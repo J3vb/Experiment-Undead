@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://systems/enemies/enemy_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://systems/enemies/zombie.tscn" id="2"]
+[ext_resource type="AudioStream" path="res://assets/audio/zombie_groan_1.wav" id="3"]
+[ext_resource type="AudioStream" path="res://assets/audio/zombie_groan_2.wav" id="4"]
+[ext_resource type="AudioStream" path="res://assets/audio/zombie_groan_3.wav" id="5"]
+[ext_resource type="AudioStream" path="res://assets/audio/zombie_attack.wav" id="6"]
+
+[resource]
+script = ExtResource("1")
+id = &"zombie_walker"
+display_name = "Walker"
+max_health = 100.0
+move_speed = 1.9
+acceleration = 8.0
+xp_reward = 10
+attack_damage = 35.0
+attack_range = 1.5
+attack_windup = 0.45
+attack_cooldown = 1.2
+skin_color = Color(0.36, 0.43, 0.3, 1)
+clothes_color = Color(0.22, 0.2, 0.17, 1)
+body_scale = 1.0
+scene = ExtResource("2")
+groan_sounds = Array[AudioStream]([ExtResource("3"), ExtResource("4"), ExtResource("5")])
+attack_sound = ExtResource("6")
