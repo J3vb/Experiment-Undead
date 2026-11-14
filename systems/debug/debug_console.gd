@@ -1,4 +1,5 @@
 ## Debug-only command registry and tuning console owned by the match.
+class_name DebugConsole
 extends CanvasLayer
 
 var commands: Dictionary[StringName, Dictionary] = {}
