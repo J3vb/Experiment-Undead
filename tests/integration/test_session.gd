@@ -49,6 +49,7 @@ func test_navmesh_has_paths() -> void:
 	assert_almost_eq(path[path.size() - 1].distance_to(Vector3(44, 0, 50)), 0.0, 1.0)
 
 
+
 func test_player_spawns_with_loadout() -> void:
 	watch_signals(Events)
 	player.weapons.give(Content.weapon(&"rifle_ar"))
@@ -77,15 +78,16 @@ func test_headshots_kill_and_pay() -> void:
 		return
 	watch_signals(Events)
 	var weapon: Weapon = player.weapons.current
+	watch_signals(weapon)
 	weapon.ads_progress = 1.0
 	var shots: int = 0
 	while z.state != Zombie.State.DEAD and shots < 15:
-		var head: Vector3 = z.global_position + Vector3(0, 1.68, 0)
-		player.camera.look_at(head)
+		player.camera.look_at(z.head_zone.global_position)
 		weapon.fire()
 		shots += 1
 		await wait_physics_frames(2)
 	assert_eq(z.state, Zombie.State.DEAD, "zombie died after %d shots" % shots)
+	assert_signal_emitted_with_parameters(weapon, "hit_landed", [true, true])
 	assert_signal_emitted(Events, "enemy_killed")
 	assert_gt(player.wallet.points, 500, "points paid")
 	assert_gt(session.progression.get_xp(player), 0, "xp paid")
