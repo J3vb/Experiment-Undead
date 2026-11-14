@@ -41,7 +41,7 @@ func get_prompt(player: Player) -> String:
 		State.OFFERING:
 			return "Take %s [F]" % offer.display_name if player == _buyer else ""
 		State.IDLE:
-			if not _choices(player).is_empty():
+			if _has_choice(player):
 				return "Roll the Specimen Vault [F]  %d" % cost
 	return ""
 
@@ -96,12 +96,24 @@ func _physics_process(delta: float) -> void:
 func _choices(player: Player) -> Array[WeaponData]:
 	var out: Array[WeaponData] = []
 	for gun: WeaponData in pool:
-		var owned: bool = false
-		for held: Weapon in player.weapons.weapons:
-			owned = owned or held.data == gun or held.data == gun.upgraded
-		if not owned and gun.crate_weight > 0.0:
+		if gun.crate_weight > 0.0 and not _holds(player, gun):
 			out.append(gun)
 	return out
+
+
+## Same test as _choices() without building a list: the prompt runs every frame.
+func _has_choice(player: Player) -> bool:
+	for gun: WeaponData in pool:
+		if gun.crate_weight > 0.0 and not _holds(player, gun):
+			return true
+	return false
+
+
+func _holds(player: Player, gun: WeaponData) -> bool:
+	for held: Weapon in player.weapons.weapons:
+		if held.data == gun or held.data == gun.upgraded:
+			return true
+	return false
 
 
 func _move() -> void:
