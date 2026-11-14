@@ -106,3 +106,8 @@ func test_prunes_oldest_runs() -> void:
 	assert_true(left.has("run_20260104.jsonl"), "newest kept")
 	# Kept: runs 03 and 04 (log + summary) and this test's own run_test_client log.
 	assert_eq(left.size(), 5)
+
+
+func test_live_run_has_unique_name_and_early_summary() -> void:
+	assert_string_ends_with(Log.session_id, "_%d" % OS.get_process_id(), "pid in the file name")
+	assert_true(FileAccess.file_exists(Log.summary_path()), "summary exists from the start")

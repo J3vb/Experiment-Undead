@@ -33,7 +33,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	var role: String = "server" if Build.is_server() else "client"
 	var stamp: String = Time.get_datetime_string_from_system(true).replace(":", "").replace("-", "")
-	open("%s/run_%s_%s.jsonl" % [DIR, stamp, role])
+	# The process id keeps two runs started in the same second apart.
+	open("%s/run_%s_%s_%d.jsonl" % [DIR, stamp, role, OS.get_process_id()])
 	prune_old_runs(DIR, KEEP_RUNS)
 	_capture = EngineErrorCapture.new(self)
 	OS.add_logger(_capture)
@@ -43,6 +44,8 @@ func _ready() -> void:
 	if Build.crashed_last_run:
 		warn(&"build", &"previous_run_crashed", {"previous_log": _previous_log()})
 	_connect_events()
+	# A crash during loading still leaves a summary that says clean_exit: false.
+	write_summary(false)
 
 
 func _exit_tree() -> void:

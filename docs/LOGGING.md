@@ -16,9 +16,9 @@ Folder `user://logs/`:
 
 Per run (the last 20 runs are kept):
 
-- `run_<UTC time>_<client|server>.jsonl`: the log, one JSON object per line.
+- `run_<UTC time>_<client|server>_<pid>.jsonl`: the log, one JSON object per line.
 - `run_<...>.summary.json`: counts, distinct problems and perf numbers.
-  Rewritten every 30 s and on exit. `"clean_exit": false` means the run crashed
+  Written at start, every 30 s and on exit. `"clean_exit": false` means the run crashed
   or was killed.
 - `godot.log`: Godot's own plain-text output (prints, engine errors). Use it
   only when the JSON log is not enough.
