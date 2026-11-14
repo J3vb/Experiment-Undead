@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="XpRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/progression/xp_rules.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+headshot_kill_bonus = 5
+round_clear_xp_per_round = 50
+level_base = 500
+level_exponent = 1.25
+round_to = 50
+max_level = 50
+bonus_point_levels = Array[int]([10, 20, 30, 40, 50])
