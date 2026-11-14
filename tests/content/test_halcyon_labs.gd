@@ -138,4 +138,16 @@ func test_kestrel_replaces_its_wall_placeholder() -> void:
 		assert_eq(wall.position, Vector3(10.25, 1.4, 32))
 		assert_eq(wall.basis, Basis.IDENTITY, "same facing as the placeholder")
 		assert_eq((wall.get_node("Label") as Label3D).text, "Kestrel SMG 1000")
-	assert_eq(get_tree().get_nodes_in_group(&"wall_buy_spot").size(), 1, "only Talon remains a placeholder")
+	assert_eq(get_tree().get_nodes_in_group(&"wall_buy_spot").size(), 0, "no wall-gun placeholders remain")
+
+
+func test_talon_replaces_its_wall_placeholder() -> void:
+	var level: Level = (load(MAP) as PackedScene).instantiate() as Level
+	add_child_autofree(level)
+	var wall: WallBuy = level.find_child("WallBuyTalon", true, false) as WallBuy
+	assert_not_null(wall)
+	if wall:
+		assert_eq(wall.weapon.id, &"talon_dmr")
+		assert_eq(wall.position, Vector3(8.25, 1.4, 20))
+		assert_eq(wall.basis, Basis.IDENTITY, "same facing as the placeholder")
+		assert_eq((wall.get_node("Label") as Label3D).text, "Talon DMR 1500")

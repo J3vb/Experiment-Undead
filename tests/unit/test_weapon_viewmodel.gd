@@ -136,3 +136,14 @@ func test_scope_camera_follows_main_camera_each_frame_without_interpolation() ->
 	var offset: float = lens.camera.global_position.distance_to(main.global_position)
 	assert_almost_eq(offset, 0.0, 0.001, "scope sits on the main camera")
 	assert_true(lens.camera.global_basis.is_equal_approx(main.global_basis), "scope looks where the main camera looks")
+
+
+func test_talon_scope_has_three_times_zoom() -> void:
+	var weapon: Weapon = _gun("res://content/weapons/talon_dmr.tres")
+	var lens: ScopeLens = _part(weapon, "ScopeLens") as ScopeLens
+	assert_eq(lens.zoom, 3.0)
+	weapon.ads_progress = 1.0
+	lens._process(0.016)
+	assert_true(lens.is_rendering())
+	assert_almost_eq(lens.camera.fov, get_viewport().get_camera_3d().fov / 3.0, 0.01)
+	assert_eq(_part(weapon, "FlashLight").get_parent(), _part(weapon, "Muzzle"))

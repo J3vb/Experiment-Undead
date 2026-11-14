@@ -14,6 +14,7 @@
 [ext_resource type="Resource" path="res://content/weapons/rifle_ar.tres" id="rifle"]
 [ext_resource type="Resource" path="res://content/weapons/brenner_trench.tres" id="brenner"]
 [ext_resource type="Resource" path="res://content/weapons/kestrel_smg.tres" id="kestrel"]
+[ext_resource type="Resource" path="res://content/weapons/talon_dmr.tres" id="talon"]
 [ext_resource type="PackedScene" path="res://systems/interactables/med_dispenser.tscn" id="meddisp"]
 [ext_resource type="PackedScene" path="res://systems/interactables/reforger.tscn" id="reforger"]
 [ext_resource type="PackedScene" path="res://systems/interactables/specimen_vault.tscn" id="vault"]
@@ -314,7 +315,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0.5, 45.4)
 
 [node name="SpecimenVault" parent="NavigationRegion3D/Machines" instance=ExtResource("vault")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0.5, 45.4)
-pool = Array[ExtResource("weapon_data")]([ExtResource("rifle"), ExtResource("brenner"), ExtResource("kestrel")])
+pool = Array[ExtResource("weapon_data")]([ExtResource("rifle"), ExtResource("brenner"), ExtResource("kestrel"), ExtResource("talon")])
 
 [node name="VaultSpotGuardPost" type="Marker3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0.5, 49.4)
@@ -377,11 +378,18 @@ pixel_size = 0.004
 font_size = 40
 text = "Kestrel SMG 1000"
 
-[node name="WallBuyTalon" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["wall_buy_spot"]]
+[node name="WallBuyTalon" type="Area3D" parent="NavigationRegion3D/Machines"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.25, 1.4, 20)
+script = ExtResource("wallbuy")
+weapon = ExtResource("talon")
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyTalon"]
+shape = SubResource("wallbuy_area")
+
+[node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/WallBuyTalon"]
 script = ExtResource("block")
 size = Vector3(0.1, 0.8, 1.6)
-material = SubResource("machine_dev")
+material = ExtResource("wood")
 
 [node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyTalon"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)

@@ -91,3 +91,10 @@ thump = np.sin(2 * np.pi * (180 * tt - 80 * tt**2)) * np.exp(-tt * 38)
 snap = np.sin(2 * np.pi * 2100 * tt) * np.exp(-tt * 160)
 tail = lowpass(rng.standard_normal(len(tt)), 0.18) * np.exp(-tt * 30)
 save("kestrel_fire.wav", crack + thump * 0.55 + snap * 0.3 + tail * 0.7)
+
+# Talon shot: heavier crack and a longer reverberant tail than the rifle.
+tt = t(0.75)
+crack = rng.standard_normal(len(tt)) * np.exp(-tt * 45)
+thump = np.sin(2 * np.pi * (75 * tt - 40 * tt**2)) * np.exp(-tt * 14)
+tail = lowpass(rng.standard_normal(len(tt)), 0.07) * np.exp(-tt * 5) * 3.0
+save("talon_fire.wav", crack * 1.3 + thump * 1.5 + tail)

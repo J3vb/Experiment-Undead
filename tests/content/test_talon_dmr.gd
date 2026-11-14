@@ -1,0 +1,33 @@
+## Locks the provisional Talon balance-sheet scale and its handling contract.
+extends GutTest
+
+
+func test_talon_balance_and_handling() -> void:
+	var gun: WeaponData = Content.weapon(&"talon_dmr")
+	assert_eq(gun.display_name, "Talon DMR")
+	assert_eq(gun.cost, 1500)
+	assert_eq(gun.fire_mode, WeaponData.FireMode.SEMI)
+	assert_eq(gun.rounds_per_minute, 300.0)
+	assert_almost_eq(gun.damage, 68.0 * 0.57, 0.001)
+	assert_almost_eq(gun.min_damage, 55.0 * 0.57, 0.001)
+	assert_eq(gun.falloff_start, 40.0)
+	assert_eq(gun.falloff_end, 90.0)
+	assert_eq(gun.head_multiplier, 3.0)
+	assert_eq(gun.magazine_size, 15)
+	assert_eq(gun.starting_reserve, 90)
+	assert_eq(gun.max_reserve, 90)
+	assert_eq(gun.reload_time, 2.4)
+	assert_eq(gun.empty_reload_time, 3.1)
+	assert_eq(gun.ads_time, 0.25)
+	assert_eq(gun.ads_fov, 40.0)
+	assert_eq(gun.move_speed_multiplier, 0.95)
+	assert_lt(gun.ads_spread, Content.weapon(&"rifle_ar").ads_spread)
+	assert_gt(gun.hip_spread, Content.weapon(&"rifle_ar").hip_spread)
+	assert_eq(gun.recoil.pattern.size(), 1)
+	assert_eq(gun.recoil.pattern[0].x, 0.0)
+	assert_gt(gun.recoil.pattern[0].y, 3.0)
+	assert_gt(gun.recoil.recovery_speed, Content.weapon(&"rifle_ar").recoil.recovery_speed)
+	assert_gt(gun.fire_sound.get_length(), Content.weapon(&"rifle_ar").fire_sound.get_length())
+	assert_eq(gun.upgraded.display_name, "Talon Reforged")
+	assert_almost_eq(gun.upgraded.min_damage, gun.min_damage * 2.0, 0.001)
+	assert_eq(gun.upgraded.starting_reserve, gun.starting_reserve * 2)
