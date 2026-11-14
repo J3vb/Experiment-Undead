@@ -107,6 +107,8 @@ func test_prompt_splits_existing_interactable_price_and_preserves_unclear_text()
 	assert_true(hud.prompt_key.visible)
 	assert_eq(hud.prompt_label.text, "Open Labs")
 	assert_eq(hud.prompt_price.text, "1500")
+	await get_tree().process_frame
+	assert_gt(hud.prompt_box.position.y, hud.prompt_box.get_viewport_rect().size.y * 0.5)
 	hud._update_prompt("Needs power")
 	assert_eq(hud.prompt_label.text, "Needs power")
 	assert_eq(hud.prompt_price.text, "")
@@ -142,5 +144,6 @@ func test_revive_removes_consumed_serum_badge() -> void:
 	Events.serum_gained.emit(player, second_wind)
 	player.serums.erase(second_wind)
 	Events.player_revived.emit(player)
+	await get_tree().process_frame
 	assert_eq(hud.serums.get_child_count(), 1)
 	assert_eq((hud.serums.get_child(0) as Label).text, "IH")
