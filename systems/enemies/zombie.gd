@@ -1,6 +1,6 @@
-## Basic zombie brain: rises, tears through its window barrier (if it spawned
-## behind one), chases the nearest living player over the navmesh, swings when
-## close, dies. State machine is a plain enum + match. The body
+## Basic zombie brain: rises, queues at and tears through its window barrier
+## (if it spawned behind one), vaults in, chases the nearest living player over
+## the navmesh, swings when close, dies. State machine is a plain enum + match. The body
 ## (ZombieRig) and voice (ZombieVoice) are child nodes with their own scripts.
 class_name Zombie
 extends CharacterBody3D
@@ -13,6 +13,8 @@ const SEPARATION_FORCE: float = 2.5
 const STRIKE_TIME: float = 0.35
 ## A swing still lands this far past attack_range (also the reach through a window).
 const HIT_SLACK: float = 0.3
+## Seconds to climb through an open window (AI doc: 1.0 s vault).
+const VAULT_TIME: float = 1.0
 
 var data: EnemyData
 var net_id: int = 0
@@ -29,7 +31,8 @@ var _damage: float = 35.0
 var _attack_cooldown: float = 0.0
 var _attack_landed: bool = false
 var _tear_timer: float = 0.0
-var _climbing: bool = false
+var _vault_time: float = -1.0
+var _vault_from: Vector3 = Vector3.ZERO
 var _repath_timer: float = 0.0
 var _retarget_timer: float = 0.0
 var _stuck_watch: ZombieStuckWatch = ZombieStuckWatch.new()
@@ -149,20 +152,30 @@ func _tick_chasing(delta: float) -> void:
 	_face(to_target, delta)
 
 
-## Walk to the window, tear planks (or swipe a player through the gap), climb in.
+## Take an attack slot at the window (or wait in the queue), tear planks or
+## swipe a player through the gap, then vault in once the window is open.
 func _tick_entering(delta: float) -> void:
-	if barrier.is_broken() or _climbing:
-		_climb_in(delta)
+	if _vault_time >= 0.0:
+		_tick_vault(delta)
 		return
+	var slot: int = barrier.claim_slot(self)
+	var spot: Vector3 = barrier.slot_point(slot) if slot >= 0 else barrier.queue_point(net_id)
 	_update_target(delta)
-	var to_window: Vector3 = barrier.outside_point() - global_position
-	to_window.y = 0.0
-	if to_window.length() > 0.3:
-		_steer(to_window.normalized() * _speed + _separation(), delta)
-		_face(to_window, delta)
+	var to_spot: Vector3 = spot - global_position
+	to_spot.y = 0.0
+	if to_spot.length() > 0.3:
+		_steer(to_spot.normalized() * _speed + _separation(), delta)
+		_face(to_spot, delta)
 		return
 	_steer(Vector3.ZERO, delta)
 	_face(barrier.global_position - global_position, delta)
+	if slot < 0:
+		return
+	if barrier.is_broken():
+		if barrier.try_start_vault(self):
+			_vault_from = global_position
+			_vault_time = 0.0
+		return
 	if (
 		target
 		and _attack_cooldown <= 0.0
@@ -178,18 +191,26 @@ func _tick_entering(delta: float) -> void:
 		barrier.tear_plank()
 
 
-func _climb_in(delta: float) -> void:
-	_climbing = true
-	var to_inside: Vector3 = barrier.inside_point() - global_position
-	to_inside.y = 0.0
-	if to_inside.length() < 0.4:
+## Over the sill on a fixed path; the rig adds the hop (see vault_progress).
+func _tick_vault(delta: float) -> void:
+	_vault_time += delta
+	var t: float = clampf(_vault_time / VAULT_TIME, 0.0, 1.0)
+	var landing: Vector3 = barrier.inside_point()
+	landing.y = _vault_from.y
+	velocity = Vector3.ZERO
+	global_position = _vault_from.lerp(landing, t)
+	_face(landing - _vault_from, delta)
+	if t >= 1.0:
+		barrier.release(self)
 		barrier = null
-		_climbing = false
+		_vault_time = -1.0
 		_stuck_watch.restart(global_position)
 		_enter(State.CHASING)
-		return
-	_steer(to_inside.normalized() * _speed, delta)
-	_face(to_inside, delta)
+
+
+## 0..1 while vaulting through a window, -1 otherwise.
+func vault_progress() -> float:
+	return clampf(_vault_time / VAULT_TIME, 0.0, 1.0) if _vault_time >= 0.0 else -1.0
 
 
 func _flat_distance(other: Node3D) -> float:
@@ -298,6 +319,8 @@ func _on_damaged(info: DamageInfo) -> void:
 
 func _on_died(info: DamageInfo) -> void:
 	_enter(State.DEAD)
+	if barrier:
+		barrier.release(self)
 	collision_layer = 0
 	for zone: HitZone in hit_zones:
 		zone.set_enabled(false)
