@@ -179,6 +179,14 @@ python tools/ci/check_pr.py origin/main
 - Every bug fix adds a test that fails without the fix.
 - Tests use `GameSession.rng` with a fixed seed, never real time or `randf()`.
 
+## Logs and diagnostics
+
+Each run writes a JSON-lines log and a summary to `user://logs/` (engine
+errors with file, line and stack included). To debug a bug report, a crash or
+a test run, read `docs/LOGGING.md` first: it says where the files are, how to
+read them and what each event means. When you build a system, add `Log.warn`
+lines for its early warning signs and list them in that doc's catalogue.
+
 ## Merging
 
 - When both checks are green you may mark your PR ready and merge it yourself

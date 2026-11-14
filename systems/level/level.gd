@@ -9,6 +9,11 @@ extends Node3D
 signal navigation_ready
 signal power_turned_on
 
+## A navmesh bake slower than this is a visible hitch.
+const NAV_BAKE_WARN_MS: float = 100.0
+## Navigation not usable this long after load means the bake or sync failed.
+const NAV_READY_WARN_MS: float = 10000.0
+
 @export var navigation_region: NavigationRegion3D
 @export var player_spawn: Marker3D
 @export var start_area: StringName
@@ -18,6 +23,7 @@ var open_areas: Array[StringName] = []
 var power_on: bool = false
 var _baked: bool = false
 var _rebake_pending: bool = false
+var _ready_usec: int = 0
 
 
 func _ready() -> void:
@@ -27,7 +33,8 @@ func _ready() -> void:
 		_finish()
 		return
 	navigation_region.bake_finished.connect(func() -> void: _baked = true, CONNECT_ONE_SHOT)
-	navigation_region.bake_navigation_mesh(false)
+	_ready_usec = Time.get_ticks_usec()
+	_bake(&"load")
 
 
 func turn_power_on() -> void:
@@ -52,7 +59,19 @@ func is_rebaking() -> bool:
 
 func _rebake_now() -> void:
 	_rebake_pending = false
+	_bake(&"rebake")
+
+
+## Main-thread bake; the time is logged because it freezes the game.
+func _bake(reason: StringName) -> void:
+	var start: int = Time.get_ticks_usec()
 	navigation_region.bake_navigation_mesh(false)
+	var ms: float = (Time.get_ticks_usec() - start) / 1000.0
+	var data: Dictionary = {"reason": reason, "ms": snappedf(ms, 0.1), "open_areas": open_areas}
+	if ms > NAV_BAKE_WARN_MS:
+		Log.warn(&"level", &"navmesh_bake_slow", data)
+	else:
+		Log.info(&"level", &"navmesh_baked", data)
 
 
 func open_area(area: StringName) -> void:
@@ -70,7 +89,10 @@ func get_player_spawn() -> Transform3D:
 
 
 func _physics_process(_delta: float) -> void:
-	if is_navigation_ready or not _baked:
+	if is_navigation_ready:
+		return
+	_warn_if_navigation_late()
+	if not _baked:
 		return
 	# The new mesh is usable only after the navigation map has synced it,
 	# which can take one or more physics frames.
@@ -82,7 +104,17 @@ func _physics_process(_delta: float) -> void:
 		_finish()
 
 
+func _warn_if_navigation_late() -> void:
+	var waited_ms: float = (Time.get_ticks_usec() - _ready_usec) / 1000.0
+	if _ready_usec != 0 and waited_ms > NAV_READY_WARN_MS:
+		_ready_usec = 0
+		Log.error(&"level", &"navigation_not_ready", {"waited_ms": int(waited_ms), "baked": _baked})
+
+
 func _finish() -> void:
+	if _ready_usec != 0:
+		Log.info(&"level", &"navigation_ready", {"ms": (Time.get_ticks_usec() - _ready_usec) / 1000})
+	_ready_usec = 0
 	is_navigation_ready = true
 	set_physics_process(false)
 	navigation_ready.emit()
