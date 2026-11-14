@@ -52,8 +52,10 @@ func test_checkboxes_and_all_fps_options() -> void:
 		var check: CheckBox = _screen.get_node("%" + entry[0]) as CheckBox
 		check.button_pressed = true
 		assert_eq(Settings.get_value(entry[1], entry[0]), true)
+		assert_true(check.text.ends_with("[On]"), "toggle state has a text cue")
 		check.button_pressed = false
 		assert_eq(Settings.get_value(entry[1], entry[0]), false)
+		assert_true(check.text.ends_with("[Off]"), "toggle state has a text cue")
 	var option: OptionButton = _screen.get_node("%max_fps") as OptionButton
 	var expected: Array[int] = [60, 120, 144, 165, 240, 0]
 	for index: int in range(expected.size()):
@@ -162,3 +164,22 @@ func test_show_fps_is_only_a_hud_line() -> void:
 	assert_true(hud._fps_label.visible)
 	assert_true(hud._fps_label.text.begins_with("FPS: "))
 	assert_false(hud._fps_label.text.contains("\n"))
+
+
+func test_standalone_screen_has_keyboard_focus_and_readable_hints() -> void:
+	var tabs: TabContainer = _screen.get_node("Margin/Box/Tabs") as TabContainer
+	assert_true(tabs.get_tab_bar().has_focus(), "a standalone settings screen starts with keyboard focus")
+	for tab: Control in tabs.get_children():
+		var hints: int = 0
+		for child: Node in tab.get_children():
+			var label: Label = child as Label
+			if label:
+				hints += 1
+				assert_false(label.text.is_empty())
+				assert_gte(label.get_theme_font_size("font_size"), 24, "hints stay readable")
+		assert_gt(hints, 0, "each tab explains its controls")
+	for index: int in range(tabs.get_tab_count()):
+		tabs.current_tab = index
+		await wait_process_frames(2)
+		assert_lte(_screen.get_combined_minimum_size().x, 1600.0, "rows fit the game viewport")
+		assert_lte(_screen.get_combined_minimum_size().y, 900.0, "footer remains visible")
