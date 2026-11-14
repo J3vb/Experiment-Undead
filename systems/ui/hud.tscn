@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://systems/ui/hud.gd" id="1"]
 [ext_resource type="Theme" path="res://systems/ui/theme.tres" id="2"]
@@ -14,6 +14,43 @@
 shader = ExtResource("5")
 shader_parameter/intensity = 0.0
 shader_parameter/tint = Color(0.55, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="dark_box"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+bg_color = Color(0.025, 0.04, 0.045, 0.92)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_left = 8
+corner_radius_bottom_right = 8
+
+[sub_resource type="StyleBoxFlat" id="green_box"]
+content_margin_left = 18.0
+content_margin_top = 12.0
+content_margin_right = 18.0
+content_margin_bottom = 12.0
+bg_color = Color(0.025, 0.04, 0.035, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.75, 0.5, 1)
+
+[sub_resource type="StyleBoxFlat" id="key_box"]
+bg_color = Color(0.08, 0.1, 0.1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.75, 0.77, 0.73, 1)
+
+[sub_resource type="StyleBoxFlat" id="bar_bg"]
+bg_color = Color(0.12, 0.15, 0.15, 0.9)
+
+[sub_resource type="StyleBoxFlat" id="bar_fill"]
+bg_color = Color(1, 1, 1, 1)
 
 [node name="Hud" type="CanvasLayer"]
 process_mode = 3
@@ -59,106 +96,137 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("4")
 
-[node name="RoundLabel" type="Label" parent="Root"]
+[node name="RoundInfo" type="VBoxContainer" parent="Root"]
 layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 40.0
-offset_top = -135.0
-offset_right = 300.0
-offset_bottom = -30.0
-grow_vertical = 0
-theme_override_colors/font_color = Color(0.72, 0.06, 0.04, 1)
-theme_override_font_sizes/font_size = 88
+anchor_left = 0.025
+anchor_top = 0.025
+anchor_right = 0.25
+anchor_bottom = 0.22
+theme_override_constants/separation = -10
+
+[node name="RoundLabel" type="Label" parent="Root/RoundInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 110
+theme_override_constants/outline_size = 8
+modulate = Color(0.784314, 0.12549, 0.164706, 1)
 text = "1"
-vertical_alignment = 2
 
-[node name="PointsLabel" type="Label" parent="Root"]
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 44.0
-offset_top = -185.0
-offset_right = 244.0
-offset_bottom = -135.0
-grow_vertical = 0
-theme_override_font_sizes/font_size = 34
-text = "500"
+[node name="MapName" type="Label" parent="Root/RoundInfo"]
+layout_mode = 2
+text = "Halcyon Labs"
 
-[node name="SerumsLabel" type="Label" parent="Root"]
+[node name="Loadout" type="VBoxContainer" parent="Root"]
 layout_mode = 1
-anchors_preset = 2
+anchor_left = 0.7
 anchor_top = 1.0
+anchor_right = 0.975
 anchor_bottom = 1.0
-offset_left = 44.0
-offset_top = -235.0
-offset_right = 444.0
-offset_bottom = -195.0
+offset_top = -260.0
+offset_bottom = -28.0
 grow_vertical = 0
-theme_override_font_sizes/font_size = 24
-theme_override_colors/font_color = Color(0.45, 0.95, 0.8, 1)
+theme_override_constants/separation = 0
+alignment = 2
 
-[node name="PointsDelta" type="Label" parent="Root"]
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 200.0
-offset_top = -185.0
-offset_right = 360.0
-offset_bottom = -135.0
-grow_vertical = 0
-theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
-theme_override_font_sizes/font_size = 26
+[node name="PointsDelta" type="Label" parent="Root/Loadout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94902, 0.756863, 0.305882, 1)
 text = "+0"
-
-[node name="WeaponLabel" type="Label" parent="Root"]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -400.0
-offset_top = -140.0
-offset_right = -40.0
-offset_bottom = -105.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_font_sizes/font_size = 20
-text = "WEAPON"
 horizontal_alignment = 2
 
-[node name="AmmoLabel" type="Label" parent="Root"]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -400.0
-offset_top = -105.0
-offset_right = -40.0
-offset_bottom = -40.0
-grow_horizontal = 0
-grow_vertical = 0
-theme_override_font_sizes/font_size = 46
-text = "30 / 120"
+[node name="PointsLabel" type="Label" parent="Root/Loadout"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 44
+text = "0"
 horizontal_alignment = 2
 
-[node name="ExfilLabel" type="Label" parent="Root"]
+[node name="WeaponLabel" type="Label" parent="Root/Loadout"]
+layout_mode = 2
+text = "Weapon"
+horizontal_alignment = 2
+
+[node name="Ammo" type="HBoxContainer" parent="Root/Loadout"]
+layout_mode = 2
+alignment = 2
+theme_override_constants/separation = 12
+
+[node name="AmmoLabel" type="Label" parent="Root/Loadout/Ammo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 72
+text = "0"
+
+[node name="ReserveLabel" type="Label" parent="Root/Loadout/Ammo"]
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_colors/font_color = Color(0.63, 0.66, 0.64, 1)
+theme_override_font_sizes/font_size = 32
+text = "/ 0"
+
+[node name="Vitals" type="VBoxContainer" parent="Root"]
 layout_mode = 1
-anchors_preset = 5
+anchor_left = 0.025
+anchor_top = 1.0
+anchor_right = 0.3
+anchor_bottom = 1.0
+offset_top = -100.0
+offset_bottom = -28.0
+grow_vertical = 0
+theme_override_constants/separation = 14
+alignment = 2
+
+[node name="Health" type="ProgressBar" parent="Root/Vitals"]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+mouse_filter = 2
+modulate = Color(0.949, 0.929, 0.878, 1)
+theme_override_styles/background = SubResource("bar_bg")
+theme_override_styles/fill = SubResource("bar_fill")
+max_value = 1.0
+step = 0.001
+value = 1.0
+show_percentage = false
+
+[node name="Serums" type="HBoxContainer" parent="Root/Vitals"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ExfilBox" type="PanelContainer" parent="Root"]
+visible = false
+layout_mode = 1
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -250.0
+offset_left = -270.0
 offset_top = 24.0
-offset_right = 250.0
-offset_bottom = 60.0
+offset_right = 270.0
 grow_horizontal = 2
-theme_override_colors/font_color = Color(0.6, 1, 0.5, 1)
+theme_override_styles/panel = SubResource("green_box")
+
+[node name="Box" type="VBoxContainer" parent="Root/ExfilBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="Root/ExfilBox/Box"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.75, 0.5, 1)
+text = "Exfil open · Containment Wing"
+horizontal_alignment = 1
+
+[node name="Hold" type="ProgressBar" parent="Root/ExfilBox/Box"]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+mouse_filter = 2
+modulate = Color(0.4, 0.75, 0.5, 1)
+theme_override_styles/background = SubResource("bar_bg")
+theme_override_styles/fill = SubResource("bar_fill")
+max_value = 1.0
+step = 0.001
+show_percentage = false
+
+[node name="Time" type="Label" parent="Root/ExfilBox/Box"]
+layout_mode = 2
+text = "Hold 1:00"
 horizontal_alignment = 1
 
 [node name="HintLabel" type="Label" parent="Root"]
@@ -178,21 +246,39 @@ theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
 text = "RELOAD [R]"
 horizontal_alignment = 1
 
-[node name="PromptLabel" type="Label" parent="Root"]
+[node name="Prompt" type="PanelContainer" parent="Root"]
+visible = false
 layout_mode = 1
-anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -300.0
 offset_top = 115.0
-offset_right = 300.0
-offset_bottom = 150.0
+offset_bottom = 171.0
 grow_horizontal = 2
-grow_vertical = 2
-theme_override_colors/font_color = Color(0.85, 0.95, 0.93, 1)
+grow_vertical = 0
+theme_override_styles/panel = SubResource("dark_box")
+
+[node name="Row" type="HBoxContainer" parent="Root/Prompt"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Key" type="Label" parent="Root/Prompt/Row"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+theme_override_styles/normal = SubResource("key_box")
+text = "F"
 horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PromptLabel" type="Label" parent="Root/Prompt/Row"]
+layout_mode = 2
+vertical_alignment = 1
+
+[node name="Price" type="Label" parent="Root/Prompt/Row"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.63, 0.66, 0.64, 1)
+vertical_alignment = 1
 
 [node name="CenterLabel" type="Label" parent="Root"]
 layout_mode = 1
