@@ -37,6 +37,7 @@ func interact(player: Player) -> void:
 		return
 	_repair_cooldown = REPAIR_TIME
 	_set_planks(planks + 1)
+	($RepairSound as AudioStreamPlayer3D).play()
 	var session: GameSession = get_tree().get_first_node_in_group(&"game_session") as GameSession
 	if session:
 		session.economy.pay_repair(player)
@@ -45,6 +46,7 @@ func interact(player: Player) -> void:
 func tear_plank() -> void:
 	if planks > 0:
 		_set_planks(planks - 1)
+		($TearSound as AudioStreamPlayer3D).play()
 
 
 func is_broken() -> bool:

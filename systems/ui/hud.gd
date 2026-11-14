@@ -271,6 +271,7 @@ func _on_round_started(round_number: int, _count: int) -> void:
 
 
 func _on_round_ended(round_number: int) -> void:
+	($RoundEndSound as AudioStreamPlayer).play()
 	_flash_center("ROUND %d SURVIVED" % round_number, 3.0)
 
 

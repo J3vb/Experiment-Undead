@@ -41,6 +41,16 @@ func open() -> void:
 	if is_open:
 		return
 	is_open = true
+	var sound: AudioStreamPlayer3D = $OpenSound
+	sound.reparent(level)
+	sound.finished.connect(sound.queue_free)
+	sound.play()
+	var buy: AudioStreamPlayer3D = $BuySound
+	if buy.playing:
+		buy.stop()
+		buy.reparent(level)
+		buy.finished.connect(buy.queue_free)
+		buy.play()
 	# Free the blocker now so the navmesh rebake no longer sees it.
 	get_node("Blocker").free()
 	queue_free()

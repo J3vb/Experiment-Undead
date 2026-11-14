@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" path="res://systems/power_ups/power_up.gd" id="1"]
 
+[ext_resource type="AudioStream" path="res://assets/audio/power_up.wav" id="sfx_power_up"]
+
 [sub_resource type="SphereShape3D" id="area"]
 radius = 0.7
 
@@ -39,3 +41,7 @@ billboard = 1
 pixel_size = 0.003
 font_size = 40
 modulate = Color(0.6, 1, 0.5, 1)
+
+[node name="CollectSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("sfx_power_up")
+bus = &"SFX"
