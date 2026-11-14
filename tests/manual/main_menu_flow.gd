@@ -3,6 +3,7 @@ extends SceneTree
 
 
 func _initialize() -> void:
+	node_added.connect(_disable_profile)
 	_run.call_deferred()
 
 
@@ -70,3 +71,9 @@ func _press_action(action: StringName) -> void:
 	event.pressed = false
 	Input.parse_input_event(event)
 	await process_frame
+
+
+func _disable_profile(node: Node) -> void:
+	var script: Script = node.get_script() as Script
+	if script and script.resource_path == "res://systems/game/game_session.gd":
+		node.set("profile_id", &"")
