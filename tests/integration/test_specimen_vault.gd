@@ -59,10 +59,11 @@ func test_roll_offers_a_gun_the_player_does_not_hold() -> void:
 	assert_eq(vault.get_prompt(player), "", "nothing to press while rolling")
 	_finish_roll()
 	assert_eq(vault.state, SpecimenVault.State.OFFERING)
-	assert_eq(vault.offer.id, &"brenner_trench", "player holds pistol and rifle: only the shotgun is left")
-	assert_string_contains(vault.get_prompt(player), "Take Brenner Trench")
+	assert_has([&"brenner_trench", &"kestrel_smg"], vault.offer.id, "offers an unowned gun")
+	var offered: WeaponData = vault.offer
+	assert_string_contains(vault.get_prompt(player), "Take " + offered.display_name)
 	vault.interact(player)
-	assert_eq(player.weapons.current.data.id, &"brenner_trench", "gun in hand")
+	assert_eq(player.weapons.current.data, offered, "gun in hand")
 	assert_eq(vault.state, SpecimenVault.State.IDLE)
 
 
@@ -72,13 +73,16 @@ func test_offer_runs_out() -> void:
 	_finish_roll()
 	vault._physics_process(SpecimenVault.OFFER_TIME + 0.01)
 	assert_eq(vault.state, SpecimenVault.State.IDLE)
-	assert_ne(player.weapons.current.data.id, &"brenner_trench", "left in the Vault")
+	assert_eq(player.weapons.current.data.id, &"rifle_ar", "offer left in the Vault")
 
 
 func test_nothing_to_roll_when_the_player_holds_the_whole_pool() -> void:
 	level.turn_power_on()
+	player.weapons.max_slots = 3
 	player.weapons.give(load("res://content/weapons/brenner_trench.tres") as WeaponData)
 	player.weapons.equip(0)
+	player.weapons.give(load("res://content/weapons/kestrel_smg_reforged.tres") as WeaponData)
+	player.weapons.equip(1)
 	player.weapons.give(load("res://content/weapons/rifle_ar_reforged.tres") as WeaponData)
 	assert_eq(vault.get_prompt(player), "")
 	vault.interact(player)
@@ -101,3 +105,19 @@ func test_last_roll_refunds_and_moves_the_vault() -> void:
 	assert_true(vault.spot.is_in_group(&"vault_spot"))
 	var gap: float = vault.global_position.distance_to(vault.spot.global_position)
 	assert_almost_eq(gap, 0.0, 0.01, "Vault sits on its new spot")
+
+
+func test_vault_can_offer_the_kestrel_from_the_map_pool() -> void:
+	level.turn_power_on()
+	player.weapons.equip(0)
+	player.weapons.give(Content.weapon(&"brenner_trench"))
+	vault.interact(player)
+	_finish_roll()
+	assert_eq(vault.state, SpecimenVault.State.OFFERING)
+	assert_not_null(vault.offer)
+	if vault.offer:
+		assert_eq(vault.offer.id, &"kestrel_smg", "rifle and Brenner held: Kestrel is the only choice")
+	vault.interact(player)
+	assert_eq(player.weapons.current.data.id, &"kestrel_smg")
+	assert_eq(player.weapons.current.instance.ammo_in_mag, 30)
+	assert_eq(player.wallet.points, 9050)

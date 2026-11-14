@@ -78,6 +78,23 @@ func test_shotgun_has_a_pump_and_muzzle() -> void:
 	gun.free()
 
 
+func test_kestrel_has_moving_parts_and_iron_sights() -> void:
+	var gun: Node3D = _load("res://assets/models/weapons/kestrel_smg.glb")
+	if gun == null:
+		return
+	for part: String in ["Magazine", "Bolt", "Muzzle"]:
+		assert_not_null(gun.find_child(part, true, false), "Kestrel has " + part)
+	assert_true(gun.find_child("Receiver", true, false) is MeshInstance3D)
+	var muzzle: Node3D = gun.find_child("Muzzle", true, false) as Node3D
+	if muzzle:
+		assert_lt(muzzle.position.z, -0.35, "muzzle points forward (-Z)")
+	var box: AABB = _size_of(gun)
+	assert_between(box.size.z, 0.65, 0.75, "compact SMG with stock extended")
+	assert_lt(box.size.x, 0.1, "narrow SMG")
+	assert_lt(gun.find_children("*", "MeshInstance3D", true, false).size(), 6, "few draw calls")
+	gun.free()
+
+
 func test_wall_panel_fits_the_kit_grid() -> void:
 	var wall: Node3D = _load(WALL)
 	if wall == null:
