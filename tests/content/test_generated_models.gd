@@ -3,6 +3,7 @@
 extends GutTest
 
 const RIFLE: String = "res://assets/models/weapons/rifle_ar.glb"
+const SHOTGUN: String = "res://assets/models/weapons/shotgun_brenner.glb"
 const WALL: String = "res://assets/models/kit/wall_panel.glb"
 const ZOMBIES: String = "res://assets/models/zombies/%s.glb"
 const ZOMBIE_PARTS: Array[String] = ["Hips", "Torso", "Head", "EyeL", "EyeR", "ArmL", "ArmR"]
@@ -56,6 +57,24 @@ func test_rifle_body_is_one_mesh() -> void:
 	assert_true(receiver is MeshInstance3D, "static rifle parts are joined into Receiver")
 	var meshes: Array[Node] = gun.find_children("*", "MeshInstance3D", true, false)
 	assert_lt(meshes.size(), 10, "few draw calls: only moving parts are separate meshes")
+	gun.free()
+
+
+func test_shotgun_has_a_pump_and_muzzle() -> void:
+	var gun: Node3D = _load(SHOTGUN)
+	if gun == null:
+		return
+	assert_true(gun.find_child("Receiver", true, false) is MeshInstance3D, "static parts are joined into Receiver")
+	assert_true(gun.find_child("Bolt", true, false) is MeshInstance3D, "the pump is the Bolt node, so it racks")
+	assert_null(gun.find_child("Magazine", true, false), "tube-fed: no magazine to drop")
+	var muzzle: Node3D = gun.find_child("Muzzle", true, false) as Node3D
+	assert_not_null(muzzle, "shotgun has a Muzzle")
+	if muzzle:
+		assert_lt(muzzle.position.z, -0.5, "muzzle points forward (-Z)")
+	var box: AABB = _size_of(gun)
+	assert_almost_eq(box.size.z, 1.0, 0.05, "shotgun is about 1 m long")
+	assert_lt(box.size.x, 0.1, "shotgun is narrow")
+	assert_lt(gun.find_children("*", "MeshInstance3D", true, false).size(), 4, "few draw calls")
 	gun.free()
 
 
