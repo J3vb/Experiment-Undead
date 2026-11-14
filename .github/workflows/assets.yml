@@ -25,6 +25,6 @@ jobs:
       - name: Build every model headless
         run: |
           python tools/assets/build_models.py --out "$RUNNER_TEMP/models"
-          for f in kit/wall_panel.glb weapons/rifle_ar.glb; do
+          for f in kit/wall_panel.glb weapons/rifle_ar.glb zombies/shambler.glb zombies/crawler.glb zombies/bloater.glb; do
             test -s "$RUNNER_TEMP/models/$f" || { echo "missing $f"; exit 1; }
           done
