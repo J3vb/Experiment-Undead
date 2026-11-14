@@ -189,16 +189,13 @@ lines for its early warning signs and list them in that doc's catalogue.
 
 ## Merging
 
-- Every PR gets an automatic review:
-  - **Claude reviews Codex PRs** (`codex/` branches): the `review` CI job runs
-    when the PR leaves draft and on every push.
-  - **Codex reviews all other PRs**: it runs when the PR is opened as ready or
-    marked ready. It does **not** run on later pushes: after each push with
-    changes, comment `@codex review` on the PR once.
+- **Codex reviews every PR**, from Claude and from Codex. It runs when the PR
+  is opened as ready or marked ready. It does **not** run on later pushes:
+  after each push with changes, comment `@codex review` on the PR once.
 - You may merge your PR yourself (squash merge), no human approval needed,
   when all of these hold for the current head commit:
-  1. `quality`, `test` and `review` checks are green.
-  2. The review for that commit is finished. For Codex: its "Codex Review
+  1. `quality` and `test` checks are green.
+  2. The Codex review for that commit is finished: its "Codex Review
      Summary" comment shows ✅ Completed for that commit (or a 👍 reaction).
   3. Every review comment is fixed, or answered with a reason if it is a
      "Suggestion" you decline, and its conversation is resolved. A comment
