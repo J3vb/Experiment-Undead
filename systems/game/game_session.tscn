@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://systems/game/game_session.gd" id="1"]
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/map.tscn" id="2"]
@@ -16,6 +16,9 @@
 [ext_resource type="Script" path="res://systems/power_ups/power_up_data.gd" id="14"]
 [ext_resource type="Resource" path="res://content/power_ups/resupply.tres" id="15"]
 [ext_resource type="Resource" path="res://content/power_ups/ammo_pack.tres" id="16"]
+
+[ext_resource type="PackedScene" path="res://systems/debug/debug_console.tscn" id="16"]
+[ext_resource type="Script" path="res://systems/debug/debug_overlay.gd" id="17"]
 
 [node name="GameSession" type="Node"]
 process_mode = 3
@@ -45,3 +48,8 @@ power_ups = Array[ExtResource("14")]([ExtResource("15")])
 ammo_pack = ExtResource("16")
 
 [node name="Hud" parent="." instance=ExtResource("11")]
+
+[node name="DebugConsole" parent="." instance=ExtResource("16")]
+
+[node name="DebugOverlay" type="CanvasLayer" parent="."]
+script = ExtResource("17")
