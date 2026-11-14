@@ -43,6 +43,7 @@ built, what was simplified on purpose, and what is still to do.
 - **Logging and diagnostics:** `Log` autoload (provisional: not in the architecture doc's autoload list) writes one JSON line per event to `user://logs/run_<time>_<role>_<pid>.jsonl` and a `.summary.json` (rewritten every 30 s, `clean_exit` false after a crash). An engine `Logger` captures `push_error`/`push_warning` and script errors with file, line and stack. `HealthWatch` warns on long frames, low fps, growing orphan nodes and stalled rounds; zombies report being stuck or falling out of the map; the level logs navmesh bake times and warns when navigation is never ready. Keeps the last 20 runs. No desync checks until networking (P7). See `docs/LOGGING.md`.
 - **Builds and releases:** see `docs/RELEASING.md`. Exports run on Linux only (Windows cross-exported, no rcedit). Git tag = version. Separate `Build.PROTOCOL_VERSION` and `SaveFile.CURRENT_VERSION`. Godot ignores SIGTERM, so the server quits on a stop file the Docker entrypoint writes. No code signing yet.
 
+- **Debug console and F3 overlay:** debug builds only, children of GameSession; console owns the command registry, authority checks guard tuning commands, and F3 counters refresh at 4 Hz. God mode is deferred until a public damage-immunity API exists.
 - **CPU benchmark:** `godot --headless --path . --script res://tools/benchmark/benchmark.gd -- --zombies 24 --seconds 20 --seed 1` (also run 48); skips 2 s warm-up, measures physics callbacks at 60 Hz (no GPU, idle callbacks or standalone server integration), prints mean/P95/P99/max and writes `user://benchmark_<zombies>.json`; PR/manual workflow uploads results without performance thresholds.
 
 ## Simplified on purpose (fix before or during the matching build step)
@@ -61,5 +62,5 @@ built, what was simplified on purpose, and what is still to do.
 ## Not started
 
 Specimen Vault, Reforger Tiers II and III, grenades (and Scavenger's +1 grenade), the other power-ups (Payday, Overkill, Purge, Scrap Kit, Stasis, Supply Crate),
-menus and settings, debug console and F3 overlay, levels/skills/loot,
+menus and settings, levels/skills/loot,
 networking, dedicated server.
