@@ -12,18 +12,18 @@ extends Node
 @export var rng_seed: int = 0
 @export var restart_delay: float = 2.5
 
-@onready var director: WaveDirector = $WaveDirector
-@onready var economy: Economy = $Economy
-@onready var progression: ProgressionService = $Progression
-@onready var power_up_drops: PowerUpDrops = $PowerUpDrops
-@onready var hud: Hud = $Hud
-
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var tick: int = 0
 var level: Level
 var spawner: Spawner
 var is_over: bool = false
 var _kills: int = 0
+
+@onready var director: WaveDirector = $WaveDirector
+@onready var economy: Economy = $Economy
+@onready var progression: ProgressionService = $Progression
+@onready var power_up_drops: PowerUpDrops = $PowerUpDrops
+@onready var hud: Hud = $Hud
 
 
 func _ready() -> void:
