@@ -7,21 +7,26 @@ extends Node3D
 
 var session: GameSession
 
+
 func spawn(enemy: EnemyData, round_number: int, rules: WaveRules) -> Zombie:
 	if not Net.is_authority() or enemy == null or enemy.scene == null:
 		return null
 	var point: Vector3 = _pick_point(rules.min_spawn_distance)
 	var zombie: Zombie = enemy.scene.instantiate() as Zombie
-	zombie.setup(enemy, Net.allocate_id(),
+	zombie.setup(
+		enemy,
+		Net.allocate_id(),
 		rules.get_health_multiplier(round_number),
 		rules.get_speed_multiplier(round_number),
 		rules.get_damage_multiplier(round_number),
-		session.rng)
+		session.rng
+	)
 	add_child(zombie)
 	zombie.global_position = point
 	zombie.rotation.y = session.rng.randf() * TAU
 	Events.enemy_spawned.emit(zombie)
 	return zombie
+
 
 func alive_count() -> int:
 	var n: int = 0
@@ -30,6 +35,7 @@ func alive_count() -> int:
 		if z and z.state != Zombie.State.DEAD:
 			n += 1
 	return n
+
 
 func _pick_point(min_distance: float) -> Vector3:
 	var points: Array[Node] = get_tree().get_nodes_in_group(spawn_group)
@@ -41,7 +47,9 @@ func _pick_point(min_distance: float) -> Vector3:
 		var marker: Node3D = node as Node3D
 		if marker and _distance_to_nearest_player(marker.global_position) >= min_distance:
 			far_enough.append(marker)
-	var pool: Array = far_enough if not far_enough.is_empty() else points
+	var pool: Array = points
+	if not far_enough.is_empty():
+		pool = far_enough
 	var chosen: Node3D = pool[session.rng.randi_range(0, pool.size() - 1)] as Node3D
 	var jitter: Vector3 = Vector3(session.rng.randf_range(-1.0, 1.0), 0.0, session.rng.randf_range(-1.0, 1.0))
 	var wanted: Vector3 = chosen.global_position + jitter
@@ -49,6 +57,7 @@ func _pick_point(min_distance: float) -> Vector3:
 	if NavigationServer3D.map_get_iteration_id(map) > 0:
 		return NavigationServer3D.map_get_closest_point(map, wanted)
 	return wanted
+
 
 func _distance_to_nearest_player(at: Vector3) -> float:
 	var best: float = INF
