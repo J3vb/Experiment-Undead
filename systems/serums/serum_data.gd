@@ -12,6 +12,8 @@ const STATS: Array[StringName] = [
 	&"head_damage",
 	&"ads_time",
 	&"weapon_slots",
+	&"sprint_time",
+	&"sprint_out_time",
 ]
 
 @export var id: StringName = &""

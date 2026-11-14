@@ -84,4 +84,14 @@ func test_every_real_dispenser_sells_a_different_serum() -> void:
 		if machine:
 			assert_does_not_have(seen, machine.serum.id)
 			seen.append(machine.serum.id)
-	assert_eq(seen.size(), 5, "Ironhide, Quickhands, Overclock, Deadeye, Mule")
+	assert_eq(seen.size(), 6, "Ironhide, Quickhands, Overclock, Deadeye, Mule, Stride")
+
+
+func test_stride_doubles_sprint_and_speeds_up_sprint_to_fire() -> void:
+	level.turn_power_on()
+	_dispenser("stride").interact(player)
+	assert_eq(player.get_stat(&"sprint_time"), 2.0)
+	var weapon: Weapon = player.weapons.current
+	weapon.sprinting = true
+	weapon._tick_timers(0.0)
+	assert_almost_eq(weapon._sprint_block, weapon.data.sprint_to_fire_time * 0.5, 0.001)
