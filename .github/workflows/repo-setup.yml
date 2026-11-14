@@ -1,0 +1,46 @@
+name: Repo setup
+
+# Creates or updates labels and milestones from .github/repo-setup.json.
+# Never deletes anything.
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/repo-setup.json]
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Labels
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          jq -c '.labels[]' .github/repo-setup.json | while read -r l; do
+            gh label create "$(jq -r .name <<<"$l")" \
+              --color "$(jq -r .color <<<"$l")" \
+              --description "$(jq -r .description <<<"$l")" --force
+          done
+
+      - name: Milestones
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing=$(gh api "repos/$GITHUB_REPOSITORY/milestones?state=all&per_page=100")
+          jq -c '.milestones[]' .github/repo-setup.json | while read -r m; do
+            title=$(jq -r .title <<<"$m")
+            desc=$(jq -r .description <<<"$m")
+            number=$(jq -r --arg t "$title" '.[] | select(.title == $t) | .number' <<<"$existing")
+            if [ -n "$number" ]; then
+              gh api -X PATCH "repos/$GITHUB_REPOSITORY/milestones/$number" -f description="$desc" >/dev/null
+            else
+              gh api -X POST "repos/$GITHUB_REPOSITORY/milestones" -f title="$title" -f description="$desc" >/dev/null
+            fi
+            echo "ok: $title"
+          done

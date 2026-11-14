@@ -4,7 +4,8 @@ Experiment Undead is an original wave-based zombie FPS in **Godot 4.7.2**,
 written in **typed GDScript**. It will get RPG progression and self-hosted
 8-player servers later, so code must stay multiplayer-ready from day one.
 
-Read `docs/DECISIONS.md` before you start. It lists what is built, what is
+Read `docs/PROCESS.md` (pillars, milestones, how work flows) and
+`docs/DECISIONS.md` before you start. DECISIONS.md lists what is built, what is
 simplified on purpose, and what is not started.
 
 ## Folders

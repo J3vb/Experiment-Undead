@@ -1,0 +1,20 @@
+name: Idea
+description: A new idea for later. It does not go into the game until a milestone needs it
+labels: [idea]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+    validations:
+      required: true
+  - type: dropdown
+    id: pillar
+    attributes:
+      label: Pillar it serves
+      description: If it serves none, it probably waits
+      options:
+        - Guns feel great
+        - The pressure always builds
+        - Every run makes you stronger
+        - None
