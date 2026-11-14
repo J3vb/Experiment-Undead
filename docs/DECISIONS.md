@@ -48,6 +48,8 @@ built, what was simplified on purpose, and what is still to do.
 - **Debug console and F3 overlay:** debug builds only, children of GameSession; console owns the command registry, authority checks guard tuning commands, and F3 counters refresh at 4 Hz. God mode is deferred until a public damage-immunity API exists.
 - **CPU benchmark:** `godot --headless --path . --script res://tools/benchmark/benchmark.gd -- --zombies 24 --seconds 20 --seed 1` (also run 48); skips 2 s warm-up, measures physics callbacks at 60 Hz (no GPU, idle callbacks or standalone server integration), prints mean/P95/P99/max and writes `user://benchmark_<zombies>.json`; PR/manual workflow uploads results without performance thresholds.
 
+- **Headless soak:** normal Halcyon Labs rounds 1–10, seed 1, stationary immortal player; authority hits wait for window entry, JSON-log failures gate the separate optional PR/manual Soak check (see `docs/LOGGING.md`).
+
 ## Simplified on purpose (fix before or during the matching build step)
 
 - **Navmesh bakes at load** from the grey-box blocks instead of being baked ahead. Keeps edits safe while the map changes; switch to a baked `.tres` when the layout settles.
