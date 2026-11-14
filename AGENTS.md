@@ -39,11 +39,29 @@ simplified on purpose, and what is not started.
    - All enemies come from `Spawner`.
    - Gameplay randomness uses `GameSession.rng`, never `randf()`.
    - XP and items go through `ProgressionService`.
-6. **Performance target:** 120 fps with 24 zombies alive. No per-frame
-   allocations in hot paths, no `get_node()` in loops, cache lookups.
+6. **Performance:** v0.1 (P4) must hold 60 fps with 24 zombies alive. The
+   long-term target is 120 fps on an RTX 4080 Super at 1440p High, so keep
+   code 120-friendly: no per-frame allocations in hot paths, no `get_node()`
+   in loops, cache lookups.
 7. Short doc comment (`##`) at the top of every new script. Few other comments.
-8. Do not add third-party code or assets without listing them in
-   `docs/CREDITS.md` with their licence (CC0 / MIT preferred).
+8. **Assets.** Up to v0.1, art is built in code to match the style-guide
+   previews (Cold Containment): Godot grey boxes and shaders, Blender Python
+   scripts in `tools/assets/` that export `.glb` into `assets/`, and
+   generated sounds (`tools/generate_sfx.py`). The script is the source; never
+   hand-edit its output. Asset packs come after v0.1 to raise quality. Every
+   third-party file (code or asset) gets one line in `docs/CREDITS.md`: name,
+   author, link, licence. CC0 first, CC-BY with credit, MIT for code. No
+   "non-commercial" or "no AI" licences. No Git LFS for now.
+   Models: `pip install -r tools/assets/requirements.txt` (Python 3.13), then
+   `python tools/assets/build_models.py [name]`. Commit the `.glb` and its
+   `.import` file, and keep a test in `tests/content/test_generated_models.gd`
+   for any part code needs by name (like `Magazine` or `Muzzle`).
+9. **Names.** Use the design doc's words in code and data:
+   - Machines: `SpecimenVault` (random gun), `MedDispenser` (gives a serum),
+     `Reforger` (upgrades a gun). Not "mystery box" or "perk machine".
+   - Data types: `WeaponData`, `RecoilData`, `EnemyData`, `WaveRules`,
+     `EconomyRules`, `SerumData`, `AmmoModData`, `BuyableData`,
+     `PowerUpData`, `MapData`. Not `PerkData` or `RoundCurve`.
 
 ## Keep it simple
 
@@ -92,7 +110,7 @@ things to build only when needed: `docs/KEEP_IT_SIMPLE.md`.
 11. **Delete, don't disable.** Remove dead code, unused functions and
     commented-out blocks in the same PR that makes them dead. Git keeps history.
 12. **Prefer changing data over changing code.** A new gun, zombie, wave mix or
-    perk is a `.tres` file. If it needs code, add the smallest script that data
+    serum is a `.tres` file. If it needs code, add the smallest script that data
     can point to.
 
 ### Simplicity check (every PR)

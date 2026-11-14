@@ -58,3 +58,8 @@ name and tune the numbers. Add a zombie type: copy a file in
 `content/enemies/` and add it to `content/waves/default_waves.tres`.
 
 See [docs/DECISIONS.md](docs/DECISIONS.md) for the choices made so far.
+
+## Licence
+
+All rights reserved. See [LICENSE](LICENSE). Third-party parts keep their own
+licences and are listed in [docs/CREDITS.md](docs/CREDITS.md).

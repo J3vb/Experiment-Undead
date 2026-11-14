@@ -7,9 +7,9 @@
 *.ttf binary
 *.otf binary
 
-# Git LFS is planned for binaries (see docs/DECISIONS.md). The cloud build
-# session cannot upload LFS objects yet, so these stay commented until the
-# first push from a local machine. To switch on, uncomment and run
+# Git LFS: not yet (decided 2026-11-14). Cloud agent sessions cannot upload
+# LFS objects, and binaries are small. Revisit when real asset packs arrive
+# (around P4). To switch on later, uncomment and run
 # `git lfs migrate import --include="*.wav,*.ogg,*.png,*.jpg,*.glb,*.ttf,*.otf" --everything`.
 # *.wav filter=lfs diff=lfs merge=lfs -text
 # *.ogg filter=lfs diff=lfs merge=lfs -text

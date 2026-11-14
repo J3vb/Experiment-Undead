@@ -74,4 +74,4 @@ trigger below is true, not just because the doc lists them.
 | Import scripts per asset type | The first real asset of that type is imported. One script per type, written then. |
 | Debug console commands | A test or tuning task needs the command. Start with the few you use. |
 | Zombie AI tiers (frame skipping) | Profiling with 24+ zombies shows the AI over budget. |
-| StatBlock "more" modifiers and caps | P5. Before then, P3 perks use plain add / multiply modifiers. |
+| StatBlock "more" modifiers and caps | P5. Before then, P3 serums use plain add / multiply modifiers. |
