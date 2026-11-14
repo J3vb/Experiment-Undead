@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/weapons/weapon.gd" id="1"]
+
+[node name="Weapon" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Viewmodel" type="Node3D" parent="."]
+
+[node name="FireAudio" type="AudioStreamPlayer" parent="."]
+max_polyphony = 6
+bus = &"Weapons"
+
+[node name="MechAudio" type="AudioStreamPlayer" parent="."]
+bus = &"Weapons"
