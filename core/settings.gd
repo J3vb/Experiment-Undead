@@ -5,7 +5,7 @@ signal changed(section: StringName, key: StringName, value: Variant)
 
 const DEFAULTS: Dictionary = {
 	&"controls": {&"mouse_sensitivity": 0.0022, &"ads_sensitivity_multiplier": 0.8, &"invert_y": false},
-	&"video": {&"fov": 90, &"max_fps": 0, &"vsync": false, &"show_fps": false},
+	&"video": {&"fov": 110, &"max_fps": 0, &"vsync": false, &"show_fps": false},
 	&"audio": {&"master_volume": 1.0, &"music_volume": 0.8, &"sfx_volume": 1.0},
 }
 const AUDIO_BUSES: Dictionary = {&"master_volume": &"Master", &"music_volume": &"Music", &"sfx_volume": &"SFX"}
@@ -70,7 +70,7 @@ func _normalize(section: StringName, key: StringName, value: Variant) -> Variant
 	if section == &"audio":
 		return clampf(float(value), 0.0, 1.0)
 	if key == &"fov":
-		return clampi(int(value), 70, 110)
+		return clampi(int(value), 70, 120)
 	if key == &"max_fps":
 		return maxi(int(value), 0)
 	return maxf(float(value), 0.0)
