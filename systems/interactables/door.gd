@@ -41,10 +41,10 @@ func open() -> void:
 	if is_open:
 		return
 	is_open = true
-	var others: Array[Node] = get_tree().get_nodes_in_group(&"doors")
-	# Leave the tree now so the navmesh rebake no longer sees the blocker.
-	get_parent().remove_child(self)
+	# Free the blocker now so the navmesh rebake no longer sees it.
+	get_node("Blocker").free()
 	queue_free()
+	var others: Array[Node] = get_tree().get_nodes_in_group(&"doors")
 	for node: Node in others:
 		var other: Door = node as Door
 		if other != self and other.opens_area == opens_area:

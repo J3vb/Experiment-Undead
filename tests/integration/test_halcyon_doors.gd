@@ -42,7 +42,8 @@ func test_buying_a_door_opens_its_area() -> void:
 	door.interact(player)
 	assert_eq(player.wallet.points, 4250, "door cost 750")
 	assert_true(door.is_open)
-	assert_false(door.is_inside_tree(), "door and blocker removed")
+	assert_true(door.is_queued_for_deletion(), "door removed")
+	assert_null(door.get_node_or_null("Blocker"), "blocker gone at once, so the rebake does not see it")
 	assert_has(level.open_areas, &"guard_post")
 	assert_eq(get_tree().get_nodes_in_group(&"enemy_spawn").size(), 6, "Guard Post windows join")
 

@@ -18,7 +18,6 @@ var open_areas: Array[StringName] = []
 var power_on: bool = false
 var _baked: bool = false
 var _rebake_pending: bool = false
-var _baking: bool = false
 
 
 func _ready() -> void:
@@ -27,8 +26,7 @@ func _ready() -> void:
 	if navigation_region == null:
 		_finish()
 		return
-	navigation_region.bake_finished.connect(_on_bake_finished)
-	_baking = true
+	navigation_region.bake_finished.connect(func() -> void: _baked = true, CONNECT_ONE_SHOT)
 	navigation_region.bake_navigation_mesh(false)
 
 
@@ -39,17 +37,22 @@ func turn_power_on() -> void:
 	power_turned_on.emit()
 
 
-## Bakes again on a thread (after a door opened). Calls during a bake are merged.
+## Bakes again at the end of this frame (after a door opened). Several calls in
+## one frame give one bake. On the main thread: threaded bakes never finished
+## on the 2-core CI runner, and a door purchase is rare enough for one short hitch.
 func rebake_navigation() -> void:
-	if _baking:
+	if not _rebake_pending:
 		_rebake_pending = true
-	else:
-		_baking = true
-		navigation_region.bake_navigation_mesh(true)
+		_rebake_now.call_deferred()
 
 
 func is_rebaking() -> bool:
-	return _baking or _rebake_pending
+	return _rebake_pending
+
+
+func _rebake_now() -> void:
+	_rebake_pending = false
+	navigation_region.bake_navigation_mesh(false)
 
 
 func open_area(area: StringName) -> void:
@@ -77,14 +80,6 @@ func _physics_process(_delta: float) -> void:
 	var probe: Vector3 = get_player_spawn().origin
 	if NavigationServer3D.map_get_closest_point_owner(map, probe) == navigation_region.get_rid():
 		_finish()
-
-
-func _on_bake_finished() -> void:
-	_baked = true
-	_baking = false
-	if _rebake_pending:
-		_rebake_pending = false
-		rebake_navigation.call_deferred()
 
 
 func _finish() -> void:
