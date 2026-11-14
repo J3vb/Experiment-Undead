@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://systems/ui/hud.gd" id="1"]
 [ext_resource type="Theme" path="res://systems/ui/theme.tres" id="2"]
@@ -7,6 +7,8 @@
 [ext_resource type="Shader" path="res://systems/ui/damage_vignette.gdshader" id="5"]
 [ext_resource type="AudioStream" path="res://assets/audio/hitmarker.wav" id="6"]
 [ext_resource type="AudioStream" path="res://assets/audio/wave_start.wav" id="7"]
+
+[ext_resource type="PackedScene" path="res://systems/ui/settings_screen.tscn" id="8"]
 
 [sub_resource type="ShaderMaterial" id="vignette_mat"]
 shader = ExtResource("5")
@@ -219,19 +221,37 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0.6)
 
-[node name="Label" type="Label" parent="Root/PausePanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 48
-text = "PAUSED
+[node name="Menu" type="VBoxContainer" parent="Root/PausePanel"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -140.0
+offset_right = 180.0
+offset_bottom = 140.0
+theme_override_constants/separation = 16
 
-Esc to resume"
+[node name="Title" type="Label" parent="Root/PausePanel/Menu"]
+text = "PAUSED"
 horizontal_alignment = 1
-vertical_alignment = 1
+theme_override_font_sizes/font_size = 48
+
+[node name="Resume" type="Button" parent="Root/PausePanel/Menu"]
+text = "Resume"
+theme_override_font_sizes/font_size = 24
+
+[node name="Settings" type="Button" parent="Root/PausePanel/Menu"]
+text = "Settings"
+theme_override_font_sizes/font_size = 24
+
+[node name="Quit" type="Button" parent="Root/PausePanel/Menu"]
+text = "Quit to desktop"
+theme_override_font_sizes/font_size = 24
+
+[node name="SettingsScreen" parent="Root/PausePanel" instance=ExtResource("8")]
+visible = false
 
 [node name="GameOverPanel" type="ColorRect" parent="Root"]
 layout_mode = 1

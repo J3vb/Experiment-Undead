@@ -38,7 +38,7 @@ func after_each() -> void:
 func test_defaults_for_missing_file() -> void:
 	var expected: Dictionary = {
 		&"controls": {&"mouse_sensitivity": 0.0022, &"ads_sensitivity_multiplier": 0.8, &"invert_y": false},
-		&"video": {&"fov": 90, &"max_fps": 0, &"vsync": false, &"show_fps": false},
+		&"video": {&"fov": 110, &"max_fps": 0, &"vsync": false, &"show_fps": false},
 		&"audio": {&"master_volume": 1.0, &"music_volume": 0.8, &"sfx_volume": 1.0},
 	}
 	for section: StringName in expected:
@@ -70,7 +70,7 @@ func test_clamps_values() -> void:
 	_settings.set_value(&"video", &"fov", 20)
 	assert_eq(_settings.get_value(&"video", &"fov"), 70)
 	_settings.set_value(&"video", &"fov", 200)
-	assert_eq(_settings.get_value(&"video", &"fov"), 110)
+	assert_eq(_settings.get_value(&"video", &"fov"), 120)
 	_settings.set_value(&"video", &"max_fps", -30)
 	assert_eq(_settings.get_value(&"video", &"max_fps"), 0)
 
@@ -81,7 +81,7 @@ func test_broken_file_falls_back_to_defaults() -> void:
 	file.close()
 	_settings.load_settings()
 	assert_eq(_settings.get_value(&"controls", &"mouse_sensitivity"), 0.0022)
-	assert_eq(_settings.get_value(&"video", &"fov"), 90)
+	assert_eq(_settings.get_value(&"video", &"fov"), 110)
 
 
 func test_unknown_keys_and_invalid_values_are_ignored() -> void:
@@ -95,7 +95,7 @@ func test_unknown_keys_and_invalid_values_are_ignored() -> void:
 	_settings.load_settings()
 	assert_null(_settings.get_value(&"unknown", &"key"))
 	assert_null(_settings.get_value(&"video", &"unknown"))
-	assert_eq(_settings.get_value(&"video", &"fov"), 90)
+	assert_eq(_settings.get_value(&"video", &"fov"), 110)
 	assert_eq(_settings.get_value(&"controls", &"invert_y"), false)
 	assert_eq(_settings.get_value(&"audio", &"music_volume"), 1.0)
 	_settings.set_value(&"unknown", &"key", 4)
@@ -105,7 +105,7 @@ func test_unknown_keys_and_invalid_values_are_ignored() -> void:
 func test_changed_signal_reports_clamped_value() -> void:
 	watch_signals(_settings)
 	_settings.set_value(&"video", &"fov", 500)
-	assert_signal_emitted_with_parameters(_settings, "changed", [&"video", &"fov", 110])
+	assert_signal_emitted_with_parameters(_settings, "changed", [&"video", &"fov", 120])
 
 
 func test_reset_applies_and_saves_defaults() -> void:
