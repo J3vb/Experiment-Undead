@@ -38,7 +38,7 @@ jobs:
           if [ "$NO_TESTS_LABEL" = "true" ]; then args="$args --no-tests-label"; fi
           python tools/ci/check_pr.py $args
 
-  godot:
+  test:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

@@ -74,7 +74,7 @@ CI has two required checks. A PR can only merge when both are green.
   - **Tests required:** if you change a `.gd` file in `core/` or `systems/`,
     you must also add or change a file in `tests/`. Only for visual-only or
     pure-rename changes, add the label `no-tests-needed` and say why in the PR.
-- **`godot`**: import, boot test, all GUT tests. Any `SCRIPT ERROR` or
+- **`test`**: import, boot test, all GUT tests. Any `SCRIPT ERROR` or
   `Parse Error` fails it. `tests/unit/test_scripts_compile.gd` loads every
   script, so unused variables, shadowing, unreachable code and the other
   warnings set to error in `project.godot` fail CI too. Do not lower those

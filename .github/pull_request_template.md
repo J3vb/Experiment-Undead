@@ -12,7 +12,7 @@
 
 ## Checklist
 
-- [ ] CI is green (`quality` and `godot`)
+- [ ] CI is green (`quality` and `test`)
 - [ ] Behaviour change has a test (or the `no-tests-needed` label and a reason above)
 - [ ] Bug fix has a test that failed before the fix
 - [ ] Follows the Keep it simple rules in AGENTS.md
