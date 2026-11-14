@@ -17,8 +17,8 @@
 [ext_resource type="Resource" path="res://content/power_ups/resupply.tres" id="15"]
 [ext_resource type="Resource" path="res://content/power_ups/ammo_pack.tres" id="16"]
 
-[ext_resource type="PackedScene" path="res://systems/debug/debug_console.tscn" id="17"]
-[ext_resource type="Script" path="res://systems/debug/debug_overlay.gd" id="18"]
+[ext_resource type="PackedScene" path="res://systems/debug/debug_console.tscn" id="debug_console"]
+[ext_resource type="Script" path="res://systems/debug/debug_overlay.gd" id="debug_overlay"]
 
 [node name="GameSession" type="Node"]
 process_mode = 3
@@ -49,7 +49,7 @@ ammo_pack = ExtResource("16")
 
 [node name="Hud" parent="." instance=ExtResource("11")]
 
-[node name="DebugConsole" parent="." instance=ExtResource("17")]
+[node name="DebugConsole" parent="." instance=ExtResource("debug_console")]
 
 [node name="DebugOverlay" type="CanvasLayer" parent="."]
-script = ExtResource("18")
+script = ExtResource("debug_overlay")

@@ -1,9 +1,8 @@
-## Debug-only performance counters, sampled four times per real second.
+## Debug-only performance counters, sampled four times per second.
 extends CanvasLayer
 
 var _label: Label
 var _timer: Timer
-var _session: GameSession
 
 
 func _ready() -> void:
@@ -11,7 +10,6 @@ func _ready() -> void:
 		process_mode = Node.PROCESS_MODE_DISABLED
 		return
 	layer = 99
-	_session = get_parent() as GameSession
 	_label = Label.new()
 	_label.theme = preload("res://systems/ui/theme.tres")
 	_label.position = Vector2(12, 12)
@@ -38,16 +36,17 @@ func _input(event: InputEvent) -> void:
 
 
 func _refresh() -> void:
+	var session: GameSession = get_parent() as GameSession
 	var fps: float = Performance.get_monitor(Performance.TIME_FPS)
 	_label.text = (
-		"FPS: %.0f | frame: %.2f ms\nPhysics ticks: %d (%d Hz)\nEnemies: %d | draw calls: %d\nStatic memory: %.1f MiB"
+		"FPS: %.0f | frame: %.2f ms\nPhysics ticks: %d (%d Hz)\nEnemies alive: %d\nDraw calls: %d\nStatic memory: %.1f MiB"
 		% [
 			fps,
 			1000.0 / fps if fps > 0.0 else 0.0,
-			_session.tick,
+			session.tick,
 			Engine.physics_ticks_per_second,
-			_session.spawner.alive_count() if _session.spawner else 0,
-			int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)),
+			session.spawner.alive_count(),
+			Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
 			Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0,
 		]
 	)

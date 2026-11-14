@@ -42,7 +42,7 @@ built, what was simplified on purpose, and what is still to do.
 - **Logging and diagnostics:** `Log` autoload (provisional: not in the architecture doc's autoload list) writes one JSON line per event to `user://logs/run_<time>_<role>_<pid>.jsonl` and a `.summary.json` (rewritten every 30 s, `clean_exit` false after a crash). An engine `Logger` captures `push_error`/`push_warning` and script errors with file, line and stack. `HealthWatch` warns on long frames, low fps, growing orphan nodes and stalled rounds; zombies report being stuck or falling out of the map; the level logs navmesh bake times and warns when navigation is never ready. Keeps the last 20 runs. No desync checks until networking (P7). See `docs/LOGGING.md`.
 - **Builds and releases:** see `docs/RELEASING.md`. Exports run on Linux only (Windows cross-exported, no rcedit). Git tag = version. Separate `Build.PROTOCOL_VERSION` and `SaveFile.CURRENT_VERSION`. Godot ignores SIGTERM, so the server quits on a stop file the Docker entrypoint writes. No code signing yet.
 
-- **Debug console and F3 overlay:** session child nodes, debug builds only. Physical backtick toggles a themed console with a local command registry and history; F3 samples performance counters at 4 Hz. Mutating built-ins require authority. `god` is omitted because there is no public damage-immunity API. `skip_round` kills alive enemies; pending wave spawns remain.
+- **Debug console and F3 overlay:** debug builds only, children of GameSession; console owns the command registry, authority checks guard tuning commands, and F3 counters refresh at 4 Hz. God mode is deferred until a public damage-immunity API exists.
 
 ## Simplified on purpose (fix before or during the matching build step)
 
