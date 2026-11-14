@@ -39,19 +39,19 @@ emission = Color(0.15, 0.75, 0.3, 1)
 emission_energy_multiplier = 0.3
 
 [sub_resource type="BoxShape3D" id="door_area_2"]
-size = Vector3(2, 2.6, 2.4)
+size = Vector3(2, 2.6, 0.8)
 
 [sub_resource type="BoxShape3D" id="door_area_3"]
-size = Vector3(3, 2.6, 2.4)
+size = Vector3(3, 2.6, 0.8)
 
 [sub_resource type="BoxShape3D" id="door_area_4"]
-size = Vector3(4, 2.6, 2.4)
+size = Vector3(4, 2.6, 0.8)
 
 [sub_resource type="BoxShape3D" id="switch_area"]
-size = Vector3(1, 1.2, 1.2)
+size = Vector3(0.6, 1.2, 1.2)
 
 [sub_resource type="BoxShape3D" id="wallbuy_area"]
-size = Vector3(0.8, 1.2, 2)
+size = Vector3(0.6, 1.2, 2)
 
 [node name="HalcyonLabs" type="Node3D" node_paths=PackedStringArray("navigation_region", "player_spawn")]
 script = ExtResource("level")

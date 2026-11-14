@@ -118,13 +118,15 @@ func test_wall_buy_sells_ammo_and_guns() -> void:
 	assert_eq(player.wallet.points, 3200, "gun costs its WeaponData cost")
 
 
-func test_player_sees_the_door_prompt() -> void:
-	player.global_position = Vector3(23.5, 0.0, 48.0)
-	player.rotation = Vector3(0.0, PI * 0.5, 0.0)
-	await wait_physics_frames(3)
-	assert_eq(player.focus, _door("GuardPostDoor") as Interactable, "door under the crosshair")
-	if player.focus:
-		assert_string_contains(player.focus.get_prompt(player), "750")
+func test_player_sees_the_door_prompt_from_near_and_far() -> void:
+	# 22.65 is pressed against the blocker: the camera must stay outside the door's area.
+	for x: float in [22.65, 23.5]:
+		player.global_position = Vector3(x, 0.0, 48.0)
+		player.rotation = Vector3(0.0, PI * 0.5, 0.0)
+		await wait_physics_frames(3)
+		assert_eq(player.focus, _door("GuardPostDoor") as Interactable, "door under the crosshair at x = %.2f" % x)
+		if player.focus:
+			assert_string_contains(player.focus.get_prompt(player), "750")
 
 
 func test_everything_open_lets_every_spawn_point_reach_the_start() -> void:
