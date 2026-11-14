@@ -10,6 +10,13 @@
 
 <!-- Which tests you added or changed. For feel/visual changes, what you checked in-game. -->
 
+### Simplicity check
+- Only builds what this phase needs: yes / no (why)
+- New autoloads, managers or base classes: none / list + which rule allows it
+- New abstraction used in fewer than 3 places: none / list
+- Anything a Godot built-in already does: none / list
+- Dead code removed: yes / n.a.
+
 ## Checklist
 
 - [ ] CI is green (`quality` and `test`)

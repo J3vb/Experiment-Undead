@@ -61,7 +61,7 @@ things to build only when needed: `docs/KEEP_IT_SIMPLE.md`.
    are fine.
 3. **No interface with one implementation.** No base class whose methods are
    empty stubs, no "Service" that only forwards to another class.
-4. **Size limits** (CI enforces these through gdlint):
+4. **Size limits** (CI enforces these in the `quality` check):
    - function: 50 lines max
    - file: 350 lines max
    - function arguments: 6 max
