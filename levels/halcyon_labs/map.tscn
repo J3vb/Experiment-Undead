@@ -13,6 +13,7 @@
 [ext_resource type="Script" path="res://systems/interactables/wall_buy.gd" id="wallbuy"]
 [ext_resource type="Resource" path="res://content/weapons/rifle_ar.tres" id="rifle"]
 [ext_resource type="PackedScene" path="res://systems/interactables/med_dispenser.tscn" id="meddisp"]
+[ext_resource type="PackedScene" path="res://systems/interactables/reforger.tscn" id="reforger"]
 [ext_resource type="Resource" path="res://content/serums/ironhide.tres" id="serum_ironhide"]
 [ext_resource type="Resource" path="res://content/serums/quickhands.tres" id="serum_quickhands"]
 [ext_resource type="Resource" path="res://content/serums/overclock.tres" id="serum_overclock"]
@@ -403,18 +404,8 @@ pixel_size = 0.004
 font_size = 40
 text = "Specimen Vault"
 
-[node name="Reforger" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["reforger"]]
+[node name="Reforger" parent="NavigationRegion3D/Machines" instance=ExtResource("reforger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.6, 1, 22)
-script = ExtResource("block")
-size = Vector3(1, 2, 1.6)
-material = SubResource("machine_dev")
-
-[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/Reforger"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
-billboard = 1
-pixel_size = 0.004
-font_size = 40
-text = "Reforger"
 
 [node name="ExfilHatch" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["exfil"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70, -2.97, 18)
