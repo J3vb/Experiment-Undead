@@ -20,7 +20,7 @@ built, what was simplified on purpose, and what is still to do.
   4. Gameplay in `_physics_process`; `GameSession.tick` counts ticks. Weapon `tick()` runs from the player's physics step; `_process` is visuals only.
   5. All enemies come from `Spawner`, which assigns `net_id`.
   6. Gameplay randomness uses `GameSession.rng` (seedable).
-  7. XP goes through `ProgressionService` (`LocalProgressionService` now).
+  7. XP goes through `ProgressionService` (one in-memory class for now).
   8. No global player: everything loops the `players` group.
 - **Economy:** per-player `Wallet`; `Economy` pays from `EconomyRules` and owns `try_spend()`.
 - **Wave director:** intermission → `round_started` → spawning (max alive cap, extra per player) → clearing → `round_ended`.

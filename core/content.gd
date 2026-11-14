@@ -47,12 +47,6 @@ func get_item(type: StringName, id: StringName) -> Resource:
 func ids(type: StringName) -> Array:
 	return _by_type.get(type, {}).keys()
 
-func all(type: StringName) -> Array[Resource]:
-	var out: Array[Resource] = []
-	for id: StringName in ids(type):
-		out.append(get_item(type, id))
-	return out
-
 func weapon(id: StringName) -> WeaponData:
 	return get_item(&"weapons", id) as WeaponData
 

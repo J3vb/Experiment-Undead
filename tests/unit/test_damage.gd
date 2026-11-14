@@ -71,14 +71,3 @@ func test_recoil_pattern_repeats_tail() -> void:
 	assert_eq(r.get_kick(3, rng).y, 4.0)
 	assert_eq(r.get_kick(4, rng).y, 3.0)
 	assert_eq(r.get_kick(5, rng).y, 4.0)
-
-func test_input_frame_round_trips() -> void:
-	var f: InputFrame = InputFrame.new()
-	f.tick = 42
-	f.move = Vector2(0.5, -1)
-	f.buttons = InputFrame.FIRE | InputFrame.ADS
-	var g: InputFrame = InputFrame.from_dict(f.to_dict())
-	assert_eq(g.tick, 42)
-	assert_eq(g.move, f.move)
-	assert_true(g.has(InputFrame.ADS))
-	assert_false(g.has(InputFrame.JUMP))

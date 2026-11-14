@@ -21,14 +21,3 @@ var buttons: int = 0
 
 func has(flag: int) -> bool:
 	return buttons & flag != 0
-
-func to_dict() -> Dictionary:
-	return {"t": tick, "m": move, "l": look, "b": buttons}
-
-static func from_dict(d: Dictionary) -> InputFrame:
-	var f: InputFrame = InputFrame.new()
-	f.tick = d.get("t", 0)
-	f.move = d.get("m", Vector2.ZERO)
-	f.look = d.get("l", Vector2.ZERO)
-	f.buttons = d.get("b", 0)
-	return f
