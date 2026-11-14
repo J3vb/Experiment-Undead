@@ -5,8 +5,6 @@ extends Node
 signal points_changed(total: int, delta: int)
 
 var points: int = 0
-## Multiplier hook for power-ups like double points.
-var earn_multiplier: float = 1.0
 
 func set_points(value: int) -> void:
 	var delta: int = value - points
@@ -16,6 +14,5 @@ func set_points(value: int) -> void:
 func add(amount: int) -> void:
 	if amount == 0:
 		return
-	var scaled: int = int(round(amount * earn_multiplier)) if amount > 0 else amount
-	points += scaled
-	points_changed.emit(points, scaled)
+	points += amount
+	points_changed.emit(points, amount)

@@ -45,6 +45,70 @@ simplified on purpose, and what is not started.
 8. Do not add third-party code or assets without listing them in
    `docs/CREDITS.md` with their licence (CC0 / MIT preferred).
 
+## Keep it simple
+
+The game will grow to loot, co-op and a town hub, but it grows by adding
+**small, plain pieces**, not by building frameworks up front. When two readings
+of a task are possible, pick the one with less code. Examples and the list of
+things to build only when needed: `docs/KEEP_IT_SIMPLE.md`.
+
+1. **Build only what your task's phase needs.** The phases are P0 to P10 in the
+   architecture doc. Do not add fields, functions, signals, enum values, settings
+   or files for a later phase "because we'll need it". Later phases add them.
+2. **No abstraction before the third use.** Write the code plainly the first
+   time, copy it the second time, and only pull out a shared function, base
+   class or helper when the third real use arrives. Two similar 10-line blocks
+   are fine.
+3. **No interface with one implementation.** No base class whose methods are
+   empty stubs, no "Service" that only forwards to another class.
+4. **Size limits** (CI enforces these through gdlint):
+   - function: 50 lines max
+   - file: 350 lines max
+   - function arguments: 6 max
+
+   If you hit a limit, split by job (move the zombie's attack logic to its own
+   function), not by layer (no `ZombieAttackHelper`, `ZombieAttackManager`).
+5. **New autoload:** only the ones in the architecture doc's autoload table
+   (Events, Content, Settings, Audio, Pool, Game, Net), and only when your task
+   actually needs it. Any other autoload: stop and ask in the PR.
+6. **New manager / director / service node:** only if it owns state or a rule
+   that no existing node owns. If it would just pass calls through, put the code
+   in the node that owns the data.
+7. **New base class:** only when there are already 3 concrete classes that need
+   it, or the architecture doc names it (HealthComponent, HitZone, Interactable).
+8. **Godot first.** Use the built-in tool before writing your own: signals,
+   groups, Timer/Tween, AnimationPlayer, Resources, NavigationAgent3D,
+   AudioStreamRandomizer, ConfigFile, JSON, MultiplayerSpawner/Synchronizer.
+   No custom event bus, state-machine framework, dependency injection,
+   object factory, plugin system or service locator.
+9. **Multiplayer: only the seams the architecture already reserves.** They are
+   listed in code rule 5 above (InputFrame, `Net.is_authority()`,
+   physics ticks, one Spawner with net ids, `GameSession.rng`,
+   ProgressionService, items as dicts, no global player). Before P7 do **not**
+   add RPCs, MultiplayerSpawner/Synchronizer, peer handling, serialization,
+   prediction, interpolation or lag compensation code.
+10. **No config for things nobody tunes.** Export a value to data only if a
+    designer will change it for balance or feel. Fixed rules stay as constants.
+11. **Delete, don't disable.** Remove dead code, unused functions and
+    commented-out blocks in the same PR that makes them dead. Git keeps history.
+12. **Prefer changing data over changing code.** A new gun, zombie, wave mix or
+    perk is a `.tres` file. If it needs code, add the smallest script that data
+    can point to.
+
+### Simplicity check (every PR)
+
+Add this section to the PR description and answer each line in a few words.
+Reviewers (human or AI) reject the PR if an answer is "no" without a good reason.
+
+```
+### Simplicity check
+- Only builds what this phase needs: yes / no (why)
+- New autoloads, managers or base classes: none / list + which rule allows it
+- New abstraction used in fewer than 3 places: none / list
+- Anything a Godot built-in already does: none / list
+- Dead code removed: yes / n.a.
+```
+
 ## How to run checks
 
 ```bash
