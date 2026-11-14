@@ -48,7 +48,7 @@ built, what was simplified on purpose, and what is still to do.
 - **Navmesh bakes at load** from the grey-box blocks instead of being baked ahead. Keeps edits safe while the map changes; switch to a baked `.tres` when the layout settles.
 - **Zombie AI tiers:** only the re-path interval is tiered. Frame-skipping by tier and off-screen checks come with the performance pass.
 - **No Pool autoload yet.** Impacts are capped at 48 and freed; zombies are freed after the corpse fades.
-- **No Settings / Audio / Game autoloads yet.** Mouse sensitivity sits on `LocalInput`; sounds use plain players on the audio buses in `default_bus_layout.tres`.
+- **Settings autoload** stores controls, video and audio options in `user://settings.cfg`, applies FPS/vsync and bus volumes, and updates `LocalInput` sensitivity and Y inversion. FOV is stored only. Audio / Game autoloads are still deferred; sounds use plain players on the audio buses in `default_bus_layout.tres`.
 - **Viewmodel** is a normal mesh close to the camera (near plane 0.03), not the depth-pulling shader. It can poke into walls when you hug them.
 - **Procedural animation** for zombies and guns (bob, sway, kick, reload dip). Real clips replace it later.
 - **Range falloff** uses start/end distances instead of a Curve.

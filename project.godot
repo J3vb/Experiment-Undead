@@ -25,6 +25,7 @@ Content="*res://core/content.gd"
 Net="*res://core/net.gd"
 Build="*res://core/build.gd"
 Log="*res://core/log.gd"
+Settings="*res://core/settings.gd"
 
 [debug]
 
