@@ -181,11 +181,19 @@ python tools/ci/check_pr.py origin/main
 
 ## Merging
 
-- When both checks are green you may mark your PR ready and merge it yourself
-  (squash merge). No human approval is needed.
-- Second-agent review first when the PR changes more than 300 lines, or touches
-  `core/`, `project.godot`, `.github/` or networking code: Codex reviews Claude
-  PRs and Claude reviews Codex PRs. Fix or answer every comment, then merge.
+- Every PR gets an automatic review when it leaves draft and on every push:
+  **Claude reviews Codex PRs** (`codex/` branches, the `review` check) and
+  **Codex reviews all other PRs** (a review from `chatgpt-codex-connector`).
+- You may mark your PR ready and merge it yourself (squash merge), no human
+  approval needed, when all of these hold for the current head commit:
+  1. `quality`, `test` and `review` checks are green.
+  2. The automatic review for that commit has arrived (for Codex reviews: a
+     review or a 👍 reaction from Codex on the PR).
+  3. Every review comment is fixed, or answered with a reason if it is a
+     "Suggestion" you decline, and its conversation is resolved. A comment
+     marked "Blocking" or a red/P0/P1 finding must be fixed, not declined.
+- If the review has not arrived 30 minutes after your last push, comment
+  `@codex review` (Claude PRs) once, then wait again.
 - Never merge with a red or pending check, and never merge someone else's PR.
 - Each PR gets exactly one label for release notes: `new`, `fix`, `balance`
   or `tech`.
