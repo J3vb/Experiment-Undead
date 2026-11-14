@@ -49,7 +49,6 @@ func test_navmesh_has_paths() -> void:
 	assert_almost_eq(path[path.size() - 1].distance_to(Vector3(44, 0, 50)), 0.0, 1.0)
 
 
-
 func test_player_spawns_with_loadout() -> void:
 	watch_signals(Events)
 	player.weapons.give(Content.weapon(&"rifle_ar"))
@@ -76,6 +75,8 @@ func test_headshots_kill_and_pay() -> void:
 	if z == null:
 		fail_test("no zombie")
 		return
+	# A rising zombie's head is still below its body zone, so wait until it stands.
+	await wait_until(func() -> bool: return z.state != Zombie.State.SPAWNING, 2.0, "zombie stood up")
 	watch_signals(Events)
 	var weapon: Weapon = player.weapons.current
 	watch_signals(weapon)
