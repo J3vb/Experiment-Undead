@@ -74,25 +74,8 @@ tt = t(3.0)
 drone = sum(np.sin(2*np.pi*f*tt) * a for f, a in [(55, 1), (82.4, 0.6), (110, 0.4), (58, 0.5)])
 save("wave_start.wav", drone * np.exp(-tt * 1.2) * np.minimum(tt * 20, 1))
 
-# Shotgun blast: heavier, lower boom than the rifle, then the pump racking
-tt = t(0.9)
-boom = np.sin(2 * np.pi * (60 * tt - 30 * tt**2)) * np.exp(-tt * 9)
-blast = lowpass(rng.standard_normal(len(tt)), 0.25) * np.exp(-tt * 25) * 1.5
-tail = lowpass(rng.standard_normal(len(tt)), 0.05) * np.exp(-tt * 5) * 3.0
-x = boom * 1.4 + blast + tail
-click(0.55, 700, 70, 0.25)
-click(0.68, 1100, 90, 0.2)
-save("shotgun_fire.wav", x)
-
-# Kestrel SMG: a short, higher crack with a quick mechanical snap.
-tt = t(0.18)
-crack = rng.standard_normal(len(tt)) * np.exp(-tt * 95)
-thump = np.sin(2 * np.pi * (180 * tt - 80 * tt**2)) * np.exp(-tt * 38)
-snap = np.sin(2 * np.pi * 2100 * tt) * np.exp(-tt * 160)
-tail = lowpass(rng.standard_normal(len(tt)), 0.18) * np.exp(-tt * 30)
-save("kestrel_fire.wav", crack + thump * 0.55 + snap * 0.3 + tail * 0.7)
-
-# Keep machine sounds independent of the weapon noise sequence.
+# Machine noise uses its own sequence, leaving weapon sounds unchanged.
+weapon_rng = rng
 rng = np.random.default_rng(17)
 
 # Purchase: two bright notes and a register latch
@@ -146,3 +129,29 @@ save("power_up.wav", shimmer * (0.75+0.25*np.sin(2*np.pi*19*tt)) * np.sin(np.pi*
 tt = t(2.0)
 brass = sum(sum(np.sin(2*np.pi*f*h*tt) / h for h in range(1, 7)) for f in [65.4, 82.4, 98.0])
 save("round_end.wav", lowpass(brass, 0.12) * np.minimum(tt*12, 1) * np.exp(-tt*1.8) * np.minimum((2-tt)*8, 1))
+rng = weapon_rng
+
+# Shotgun blast: heavier, lower boom than the rifle, then the pump racking
+tt = t(0.9)
+boom = np.sin(2 * np.pi * (60 * tt - 30 * tt**2)) * np.exp(-tt * 9)
+blast = lowpass(rng.standard_normal(len(tt)), 0.25) * np.exp(-tt * 25) * 1.5
+tail = lowpass(rng.standard_normal(len(tt)), 0.05) * np.exp(-tt * 5) * 3.0
+x = boom * 1.4 + blast + tail
+click(0.55, 700, 70, 0.25)
+click(0.68, 1100, 90, 0.2)
+save("shotgun_fire.wav", x)
+
+# Kestrel SMG: a short, higher crack with a quick mechanical snap.
+tt = t(0.18)
+crack = rng.standard_normal(len(tt)) * np.exp(-tt * 95)
+thump = np.sin(2 * np.pi * (180 * tt - 80 * tt**2)) * np.exp(-tt * 38)
+snap = np.sin(2 * np.pi * 2100 * tt) * np.exp(-tt * 160)
+tail = lowpass(rng.standard_normal(len(tt)), 0.18) * np.exp(-tt * 30)
+save("kestrel_fire.wav", crack + thump * 0.55 + snap * 0.3 + tail * 0.7)
+
+# Talon shot: heavier crack and a longer reverberant tail than the rifle.
+tt = t(0.75)
+crack = rng.standard_normal(len(tt)) * np.exp(-tt * 45)
+thump = np.sin(2 * np.pi * (75 * tt - 40 * tt**2)) * np.exp(-tt * 14)
+tail = lowpass(rng.standard_normal(len(tt)), 0.07) * np.exp(-tt * 5) * 3.0
+save("talon_fire.wav", crack * 1.3 + thump * 1.5 + tail)

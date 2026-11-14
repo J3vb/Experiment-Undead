@@ -59,7 +59,7 @@ func test_roll_offers_a_gun_the_player_does_not_hold() -> void:
 	assert_eq(vault.get_prompt(player), "", "nothing to press while rolling")
 	_finish_roll()
 	assert_eq(vault.state, SpecimenVault.State.OFFERING)
-	assert_has([&"brenner_trench", &"kestrel_smg"], vault.offer.id, "offers an unowned gun")
+	assert_has([&"brenner_trench", &"kestrel_smg", &"talon_dmr"], vault.offer.id, "offers an unowned gun")
 	var offered: WeaponData = vault.offer
 	assert_string_contains(vault.get_prompt(player), "Take " + offered.display_name)
 	vault.interact(player)
@@ -78,7 +78,8 @@ func test_offer_runs_out() -> void:
 
 func test_nothing_to_roll_when_the_player_holds_the_whole_pool() -> void:
 	level.turn_power_on()
-	player.weapons.max_slots = 3
+	player.weapons.max_slots = 4
+	player.weapons.give(Content.weapon(&"talon_dmr_reforged"))
 	player.weapons.give(load("res://content/weapons/brenner_trench.tres") as WeaponData)
 	player.weapons.equip(0)
 	player.weapons.give(load("res://content/weapons/kestrel_smg_reforged.tres") as WeaponData)
@@ -108,6 +109,8 @@ func test_last_roll_refunds_and_moves_the_vault() -> void:
 
 
 func test_vault_can_offer_the_kestrel_from_the_map_pool() -> void:
+	player.weapons.max_slots = 3
+	player.weapons.give(Content.weapon(&"talon_dmr"))
 	level.turn_power_on()
 	player.weapons.equip(0)
 	player.weapons.give(Content.weapon(&"brenner_trench"))
@@ -116,7 +119,7 @@ func test_vault_can_offer_the_kestrel_from_the_map_pool() -> void:
 	assert_eq(vault.state, SpecimenVault.State.OFFERING)
 	assert_not_null(vault.offer)
 	if vault.offer:
-		assert_eq(vault.offer.id, &"kestrel_smg", "rifle and Brenner held: Kestrel is the only choice")
+		assert_eq(vault.offer.id, &"kestrel_smg", "all other pool guns held: only Kestrel remains")
 	vault.interact(player)
 	assert_eq(player.weapons.current.data.id, &"kestrel_smg")
 	assert_eq(player.weapons.current.instance.ammo_in_mag, 30)
