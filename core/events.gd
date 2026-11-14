@@ -44,5 +44,10 @@ signal power_up_collected(player: Player, power_up: PowerUpData)
 ## A player's shot landed on an enemy.
 signal hit_confirmed(player: Player, is_kill: bool, is_headshot: bool)
 
+## The exfil hatch opened for this round.
+signal exfil_opened
+## A player called the exfil; the squad must now hold the hatch.
+signal exfil_called(hatch: ExfilHatch)
+
 ## The match ended.
 signal game_over(stats: Dictionary)
