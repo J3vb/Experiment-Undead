@@ -56,7 +56,14 @@ func _input(event: InputEvent) -> void:
 
 func _open_settings() -> void:
 	menu.hide()
-	_animate_panel(settings_screen)
+	if _panel_tween:
+		_panel_tween.kill()
+	settings_screen.show()
+	settings_screen.modulate.a = 0.0
+	settings_screen.position.x = 12.0
+	_panel_tween = create_tween().set_parallel(true)
+	_panel_tween.tween_property(settings_screen, "modulate:a", 1.0, 0.12)
+	_panel_tween.tween_property(settings_screen, "position:x", 0.0, 0.12)
 	(settings_screen.get_node("Margin/Box/Tabs") as TabContainer).get_tab_bar().grab_focus()
 
 
@@ -68,7 +75,14 @@ func _close_settings() -> void:
 
 func _open_credits() -> void:
 	menu.hide()
-	_animate_panel(credits_panel)
+	if _panel_tween:
+		_panel_tween.kill()
+	credits_panel.show()
+	credits_panel.modulate.a = 0.0
+	credits_panel.position.x = 12.0
+	_panel_tween = create_tween().set_parallel(true)
+	_panel_tween.tween_property(credits_panel, "modulate:a", 1.0, 0.12)
+	_panel_tween.tween_property(credits_panel, "position:x", 0.0, 0.12)
 	($Screens/Root/CreditsPanel/Box/Back as Button).grab_focus()
 
 
@@ -76,14 +90,3 @@ func _close_credits() -> void:
 	credits_panel.hide()
 	menu.show()
 	credits_button.grab_focus()
-
-
-func _animate_panel(panel: Control) -> void:
-	if _panel_tween:
-		_panel_tween.kill()
-	panel.show()
-	panel.modulate.a = 0.0
-	panel.position.x = 12.0
-	_panel_tween = create_tween().set_parallel(true)
-	_panel_tween.tween_property(panel, "modulate:a", 1.0, 0.12)
-	_panel_tween.tween_property(panel, "position:x", 0.0, 0.12)
