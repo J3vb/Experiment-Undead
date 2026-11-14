@@ -83,3 +83,11 @@ x = boom * 1.4 + blast + tail
 click(0.55, 700, 70, 0.25)
 click(0.68, 1100, 90, 0.2)
 save("shotgun_fire.wav", x)
+
+# Kestrel SMG: a short, higher crack with a quick mechanical snap.
+tt = t(0.18)
+crack = rng.standard_normal(len(tt)) * np.exp(-tt * 95)
+thump = np.sin(2 * np.pi * (180 * tt - 80 * tt**2)) * np.exp(-tt * 38)
+snap = np.sin(2 * np.pi * 2100 * tt) * np.exp(-tt * 160)
+tail = lowpass(rng.standard_normal(len(tt)), 0.18) * np.exp(-tt * 30)
+save("kestrel_fire.wav", crack + thump * 0.55 + snap * 0.3 + tail * 0.7)

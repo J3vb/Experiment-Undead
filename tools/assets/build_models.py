@@ -246,6 +246,43 @@ def build_shotgun_brenner() -> None:
     marker("Muzzle", (0, 0.605, 0.018), parent=receiver)
 
 
+def build_kestrel_smg() -> None:
+    """Compact iron-sighted SMG with a hinged wire stock and straight magazine."""
+    metal = material("GunMetal", GUN_METAL, metallic=0.8, roughness=0.4)
+    black = material("MatteBlack", MATTE_BLACK, roughness=0.75)
+    accent = material("MutedTeal", WALL_PAINT, roughness=0.85)
+    receiver = box("Receiver", (0.05, 0.28, 0.065), (0, 0, 0), metal, bevel=0.005)
+    parts: list = [
+        box("Lower", (0.044, 0.19, 0.035), (0, -0.02, -0.045), black, bevel=0.004),
+        box("Handguard", (0.056, 0.13, 0.06), (0, 0.19, -0.005), black, bevel=0.006),
+        box("Grip", (0.034, 0.05, 0.105), (0, -0.095, -0.105), black, bevel=0.007),
+        box("MagWell", (0.043, 0.06, 0.035), (0, 0.055, -0.055), black, bevel=0.003),
+        box("TriggerGuard", (0.012, 0.07, 0.007), (0, -0.035, -0.09), black),
+        box("GuardPost", (0.012, 0.007, 0.04), (0, 0, -0.07), black),
+        box("Trigger", (0.006, 0.008, 0.025), (0, -0.04, -0.065), metal),
+        cylinder("Barrel", 0.011, 0.1, (0, 0.29, 0.008), metal),
+        cylinder("MuzzleCap", 0.014, 0.025, (0, 0.345, 0.008), black),
+        cylinder("StockHinge", 0.018, 0.06, (0, -0.145, -0.006), metal, axis="x"),
+        box("StockLatch", (0.008, 0.025, 0.02), (0.033, -0.14, 0), accent, bevel=0.002),
+        box("ButtPad", (0.05, 0.015, 0.095), (0, -0.35, -0.035), black, bevel=0.003),
+        box("FrontPost", (0.003, 0.008, 0.018), (0, 0.245, 0.051), metal),
+        box("RearBase", (0.036, 0.012, 0.008), (0, -0.115, 0.036), black),
+    ]
+    for side in (-1, 1):
+        parts += [
+            cylinder(f"StockWire{side}", 0.004, 0.2, (side * 0.022, -0.25, -0.005), metal),
+            box(f"RearNotch{side}", (0.008, 0.012, 0.02), (side * 0.014, -0.115, 0.05), metal),
+            box(f"FrontGuard{side}", (0.004, 0.016, 0.028), (side * 0.018, 0.245, 0.046), black),
+        ]
+        for i in range(3):
+            parts.append(box(f"Vent{side}{i}", (0.002, 0.018, 0.01), (side * 0.028, 0.15 + i * 0.032, 0.012), metal))
+    join_into(receiver, parts)
+    mag = box("Magazine", (0.032, 0.048, 0.17), (0, 0.055, -0.145), black, bevel=0.004, parent=receiver)
+    box("MagBase", (0.037, 0.055, 0.009), (0, 0, -0.087), accent, bevel=0.002, parent=mag)
+    box("Bolt", (0.012, 0.045, 0.014), (0.031, -0.02, 0.015), metal, bevel=0.002, parent=receiver)
+    marker("Muzzle", (0, 0.358, 0.008), parent=receiver)
+
+
 def join_into(target, parts: list) -> None:
     """Merges `parts` into `target` so the static body is one mesh (fewer draw calls)."""
     bpy.ops.object.select_all(action="DESELECT")
@@ -379,6 +416,7 @@ def build_bloater() -> None:
 MODELS = {
     "wall_panel": ("kit/wall_panel.glb", build_wall_panel),
     "rifle_ar": ("weapons/rifle_ar.glb", build_rifle_ar),
+    "kestrel_smg": ("weapons/kestrel_smg.glb", build_kestrel_smg),
     "shotgun_brenner": ("weapons/shotgun_brenner.glb", build_shotgun_brenner),
     "shambler": ("zombies/shambler.glb", build_shambler),
     "crawler": ("zombies/crawler.glb", build_crawler),
