@@ -1,0 +1,37 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://systems/game/game_session.gd" id="1"]
+[ext_resource type="PackedScene" path="res://levels/courtyard/courtyard.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://systems/player/player.tscn" id="3"]
+[ext_resource type="Resource" path="res://content/weapons/rifle_ar.tres" id="4"]
+[ext_resource type="Resource" path="res://content/weapons/pistol_service.tres" id="5"]
+[ext_resource type="Resource" path="res://content/waves/default_waves.tres" id="6"]
+[ext_resource type="Resource" path="res://content/economy/default_economy.tres" id="7"]
+[ext_resource type="Script" path="res://systems/waves/wave_director.gd" id="8"]
+[ext_resource type="Script" path="res://systems/economy/economy.gd" id="9"]
+[ext_resource type="Script" path="res://systems/progression/local_progression_service.gd" id="10"]
+[ext_resource type="PackedScene" path="res://systems/ui/hud.tscn" id="11"]
+[ext_resource type="Script" path="res://systems/weapons/weapon_data.gd" id="12"]
+
+[node name="GameSession" type="Node"]
+process_mode = 3
+script = ExtResource("1")
+level_scene = ExtResource("2")
+player_scene = ExtResource("3")
+starting_loadout = Array[ExtResource("12")]([ExtResource("5"), ExtResource("4")])
+wave_rules = ExtResource("6")
+economy_rules = ExtResource("7")
+
+[node name="WaveDirector" type="Node" parent="."]
+process_mode = 1
+script = ExtResource("8")
+
+[node name="Economy" type="Node" parent="."]
+process_mode = 1
+script = ExtResource("9")
+
+[node name="Progression" type="Node" parent="."]
+process_mode = 1
+script = ExtResource("10")
+
+[node name="Hud" parent="." instance=ExtResource("11")]
