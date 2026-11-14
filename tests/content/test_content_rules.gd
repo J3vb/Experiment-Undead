@@ -136,4 +136,8 @@ func _check_resource_numbers(resource: Resource, field: String, visited: Array[R
 		if usage & PROPERTY_USAGE_EDITOR == 0 or usage & PROPERTY_USAGE_SCRIPT_VARIABLE == 0:
 			continue
 		var name: String = property["name"]
+		# Decreasing spawn weights are valid; get_weight clamps them to zero.
+		if resource is EnemySpawnEntry and name == "weight_per_round":
+			assert_true(is_finite(float(resource.get(name))), field + "." + name + " must be finite")
+			continue
 		_check_numbers(resource.get(name), field + "." + name, visited)
