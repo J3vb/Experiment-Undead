@@ -4,10 +4,14 @@
 frequency = 0.03
 fractal_octaves = 5
 
+[sub_resource type="Gradient" id="stains"]
+colors = PackedColorArray(0.55, 0.57, 0.56, 1, 1, 1, 1, 1)
+
 [sub_resource type="NoiseTexture2D" id="albedo"]
 width = 512
 height = 512
 seamless = true
+color_ramp = SubResource("stains")
 noise = SubResource("noise")
 
 [sub_resource type="FastNoiseLite" id="puddles"]
@@ -29,10 +33,10 @@ bump_strength = 2.0
 noise = SubResource("noise")
 
 [resource]
-albedo_color = Color(0.46, 0.5, 0.49, 1)
+albedo_color = Color(0.55, 0.6, 0.58, 1)
 albedo_texture = SubResource("albedo")
 metallic = 0.0
-roughness = 0.45
+roughness = 0.2
 roughness_texture = SubResource("roughness")
 normal_enabled = true
 normal_scale = 0.4

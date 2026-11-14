@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" path="res://assets/models/kit/wall_panel.glb" id="wall"]
 [ext_resource type="PackedScene" path="res://assets/models/weapons/rifle_ar.glb" id="rifle"]
 [ext_resource type="PackedScene" path="res://levels/look_reference/zombie_standin.tscn" id="zombie"]
+[ext_resource type="PackedScene" path="res://systems/effects/film_post.tscn" id="film"]
 
 [sub_resource type="BoxMesh" id="tube_mesh"]
 material = ExtResource("tube")
@@ -19,8 +20,8 @@ size = Vector3(0.16, 0.05, 1.4)
 
 [sub_resource type="CylinderMesh" id="pipe_mesh"]
 material = ExtResource("pipe")
-top_radius = 0.05
-bottom_radius = 0.05
+top_radius = 0.07
+bottom_radius = 0.07
 height = 42
 radial_segments = 12
 rings = 1
@@ -35,6 +36,25 @@ material = ExtResource("bio")
 top_radius = 0.6
 bottom_radius = 0.6
 height = 0.01
+
+[sub_resource type="StandardMaterial3D" id="dust_mat"]
+shading_mode = 0
+albedo_color = Color(0.85, 0.95, 0.95, 0.7)
+transparency = 1
+billboard_mode = 1
+
+[sub_resource type="QuadMesh" id="dust_mesh"]
+material = SubResource("dust_mat")
+size = Vector2(0.006, 0.006)
+
+[sub_resource type="ParticleProcessMaterial" id="dust_process"]
+emission_shape = 3
+emission_box_extents = Vector3(1.5, 1.4, 9)
+direction = Vector3(0, -1, 0)
+spread = 180.0
+initial_velocity_min = 0.02
+initial_velocity_max = 0.08
+gravity = Vector3(0, -0.01, 0)
 
 [node name="HalcyonCorridor" type="Node3D"]
 
@@ -127,44 +147,44 @@ transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -39)
 [node name="PillarL0" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.58, 1.5, 2)
 script = ExtResource("block")
-size = Vector3(0.3, 3, 0.35)
-material = ExtResource("concrete")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
 
 [node name="PillarL3" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.58, 1.5, -4)
 script = ExtResource("block")
-size = Vector3(0.3, 3, 0.35)
-material = ExtResource("concrete")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
 
 [node name="PillarL6" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.58, 1.5, -10)
 script = ExtResource("block")
-size = Vector3(0.3, 3, 0.35)
-material = ExtResource("concrete")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
 
 [node name="PillarL9" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.58, 1.5, -16)
 script = ExtResource("block")
-size = Vector3(0.3, 3, 0.35)
-material = ExtResource("concrete")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
 
 [node name="PillarL12" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.58, 1.5, -22)
 script = ExtResource("block")
-size = Vector3(0.3, 3, 0.35)
-material = ExtResource("concrete")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
 
 [node name="PillarL15" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.58, 1.5, -28)
 script = ExtResource("block")
-size = Vector3(0.3, 3, 0.35)
-material = ExtResource("concrete")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
 
 [node name="PillarL18" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.58, 1.5, -34)
 script = ExtResource("block")
-size = Vector3(0.3, 3, 0.35)
-material = ExtResource("concrete")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
 
 [node name="WallR0" parent="Geometry" instance=ExtResource("wall")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, 1)
@@ -232,59 +252,63 @@ transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -39)
 [node name="PillarR0" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.58, 1.5, 2)
 script = ExtResource("block")
-size = Vector3(0.3, 3, 0.35)
-material = ExtResource("concrete")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
 
 [node name="PillarR3" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.58, 1.5, -4)
 script = ExtResource("block")
-size = Vector3(0.3, 3, 0.35)
-material = ExtResource("concrete")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
 
 [node name="PillarR6" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.58, 1.5, -10)
 script = ExtResource("block")
-size = Vector3(0.3, 3, 0.35)
-material = ExtResource("concrete")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
 
 [node name="PillarR9" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.58, 1.5, -16)
 script = ExtResource("block")
-size = Vector3(0.3, 3, 0.35)
-material = ExtResource("concrete")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
 
 [node name="PillarR12" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.58, 1.5, -22)
 script = ExtResource("block")
-size = Vector3(0.3, 3, 0.35)
-material = ExtResource("concrete")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
 
 [node name="PillarR15" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.58, 1.5, -28)
 script = ExtResource("block")
-size = Vector3(0.3, 3, 0.35)
-material = ExtResource("concrete")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
 
 [node name="PillarR18" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.58, 1.5, -34)
 script = ExtResource("block")
-size = Vector3(0.3, 3, 0.35)
-material = ExtResource("concrete")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
 
 [node name="Pipe0" type="MeshInstance3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 1.25, 2.75, -19)
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 1.05, 2.8, -19)
 mesh = SubResource("pipe_mesh")
 
 [node name="Pipe1" type="MeshInstance3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 1.3, 2.6, -19)
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 1.3, 2.78, -19)
 mesh = SubResource("pipe_mesh")
 
 [node name="Pipe2" type="MeshInstance3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 1.35, 2.45, -19)
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 1.42, 2.58, -19)
 mesh = SubResource("pipe_mesh")
 
 [node name="Pipe3" type="MeshInstance3D" parent="Geometry"]
-transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 1, 2.82, -19)
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 1.45, 2.38, -19)
+mesh = SubResource("pipe_mesh")
+
+[node name="Pipe4" type="MeshInstance3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 1.47, 2.18, -19)
 mesh = SubResource("pipe_mesh")
 
 [node name="CrateA" type="StaticBody3D" parent="Geometry"]
@@ -320,12 +344,20 @@ mesh = SubResource("tube_mesh")
 [node name="Fixture0" type="SpotLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.9, -1.5)
 light_color = Color(0.804, 0.933, 0.91, 1)
-light_energy = 3.5
+light_energy = 3.0
 light_volumetric_fog_energy = 1.5
 shadow_enabled = true
-spot_range = 6.0
-spot_angle = 80.0
+spot_range = 6.5
+spot_angle = 70.0
 spot_angle_attenuation = 0.6
+
+[node name="Spill0" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.65, -1.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 0.55
+light_volumetric_fog_energy = 0.0
+light_specular = 0.0
+omni_range = 2.6
 
 [node name="Tube1" type="MeshInstance3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.97, -7.5)
@@ -334,12 +366,20 @@ mesh = SubResource("tube_mesh")
 [node name="Fixture1" type="SpotLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.9, -7.5)
 light_color = Color(0.804, 0.933, 0.91, 1)
-light_energy = 3.5
+light_energy = 3.0
 light_volumetric_fog_energy = 1.5
 shadow_enabled = true
-spot_range = 6.0
-spot_angle = 80.0
+spot_range = 6.5
+spot_angle = 70.0
 spot_angle_attenuation = 0.6
+
+[node name="Spill1" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.65, -7.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 0.55
+light_volumetric_fog_energy = 0.0
+light_specular = 0.0
+omni_range = 2.6
 
 [node name="Tube2" type="MeshInstance3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.97, -13.5)
@@ -348,12 +388,20 @@ mesh = SubResource("tube_mesh")
 [node name="Fixture2" type="SpotLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.9, -13.5)
 light_color = Color(0.804, 0.933, 0.91, 1)
-light_energy = 3.5
+light_energy = 3.0
 light_volumetric_fog_energy = 1.5
 shadow_enabled = true
-spot_range = 6.0
-spot_angle = 80.0
+spot_range = 6.5
+spot_angle = 70.0
 spot_angle_attenuation = 0.6
+
+[node name="Spill2" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.65, -13.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 0.55
+light_volumetric_fog_energy = 0.0
+light_specular = 0.0
+omni_range = 2.6
 
 [node name="Tube3" type="MeshInstance3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.97, -19.5)
@@ -362,12 +410,20 @@ mesh = SubResource("tube_mesh")
 [node name="Fixture3" type="SpotLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.9, -19.5)
 light_color = Color(0.804, 0.933, 0.91, 1)
-light_energy = 3.5
+light_energy = 3.0
 light_volumetric_fog_energy = 1.5
 shadow_enabled = true
-spot_range = 6.0
-spot_angle = 80.0
+spot_range = 6.5
+spot_angle = 70.0
 spot_angle_attenuation = 0.6
+
+[node name="Spill3" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.65, -19.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 0.55
+light_volumetric_fog_energy = 0.0
+light_specular = 0.0
+omni_range = 2.6
 
 [node name="Tube4" type="MeshInstance3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.97, -25.5)
@@ -376,12 +432,20 @@ mesh = SubResource("tube_mesh")
 [node name="Fixture4" type="SpotLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.9, -25.5)
 light_color = Color(0.804, 0.933, 0.91, 1)
-light_energy = 3.5
+light_energy = 3.0
 light_volumetric_fog_energy = 1.5
 shadow_enabled = false
-spot_range = 6.0
-spot_angle = 80.0
+spot_range = 6.5
+spot_angle = 70.0
 spot_angle_attenuation = 0.6
+
+[node name="Spill4" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.65, -25.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 0.55
+light_volumetric_fog_energy = 0.0
+light_specular = 0.0
+omni_range = 2.6
 
 [node name="Tube5" type="MeshInstance3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.97, -31.5)
@@ -390,12 +454,20 @@ mesh = SubResource("tube_mesh")
 [node name="Fixture5" type="SpotLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.9, -31.5)
 light_color = Color(0.804, 0.933, 0.91, 1)
-light_energy = 3.5
+light_energy = 3.0
 light_volumetric_fog_energy = 1.5
 shadow_enabled = false
-spot_range = 6.0
-spot_angle = 80.0
+spot_range = 6.5
+spot_angle = 70.0
 spot_angle_attenuation = 0.6
+
+[node name="Spill5" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.65, -31.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 0.55
+light_volumetric_fog_energy = 0.0
+light_specular = 0.0
+omni_range = 2.6
 
 [node name="Tube6" type="MeshInstance3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.97, -37.5)
@@ -404,12 +476,20 @@ mesh = SubResource("tube_mesh")
 [node name="Fixture6" type="SpotLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.9, -37.5)
 light_color = Color(0.804, 0.933, 0.91, 1)
-light_energy = 3.5
+light_energy = 3.0
 light_volumetric_fog_energy = 1.5
 shadow_enabled = false
-spot_range = 6.0
-spot_angle = 80.0
+spot_range = 6.5
+spot_angle = 70.0
 spot_angle_attenuation = 0.6
+
+[node name="Spill6" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.65, -37.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 0.55
+light_volumetric_fog_energy = 0.0
+light_specular = 0.0
+omni_range = 2.6
 
 [node name="BioLeak" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0, -14.5)
@@ -440,13 +520,25 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0, -9.5)
 [node name="Walker3" parent="Zombies" instance=ExtResource("zombie")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0, -12)
 
+[node name="Dust" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -8)
+amount = 250
+lifetime = 20.0
+preprocess = 20.0
+use_fixed_seed = true
+visibility_aabb = AABB(-2, -2, -10, 4, 4, 20)
+process_material = SubResource("dust_process")
+draw_pass_1 = SubResource("dust_mesh")
+
+[node name="FilmPost" parent="." instance=ExtResource("film")]
+
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 1.65, 1)
 fov = 75.0
 near = 0.03
 
 [node name="Rifle" parent="Camera3D" instance=ExtResource("rifle")]
-transform = Transform3D(0.985, 0, 0.174, 0, 1, 0, -0.174, 0, 0.985, 0.2, -0.22, -0.62)
+transform = Transform3D(0.94, 0, 0.342, 0, 1, 0, -0.342, 0, 0.94, 0.3, -0.27, -0.55)
 
 [node name="ViewFill" type="OmniLight3D" parent="Camera3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0.1, 0)

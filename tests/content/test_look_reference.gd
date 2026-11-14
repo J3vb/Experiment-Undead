@@ -31,6 +31,7 @@ func test_corridor_uses_the_shared_look() -> void:
 	if world and world.environment:
 		assert_eq(world.environment.resource_path, LOOK, "environment is the shared file, not a copy")
 	assert_not_null(scene.find_child("Camera3D", false, false), "corridor has the reference camera")
+	assert_not_null(scene.find_child("FilmPost", false, false), "corridor has film grain and vignette")
 
 
 func test_corridor_keeps_the_shadow_light_budget() -> void:
