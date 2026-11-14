@@ -20,6 +20,7 @@ func _ready() -> void:
 	viewport = SubViewport.new()
 	viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
 	camera = Camera3D.new()
+	camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	camera.cull_mask = 0xFFFFF & ~VIEWMODEL_LAYER
 	camera.near = 0.05
 	viewport.add_child(camera)
@@ -46,5 +47,5 @@ func _process(_delta: float) -> void:
 	if not aimed:
 		return
 	viewport.size = Vector2i(get_viewport().get_visible_rect().size / 2.0)
-	camera.global_transform = main.global_transform
+	camera.global_transform = main.get_global_transform_interpolated()
 	camera.fov = main.fov / zoom

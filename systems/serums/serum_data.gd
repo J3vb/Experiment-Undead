@@ -12,7 +12,12 @@ const STATS: Array[StringName] = [
 	&"head_damage",
 	&"ads_time",
 	&"weapon_slots",
+	&"sprint_time",
+	&"sprint_out_time",
 ]
+
+## Serums whose effect is code that checks for their id, not a stat.
+const EFFECTS: Array[StringName] = [&"second_wind"]
 
 @export var id: StringName = &""
 @export var display_name: String = "Serum"

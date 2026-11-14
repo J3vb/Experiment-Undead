@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SerumData" format=3]
+
+[ext_resource type="Script" path="res://systems/serums/serum_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"stride"
+display_name = "Stride"
+cost = 2000
+description = "Sprint twice as long. Raise your gun out of a sprint twice as fast."
+multipliers = Dictionary[StringName, float]({&"sprint_out_time": 0.5, &"sprint_time": 2.0})

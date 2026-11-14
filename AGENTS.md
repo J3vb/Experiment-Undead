@@ -189,11 +189,20 @@ lines for its early warning signs and list them in that doc's catalogue.
 
 ## Merging
 
-- When both checks are green you may mark your PR ready and merge it yourself
-  (squash merge). No human approval is needed.
-- Second-agent review first when the PR changes more than 300 lines, or touches
-  `core/`, `project.godot`, `.github/` or networking code: Codex reviews Claude
-  PRs and Claude reviews Codex PRs. Fix or answer every comment, then merge.
+- Every PR gets an automatic review:
+  - **Claude reviews Codex PRs** (`codex/` branches): the `review` CI job runs
+    when the PR leaves draft and on every push.
+  - **Codex reviews all other PRs**: it runs when the PR is opened as ready or
+    marked ready. It does **not** run on later pushes: after each push with
+    changes, comment `@codex review` on the PR once.
+- You may merge your PR yourself (squash merge), no human approval needed,
+  when all of these hold for the current head commit:
+  1. `quality`, `test` and `review` checks are green.
+  2. The review for that commit is finished. For Codex: its "Codex Review
+     Summary" comment shows ✅ Completed for that commit (or a 👍 reaction).
+  3. Every review comment is fixed, or answered with a reason if it is a
+     "Suggestion" you decline, and its conversation is resolved. A comment
+     marked "Blocking" or a P0/P1 finding must be fixed, not declined.
 - Never merge with a red or pending check, and never merge someone else's PR.
 - Each PR gets exactly one label for release notes: `new`, `fix`, `balance`
   or `tech`.

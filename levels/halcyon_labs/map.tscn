@@ -21,6 +21,8 @@
 [ext_resource type="Resource" path="res://content/serums/overclock.tres" id="serum_overclock"]
 [ext_resource type="Resource" path="res://content/serums/deadeye.tres" id="serum_deadeye"]
 [ext_resource type="Resource" path="res://content/serums/mule.tres" id="serum_mule"]
+[ext_resource type="Resource" path="res://content/serums/stride.tres" id="serum_stride"]
+[ext_resource type="Resource" path="res://content/serums/second_wind.tres" id="serum_second_wind"]
 
 [sub_resource type="NavigationMesh" id="navmesh"]
 resource_local_to_scene = true
@@ -273,18 +275,10 @@ material = SubResource("door_dev")
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 10.5, 1, 40)
 serum = ExtResource("serum_quickhands")
 
-[node name="MedDispenserSecondWind" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["med_dispenser"]]
+[node name="MedDispenserSecondWind" parent="NavigationRegion3D/Machines" instance=ExtResource("meddisp")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 1, 30.5)
-script = ExtResource("block")
-size = Vector3(1, 2, 0.6)
-material = SubResource("machine_dev")
-
-[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/MedDispenserSecondWind"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
-billboard = 1
-pixel_size = 0.004
-font_size = 40
-text = "Second Wind"
+serum = ExtResource("serum_second_wind")
+max_sales = 3
 
 [node name="MedDispenserIronhide" parent="NavigationRegion3D/Machines" instance=ExtResource("meddisp")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 1, 26.5)
@@ -311,18 +305,9 @@ serum = ExtResource("serum_deadeye")
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 75.5, -2, 14)
 serum = ExtResource("serum_overclock")
 
-[node name="MedDispenserStride" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["med_dispenser"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75.5, -2, 22)
-script = ExtResource("block")
-size = Vector3(0.6, 2, 1)
-material = SubResource("machine_dev")
-
-[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/MedDispenserStride"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
-billboard = 1
-pixel_size = 0.004
-font_size = 40
-text = "Stride"
+[node name="MedDispenserStride" parent="NavigationRegion3D/Machines" instance=ExtResource("meddisp")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 75.5, -2, 22)
+serum = ExtResource("serum_stride")
 
 [node name="MedDispenserMule" parent="NavigationRegion3D/Machines" instance=ExtResource("meddisp")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68, -2, 4.5)
