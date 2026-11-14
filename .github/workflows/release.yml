@@ -1,0 +1,83 @@
+name: Release
+
+# Pushing a tag like v0.1.0 builds everything, publishes a GitHub Release
+# with zips and auto-written notes, and pushes the server image.
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    uses: ./.github/workflows/export.yml
+    with:
+      retention-days: 7
+
+  tags:
+    runs-on: ubuntu-latest
+    outputs:
+      image-tags: ${{ steps.tags.outputs.image-tags }}
+      prerelease: ${{ steps.tags.outputs.prerelease }}
+    steps:
+      - id: tags
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          if [[ "$version" == *-* ]]; then
+            echo "image-tags=$version" >> "$GITHUB_OUTPUT"
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "image-tags=$version ${version%.*} latest" >> "$GITHUB_OUTPUT"
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  server-image:
+    needs: [export, tags]
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/server-image.yml
+    with:
+      version: ${{ needs.export.outputs.version }}
+      tags: ${{ needs.tags.outputs.image-tags }}
+
+  publish:
+    needs: [export, tags, server-image]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Download builds
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ExperimentUndead-*
+          path: artifacts
+
+      - name: Zip builds
+        run: |
+          mkdir dist
+          chmod +x artifacts/*/*.x86_64
+          for dir in artifacts/*/; do
+            name="$(basename "$dir")"
+            (cd "$dir" && zip -qr9 "$GITHUB_WORKSPACE/dist/$name.zip" .)
+          done
+          ls -la dist
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ needs.export.outputs.version }}
+          PRERELEASE: ${{ needs.tags.outputs.prerelease }}
+        run: |
+          flags=(--repo "$GITHUB_REPOSITORY" --title "Experiment Undead $VERSION" --generate-notes --verify-tag)
+          if [ "$PRERELEASE" = "true" ]; then flags+=(--prerelease); fi
+          gh release create "$TAG" dist/*.zip "${flags[@]}"

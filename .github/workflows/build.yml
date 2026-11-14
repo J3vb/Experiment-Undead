@@ -1,0 +1,38 @@
+name: Build
+
+# Every merge to main: playable Windows/Linux builds as downloadable
+# artifacts (kept 3 days) and the server image tagged "edge".
+# "Run workflow" on any branch builds without pushing an image.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/pull_request_template.md"
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    uses: ./.github/workflows/export.yml
+    with:
+      retention-days: 3
+
+  server-image:
+    needs: export
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/server-image.yml
+    with:
+      version: ${{ needs.export.outputs.version }}
+      tags: edge

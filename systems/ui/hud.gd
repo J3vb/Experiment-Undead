@@ -32,6 +32,7 @@ func _ready() -> void:
 	points_delta.modulate.a = 0.0
 	hint_label.text = ""
 	round_label.text = ""
+	$Root.add_child(VersionLabel.new())
 	Events.player_spawned.connect(_on_player_spawned)
 	Events.player_health_changed.connect(_on_health_changed)
 	Events.player_damaged.connect(_on_player_damaged)

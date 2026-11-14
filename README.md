@@ -31,17 +31,25 @@ godot --headless --path . -s addons/gut/gut_cmdln.gd # all tests
 Tests cover content validation, damage and wave maths, and a headless
 integration match (navmesh, spawning, chasing, shooting, points, XP, round end).
 
+## Builds
+
+Every merge to main builds Windows and Linux downloads; a `v*` tag makes a
+GitHub Release and a server Docker image. See [docs/RELEASING.md](docs/RELEASING.md).
+
 ## Where things live
 
 ```
-core/          autoloads: Events (signal hub), Content (id lookup), Net (authority)
+core/          autoloads: Build (version, crash marker), Events (signal hub),
+               Content (id lookup), Net (authority)
 systems/       code + scenes per feature: player, weapons, damage, enemies,
                waves, economy, progression, input, level, effects, ui, game
 content/       data only (.tres): weapons, enemies, waves, economy
 levels/        maps and their materials
 assets/        raw audio (later models, textures)
 tests/         GUT tests: unit/, content/, integration/
-tools/         helper scripts (input map, placeholder sound generator, screenshots)
+tools/         helper scripts (input map, placeholder sound generator, screenshots);
+               tools/ci/ holds the build scripts
+deploy/        server Dockerfile and Unraid template
 docs/          decisions and credits
 ```
 

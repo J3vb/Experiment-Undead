@@ -28,3 +28,5 @@ mono_crash.*.json
 /build/
 /screenshots/
 __pycache__/
+/version.json
+/deploy/server/server/

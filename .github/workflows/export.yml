@@ -1,0 +1,85 @@
+name: Export
+
+# Reusable: exports Windows, Linux and the dedicated server, smoke-tests them
+# and uploads them as artifacts. Called by build.yml and release.yml.
+on:
+  workflow_call:
+    inputs:
+      retention-days:
+        description: Days to keep the Windows and Linux artifacts
+        type: number
+        default: 3
+    outputs:
+      version:
+        description: Version stamped into the build
+        value: ${{ jobs.export.outputs.version }}
+
+env:
+  GODOT_VERSION: 4.7.2
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Cache Godot and export templates
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/godot
+            ~/.local/share/godot/export_templates
+          key: godot-${{ env.GODOT_VERSION }}-templates-v1
+
+      - name: Set up Godot
+        run: tools/ci/setup_godot.sh "$GODOT_VERSION" ~/godot
+
+      - name: Cache imported assets
+        uses: actions/cache@v4
+        with:
+          path: .godot
+          key: import-${{ env.GODOT_VERSION }}-${{ hashFiles('**/*.import', 'project.godot') }}
+          restore-keys: import-${{ env.GODOT_VERSION }}-
+
+      - name: Stamp version
+        id: version
+        run: |
+          tools/ci/stamp_version.sh
+          version="$(sed -n 's/.*"version": "\(.*\)".*/\1/p' version.json)"
+          echo "safe=${version//+/-}" >> "$GITHUB_OUTPUT"
+
+      - name: Import project
+        run: ~/godot/godot --headless --path . --import
+
+      - name: Export
+        run: tools/ci/export_all.sh ~/godot/godot
+
+      - name: Smoke test exported builds
+        run: tools/ci/smoke_test.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ExperimentUndead-${{ steps.version.outputs.safe }}-windows
+          path: build/windows/
+          retention-days: ${{ inputs.retention-days }}
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ExperimentUndead-${{ steps.version.outputs.safe }}-linux
+          path: build/linux/
+          retention-days: ${{ inputs.retention-days }}
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ExperimentUndead-${{ steps.version.outputs.safe }}-server
+          path: build/server/
+          retention-days: 1
+          if-no-files-found: error
