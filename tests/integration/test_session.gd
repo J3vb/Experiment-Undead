@@ -102,3 +102,33 @@ func test_round_ends_when_all_dead() -> void:
 		deadline -= 0.2
 	assert_signal_emitted(Events, "round_ended")
 	assert_eq(session.director.round_number, 1)
+
+func test_holding_trigger_through_reload_fires_one_shot_per_interval() -> void:
+	player.set_physics_process(false)
+	var weapon: Weapon = player.weapons.current
+	weapon.trigger_held = true
+	weapon.instance.ammo_in_mag = 0
+	assert_true(weapon.start_reload())
+	var dt: float = 1.0 / 60.0
+	var guard: int = 0
+	while weapon.is_reloading() and guard < 600:
+		weapon.tick(dt)
+		guard += 1
+	assert_false(weapon.is_reloading(), "reload finished")
+	assert_gte(weapon.instance.ammo_in_mag, weapon.data.magazine_size - 1, "no banked burst after reload")
+	weapon.tick(dt)
+	assert_gte(weapon.instance.ammo_in_mag, weapon.data.magazine_size - 2, "normal fire rate afterwards")
+
+func test_zombie_cannot_hit_through_walls() -> void:
+	var z: Zombie = await _wait_for_zombie()
+	if z == null:
+		fail_test("no zombie")
+		return
+	# RuinWallA spans x -4.4..1.6 at z = -5, 0.5 m thick.
+	player.global_position = Vector3(-1.4, 0.0, -4.3)
+	z.global_position = Vector3(-1.4, 0.0, -5.7)
+	await wait_physics_frames(2)
+	assert_false(z._can_see(player), "wall blocks the swing")
+	z.global_position = player.global_position + Vector3(1.2, 0.0, 0.0)
+	await wait_physics_frames(2)
+	assert_true(z._can_see(player), "open ground does not")

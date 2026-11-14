@@ -133,10 +133,7 @@ func _handle_trigger() -> void:
 	var pressed_now: bool = trigger_held and not _trigger_was_held
 	if pressed_now:
 		_buffered = BUFFER_TIME
-	# Accumulator keeps the real fire rate independent of frame rate,
-	# but never banks shots while the trigger is idle.
-	if _shot_timer < 0.0 and not trigger_held and _burst_left == 0:
-		_shot_timer = 0.0
+	# Accumulator keeps the real fire rate independent of frame rate.
 	while _shot_timer <= 0.0:
 		var wants: bool = false
 		match data.fire_mode:
@@ -148,20 +145,21 @@ func _handle_trigger() -> void:
 				if _burst_left == 0 and _buffered > 0.0:
 					_burst_left = data.burst_count
 				wants = _burst_left > 0
-		if not wants:
-			return
-		if not can_fire():
-			return
+		if not wants or not can_fire():
+			break
 		_buffered = 0.0
 		if instance.ammo_in_mag <= 0:
 			_burst_left = 0
 			_play_mech(data.dry_fire_sound)
 			start_reload()
-			return
+			break
 		fire()
 		_burst_left = maxi(_burst_left - 1, 0)
 		var extra: float = 0.12 if data.fire_mode == WeaponData.FireMode.BURST and _burst_left == 0 else 0.0
 		_shot_timer += data.get_fire_interval() + extra
+	# Time spent blocked (reloading, sprinting, waiting for a press) is not
+	# banked as missed shots.
+	_shot_timer = maxf(_shot_timer, 0.0)
 
 ## Fires one shot (all pellets) right now. Public for tests and AI.
 func fire() -> void:

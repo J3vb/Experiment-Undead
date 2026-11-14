@@ -117,7 +117,7 @@ func _tick_chasing(delta: float) -> void:
 	var to_target: Vector3 = target.global_position - global_position
 	to_target.y = 0.0
 	var distance: float = to_target.length()
-	if distance <= data.attack_range * 0.85 and _attack_cooldown <= 0.0:
+	if distance <= data.attack_range * 0.85 and _attack_cooldown <= 0.0 and _can_see(target):
 		_enter(State.ATTACKING)
 		_play(data.attack_sound)
 		return
@@ -155,11 +155,18 @@ func _try_hit_target() -> void:
 		return
 	var flat: Vector3 = target.global_position - global_position
 	flat.y = 0.0
-	if flat.length() <= data.attack_range + 0.3:
+	if flat.length() <= data.attack_range + 0.3 and _can_see(target):
 		var info: DamageInfo = DamageInfo.create(_damage, self, DamageInfo.Type.MELEE)
 		info.position = target.global_position
 		info.impulse = flat.normalized()
 		target.take_damage(info)
+
+## True when no world geometry sits between our chest and the target's.
+func _can_see(other: Node3D) -> bool:
+	var from: Vector3 = global_position + Vector3.UP * 1.2
+	var to: Vector3 = other.global_position + Vector3.UP * 1.2
+	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(from, to, Layers.WORLD)
+	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
 
 func _update_target(delta: float) -> void:
 	_retarget_timer -= delta
