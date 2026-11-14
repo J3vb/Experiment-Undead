@@ -2,6 +2,7 @@
 ## everything it references exists. Bad data fails here, not in game.
 extends GutTest
 
+
 func _files(type: String) -> PackedStringArray:
 	var out: PackedStringArray = []
 	var dir: DirAccess = DirAccess.open("res://content/" + type)
@@ -13,9 +14,11 @@ func _files(type: String) -> PackedStringArray:
 			out.append("res://content/%s/%s" % [type, f.trim_suffix(".remap")])
 	return out
 
+
 func test_content_autoload_indexes_every_type() -> void:
 	for type: StringName in [&"weapons", &"enemies", &"waves", &"economy"]:
 		assert_gt(Content.ids(type).size(), 0, "Content has %s" % type)
+
 
 func test_weapons_are_valid() -> void:
 	for path: String in _files("weapons"):
@@ -32,8 +35,9 @@ func test_weapons_are_valid() -> void:
 		assert_true(w.min_damage <= w.damage, path + " min_damage <= damage")
 		if w.viewmodel_scene:
 			var vm: Node = w.viewmodel_scene.instantiate()
-			assert_not_null(vm.get_node_or_null("Muzzle"), path + " viewmodel has Muzzle")
+			assert_not_null(vm.find_child("Muzzle", true, false), path + " viewmodel has Muzzle")
 			vm.free()
+
 
 func test_enemies_are_valid() -> void:
 	for path: String in _files("enemies"):
@@ -48,6 +52,7 @@ func test_enemies_are_valid() -> void:
 			var z: Node = e.scene.instantiate()
 			assert_true(z is Zombie, path + " scene root is Zombie")
 			z.free()
+
 
 func test_wave_rules_are_valid() -> void:
 	for path: String in _files("waves"):

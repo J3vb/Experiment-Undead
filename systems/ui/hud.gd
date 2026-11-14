@@ -19,6 +19,7 @@ var _delta_sum: int = 0
 @onready var weapon_label: Label = $Root/WeaponLabel
 @onready var hint_label: Label = $Root/HintLabel
 @onready var center_label: Label = $Root/CenterLabel
+@onready var prompt_label: Label = $Root/PromptLabel
 @onready var pause_panel: Control = $Root/PausePanel
 @onready var game_over_panel: Control = $Root/GameOverPanel
 @onready var game_over_stats: Label = $Root/GameOverPanel/Box/Stats
@@ -65,6 +66,7 @@ func _process(delta: float) -> void:
 		if _delta_time <= 0.0:
 			_delta_sum = 0
 
+	prompt_label.text = _player.focus.get_prompt(_player) if _player and _player.focus else ""
 	if _player and _player.weapons.current:
 		var w: Weapon = _player.weapons.current
 		crosshair.spread_degrees = w.get_current_spread()
