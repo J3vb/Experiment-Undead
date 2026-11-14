@@ -46,15 +46,16 @@ var _kick: float = 0.0
 var _flash_timer: float = 0.0
 var _rng: RandomNumberGenerator
 
-@onready var _viewmodel_root: Node3D = $Viewmodel
-@onready var _fire_audio: AudioStreamPlayer = $FireAudio
-@onready var _mech_audio: AudioStreamPlayer = $MechAudio
 var _flash_light: Light3D
 var _flash_mesh: Node3D
 var _magazine: Node3D
 var _bolt: Node3D
 var _magazine_rest: Vector3
 var _bolt_rest: Vector3
+
+@onready var _viewmodel_root: Node3D = $Viewmodel
+@onready var _fire_audio: AudioStreamPlayer = $FireAudio
+@onready var _mech_audio: AudioStreamPlayer = $MechAudio
 
 
 func setup(p_instance: WeaponInstance, p_shooter: Player, p_camera: Camera3D) -> void:
