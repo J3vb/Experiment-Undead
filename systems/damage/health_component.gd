@@ -16,8 +16,10 @@ var current: float = 0.0
 var is_dead: bool = false
 var _since_damage: float = 0.0
 
+
 func _ready() -> void:
 	current = max_health
+
 
 func reset(new_max: float) -> void:
 	max_health = new_max
@@ -25,6 +27,7 @@ func reset(new_max: float) -> void:
 	is_dead = false
 	_since_damage = 0.0
 	health_changed.emit(current, max_health)
+
 
 func take_damage(info: DamageInfo) -> void:
 	if is_dead or info.amount <= 0.0:
@@ -37,6 +40,7 @@ func take_damage(info: DamageInfo) -> void:
 		is_dead = true
 		died.emit(info)
 
+
 func heal(amount: float) -> void:
 	if is_dead or amount <= 0.0 or current >= max_health:
 		return
@@ -45,8 +49,10 @@ func heal(amount: float) -> void:
 	healed.emit(current - before)
 	health_changed.emit(current, max_health)
 
+
 func get_ratio() -> float:
 	return current / max_health if max_health > 0.0 else 0.0
+
 
 func _process(delta: float) -> void:
 	if is_dead or regen_delay <= 0.0 or current >= max_health:

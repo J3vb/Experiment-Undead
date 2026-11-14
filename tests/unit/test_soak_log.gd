@@ -63,3 +63,40 @@ func test_unreached_round_fails() -> void:
 func test_missing_and_malformed_logs_fail() -> void:
 	assert_true(SOAK.check_log("user://nonexistent_soak.jsonl", 10)["failed"])
 	assert_true(_check("broken json")["failed"])
+
+
+func test_invalid_objects_report_their_line_and_continue_reading() -> void:
+	for text: String in ["broken json", "[]", "null"]:
+		var result: Dictionary = _check(text + '\n{"system":"custom","event":"warning","level":"warn"}')
+		assert_true(result["failed"])
+		assert_eq(result["reason"], "Invalid JSON object at line 3")
+		assert_eq(result["problems"]["custom.warning"]["line"], 4)
+
+
+func test_repeated_warning_can_escalate_without_losing_first_line() -> void:
+	var warning: String = '{"system":"custom","event":"issue","level":"warn"}'
+	var error: String = '{"system":"custom","event":"issue","level":"error"}'
+	var result: Dictionary = _check(warning + "\n" + error + "\n" + warning)
+	assert_true(result["failed"])
+	assert_eq(result["problems"]["custom.issue"]["count"], 3)
+	assert_eq(result["problems"]["custom.issue"]["first"], warning)
+	assert_eq(result["problems"]["custom.issue"]["line"], 3)
+	assert_true(result["problems"]["custom.issue"]["fails"])
+
+
+func test_known_warning_is_recorded_without_warn_level() -> void:
+	var result: Dictionary = _check('{"system":"enemies","event":"zombie_stuck","level":"info"}')
+	assert_false(result["failed"])
+	assert_eq(result["problems"]["enemies.zombie_stuck"]["count"], 1)
+
+
+func test_blank_lines_and_earlier_rounds_keep_highest_progress() -> void:
+	var result: Dictionary = _check(
+		(
+			'\n{"system":"waves","event":"round_started","round":2}\n'
+			+ '{"system":"waves","event":"round_ended","round":2}\n'
+		)
+	)
+	assert_false(result["failed"])
+	assert_eq(result["reached"], 10)
+	assert_eq(result["completed"], 10)

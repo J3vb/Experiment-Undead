@@ -11,12 +11,14 @@ var spread_degrees: float = 2.0
 var fov_degrees: float = 78.0
 var _gap: float = 8.0
 
+
 func _process(delta: float) -> void:
 	var viewport_h: float = get_viewport_rect().size.y
 	var half_fov: float = deg_to_rad(fov_degrees) * 0.5
 	var target: float = tan(deg_to_rad(spread_degrees)) / tan(half_fov) * viewport_h * 0.5
 	_gap = lerpf(_gap, maxf(target, min_gap), clampf(delta * 20.0, 0.0, 1.0))
 	queue_redraw()
+
 
 func _draw() -> void:
 	var c: Vector2 = size * 0.5

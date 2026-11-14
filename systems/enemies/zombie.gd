@@ -246,9 +246,9 @@ func _try_hit_target() -> void:
 
 ## True when no world geometry sits between our chest and the target's.
 func _can_see(other: Node3D) -> bool:
-	var from: Vector3 = global_position + Vector3.UP * 1.2
-	var to: Vector3 = other.global_position + Vector3.UP * 1.2
-	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(from, to, Layers.WORLD)
+	var start: Vector3 = global_position + Vector3.UP * 1.2
+	var end: Vector3 = other.global_position + Vector3.UP * 1.2
+	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(start, end, Layers.WORLD)
 	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
 
 

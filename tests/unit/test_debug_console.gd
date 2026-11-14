@@ -212,3 +212,49 @@ func test_open_console_consumes_pause_input() -> void:
 	assert_false(get_tree().paused, "Escape must not pause or recapture through the console")
 	assert_eq(Input.mouse_mode, Input.MOUSE_MODE_VISIBLE)
 	debug._set_open(false)
+
+
+func test_game_command_validation_has_no_success_message() -> void:
+	for line: String in [
+		"give_points",
+		"give_points 0",
+		"give_points -1",
+		"give_points 1 2",
+		"set_round nope",
+		"set_round 0",
+		"kill_all extra",
+		"skip_round extra"
+	]:
+		console.run_command(line)
+	var output: String = console.log_output.get_parsed_text()
+	assert_eq(output.count("Error: usage:"), 8)
+	assert_false(output.contains("OK:"))
+
+
+func test_timescale_validation_preserves_current_scale() -> void:
+	console.run_command("timescale 0.25")
+	assert_eq(Engine.time_scale, 0.25)
+	for line: String in ["timescale", "timescale nope", "timescale 1 2", "timescale -2", "timescale 1e999"]:
+		console.run_command(line)
+		assert_eq(Engine.time_scale, 0.25, line)
+	assert_engine_error("Exponent too high")
+	var output: String = console.log_output.get_parsed_text()
+	assert_eq(output.count("OK: timescale"), 1)
+	assert_eq(output.count("Error: usage: timescale"), 3)
+	assert_eq(output.count("Error: timescale must be positive and finite."), 2)
+
+
+func test_skip_round_rejects_arguments_then_clears_enemies() -> void:
+	var session: GameSession = SESSION.instantiate() as GameSession
+	session.rng_seed = 1234
+	session.wave_rules = session.wave_rules.duplicate(true) as WaveRules
+	session.wave_rules.first_round_delay = 1000.0
+	add_child_autofree(session)
+	await wait_until(func() -> bool: return session.level.is_navigation_ready, 10.0, "navmesh baked")
+	var debug: CanvasLayer = session.get_node("DebugConsole") as CanvasLayer
+	debug.run_command("spawn zombie_walker 2")
+	debug.run_command("skip_round extra")
+	assert_eq(session.spawner.alive_count(), 2)
+	debug.run_command("skip_round")
+	assert_eq(session.spawner.alive_count(), 0)
+	assert_string_contains(debug.log_output.get_parsed_text(), "OK: skip_round")

@@ -8,6 +8,7 @@ enum Kind { SURFACE, FLESH }
 const MAX_ALIVE: int = 48
 const LIFETIME: float = 6.0
 
+
 static func spawn(parent: Node, point: Vector3, normal: Vector3, kind: Kind) -> void:
 	if parent == null:
 		return
@@ -20,6 +21,7 @@ static func spawn(parent: Node, point: Vector3, normal: Vector3, kind: Kind) -> 
 	parent.add_child(impact)
 	impact.global_position = point + normal * 0.01
 	impact._build(normal, kind)
+
 
 func _build(normal: Vector3, kind: Kind) -> void:
 	var flesh: bool = kind == Kind.FLESH

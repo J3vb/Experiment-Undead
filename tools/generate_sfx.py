@@ -1,23 +1,37 @@
 # Generates the placeholder sound effects in assets/audio (all original, no licences needed).
 # Run: python3 tools/generate_sfx.py assets/audio   (needs numpy)
-import numpy as np, wave, sys, os
+import os
+import sys
+import wave
+
+import numpy as np
+
 SR = 44100
 out = sys.argv[1]
 rng = np.random.default_rng(7)
 
+
 def save(name, x):
     x = np.clip(x / (np.max(np.abs(x)) + 1e-9) * 0.9, -1, 1)
     with wave.open(os.path.join(out, name), "wb") as w:
-        w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR)
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(SR)
         w.writeframes((x * 32767).astype(np.int16).tobytes())
 
-def t(d): return np.arange(int(SR * d)) / SR
+
+def t(d):
+    return np.arange(int(SR * d)) / SR
+
 
 def lowpass(x, a):
-    y = np.zeros_like(x); acc = 0.0
+    y = np.zeros_like(x)
+    acc = 0.0
     for i, v in enumerate(x):
-        acc += a * (v - acc); y[i] = acc
+        acc += a * (v - acc)
+        y[i] = acc
     return y
+
 
 # Rifle shot: sharp crack + low thump + noisy tail
 tt = t(0.45)
@@ -28,15 +42,24 @@ save("rifle_fire.wav", crack * 0.9 + thump * 1.2 + tail)
 
 # Dry fire click
 tt = t(0.08)
-save("dry_fire.wav", rng.standard_normal(len(tt)) * np.exp(-tt * 300) + np.sin(2*np.pi*2400*tt) * np.exp(-tt*200) * 0.5)
+save(
+    "dry_fire.wav",
+    rng.standard_normal(len(tt)) * np.exp(-tt * 300) + np.sin(2 * np.pi * 2400 * tt) * np.exp(-tt * 200) * 0.5,
+)
 
 # Reload: mag out click, pause, mag in clack, bolt
 tt = t(1.4)
 x = np.zeros(len(tt))
+
+
 def click(at, freq, decay, amp):
-    i = int(at * SR); n = int(0.12 * SR); s = np.arange(n) / SR
-    seg = (rng.standard_normal(n) * 0.6 + np.sin(2*np.pi*freq*s)) * np.exp(-s * decay) * amp
-    x[i:i+n] += seg[:len(x)-i]
+    i = int(at * SR)
+    n = int(0.12 * SR)
+    s = np.arange(n) / SR
+    seg = (rng.standard_normal(n) * 0.6 + np.sin(2 * np.pi * freq * s)) * np.exp(-s * decay) * amp
+    x[i : i + n] += seg[: len(x) - i]
+
+
 click(0.05, 1800, 90, 0.7)
 click(0.75, 900, 60, 1.0)
 click(1.15, 1400, 70, 0.9)
@@ -45,18 +68,23 @@ save("reload.wav", x)
 
 # Hitmarker tick
 tt = t(0.06)
-save("hitmarker.wav", np.sin(2*np.pi*3200*tt) * np.exp(-tt * 90))
+save("hitmarker.wav", np.sin(2 * np.pi * 3200 * tt) * np.exp(-tt * 90))
+
 
 # Zombie groans: vocal-ish buzz with formant wobble
 def groan(dur, f0, seed):
     r = np.random.default_rng(seed)
     tt = t(dur)
-    f = f0 * (1 + 0.15 * np.sin(2*np.pi*1.3*tt + r.random()*6) + 0.05 * r.standard_normal(len(tt)).cumsum() / 400)
+    f = f0 * (
+        1 + 0.15 * np.sin(2 * np.pi * 1.3 * tt + r.random() * 6) + 0.05 * r.standard_normal(len(tt)).cumsum() / 400
+    )
     ph = 2 * np.pi * np.cumsum(f) / SR
     buzz = np.sign(np.sin(ph)) * 0.5 + np.sin(ph * 2) * 0.3 + np.sin(ph * 3) * 0.2
     breath = lowpass(r.standard_normal(len(tt)), 0.2) * 0.8
     env = np.sin(np.pi * tt / dur) ** 0.6
     return lowpass(buzz + breath, 0.12) * env
+
+
 save("zombie_groan_1.wav", groan(1.6, 70, 1))
 save("zombie_groan_2.wav", groan(1.2, 95, 2))
 save("zombie_groan_3.wav", groan(2.0, 60, 3))
@@ -67,11 +95,15 @@ save("zombie_attack.wav", lowpass(rng.standard_normal(len(tt)), 0.3) * np.sin(np
 
 # Player hurt thud
 tt = t(0.3)
-save("player_hurt.wav", np.sin(2*np.pi*(120*tt - 100*tt**2)) * np.exp(-tt*12) + lowpass(rng.standard_normal(len(tt)), 0.1) * np.exp(-tt*20))
+save(
+    "player_hurt.wav",
+    np.sin(2 * np.pi * (120 * tt - 100 * tt**2)) * np.exp(-tt * 12)
+    + lowpass(rng.standard_normal(len(tt)), 0.1) * np.exp(-tt * 20),
+)
 
 # Wave start: low ominous drone hit
 tt = t(3.0)
-drone = sum(np.sin(2*np.pi*f*tt) * a for f, a in [(55, 1), (82.4, 0.6), (110, 0.4), (58, 0.5)])
+drone = sum(np.sin(2 * np.pi * f * tt) * a for f, a in [(55, 1), (82.4, 0.6), (110, 0.4), (58, 0.5)])
 save("wave_start.wav", drone * np.exp(-tt * 1.2) * np.minimum(tt * 20, 1))
 
 # Machine noise uses its own sequence, leaving weapon sounds unchanged.
@@ -83,34 +115,38 @@ x = np.zeros(len(t(0.5)))
 for at, freq in [(0.0, 1046.5), (0.12, 1568.0)]:
     s = t(0.32)
     i = int(at * SR)
-    x[i:i+len(s)] += (np.sin(2*np.pi*freq*s) + 0.3*np.sin(2*np.pi*freq*2*s)) * np.exp(-s*15) * np.minimum(s*500, 1)
+    x[i : i + len(s)] += (
+        (np.sin(2 * np.pi * freq * s) + 0.3 * np.sin(2 * np.pi * freq * 2 * s))
+        * np.exp(-s * 15)
+        * np.minimum(s * 500, 1)
+    )
 click(0.27, 2400, 120, 0.35)
 save("buy.wav", x)
 
 # Denied: short, low electrical buzz
 tt = t(0.24)
-save("denied.wav", lowpass(np.sign(np.sin(2*np.pi*95*tt)), 0.15) * np.sin(np.pi*tt/0.24)**0.5)
+save("denied.wav", lowpass(np.sign(np.sin(2 * np.pi * 95 * tt)), 0.15) * np.sin(np.pi * tt / 0.24) ** 0.5)
 
 # Heavy door: latch impact, scraping metal and a final stop
 tt = t(1.2)
-x = lowpass(rng.standard_normal(len(tt)), 0.07) * np.sin(np.pi*tt/1.2) * 1.8
-x += (np.sin(2*np.pi*125*tt) + 0.3*np.sin(2*np.pi*730*tt)) * np.sin(np.pi*tt/1.2) * 0.3
+x = lowpass(rng.standard_normal(len(tt)), 0.07) * np.sin(np.pi * tt / 1.2) * 1.8
+x += (np.sin(2 * np.pi * 125 * tt) + 0.3 * np.sin(2 * np.pi * 730 * tt)) * np.sin(np.pi * tt / 1.2) * 0.3
 click(0.0, 160, 45, 1.0)
 click(1.08, 95, 45, 1.0)
 save("door_open.wav", x)
 
 # Power: deep clunk followed by a rising transformer hum
 tt = t(2.0)
-hum = np.sin(2*np.pi*(45*tt + 22*tt**2)) + 0.3*np.sin(2*np.pi*(90*tt + 44*tt**2))
-x = hum * np.minimum(np.maximum(tt-0.15, 0)*2, 1) * np.minimum((2-tt)*4, 1) * 0.45
-x += np.sin(2*np.pi*55*tt) * np.exp(-tt*22)
+hum = np.sin(2 * np.pi * (45 * tt + 22 * tt**2)) + 0.3 * np.sin(2 * np.pi * (90 * tt + 44 * tt**2))
+x = hum * np.minimum(np.maximum(tt - 0.15, 0) * 2, 1) * np.minimum((2 - tt) * 4, 1) * 0.45
+x += np.sin(2 * np.pi * 55 * tt) * np.exp(-tt * 22)
 click(0.0, 100, 40, 1.0)
 save("power_on.wav", x)
 
 # Wood splitting: sharp crack with a short resonant body
 tt = t(0.3)
-x = rng.standard_normal(len(tt)) * np.exp(-tt*65)
-x += (np.sin(2*np.pi*370*tt) + 0.5*np.sin(2*np.pi*610*tt)) * np.exp(-tt*24) * 0.5
+x = rng.standard_normal(len(tt)) * np.exp(-tt * 65)
+x += (np.sin(2 * np.pi * 370 * tt) + 0.5 * np.sin(2 * np.pi * 610 * tt)) * np.exp(-tt * 24) * 0.5
 save("plank_tear.wav", x)
 
 # Repair: two hammer knocks
@@ -121,14 +157,14 @@ save("plank_repair.wav", x)
 
 # Power-up: rising, shimmering harmonics
 tt = t(1.1)
-phase = 2*np.pi*(420*tt + 600*tt**2)
-shimmer = sum(np.sin(phase*f) / f for f in [1, 1.5, 2, 3])
-save("power_up.wav", shimmer * (0.75+0.25*np.sin(2*np.pi*19*tt)) * np.sin(np.pi*tt/1.1))
+phase = 2 * np.pi * (420 * tt + 600 * tt**2)
+shimmer = sum(np.sin(phase * f) / f for f in [1, 1.5, 2, 3])
+save("power_up.wav", shimmer * (0.75 + 0.25 * np.sin(2 * np.pi * 19 * tt)) * np.sin(np.pi * tt / 1.1))
 
 # Round cleared: low brass-like chord, a soft attack and decaying overtones
 tt = t(2.0)
-brass = sum(sum(np.sin(2*np.pi*f*h*tt) / h for h in range(1, 7)) for f in [65.4, 82.4, 98.0])
-save("round_end.wav", lowpass(brass, 0.12) * np.minimum(tt*12, 1) * np.exp(-tt*1.8) * np.minimum((2-tt)*8, 1))
+brass = sum(sum(np.sin(2 * np.pi * f * h * tt) / h for h in range(1, 7)) for f in [65.4, 82.4, 98.0])
+save("round_end.wav", lowpass(brass, 0.12) * np.minimum(tt * 12, 1) * np.exp(-tt * 1.8) * np.minimum((2 - tt) * 8, 1))
 rng = weapon_rng
 
 # Shotgun blast: heavier, lower boom than the rifle, then the pump racking

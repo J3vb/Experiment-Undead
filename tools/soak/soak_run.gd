@@ -48,22 +48,32 @@ func _parse_args() -> bool:
 	if args.size() % 2 != 0:
 		return _argument_error("expected pairs: --rounds N --seed N --timescale N")
 	for index: int in range(0, args.size(), 2):
-		var value: String = args[index + 1]
-		match args[index]:
-			"--rounds":
-				if not value.is_valid_int() or int(value) < 1:
-					return _argument_error("--rounds must be a positive integer")
-				_rounds = int(value)
-			"--seed":
-				if not value.is_valid_int():
-					return _argument_error("--seed must be an integer")
-				_seed = int(value)
-			"--timescale":
-				if not value.is_valid_float() or not is_finite(float(value)) or float(value) <= 0.0:
-					return _argument_error("--timescale must be positive and finite")
-				_timescale = float(value)
-			_:
-				return _argument_error("unknown argument: " + args[index])
+		if not _parse_argument(args[index], args[index + 1]):
+			return false
+	return true
+
+
+func _parse_argument(option: String, value: String) -> bool:
+	match option:
+		"--rounds":
+			if not value.is_valid_int() or int(value) < 1:
+				return _argument_error("--rounds must be a positive integer")
+			_rounds = int(value)
+		"--seed":
+			if not value.is_valid_int():
+				return _argument_error("--seed must be an integer")
+			_seed = int(value)
+		"--timescale":
+			return _set_timescale(value)
+		_:
+			return _argument_error("unknown argument: " + option)
+	return true
+
+
+func _set_timescale(value: String) -> bool:
+	if not value.is_valid_float() or not is_finite(float(value)) or float(value) <= 0.0:
+		return _argument_error("--timescale must be positive and finite")
+	_timescale = float(value)
 	return true
 
 
