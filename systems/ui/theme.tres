@@ -1,6 +1,22 @@
-[gd_resource type="Theme" format=3]
+[gd_resource type="Theme" load_steps=5 format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/AtkinsonHyperlegibleNext.ttf" id="1"]
+[ext_resource type="FontFile" path="res://assets/fonts/AtkinsonHyperlegibleMono.ttf" id="2"]
+
+[sub_resource type="FontVariation" id="text_regular"]
+base_font = ExtResource("1")
+variation_opentype = {
+2003265652: 400
+}
+
+[sub_resource type="FontVariation" id="mono_medium"]
+base_font = ExtResource("2")
+variation_opentype = {
+2003265652: 500
+}
 
 [resource]
+default_font = SubResource("text_regular")
 default_font_size = 24
 Label/colors/font_color = Color(0.95, 0.93, 0.88, 1)
 Label/colors/font_outline_color = Color(0, 0, 0, 1)
@@ -8,3 +24,5 @@ Label/colors/font_shadow_color = Color(0, 0, 0, 0.6)
 Label/constants/outline_size = 6
 Label/constants/shadow_offset_x = 2
 Label/constants/shadow_offset_y = 2
+LabelMono/base_type = &"Label"
+LabelMono/fonts/font = SubResource("mono_medium")
