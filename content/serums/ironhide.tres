@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SerumData" format=3]
+
+[ext_resource type="Script" path="res://systems/serums/serum_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"ironhide"
+display_name = "Ironhide"
+cost = 2500
+description = "Max health 100 to 250."
+multipliers = Dictionary[StringName, float]({&"max_health": 2.5})

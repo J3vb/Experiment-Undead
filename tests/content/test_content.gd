@@ -16,7 +16,7 @@ func _files(type: String) -> PackedStringArray:
 
 
 func test_content_autoload_indexes_every_type() -> void:
-	for type: StringName in [&"weapons", &"enemies", &"waves", &"economy"]:
+	for type: StringName in [&"weapons", &"enemies", &"waves", &"economy", &"serums"]:
 		assert_gt(Content.ids(type).size(), 0, "Content has %s" % type)
 
 
@@ -64,3 +64,17 @@ func test_wave_rules_are_valid() -> void:
 		for entry: EnemySpawnEntry in r.enemy_mix:
 			assert_not_null(entry.enemy, path + " mix entry has an enemy")
 		assert_not_null(r.pick_enemy(1, RandomNumberGenerator.new()), path + " can spawn something in round 1")
+
+
+func test_serums_are_valid() -> void:
+	for path: String in _files("serums"):
+		var serum: SerumData = load(path) as SerumData
+		assert_not_null(serum, path + " is SerumData")
+		if serum == null:
+			continue
+		assert_eq(String(serum.id), path.get_file().get_basename(), path + " id matches file name")
+		assert_gt(serum.cost, 0, path + " cost")
+		assert_gt(serum.multipliers.size(), 0, path + " changes at least one stat")
+		for stat: StringName in serum.multipliers:
+			assert_has(SerumData.STATS, stat, "%s: '%s' is a stat code reads" % [path, stat])
+			assert_gt(serum.multipliers[stat], 0.0, path + " multiplier above 0")
