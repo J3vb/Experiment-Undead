@@ -11,11 +11,11 @@
 [ext_resource type="Environment" path="res://levels/looks/halcyon_interior.tres" id="look"]
 [ext_resource type="Material" path="res://levels/materials/pipe.tres" id="pipe"]
 [ext_resource type="PackedScene" uid="uid://vmu3fgbgc652" path="res://assets/models/weapons/rifle_ar.glb" id="rifle"]
-[ext_resource type="Material" uid="uid://cddj3o78e7mn8" path="res://levels/materials/rust.tres" id="rust"]
+[ext_resource type="Material" path="res://levels/materials/rust.tres" id="rust"]
 [ext_resource type="PackedScene" uid="uid://g5gnlrjvpfqf" path="res://assets/models/zombies/shambler.glb" id="shambler"]
 [ext_resource type="Material" path="res://levels/materials/fluorescent.tres" id="tube"]
 [ext_resource type="PackedScene" uid="uid://ex3jc4fihfis" path="res://assets/models/kit/wall_panel.glb" id="wall"]
-[ext_resource type="Material" uid="uid://csn2ky6wrgibj" path="res://levels/materials/wood.tres" id="wood"]
+[ext_resource type="Material" path="res://levels/materials/wood.tres" id="wood"]
 
 [sub_resource type="CylinderMesh" id="pipe_mesh"]
 lightmap_size_hint = Vector2i(5, 214)
