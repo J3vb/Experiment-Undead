@@ -8,6 +8,8 @@
 [ext_resource type="AudioStream" path="res://assets/audio/hitmarker.wav" id="6"]
 [ext_resource type="AudioStream" path="res://assets/audio/wave_start.wav" id="7"]
 
+[ext_resource type="AudioStream" path="res://assets/audio/round_end.wav" id="sfx_round_end"]
+
 [sub_resource type="ShaderMaterial" id="vignette_mat"]
 shader = ExtResource("5")
 shader_parameter/intensity = 0.0
@@ -272,3 +274,7 @@ bus = &"UI"
 [node name="RoundSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("7")
 bus = &"Music"
+
+[node name="RoundEndSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("sfx_round_end")
+bus = &"SFX"

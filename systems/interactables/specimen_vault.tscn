@@ -4,6 +4,10 @@
 [ext_resource type="Script" path="res://systems/level/block.gd" id="2"]
 [ext_resource type="Material" path="res://levels/materials/panel_paint.tres" id="3"]
 
+[ext_resource type="AudioStream" path="res://assets/audio/buy.wav" id="sfx_buy"]
+
+[ext_resource type="AudioStream" path="res://assets/audio/denied.wav" id="sfx_denied"]
+
 [sub_resource type="BoxShape3D" id="area"]
 size = Vector3(2.3, 2, 1.3)
 
@@ -40,3 +44,11 @@ billboard = 1
 pixel_size = 0.004
 font_size = 40
 text = "Specimen Vault"
+
+[node name="BuySound" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("sfx_buy")
+bus = &"SFX"
+
+[node name="DeniedSound" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("sfx_denied")
+bus = &"SFX"

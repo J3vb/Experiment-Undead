@@ -31,6 +31,11 @@ func interact(player: Player) -> void:
 		player.add_serum(serum)
 		sales += 1
 		if sales == max_sales:
+			var sound: AudioStreamPlayer3D = $BuySound
+			sound.stop()
+			sound.reparent(_level())
+			sound.finished.connect(sound.queue_free)
+			sound.play()
 			queue_free()
 
 

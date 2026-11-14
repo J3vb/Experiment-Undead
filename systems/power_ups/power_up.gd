@@ -45,6 +45,10 @@ func collect(player: Player) -> void:
 			for weapon: Weapon in player.weapons.weapons:
 				weapon.instance.add_reserve(weapon.data.magazine_size)
 				weapon.ammo_changed.emit(weapon.instance.ammo_in_mag, weapon.instance.ammo_reserve)
+	var sound: AudioStreamPlayer = $CollectSound
+	sound.reparent(get_parent())
+	sound.finished.connect(sound.queue_free)
+	sound.play()
 	Events.power_up_collected.emit(player, data)
 	queue_free()
 

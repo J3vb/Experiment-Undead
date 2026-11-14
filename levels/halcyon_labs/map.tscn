@@ -8,9 +8,9 @@
 [ext_resource type="PackedScene" path="res://systems/effects/film_post.tscn" id="film"]
 [ext_resource type="Material" path="res://levels/materials/rust.tres" id="rust"]
 [ext_resource type="Material" path="res://levels/materials/wood.tres" id="wood"]
-[ext_resource type="Script" path="res://systems/interactables/door.gd" id="door"]
-[ext_resource type="Script" path="res://systems/interactables/power_switch.gd" id="power"]
-[ext_resource type="Script" path="res://systems/interactables/wall_buy.gd" id="wallbuy"]
+[ext_resource type="PackedScene" path="res://systems/interactables/door.tscn" id="door"]
+[ext_resource type="PackedScene" path="res://systems/interactables/power_switch.tscn" id="power"]
+[ext_resource type="PackedScene" path="res://systems/interactables/wall_buy.tscn" id="wallbuy"]
 [ext_resource type="Resource" path="res://content/weapons/rifle_ar.tres" id="rifle"]
 [ext_resource type="Resource" path="res://content/weapons/brenner_trench.tres" id="brenner"]
 [ext_resource type="PackedScene" path="res://systems/interactables/med_dispenser.tscn" id="meddisp"]
@@ -129,9 +129,8 @@ omni_range = 9.0
 
 [node name="Doors" type="Node3D" parent="NavigationRegion3D"]
 
-[node name="GuardPostDoor" type="Area3D" parent="NavigationRegion3D/Doors"]
+[node name="GuardPostDoor" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 22, 1.3, 48)
-script = ExtResource("door")
 opens_area = &"guard_post"
 cost = 750
 needs_power = false
@@ -145,9 +144,8 @@ script = ExtResource("block")
 size = Vector3(2, 2.6, 0.5)
 material = SubResource("door_dev")
 
-[node name="MessHallDebris" type="Area3D" parent="NavigationRegion3D/Doors"]
+[node name="MessHallDebris" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 1.3, 46)
-script = ExtResource("door")
 opens_area = &"mess_hall"
 cost = 1000
 needs_power = false
@@ -161,9 +159,8 @@ script = ExtResource("block")
 size = Vector3(4, 2.6, 0.5)
 material = SubResource("door_dev")
 
-[node name="CorridorDoorGuardPost" type="Area3D" parent="NavigationRegion3D/Doors"]
+[node name="CorridorDoorGuardPost" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1.3, 30)
-script = ExtResource("door")
 opens_area = &"main_corridor"
 cost = 1000
 needs_power = false
@@ -177,9 +174,8 @@ script = ExtResource("block")
 size = Vector3(2, 2.6, 0.5)
 material = SubResource("door_dev")
 
-[node name="CorridorDoorMessHall" type="Area3D" parent="NavigationRegion3D/Doors"]
+[node name="CorridorDoorMessHall" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 1.3, 30)
-script = ExtResource("door")
 opens_area = &"main_corridor"
 cost = 1000
 needs_power = false
@@ -193,9 +189,8 @@ script = ExtResource("block")
 size = Vector3(2, 2.6, 0.5)
 material = SubResource("door_dev")
 
-[node name="GeneratorHallDoor" type="Area3D" parent="NavigationRegion3D/Doors"]
+[node name="GeneratorHallDoor" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 1.3, 26)
-script = ExtResource("door")
 opens_area = &"generator_hall"
 cost = 1250
 needs_power = false
@@ -209,9 +204,8 @@ script = ExtResource("block")
 size = Vector3(2, 2.6, 0.5)
 material = SubResource("door_dev")
 
-[node name="LabsDebris" type="Area3D" parent="NavigationRegion3D/Doors"]
+[node name="LabsDebris" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 1.3, 26)
-script = ExtResource("door")
 opens_area = &"labs"
 cost = 1500
 needs_power = true
@@ -225,9 +219,8 @@ script = ExtResource("block")
 size = Vector3(4, 2.6, 0.5)
 material = SubResource("door_dev")
 
-[node name="TunnelWestShutter" type="Area3D" parent="NavigationRegion3D/Doors"]
+[node name="TunnelWestShutter" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 28, 1.3, 12.5)
-script = ExtResource("door")
 opens_area = &"coolant_tunnel"
 cost = 0
 needs_power = true
@@ -241,9 +234,8 @@ script = ExtResource("block")
 size = Vector3(3, 2.6, 0.5)
 material = SubResource("door_dev")
 
-[node name="TunnelEastShutter" type="Area3D" parent="NavigationRegion3D/Doors"]
+[node name="TunnelEastShutter" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 36, 1.3, 12.5)
-script = ExtResource("door")
 opens_area = &"coolant_tunnel"
 cost = 0
 needs_power = true
@@ -257,9 +249,8 @@ script = ExtResource("block")
 size = Vector3(3, 2.6, 0.5)
 material = SubResource("door_dev")
 
-[node name="ContainmentDoor" type="Area3D" parent="NavigationRegion3D/Doors"]
+[node name="ContainmentDoor" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 52, 1.3, 18)
-script = ExtResource("door")
 opens_area = &"containment_wing"
 cost = 1500
 needs_power = true
@@ -336,9 +327,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.6, 1, 22)
 [node name="ExfilHatch" parent="NavigationRegion3D/Machines" instance=ExtResource("exfil")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70, -2.97, 18)
 
-[node name="WallBuyBrennerTrench" type="Area3D" parent="NavigationRegion3D/Machines"]
+[node name="WallBuyBrennerTrench" parent="NavigationRegion3D/Machines" instance=ExtResource("wallbuy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.75, 1.4, 52)
-script = ExtResource("wallbuy")
 weapon = ExtResource("brenner")
 
 [node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyBrennerTrench"]
@@ -382,9 +372,8 @@ pixel_size = 0.004
 font_size = 40
 text = "Talon DMR 1500"
 
-[node name="PowerSwitch" type="Area3D" parent="NavigationRegion3D/Machines"]
+[node name="PowerSwitch" parent="NavigationRegion3D/Machines" instance=ExtResource("power")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 1.3, 16)
-script = ExtResource("power")
 
 [node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/PowerSwitch"]
 shape = SubResource("switch_area")
@@ -401,9 +390,8 @@ pixel_size = 0.004
 font_size = 40
 text = "Power"
 
-[node name="WallBuyRifle" type="Area3D" parent="NavigationRegion3D/Machines"]
+[node name="WallBuyRifle" parent="NavigationRegion3D/Machines" instance=ExtResource("wallbuy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.75, 1.4, 38)
-script = ExtResource("wallbuy")
 weapon = ExtResource("rifle")
 
 [node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyRifle"]

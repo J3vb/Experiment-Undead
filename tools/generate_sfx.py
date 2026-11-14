@@ -83,3 +83,55 @@ x = boom * 1.4 + blast + tail
 click(0.55, 700, 70, 0.25)
 click(0.68, 1100, 90, 0.2)
 save("shotgun_fire.wav", x)
+
+# Purchase: two bright notes and a register latch
+x = np.zeros(len(t(0.5)))
+for at, freq in [(0.0, 1046.5), (0.12, 1568.0)]:
+    s = t(0.32)
+    i = int(at * SR)
+    x[i:i+len(s)] += (np.sin(2*np.pi*freq*s) + 0.3*np.sin(2*np.pi*freq*2*s)) * np.exp(-s*15) * np.minimum(s*500, 1)
+click(0.27, 2400, 120, 0.35)
+save("buy.wav", x)
+
+# Denied: short, low electrical buzz
+tt = t(0.24)
+save("denied.wav", lowpass(np.sign(np.sin(2*np.pi*95*tt)), 0.15) * np.sin(np.pi*tt/0.24)**0.5)
+
+# Heavy door: latch impact, scraping metal and a final stop
+tt = t(1.2)
+x = lowpass(rng.standard_normal(len(tt)), 0.07) * np.sin(np.pi*tt/1.2) * 1.8
+x += (np.sin(2*np.pi*125*tt) + 0.3*np.sin(2*np.pi*730*tt)) * np.sin(np.pi*tt/1.2) * 0.3
+click(0.0, 160, 45, 1.0)
+click(1.08, 95, 45, 1.0)
+save("door_open.wav", x)
+
+# Power: deep clunk followed by a rising transformer hum
+tt = t(2.0)
+hum = np.sin(2*np.pi*(45*tt + 22*tt**2)) + 0.3*np.sin(2*np.pi*(90*tt + 44*tt**2))
+x = hum * np.minimum(np.maximum(tt-0.15, 0)*2, 1) * np.minimum((2-tt)*4, 1) * 0.45
+x += np.sin(2*np.pi*55*tt) * np.exp(-tt*22)
+click(0.0, 100, 40, 1.0)
+save("power_on.wav", x)
+
+# Wood splitting: sharp crack with a short resonant body
+tt = t(0.3)
+x = rng.standard_normal(len(tt)) * np.exp(-tt*65)
+x += (np.sin(2*np.pi*370*tt) + 0.5*np.sin(2*np.pi*610*tt)) * np.exp(-tt*24) * 0.5
+save("plank_tear.wav", x)
+
+# Repair: two hammer knocks
+x = np.zeros(len(t(0.55)))
+click(0.0, 260, 55, 1.0)
+click(0.27, 310, 60, 0.85)
+save("plank_repair.wav", x)
+
+# Power-up: rising, shimmering harmonics
+tt = t(1.1)
+phase = 2*np.pi*(420*tt + 600*tt**2)
+shimmer = sum(np.sin(phase*f) / f for f in [1, 1.5, 2, 3])
+save("power_up.wav", shimmer * (0.75+0.25*np.sin(2*np.pi*19*tt)) * np.sin(np.pi*tt/1.1))
+
+# Round cleared: low brass-like chord, a soft attack and decaying overtones
+tt = t(2.0)
+brass = sum(sum(np.sin(2*np.pi*f*h*tt) / h for h in range(1, 7)) for f in [65.4, 82.4, 98.0])
+save("round_end.wav", lowpass(brass, 0.12) * np.minimum(tt*12, 1) * np.exp(-tt*1.8) * np.minimum((2-tt)*8, 1))
