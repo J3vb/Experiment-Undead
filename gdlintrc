@@ -1,0 +1,8 @@
+# gdlint settings (gdtoolkit 4.5). Defaults for everything not listed.
+# Limits match the "Keep it simple" rules in AGENTS.md.
+excluded_directories: !!set
+  .git: null
+  addons: null
+max-line-length: 120
+max-file-lines: 350
+function-arguments-number: 6

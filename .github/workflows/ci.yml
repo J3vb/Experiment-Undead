@@ -2,20 +2,59 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   GODOT_VERSION: 4.7.2
+  GDTOOLKIT_VERSION: 4.5.0
 
 jobs:
+  quality:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install gdtoolkit
+        run: pip install "gdtoolkit==${GDTOOLKIT_VERSION}"
+
+      - name: Lint, format and tests-required check (changed files only)
+        env:
+          NO_TESTS_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'no-tests-needed') }}
+        run: |
+          args="origin/${{ github.base_ref }}"
+          if [ "$NO_TESTS_LABEL" = "true" ]; then args="$args --no-tests-label"; fi
+          python tools/ci/check_pr.py $args
+
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
           lfs: true
 
+      - name: Cache Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: godot
+          key: godot-${{ env.GODOT_VERSION }}
+
       - name: Download Godot
+        if: steps.cache-godot.outputs.cache-hit != 'true'
         run: |
           curl -sSL -o godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
           unzip -q godot.zip
@@ -31,4 +70,7 @@ jobs:
           if grep -E "SCRIPT ERROR|Parse Error" boot.log; then exit 1; fi
 
       - name: GUT tests
-        run: ./godot --headless --path . -s addons/gut/gut_cmdln.gd
+        run: |
+          set -o pipefail
+          ./godot --headless --path . -s addons/gut/gut_cmdln.gd 2>&1 | tee gut.log
+          if grep -E "SCRIPT ERROR|Parse Error" gut.log; then exit 1; fi
