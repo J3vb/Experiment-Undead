@@ -16,7 +16,7 @@ func _files(type: String) -> PackedStringArray:
 
 
 func test_content_autoload_indexes_every_type() -> void:
-	for type: StringName in [&"weapons", &"enemies", &"waves", &"economy", &"serums"]:
+	for type: StringName in [&"weapons", &"enemies", &"waves", &"economy", &"serums", &"power_ups"]:
 		assert_gt(Content.ids(type).size(), 0, "Content has %s" % type)
 
 
@@ -90,3 +90,11 @@ func test_serums_are_valid() -> void:
 		for stat: StringName in serum.multipliers:
 			assert_has(SerumData.STATS, stat, "%s: '%s' is a stat code reads" % [path, stat])
 			assert_gt(serum.multipliers[stat], 0.0, path + " multiplier above 0")
+
+
+func test_power_ups_are_valid() -> void:
+	for path: String in _files("power_ups"):
+		var power_up: PowerUpData = load(path) as PowerUpData
+		assert_not_null(power_up, path + " is PowerUpData")
+		if power_up:
+			assert_eq(String(power_up.id), path.get_file().get_basename(), path + " id matches file name")
