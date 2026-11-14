@@ -1,0 +1,77 @@
+Settings
+"Every global number the model uses. Blue = input you can change. Yellow = assumption, not in the design doc."
+
+Section,Name (used in formulas),Value,Unit,Source / note
+Player,player_hp,100,HP,GDD: 100 HP
+Player,player_walk,4.5,m/s,GDD movement table
+Player,player_sprint,6.8,m/s,"GDD: unlimited 4 s, then 3 s cooldown"
+Player,sprint_time,4,s,GDD
+Player,sprint_cooldown,3,s,GDD
+Damage,head_mult,2.5,x,GDD: head 2.5x unless the gun overrides it
+Damage,limb_mult,0.75,x,GDD. Not used in the model (hits are head or torso)
+Player skill model,hs_ratio,0.3,share,ASSUMED: share of hits that land on the head
+Player skill model,accuracy,0.7,share,ASSUMED: hits / shots fired. Used for ammo needs only; TTK assumes every shot hits
+Player skill model,run_round,15,round,ASSUMED: round a typical run reaches (GDD says 15 to 30)
+Player skill model,players,1,players,1 = solo. Co-op scales zombie count
+Round scaling,cnt_r1,6,zombies,GDD: rounds 1-4 fixed
+Round scaling,cnt_r2,8,zombies,GDD
+Round scaling,cnt_r3,13,zombies,GDD
+Round scaling,cnt_r4,18,zombies,GDD
+Round scaling,cnt_a,0.09,,GDD: round 5+ count = INT(a*r^2 + b*r + c)
+Round scaling,cnt_b,0.6,,GDD
+Round scaling,cnt_c,15,,GDD
+Round scaling,coop_count,0.5,per extra player,GDD: count x (1 + 0.5 per extra player)
+Round scaling,hp_base,120,HP,GDD: round 1 health
+Round scaling,hp_step,90,HP/round,GDD: +90 per round up to hp_linear_until
+Round scaling,hp_linear_until,9,round,GDD
+Round scaling,hp_growth,1.09,x/round,"GDD: from round 10, previous round x 1.09"
+Round scaling,spawn_start,2,s,GDD
+Round scaling,spawn_mult,0.95,x/round,GDD
+Round scaling,spawn_min,0.3,s,GDD
+Round scaling,max_alive,24,zombies,GDD (performance cap)
+Round scaling,breather,10,s,GDD
+Round scaling,brute_first,15,round,GDD
+Round scaling,brute_every,5,rounds,"GDD says 4 to 6, model uses the average"
+Points,start_points,500,pts,GDD
+Points,pts_hit,10,pts,GDD: any bullet that does damage
+Points,pts_kill,60,pts,GDD: body kill
+Points,pts_head_kill,100,pts,GDD
+Points,pts_melee,130,pts,GDD (not used in the model)
+Points,paid_hits_cap,999,hits,PROPOSED new rule: max hits per zombie that pay points. 999 = no cap (current design). Try 4
+Points,repair_pts_round,100,pts/round,ASSUMED average barricade repair points (GDD max 500)
+Prices and ammo (PROVISIONAL 2026-11-14),price_mult,2.5,x,"PROVISIONAL: multiplier on doors, serums and Reforger (Prices tab, Scaled = yes). GDD base prices x 2.5, rounded to 250"
+Prices and ammo (PROVISIONAL 2026-11-14),ammo_share,0.5,x wall price,GDD: buying a wall gun you own refills its ammo for half the price
+Prices and ammo (PROVISIONAL 2026-11-14),ammo_reforged,4000,pts,PROVISIONAL: ammo refill for a Reforged gun at its wall (COD-style higher price)
+Prices and ammo (PROVISIONAL 2026-11-14),resupply_share,0.158,share,"Share of power-up drops that are Resupply (1 of 6 types, plus Supply Crate 1 in 3 decks)"
+Loot ammo affixes (PROVISIONAL 2026-11-14),la_gun,mako_pdw,,Loot gun used on the Loot ammo tab (any Weapons id)
+Loot ammo affixes (PROVISIONAL 2026-11-14),la_tier,1,0-3,Reforger tier on that loot gun
+Loot ammo affixes (PROVISIONAL 2026-11-14),la_round,20,round,Round for the rarity comparison table (item level = this round)
+Loot ammo affixes (PROVISIONAL 2026-11-14),la_rarity,Rare,,Rarity for the round-by-round table
+Loot ammo affixes (PROVISIONAL 2026-11-14),round_time_mult,1.5,x,ASSUMED: a round lasts this x the minimum spawn time (for Fabricator regen)
+Reforger and item level,ref_t1_mult,2,x dmg,GDD Tier I
+Reforger and item level,ref_t3_mult,1.5,x dmg,GDD Tier III (on top of Tier I)
+Reforger and item level,ref_mag_mult,1.5,x mag,GDD Tier I
+Reforger and item level,ref_reserve_mult,2,x reserve,GDD Tier I
+Reforger and item level,ilvl_step,0.02,per ilvl,GDD: damage x (1 + 0.02 per item level above 1)
+Reforger and item level,ilvl_cap,50,ilvl,GDD
+TTK view (change these to redraw the TTK tab),ttk_enemy,Shambler,,Enemy name from the Enemies tab
+TTK view (change these to redraw the TTK tab),ttk_tier,0,0-3,Reforger tier applied to every gun on the TTK tab
+TTK view (change these to redraw the TTK tab),ttk_ilvl,1,ilvl,Item level applied to every gun on the TTK tab
+Power-ups,pu_chance,0.025,per kill,GDD
+Power-ups,pu_max,4,per round,GDD
+Loot,loot_base,0.015,per kill,"GDD: common zombies 1.5% + 0.1%/round, max 5%"
+Loot,loot_step,0.001,per round,GDD
+Loot,loot_max,0.05,,GDD
+Loot,luck_from,10,round,GDD: +2% luck per round after round 10
+Loot,luck_per_round,0.02,,GDD
+Loot,luck_cap,1,,GDD: capped at +100%
+Loot,luck_extra,0,,"Luck from skills and gear (Lucky Find max +15%, affixes up to +20% each)"
+Loot,cache_every,5,rounds,GDD: Supply Cache every 5 rounds
+Loot,vault_from,6,round,ASSUMED: first round the player starts rolling the Vault
+Loot,vault_rolls,0.5,per round,ASSUMED: Vault rolls per round after vault_from
+XP,xp_kill,10,xp,GDD
+XP,xp_head,5,xp,GDD: headshot kill bonus
+XP,xp_round,50,xp x round,GDD: 50 x round number per cleared round
+XP,xp_base,500,,"GDD: XP to next level = 500 x L^1.25, rounded to 50"
+XP,xp_exp,1.25,,GDD
+XP,xp_round_to,50,,GDD

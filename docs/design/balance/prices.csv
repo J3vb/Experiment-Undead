@@ -1,0 +1,45 @@
+Prices
+"Run-layer prices (points). Cost = base x price_mult when Scaled = yes (PROVISIONAL 2.5x, 2026-11-14). Green = linked from another tab."
+
+Category,Item,Base cost (GDD),Scaled?,Cost (pts),Effect
+Wall gun,Brenner Trench,750,no,750,Pump shotgun
+Wall gun,Kestrel SMG,1000,no,1000,SMG
+Wall gun,Vanguard AR,1200,no,1200,Assault rifle
+Wall gun,Talon DMR,1500,no,1500,Marksman rifle
+Ammo,Ammo: Brenner Trench,375,no,375,Full refill at its wall (half the gun price)
+Ammo,Ammo: Kestrel SMG,500,no,500,Full refill at its wall
+Ammo,Ammo: Vanguard AR,600,no,600,Full refill at its wall
+Ammo,Ammo: Talon DMR,750,no,750,Full refill at its wall
+Ammo,Ammo: Reforged gun,4000,no,4000,PROVISIONAL. Full refill of a Reforged wall gun at its wall
+Door,Door tier 1,750,yes,2000,First ring doors and debris
+Door,Door tier 2,1000,yes,2500
+Door,Door tier 3,1250,yes,3250
+Door,Door tier 4,1500,yes,3750,"Deepest doors, power-gated areas"
+Machine,Vault roll,950,no,950,"Specimen Vault, one loot gun"
+Machine,Lure Beacon x2,500,no,500,Tactical
+Serum,Ironhide,2500,yes,6250,Max health 100 to 250
+Serum,Quickhands,2000,yes,5000,Reload and swap 40% faster
+Serum,Overclock,2000,yes,5000,Fire rate +30%
+Serum,Second Wind,1500,yes,3750,Solo: 3 self-revives
+Serum,Stride,2000,yes,5000,Double sprint length
+Serum,Deadeye,1500,yes,3750,"Headshot damage +50%, ADS 20% faster"
+Serum,Scavenger,1500,yes,3750,"Ammo packs from kills, +1 grenade"
+Serum,Mule,3000,yes,7500,Third gun
+Reforger,Reforger Tier I,5000,yes,12500,"Damage x2, mag +50%, reserve x2, full ammo"
+Reforger,Reforger Tier II,7500,yes,18750,"Ammo mod, full ammo"
+Reforger,Reforger Tier III,10000,yes,25000,"Damage x1.5 more, full ammo"
+Reforger,Reforger re-buy,2500,yes,6250,Refill ammo on a tier you own (the only refill for Vault and loot guns)
+
+Totals
+,All 8 serums,40000
+,"Reforger I-III, one gun",56250
+
+Power-ups (deck: each type once before repeats)
+Power-up,Effect
+Resupply,"Full ammo, grenades refilled"
+Payday,Double points for 30 s
+Overkill,Every hit kills for 30 s (Brutes 20% max health/hit)
+Purge,"Kills every zombie alive, +400 points"
+Scrap Kit,"Rebuilds barricades, +200 points"
+Stasis,Freezes zombies 8 s
+Supply Crate,Free Vault roll (1 in 3 decks)

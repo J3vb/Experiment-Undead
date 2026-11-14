@@ -7,6 +7,11 @@ written in **typed GDScript**. It will get RPG progression and self-hosted
 Read `docs/DECISIONS.md` before you start. It lists what is built, what is
 simplified on purpose, and what is not started.
 
+**Design references:** read `docs/design/` before any UI, art, audio,
+weapon, enemy or map work. Start with `docs/design/README.md`; for anything
+visual, `docs/design/look-rules.md` is the style to match. Use its colours,
+names and numbers instead of inventing new ones.
+
 ## Folders
 
 | Folder | What goes there |
