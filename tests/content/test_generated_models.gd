@@ -4,6 +4,8 @@ extends GutTest
 
 const RIFLE: String = "res://assets/models/weapons/rifle_ar.glb"
 const WALL: String = "res://assets/models/kit/wall_panel.glb"
+const ZOMBIES: String = "res://assets/models/zombies/%s.glb"
+const ZOMBIE_PARTS: Array[String] = ["Hips", "Torso", "Head", "EyeL", "EyeR", "ArmL", "ArmR"]
 
 
 func _bounds(node: Node, xform: Transform3D, out: Array[AABB]) -> void:
@@ -67,3 +69,62 @@ func test_wall_panel_fits_the_kit_grid() -> void:
 	assert_almost_eq(box.position.y, 0.0, 0.01, "origin at the floor")
 	assert_lt(box.size.z, 0.3, "wall is thin")
 	wall.free()
+
+
+func _material(mesh_node: MeshInstance3D) -> BaseMaterial3D:
+	return mesh_node.mesh.surface_get_material(0) as BaseMaterial3D
+
+
+func _check_zombie(id: String) -> Node3D:
+	var zombie: Node3D = _load(ZOMBIES % id)
+	if zombie == null:
+		return null
+	for part: String in ZOMBIE_PARTS:
+		assert_not_null(zombie.find_child(part, true, false), id + " has " + part)
+	var eye: Node3D = zombie.find_child("EyeL", true, false) as Node3D
+	if eye:
+		assert_gt(eye.position.z, 0.0, id + " faces +Z (eyes on the front of the head)")
+	var head: MeshInstance3D = zombie.find_child("Head", true, false) as MeshInstance3D
+	if head:
+		var head_value: float = _material(head).albedo_color.get_luminance()
+		for node: Node in zombie.find_children("*", "MeshInstance3D", true, false):
+			var mat: BaseMaterial3D = _material(node as MeshInstance3D)
+			if node != head and not mat.emission_enabled:
+				assert_gt(head_value, mat.albedo_color.get_luminance(), id + " head is lighter than " + node.name)
+	return zombie
+
+
+func test_shambler_is_upright_and_reaching() -> void:
+	var zombie: Node3D = _check_zombie("shambler")
+	if zombie == null:
+		return
+	var box: AABB = _size_of(zombie)
+	assert_between(box.size.y, 1.7, 1.95, "shambler is about player height")
+	assert_almost_eq(box.position.y, 0.0, 0.02, "feet on the floor")
+	assert_gt(box.end.z, 0.5, "arms reach forward")
+	assert_not_null(zombie.find_child("CoatSkirt", true, false), "shambler wears a lab coat")
+	zombie.free()
+
+
+func test_crawler_is_flat_to_the_ground() -> void:
+	var zombie: Node3D = _check_zombie("crawler")
+	if zombie == null:
+		return
+	var box: AABB = _size_of(zombie)
+	assert_lt(box.size.y, 0.8, "crawler is low")
+	assert_gt(box.size.z, 1.2, "crawler is long")
+	assert_null(zombie.find_child("LegL", true, false), "crawler has no legs")
+	zombie.free()
+
+
+func test_bloater_is_wide_with_a_glowing_belly() -> void:
+	var zombie: Node3D = _check_zombie("bloater")
+	if zombie == null:
+		return
+	var box: AABB = _size_of(zombie)
+	assert_gt(box.size.x, 1.1, "bloater is wide")
+	var belly: MeshInstance3D = zombie.find_child("Belly", true, false) as MeshInstance3D
+	assert_not_null(belly, "bloater has a Belly code can pulse")
+	if belly:
+		assert_true(_material(belly).emission_enabled, "belly glows")
+	zombie.free()
