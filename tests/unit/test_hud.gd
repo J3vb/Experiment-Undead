@@ -154,3 +154,24 @@ func test_revive_removes_consumed_serum_badge() -> void:
 	await get_tree().process_frame
 	assert_eq(hud.serums.get_child_count(), 1)
 	assert_eq((hud.serums.get_child(0) as Label).text, "IH")
+
+
+func test_pause_buttons_offer_main_menu_and_quit_game() -> void:
+	var main_menu: Button = hud.get_node("Root/PausePanel/Menu/MainMenu") as Button
+	var quit_game: Button = hud.get_node("Root/PausePanel/Menu/QuitGame") as Button
+	assert_eq(main_menu.text, "Main menu")
+	assert_eq(quit_game.text, "Quit game")
+	assert_lt(main_menu.get_index(), quit_game.get_index())
+	assert_true(main_menu.pressed.is_connected(hud._return_to_menu))
+	hud.show_paused(true)
+	assert_true(hud.resume_button.has_focus())
+
+
+func test_results_offer_menu_and_keep_restart_hint() -> void:
+	Events.game_over.emit({"round": 3, "kills": 12, "points": 500, "xp": 25})
+	var main_menu: Button = hud.get_node("Root/GameOverPanel/Box/MainMenu") as Button
+	assert_true(hud.game_over_panel.visible)
+	assert_true(main_menu.has_focus())
+	assert_true(main_menu.pressed.is_connected(hud._return_to_menu))
+	assert_string_contains(hud.game_over_stats.text, "R: restart")
+	assert_string_contains(hud.game_over_stats.text, "Esc: main menu")
