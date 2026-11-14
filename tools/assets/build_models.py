@@ -19,8 +19,9 @@ import bpy
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Cold Containment palette (see the visual style guide).
-CONCRETE = (0.42, 0.44, 0.45, 1.0)
-CONCRETE_DARK = (0.24, 0.26, 0.27, 1.0)
+# Linear values. Wall paint is #5F6D68 from the guide.
+WALL_PAINT = (0.114, 0.153, 0.138, 1.0)
+WALL_TRIM = (0.04, 0.05, 0.05, 1.0)
 GUN_METAL = (0.13, 0.13, 0.14, 1.0)
 POLYMER = (0.06, 0.06, 0.06, 1.0)
 TAN = (0.33, 0.28, 0.2, 1.0)
@@ -88,10 +89,11 @@ def marker(name: str, at: tuple, parent=None):
 
 def build_wall_panel() -> None:
     """Modular wall piece: 2 m wide, 3 m high, 0.2 m thick, origin at bottom centre."""
-    concrete = material("Concrete", CONCRETE, roughness=0.9)
-    trim = material("ConcreteDark", CONCRETE_DARK, roughness=0.95)
-    box("Panel", (2.0, 0.2, 2.7), (0, 0, 1.65), concrete, bevel=0.02)
+    paint = material("WallPaint", WALL_PAINT, roughness=0.75)
+    trim = material("WallTrim", WALL_TRIM, roughness=0.9)
+    box("Panel", (2.0, 0.2, 2.7), (0, 0, 1.65), paint, bevel=0.02)
     box("BaseTrim", (2.0, 0.24, 0.3), (0, 0, 0.15), trim, bevel=0.015)
+    box("Stripe", (2.0, 0.22, 0.08), (0, 0, 1.15), trim)
     box("Seam", (0.03, 0.21, 2.7), (0, 0, 1.65), trim)
 
 

@@ -1,0 +1,41 @@
+[gd_resource type="StandardMaterial3D" load_steps=7 format=3]
+
+[sub_resource type="FastNoiseLite" id="noise"]
+frequency = 0.03
+fractal_octaves = 5
+
+[sub_resource type="NoiseTexture2D" id="albedo"]
+width = 512
+height = 512
+seamless = true
+noise = SubResource("noise")
+
+[sub_resource type="FastNoiseLite" id="puddles"]
+frequency = 0.02
+fractal_octaves = 3
+
+[sub_resource type="NoiseTexture2D" id="roughness"]
+width = 512
+height = 512
+seamless = true
+noise = SubResource("puddles")
+
+[sub_resource type="NoiseTexture2D" id="normal"]
+width = 512
+height = 512
+seamless = true
+as_normal_map = true
+bump_strength = 2.0
+noise = SubResource("noise")
+
+[resource]
+albedo_color = Color(0.46, 0.5, 0.49, 1)
+albedo_texture = SubResource("albedo")
+metallic = 0.0
+roughness = 0.45
+roughness_texture = SubResource("roughness")
+normal_enabled = true
+normal_scale = 0.4
+normal_texture = SubResource("normal")
+uv1_scale = Vector3(0.25, 0.25, 0.25)
+uv1_triplanar = true
