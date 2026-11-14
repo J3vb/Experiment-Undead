@@ -66,7 +66,7 @@ var _sprint_cooldown_left: float = 0.0
 func _ready() -> void:
 	add_to_group(&"players")
 	collision_layer = Layers.PLAYER
-	collision_mask = Layers.WORLD | Layers.ENEMY
+	collision_mask = Layers.WORLD | Layers.ENEMY | Layers.BARRIER
 	health.damaged.connect(_on_damaged)
 	health.health_changed.connect(_on_health_changed)
 	health.died.connect(_on_died)
