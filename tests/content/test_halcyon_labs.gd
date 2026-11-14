@@ -126,3 +126,16 @@ func test_closed_doors_cut_the_navmesh() -> void:
 			assert_lt(gap, 1.0, "%s reaches the start" % point.name)
 		else:
 			assert_gt(gap, 1.0, "%s is sealed off by a closed door" % point.name)
+
+
+func test_kestrel_replaces_its_wall_placeholder() -> void:
+	var level: Level = (load(MAP) as PackedScene).instantiate() as Level
+	add_child_autofree(level)
+	var wall: WallBuy = level.find_child("WallBuyKestrel", true, false) as WallBuy
+	assert_not_null(wall)
+	if wall:
+		assert_eq(wall.weapon.id, &"kestrel_smg")
+		assert_eq(wall.position, Vector3(10.25, 1.4, 32))
+		assert_eq(wall.basis, Basis.IDENTITY, "same facing as the placeholder")
+		assert_eq((wall.get_node("Label") as Label3D).text, "Kestrel SMG 1000")
+	assert_eq(get_tree().get_nodes_in_group(&"wall_buy_spot").size(), 1, "only Talon remains a placeholder")

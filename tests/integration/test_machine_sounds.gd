@@ -64,8 +64,8 @@ func test_door_purchase_and_open_sounds_survive_removal() -> void:
 
 
 func test_wall_buy_gun_sounds() -> void:
-	var machine: WallBuy = level.find_child("WallBuyBrennerTrench", true, false) as WallBuy
-	_purchase(machine)
+	for machine_name: String in ["WallBuyBrennerTrench", "WallBuyKestrel"]:
+		_purchase(level.find_child(machine_name, true, false) as WallBuy)
 
 
 func test_wall_buy_ammo_sounds() -> void:

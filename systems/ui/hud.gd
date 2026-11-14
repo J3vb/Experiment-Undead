@@ -1,4 +1,4 @@
-## In-match HUD. Only listens to Events and never changes game state.
+## In-match HUD and pause menu; gameplay facts arrive through Events.
 class_name Hud
 extends CanvasLayer
 
@@ -9,6 +9,7 @@ var _center_time: float = 0.0
 var _delta_time: float = 0.0
 var _delta_sum: int = 0
 var _exfil: ExfilHatch
+var _fps_label: Label
 
 @onready var crosshair: Crosshair = $Root/Crosshair
 @onready var hit_marker: HitMarker = $Root/HitMarker
@@ -24,6 +25,10 @@ var _exfil: ExfilHatch
 @onready var center_label: Label = $Root/CenterLabel
 @onready var prompt_label: Label = $Root/PromptLabel
 @onready var pause_panel: Control = $Root/PausePanel
+@onready var settings_screen: SettingsScreen = $Root/PausePanel/SettingsScreen
+@onready var pause_menu: Control = $Root/PausePanel/Menu
+@onready var resume_button: Button = $Root/PausePanel/Menu/Resume
+@onready var settings_button: Button = $Root/PausePanel/Menu/Settings
 @onready var game_over_panel: Control = $Root/GameOverPanel
 @onready var game_over_stats: Label = $Root/GameOverPanel/Box/Stats
 @onready var hit_sound: AudioStreamPlayer = $HitSound
@@ -31,6 +36,7 @@ var _exfil: ExfilHatch
 
 
 func _ready() -> void:
+	_setup_pause_menu()
 	pause_panel.visible = false
 	game_over_panel.visible = false
 	center_label.modulate.a = 0.0
@@ -58,9 +64,16 @@ func _ready() -> void:
 
 func show_paused(paused: bool) -> void:
 	pause_panel.visible = paused
+	settings_screen.hide()
+	pause_menu.show()
+	if paused:
+		resume_button.grab_focus()
 
 
 func _process(delta: float) -> void:
+	_fps_label.visible = bool(Settings.get_value(&"video", &"show_fps"))
+	if _fps_label.visible:
+		_fps_label.text = "FPS: %d" % Engine.get_frames_per_second()
 	_hurt = maxf(_hurt - delta * 1.5, 0.0)
 	var low: float = clampf((0.6 - _health_ratio) / 0.6, 0.0, 1.0)
 	(vignette.material as ShaderMaterial).set_shader_parameter("intensity", clampf(maxf(_hurt, low * 0.85), 0.0, 1.0))
@@ -198,3 +211,26 @@ func _on_game_over(stats: Dictionary) -> void:
 			]
 		)
 	)
+
+
+func _setup_pause_menu() -> void:
+	resume_button.pressed.connect(func() -> void: (get_parent() as GameSession).resume())
+	settings_button.pressed.connect(_open_settings)
+	$Root/PausePanel/Menu/Quit.pressed.connect(func() -> void: get_tree().quit())
+	settings_screen.closed.connect(_close_settings)
+	_fps_label = Label.new()
+	_fps_label.position = Vector2(12, 12)
+	_fps_label.add_theme_font_size_override("font_size", 24)
+	_fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	$Root.add_child(_fps_label)
+
+
+func _open_settings() -> void:
+	pause_menu.hide()
+	settings_screen.show()
+	(settings_screen.get_node("Margin/Box/Tabs") as TabContainer).get_tab_bar().grab_focus()
+
+
+func _close_settings() -> void:
+	pause_menu.show()
+	settings_button.grab_focus()

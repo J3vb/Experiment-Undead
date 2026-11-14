@@ -90,6 +90,11 @@ func _set_paused(value: bool) -> void:
 	hud.show_paused(value)
 
 
+func resume() -> void:
+	if not is_over:
+		_set_paused(false)
+
+
 func restart() -> void:
 	get_tree().paused = false
 	get_tree().reload_current_scene()
