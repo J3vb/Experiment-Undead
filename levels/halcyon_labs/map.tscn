@@ -8,8 +8,13 @@
 [ext_resource type="PackedScene" path="res://systems/effects/film_post.tscn" id="film"]
 [ext_resource type="Material" path="res://levels/materials/rust.tres" id="rust"]
 [ext_resource type="Material" path="res://levels/materials/wood.tres" id="wood"]
+[ext_resource type="Script" path="res://systems/interactables/door.gd" id="door"]
+[ext_resource type="Script" path="res://systems/interactables/power_switch.gd" id="power"]
+[ext_resource type="Script" path="res://systems/interactables/wall_buy.gd" id="wallbuy"]
+[ext_resource type="Resource" path="res://content/weapons/rifle_ar.tres" id="rifle"]
 
 [sub_resource type="NavigationMesh" id="navmesh"]
+resource_local_to_scene = true
 geometry_parsed_geometry_type = 1
 geometry_collision_mask = 1
 cell_size = 0.25
@@ -25,6 +30,28 @@ roughness = 0.7
 emission_enabled = true
 emission = Color(0.85, 0.4, 0.08, 1)
 emission_energy_multiplier = 0.15
+
+[sub_resource type="StandardMaterial3D" id="machine_dev"]
+albedo_color = Color(0.15, 0.75, 0.3, 1)
+roughness = 0.6
+emission_enabled = true
+emission = Color(0.15, 0.75, 0.3, 1)
+emission_energy_multiplier = 0.3
+
+[sub_resource type="BoxShape3D" id="door_area_2"]
+size = Vector3(2, 2.6, 0.8)
+
+[sub_resource type="BoxShape3D" id="door_area_3"]
+size = Vector3(3, 2.6, 0.8)
+
+[sub_resource type="BoxShape3D" id="door_area_4"]
+size = Vector3(4, 2.6, 0.8)
+
+[sub_resource type="BoxShape3D" id="switch_area"]
+size = Vector3(0.6, 1.2, 1.2)
+
+[sub_resource type="BoxShape3D" id="wallbuy_area"]
+size = Vector3(0.6, 1.2, 2)
 
 [node name="HalcyonLabs" type="Node3D" node_paths=PackedStringArray("navigation_region", "player_spawn")]
 script = ExtResource("level")
@@ -87,59 +114,437 @@ omni_range = 9.0
 
 [node name="Doors" type="Node3D" parent="NavigationRegion3D"]
 
-[node name="GuardPostDoor" type="StaticBody3D" parent="NavigationRegion3D/Doors"]
+[node name="GuardPostDoor" type="Area3D" parent="NavigationRegion3D/Doors"]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 22, 1.3, 48)
+script = ExtResource("door")
+opens_area = &"guard_post"
+cost = 750
+needs_power = false
+label = "door"
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/GuardPostDoor"]
+shape = SubResource("door_area_2")
+
+[node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/GuardPostDoor"]
 script = ExtResource("block")
 size = Vector3(2, 2.6, 0.5)
 material = SubResource("door_dev")
 
-[node name="MessHallDebris" type="StaticBody3D" parent="NavigationRegion3D/Doors"]
+[node name="MessHallDebris" type="Area3D" parent="NavigationRegion3D/Doors"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 1.3, 46)
+script = ExtResource("door")
+opens_area = &"mess_hall"
+cost = 1000
+needs_power = false
+label = "debris"
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/MessHallDebris"]
+shape = SubResource("door_area_4")
+
+[node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/MessHallDebris"]
 script = ExtResource("block")
 size = Vector3(4, 2.6, 0.5)
 material = SubResource("door_dev")
 
-[node name="CorridorDoorGuardPost" type="StaticBody3D" parent="NavigationRegion3D/Doors"]
+[node name="CorridorDoorGuardPost" type="Area3D" parent="NavigationRegion3D/Doors"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1.3, 30)
+script = ExtResource("door")
+opens_area = &"main_corridor"
+cost = 1000
+needs_power = false
+label = "door"
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/CorridorDoorGuardPost"]
+shape = SubResource("door_area_2")
+
+[node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/CorridorDoorGuardPost"]
 script = ExtResource("block")
 size = Vector3(2, 2.6, 0.5)
 material = SubResource("door_dev")
 
-[node name="CorridorDoorMessHall" type="StaticBody3D" parent="NavigationRegion3D/Doors"]
+[node name="CorridorDoorMessHall" type="Area3D" parent="NavigationRegion3D/Doors"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 1.3, 30)
+script = ExtResource("door")
+opens_area = &"main_corridor"
+cost = 1000
+needs_power = false
+label = "door"
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/CorridorDoorMessHall"]
+shape = SubResource("door_area_2")
+
+[node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/CorridorDoorMessHall"]
 script = ExtResource("block")
 size = Vector3(2, 2.6, 0.5)
 material = SubResource("door_dev")
 
-[node name="GeneratorHallDoor" type="StaticBody3D" parent="NavigationRegion3D/Doors"]
+[node name="GeneratorHallDoor" type="Area3D" parent="NavigationRegion3D/Doors"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 1.3, 26)
+script = ExtResource("door")
+opens_area = &"generator_hall"
+cost = 1250
+needs_power = false
+label = "door"
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/GeneratorHallDoor"]
+shape = SubResource("door_area_2")
+
+[node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/GeneratorHallDoor"]
 script = ExtResource("block")
 size = Vector3(2, 2.6, 0.5)
 material = SubResource("door_dev")
 
-[node name="LabsDebris" type="StaticBody3D" parent="NavigationRegion3D/Doors"]
+[node name="LabsDebris" type="Area3D" parent="NavigationRegion3D/Doors"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 1.3, 26)
+script = ExtResource("door")
+opens_area = &"labs"
+cost = 1500
+needs_power = true
+label = "debris"
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/LabsDebris"]
+shape = SubResource("door_area_4")
+
+[node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/LabsDebris"]
 script = ExtResource("block")
 size = Vector3(4, 2.6, 0.5)
 material = SubResource("door_dev")
 
-[node name="TunnelWestShutter" type="StaticBody3D" parent="NavigationRegion3D/Doors"]
+[node name="TunnelWestShutter" type="Area3D" parent="NavigationRegion3D/Doors"]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 28, 1.3, 12.5)
+script = ExtResource("door")
+opens_area = &"coolant_tunnel"
+cost = 0
+needs_power = true
+label = "shutter"
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/TunnelWestShutter"]
+shape = SubResource("door_area_3")
+
+[node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/TunnelWestShutter"]
 script = ExtResource("block")
 size = Vector3(3, 2.6, 0.5)
 material = SubResource("door_dev")
 
-[node name="TunnelEastShutter" type="StaticBody3D" parent="NavigationRegion3D/Doors"]
+[node name="TunnelEastShutter" type="Area3D" parent="NavigationRegion3D/Doors"]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 36, 1.3, 12.5)
+script = ExtResource("door")
+opens_area = &"coolant_tunnel"
+cost = 0
+needs_power = true
+label = "shutter"
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/TunnelEastShutter"]
+shape = SubResource("door_area_3")
+
+[node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/TunnelEastShutter"]
 script = ExtResource("block")
 size = Vector3(3, 2.6, 0.5)
 material = SubResource("door_dev")
 
-[node name="ContainmentDoor" type="StaticBody3D" parent="NavigationRegion3D/Doors"]
+[node name="ContainmentDoor" type="Area3D" parent="NavigationRegion3D/Doors"]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 52, 1.3, 18)
+script = ExtResource("door")
+opens_area = &"containment_wing"
+cost = 1500
+needs_power = true
+label = "door"
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/ContainmentDoor"]
+shape = SubResource("door_area_4")
+
+[node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/ContainmentDoor"]
 script = ExtResource("block")
 size = Vector3(4, 2.6, 0.5)
 material = SubResource("door_dev")
+
+[node name="Machines" type="Node3D" parent="NavigationRegion3D"]
+
+[node name="MedDispenserQuickhands" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["med_dispenser"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 1, 40)
+script = ExtResource("block")
+size = Vector3(0.6, 2, 1)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/MedDispenserQuickhands"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Quickhands"
+
+[node name="MedDispenserSecondWind" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["med_dispenser"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 1, 30.5)
+script = ExtResource("block")
+size = Vector3(1, 2, 0.6)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/MedDispenserSecondWind"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Second Wind"
+
+[node name="MedDispenserIronhide" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["med_dispenser"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 1, 26.5)
+script = ExtResource("block")
+size = Vector3(1, 2, 0.6)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/MedDispenserIronhide"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Ironhide"
+
+[node name="MedDispenserScavenger" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["med_dispenser"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 1, 6.5)
+script = ExtResource("block")
+size = Vector3(1, 2, 0.6)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/MedDispenserScavenger"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Scavenger"
+
+[node name="MedDispenserDeadeye" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["med_dispenser"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 1, 24)
+script = ExtResource("block")
+size = Vector3(0.6, 2, 1)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/MedDispenserDeadeye"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Deadeye"
+
+[node name="MedDispenserOverclock" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["med_dispenser"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75.5, -2, 14)
+script = ExtResource("block")
+size = Vector3(0.6, 2, 1)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/MedDispenserOverclock"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Overclock"
+
+[node name="MedDispenserStride" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["med_dispenser"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75.5, -2, 22)
+script = ExtResource("block")
+size = Vector3(0.6, 2, 1)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/MedDispenserStride"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Stride"
+
+[node name="MedDispenserMule" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["med_dispenser"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68, -2, 4.5)
+script = ExtResource("block")
+size = Vector3(1, 2, 0.6)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/MedDispenserMule"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Mule"
+
+[node name="VaultSpotMessHall" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0.5, 45.4)
+script = ExtResource("block")
+size = Vector3(2, 1, 1)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/VaultSpotMessHall"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Specimen Vault (first)"
+
+[node name="VaultSpotGuardPost" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0.5, 49.4)
+script = ExtResource("block")
+size = Vector3(2, 1, 1)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/VaultSpotGuardPost"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Specimen Vault"
+
+[node name="VaultSpotCorridor" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0.5, 29.4)
+script = ExtResource("block")
+size = Vector3(2, 1, 1)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/VaultSpotCorridor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Specimen Vault"
+
+[node name="VaultSpotGeneratorHall" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.4, 0.5, 20)
+script = ExtResource("block")
+size = Vector3(1, 1, 2)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/VaultSpotGeneratorHall"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Specimen Vault"
+
+[node name="VaultSpotLabs" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 0.5, 10.6)
+script = ExtResource("block")
+size = Vector3(2, 1, 1)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/VaultSpotLabs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Specimen Vault"
+
+[node name="VaultSpotContainment" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, -2.5, 31.4)
+script = ExtResource("block")
+size = Vector3(2, 1, 1)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/VaultSpotContainment"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Specimen Vault"
+
+[node name="Reforger" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["reforger"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.6, 1, 22)
+script = ExtResource("block")
+size = Vector3(1, 2, 1.6)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/Reforger"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Reforger"
+
+[node name="ExfilHatch" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["exfil"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70, -2.97, 18)
+script = ExtResource("block")
+size = Vector3(3, 0.06, 3)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/ExfilHatch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.38, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Exfil hatch"
+
+[node name="WallBuyBrennerTrench" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["wall_buy_spot"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.75, 1.4, 52)
+script = ExtResource("block")
+size = Vector3(0.1, 0.8, 1.6)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyBrennerTrench"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Brenner Trench 750"
+
+[node name="WallBuyKestrel" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["wall_buy_spot"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.25, 1.4, 32)
+script = ExtResource("block")
+size = Vector3(0.1, 0.8, 1.6)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyKestrel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Kestrel SMG 1000"
+
+[node name="WallBuyTalon" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["wall_buy_spot"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.25, 1.4, 20)
+script = ExtResource("block")
+size = Vector3(0.1, 0.8, 1.6)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyTalon"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Talon DMR 1500"
+
+[node name="PowerSwitch" type="Area3D" parent="NavigationRegion3D/Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 1.3, 16)
+script = ExtResource("power")
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/PowerSwitch"]
+shape = SubResource("switch_area")
+
+[node name="Box" type="StaticBody3D" parent="NavigationRegion3D/Machines/PowerSwitch"]
+script = ExtResource("block")
+size = Vector3(0.3, 0.9, 0.6)
+material = SubResource("machine_dev")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/PowerSwitch"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Power"
+
+[node name="WallBuyRifle" type="Area3D" parent="NavigationRegion3D/Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.75, 1.4, 38)
+script = ExtResource("wallbuy")
+weapon = ExtResource("rifle")
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyRifle"]
+shape = SubResource("wallbuy_area")
+
+[node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/WallBuyRifle"]
+script = ExtResource("block")
+size = Vector3(0.1, 0.8, 1.6)
+material = ExtResource("wood")
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyRifle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "AR-7 Rifle 1200"
 
 [node name="PlayerSpawn" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 0.1, 47.5)
