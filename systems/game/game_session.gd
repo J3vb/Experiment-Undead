@@ -68,6 +68,11 @@ func _physics_process(_delta: float) -> void:
 		tick += 1
 
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		bank_run_xp()
+
+
 func _spawn_player() -> Player:
 	var player: Player = player_scene.instantiate() as Player
 	player.net_id = Net.allocate_id()

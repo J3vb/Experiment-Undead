@@ -109,6 +109,14 @@ func test_empty_profile_id_does_not_load_or_save() -> void:
 	assert_eq(int(SaveFile.read(PATH)["total_xp"]), START_XP)
 
 
+func test_window_close_banks_once() -> void:
+	session.progression.add_xp(player, 75)
+	session.notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
+	session.notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
+	session.bank_run_xp()
+	assert_eq(int(SaveFile.read(PATH)["total_xp"]), START_XP + 75)
+
+
 func test_pause_main_menu_banks_before_leaving() -> void:
 	var runner_scene: Node = get_tree().current_scene
 	remove_child(session)
