@@ -13,6 +13,8 @@ config_version=5
 config/name="Experiment Undead"
 config/description="Wave-based zombie survival FPS."
 run/main_scene="res://systems/game/game_session.tscn"
+run/main_scene.dedicated_server="res://systems/net/dedicated_server.tscn"
+run/flush_stdout_on_print=true
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -21,9 +23,11 @@ config/icon="res://icon.svg"
 Events="*res://core/events.gd"
 Content="*res://core/content.gd"
 Net="*res://core/net.gd"
+Build="*res://core/build.gd"
 
 [debug]
 
+settings/gdscript/always_track_call_stacks=true
 gdscript/warnings/untyped_declaration=2
 gdscript/warnings/inferred_declaration=2
 gdscript/warnings/unused_variable=2

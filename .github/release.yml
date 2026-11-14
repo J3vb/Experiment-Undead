@@ -1,0 +1,16 @@
+# Groups for GitHub's auto-generated release notes. Each PR carries exactly
+# one of these labels (the PR template asks for it).
+changelog:
+  exclude:
+    labels: [ignore-for-release]
+  categories:
+    - title: New
+      labels: [new]
+    - title: Fixes
+      labels: [fix]
+    - title: Balance
+      labels: [balance]
+    - title: Tech
+      labels: [tech]
+    - title: Other
+      labels: ["*"]

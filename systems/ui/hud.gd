@@ -2,6 +2,13 @@
 class_name Hud
 extends CanvasLayer
 
+var _player: Player
+var _hurt: float = 0.0
+var _health_ratio: float = 1.0
+var _center_time: float = 0.0
+var _delta_time: float = 0.0
+var _delta_sum: int = 0
+
 @onready var crosshair: Crosshair = $Root/Crosshair
 @onready var hit_marker: HitMarker = $Root/HitMarker
 @onready var vignette: ColorRect = $Root/DamageVignette
@@ -18,12 +25,6 @@ extends CanvasLayer
 @onready var hit_sound: AudioStreamPlayer = $HitSound
 @onready var round_sound: AudioStreamPlayer = $RoundSound
 
-var _player: Player
-var _hurt: float = 0.0
-var _health_ratio: float = 1.0
-var _center_time: float = 0.0
-var _delta_time: float = 0.0
-var _delta_sum: int = 0
 
 func _ready() -> void:
 	pause_panel.visible = false
@@ -32,6 +33,7 @@ func _ready() -> void:
 	points_delta.modulate.a = 0.0
 	hint_label.text = ""
 	round_label.text = ""
+	$Root.add_child(VersionLabel.new())
 	Events.player_spawned.connect(_on_player_spawned)
 	Events.player_health_changed.connect(_on_health_changed)
 	Events.player_damaged.connect(_on_player_damaged)
@@ -44,8 +46,10 @@ func _ready() -> void:
 	Events.intermission_started.connect(_on_intermission)
 	Events.game_over.connect(_on_game_over)
 
+
 func show_paused(paused: bool) -> void:
 	pause_panel.visible = paused
+
 
 func _process(delta: float) -> void:
 	_hurt = maxf(_hurt - delta * 1.5, 0.0)
@@ -67,21 +71,26 @@ func _process(delta: float) -> void:
 		crosshair.fov_degrees = _player.camera.fov
 		crosshair.modulate.a = 0.0 if (w.ads_progress > 0.5 or _player.is_sprinting or not _player.is_alive()) else 1.0
 
+
 func _flash_center(text: String, seconds: float) -> void:
 	center_label.text = text
 	_center_time = seconds
+
 
 func _on_player_spawned(player: Player) -> void:
 	if _player == null:
 		_player = player
 
+
 func _on_health_changed(player: Player, current: float, maximum: float) -> void:
 	if player == _player:
 		_health_ratio = current / maxf(maximum, 1.0)
 
+
 func _on_player_damaged(player: Player, _info: DamageInfo) -> void:
 	if player == _player:
 		_hurt = 0.8
+
 
 func _on_points_changed(player: Player, total: int, delta: int) -> void:
 	if player != _player:
@@ -91,6 +100,7 @@ func _on_points_changed(player: Player, total: int, delta: int) -> void:
 		_delta_sum += delta
 		points_delta.text = "+%d" % _delta_sum
 		_delta_time = 1.2
+
 
 func _on_ammo_changed(player: Player, in_mag: int, reserve: int) -> void:
 	if player != _player:
@@ -105,9 +115,11 @@ func _on_ammo_changed(player: Player, in_mag: int, reserve: int) -> void:
 	else:
 		hint_label.text = ""
 
+
 func _on_weapon_switched(player: Player, weapon: Weapon) -> void:
 	if player == _player:
 		weapon_label.text = weapon.data.display_name.to_upper()
+
 
 func _on_hit_confirmed(player: Player, is_kill: bool, is_headshot: bool) -> void:
 	if player != _player:
@@ -116,20 +128,31 @@ func _on_hit_confirmed(player: Player, is_kill: bool, is_headshot: bool) -> void
 	hit_sound.pitch_scale = 0.8 if is_kill else 1.0
 	hit_sound.play()
 
+
 func _on_round_started(round_number: int, _count: int) -> void:
 	round_label.text = str(round_number)
 	_flash_center("ROUND %d" % round_number, 3.0)
 	round_sound.play()
 
+
 func _on_round_ended(round_number: int) -> void:
 	_flash_center("ROUND %d SURVIVED" % round_number, 3.0)
+
 
 func _on_intermission(next_round: int, duration: float) -> void:
 	if next_round == 1:
 		_flash_center("SURVIVE", duration)
 
+
 func _on_game_over(stats: Dictionary) -> void:
 	game_over_panel.visible = true
-	game_over_stats.text = "You survived %d round%s\n%d kills    %d points    %d XP\n\nPress ENTER to try again" % [
-		stats.get("round", 0), "" if stats.get("round", 0) == 1 else "s",
-		stats.get("kills", 0), stats.get("points", 0), stats.get("xp", 0)]
+	game_over_stats.text = (
+		"You survived %d round%s\n%d kills    %d points    %d XP\n\nPress ENTER to try again"
+		% [
+			stats.get("round", 0),
+			"" if stats.get("round", 0) == 1 else "s",
+			stats.get("kills", 0),
+			stats.get("points", 0),
+			stats.get("xp", 0)
+		]
+	)

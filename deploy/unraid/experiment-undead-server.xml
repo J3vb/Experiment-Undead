@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>experiment-undead-server</Name>
+  <Repository>ghcr.io/j3vb/experiment-undead-server:latest</Repository>
+  <Registry>https://github.com/J3vb/Experiment-Undead/pkgs/container/experiment-undead-server</Registry>
+  <Network>bridge</Network>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/J3vb/Experiment-Undead</Support>
+  <Project>https://github.com/J3vb/Experiment-Undead</Project>
+  <Overview>Dedicated server for Experiment Undead, a co-op wave survival shooter. Up to 8 players. Use tag "latest" for releases or "edge" for the newest main build.</Overview>
+  <Category>GameServers:</Category>
+  <WebUI/>
+  <Icon/>
+  <ExtraParams>--user 99:100 --stop-timeout=30</ExtraParams>
+  <PostArgs/>
+  <Config Name="Game port" Target="7777" Default="7777" Mode="udp" Description="UDP port players connect to. Forward it on your router for players outside your network." Type="Port" Display="always" Required="true" Mask="false">7777</Config>
+  <Config Name="Data" Target="/data" Default="/mnt/user/appdata/experiment-undead-server" Mode="rw" Description="Server saves, config and logs." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/experiment-undead-server</Config>
+  <Config Name="Max players" Target="EU_MAX_PLAYERS" Default="8" Mode="" Description="1 to 8." Type="Variable" Display="always" Required="false" Mask="false">8</Config>
+</Container>
