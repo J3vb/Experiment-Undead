@@ -71,13 +71,18 @@ jobs:
           done
           ls -la dist
 
-      - name: Create GitHub Release
+      - name: Create or update GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
           VERSION: ${{ needs.export.outputs.version }}
           PRERELEASE: ${{ needs.tags.outputs.prerelease }}
         run: |
+          # A release made in the GitHub UI already exists: just attach the zips.
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/*.zip --repo "$GITHUB_REPOSITORY" --clobber
+            exit 0
+          fi
           flags=(--repo "$GITHUB_REPOSITORY" --title "Experiment Undead $VERSION" --generate-notes --verify-tag)
           if [ "$PRERELEASE" = "true" ]; then flags+=(--prerelease); fi
           gh release create "$TAG" dist/*.zip "${flags[@]}"

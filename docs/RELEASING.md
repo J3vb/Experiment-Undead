@@ -19,9 +19,11 @@ server must boot without script errors before anything is uploaded.
 
 1. Merge what you want into main and check the **Build** run is green.
 2. GitHub, **Releases**, **Draft a new release**, type a new tag like `v0.1.0`
-   on `main`, then **Publish**. (Or `git tag v0.1.0 && git push origin v0.1.0`.)
-3. The **Release** workflow attaches the zips and writes the notes from the PR
-   titles, grouped by the `new`, `fix`, `balance`, `tech` labels. About 10 minutes.
+   on `main`, click **Generate release notes**, then **Publish**. (Or
+   `git tag v0.1.0 && git push origin v0.1.0` and the workflow writes the notes.)
+3. The **Release** workflow attaches the zips to that release (or creates it,
+   notes from the PR titles grouped by the `new`, `fix`, `balance`, `tech`
+   labels). About 10 minutes.
 
 Tags with a dash (`v0.2.0-rc.1`) become pre-releases and do not move `latest`.
 
