@@ -13,6 +13,7 @@ var built_at: String = ""
 ## True when the previous run did not quit cleanly.
 var crashed_last_run: bool = false
 
+
 func _ready() -> void:
 	load_version_file(VERSION_FILE)
 	ProjectSettings.set_setting("application/config/version", version)
@@ -21,8 +22,10 @@ func _ready() -> void:
 	if crashed_last_run:
 		push_warning("Previous session did not exit cleanly. Logs: %s" % logs_dir())
 
+
 func _exit_tree() -> void:
 	end_run(CRASH_MARKER)
+
 
 func load_version_file(path: String) -> void:
 	if not FileAccess.file_exists(path):
@@ -36,19 +39,24 @@ func load_version_file(path: String) -> void:
 	commit = str(info.get("commit", commit))
 	built_at = str(info.get("built_at", built_at))
 
+
 func display_version() -> String:
 	if commit == "editor":
 		return "dev (editor)"
 	return "v%s" % version
 
+
 func is_server() -> bool:
 	return OS.has_feature("dedicated_server") or "--server" in OS.get_cmdline_user_args()
+
 
 func is_protocol_compatible(remote_protocol: int) -> bool:
 	return remote_protocol == PROTOCOL_VERSION
 
+
 func logs_dir() -> String:
 	return ProjectSettings.globalize_path("user://logs")
+
 
 ## Returns true when the marker from an earlier run is still there.
 func begin_run(marker: String) -> bool:
@@ -58,12 +66,16 @@ func begin_run(marker: String) -> bool:
 		file.store_string(Time.get_datetime_string_from_system(true))
 	return leftover
 
+
 func end_run(marker: String) -> void:
 	if FileAccess.file_exists(marker):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(marker))
+
 
 func _log_header() -> void:
 	print("Experiment Undead %s (commit %s, built %s, protocol %d)" % [version, commit, built_at, PROTOCOL_VERSION])
 	print("OS: %s %s | CPU: %s" % [OS.get_name(), OS.get_version(), OS.get_processor_name()])
 	if DisplayServer.get_name() != "headless":
-		print("GPU: %s (%s) | driver: %s" % [RenderingServer.get_video_adapter_name(), RenderingServer.get_video_adapter_vendor(), RenderingServer.get_video_adapter_api_version()])
+		var gpu: String = RenderingServer.get_video_adapter_name()
+		var vendor: String = RenderingServer.get_video_adapter_vendor()
+		print("GPU: %s (%s) | driver: %s" % [gpu, vendor, RenderingServer.get_video_adapter_api_version()])

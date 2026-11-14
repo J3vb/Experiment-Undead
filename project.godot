@@ -20,10 +20,10 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-Build="*res://core/build.gd"
 Events="*res://core/events.gd"
 Content="*res://core/content.gd"
 Net="*res://core/net.gd"
+Build="*res://core/build.gd"
 
 [debug]
 
