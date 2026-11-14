@@ -153,9 +153,6 @@ func _report() -> void:
 		)
 	)
 	_write_result(result)
-	_session.queue_free()
-	await get_tree().process_frame
-	await get_tree().process_frame
 	get_tree().quit(0)
 
 
