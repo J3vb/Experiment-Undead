@@ -1,0 +1,45 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[sub_resource type="FastNoiseLite" id="noise"]
+frequency = 0.03
+fractal_octaves = 5
+
+[sub_resource type="Gradient" id="stains"]
+colors = PackedColorArray(0.55, 0.57, 0.56, 1, 1, 1, 1, 1)
+
+[sub_resource type="NoiseTexture2D" id="albedo"]
+width = 512
+height = 512
+seamless = true
+color_ramp = SubResource("stains")
+noise = SubResource("noise")
+
+[sub_resource type="FastNoiseLite" id="puddles"]
+frequency = 0.02
+fractal_octaves = 3
+
+[sub_resource type="NoiseTexture2D" id="roughness"]
+width = 512
+height = 512
+seamless = true
+noise = SubResource("puddles")
+
+[sub_resource type="NoiseTexture2D" id="normal"]
+width = 512
+height = 512
+seamless = true
+as_normal_map = true
+bump_strength = 2.0
+noise = SubResource("noise")
+
+[resource]
+albedo_color = Color(0.55, 0.6, 0.58, 1)
+albedo_texture = SubResource("albedo")
+metallic = 0.0
+roughness = 0.2
+roughness_texture = SubResource("roughness")
+normal_enabled = true
+normal_scale = 0.4
+normal_texture = SubResource("normal")
+uv1_scale = Vector3(0.25, 0.25, 0.25)
+uv1_triplanar = true

@@ -1,0 +1,548 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://systems/level/block.gd" id="block"]
+[ext_resource type="Environment" path="res://levels/looks/halcyon_interior.tres" id="look"]
+[ext_resource type="Material" path="res://levels/materials/wet_floor.tres" id="floor"]
+[ext_resource type="Material" path="res://levels/materials/concrete.tres" id="concrete"]
+[ext_resource type="Material" path="res://levels/materials/pipe.tres" id="pipe"]
+[ext_resource type="Material" path="res://levels/materials/fluorescent.tres" id="tube"]
+[ext_resource type="Material" path="res://levels/materials/bio_leak.tres" id="bio"]
+[ext_resource type="Material" path="res://levels/materials/rust.tres" id="rust"]
+[ext_resource type="Material" path="res://levels/materials/wood.tres" id="wood"]
+[ext_resource type="PackedScene" path="res://assets/models/kit/wall_panel.glb" id="wall"]
+[ext_resource type="PackedScene" path="res://assets/models/weapons/rifle_ar.glb" id="rifle"]
+[ext_resource type="PackedScene" path="res://levels/look_reference/zombie_standin.tscn" id="zombie"]
+[ext_resource type="PackedScene" path="res://systems/effects/film_post.tscn" id="film"]
+
+[sub_resource type="BoxMesh" id="tube_mesh"]
+material = ExtResource("tube")
+size = Vector3(0.16, 0.05, 1.4)
+
+[sub_resource type="CylinderMesh" id="pipe_mesh"]
+material = ExtResource("pipe")
+top_radius = 0.07
+bottom_radius = 0.07
+height = 42
+radial_segments = 12
+rings = 1
+
+[sub_resource type="SphereMesh" id="leak_mesh"]
+material = ExtResource("bio")
+radius = 0.35
+height = 0.7
+
+[sub_resource type="CylinderMesh" id="puddle_mesh"]
+material = ExtResource("bio")
+top_radius = 0.6
+bottom_radius = 0.6
+height = 0.01
+
+[sub_resource type="StandardMaterial3D" id="dust_mat"]
+shading_mode = 0
+albedo_color = Color(0.85, 0.95, 0.95, 0.7)
+transparency = 1
+billboard_mode = 1
+
+[sub_resource type="QuadMesh" id="dust_mesh"]
+material = SubResource("dust_mat")
+size = Vector2(0.006, 0.006)
+
+[sub_resource type="ParticleProcessMaterial" id="dust_process"]
+emission_shape = 3
+emission_box_extents = Vector3(1.5, 1.4, 9)
+direction = Vector3(0, -1, 0)
+spread = 180.0
+initial_velocity_min = 0.02
+initial_velocity_max = 0.08
+gravity = Vector3(0, -0.01, 0)
+
+[node name="HalcyonCorridor" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("look")
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, -19)
+script = ExtResource("block")
+size = Vector3(4, 0.5, 42)
+material = ExtResource("floor")
+
+[node name="Ceiling" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.25, -19)
+script = ExtResource("block")
+size = Vector3(4, 0.5, 42)
+material = ExtResource("concrete")
+
+[node name="EndWall" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -40.25)
+script = ExtResource("block")
+size = Vector3(3.2, 3, 0.5)
+material = ExtResource("concrete")
+
+[node name="WallL0" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, 1)
+
+[node name="WallL1" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -1)
+
+[node name="WallL2" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -3)
+
+[node name="WallL3" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -5)
+
+[node name="WallL4" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -7)
+
+[node name="WallL5" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -9)
+
+[node name="WallL6" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -11)
+
+[node name="WallL7" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -13)
+
+[node name="WallL8" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -15)
+
+[node name="WallL9" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -17)
+
+[node name="WallL10" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -19)
+
+[node name="WallL11" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -21)
+
+[node name="WallL12" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -23)
+
+[node name="WallL13" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -25)
+
+[node name="WallL14" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -27)
+
+[node name="WallL15" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -29)
+
+[node name="WallL16" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -31)
+
+[node name="WallL17" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -33)
+
+[node name="WallL18" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -35)
+
+[node name="WallL19" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -37)
+
+[node name="WallL20" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -39)
+
+[node name="PillarL0" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.58, 1.5, 2)
+script = ExtResource("block")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
+
+[node name="PillarL3" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.58, 1.5, -4)
+script = ExtResource("block")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
+
+[node name="PillarL6" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.58, 1.5, -10)
+script = ExtResource("block")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
+
+[node name="PillarL9" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.58, 1.5, -16)
+script = ExtResource("block")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
+
+[node name="PillarL12" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.58, 1.5, -22)
+script = ExtResource("block")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
+
+[node name="PillarL15" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.58, 1.5, -28)
+script = ExtResource("block")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
+
+[node name="PillarL18" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.58, 1.5, -34)
+script = ExtResource("block")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
+
+[node name="WallR0" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, 1)
+
+[node name="WallR1" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -1)
+
+[node name="WallR2" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -3)
+
+[node name="WallR3" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -5)
+
+[node name="WallR4" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -7)
+
+[node name="WallR5" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -9)
+
+[node name="WallR6" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -11)
+
+[node name="WallR7" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -13)
+
+[node name="WallR8" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -15)
+
+[node name="WallR9" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -17)
+
+[node name="WallR10" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -19)
+
+[node name="WallR11" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -21)
+
+[node name="WallR12" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -23)
+
+[node name="WallR13" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -25)
+
+[node name="WallR14" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -27)
+
+[node name="WallR15" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -29)
+
+[node name="WallR16" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -31)
+
+[node name="WallR17" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -33)
+
+[node name="WallR18" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -35)
+
+[node name="WallR19" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -37)
+
+[node name="WallR20" parent="Geometry" instance=ExtResource("wall")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.7, 0, -39)
+
+[node name="PillarR0" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.58, 1.5, 2)
+script = ExtResource("block")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
+
+[node name="PillarR3" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.58, 1.5, -4)
+script = ExtResource("block")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
+
+[node name="PillarR6" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.58, 1.5, -10)
+script = ExtResource("block")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
+
+[node name="PillarR9" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.58, 1.5, -16)
+script = ExtResource("block")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
+
+[node name="PillarR12" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.58, 1.5, -22)
+script = ExtResource("block")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
+
+[node name="PillarR15" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.58, 1.5, -28)
+script = ExtResource("block")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
+
+[node name="PillarR18" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.58, 1.5, -34)
+script = ExtResource("block")
+size = Vector3(0.25, 3, 0.3)
+material = ExtResource("pipe")
+
+[node name="Pipe0" type="MeshInstance3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 1.05, 2.8, -19)
+mesh = SubResource("pipe_mesh")
+
+[node name="Pipe1" type="MeshInstance3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 1.3, 2.78, -19)
+mesh = SubResource("pipe_mesh")
+
+[node name="Pipe2" type="MeshInstance3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 1.42, 2.58, -19)
+mesh = SubResource("pipe_mesh")
+
+[node name="Pipe3" type="MeshInstance3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 1.45, 2.38, -19)
+mesh = SubResource("pipe_mesh")
+
+[node name="Pipe4" type="MeshInstance3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 1.47, 2.18, -19)
+mesh = SubResource("pipe_mesh")
+
+[node name="CrateA" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.05, 0.4, -12.5)
+script = ExtResource("block")
+size = Vector3(0.8, 0.8, 0.8)
+material = ExtResource("wood")
+
+[node name="CrateB" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1, 1.15, -12.7)
+script = ExtResource("block")
+size = Vector3(0.7, 0.7, 0.7)
+material = ExtResource("wood")
+
+[node name="CrateC" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0.35, -14)
+script = ExtResource("block")
+size = Vector3(0.7, 0.7, 0.9)
+material = ExtResource("wood")
+
+[node name="Drum" type="StaticBody3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.15, 0.45, -16)
+script = ExtResource("block")
+size = Vector3(0.6, 0.9, 0.6)
+material = ExtResource("rust")
+
+[node name="Lights" type="Node3D" parent="."]
+
+[node name="Tube0" type="MeshInstance3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.97, -1.5)
+mesh = SubResource("tube_mesh")
+
+[node name="Fixture0" type="SpotLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.9, -1.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 3.0
+light_volumetric_fog_energy = 1.5
+shadow_enabled = true
+spot_range = 6.5
+spot_angle = 70.0
+spot_angle_attenuation = 0.6
+
+[node name="Spill0" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.65, -1.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 0.55
+light_volumetric_fog_energy = 0.0
+light_specular = 0.0
+omni_range = 2.6
+
+[node name="Tube1" type="MeshInstance3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.97, -7.5)
+mesh = SubResource("tube_mesh")
+
+[node name="Fixture1" type="SpotLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.9, -7.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 3.0
+light_volumetric_fog_energy = 1.5
+shadow_enabled = true
+spot_range = 6.5
+spot_angle = 70.0
+spot_angle_attenuation = 0.6
+
+[node name="Spill1" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.65, -7.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 0.55
+light_volumetric_fog_energy = 0.0
+light_specular = 0.0
+omni_range = 2.6
+
+[node name="Tube2" type="MeshInstance3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.97, -13.5)
+mesh = SubResource("tube_mesh")
+
+[node name="Fixture2" type="SpotLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.9, -13.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 3.0
+light_volumetric_fog_energy = 1.5
+shadow_enabled = true
+spot_range = 6.5
+spot_angle = 70.0
+spot_angle_attenuation = 0.6
+
+[node name="Spill2" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.65, -13.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 0.55
+light_volumetric_fog_energy = 0.0
+light_specular = 0.0
+omni_range = 2.6
+
+[node name="Tube3" type="MeshInstance3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.97, -19.5)
+mesh = SubResource("tube_mesh")
+
+[node name="Fixture3" type="SpotLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.9, -19.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 3.0
+light_volumetric_fog_energy = 1.5
+shadow_enabled = true
+spot_range = 6.5
+spot_angle = 70.0
+spot_angle_attenuation = 0.6
+
+[node name="Spill3" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.65, -19.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 0.55
+light_volumetric_fog_energy = 0.0
+light_specular = 0.0
+omni_range = 2.6
+
+[node name="Tube4" type="MeshInstance3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.97, -25.5)
+mesh = SubResource("tube_mesh")
+
+[node name="Fixture4" type="SpotLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.9, -25.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 3.0
+light_volumetric_fog_energy = 1.5
+shadow_enabled = false
+spot_range = 6.5
+spot_angle = 70.0
+spot_angle_attenuation = 0.6
+
+[node name="Spill4" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.65, -25.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 0.55
+light_volumetric_fog_energy = 0.0
+light_specular = 0.0
+omni_range = 2.6
+
+[node name="Tube5" type="MeshInstance3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.97, -31.5)
+mesh = SubResource("tube_mesh")
+
+[node name="Fixture5" type="SpotLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.9, -31.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 3.0
+light_volumetric_fog_energy = 1.5
+shadow_enabled = false
+spot_range = 6.5
+spot_angle = 70.0
+spot_angle_attenuation = 0.6
+
+[node name="Spill5" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.65, -31.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 0.55
+light_volumetric_fog_energy = 0.0
+light_specular = 0.0
+omni_range = 2.6
+
+[node name="Tube6" type="MeshInstance3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.97, -37.5)
+mesh = SubResource("tube_mesh")
+
+[node name="Fixture6" type="SpotLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.9, -37.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 3.0
+light_volumetric_fog_energy = 1.5
+shadow_enabled = false
+spot_range = 6.5
+spot_angle = 70.0
+spot_angle_attenuation = 0.6
+
+[node name="Spill6" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.65, -37.5)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 0.55
+light_volumetric_fog_energy = 0.0
+light_specular = 0.0
+omni_range = 2.6
+
+[node name="BioLeak" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0, -14.5)
+
+[node name="Specimen" type="MeshInstance3D" parent="BioLeak"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0)
+mesh = SubResource("leak_mesh")
+
+[node name="Puddle" type="MeshInstance3D" parent="BioLeak"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0.01, 1.2)
+mesh = SubResource("puddle_mesh")
+
+[node name="Glow" type="OmniLight3D" parent="BioLeak"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0.3)
+light_color = Color(0.553, 1, 0.227, 1)
+light_energy = 1.2
+light_volumetric_fog_energy = 2.0
+omni_range = 3.5
+
+[node name="Zombies" type="Node3D" parent="."]
+
+[node name="Walker1" parent="Zombies" instance=ExtResource("zombie")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0, -7)
+
+[node name="Walker2" parent="Zombies" instance=ExtResource("zombie")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0, -9.5)
+
+[node name="Walker3" parent="Zombies" instance=ExtResource("zombie")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0, -12)
+
+[node name="Dust" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -8)
+amount = 250
+lifetime = 20.0
+preprocess = 20.0
+use_fixed_seed = true
+visibility_aabb = AABB(-2, -2, -10, 4, 4, 20)
+process_material = SubResource("dust_process")
+draw_pass_1 = SubResource("dust_mesh")
+
+[node name="FilmPost" parent="." instance=ExtResource("film")]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 1.65, 1)
+fov = 75.0
+near = 0.03
+
+[node name="Rifle" parent="Camera3D" instance=ExtResource("rifle")]
+transform = Transform3D(0.94, 0, 0.342, 0, 1, 0, -0.342, 0, 0.94, 0.3, -0.27, -0.55)
+
+[node name="ViewFill" type="OmniLight3D" parent="Camera3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0.1, 0)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 0.4
+light_volumetric_fog_energy = 0.0
+omni_range = 1.5
