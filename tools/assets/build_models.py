@@ -27,6 +27,7 @@ GUN_METAL = (0.2, 0.205, 0.21, 1.0)
 MATTE_BLACK = (0.025, 0.025, 0.027, 1.0)
 TAN = (0.3, 0.24, 0.16, 1.0)
 LENS = (0.05, 0.12, 0.13, 1.0)
+WOOD = (0.075, 0.042, 0.022, 1.0)
 
 
 def srgb(hex_code: str) -> tuple:
@@ -198,6 +199,53 @@ def build_rifle_ar() -> None:
     marker("Muzzle", (0, 0.635, 0.016), parent=receiver)
 
 
+def shotgun_body(metal, black, wood, parts: list) -> None:
+    """Receiver, barrel with a vented heat shield, magazine tube and wooden stock."""
+    stock = box("Stock", (0.044, 0.22, 0.1), (0, -0.27, -0.045), wood, bevel=0.012)
+    stock.rotation_euler = (0.08, 0, 0)
+    wrist = box("Wrist", (0.036, 0.12, 0.05), (0, -0.12, -0.012), wood, bevel=0.01)
+    wrist.rotation_euler = (-0.25, 0, 0)
+    parts += [
+        stock,
+        wrist,
+        box("ButtPad", (0.046, 0.02, 0.115), (0, -0.385, -0.05), black, bevel=0.006),
+        cylinder("Barrel", 0.013, 0.5, (0, 0.37, 0.03), metal),
+        cylinder("MagTube", 0.012, 0.4, (0, 0.32, -0.003), metal),
+        cylinder("TubeCap", 0.014, 0.02, (0, 0.53, -0.003), black),
+        box("BarrelBand", (0.03, 0.02, 0.05), (0, 0.5, 0.014), black, bevel=0.003),
+        box("Bead", (0.004, 0.006, 0.008), (0, 0.615, 0.046), metal),
+        box("PortCover", (0.004, 0.07, 0.03), (0.027, 0.03, 0.022), black),
+        box("TriggerGuard", (0.012, 0.075, 0.006), (0, -0.035, -0.06), black),
+        box("GuardPost", (0.012, 0.006, 0.035), (0, 0.0, -0.045), black),
+        box("Trigger", (0.006, 0.008, 0.026), (0, -0.03, -0.04), metal),
+        box("Loading", (0.03, 0.08, 0.006), (0, 0.04, -0.023), black),
+    ]
+    parts.append(box("Shield", (0.036, 0.3, 0.008), (0, 0.33, 0.052), black, bevel=0.002))
+    for side in (-1, 1):
+        parts.append(box(f"ShieldSide{side}", (0.004, 0.3, 0.024), (side * 0.017, 0.33, 0.04), black))
+        for i in range(6):
+            parts.append(box(f"Hole{side}{i}", (0.002, 0.026, 0.01), (side * 0.0195, 0.21 + i * 0.048, 0.04), metal))
+
+
+def build_shotgun_brenner() -> None:
+    """Brenner Trench pump shotgun. The wooden pump is the `Bolt` node so the
+    viewmodel racks it on every shot; there is no Magazine (shells load one by one)."""
+    metal = material("GunMetal", GUN_METAL, metallic=0.8, roughness=0.4)
+    black = material("MatteBlack", MATTE_BLACK, roughness=0.75)
+    wood = material("Wood", WOOD, roughness=0.7)
+
+    receiver = box("Receiver", (0.05, 0.2, 0.06), (0, 0.02, 0.012), metal, bevel=0.005)
+    parts: list = []
+    shotgun_body(metal, black, wood, parts)
+    join_into(receiver, parts)
+
+    # Children of Receiver are placed relative to it (it sits at y 0.02, z 0.012).
+    pump = cylinder("Bolt", 0.022, 0.14, (0, 0.24, -0.015), wood, parent=receiver)
+    grooves = [cylinder(f"Groove{i}", 0.0225, 0.006, (0, 0.21 + i * 0.025, -0.003), black) for i in range(5)]
+    join_into(pump, grooves)
+    marker("Muzzle", (0, 0.605, 0.018), parent=receiver)
+
+
 def join_into(target, parts: list) -> None:
     """Merges `parts` into `target` so the static body is one mesh (fewer draw calls)."""
     bpy.ops.object.select_all(action="DESELECT")
@@ -331,6 +379,7 @@ def build_bloater() -> None:
 MODELS = {
     "wall_panel": ("kit/wall_panel.glb", build_wall_panel),
     "rifle_ar": ("weapons/rifle_ar.glb", build_rifle_ar),
+    "shotgun_brenner": ("weapons/shotgun_brenner.glb", build_shotgun_brenner),
     "shambler": ("zombies/shambler.glb", build_shambler),
     "crawler": ("zombies/crawler.glb", build_crawler),
     "bloater": ("zombies/bloater.glb", build_bloater),

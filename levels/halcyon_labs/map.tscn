@@ -12,6 +12,7 @@
 [ext_resource type="Script" path="res://systems/interactables/power_switch.gd" id="power"]
 [ext_resource type="Script" path="res://systems/interactables/wall_buy.gd" id="wallbuy"]
 [ext_resource type="Resource" path="res://content/weapons/rifle_ar.tres" id="rifle"]
+[ext_resource type="Resource" path="res://content/weapons/brenner_trench.tres" id="brenner"]
 [ext_resource type="PackedScene" path="res://systems/interactables/med_dispenser.tscn" id="meddisp"]
 [ext_resource type="PackedScene" path="res://systems/interactables/reforger.tscn" id="reforger"]
 [ext_resource type="Resource" path="res://content/serums/ironhide.tres" id="serum_ironhide"]
@@ -420,11 +421,18 @@ pixel_size = 0.004
 font_size = 40
 text = "Exfil hatch"
 
-[node name="WallBuyBrennerTrench" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["wall_buy_spot"]]
+[node name="WallBuyBrennerTrench" type="Area3D" parent="NavigationRegion3D/Machines"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.75, 1.4, 52)
+script = ExtResource("wallbuy")
+weapon = ExtResource("brenner")
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyBrennerTrench"]
+shape = SubResource("wallbuy_area")
+
+[node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/WallBuyBrennerTrench"]
 script = ExtResource("block")
 size = Vector3(0.1, 0.8, 1.6)
-material = SubResource("machine_dev")
+material = ExtResource("wood")
 
 [node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyBrennerTrench"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
