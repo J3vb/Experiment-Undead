@@ -336,8 +336,13 @@ text = "Settings"
 alignment = 0
 theme_override_font_sizes/font_size = 24
 
-[node name="Quit" type="Button" parent="Root/PausePanel/Menu"]
-text = "Quit to desktop"
+[node name="MainMenu" type="Button" parent="Root/PausePanel/Menu"]
+text = "Main menu"
+alignment = 0
+theme_override_font_sizes/font_size = 24
+
+[node name="QuitGame" type="Button" parent="Root/PausePanel/Menu"]
+text = "Quit game"
 alignment = 0
 theme_override_font_sizes/font_size = 24
 
@@ -377,6 +382,11 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
 horizontal_alignment = 1
+
+[node name="MainMenu" type="Button" parent="Root/GameOverPanel/Box"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Main menu"
 
 [node name="HitSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("6")
