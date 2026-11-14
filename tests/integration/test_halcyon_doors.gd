@@ -101,7 +101,8 @@ func test_machines_are_placed() -> void:
 	assert_eq(get_tree().get_nodes_in_group(&"exfil").size(), 1, "1 exfil point")
 	assert_not_null(level.find_child("PowerSwitch", true, false), "1 power switch")
 	var wall_buys: int = level.find_children("*", "Area3D").filter(func(n: Node) -> bool: return n is WallBuy).size()
-	assert_eq(wall_buys + get_tree().get_nodes_in_group(&"wall_buy_spot").size(), 4, "4 wall guns")
+	assert_eq(wall_buys, 4, "4 real wall guns")
+	assert_eq(get_tree().get_nodes_in_group(&"wall_buy_spot").size(), 0, "no wall-gun placeholders remain")
 
 
 func test_wall_buy_sells_ammo_and_guns() -> void:

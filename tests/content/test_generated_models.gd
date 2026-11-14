@@ -164,3 +164,17 @@ func test_bloater_is_wide_with_a_glowing_belly() -> void:
 	if belly:
 		assert_true(_material(belly).emission_enabled, "belly glows")
 	zombie.free()
+
+
+func test_talon_has_rifle_parts_and_a_long_barrel() -> void:
+	var gun: Node3D = _load("res://assets/models/weapons/talon_dmr.glb")
+	if gun == null:
+		return
+	for part: String in ["Magazine", "Bolt", "Muzzle", "Barrel", "MuzzleBrake", "OpticGlass"]:
+		assert_not_null(gun.find_child(part, true, false), "Talon has " + part)
+	assert_true(gun.find_child("Receiver", true, false) is MeshInstance3D, "static body joined")
+	var muzzle: Node3D = gun.find_child("Muzzle", true, false) as Node3D
+	assert_lt(muzzle.position.z, -0.8, "long barrel points forward")
+	assert_almost_eq(_size_of(gun).size.z, 1.3, 0.05, "longer than the AR")
+	assert_lt(gun.find_children("*", "MeshInstance3D", true, false).size(), 10, "few draw calls")
+	gun.free()
