@@ -67,8 +67,12 @@ If you cannot download Godot, say so in the PR and let CI run the checks.
   something else, stop and explain why in the PR instead of doing it.
 - Adding an autoload: add exactly one line to the `[autoload]` block in
   `project.godot`, at the end.
-- Add or update tests for everything you build.
+- **Every behaviour change needs a test** that fails without the change.
+  Pure data or doc changes need no new test.
 - Add a short entry to `docs/DECISIONS.md` under the right heading when you
   build something listed there as "not started" or "simplified".
-- Open the PR as a **draft**. In the PR description write: what you built,
-  which files changed, how you tested it, and anything you left out.
+- In the PR description write: what you built, which files changed, how you
+  tested it, and anything you left out.
+- **Self-merge is allowed once CI is green.** Squash-merge your own PR when all
+  checks pass. If you cannot merge, mark it ready for review and stop.
+  Never merge with red or missing CI.
