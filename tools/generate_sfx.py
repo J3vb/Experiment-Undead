@@ -73,3 +73,13 @@ save("player_hurt.wav", np.sin(2*np.pi*(120*tt - 100*tt**2)) * np.exp(-tt*12) + 
 tt = t(3.0)
 drone = sum(np.sin(2*np.pi*f*tt) * a for f, a in [(55, 1), (82.4, 0.6), (110, 0.4), (58, 0.5)])
 save("wave_start.wav", drone * np.exp(-tt * 1.2) * np.minimum(tt * 20, 1))
+
+# Shotgun blast: heavier, lower boom than the rifle, then the pump racking
+tt = t(0.9)
+boom = np.sin(2 * np.pi * (60 * tt - 30 * tt**2)) * np.exp(-tt * 9)
+blast = lowpass(rng.standard_normal(len(tt)), 0.25) * np.exp(-tt * 25) * 1.5
+tail = lowpass(rng.standard_normal(len(tt)), 0.05) * np.exp(-tt * 5) * 3.0
+x = boom * 1.4 + blast + tail
+click(0.55, 700, 70, 0.25)
+click(0.68, 1100, 90, 0.2)
+save("shotgun_fire.wav", x)
