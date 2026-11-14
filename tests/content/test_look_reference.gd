@@ -17,7 +17,7 @@ func test_interior_look_follows_the_style_guide() -> void:
 	assert_true(env.volumetric_fog_enabled, "volumetric fog on")
 	assert_true(env.glow_enabled, "glow on")
 	assert_true(env.ssao_enabled, "SSAO on")
-	assert_false(env.sdfgi_enabled, "SDFGI off (LightmapGI later)")
+	assert_false(env.sdfgi_enabled, "SDFGI off (the corridor uses LightmapGI)")
 	assert_eq(env.ambient_light_source, Environment.AMBIENT_SOURCE_COLOR, "flat ambient colour")
 
 
@@ -84,3 +84,36 @@ func test_every_fixture_has_a_housing_and_the_rim_light_is_cheap() -> void:
 	if rim:
 		assert_false(rim.shadow_enabled, "rim light casts no shadow (budget)")
 		assert_gt(-rim.global_basis.z.z, 0.0, "rim light shines back toward the camera (+Z)")
+
+
+func test_corridor_has_baked_lightmaps_and_no_spill_lights() -> void:
+	var scene: Node = (load(CORRIDOR) as PackedScene).instantiate()
+	add_child_autofree(scene)
+	var lightmap: LightmapGI = scene.find_child("LightmapGI", false, false) as LightmapGI
+	assert_not_null(lightmap, "corridor has a LightmapGI")
+	if lightmap:
+		assert_not_null(lightmap.light_data, "lightmaps are baked")
+	assert_eq(scene.find_children("Spill*", "Light3D", true, false).size(), 0, "bounce comes from the bake")
+
+
+func test_corridor_light_bake_modes() -> void:
+	var scene: Node = (load(CORRIDOR) as PackedScene).instantiate()
+	add_child_autofree(scene)
+	var real_time: Array[Node] = scene.find_children("Fixture*", "Light3D", true, false)
+	real_time.append(scene.find_child("Glow", true, false))
+	for light: Node in real_time:
+		assert_eq((light as Light3D).light_bake_mode, Light3D.BAKE_DYNAMIC, "%s bakes its bounce" % light.name)
+	for cheat: String in ["ZombieRim", "ViewFill"]:
+		var light: Light3D = scene.find_child(cheat, true, false) as Light3D
+		assert_eq(light.light_bake_mode, Light3D.BAKE_DISABLED, "%s stays out of the bake" % cheat)
+
+
+func test_zombies_and_rifle_are_not_baked() -> void:
+	var scene: Node = (load(CORRIDOR) as PackedScene).instantiate()
+	add_child_autofree(scene)
+	for root: String in ["Zombies", "Camera3D"]:
+		var meshes: Array[Node] = scene.find_child(root, false, false).find_children("*", "MeshInstance3D", true, false)
+		assert_gt(meshes.size(), 0, "%s has meshes" % root)
+		for mesh: Node in meshes:
+			var gi_mode: int = (mesh as MeshInstance3D).gi_mode
+			assert_eq(gi_mode, GeometryInstance3D.GI_MODE_DYNAMIC, "%s lit by probes" % mesh.name)
