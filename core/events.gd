@@ -39,6 +39,8 @@ signal ammo_changed(player: Player, in_mag: int, reserve: int)
 signal reload_started(player: Player, duration: float)
 ## A player bought a Serum.
 signal serum_gained(player: Player, serum: SerumData)
+## A player picked up a power-up (its effect has already been applied).
+signal power_up_collected(player: Player, power_up: PowerUpData)
 ## A player's shot landed on an enemy.
 signal hit_confirmed(player: Player, is_kill: bool, is_headshot: bool)
 
