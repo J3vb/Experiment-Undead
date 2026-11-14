@@ -52,6 +52,10 @@ simplified on purpose, and what is not started.
    third-party file (code or asset) gets one line in `docs/CREDITS.md`: name,
    author, link, licence. CC0 first, CC-BY with credit, MIT for code. No
    "non-commercial" or "no AI" licences. No Git LFS for now.
+   Models: `pip install -r tools/assets/requirements.txt` (Python 3.13), then
+   `python tools/assets/build_models.py [name]`. Commit the `.glb` and its
+   `.import` file, and keep a test in `tests/content/test_generated_models.gd`
+   for any part code needs by name (like `Magazine` or `Muzzle`).
 9. **Names.** Use the design doc's words in code and data:
    - Machines: `SpecimenVault` (random gun), `MedDispenser` (gives a serum),
      `Reforger` (upgrades a gun). Not "mystery box" or "perk machine".

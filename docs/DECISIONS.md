@@ -39,7 +39,7 @@ built, what was simplified on purpose, and what is still to do.
 - **Viewmodel** is a normal mesh close to the camera (near plane 0.03), not the depth-pulling shader. It can poke into walls when you hug them.
 - **Procedural animation** for zombies and guns (bob, sway, kick, reload dip). Real clips replace it later.
 - **Range falloff** uses start/end distances instead of a Curve.
-- **Grey-box art:** boxes with procedural noise materials.
+- **Grey-box art:** boxes with procedural noise materials. First code-built models (wall panel, rifle) exist in `assets/models/` from `tools/assets/build_models.py` but are not placed in the game yet.
 
 ## Not started
 
