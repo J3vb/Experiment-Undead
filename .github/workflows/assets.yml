@@ -1,0 +1,30 @@
+name: Assets
+
+on:
+  pull_request:
+    paths:
+      - "tools/assets/**"
+      - ".github/workflows/assets.yml"
+
+jobs:
+  build-models:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: tools/assets/requirements.txt
+
+      - name: Install Blender as a Python module
+        run: pip install -r tools/assets/requirements.txt
+
+      - name: Build every model headless
+        run: |
+          python tools/assets/build_models.py --out "$RUNNER_TEMP/models"
+          for f in kit/wall_panel.glb weapons/rifle_ar.glb; do
+            test -s "$RUNNER_TEMP/models/$f" || { echo "missing $f"; exit 1; }
+          done
