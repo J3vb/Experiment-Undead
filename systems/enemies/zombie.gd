@@ -12,6 +12,11 @@ const SEPARATION_FORCE: float = 2.5
 const STRIKE_TIME: float = 0.35
 ## Arms start lifting toward a target closer than this.
 const REACH_DISTANCE: float = 3.0
+## A chasing zombie that moves less than STUCK_DISTANCE in STUCK_TIME seconds
+## while out of reach is reported to the Log once.
+const STUCK_TIME: float = 3.0
+const STUCK_DISTANCE: float = 0.3
+const FELL_OUT_Y: float = -50.0
 
 var data: EnemyData
 var net_id: int = 0
@@ -27,6 +32,9 @@ var _attack_landed: bool = false
 var _repath_timer: float = 0.0
 var _retarget_timer: float = 0.0
 var _groan_timer: float = 0.0
+var _stuck_timer: float = 0.0
+var _stuck_from: Vector3 = Vector3.ZERO
+var _stuck_reported: bool = false
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _rng: RandomNumberGenerator
 
@@ -106,6 +114,7 @@ func _tick_spawning() -> void:
 	velocity.x = 0.0
 	velocity.z = 0.0
 	if _state_time >= SPAWN_TIME:
+		_stuck_from = global_position
 		_enter(State.CHASING)
 
 
@@ -117,6 +126,7 @@ func _tick_chasing(delta: float) -> void:
 	var to_target: Vector3 = target.global_position - global_position
 	to_target.y = 0.0
 	var distance: float = to_target.length()
+	_watch_progress(delta, distance)
 	if distance <= data.attack_range * 0.85 and _attack_cooldown <= 0.0 and _can_see(target):
 		_enter(State.ATTACKING)
 		_play(data.attack_sound)
@@ -137,6 +147,29 @@ func _tick_chasing(delta: float) -> void:
 		direction = Vector3.ZERO
 	_steer(direction * _speed + _separation(), delta)
 	_face(to_target, delta)
+
+
+## Early warning for navmesh holes, bad spawn points and zombies wedged in
+## geometry. Logs only; the zombie keeps trying.
+func _watch_progress(delta: float, distance: float) -> void:
+	_stuck_timer += delta
+	if _stuck_timer < STUCK_TIME or _stuck_reported:
+		return
+	_stuck_timer = 0.0
+	var moved: float = global_position.distance_to(_stuck_from)
+	_stuck_from = global_position
+	var fell: bool = global_position.y < FELL_OUT_Y
+	if fell or (moved < STUCK_DISTANCE and distance > data.attack_range):
+		_stuck_reported = true
+		var data_out: Dictionary = {
+			"net_id": net_id,
+			"enemy": data.resource_path.get_file().get_basename(),
+			"at": str(global_position.snappedf(0.1)),
+			"target_distance": snappedf(distance, 0.1),
+			"next_path_point": str(agent.get_next_path_position().snappedf(0.1)),
+			"path_finished": agent.is_navigation_finished(),
+		}
+		Log.warn(&"enemies", &"zombie_fell_out" if fell else &"zombie_stuck", data_out)
 
 
 func _tick_attacking(delta: float) -> void:
