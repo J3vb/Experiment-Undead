@@ -75,6 +75,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if key and key.pressed and not key.echo and key.physical_keycode == KEY_QUOTELEFT:
 		_set_open(not panel.visible)
 		get_viewport().set_input_as_handled()
+	if panel.visible:
+		get_viewport().set_input_as_handled()
 
 
 func _on_input_gui(event: InputEvent) -> void:

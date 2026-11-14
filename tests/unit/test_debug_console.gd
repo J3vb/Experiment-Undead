@@ -111,14 +111,17 @@ func test_game_commands_in_headless_session() -> void:
 
 func _check_overlay(session: GameSession) -> void:
 	var overlay: CanvasLayer = session.get_node("DebugOverlay") as CanvasLayer
-	overlay._input(_key(KEY_F3))
+	var debug: CanvasLayer = session.get_node("DebugConsole") as CanvasLayer
+	debug._set_open(true)
+	get_viewport().push_input(_key(KEY_F3), true)
 	assert_true(overlay._label.visible)
 	assert_false(overlay._timer.is_stopped())
 	assert_eq(overlay._timer.wait_time, 0.25)
 	assert_string_contains(overlay._label.text, "Enemies alive: 0")
-	overlay._input(_key(KEY_F3))
+	get_viewport().push_input(_key(KEY_F3), true)
 	assert_false(overlay._label.visible)
 	assert_true(overlay._timer.is_stopped())
+	debug._set_open(false)
 
 
 func test_submitted_command_waits_for_physics() -> void:
@@ -190,3 +193,16 @@ func test_real_revival_keeps_console_input_suppressed() -> void:
 	debug._set_open(false)
 	assert_true(player.input_enabled)
 	assert_true(player.local_input.enabled)
+
+
+func test_open_console_consumes_pause_input() -> void:
+	var session: GameSession = SESSION.instantiate() as GameSession
+	session.rng_seed = 1234
+	add_child_autofree(session)
+	var debug: CanvasLayer = session.get_node("DebugConsole") as CanvasLayer
+	debug._set_open(true)
+	get_viewport().push_input(_key(KEY_ESCAPE), true)
+	get_viewport().push_input(_key(KEY_ESCAPE), true)
+	assert_false(get_tree().paused, "Escape must not pause or recapture through the console")
+	assert_eq(Input.mouse_mode, Input.MOUSE_MODE_VISIBLE)
+	debug._set_open(false)
