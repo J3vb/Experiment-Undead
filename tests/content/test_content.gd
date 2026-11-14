@@ -39,6 +39,18 @@ func test_weapons_are_valid() -> void:
 			vm.free()
 
 
+func test_reforged_guns_follow_tier_one() -> void:
+	for path: String in _files("weapons"):
+		var w: WeaponData = load(path) as WeaponData
+		if w == null or w.upgraded == null:
+			continue
+		var up: WeaponData = w.upgraded
+		assert_ne(up.id, w.id, path + " upgrades into another gun")
+		assert_almost_eq(up.damage, w.damage * 2.0, 0.01, path + " Tier I: damage x2")
+		assert_eq(up.magazine_size, int(w.magazine_size * 1.5), path + " Tier I: magazine +50%")
+		assert_eq(up.max_reserve, w.max_reserve * 2, path + " Tier I: reserve x2")
+
+
 func test_enemies_are_valid() -> void:
 	for path: String in _files("enemies"):
 		var e: EnemyData = load(path) as EnemyData
