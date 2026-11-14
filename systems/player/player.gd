@@ -53,9 +53,9 @@ func _ready() -> void:
 
 func spawn(p_session: GameSession, loadout: Array[WeaponData]) -> void:
 	session = p_session
+	Events.player_spawned.emit(self)
 	for data: WeaponData in loadout:
 		weapons.give(data)
-	Events.player_spawned.emit(self)
 	_on_health_changed(health.current, health.max_health)
 	_on_points_changed(wallet.points, 0)
 

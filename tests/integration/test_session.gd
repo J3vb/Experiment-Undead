@@ -19,7 +19,6 @@ func before_each() -> void:
 	session.rng_seed = 1234
 	add_child_autofree(session)
 	await wait_until(func() -> bool: return session.level.is_navigation_ready, 10.0, "navmesh baked")
-	await wait_physics_frames(3)
 	player = session.get_players()[0]
 
 func after_each() -> void:
