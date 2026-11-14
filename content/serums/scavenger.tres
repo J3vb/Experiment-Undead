@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="SerumData" format=3]
+
+[ext_resource type="Script" path="res://systems/serums/serum_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"scavenger"
+display_name = "Scavenger"
+cost = 1500
+description = "Your kills sometimes drop a small ammo pack."

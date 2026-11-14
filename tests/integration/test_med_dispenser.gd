@@ -84,7 +84,7 @@ func test_every_real_dispenser_sells_a_different_serum() -> void:
 		if machine:
 			assert_does_not_have(seen, machine.serum.id)
 			seen.append(machine.serum.id)
-	assert_eq(seen.size(), 7, "Ironhide, Quickhands, Overclock, Deadeye, Mule, Stride, Second Wind")
+	assert_eq(seen.size(), 8, "all 8 Serums")
 
 
 func test_stride_doubles_sprint_and_speeds_up_sprint_to_fire() -> void:
