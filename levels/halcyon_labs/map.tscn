@@ -15,6 +15,7 @@
 [ext_resource type="PackedScene" path="res://systems/interactables/med_dispenser.tscn" id="meddisp"]
 [ext_resource type="PackedScene" path="res://systems/interactables/reforger.tscn" id="reforger"]
 [ext_resource type="PackedScene" path="res://systems/interactables/exfil_hatch.tscn" id="exfil"]
+[ext_resource type="PackedScene" path="res://systems/interactables/barrier.tscn" id="barrier"]
 [ext_resource type="Resource" path="res://content/serums/ironhide.tres" id="serum_ironhide"]
 [ext_resource type="Resource" path="res://content/serums/quickhands.tres" id="serum_quickhands"]
 [ext_resource type="Resource" path="res://content/serums/overclock.tres" id="serum_overclock"]
@@ -492,76 +493,140 @@ text = "AR-7 Rifle 1200"
 [node name="PlayerSpawn" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 0.1, 47.5)
 
+[node name="Barriers" type="Node3D" parent="."]
+
+[node name="LoadingDock1" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 22, 0, 54)
+
+[node name="LoadingDock2" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 46, 0, 54)
+
+[node name="LoadingDock3" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 28, 0, 60)
+
+[node name="LoadingDock4" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 40, 0, 60)
+
+[node name="GuardPost1" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 10, 0, 36)
+
+[node name="GuardPost2" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 10, 0, 46)
+
+[node name="MessHall1" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 58, 0, 34)
+
+[node name="MessHall2" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 58, 0, 42)
+
+[node name="MainCorridor1" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 18, 0, 28)
+
+[node name="MainCorridor2" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 48, 0, 28)
+
+[node name="GeneratorHall1" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 8, 0, 10)
+
+[node name="GeneratorHall2" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23, 0, 6)
+
+[node name="Labs1" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0, 10)
+
+[node name="Labs2" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 52, 0, 12)
+
+[node name="ContainmentWing1" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 76, -3, 8)
+
+[node name="ContainmentWing2" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 76, -3, 28)
+
 [node name="ZombieSpawns" type="Node3D" parent="."]
 
-[node name="LoadingDock1" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23, 0.1, 54)
+[node name="LoadingDock1" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, 0.1, 54)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/LoadingDock1")
 area = &"loading_dock"
 
-[node name="LoadingDock2" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 0.1, 54)
+[node name="LoadingDock2" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 0.1, 54)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/LoadingDock2")
 area = &"loading_dock"
 
-[node name="LoadingDock3" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0.1, 59)
+[node name="LoadingDock3" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0.1, 61.5)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/LoadingDock3")
 area = &"loading_dock"
 
-[node name="LoadingDock4" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.1, 59)
+[node name="LoadingDock4" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.1, 61.5)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/LoadingDock4")
 area = &"loading_dock"
 
-[node name="GuardPost1" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 0.1, 36)
+[node name="GuardPost1" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.1, 36)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/GuardPost1")
 area = &"guard_post"
 
-[node name="GuardPost2" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 0.1, 46)
+[node name="GuardPost2" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.1, 46)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/GuardPost2")
 area = &"guard_post"
 
-[node name="MessHall1" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 0.1, 34)
+[node name="MessHall1" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59.5, 0.1, 34)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/MessHall1")
 area = &"mess_hall"
 
-[node name="MessHall2" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 0.1, 42)
+[node name="MessHall2" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59.5, 0.1, 42)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/MessHall2")
 area = &"mess_hall"
 
-[node name="MainCorridor1" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 0.1, 28)
+[node name="MainCorridor1" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, 0.1, 28)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/MainCorridor1")
 area = &"main_corridor"
 
-[node name="MainCorridor2" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 0.1, 28)
+[node name="MainCorridor2" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 0.1, 28)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/MainCorridor2")
 area = &"main_corridor"
 
-[node name="GeneratorHall1" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.1, 10)
+[node name="GeneratorHall1" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 0.1, 10)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/GeneratorHall1")
 area = &"generator_hall"
 
-[node name="GeneratorHall2" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0.1, 7)
+[node name="GeneratorHall2" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23, 0.1, 4.5)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/GeneratorHall2")
 area = &"generator_hall"
 
-[node name="Labs1" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.1, 11)
+[node name="Labs1" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.1, 8.5)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/Labs1")
 area = &"labs"
 
-[node name="Labs2" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51, 0.1, 12)
+[node name="Labs2" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.5, 0.1, 12)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/Labs2")
 area = &"labs"
 
 [node name="Labs3" type="Marker3D" parent="ZombieSpawns"]
@@ -574,14 +639,16 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 0.1, 22)
 script = ExtResource("spawn")
 area = &"labs"
 
-[node name="ContainmentWing1" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, -2.9, 8)
+[node name="ContainmentWing1" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77.5, -2.9, 8)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/ContainmentWing1")
 area = &"containment_wing"
 
-[node name="ContainmentWing2" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, -2.9, 28)
+[node name="ContainmentWing2" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77.5, -2.9, 28)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/ContainmentWing2")
 area = &"containment_wing"
 
 [node name="ContainmentWing3" type="Marker3D" parent="ZombieSpawns"]

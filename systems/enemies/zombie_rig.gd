@@ -55,7 +55,9 @@ func follow(zombie: Zombie, delta: float) -> void:
 			pose_attack(1.0 + (t - windup) / Zombie.STRIKE_TIME)
 		return
 	var reach: float = 0.0
-	if zombie.target:
+	if zombie.state == Zombie.State.ENTERING:
+		reach = 1.0
+	elif zombie.target:
 		var distance: float = zombie.global_position.distance_to(zombie.target.global_position)
 		reach = clampf(1.0 - distance / REACH_DISTANCE, 0.0, 1.0)
 	pose_walk(Vector2(zombie.velocity.x, zombie.velocity.z).length(), reach, delta)

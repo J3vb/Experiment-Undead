@@ -1,5 +1,6 @@
 ## Turns levels/<map>/layout.json into levels/<map>/blockout.tscn: floors,
-## ceilings, panelled walls with door cuts, ramps and ceiling lights.
+## ceilings, panelled walls with door and window cuts, ramps and ceiling lights.
+## Rooms with "lights": false (the small spaces behind windows) get no lights.
 ## Never hand-edit the output; change the JSON and run this again:
 ##   godot --headless --path . -s res://tools/blockout_builder.gd -- halcyon_labs
 extends SceneTree
@@ -67,7 +68,8 @@ static func _build_room(root: Node3D, room: Dictionary, openings: Array) -> void
 	]
 	for i: int in edges.size():
 		_build_wall(root, walls, "Edge%d" % i, edges[i], openings, centre)
-	_build_lights(root, node, size, minf(h, LIGHT_HANG) - 0.03)
+	if room.get("lights", true):
+		_build_lights(root, node, size, minf(h, LIGHT_HANG) - 0.03)
 
 
 static func _build_wall(
