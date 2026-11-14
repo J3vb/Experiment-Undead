@@ -1,0 +1,188 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://systems/ui/results_screen.gd" id="1"]
+[ext_resource type="Theme" path="res://systems/ui/results_screen.tres" id="2"]
+
+[node name="ResultsScreen" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+theme = ExtResource("2")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Header" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchor_left = 0.03
+anchor_top = 0.04
+anchor_right = 0.97
+theme_override_constants/separation = 0
+
+[node name="MapTime" type="Label" parent="Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "Halcyon Labs · 00:00"
+
+[node name="RoundRow" type="HBoxContainer" parent="Header"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Round" type="Label" parent="Header/RoundRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelRound"
+text = "0"
+
+[node name="Caption" type="Label" parent="Header/RoundRow"]
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 36
+text = "rounds survived"
+
+[node name="Exfil" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchor_left = 0.71
+anchor_right = 0.97
+anchor_top = 0.13
+horizontal_alignment = 1
+theme_type_variation = &"LabelExfil"
+theme_override_font_sizes/font_size = 28
+text = "Exfiltrated"
+
+[node name="StatsPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchor_left = 0.03
+anchor_top = 0.25
+anchor_right = 0.26
+
+[node name="Stats" type="GridContainer" parent="StatsPanel"]
+layout_mode = 2
+theme_override_constants/h_separation = 24
+theme_override_constants/v_separation = 18
+columns = 2
+
+[node name="KillsTitle" type="Label" parent="StatsPanel/Stats"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"LabelDim"
+text = "Kills"
+
+[node name="Kills" type="Label" parent="StatsPanel/Stats"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelMono"
+text = "0"
+horizontal_alignment = 2
+
+[node name="HeadshotsTitle" type="Label" parent="StatsPanel/Stats"]
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "Headshots"
+
+[node name="Headshots" type="Label" parent="StatsPanel/Stats"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelHeadshot"
+text = "0"
+horizontal_alignment = 2
+
+[node name="PointsTitle" type="Label" parent="StatsPanel/Stats"]
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "Points earned"
+
+[node name="Points" type="Label" parent="StatsPanel/Stats"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelMono"
+text = "0"
+horizontal_alignment = 2
+
+[node name="ProgressPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchor_left = 0.71
+anchor_top = 0.25
+anchor_right = 0.97
+anchor_bottom = 0.72
+
+[node name="Box" type="VBoxContainer" parent="ProgressPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="ProgressPanel/Box"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Progress"
+
+[node name="Xp" type="Label" parent="ProgressPanel/Box"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelMono"
+text = "XP +0"
+
+[node name="XpBar" type="ProgressBar" parent="ProgressPanel/Box"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 12)
+mouse_filter = 2
+step = 0.001
+show_percentage = false
+
+[node name="Level" type="Label" parent="ProgressPanel/Box"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelMono"
+text = "LV 1"
+
+[node name="Scroll" type="ScrollContainer" parent="ProgressPanel/Box"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="LevelUps" type="VBoxContainer" parent="ProgressPanel/Box/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="Buttons" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchor_left = 0.71
+anchor_top = 0.78
+anchor_right = 0.97
+theme_override_constants/separation = 8
+
+[node name="MainMenu" type="Button" parent="Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_neighbor_top = NodePath("../Restart")
+focus_neighbor_bottom = NodePath("../Restart")
+text = "Main menu"
+
+[node name="Restart" type="Button" parent="Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_neighbor_top = NodePath("../MainMenu")
+focus_neighbor_bottom = NodePath("../MainMenu")
+text = "Restart"
+
+[node name="Hint" type="Label" parent="."]
+layout_mode = 1
+anchor_left = 0.03
+anchor_top = 0.95
+anchor_right = 0.97
+theme_type_variation = &"LabelDim"
+text = "Enter / A: select     R: restart     Esc / B: main menu"
