@@ -20,6 +20,8 @@
 [ext_resource type="PackedScene" path="res://systems/debug/debug_console.tscn" id="debug_console"]
 [ext_resource type="Script" path="res://systems/debug/debug_overlay.gd" id="debug_overlay"]
 
+[ext_resource type="PackedScene" path="res://systems/audio/music_player.tscn" id="music"]
+
 [node name="GameSession" type="Node"]
 process_mode = 3
 script = ExtResource("1")
@@ -53,3 +55,5 @@ ammo_pack = ExtResource("16")
 
 [node name="DebugOverlay" type="CanvasLayer" parent="."]
 script = ExtResource("debug_overlay")
+
+[node name="MusicPlayer" parent="." instance=ExtResource("music")]
