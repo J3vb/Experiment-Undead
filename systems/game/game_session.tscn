@@ -1,7 +1,7 @@
 [gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://systems/game/game_session.gd" id="1"]
-[ext_resource type="PackedScene" path="res://levels/courtyard/courtyard.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://levels/halcyon_labs/map.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://systems/player/player.tscn" id="3"]
 [ext_resource type="Resource" path="res://content/weapons/rifle_ar.tres" id="4"]
 [ext_resource type="Resource" path="res://content/weapons/pistol_service.tres" id="5"]

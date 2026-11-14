@@ -1,0 +1,254 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://systems/level/level.gd" id="level"]
+[ext_resource type="Script" path="res://systems/level/block.gd" id="block"]
+[ext_resource type="Script" path="res://systems/waves/zombie_spawn_point.gd" id="spawn"]
+[ext_resource type="Environment" path="res://levels/looks/halcyon_interior.tres" id="look"]
+[ext_resource type="PackedScene" path="res://levels/halcyon_labs/blockout.tscn" id="blockout"]
+[ext_resource type="PackedScene" path="res://systems/effects/film_post.tscn" id="film"]
+[ext_resource type="Material" path="res://levels/materials/rust.tres" id="rust"]
+[ext_resource type="Material" path="res://levels/materials/wood.tres" id="wood"]
+
+[sub_resource type="NavigationMesh" id="navmesh"]
+geometry_parsed_geometry_type = 1
+geometry_collision_mask = 1
+cell_size = 0.25
+cell_height = 0.25
+agent_height = 1.75
+agent_radius = 0.5
+agent_max_climb = 0.5
+agent_max_slope = 45.0
+
+[sub_resource type="StandardMaterial3D" id="door_dev"]
+albedo_color = Color(0.85, 0.4, 0.08, 1)
+roughness = 0.7
+emission_enabled = true
+emission = Color(0.85, 0.4, 0.08, 1)
+emission_energy_multiplier = 0.15
+
+[node name="HalcyonLabs" type="Node3D" node_paths=PackedStringArray("navigation_region", "player_spawn")]
+script = ExtResource("level")
+navigation_region = NodePath("NavigationRegion3D")
+player_spawn = NodePath("PlayerSpawn")
+start_area = &"loading_dock"
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("look")
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+navigation_mesh = SubResource("navmesh")
+
+[node name="Blockout" parent="NavigationRegion3D" instance=ExtResource("blockout")]
+
+[node name="Props" type="Node3D" parent="NavigationRegion3D"]
+
+[node name="Truck" type="StaticBody3D" parent="NavigationRegion3D/Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 1.4, 54)
+script = ExtResource("block")
+size = Vector3(2.6, 2.8, 7)
+material = ExtResource("rust")
+
+[node name="CrateA" type="StaticBody3D" parent="NavigationRegion3D/Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0.5, 52)
+script = ExtResource("block")
+size = Vector3(1, 1, 1)
+material = ExtResource("wood")
+
+[node name="CrateB" type="StaticBody3D" parent="NavigationRegion3D/Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.2, 1.4, 52.1)
+script = ExtResource("block")
+size = Vector3(0.8, 0.8, 0.8)
+material = ExtResource("wood")
+
+[node name="CrateC" type="StaticBody3D" parent="NavigationRegion3D/Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.3, 0.45, 53.4)
+script = ExtResource("block")
+size = Vector3(0.9, 0.9, 1.2)
+material = ExtResource("wood")
+
+[node name="CrateD" type="StaticBody3D" parent="NavigationRegion3D/Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 0.6, 56)
+script = ExtResource("block")
+size = Vector3(1.2, 1.2, 1.2)
+material = ExtResource("wood")
+
+[node name="Drum" type="StaticBody3D" parent="NavigationRegion3D/Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0.45, 49)
+script = ExtResource("block")
+size = Vector3(0.6, 0.9, 0.6)
+material = ExtResource("rust")
+
+[node name="TruckFire" type="OmniLight3D" parent="NavigationRegion3D/Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 3.2, 52)
+light_color = Color(1, 0.55, 0.2, 1)
+light_energy = 2.0
+light_volumetric_fog_energy = 2.0
+omni_range = 9.0
+
+[node name="Doors" type="Node3D" parent="NavigationRegion3D"]
+
+[node name="GuardPostDoor" type="StaticBody3D" parent="NavigationRegion3D/Doors"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 22, 1.3, 48)
+script = ExtResource("block")
+size = Vector3(2, 2.6, 0.5)
+material = SubResource("door_dev")
+
+[node name="MessHallDebris" type="StaticBody3D" parent="NavigationRegion3D/Doors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 1.3, 46)
+script = ExtResource("block")
+size = Vector3(4, 2.6, 0.5)
+material = SubResource("door_dev")
+
+[node name="CorridorDoorGuardPost" type="StaticBody3D" parent="NavigationRegion3D/Doors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1.3, 30)
+script = ExtResource("block")
+size = Vector3(2, 2.6, 0.5)
+material = SubResource("door_dev")
+
+[node name="CorridorDoorMessHall" type="StaticBody3D" parent="NavigationRegion3D/Doors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 1.3, 30)
+script = ExtResource("block")
+size = Vector3(2, 2.6, 0.5)
+material = SubResource("door_dev")
+
+[node name="GeneratorHallDoor" type="StaticBody3D" parent="NavigationRegion3D/Doors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 1.3, 26)
+script = ExtResource("block")
+size = Vector3(2, 2.6, 0.5)
+material = SubResource("door_dev")
+
+[node name="LabsDebris" type="StaticBody3D" parent="NavigationRegion3D/Doors"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 1.3, 26)
+script = ExtResource("block")
+size = Vector3(4, 2.6, 0.5)
+material = SubResource("door_dev")
+
+[node name="TunnelWestShutter" type="StaticBody3D" parent="NavigationRegion3D/Doors"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 28, 1.3, 12.5)
+script = ExtResource("block")
+size = Vector3(3, 2.6, 0.5)
+material = SubResource("door_dev")
+
+[node name="TunnelEastShutter" type="StaticBody3D" parent="NavigationRegion3D/Doors"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 36, 1.3, 12.5)
+script = ExtResource("block")
+size = Vector3(3, 2.6, 0.5)
+material = SubResource("door_dev")
+
+[node name="ContainmentDoor" type="StaticBody3D" parent="NavigationRegion3D/Doors"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 52, 1.3, 18)
+script = ExtResource("block")
+size = Vector3(4, 2.6, 0.5)
+material = SubResource("door_dev")
+
+[node name="PlayerSpawn" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 0.1, 47.5)
+
+[node name="ZombieSpawns" type="Node3D" parent="."]
+
+[node name="LoadingDock1" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23, 0.1, 54)
+script = ExtResource("spawn")
+area = &"loading_dock"
+
+[node name="LoadingDock2" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 0.1, 54)
+script = ExtResource("spawn")
+area = &"loading_dock"
+
+[node name="LoadingDock3" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0.1, 59)
+script = ExtResource("spawn")
+area = &"loading_dock"
+
+[node name="LoadingDock4" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.1, 59)
+script = ExtResource("spawn")
+area = &"loading_dock"
+
+[node name="GuardPost1" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 0.1, 36)
+script = ExtResource("spawn")
+area = &"guard_post"
+
+[node name="GuardPost2" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 0.1, 46)
+script = ExtResource("spawn")
+area = &"guard_post"
+
+[node name="MessHall1" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 0.1, 34)
+script = ExtResource("spawn")
+area = &"mess_hall"
+
+[node name="MessHall2" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 0.1, 42)
+script = ExtResource("spawn")
+area = &"mess_hall"
+
+[node name="MainCorridor1" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 0.1, 28)
+script = ExtResource("spawn")
+area = &"main_corridor"
+
+[node name="MainCorridor2" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 0.1, 28)
+script = ExtResource("spawn")
+area = &"main_corridor"
+
+[node name="GeneratorHall1" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.1, 10)
+script = ExtResource("spawn")
+area = &"generator_hall"
+
+[node name="GeneratorHall2" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0.1, 7)
+script = ExtResource("spawn")
+area = &"generator_hall"
+
+[node name="Labs1" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.1, 11)
+script = ExtResource("spawn")
+area = &"labs"
+
+[node name="Labs2" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51, 0.1, 12)
+script = ExtResource("spawn")
+area = &"labs"
+
+[node name="Labs3" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 0.1, 16)
+script = ExtResource("spawn")
+area = &"labs"
+
+[node name="Labs4" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 0.1, 22)
+script = ExtResource("spawn")
+area = &"labs"
+
+[node name="ContainmentWing1" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, -2.9, 8)
+script = ExtResource("spawn")
+area = &"containment_wing"
+
+[node name="ContainmentWing2" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, -2.9, 28)
+script = ExtResource("spawn")
+area = &"containment_wing"
+
+[node name="ContainmentWing3" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66, -2.9, 6)
+script = ExtResource("spawn")
+area = &"containment_wing"
+
+[node name="ContainmentWing4" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70, -2.9, 30)
+script = ExtResource("spawn")
+area = &"containment_wing"
+
+[node name="CoolantTunnel1" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0.1, 12.5)
+script = ExtResource("spawn")
+area = &"coolant_tunnel"
+
+[node name="FilmPost" parent="." instance=ExtResource("film")]
