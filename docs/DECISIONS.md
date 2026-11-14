@@ -42,6 +42,8 @@ built, what was simplified on purpose, and what is still to do.
 - **Logging and diagnostics:** `Log` autoload (provisional: not in the architecture doc's autoload list) writes one JSON line per event to `user://logs/run_<time>_<role>_<pid>.jsonl` and a `.summary.json` (rewritten every 30 s, `clean_exit` false after a crash). An engine `Logger` captures `push_error`/`push_warning` and script errors with file, line and stack. `HealthWatch` warns on long frames, low fps, growing orphan nodes and stalled rounds; zombies report being stuck or falling out of the map; the level logs navmesh bake times and warns when navigation is never ready. Keeps the last 20 runs. No desync checks until networking (P7). See `docs/LOGGING.md`.
 - **Builds and releases:** see `docs/RELEASING.md`. Exports run on Linux only (Windows cross-exported, no rcedit). Git tag = version. Separate `Build.PROTOCOL_VERSION` and `SaveFile.CURRENT_VERSION`. Godot ignores SIGTERM, so the server quits on a stop file the Docker entrypoint writes. No code signing yet.
 
+- **Debug tools:** development builds have a command console and F3 performance overlay. God mode and point grants await public APIs.
+
 ## Simplified on purpose (fix before or during the matching build step)
 
 - **Navmesh bakes at load** from the grey-box blocks instead of being baked ahead. Keeps edits safe while the map changes; switch to a baked `.tres` when the layout settles.
@@ -57,5 +59,5 @@ built, what was simplified on purpose, and what is still to do.
 ## Not started
 
 Emergency lighting before power, Specimen Vault, Reforger Tiers II and III, grenades (and Scavenger's +1 grenade), the other power-ups (Payday, Overkill, Purge, Scrap Kit, Stasis, Supply Crate),
-menus and settings, debug console and F3 overlay, levels/skills/loot,
+menus and settings, levels/skills/loot,
 networking, dedicated server.
