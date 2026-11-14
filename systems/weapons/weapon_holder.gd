@@ -29,25 +29,6 @@ func setup(player: Player, camera: Camera3D) -> void:
 func give(data: WeaponData) -> Weapon:
 	if weapons.size() >= max_slots and current:
 		return replace_current(data)
-	var weapon: Weapon = _make(data)
-	weapons.append(weapon)
-	Events.weapon_acquired.emit(_player, data.id)
-	equip(weapons.find(weapon))
-	return weapon
-
-
-## Swaps the gun in hand for a new one in the same slot (full ammo).
-func replace_current(data: WeaponData) -> Weapon:
-	var weapon: Weapon = _make(data)
-	weapons[weapons.find(current)] = weapon
-	current.queue_free()
-	current = null
-	Events.weapon_acquired.emit(_player, data.id)
-	equip(weapons.find(weapon))
-	return weapon
-
-
-func _make(data: WeaponData) -> Weapon:
 	var weapon: Weapon = WEAPON_SCENE.instantiate()
 	weapon.setup(WeaponInstance.new(data), _player, _camera)
 	add_child(weapon)
@@ -56,6 +37,27 @@ func _make(data: WeaponData) -> Weapon:
 	weapon.fired.connect(_on_fired.bind(weapon))
 	weapon.reload_started.connect(_on_reload_started.bind(weapon))
 	weapon.hit_landed.connect(_on_hit_landed)
+	weapons.append(weapon)
+	Events.weapon_acquired.emit(_player, data.id)
+	equip(weapons.find(weapon))
+	return weapon
+
+
+## Swaps the gun in hand for a new one in the same slot (full ammo).
+func replace_current(data: WeaponData) -> Weapon:
+	var weapon: Weapon = WEAPON_SCENE.instantiate()
+	weapon.setup(WeaponInstance.new(data), _player, _camera)
+	add_child(weapon)
+	weapon.set_active(false)
+	weapon.ammo_changed.connect(_on_ammo_changed.bind(weapon))
+	weapon.fired.connect(_on_fired.bind(weapon))
+	weapon.reload_started.connect(_on_reload_started.bind(weapon))
+	weapon.hit_landed.connect(_on_hit_landed)
+	weapons[weapons.find(current)] = weapon
+	current.queue_free()
+	current = null
+	Events.weapon_acquired.emit(_player, data.id)
+	equip(weapons.find(weapon))
 	return weapon
 
 
