@@ -22,8 +22,6 @@ extends Resource
 @export var attack_cooldown: float = 1.2
 
 @export_group("Look")
-@export var skin_color: Color = Color(0.36, 0.45, 0.3)
-@export var clothes_color: Color = Color(0.22, 0.2, 0.18)
 @export var body_scale: float = 1.0
 @export var groan_sounds: Array[AudioStream] = []
 @export var attack_sound: AudioStream

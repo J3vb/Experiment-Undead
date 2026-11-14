@@ -1,9 +1,10 @@
-[gd_resource type="Resource" script_class="WaveRules" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="WaveRules" format=3]
 
 [ext_resource type="Script" path="res://systems/waves/wave_rules.gd" id="1"]
 [ext_resource type="Script" path="res://systems/waves/enemy_spawn_entry.gd" id="2"]
 [ext_resource type="Resource" path="res://content/enemies/zombie_walker.tres" id="3"]
 [ext_resource type="Resource" path="res://content/enemies/zombie_runner.tres" id="4"]
+[ext_resource type="Resource" path="res://content/enemies/zombie_bloater.tres" id="5"]
 
 [sub_resource type="Resource" id="walker"]
 script = ExtResource("2")
@@ -17,9 +18,16 @@ weight = 0.15
 weight_per_round = 0.08
 first_round = 3
 
+[sub_resource type="Resource" id="bloater"]
+script = ExtResource("2")
+enemy = ExtResource("5")
+weight = 0.05
+weight_per_round = 0.01
+first_round = 8
+
 [resource]
 script = ExtResource("1")
-enemy_mix = Array[ExtResource("2")]([SubResource("walker"), SubResource("runner")])
+enemy_mix = Array[ExtResource("2")]([SubResource("walker"), SubResource("runner"), SubResource("bloater")])
 first_round_delay = 4.0
 intermission_time = 10.0
 base_count = 6

@@ -1,40 +1,20 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene format=3]
 
 [ext_resource type="Script" path="res://systems/enemies/zombie.gd" id="1"]
 [ext_resource type="Script" path="res://systems/damage/health_component.gd" id="2"]
 [ext_resource type="Script" path="res://systems/damage/hit_zone.gd" id="3"]
+[ext_resource type="Script" path="res://systems/enemies/zombie_rig.gd" id="4"]
+[ext_resource type="PackedScene" path="res://assets/models/zombies/shambler.glb" id="5"]
 
 [sub_resource type="CapsuleShape3D" id="capsule"]
 radius = 0.35
 height = 1.8
 
-[sub_resource type="BoxMesh" id="leg"]
-size = Vector3(0.18, 0.9, 0.2)
-
-[sub_resource type="BoxMesh" id="torso"]
-size = Vector3(0.5, 0.65, 0.28)
-
-[sub_resource type="BoxMesh" id="head"]
-size = Vector3(0.28, 0.3, 0.28)
-
-[sub_resource type="BoxMesh" id="arm"]
-size = Vector3(0.13, 0.65, 0.13)
-
-[sub_resource type="StandardMaterial3D" id="eye_mat"]
-albedo_color = Color(1, 0.1, 0.05, 1)
-emission_enabled = true
-emission = Color(1, 0.15, 0.05, 1)
-emission_energy_multiplier = 6.0
-
-[sub_resource type="BoxMesh" id="eye"]
-material = SubResource("eye_mat")
-size = Vector3(0.06, 0.035, 0.02)
-
 [sub_resource type="SphereShape3D" id="head_zone"]
-radius = 0.2
+radius = 0.17
 
 [sub_resource type="BoxShape3D" id="body_zone"]
-size = Vector3(0.6, 1.45, 0.4)
+size = Vector3(0.6, 1.5, 0.45)
 
 [node name="Zombie" type="CharacterBody3D"]
 script = ExtResource("1")
@@ -44,52 +24,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("capsule")
 
 [node name="Visual" type="Node3D" parent="."]
-
-[node name="LegL" type="Node3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12, 0.9, 0)
-
-[node name="Mesh" type="MeshInstance3D" parent="Visual/LegL" groups=["cloth"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.45, 0)
-mesh = SubResource("leg")
-
-[node name="LegR" type="Node3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12, 0.9, 0)
-
-[node name="Mesh" type="MeshInstance3D" parent="Visual/LegR" groups=["cloth"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.45, 0)
-mesh = SubResource("leg")
-
-[node name="Torso" type="MeshInstance3D" parent="Visual" groups=["cloth"]]
-transform = Transform3D(1, 0, 0, 0, 0.98, -0.17, 0, 0.17, 0.98, 0, 1.22, -0.03)
-mesh = SubResource("torso")
-
-[node name="Head" type="MeshInstance3D" parent="Visual" groups=["skin"]]
-transform = Transform3D(0.97, 0.1, 0, -0.1, 0.97, 0.17, 0, -0.17, 0.98, 0.02, 1.68, -0.1)
-mesh = SubResource("head")
-
-[node name="EyeL" type="MeshInstance3D" parent="Visual/Head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.06, 0.03, -0.145)
-mesh = SubResource("eye")
-cast_shadow = 0
-
-[node name="EyeR" type="MeshInstance3D" parent="Visual/Head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.06, 0.03, -0.145)
-mesh = SubResource("eye")
-cast_shadow = 0
-
-[node name="ArmL" type="Node3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.32, 1.48, -0.05)
-
-[node name="Mesh" type="MeshInstance3D" parent="Visual/ArmL" groups=["skin"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0)
-mesh = SubResource("arm")
-
-[node name="ArmR" type="Node3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.32, 1.48, -0.05)
-
-[node name="Mesh" type="MeshInstance3D" parent="Visual/ArmR" groups=["skin"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 0)
-mesh = SubResource("arm")
+script = ExtResource("4")
+model = ExtResource("5")
 
 [node name="HitZones" type="Node3D" parent="."]
 
@@ -103,7 +39,7 @@ zone = 1
 shape = SubResource("head_zone")
 
 [node name="Body" type="Area3D" parent="HitZones" node_paths=PackedStringArray("health")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.78, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
 script = ExtResource("3")
 health = NodePath("../../HealthComponent")
 
