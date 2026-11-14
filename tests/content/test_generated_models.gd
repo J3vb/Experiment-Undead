@@ -35,7 +35,7 @@ func test_rifle_has_moving_parts_and_muzzle() -> void:
 	var gun: Node3D = _load(RIFLE)
 	if gun == null:
 		return
-	for part: String in ["Magazine", "Bolt", "Muzzle", "Barrel"]:
+	for part: String in ["Magazine", "Bolt", "Muzzle", "Barrel", "OpticGlass"]:
 		assert_not_null(gun.find_child(part, true, false), "rifle has " + part)
 	var muzzle: Node3D = gun.find_child("Muzzle", true, false) as Node3D
 	if muzzle:
@@ -43,6 +43,17 @@ func test_rifle_has_moving_parts_and_muzzle() -> void:
 	var box: AABB = _size_of(gun)
 	assert_almost_eq(box.size.z, 1.02, 0.03, "rifle is about 1 m long")
 	assert_lt(box.size.x, 0.1, "rifle is narrow")
+	gun.free()
+
+
+func test_rifle_body_is_one_mesh() -> void:
+	var gun: Node3D = _load(RIFLE)
+	if gun == null:
+		return
+	var receiver: Node = gun.find_child("Receiver", true, false)
+	assert_true(receiver is MeshInstance3D, "static rifle parts are joined into Receiver")
+	var meshes: Array[Node] = gun.find_children("*", "MeshInstance3D", true, false)
+	assert_lt(meshes.size(), 10, "few draw calls: only moving parts are separate meshes")
 	gun.free()
 
 
