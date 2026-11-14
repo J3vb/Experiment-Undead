@@ -305,6 +305,7 @@ func _on_game_over(stats: Dictionary) -> void:
 
 
 func _setup_pause_menu() -> void:
+	pause_panel.theme = settings_screen.theme
 	resume_button.pressed.connect(func() -> void: (get_parent() as GameSession).resume())
 	settings_button.pressed.connect(_open_settings)
 	$Root/PausePanel/Menu/Quit.pressed.connect(func() -> void: get_tree().quit())

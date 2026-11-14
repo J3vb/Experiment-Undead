@@ -13,11 +13,14 @@ const SLIDERS: Dictionary = {
 	&"sfx_volume": [&"audio", 100.0],
 }
 const CHECKS: Dictionary = {&"invert_y": &"controls", &"vsync": &"video", &"show_fps": &"video"}
+const CHECK_LABELS: Dictionary = {&"invert_y": "Invert Y", &"vsync": "VSync", &"show_fps": "Show FPS"}
 const FPS: Array[int] = [60, 120, 144, 165, 240, 0]
 
 
 func _ready() -> void:
-	theme = theme.duplicate() as Theme
+	var menu_theme: Theme = theme
+	theme = preload("res://systems/ui/theme.tres").duplicate() as Theme
+	theme.merge_with(menu_theme)
 	theme.default_font_size = 24
 	for key: StringName in SLIDERS:
 		var slider: HSlider = get_node("%" + key) as HSlider
@@ -30,6 +33,8 @@ func _ready() -> void:
 	%Back.pressed.connect(_close)
 	Settings.changed.connect(_on_setting_changed)
 	_refresh()
+	if is_visible_in_tree():
+		($Margin/Box/Tabs as TabContainer).get_tab_bar().grab_focus()
 
 
 func _input(event: InputEvent) -> void:
@@ -65,4 +70,5 @@ func _refresh() -> void:
 	for key: StringName in CHECKS:
 		var check: CheckBox = get_node("%" + key) as CheckBox
 		check.set_pressed_no_signal(bool(Settings.get_value(CHECKS[key], key)))
+		check.text = "%s   [%s]" % [CHECK_LABELS[key], "On" if check.button_pressed else "Off"]
 	%max_fps.select(FPS.find(int(Settings.get_value(&"video", &"max_fps"))))
