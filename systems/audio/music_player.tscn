@@ -1,0 +1,26 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://systems/audio/music_player.gd" id="1"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/halcyon_bed.ogg" id="2"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/halcyon_drive.ogg" id="3"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/breather.ogg" id="4"]
+
+[sub_resource type="AudioStreamSynchronized" id="CombatStems"]
+resource_local_to_scene = true
+stream_count = 2
+stream_0/stream = ExtResource("2")
+stream_1/stream = ExtResource("3")
+stream_1/volume = -80.0
+
+[node name="MusicPlayer" type="Node"]
+script = ExtResource("1")
+
+[node name="Combat" type="AudioStreamPlayer" parent="."]
+stream = SubResource("CombatStems")
+volume_db = -80.0
+bus = &"Music"
+
+[node name="Breather" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4")
+volume_db = -80.0
+bus = &"Music"
