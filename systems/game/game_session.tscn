@@ -9,7 +9,7 @@
 [ext_resource type="Resource" path="res://content/economy/default_economy.tres" id="7"]
 [ext_resource type="Script" path="res://systems/waves/wave_director.gd" id="8"]
 [ext_resource type="Script" path="res://systems/economy/economy.gd" id="9"]
-[ext_resource type="Script" path="res://systems/progression/local_progression_service.gd" id="10"]
+[ext_resource type="Script" uid="uid://08pmdntyclan" path="res://systems/progression/progression_service.gd" id="10"]
 [ext_resource type="PackedScene" path="res://systems/ui/hud.tscn" id="11"]
 [ext_resource type="Script" path="res://systems/weapons/weapon_data.gd" id="12"]
 
