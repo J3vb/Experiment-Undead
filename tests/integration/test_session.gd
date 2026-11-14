@@ -44,6 +44,9 @@ func test_navmesh_has_paths() -> void:
 	assert_almost_eq(path[path.size() - 1].distance_to(Vector3(20, 0, 20)), 0.0, 1.0)
 
 func test_player_spawns_with_loadout() -> void:
+	watch_signals(Events)
+	player.weapons.give(Content.weapon(&"rifle_ar"))
+	assert_signal_emitted_with_parameters(Events, "weapon_acquired", [player, &"rifle_ar"])
 	assert_eq(player.weapons.weapons.size(), 2)
 	assert_eq(player.wallet.points, 500)
 	assert_true(player.is_alive())

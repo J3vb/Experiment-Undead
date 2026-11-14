@@ -29,7 +29,9 @@ signal points_changed(player: Player, total: int, delta: int)
 
 ## A player's weapon fired one shot.
 signal weapon_fired(player: Player, weapon: Weapon)
-## A player switched to (or picked up) a weapon.
+## A player gained a weapon (loadout, wall buy, crate, loot).
+signal weapon_acquired(player: Player, weapon_id: StringName)
+## A player's active weapon changed.
 signal weapon_switched(player: Player, weapon: Weapon)
 ## A player's active weapon ammo changed.
 signal ammo_changed(player: Player, in_mag: int, reserve: int)

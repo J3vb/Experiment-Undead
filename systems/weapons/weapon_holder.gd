@@ -39,6 +39,7 @@ func give(data: WeaponData) -> Weapon:
 		current = null
 	else:
 		weapons.append(weapon)
+	Events.weapon_acquired.emit(_player, data.id)
 	equip(weapons.find(weapon))
 	return weapon
 
