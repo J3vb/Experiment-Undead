@@ -43,3 +43,44 @@ func test_corridor_keeps_the_shadow_light_budget() -> void:
 			shadowed += 1
 	assert_gt(shadowed, 0, "some fixtures cast shadows")
 	assert_lte(shadowed, MAX_SHADOWED_LIGHTS, "at most 6 shadowed lights")
+
+
+func test_wall_panel_uses_the_grime_materials() -> void:
+	var panel: Node = (load("res://assets/models/kit/wall_panel.glb") as PackedScene).instantiate()
+	add_child_autofree(panel)
+	var paths: Array[String] = []
+	for mesh_node: Node in panel.find_children("*", "MeshInstance3D", true, false):
+		var mesh: Mesh = (mesh_node as MeshInstance3D).mesh
+		for i: int in mesh.get_surface_count():
+			paths.append(mesh.surface_get_material(i).resource_path)
+	assert_has(paths, "res://levels/materials/panel_paint.tres", "panel paint is the grime shader")
+	assert_has(paths, "res://levels/materials/panel_trim.tres", "panel trim is the grime shader")
+
+
+func test_corridor_surfaces_have_procedural_detail() -> void:
+	var scene: Node = (load(CORRIDOR) as PackedScene).instantiate()
+	add_child_autofree(scene)
+	var floor_mat: ShaderMaterial = (scene.find_child("Floor", true, false) as Block).material as ShaderMaterial
+	assert_not_null(floor_mat, "floor is a shader material")
+	if floor_mat:
+		assert_eq(floor_mat.shader.resource_path, "res://levels/materials/wet_tiles.gdshader", "wet tiled floor")
+		assert_not_null(floor_mat.get_shader_parameter("noise"), "floor has its puddle noise")
+	var ceiling_mat: ShaderMaterial = (scene.find_child("Ceiling", true, false) as Block).material as ShaderMaterial
+	assert_not_null(ceiling_mat, "ceiling is a shader material")
+	if ceiling_mat:
+		assert_not_null(ceiling_mat.get_shader_parameter("noise"), "ceiling has its stain noise")
+
+
+func test_every_fixture_has_a_housing_and_the_rim_light_is_cheap() -> void:
+	var scene: Node = (load(CORRIDOR) as PackedScene).instantiate()
+	add_child_autofree(scene)
+	var lights: Node = scene.find_child("Lights", false, false)
+	var fixtures: int = lights.find_children("Fixture*", "SpotLight3D", false, false).size()
+	var housings: int = lights.find_children("Housing*", "MeshInstance3D", false, false).size()
+	assert_gt(fixtures, 0, "corridor has fixtures")
+	assert_eq(housings, fixtures, "one housing per fixture")
+	var rim: SpotLight3D = lights.find_child("ZombieRim", false, false) as SpotLight3D
+	assert_not_null(rim, "rim light keeps zombies readable")
+	if rim:
+		assert_false(rim.shadow_enabled, "rim light casts no shadow (budget)")
+		assert_gt(-rim.global_basis.z.z, 0.0, "rim light shines back toward the camera (+Z)")

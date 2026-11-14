@@ -1,0 +1,14 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://levels/materials/grime.gdshader" id="shader"]
+[ext_resource type="Texture2D" path="res://levels/materials/grime_noise.tres" id="noise"]
+[ext_resource type="Texture2D" path="res://levels/materials/grime_normal.tres" id="normal"]
+
+[resource]
+shader = ExtResource("shader")
+shader_parameter/noise = ExtResource("noise")
+shader_parameter/detail_normal = ExtResource("normal")
+shader_parameter/base_color = Color(0.22, 0.25, 0.25, 1)
+shader_parameter/roughness = 0.85
+shader_parameter/streaks = 0.3
+shader_parameter/floor_dirt = 0.6
