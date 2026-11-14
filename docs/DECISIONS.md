@@ -44,12 +44,15 @@ built, what was simplified on purpose, and what is still to do.
 - **Logging and diagnostics:** `Log` autoload (provisional: not in the architecture doc's autoload list) writes one JSON line per event to `user://logs/run_<time>_<role>_<pid>.jsonl` and a `.summary.json` (rewritten every 30 s, `clean_exit` false after a crash). An engine `Logger` captures `push_error`/`push_warning` and script errors with file, line and stack. `HealthWatch` warns on long frames, low fps, growing orphan nodes and stalled rounds; zombies report being stuck or falling out of the map; the level logs navmesh bake times and warns when navigation is never ready. Keeps the last 20 runs. No desync checks until networking (P7). See `docs/LOGGING.md`.
 - **Builds and releases:** see `docs/RELEASING.md`. Exports run on Linux only (Windows cross-exported, no rcedit). Git tag = version. Separate `Build.PROTOCOL_VERSION` and `SaveFile.CURRENT_VERSION`. Godot ignores SIGTERM, so the server quits on a stop file the Docker entrypoint writes. No code signing yet.
 
+- **Debug console and F3 overlay:** debug builds only, children of GameSession; console owns the command registry, authority checks guard tuning commands, and F3 counters refresh at 4 Hz. God mode is deferred until a public damage-immunity API exists.
+- **CPU benchmark:** `godot --headless --path . --script res://tools/benchmark/benchmark.gd -- --zombies 24 --seconds 20 --seed 1` (also run 48); skips 2 s warm-up, measures physics callbacks at 60 Hz (no GPU, idle callbacks or standalone server integration), prints mean/P95/P99/max and writes `user://benchmark_<zombies>.json`; PR/manual workflow uploads results without performance thresholds.
+
 ## Simplified on purpose (fix before or during the matching build step)
 
 - **Navmesh bakes at load** from the grey-box blocks instead of being baked ahead. Keeps edits safe while the map changes; switch to a baked `.tres` when the layout settles.
 - **Zombie AI tiers:** only the re-path interval is tiered. Frame-skipping by tier and off-screen checks come with the performance pass.
 - **No Pool autoload yet.** Impacts are capped at 48 and freed; zombies are freed after the corpse fades.
-- **No Settings / Audio / Game autoloads yet.** Mouse sensitivity sits on `LocalInput`; sounds use plain players on the audio buses in `default_bus_layout.tres`.
+- **Settings autoload** stores controls, video and audio options in `user://settings.cfg`, applies FPS/vsync and bus volumes, and updates `LocalInput` sensitivity and Y inversion. FOV is stored only. Audio / Game autoloads are still deferred; sounds use plain players on the audio buses in `default_bus_layout.tres`.
 - **Viewmodel** is a normal mesh close to the camera (near plane 0.03), not the depth-pulling shader. It can poke into walls when you hug them.
 - **Procedural animation** for zombies and guns (bob, sway, kick, reload dip). Real clips replace it later.
 - **Range falloff** uses start/end distances instead of a Curve.
@@ -60,5 +63,5 @@ built, what was simplified on purpose, and what is still to do.
 ## Not started
 
 Reforger Tiers II and III, grenades (and Scavenger's +1 grenade), the other power-ups (Payday, Overkill, Purge, Scrap Kit, Stasis, Supply Crate),
-menus and settings, debug console and F3 overlay, levels/skills/loot,
+menus and settings, levels/skills/loot,
 networking, dedicated server.
