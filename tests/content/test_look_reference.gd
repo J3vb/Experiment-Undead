@@ -1,5 +1,6 @@
 ## Checks the shared Cold Containment look and the corridor look reference scene
-## against the style-guide rules (AgX, volumetric fog, max 6 shadowed lights).
+## against the style-guide rules (AgX, volumetric fog, max 6 shadowed lights;
+## see the look reference entry in docs/DECISIONS.md).
 extends GutTest
 
 const LOOK: String = "res://levels/looks/halcyon_interior.tres"
@@ -26,6 +27,8 @@ func test_corridor_uses_the_shared_look() -> void:
 	var world: WorldEnvironment = scene.find_child("WorldEnvironment", false, false) as WorldEnvironment
 	assert_not_null(world, "corridor has a WorldEnvironment")
 	if world:
+		assert_not_null(world.environment, "environment is set")
+	if world and world.environment:
 		assert_eq(world.environment.resource_path, LOOK, "environment is the shared file, not a copy")
 	assert_not_null(scene.find_child("Camera3D", false, false), "corridor has the reference camera")
 

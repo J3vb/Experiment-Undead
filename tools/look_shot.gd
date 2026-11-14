@@ -14,7 +14,7 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	for i: int in WARMUP_FRAMES:
+	for _i: int in WARMUP_FRAMES:
 		await process_frame
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://screenshots"))
 	root.get_texture().get_image().save_png(OUT)

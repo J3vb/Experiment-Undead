@@ -1,7 +1,6 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://systems/level/block.gd" id="block"]
-[ext_resource type="Script" path="res://systems/effects/flicker_light.gd" id="flicker"]
 [ext_resource type="Environment" path="res://levels/looks/halcyon_interior.tres" id="look"]
 [ext_resource type="Material" path="res://levels/materials/wet_floor.tres" id="floor"]
 [ext_resource type="Material" path="res://levels/materials/concrete.tres" id="concrete"]
@@ -63,67 +62,67 @@ size = Vector3(3.2, 3, 0.5)
 material = ExtResource("concrete")
 
 [node name="WallL0" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, 1)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, 1)
 
 [node name="WallL1" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -1)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -1)
 
 [node name="WallL2" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -3)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -3)
 
 [node name="WallL3" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -5)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -5)
 
 [node name="WallL4" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -7)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -7)
 
 [node name="WallL5" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -9)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -9)
 
 [node name="WallL6" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -11)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -11)
 
 [node name="WallL7" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -13)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -13)
 
 [node name="WallL8" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -15)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -15)
 
 [node name="WallL9" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -17)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -17)
 
 [node name="WallL10" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -19)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -19)
 
 [node name="WallL11" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -21)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -21)
 
 [node name="WallL12" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -23)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -23)
 
 [node name="WallL13" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -25)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -25)
 
 [node name="WallL14" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -27)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -27)
 
 [node name="WallL15" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -29)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -29)
 
 [node name="WallL16" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -31)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -31)
 
 [node name="WallL17" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -33)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -33)
 
 [node name="WallL18" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -35)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -35)
 
 [node name="WallL19" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -37)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -37)
 
 [node name="WallL20" parent="Geometry" instance=ExtResource("wall")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.7, 0, -39)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.7, 0, -39)
 
 [node name="PillarL0" type="StaticBody3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.58, 1.5, 2)
@@ -355,9 +354,6 @@ shadow_enabled = true
 spot_range = 6.0
 spot_angle = 80.0
 spot_angle_attenuation = 0.6
-
-[node name="Flicker" type="Node" parent="Lights/Fixture2"]
-script = ExtResource("flicker")
 
 [node name="Tube3" type="MeshInstance3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.97, -19.5)
