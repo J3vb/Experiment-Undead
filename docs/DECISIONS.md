@@ -55,6 +55,8 @@ built, what was simplified on purpose, and what is still to do.
 
 ## Simplified on purpose (fix before or during the matching build step)
 
+- **Music first slice:** generated Halcyon Bed + Drive (100 BPM, D minor, 16 bars), synchronized in a scene-local MusicPlayer; round/proximity intensity, 3 s combat/breather fades and 2 s game-over fade, on the existing Music bus. Warm 70 BPM breather also lives in the standalone main-menu scene (menu flow is not built yet). Four stems, stingers, ducking and `music_config.tres` wait.
+
 - **Navmesh bakes at load** from the grey-box blocks instead of being baked ahead. Keeps edits safe while the map changes; switch to a baked `.tres` when the layout settles.
 - **Zombie AI tiers:** only the re-path interval is tiered. Frame-skipping by tier and off-screen checks come with the performance pass.
 - **No Pool autoload yet.** Impacts are capped at 48 and freed; zombies are freed after the corpse fades.

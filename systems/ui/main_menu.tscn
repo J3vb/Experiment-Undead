@@ -1,9 +1,10 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://systems/ui/main_menu.gd" id="1"]
 [ext_resource type="Theme" path="res://systems/ui/theme.tres" id="2"]
 [ext_resource type="PackedScene" path="res://systems/ui/settings_screen.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/map.tscn" id="4"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/breather.ogg" id="5"]
 
 [sub_resource type="StyleBoxFlat" id="Normal"]
 bg_color = Color(0, 0, 0, 0)
@@ -199,3 +200,10 @@ text = "Enter / A: select     Esc / B: back"
 theme_override_font_sizes/font_size = 20
 theme_override_colors/font_color = Color(0.561, 0.639, 0.659, 1)
 theme_override_constants/outline_size = 0
+
+[node name="Music" type="AudioStreamPlayer" parent="."]
+process_mode = 3
+stream = ExtResource("5")
+volume_db = -18.0
+bus = &"Music"
+autoplay = true
