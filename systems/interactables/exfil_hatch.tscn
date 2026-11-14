@@ -1,0 +1,56 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://systems/interactables/exfil_hatch.gd" id="1"]
+[ext_resource type="Script" path="res://systems/level/block.gd" id="2"]
+[ext_resource type="Material" path="res://levels/materials/rust.tres" id="3"]
+
+[sub_resource type="BoxShape3D" id="area"]
+size = Vector3(3, 0.3, 3)
+
+[sub_resource type="StandardMaterial3D" id="glow"]
+albedo_color = Color(0.45, 1, 0.35, 1)
+emission_enabled = true
+emission = Color(0.45, 1, 0.35, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="BoxMesh" id="frame"]
+material = SubResource("glow")
+size = Vector3(3.1, 0.03, 0.1)
+
+[node name="ExfilHatch" type="Area3D"]
+script = ExtResource("1")
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+shape = SubResource("area")
+
+[node name="Body" type="StaticBody3D" parent="."]
+script = ExtResource("2")
+size = Vector3(3, 0.06, 3)
+material = ExtResource("3")
+
+[node name="Glow" type="Node3D" parent="."]
+visible = false
+
+[node name="North" type="MeshInstance3D" parent="Glow"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, -1.5)
+mesh = SubResource("frame")
+
+[node name="South" type="MeshInstance3D" parent="Glow"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 1.5)
+mesh = SubResource("frame")
+
+[node name="East" type="MeshInstance3D" parent="Glow"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.5, 0.04, 0)
+mesh = SubResource("frame")
+
+[node name="West" type="MeshInstance3D" parent="Glow"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -1.5, 0.04, 0)
+mesh = SubResource("frame")
+
+[node name="Label" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.38, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Exfil hatch"

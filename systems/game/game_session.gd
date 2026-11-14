@@ -95,10 +95,26 @@ func restart() -> void:
 	get_tree().reload_current_scene()
 
 
+## Ends the match as a successful exfil: +50% XP for the whole run.
+func finish_exfil() -> void:
+	if is_over:
+		return
+	for player: Player in get_players():
+		progression.add_xp(player, progression.get_xp(player) / 2)
+	level.process_mode = Node.PROCESS_MODE_DISABLED
+	_end_match(true)
+
+
 func _on_player_died(_player: Player) -> void:
 	for p: Player in get_players():
 		if p.is_alive():
 			return
+	_end_match(false)
+
+
+func _end_match(exfiled: bool) -> void:
+	if is_over:
+		return
 	is_over = true
 	director.stop()
 	var stats: Dictionary = {
@@ -106,6 +122,7 @@ func _on_player_died(_player: Player) -> void:
 		"kills": _kills,
 		"points": get_players()[0].wallet.points if not get_players().is_empty() else 0,
 		"xp": progression.get_xp(get_players()[0]) if not get_players().is_empty() else 0,
+		"exfil": exfiled,
 	}
 	await get_tree().create_timer(restart_delay).timeout
 	_capture_mouse(false)
