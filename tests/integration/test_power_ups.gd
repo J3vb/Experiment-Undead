@@ -84,3 +84,32 @@ func test_drop_vanishes_after_25_seconds() -> void:
 	assert_false(pickup.is_queued_for_deletion())
 	pickup._physics_process(1.5)
 	assert_true(pickup.is_queued_for_deletion())
+
+
+func _kill_by(killer: Player) -> void:
+	var corpse: Node3D = Node3D.new()
+	add_child_autofree(corpse)
+	corpse.global_position = Vector3(40, 0, 40)
+	Events.enemy_killed.emit(corpse, DamageInfo.create(1.0, killer))
+
+
+func test_scavenger_kills_drop_ammo_packs() -> void:
+	drops.drop_chance = 0.0
+	drops.ammo_pack_chance = 1.0
+	_kill_by(player)
+	assert_eq(_pickups().size(), 0, "no Scavenger, no pack")
+	player.add_serum(load("res://content/serums/scavenger.tres") as SerumData)
+	for i: int in 6:
+		_kill_by(player)
+	assert_eq(_pickups().size(), 6, "packs do not count toward the power-up cap")
+	assert_eq(_pickups()[0].data.id, &"ammo_pack")
+	assert_eq(drops.dropped_this_round, 0)
+
+
+func test_ammo_pack_adds_one_magazine_to_every_gun() -> void:
+	for weapon: Weapon in player.weapons.weapons:
+		weapon.instance.ammo_reserve = 0
+	var pack: PowerUp = drops._spawn(Content.get_item(&"power_ups", &"ammo_pack") as PowerUpData, Vector3(40, 0, 40))
+	pack.collect(player)
+	for weapon: Weapon in player.weapons.weapons:
+		assert_eq(weapon.instance.ammo_reserve, weapon.data.magazine_size)

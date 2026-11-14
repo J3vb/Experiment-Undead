@@ -1,6 +1,7 @@
 ## Rolls a power-up drop for every zombie kill: drop_chance each, at most
 ## max_per_round a round. Types come from a shuffled deck, so every type drops
-## once before any repeats. Lives in the GameSession.
+## once before any repeats. Kills by a player with Scavenger can also drop an
+## ammo pack (not counted in the cap). Lives in the GameSession.
 class_name PowerUpDrops
 extends Node
 
@@ -9,6 +10,8 @@ const SCENE: PackedScene = preload("res://systems/power_ups/power_up.tscn")
 @export var drop_chance: float = 0.025
 @export var max_per_round: int = 4
 @export var power_ups: Array[PowerUpData] = []
+@export var ammo_pack: PowerUpData
+@export var ammo_pack_chance: float = 0.1
 
 var session: GameSession
 var dropped_this_round: int = 0
@@ -22,6 +25,10 @@ func _ready() -> void:
 
 func drop(data: PowerUpData, at: Vector3) -> PowerUp:
 	dropped_this_round += 1
+	return _spawn(data, at)
+
+
+func _spawn(data: PowerUpData, at: Vector3) -> PowerUp:
 	var pickup: PowerUp = SCENE.instantiate() as PowerUp
 	pickup.data = data
 	session.level.add_child(pickup)
@@ -29,8 +36,13 @@ func drop(data: PowerUpData, at: Vector3) -> PowerUp:
 	return pickup
 
 
-func _on_enemy_killed(enemy: Node3D, _info: DamageInfo) -> void:
-	if not Net.is_authority() or dropped_this_round >= max_per_round or power_ups.is_empty():
+func _on_enemy_killed(enemy: Node3D, info: DamageInfo) -> void:
+	if not Net.is_authority():
+		return
+	var killer: Player = info.attacker as Player
+	if killer and killer.has_serum(&"scavenger") and session.rng.randf() < ammo_pack_chance:
+		_spawn(ammo_pack, enemy.global_position)
+	if dropped_this_round >= max_per_round or power_ups.is_empty():
 		return
 	if session.rng.randf() < drop_chance:
 		drop(_next(), enemy.global_position)

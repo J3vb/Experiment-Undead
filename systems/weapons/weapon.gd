@@ -156,7 +156,9 @@ func _tick_timers(delta: float) -> void:
 	_since_last_shot += delta
 	_buffered = maxf(_buffered - delta, 0.0)
 	_bloom = move_toward(_bloom, 0.0, data.spread_recovery * delta)
-	_sprint_block = data.sprint_to_fire_time if sprinting else maxf(_sprint_block - delta, 0.0)
+	_sprint_block = (
+		data.sprint_to_fire_time * _stat(&"sprint_out_time") if sprinting else maxf(_sprint_block - delta, 0.0)
+	)
 	var ads_target: float = 1.0 if aiming and state != State.RELOADING else 0.0
 	ads_progress = move_toward(ads_progress, ads_target, delta / maxf(data.ads_time * _stat(&"ads_time"), 0.01))
 	_sprint_progress = move_toward(_sprint_progress, 1.0 if sprinting else 0.0, delta * 6.0)

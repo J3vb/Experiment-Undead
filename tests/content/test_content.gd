@@ -86,7 +86,8 @@ func test_serums_are_valid() -> void:
 			continue
 		assert_eq(String(serum.id), path.get_file().get_basename(), path + " id matches file name")
 		assert_gt(serum.cost, 0, path + " cost")
-		assert_gt(serum.multipliers.size(), 0, path + " changes at least one stat")
+		if not SerumData.EFFECTS.has(serum.id):
+			assert_gt(serum.multipliers.size(), 0, path + " changes at least one stat")
 		for stat: StringName in serum.multipliers:
 			assert_has(SerumData.STATS, stat, "%s: '%s' is a stat code reads" % [path, stat])
 			assert_gt(serum.multipliers[stat], 0.0, path + " multiplier above 0")

@@ -20,6 +20,8 @@ extends Resource
 @export var attack_range: float = 1.5
 @export var attack_windup: float = 0.45
 @export var attack_cooldown: float = 1.2
+## Seconds to tear one plank off a window barrier.
+@export var plank_time: float = 1.5
 
 @export_group("Look")
 @export var body_scale: float = 1.0

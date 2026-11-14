@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="SerumData" format=3]
+
+[ext_resource type="Script" path="res://systems/serums/serum_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"second_wind"
+display_name = "Second Wind"
+cost = 1500
+description = "Get back up once when you go down. The dispenser runs dry after 3."

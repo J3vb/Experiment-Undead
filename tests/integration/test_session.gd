@@ -36,10 +36,17 @@ func _zombies() -> Array[Zombie]:
 	return out
 
 
+## The first zombie, already through its window barrier and chasing.
 func _wait_for_zombie() -> Zombie:
 	await wait_until(func() -> bool: return not _zombies().is_empty(), 5.0, "a zombie spawned")
 	var all: Array[Zombie] = _zombies()
-	return all[0] if not all.is_empty() else null
+	if all.is_empty():
+		return null
+	var z: Zombie = all[0]
+	while z.barrier and not z.barrier.is_broken():
+		z.barrier.tear_plank()
+	await wait_until(func() -> bool: return z.state == Zombie.State.CHASING, 8.0, "zombie climbed in")
+	return z
 
 
 func test_navmesh_has_paths() -> void:
@@ -75,8 +82,10 @@ func test_headshots_kill_and_pay() -> void:
 	if z == null:
 		fail_test("no zombie")
 		return
-	# A rising zombie's head is still below its body zone, so wait until it stands.
-	await wait_until(func() -> bool: return z.state != Zombie.State.SPAWNING, 2.0, "zombie stood up")
+	# Zombies that spawned while this one climbed in would soak up the shots.
+	for other: Zombie in _zombies():
+		if other != z:
+			other.free()
 	watch_signals(Events)
 	var weapon: Weapon = player.weapons.current
 	watch_signals(weapon)
