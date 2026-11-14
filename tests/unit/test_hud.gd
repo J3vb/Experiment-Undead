@@ -90,6 +90,13 @@ func test_exfil_shows_when_open_counts_hold_and_hides_when_closed() -> void:
 	hud._process(0.0)
 	assert_eq(hud.exfil_time.text, "Hold 0:39")
 	assert_almost_eq(hud.exfil_bar.value, 0.35, 0.001)
+	player.global_position = Vector3(10, 0, 0)
+	hud._process(0.0)
+	assert_eq(hud.exfil_time.text, "Hold 0:39 · Return to hatch")
+	assert_almost_eq(hud.exfil_bar.value, 0.35, 0.001)
+	player.global_position = Vector3.ZERO
+	hud._process(0.0)
+	assert_eq(hud.exfil_time.text, "Hold 0:39")
 	hatch.is_open = false
 	hatch.is_holding = false
 	hud._process(0.0)

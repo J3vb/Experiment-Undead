@@ -136,6 +136,8 @@ func _update_exfil() -> void:
 	exfil_bar.value = 1.0 - _exfil.hold_left / ExfilHatch.HOLD_TIME
 	var seconds: int = maxi(ceili(_exfil.hold_left), 0)
 	exfil_time.text = "Hold %d:%02d" % [seconds / 60, seconds % 60]
+	if _exfil.is_holding and not _exfil.has_player_in_zone():
+		exfil_time.text += " · Return to hatch"
 
 
 func _update_prompt(text: String) -> void:
