@@ -211,6 +211,8 @@ def join_into(target, parts: list) -> None:
 def attach(obj, pivot: tuple, parent=None):
     """Moves the origin to `pivot` (the joint code rotates around) and parents without moving."""
     bpy.context.scene.cursor.location = pivot
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
     bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
     if parent:
