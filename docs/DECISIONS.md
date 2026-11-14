@@ -6,6 +6,7 @@ built, what was simplified on purpose, and what is still to do.
 
 ## Built and matching the doc
 
+- **Weapon loot roller (first affix batch):** AffixData/AffixTier and RarityData Resources hold 22 weapon lines, three rarity-based implicit ammo lines and six rarity tables. ItemRoller uses only the supplied RNG for rarity/luck, counts, tag/family exclusions, gated tiers, roll fractions and ids, returning the versioned plain item dict; Legendary rolls four lines with a null trait, and Prototype weapon rolls are rejected. Equal-fifth tiers use a 0.1 step where their boundaries are fractional (otherwise 1). Gear, traits, named Legendaries, sets, caps, match drops and loot UI wait for later batches.
 - **Godot 4.7.2, Forward+, Jolt at 60 Hz, physics interpolation on.**
 - **Typed GDScript enforced:** `untyped_declaration` and `inferred_declaration` are errors (addons excluded).
 - **Folders:** `core/` autoloads, `systems/<feature>/` code + scenes, `content/<type>/` data only.

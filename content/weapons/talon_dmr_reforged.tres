@@ -20,6 +20,7 @@ repeat_last = 1
 [resource]
 script = ExtResource("1")
 id = &"talon_dmr_reforged"
+loot_tags = Array[StringName]([&"rifle", &"dmr"])
 display_name = "Talon Reforged"
 cost = 1500
 damage = 77.52
