@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://systems/game/game_session.tscn" id="1"]
+
+[node name="GameSession" instance=ExtResource("1")]
+profile_id = &"test_character_session"
+rng_seed = 1234
+restart_delay = 0.01

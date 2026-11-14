@@ -71,6 +71,7 @@ func test_toggle_uses_physical_key_and_restores_mouse() -> void:
 
 func test_game_commands_in_headless_session() -> void:
 	var session: GameSession = SESSION.instantiate() as GameSession
+	session.profile_id = &""
 	session.rng_seed = 1234
 	session.wave_rules = session.wave_rules.duplicate(true) as WaveRules
 	session.wave_rules.first_round_delay = 1000.0
@@ -176,6 +177,7 @@ func _check_revive_input(debug: CanvasLayer, player: Player) -> void:
 
 func test_real_revival_keeps_console_input_suppressed() -> void:
 	var session: GameSession = SESSION.instantiate() as GameSession
+	session.profile_id = &""
 	session.rng_seed = 1234
 	add_child_autofree(session)
 	session.director.stop()
@@ -202,6 +204,7 @@ func test_real_revival_keeps_console_input_suppressed() -> void:
 
 func test_open_console_consumes_pause_input() -> void:
 	var session: GameSession = SESSION.instantiate() as GameSession
+	session.profile_id = &""
 	session.rng_seed = 1234
 	add_child_autofree(session)
 	var debug: CanvasLayer = session.get_node("DebugConsole") as CanvasLayer

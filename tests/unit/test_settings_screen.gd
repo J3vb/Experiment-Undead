@@ -117,6 +117,7 @@ func test_horizontal_fov_converts_and_updates_live_camera() -> void:
 func test_pause_settings_back_escape_and_resume() -> void:
 	_screen.hide()
 	var session: GameSession = SESSION.instantiate() as GameSession
+	session.profile_id = &""
 	session.rng_seed = 1234
 	add_child_autofree(session)
 	var pause: InputEventAction = InputEventAction.new()

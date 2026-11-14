@@ -22,8 +22,9 @@ built, what was simplified on purpose, and what is still to do.
   6. Gameplay randomness uses `GameSession.rng` (seedable).
   7. XP goes through `ProgressionService` (one in-memory class for now).
   8. No global player: everything loops the `players` group.
+- **Local character (P5):** one `solo` character until character selection in P6. `user://characters/<id>.json` stores id, display name, total XP and skill ranks (empty until skills); level comes from total XP. Unknown fields survive saves. Game over, exfil (after +50%) and leaving early bank run XP once; unreadable/newer files stay untouched and use a temporary character.
 - **Economy:** per-player `Wallet`; `Economy` pays from `EconomyRules` and owns `try_spend()`.
-- **XP rules and levels:** `XpRules` (`content/progression/xp_rules.tres`) holds kill/round rewards and the rounded level curve from the balance CSV. `ProgressionService` owns run XP plus a starting total (0 until saves are connected), grants headshot and living-player round-clear XP, and emits every new level up to 50. Skill-point totals include the five bonus levels (54 at level 50); skills are not built yet. Exfil still bonuses only run XP.
+- **XP rules and levels:** `XpRules` (`content/progression/xp_rules.tres`) holds kill/round rewards and the rounded level curve from the balance CSV. `ProgressionService` owns run XP plus a starting total from the local character, grants headshot and living-player round-clear XP, and emits every new level up to 50. Skill-point totals include the five bonus levels (54 at level 50); skills are not built yet. Exfil still bonuses only run XP.
 - **Wave director:** intermission → `round_started` → spawning (max alive cap, extra per player) → clearing → `round_ended`.
 - **Zombie AI:** enum state machine (Spawning, Entering, Chasing, Attacking, Dead), NavigationAgent3D with avoidance off plus cheap separation, re-path interval by distance (0.25 / 0.5 / 1.5 s), target = nearest living player every 0.5 s.
 - **Fire timing:** time accumulator plus a 0.12 s input buffer, semi / burst / auto.

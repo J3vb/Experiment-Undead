@@ -11,6 +11,7 @@ var player: Player
 
 func before_each() -> void:
 	session = SESSION.instantiate() as GameSession
+	session.profile_id = &""
 	var rules: WaveRules = (session.wave_rules.duplicate(true)) as WaveRules
 	rules.first_round_delay = 0.2
 	rules.spawn_interval_start = 0.2
