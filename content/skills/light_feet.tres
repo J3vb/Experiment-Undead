@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="SkillNodeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/progression/skill_node_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"light_feet"
+display_name = "Light Feet"
+description = "Sprint speed +{v}% per rank."
+branch = &"Survivor"
+row = 1
+column = 0
+max_ranks = 2
+requires = Array[StringName]([])
+branch_points_needed = 0
+stat = &"sprint_speed"
+per_rank = 5.0

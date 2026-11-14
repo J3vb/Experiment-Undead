@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="SkillNodeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/progression/skill_node_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"weak_spot"
+display_name = "Weak Spot"
+description = "Headshot damage +{v}% per rank."
+branch = &"Marksman"
+row = 1
+column = 0
+max_ranks = 3
+requires = Array[StringName]([])
+branch_points_needed = 0
+stat = &"head_damage"
+per_rank = 5.0
