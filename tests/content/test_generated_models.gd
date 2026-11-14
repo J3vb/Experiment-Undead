@@ -4,6 +4,8 @@ extends GutTest
 
 const RIFLE: String = "res://assets/models/weapons/rifle_ar.glb"
 const SHOTGUN: String = "res://assets/models/weapons/shotgun_brenner.glb"
+const KESTREL: String = "res://assets/models/weapons/kestrel_smg.glb"
+const TALON: String = "res://assets/models/weapons/talon_dmr.glb"
 const WALL: String = "res://assets/models/kit/wall_panel.glb"
 const ZOMBIES: String = "res://assets/models/zombies/%s.glb"
 const ZOMBIE_PARTS: Array[String] = ["Hips", "Torso", "Head", "EyeL", "EyeR", "ArmL", "ArmR"]
@@ -79,10 +81,10 @@ func test_shotgun_has_a_pump_and_muzzle() -> void:
 
 
 func test_kestrel_has_moving_parts_and_iron_sights() -> void:
-	var gun: Node3D = _load("res://assets/models/weapons/kestrel_smg.glb")
+	var gun: Node3D = _load(KESTREL)
 	if gun == null:
 		return
-	for part: String in ["Magazine", "Bolt", "Muzzle"]:
+	for part: String in ["Magazine", "Bolt", "Muzzle", "Barrel", "FoldingStock", "IronSights", "Grip", "Trigger"]:
 		assert_not_null(gun.find_child(part, true, false), "Kestrel has " + part)
 	assert_true(gun.find_child("Receiver", true, false) is MeshInstance3D)
 	var muzzle: Node3D = gun.find_child("Muzzle", true, false) as Node3D
@@ -91,7 +93,11 @@ func test_kestrel_has_moving_parts_and_iron_sights() -> void:
 	var box: AABB = _size_of(gun)
 	assert_between(box.size.z, 0.65, 0.75, "compact SMG with stock extended")
 	assert_lt(box.size.x, 0.1, "narrow SMG")
-	assert_lt(gun.find_children("*", "MeshInstance3D", true, false).size(), 6, "few draw calls")
+	assert_lte(gun.find_children("*", "MeshInstance3D", true, false).size(), 10, "bounded separate parts")
+	var stock: Node3D = gun.find_child("FoldingStock", true, false) as Node3D
+	assert_not_null(stock, "folding stock has its own hinge pivot")
+	if stock:
+		assert_between(stock.position.z, 0.1, 0.2, "stock pivot sits at the receiver hinge")
 	gun.free()
 
 
@@ -167,14 +173,69 @@ func test_bloater_is_wide_with_a_glowing_belly() -> void:
 
 
 func test_talon_has_rifle_parts_and_a_long_barrel() -> void:
-	var gun: Node3D = _load("res://assets/models/weapons/talon_dmr.glb")
+	var gun: Node3D = _load(TALON)
 	if gun == null:
 		return
-	for part: String in ["Magazine", "Bolt", "Muzzle", "Barrel", "MuzzleBrake", "OpticGlass"]:
+	for part: String in [
+		"Magazine", "Bolt", "Muzzle", "Barrel", "MuzzleBrake", "OpticGlass", "Optic", "Bipod", "Stock"
+	]:
 		assert_not_null(gun.find_child(part, true, false), "Talon has " + part)
 	assert_true(gun.find_child("Receiver", true, false) is MeshInstance3D, "static body joined")
 	var muzzle: Node3D = gun.find_child("Muzzle", true, false) as Node3D
 	assert_lt(muzzle.position.z, -0.8, "long barrel points forward")
 	assert_almost_eq(_size_of(gun).size.z, 1.3, 0.05, "longer than the AR")
-	assert_lt(gun.find_children("*", "MeshInstance3D", true, false).size(), 10, "few draw calls")
+	assert_lte(gun.find_children("*", "MeshInstance3D", true, false).size(), 14, "bounded separate parts")
+	assert_not_null(gun.find_child("ScopeLensMount", true, false), "rear lens has an explicit mount")
 	gun.free()
+
+
+func _triangle_count(model: Node3D) -> int:
+	var count: int = 0
+	for node: Node in model.find_children("*", "MeshInstance3D", true, false):
+		count += int((node as MeshInstance3D).mesh.get_faces().size() / 3.0)
+	return count
+
+
+func test_rebuilt_guns_keep_rifle_triangle_budget_and_distinct_materials() -> void:
+	var rifle: Node3D = _load(RIFLE)
+	var budget: int = int(_triangle_count(rifle) * 1.5)
+	rifle.free()
+	for path: String in [KESTREL, TALON]:
+		var gun: Node3D = _load(path)
+		var triangles: int = _triangle_count(gun)
+		assert_gt(triangles, 0, path + " has geometry")
+		assert_lte(triangles, budget, path + " stays below 1.5x rifle triangles")
+		var receiver: MeshInstance3D = gun.find_child("Receiver", true, false) as MeshInstance3D
+		assert_gte(receiver.mesh.get_surface_count(), 3, path + " separates metal, polymer and secondary colour")
+		var materials: Array[Material] = []
+		for surface: int in receiver.mesh.get_surface_count():
+			var mat: Material = receiver.mesh.surface_get_material(surface)
+			if mat != null and not materials.has(mat):
+				materials.append(mat)
+		assert_gte(materials.size(), 3, path + " has at least three distinct material slots")
+		gun.free()
+
+
+func test_rebuilt_gun_animation_parts_have_independent_pivots() -> void:
+	for path: String in [KESTREL, TALON]:
+		var gun: Node3D = _load(path)
+		var receiver: Node3D = gun.find_child("Receiver", true, false) as Node3D
+		var magazine: MeshInstance3D = gun.find_child("Magazine", true, false) as MeshInstance3D
+		var bolt: Node3D = gun.find_child("Bolt", true, false) as Node3D
+		var handle: Node3D = gun.find_child("ChargingHandle", true, false) as Node3D
+		assert_eq(magazine.get_parent(), receiver, path + " magazine is independent of the bolt")
+		assert_eq(bolt.get_parent(), receiver, path + " bolt is independent of the magazine")
+		assert_not_null(handle, path + " has a charging handle")
+		if handle:
+			assert_true(bolt.is_ancestor_of(handle), path + " charging handle follows the bolt")
+		assert_lt(magazine.get_aabb().position.y, -0.08, path + " magazine extends below its well pivot")
+		assert_almost_eq(magazine.get_aabb().end.y, 0.0, 0.035, path + " magazine pivot is at its feed end")
+		assert_true(gun.scale.is_equal_approx(Vector3.ONE), path + " imports in metres without rescaling")
+		gun.free()
+
+
+func test_rebuilt_guns_use_dynamic_light_baking() -> void:
+	for path: String in [KESTREL, TALON]:
+		var settings: ConfigFile = ConfigFile.new()
+		assert_eq(settings.load(path + ".import"), OK, path + " import settings are committed")
+		assert_eq(settings.get_value("params", "meshes/light_baking"), 3, path + " receives dynamic probe lighting")
