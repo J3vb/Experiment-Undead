@@ -120,3 +120,19 @@ func test_shotgun_fires_every_pellet() -> void:
 	assert_eq(hits.size(), weapon.data.pellets, "one trace per pellet")
 	assert_eq(weapon.data.pellets, 8, "Brenner Trench fires 8 pellets")
 	assert_eq(weapon.instance.ammo_in_mag, weapon.data.magazine_size - 1, "one shell per shot")
+
+
+func test_scope_camera_follows_main_camera_each_frame_without_interpolation() -> void:
+	var weapon: Weapon = _gun()
+	var lens: ScopeLens = _part(weapon, "ScopeLens") as ScopeLens
+	var mode: Node.PhysicsInterpolationMode = lens.camera.physics_interpolation_mode
+	assert_eq(mode, Node.PHYSICS_INTERPOLATION_MODE_OFF, "scope camera is moved in _process")
+	assert_false(lens.camera.is_physics_interpolated(), "no 'interpolated camera moved outside physics' warning")
+	var main: Camera3D = get_viewport().get_camera_3d()
+	main.global_position = Vector3(3.0, 1.5, -2.0)
+	main.rotate_y(0.7)
+	weapon.ads_progress = 1.0
+	lens._process(0.016)
+	var offset: float = lens.camera.global_position.distance_to(main.global_position)
+	assert_almost_eq(offset, 0.0, 0.001, "scope sits on the main camera")
+	assert_true(lens.camera.global_basis.is_equal_approx(main.global_basis), "scope looks where the main camera looks")

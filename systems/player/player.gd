@@ -13,8 +13,15 @@ extends CharacterBody3D
 @export var ground_accel: float = 14.0
 @export var ground_decel: float = 18.0
 @export var air_accel: float = 3.0
+## Seconds of sprint before the legs give out (Stride scales it).
+@export var sprint_time: float = 4.0
+## Seconds without sprint after running out; also how long a full refill takes.
+@export var sprint_cooldown: float = 3.0
 @export var jump_velocity: float = 4.8
 @export var gravity_multiplier: float = 1.3
+
+## Seconds spent down before Second Wind gets the player back up.
+@export var second_wind_time: float = 3.0
 
 @export_group("Interact")
 @export var interact_range: float = 2.5
@@ -30,7 +37,10 @@ var input_enabled: bool = true
 var is_sprinting: bool = false
 var is_aiming: bool = false
 var is_crouching: bool = false
+## Down but not out: Second Wind brings the player back up soon.
+var is_downed: bool = false
 var move_input: Vector2 = Vector2.ZERO
+var sprint_left: float = 4.0
 var last_frame: InputFrame = InputFrame.new()
 ## The Interactable under the crosshair, or null. Updated every tick.
 var focus: Interactable
@@ -42,6 +52,7 @@ var _fallback_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _focus_query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.new()
 var _base_max_health: float = 100.0
 var _base_slots: int = 2
+var _sprint_cooldown_left: float = 0.0
 
 @onready var camera_rig: PlayerCamera = $Head
 @onready var camera: Camera3D = $Head/RecoilPivot/Camera3D
@@ -55,7 +66,7 @@ var _base_slots: int = 2
 func _ready() -> void:
 	add_to_group(&"players")
 	collision_layer = Layers.PLAYER
-	collision_mask = Layers.WORLD | Layers.ENEMY
+	collision_mask = Layers.WORLD | Layers.ENEMY | Layers.BARRIER
 	health.damaged.connect(_on_damaged)
 	health.health_changed.connect(_on_health_changed)
 	health.died.connect(_on_died)
@@ -93,6 +104,13 @@ func get_stat(stat: StringName) -> float:
 	return value
 
 
+func has_serum(id: StringName) -> bool:
+	for serum: SerumData in serums:
+		if serum.id == id:
+			return true
+	return false
+
+
 func add_serum(serum: SerumData) -> void:
 	if serums.has(serum):
 		return
@@ -128,6 +146,7 @@ func apply_frame(frame: InputFrame, delta: float) -> void:
 		look(frame.look)
 		weapons.add_sway(frame.look)
 	_read_input(frame)
+	_tick_stamina(delta)
 	_update_focus()
 	if input_enabled and focus and frame.has(InputFrame.INTERACT) and Net.is_authority():
 		focus.interact(self)
@@ -161,7 +180,7 @@ func _read_input(frame: InputFrame) -> void:
 	is_crouching = frame.has(InputFrame.CROUCH) and is_on_floor()
 	var wants_sprint: bool = frame.has(InputFrame.SPRINT) and move_input.y < -0.4 and not is_crouching
 	is_aiming = frame.has(InputFrame.ADS) and not wants_sprint
-	is_sprinting = wants_sprint and is_on_floor()
+	is_sprinting = wants_sprint and is_on_floor() and can_sprint()
 	weapons.set_trigger(frame.has(InputFrame.FIRE))
 	if frame.has(InputFrame.RELOAD):
 		weapons.reload()
@@ -169,6 +188,27 @@ func _read_input(frame: InputFrame) -> void:
 		weapons.cycle(1)
 	elif frame.has(InputFrame.PREV_WEAPON):
 		weapons.cycle(-1)
+
+
+func can_sprint() -> bool:
+	return _sprint_cooldown_left <= 0.0
+
+
+## Sprint drains sprint_left; running out blocks sprint for sprint_cooldown,
+## then refills it. Stopping early refills it over sprint_cooldown seconds.
+func _tick_stamina(delta: float) -> void:
+	var full: float = sprint_time * get_stat(&"sprint_time")
+	if _sprint_cooldown_left > 0.0:
+		_sprint_cooldown_left -= delta
+		if _sprint_cooldown_left <= 0.0:
+			sprint_left = full
+	elif is_sprinting:
+		sprint_left -= delta
+		if sprint_left <= 0.0:
+			sprint_left = 0.0
+			_sprint_cooldown_left = sprint_cooldown
+	else:
+		sprint_left = minf(sprint_left + delta * full / sprint_cooldown, full)
 
 
 func _move(delta: float, frame: InputFrame) -> void:
@@ -213,8 +253,30 @@ func _on_points_changed(total: int, delta: int) -> void:
 func _on_died(_info: DamageInfo) -> void:
 	input_enabled = false
 	weapons.set_trigger(false)
+	if has_serum(&"second_wind"):
+		_go_down()
+		return
 	weapons.visible = false
 	var tween: Tween = create_tween().set_parallel()
 	tween.tween_property(camera_rig, "position:y", 0.3, 0.8).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 	tween.tween_property(camera_rig, "rotation:z", deg_to_rad(70.0), 0.8)
 	Events.player_died.emit(self)
+
+
+## Second Wind: stay down for second_wind_time, then get up with full health.
+## Uses up Second Wind; the other Serums stay.
+func _go_down() -> void:
+	is_downed = true
+	is_crouching = true
+	create_tween().tween_property(camera_rig, "rotation:z", deg_to_rad(25.0), 0.4)
+	await get_tree().create_timer(second_wind_time, false, true).timeout
+	for serum: SerumData in serums:
+		if serum.id == &"second_wind":
+			serums.erase(serum)
+			break
+	is_downed = false
+	is_crouching = false
+	input_enabled = true
+	health.reset(health.max_health)
+	create_tween().tween_property(camera_rig, "rotation:z", 0.0, 0.4)
+	Events.player_revived.emit(self)

@@ -25,4 +25,4 @@
 - [ ] Follows the Keep it simple rules in AGENTS.md
 - [ ] Only touched files this task needed
 - [ ] One label: `new`, `fix`, `balance` or `tech`
-- [ ] Big or core change (over 300 changed lines, or `core/`, `project.godot`, networking): reviewed by a second agent
+- [ ] Automatic review arrived for the latest commit, every comment fixed or answered and resolved

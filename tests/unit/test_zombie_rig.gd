@@ -74,6 +74,23 @@ func test_death_disables_hit_zones_and_goes_limp() -> void:
 	assert_eq(zombie.head_zone.collision_layer, 0, "head zone off when dead")
 	await wait_seconds(0.5)
 	assert_gt(zombie.visual.get_offset(&"ArmL").x, 0.5, "arms fall slack")
+	assert_lt(zombie.visual.rotation.x, -1.0, "body tipped over")
+	assert_false(zombie.voice.is_processing(), "dead zombies stop groaning")
+
+
+func test_rising_zombie_climbs_out_of_the_floor() -> void:
+	var zombie: Zombie = _spawn(WALKER)
+	zombie.state_time = 0.0
+	zombie.visual.follow(zombie, 0.0)
+	assert_almost_eq(zombie.visual.position.y, -1.8, 0.01, "starts under the floor")
+	zombie.state_time = Zombie.SPAWN_TIME
+	zombie.visual.follow(zombie, 0.0)
+	assert_almost_eq(zombie.visual.position.y, 0.0, 0.01, "standing at the end of the rise")
+
+
+func test_voice_gets_the_enemy_groans() -> void:
+	var zombie: Zombie = _spawn(WALKER)
+	assert_eq(zombie.voice.groans, zombie.data.groan_sounds)
 
 
 func test_bloater_has_its_own_model_and_wider_body() -> void:

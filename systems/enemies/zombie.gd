@@ -1,32 +1,38 @@
-## Basic zombie: rises, chases the nearest living player over the navmesh,
-## swings when close, dies. State machine is a plain enum + match.
+## Basic zombie brain: rises, tears through its window barrier (if it spawned
+## behind one), chases the nearest living player over the navmesh, swings when
+## close, dies. State machine is a plain enum + match. The body
+## (ZombieRig) and voice (ZombieVoice) are child nodes with their own scripts.
 class_name Zombie
 extends CharacterBody3D
 
-enum State { SPAWNING, CHASING, ATTACKING, DEAD }
+enum State { SPAWNING, ENTERING, CHASING, ATTACKING, DEAD }
 
 const SPAWN_TIME: float = 0.9
-const CORPSE_TIME: float = 5.0
 const SEPARATION_RADIUS: float = 0.9
 const SEPARATION_FORCE: float = 2.5
 const STRIKE_TIME: float = 0.35
-## Arms start lifting toward a target closer than this.
-const REACH_DISTANCE: float = 3.0
+## A swing still lands this far past attack_range (also the reach through a window).
+const HIT_SLACK: float = 0.3
 
 var data: EnemyData
 var net_id: int = 0
 var state: State = State.SPAWNING
+## Seconds since the current state began.
+var state_time: float = 0.0
 var target: Player
+## The window this zombie climbs through; set by the Spawner, cleared once inside.
+var barrier: Barrier
 
 var _max_health: float = 100.0
 var _speed: float = 1.8
 var _damage: float = 35.0
-var _state_time: float = 0.0
 var _attack_cooldown: float = 0.0
 var _attack_landed: bool = false
+var _tear_timer: float = 0.0
+var _climbing: bool = false
 var _repath_timer: float = 0.0
 var _retarget_timer: float = 0.0
-var _groan_timer: float = 0.0
+var _stuck_watch: ZombieStuckWatch = ZombieStuckWatch.new()
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _rng: RandomNumberGenerator
 
@@ -34,7 +40,7 @@ var _rng: RandomNumberGenerator
 @onready var agent: NavigationAgent3D = $NavigationAgent3D
 @onready var visual: ZombieRig = $Visual
 @onready var head_zone: HitZone = $HitZones/Head
-@onready var voice: AudioStreamPlayer3D = $Voice
+@onready var voice: ZombieVoice = $Voice
 @onready var hit_zones: Array[HitZone] = [$HitZones/Head, $HitZones/Body]
 
 
@@ -64,19 +70,19 @@ func _ready() -> void:
 	if data:
 		health.reset(_max_health)
 		visual.scale = Vector3.ONE * data.body_scale
+		voice.groans = data.groan_sounds
 	# The head zone rides on the model's head so headshots follow the animation.
 	head_zone.reparent(visual.head, false)
 	head_zone.position = Vector3.ZERO
 	health.damaged.connect(_on_damaged)
 	health.died.connect(_on_died)
 	_repath_timer = _rng.randf() * 0.25
-	_groan_timer = _rng.randf_range(1.0, 5.0)
 	visual.position.y = -1.8
 	_enter(State.SPAWNING)
 
 
 func _physics_process(delta: float) -> void:
-	_state_time += delta
+	state_time += delta
 	_attack_cooldown = maxf(_attack_cooldown - delta, 0.0)
 	if not is_on_floor():
 		velocity.y -= _gravity * delta
@@ -85,6 +91,8 @@ func _physics_process(delta: float) -> void:
 	match state:
 		State.SPAWNING:
 			_tick_spawning()
+		State.ENTERING:
+			_tick_entering(delta)
 		State.CHASING:
 			_tick_chasing(delta)
 		State.ATTACKING:
@@ -93,20 +101,21 @@ func _physics_process(delta: float) -> void:
 			velocity.x = 0.0
 			velocity.z = 0.0
 	move_and_slide()
-	_tick_voice(delta)
 
 
 func _enter(new_state: State) -> void:
 	state = new_state
-	_state_time = 0.0
+	state_time = 0.0
 	_attack_landed = false
 
 
 func _tick_spawning() -> void:
 	velocity.x = 0.0
 	velocity.z = 0.0
-	if _state_time >= SPAWN_TIME:
-		_enter(State.CHASING)
+	if state_time >= SPAWN_TIME:
+		_stuck_watch.restart(global_position)
+		_tear_timer = data.plank_time
+		_enter(State.ENTERING if barrier else State.CHASING)
 
 
 func _tick_chasing(delta: float) -> void:
@@ -117,9 +126,10 @@ func _tick_chasing(delta: float) -> void:
 	var to_target: Vector3 = target.global_position - global_position
 	to_target.y = 0.0
 	var distance: float = to_target.length()
+	_stuck_watch.tick(self, delta, distance)
 	if distance <= data.attack_range * 0.85 and _attack_cooldown <= 0.0 and _can_see(target):
 		_enter(State.ATTACKING)
-		_play(data.attack_sound)
+		voice.say(data.attack_sound)
 		return
 
 	_repath_timer -= delta
@@ -139,17 +149,66 @@ func _tick_chasing(delta: float) -> void:
 	_face(to_target, delta)
 
 
+## Walk to the window, tear planks (or swipe a player through the gap), climb in.
+func _tick_entering(delta: float) -> void:
+	if barrier.is_broken() or _climbing:
+		_climb_in(delta)
+		return
+	_update_target(delta)
+	var to_window: Vector3 = barrier.outside_point() - global_position
+	to_window.y = 0.0
+	if to_window.length() > 0.3:
+		_steer(to_window.normalized() * _speed + _separation(), delta)
+		_face(to_window, delta)
+		return
+	_steer(Vector3.ZERO, delta)
+	_face(barrier.global_position - global_position, delta)
+	if (
+		target
+		and _attack_cooldown <= 0.0
+		and _flat_distance(target) <= data.attack_range + HIT_SLACK
+		and _can_see(target)
+	):
+		_enter(State.ATTACKING)
+		voice.say(data.attack_sound)
+		return
+	_tear_timer -= delta
+	if _tear_timer <= 0.0:
+		_tear_timer = data.plank_time
+		barrier.tear_plank()
+
+
+func _climb_in(delta: float) -> void:
+	_climbing = true
+	var to_inside: Vector3 = barrier.inside_point() - global_position
+	to_inside.y = 0.0
+	if to_inside.length() < 0.4:
+		barrier = null
+		_climbing = false
+		_stuck_watch.restart(global_position)
+		_enter(State.CHASING)
+		return
+	_steer(to_inside.normalized() * _speed, delta)
+	_face(to_inside, delta)
+
+
+func _flat_distance(other: Node3D) -> float:
+	var flat: Vector3 = other.global_position - global_position
+	flat.y = 0.0
+	return flat.length()
+
+
 func _tick_attacking(delta: float) -> void:
 	velocity.x = move_toward(velocity.x, 0.0, data.acceleration * delta)
 	velocity.z = move_toward(velocity.z, 0.0, data.acceleration * delta)
 	if target:
 		_face(target.global_position - global_position, delta)
-	if not _attack_landed and _state_time >= data.attack_windup:
+	if not _attack_landed and state_time >= data.attack_windup:
 		_attack_landed = true
 		_try_hit_target()
-	if _state_time >= data.attack_windup + STRIKE_TIME:
+	if state_time >= data.attack_windup + STRIKE_TIME:
 		_attack_cooldown = data.attack_cooldown
-		_enter(State.CHASING)
+		_enter(State.ENTERING if barrier else State.CHASING)
 
 
 func _try_hit_target() -> void:
@@ -157,7 +216,7 @@ func _try_hit_target() -> void:
 		return
 	var flat: Vector3 = target.global_position - global_position
 	flat.y = 0.0
-	if flat.length() <= data.attack_range + 0.3 and _can_see(target):
+	if flat.length() <= data.attack_range + HIT_SLACK and _can_see(target):
 		var info: DamageInfo = DamageInfo.create(_damage, self, DamageInfo.Type.MELEE)
 		info.position = target.global_position
 		info.impulse = flat.normalized()
@@ -228,48 +287,6 @@ func _face(direction: Vector3, delta: float) -> void:
 	rotation.y = lerp_angle(rotation.y, target_yaw, clampf(data.turn_speed * delta, 0.0, 1.0))
 
 
-func _process(delta: float) -> void:
-	_animate(delta)
-
-
-## Code-driven limb animation until real clips arrive.
-func _animate(delta: float) -> void:
-	if state == State.SPAWNING:
-		visual.position.y = lerpf(-1.8, 0.0, clampf(_state_time / SPAWN_TIME, 0.0, 1.0))
-		return
-	if state == State.DEAD:
-		return
-	visual.position = visual.position.lerp(Vector3.ZERO, clampf(delta * 10.0, 0.0, 1.0))
-	if state == State.ATTACKING:
-		var windup: float = maxf(data.attack_windup, 0.01)
-		if _state_time < windup:
-			visual.pose_attack(_state_time / windup)
-		else:
-			visual.pose_attack(1.0 + (_state_time - windup) / STRIKE_TIME)
-		return
-	var reach: float = 0.0
-	if target:
-		reach = clampf(1.0 - global_position.distance_to(target.global_position) / REACH_DISTANCE, 0.0, 1.0)
-	visual.pose_walk(Vector2(velocity.x, velocity.z).length(), reach, delta)
-
-
-func _tick_voice(delta: float) -> void:
-	if state == State.DEAD or data == null or data.groan_sounds.is_empty():
-		return
-	_groan_timer -= delta
-	if _groan_timer <= 0.0:
-		_groan_timer = randf_range(3.0, 8.0)
-		_play(data.groan_sounds[randi() % data.groan_sounds.size()])
-
-
-func _play(stream: AudioStream) -> void:
-	if stream == null:
-		return
-	voice.stream = stream
-	voice.pitch_scale = randf_range(0.85, 1.15)
-	voice.play()
-
-
 func _on_damaged(info: DamageInfo) -> void:
 	Events.enemy_damaged.emit(self, info)
 	if state == State.DEAD:
@@ -284,17 +301,10 @@ func _on_died(info: DamageInfo) -> void:
 	collision_layer = 0
 	for zone: HitZone in hit_zones:
 		zone.set_enabled(false)
-	voice.stop()
+	voice.silence()
 	Events.enemy_killed.emit(self, info)
-	visual.pose_dead()
-	var fall_dir: float = 1.0 if randf() < 0.5 else -1.0
-	var tween: Tween = create_tween()
-	(
-		tween
-		. tween_property(visual, "rotation", Vector3(deg_to_rad(-85.0), 0.0, deg_to_rad(10.0) * fall_dir), 0.45)
-		. set_trans(Tween.TRANS_QUAD)
-		. set_ease(Tween.EASE_IN)
-	)
-	tween.tween_interval(CORPSE_TIME)
-	tween.tween_property(visual, "position:y", -1.0, 1.5)
-	tween.tween_callback(queue_free)
+	visual.fall_over().tween_callback(queue_free)
+
+
+func _process(delta: float) -> void:
+	visual.follow(self, delta)

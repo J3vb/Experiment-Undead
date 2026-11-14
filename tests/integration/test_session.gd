@@ -36,10 +36,17 @@ func _zombies() -> Array[Zombie]:
 	return out
 
 
+## The first zombie, already through its window barrier and chasing.
 func _wait_for_zombie() -> Zombie:
 	await wait_until(func() -> bool: return not _zombies().is_empty(), 5.0, "a zombie spawned")
 	var all: Array[Zombie] = _zombies()
-	return all[0] if not all.is_empty() else null
+	if all.is_empty():
+		return null
+	var z: Zombie = all[0]
+	while z.barrier and not z.barrier.is_broken():
+		z.barrier.tear_plank()
+	await wait_until(func() -> bool: return z.state == Zombie.State.CHASING, 8.0, "zombie climbed in")
+	return z
 
 
 func test_navmesh_has_paths() -> void:
@@ -47,7 +54,6 @@ func test_navmesh_has_paths() -> void:
 	var path: PackedVector3Array = NavigationServer3D.map_get_path(map, Vector3(24, 0, 58), Vector3(44, 0, 50), true)
 	assert_gt(path.size(), 1, "path across the Loading Dock")
 	assert_almost_eq(path[path.size() - 1].distance_to(Vector3(44, 0, 50)), 0.0, 1.0)
-
 
 
 func test_player_spawns_with_loadout() -> void:
@@ -76,6 +82,10 @@ func test_headshots_kill_and_pay() -> void:
 	if z == null:
 		fail_test("no zombie")
 		return
+	# Zombies that spawned while this one climbed in would soak up the shots.
+	for other: Zombie in _zombies():
+		if other != z:
+			other.free()
 	watch_signals(Events)
 	var weapon: Weapon = player.weapons.current
 	watch_signals(weapon)

@@ -7,6 +7,9 @@ const PARTS: Array[StringName] = [&"Hips", &"Torso", &"Head", &"ArmL", &"ArmR", 
 ## Arm lift (radians) at the top of an attack wind-up, and the drop past rest at the end of the strike.
 const ATTACK_LIFT: float = 1.3
 const ATTACK_DROP: float = 0.7
+## Arms start lifting toward a target closer than this.
+const REACH_DISTANCE: float = 3.0
+const CORPSE_TIME: float = 5.0
 
 ## A .glb from tools/assets/build_models.py (faces +Z, one node per limb).
 @export var model: PackedScene
@@ -33,6 +36,48 @@ func _ready() -> void:
 	_belly = body.find_child("Belly", true, false) as Node3D
 	if _parts.has(&"Hips"):
 		_hips_rest_y = _parts[&"Hips"].position.y
+
+
+## Code-driven limb animation for the zombie's current state, until real clips arrive.
+func follow(zombie: Zombie, delta: float) -> void:
+	var t: float = zombie.state_time
+	if zombie.state == Zombie.State.SPAWNING:
+		position.y = lerpf(-1.8, 0.0, clampf(t / Zombie.SPAWN_TIME, 0.0, 1.0))
+		return
+	if zombie.state == Zombie.State.DEAD:
+		return
+	position = position.lerp(Vector3.ZERO, clampf(delta * 10.0, 0.0, 1.0))
+	if zombie.state == Zombie.State.ATTACKING:
+		var windup: float = maxf(zombie.data.attack_windup, 0.01)
+		if t < windup:
+			pose_attack(t / windup)
+		else:
+			pose_attack(1.0 + (t - windup) / Zombie.STRIKE_TIME)
+		return
+	var reach: float = 0.0
+	if zombie.state == Zombie.State.ENTERING:
+		reach = 1.0
+	elif zombie.target:
+		var distance: float = zombie.global_position.distance_to(zombie.target.global_position)
+		reach = clampf(1.0 - distance / REACH_DISTANCE, 0.0, 1.0)
+	pose_walk(Vector2(zombie.velocity.x, zombie.velocity.z).length(), reach, delta)
+
+
+## Limbs go slack, the body tips over, lies for a while and sinks. Connect to
+## the returned tween to free the zombie at the end.
+func fall_over() -> Tween:
+	pose_dead()
+	var fall_dir: float = 1.0 if randf() < 0.5 else -1.0
+	var tween: Tween = create_tween()
+	(
+		tween
+		. tween_property(self, "rotation", Vector3(deg_to_rad(-85.0), 0.0, deg_to_rad(10.0) * fall_dir), 0.45)
+		. set_trans(Tween.TRANS_QUAD)
+		. set_ease(Tween.EASE_IN)
+	)
+	tween.tween_interval(CORPSE_TIME)
+	tween.tween_property(self, "position:y", -1.0, 1.5)
+	return tween
 
 
 func has_part(part_name: StringName) -> bool:
@@ -82,7 +127,7 @@ func pose_attack(t: float) -> void:
 	_pose_part(&"LegR", Vector3(-0.1, 0.0, 0.0))
 
 
-## Limbs go slack as the body falls (the Zombie tweens the fall itself).
+## Limbs go slack as the body falls.
 func pose_dead() -> void:
 	var tween: Tween = create_tween().set_parallel().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	var slack: Dictionary[StringName, Vector3] = {

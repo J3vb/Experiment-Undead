@@ -8,6 +8,7 @@ var _health_ratio: float = 1.0
 var _center_time: float = 0.0
 var _delta_time: float = 0.0
 var _delta_sum: int = 0
+var _exfil: ExfilHatch
 
 @onready var crosshair: Crosshair = $Root/Crosshair
 @onready var hit_marker: HitMarker = $Root/HitMarker
@@ -18,6 +19,7 @@ var _delta_sum: int = 0
 @onready var serums_label: Label = $Root/SerumsLabel
 @onready var ammo_label: Label = $Root/AmmoLabel
 @onready var weapon_label: Label = $Root/WeaponLabel
+@onready var exfil_label: Label = $Root/ExfilLabel
 @onready var hint_label: Label = $Root/HintLabel
 @onready var center_label: Label = $Root/CenterLabel
 @onready var prompt_label: Label = $Root/PromptLabel
@@ -44,9 +46,13 @@ func _ready() -> void:
 	Events.weapon_switched.connect(_on_weapon_switched)
 	Events.hit_confirmed.connect(_on_hit_confirmed)
 	Events.serum_gained.connect(_on_serum_gained)
+	Events.power_up_collected.connect(_on_power_up_collected)
+	Events.player_revived.connect(_on_player_revived)
 	Events.round_started.connect(_on_round_started)
 	Events.round_ended.connect(_on_round_ended)
 	Events.intermission_started.connect(_on_intermission)
+	Events.exfil_opened.connect(func() -> void: _flash_center("EXFIL OPEN", 3.0))
+	Events.exfil_called.connect(func(hatch: ExfilHatch) -> void: _exfil = hatch)
 	Events.game_over.connect(_on_game_over)
 
 
@@ -68,12 +74,21 @@ func _process(delta: float) -> void:
 		if _delta_time <= 0.0:
 			_delta_sum = 0
 
+	_update_exfil()
 	prompt_label.text = _player.focus.get_prompt(_player) if _player and _player.focus else ""
 	if _player and _player.weapons.current:
 		var w: Weapon = _player.weapons.current
 		crosshair.spread_degrees = w.get_current_spread()
 		crosshair.fov_degrees = _player.camera.fov
 		crosshair.modulate.a = 0.0 if (w.ads_progress > 0.5 or _player.is_sprinting or not _player.is_alive()) else 1.0
+
+
+func _update_exfil() -> void:
+	if _exfil == null or not _exfil.is_holding:
+		exfil_label.text = ""
+		return
+	var where: String = "HOLD THE HATCH" if _exfil.has_player_in_zone() else "RETURN TO THE HATCH"
+	exfil_label.text = "EXFIL  %s  %d" % [where, ceili(_exfil.hold_left)]
 
 
 func _flash_center(text: String, seconds: float) -> void:
@@ -142,6 +157,16 @@ func _on_hit_confirmed(player: Player, is_kill: bool, is_headshot: bool) -> void
 	hit_sound.play()
 
 
+func _on_power_up_collected(_collector: Player, power_up: PowerUpData) -> void:
+	_flash_center(power_up.display_name.to_upper(), 2.0)
+
+
+func _on_player_revived(player: Player) -> void:
+	if player == _player:
+		_flash_center("SECOND WIND", 2.0)
+		_on_serum_gained(player, null)
+
+
 func _on_round_started(round_number: int, _count: int) -> void:
 	round_label.text = str(round_number)
 	_flash_center("ROUND %d" % round_number, 3.0)
@@ -160,12 +185,15 @@ func _on_intermission(next_round: int, duration: float) -> void:
 func _on_game_over(stats: Dictionary) -> void:
 	game_over_panel.visible = true
 	game_over_stats.text = (
-		"You survived %d round%s\n%d kills    %d points    %d XP\n\nPress ENTER to try again"
-		% [
-			stats.get("round", 0),
-			"" if stats.get("round", 0) == 1 else "s",
-			stats.get("kills", 0),
-			stats.get("points", 0),
-			stats.get("xp", 0)
-		]
+		("Exfil successful: +50% XP\n" if stats.get("exfil", false) else "")
+		+ (
+			"You survived %d round%s\n%d kills    %d points    %d XP\n\nPress ENTER to try again"
+			% [
+				stats.get("round", 0),
+				"" if stats.get("round", 0) == 1 else "s",
+				stats.get("kills", 0),
+				stats.get("points", 0),
+				stats.get("xp", 0)
+			]
+		)
 	)
