@@ -34,6 +34,7 @@ material = SubResource("m_flash")
 size = Vector2(0.22, 0.22)
 
 [sub_resource type="ShaderMaterial" id="m_lens"]
+resource_local_to_scene = true
 shader = ExtResource("3")
 
 [sub_resource type="CylinderMesh" id="lens_disc"]

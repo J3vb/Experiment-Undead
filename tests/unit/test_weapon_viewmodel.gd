@@ -67,11 +67,22 @@ func test_scope_renders_zoomed_view_only_while_aiming() -> void:
 		return
 	lens._process(0.016)
 	assert_false(lens.is_rendering(), "no extra render at the hip")
+	var material: ShaderMaterial = lens.material_override as ShaderMaterial
+	assert_false(material.get_shader_parameter(&"live"), "lens shows plain glass at the hip")
 	weapon.ads_progress = 1.0
 	lens._process(0.016)
 	assert_true(lens.is_rendering(), "scope renders while aiming")
+	assert_true(material.get_shader_parameter(&"live"), "lens shows the scope view while aiming")
 	var main: Camera3D = get_viewport().get_camera_3d()
 	assert_almost_eq(lens.camera.fov, main.fov / lens.zoom, 0.01, "scope view is zoomed")
 	assert_eq(lens.camera.cull_mask & ScopeLens.VIEWMODEL_LAYER, 0, "scope camera does not see the gun")
 	for mesh: Node in weapon.find_children("*", "MeshInstance3D", true, false):
 		assert_eq((mesh as MeshInstance3D).layers, ScopeLens.VIEWMODEL_LAYER, mesh.name + " is on the viewmodel layer")
+
+
+func test_each_rifle_has_its_own_scope_picture() -> void:
+	var first: ScopeLens = _part(_rifle(), "ScopeLens") as ScopeLens
+	var second: ScopeLens = _part(_rifle(), "ScopeLens") as ScopeLens
+	assert_ne(first.material_override, second.material_override, "lens materials are not shared")
+	var view: Texture2D = (first.material_override as ShaderMaterial).get_shader_parameter(&"view")
+	assert_eq(view, first.viewport.get_texture(), "first rifle still shows its own scope camera")

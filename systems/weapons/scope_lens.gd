@@ -13,6 +13,7 @@ var camera: Camera3D
 var viewport: SubViewport
 
 var _weapon: Weapon
+var _material: ShaderMaterial
 
 
 func _ready() -> void:
@@ -23,7 +24,9 @@ func _ready() -> void:
 	camera.near = 0.05
 	viewport.add_child(camera)
 	add_child(viewport)
-	(material_override as ShaderMaterial).set_shader_parameter(&"view", viewport.get_texture())
+	_material = material_override as ShaderMaterial
+	_material.set_shader_parameter(&"view", viewport.get_texture())
+	_material.set_shader_parameter(&"live", false)
 	var node: Node = get_parent()
 	while node != null and not node is Weapon:
 		node = node.get_parent()
@@ -37,7 +40,9 @@ func is_rendering() -> bool:
 func _process(_delta: float) -> void:
 	var main: Camera3D = get_viewport().get_camera_3d()
 	var aimed: bool = _weapon != null and _weapon.active and _weapon.ads_progress > AIMED and main != null
-	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if aimed else SubViewport.UPDATE_DISABLED
+	if aimed != is_rendering():
+		viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if aimed else SubViewport.UPDATE_DISABLED
+		_material.set_shader_parameter(&"live", aimed)
 	if not aimed:
 		return
 	viewport.size = Vector2i(get_viewport().get_visible_rect().size / 2.0)
