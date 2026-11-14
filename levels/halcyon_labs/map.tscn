@@ -15,6 +15,8 @@
 [ext_resource type="Resource" path="res://content/weapons/brenner_trench.tres" id="brenner"]
 [ext_resource type="PackedScene" path="res://systems/interactables/med_dispenser.tscn" id="meddisp"]
 [ext_resource type="PackedScene" path="res://systems/interactables/reforger.tscn" id="reforger"]
+[ext_resource type="PackedScene" path="res://systems/interactables/specimen_vault.tscn" id="vault"]
+[ext_resource type="Script" path="res://systems/weapons/weapon_data.gd" id="weapon_data"]
 [ext_resource type="PackedScene" path="res://systems/interactables/exfil_hatch.tscn" id="exfil"]
 [ext_resource type="PackedScene" path="res://systems/interactables/barrier.tscn" id="barrier"]
 [ext_resource type="Resource" path="res://content/serums/ironhide.tres" id="serum_ironhide"]
@@ -306,83 +308,27 @@ serum = ExtResource("serum_stride")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68, -2, 4.5)
 serum = ExtResource("serum_mule")
 
-[node name="VaultSpotMessHall" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
+[node name="VaultSpotMessHall" type="Marker3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0.5, 45.4)
-script = ExtResource("block")
-size = Vector3(2, 1, 1)
-material = SubResource("machine_dev")
 
-[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/VaultSpotMessHall"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
-billboard = 1
-pixel_size = 0.004
-font_size = 40
-text = "Specimen Vault (first)"
+[node name="SpecimenVault" parent="NavigationRegion3D/Machines" instance=ExtResource("vault")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0.5, 45.4)
+pool = Array[ExtResource("weapon_data")]([ExtResource("rifle"), ExtResource("brenner")])
 
-[node name="VaultSpotGuardPost" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
+[node name="VaultSpotGuardPost" type="Marker3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0.5, 49.4)
-script = ExtResource("block")
-size = Vector3(2, 1, 1)
-material = SubResource("machine_dev")
 
-[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/VaultSpotGuardPost"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
-billboard = 1
-pixel_size = 0.004
-font_size = 40
-text = "Specimen Vault"
-
-[node name="VaultSpotCorridor" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
+[node name="VaultSpotCorridor" type="Marker3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0.5, 29.4)
-script = ExtResource("block")
-size = Vector3(2, 1, 1)
-material = SubResource("machine_dev")
 
-[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/VaultSpotCorridor"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
-billboard = 1
-pixel_size = 0.004
-font_size = 40
-text = "Specimen Vault"
+[node name="VaultSpotGeneratorHall" type="Marker3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 27.4, 0.5, 20)
 
-[node name="VaultSpotGeneratorHall" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.4, 0.5, 20)
-script = ExtResource("block")
-size = Vector3(1, 1, 2)
-material = SubResource("machine_dev")
-
-[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/VaultSpotGeneratorHall"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
-billboard = 1
-pixel_size = 0.004
-font_size = 40
-text = "Specimen Vault"
-
-[node name="VaultSpotLabs" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
+[node name="VaultSpotLabs" type="Marker3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 0.5, 10.6)
-script = ExtResource("block")
-size = Vector3(2, 1, 1)
-material = SubResource("machine_dev")
 
-[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/VaultSpotLabs"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
-billboard = 1
-pixel_size = 0.004
-font_size = 40
-text = "Specimen Vault"
-
-[node name="VaultSpotContainment" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
+[node name="VaultSpotContainment" type="Marker3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, -2.5, 31.4)
-script = ExtResource("block")
-size = Vector3(2, 1, 1)
-material = SubResource("machine_dev")
-
-[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/VaultSpotContainment"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
-billboard = 1
-pixel_size = 0.004
-font_size = 40
-text = "Specimen Vault"
 
 [node name="Reforger" parent="NavigationRegion3D/Machines" instance=ExtResource("reforger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.6, 1, 22)
