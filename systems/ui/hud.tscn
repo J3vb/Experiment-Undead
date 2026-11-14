@@ -85,6 +85,19 @@ grow_vertical = 0
 theme_override_font_sizes/font_size = 34
 text = "500"
 
+[node name="SerumsLabel" type="Label" parent="Root"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 44.0
+offset_top = -235.0
+offset_right = 444.0
+offset_bottom = -195.0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.45, 0.95, 0.8, 1)
+
 [node name="PointsDelta" type="Label" parent="Root"]
 layout_mode = 1
 anchors_preset = 2

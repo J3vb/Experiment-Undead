@@ -37,6 +37,8 @@ signal weapon_switched(player: Player, weapon: Weapon)
 signal ammo_changed(player: Player, in_mag: int, reserve: int)
 ## A player's reload started.
 signal reload_started(player: Player, duration: float)
+## A player bought a Serum.
+signal serum_gained(player: Player, serum: SerumData)
 ## A player's shot landed on an enemy.
 signal hit_confirmed(player: Player, is_kill: bool, is_headshot: bool)
 

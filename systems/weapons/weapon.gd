@@ -42,6 +42,7 @@ var _sprint_block: float = 0.0
 var _sprint_progress: float = 0.0
 var _reload_timer: float = 0.0
 var _reload_duration: float = 0.0
+var _empty_reload: bool = false
 var _kick: float = 0.0
 var _flash_timer: float = 0.0
 var _rng: RandomNumberGenerator
@@ -113,11 +114,16 @@ func start_reload() -> bool:
 		return false
 	state = State.RELOADING
 	_burst_left = 0
-	_reload_duration = data.empty_reload_time if instance.ammo_in_mag == 0 else data.reload_time
+	_empty_reload = instance.ammo_in_mag == 0
+	_reload_duration = (data.empty_reload_time if _empty_reload else data.reload_time) * _stat(&"reload_time")
 	_reload_timer = _reload_duration
 	_play_mech(data.reload_sound)
 	reload_started.emit(_reload_duration)
 	return true
+
+
+func _stat(stat: StringName) -> float:
+	return shooter.get_stat(stat) if shooter else 1.0
 
 
 func can_fire() -> bool:
@@ -152,7 +158,7 @@ func _tick_timers(delta: float) -> void:
 	_bloom = move_toward(_bloom, 0.0, data.spread_recovery * delta)
 	_sprint_block = data.sprint_to_fire_time if sprinting else maxf(_sprint_block - delta, 0.0)
 	var ads_target: float = 1.0 if aiming and state != State.RELOADING else 0.0
-	ads_progress = move_toward(ads_progress, ads_target, delta / maxf(data.ads_time, 0.01))
+	ads_progress = move_toward(ads_progress, ads_target, delta / maxf(data.ads_time * _stat(&"ads_time"), 0.01))
 	_sprint_progress = move_toward(_sprint_progress, 1.0 if sprinting else 0.0, delta * 6.0)
 	if _since_last_shot > (data.recoil.reset_time if data.recoil else 0.3):
 		_shots_in_string = 0
@@ -185,7 +191,7 @@ func _handle_trigger() -> void:
 		fire()
 		_burst_left = maxi(_burst_left - 1, 0)
 		var extra: float = 0.12 if data.fire_mode == WeaponData.FireMode.BURST and _burst_left == 0 else 0.0
-		_shot_timer += data.get_fire_interval() + extra
+		_shot_timer += data.get_fire_interval() * _stat(&"fire_interval") + extra
 	# Time spent blocked (reloading, sprinting, waiting for a press) is not
 	# banked as missed shots.
 	_shot_timer = maxf(_shot_timer, 0.0)
@@ -251,6 +257,8 @@ func _trace(origin: Vector3, direction: Vector3) -> void:
 	info.normal = normal
 	info.impulse = direction * 2.0
 	info.amount *= data.get_zone_multiplier(hit_zone.zone)
+	if hit_zone.zone == DamageInfo.Zone.HEAD:
+		info.amount *= _stat(&"head_damage")
 	hit_zone.receive_hit(info)
 	hit_landed.emit(hit_zone.health.is_dead, info.is_headshot())
 
@@ -295,7 +303,7 @@ func _update_pose(delta: float) -> void:
 func _pose_moving_parts() -> void:
 	if _bolt:
 		var back: float = _kick / maxf(data.viewmodel_kick, 0.001)
-		if state == State.RELOADING and _reload_duration == data.empty_reload_time:
+		if state == State.RELOADING and _empty_reload:
 			back = 1.0
 		_bolt.position = _bolt_rest + Vector3(0.0, 0.0, 0.035 * back)
 	if _magazine:

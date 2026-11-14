@@ -34,10 +34,14 @@ var move_input: Vector2 = Vector2.ZERO
 var last_frame: InputFrame = InputFrame.new()
 ## The Interactable under the crosshair, or null. Updated every tick.
 var focus: Interactable
+## Serums bought this run. Their multipliers are read through get_stat().
+var serums: Array[SerumData] = []
 
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _fallback_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _focus_query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.new()
+var _base_max_health: float = 100.0
+var _base_slots: int = 2
 
 @onready var camera_rig: PlayerCamera = $Head
 @onready var camera: Camera3D = $Head/RecoilPivot/Camera3D
@@ -57,6 +61,8 @@ func _ready() -> void:
 	health.died.connect(_on_died)
 	wallet.points_changed.connect(_on_points_changed)
 	weapons.setup(self, camera)
+	_base_max_health = health.max_health
+	_base_slots = weapons.max_slots
 	_focus_query.collision_mask = Layers.INTERACTABLE | Layers.WORLD
 	_focus_query.collide_with_areas = true
 
@@ -77,6 +83,26 @@ func is_alive() -> bool:
 func take_damage(info: DamageInfo) -> void:
 	if Net.is_authority():
 		health.take_damage(info)
+
+
+## Product of every active Serum's multiplier for this stat (1.0 when none).
+func get_stat(stat: StringName) -> float:
+	var value: float = 1.0
+	for serum: SerumData in serums:
+		value *= serum.multipliers.get(stat, 1.0)
+	return value
+
+
+func add_serum(serum: SerumData) -> void:
+	if serums.has(serum):
+		return
+	serums.append(serum)
+	var new_max: float = _base_max_health * get_stat(&"max_health")
+	var gained: float = new_max - health.max_health
+	health.max_health = new_max
+	health.heal(gained)
+	weapons.max_slots = roundi(_base_slots * get_stat(&"weapon_slots"))
+	Events.serum_gained.emit(self, serum)
 
 
 func get_rng() -> RandomNumberGenerator:

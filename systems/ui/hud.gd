@@ -15,6 +15,7 @@ var _delta_sum: int = 0
 @onready var round_label: Label = $Root/RoundLabel
 @onready var points_label: Label = $Root/PointsLabel
 @onready var points_delta: Label = $Root/PointsDelta
+@onready var serums_label: Label = $Root/SerumsLabel
 @onready var ammo_label: Label = $Root/AmmoLabel
 @onready var weapon_label: Label = $Root/WeaponLabel
 @onready var hint_label: Label = $Root/HintLabel
@@ -42,6 +43,7 @@ func _ready() -> void:
 	Events.ammo_changed.connect(_on_ammo_changed)
 	Events.weapon_switched.connect(_on_weapon_switched)
 	Events.hit_confirmed.connect(_on_hit_confirmed)
+	Events.serum_gained.connect(_on_serum_gained)
 	Events.round_started.connect(_on_round_started)
 	Events.round_ended.connect(_on_round_ended)
 	Events.intermission_started.connect(_on_intermission)
@@ -121,6 +123,15 @@ func _on_ammo_changed(player: Player, in_mag: int, reserve: int) -> void:
 func _on_weapon_switched(player: Player, weapon: Weapon) -> void:
 	if player == _player:
 		weapon_label.text = weapon.data.display_name.to_upper()
+
+
+func _on_serum_gained(player: Player, _serum: SerumData) -> void:
+	if player != _player:
+		return
+	var names: PackedStringArray = []
+	for serum: SerumData in player.serums:
+		names.append(serum.display_name.to_upper())
+	serums_label.text = "  ".join(names)
 
 
 func _on_hit_confirmed(player: Player, is_kill: bool, is_headshot: bool) -> void:
