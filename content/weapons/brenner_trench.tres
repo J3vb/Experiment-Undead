@@ -21,6 +21,7 @@ repeat_last = 1
 [resource]
 script = ExtResource("1")
 id = &"brenner_trench"
+loot_tags = Array[StringName]([&"shotgun", &"pump"])
 display_name = "Brenner Trench"
 cost = 750
 damage = 20.0

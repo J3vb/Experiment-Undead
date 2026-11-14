@@ -7,6 +7,7 @@ enum FireMode { SEMI, BURST, AUTO }
 
 @export_group("Identity")
 @export var id: StringName = &""
+@export var loot_tags: Array[StringName] = []
 @export var display_name: String = "Weapon"
 @export var cost: int = 0
 @export var crate_weight: float = 1.0
@@ -57,8 +58,10 @@ enum FireMode { SEMI, BURST, AUTO }
 @export var dry_fire_sound: AudioStream
 @export var reload_sound: AudioStream
 
+
 func get_fire_interval() -> float:
 	return 60.0 / maxf(rounds_per_minute, 1.0)
+
 
 func get_damage_at(distance: float) -> float:
 	if distance <= falloff_start:
@@ -67,6 +70,7 @@ func get_damage_at(distance: float) -> float:
 		return min_damage
 	var t: float = (distance - falloff_start) / maxf(falloff_end - falloff_start, 0.001)
 	return lerpf(damage, min_damage, t)
+
 
 func get_zone_multiplier(zone: DamageInfo.Zone) -> float:
 	match zone:
