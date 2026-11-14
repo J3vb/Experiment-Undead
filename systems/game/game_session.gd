@@ -15,6 +15,7 @@ extends Node
 @onready var director: WaveDirector = $WaveDirector
 @onready var economy: Economy = $Economy
 @onready var progression: ProgressionService = $Progression
+@onready var power_up_drops: PowerUpDrops = $PowerUpDrops
 @onready var hud: Hud = $Hud
 
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -24,6 +25,7 @@ var spawner: Spawner
 var is_over: bool = false
 var _kills: int = 0
 
+
 func _ready() -> void:
 	add_to_group(&"game_session")
 	rng.seed = rng_seed if rng_seed != 0 else randi()
@@ -31,6 +33,7 @@ func _ready() -> void:
 	economy.rules = economy_rules
 	director.rules = wave_rules
 	director.session = self
+	power_up_drops.session = self
 	Events.player_died.connect(_on_player_died)
 	Events.enemy_killed.connect(func(_e: Node3D, _i: DamageInfo) -> void: _kills += 1)
 
@@ -50,9 +53,11 @@ func _ready() -> void:
 		level.navigation_ready.connect(director.start, CONNECT_ONE_SHOT)
 	_capture_mouse(true)
 
+
 func _physics_process(_delta: float) -> void:
 	if not get_tree().paused:
 		tick += 1
+
 
 func _spawn_player() -> Player:
 	var player: Player = player_scene.instantiate() as Player
@@ -62,11 +67,13 @@ func _spawn_player() -> Player:
 	player.spawn(self, starting_loadout)
 	return player
 
+
 func get_players() -> Array[Player]:
 	var out: Array[Player] = []
 	for node: Node in get_tree().get_nodes_in_group(&"players"):
 		out.append(node as Player)
 	return out
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"pause") and not is_over:
@@ -76,14 +83,17 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventMouseButton and event.is_pressed() and not get_tree().paused and not is_over:
 		_capture_mouse(true)
 
+
 func _set_paused(value: bool) -> void:
 	get_tree().paused = value
 	_capture_mouse(not value)
 	hud.show_paused(value)
 
+
 func restart() -> void:
 	get_tree().paused = false
 	get_tree().reload_current_scene()
+
 
 func _on_player_died(_player: Player) -> void:
 	for p: Player in get_players():
@@ -100,6 +110,7 @@ func _on_player_died(_player: Player) -> void:
 	await get_tree().create_timer(restart_delay).timeout
 	_capture_mouse(false)
 	Events.game_over.emit(stats)
+
 
 func _capture_mouse(captured: bool) -> void:
 	if DisplayServer.get_name() == "headless":

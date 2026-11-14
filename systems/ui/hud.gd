@@ -44,6 +44,7 @@ func _ready() -> void:
 	Events.weapon_switched.connect(_on_weapon_switched)
 	Events.hit_confirmed.connect(_on_hit_confirmed)
 	Events.serum_gained.connect(_on_serum_gained)
+	Events.power_up_collected.connect(_on_power_up_collected)
 	Events.round_started.connect(_on_round_started)
 	Events.round_ended.connect(_on_round_ended)
 	Events.intermission_started.connect(_on_intermission)
@@ -140,6 +141,10 @@ func _on_hit_confirmed(player: Player, is_kill: bool, is_headshot: bool) -> void
 	hit_marker.show_hit(is_kill, is_headshot)
 	hit_sound.pitch_scale = 0.8 if is_kill else 1.0
 	hit_sound.play()
+
+
+func _on_power_up_collected(_collector: Player, power_up: PowerUpData) -> void:
+	_flash_center(power_up.display_name.to_upper(), 2.0)
 
 
 func _on_round_started(round_number: int, _count: int) -> void:
