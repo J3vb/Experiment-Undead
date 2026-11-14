@@ -186,7 +186,12 @@ func test_real_revival_keeps_console_input_suppressed() -> void:
 	player.take_damage(DamageInfo.create(player.health.current, null))
 	assert_true(player.is_downed)
 	debug._set_open(true)
+	var revived_input: Array[bool] = []
+	Events.player_revived.connect(
+		func(revived: Player) -> void: revived_input.append(revived.input_enabled), CONNECT_ONE_SHOT
+	)
 	await wait_for_signal(Events.player_revived, 2.0)
+	assert_eq(revived_input, [false], "revival signal must keep controls suppressed immediately")
 	assert_true(player.is_alive())
 	assert_false(player.input_enabled, "revival signal must suppress input immediately")
 	assert_false(player.local_input.enabled)
@@ -202,6 +207,7 @@ func test_open_console_consumes_pause_input() -> void:
 	var debug: CanvasLayer = session.get_node("DebugConsole") as CanvasLayer
 	debug._set_open(true)
 	get_viewport().push_input(_key(KEY_ESCAPE), true)
+	assert_false(get_tree().paused, "first Escape must not reach the pause handler")
 	get_viewport().push_input(_key(KEY_ESCAPE), true)
 	assert_false(get_tree().paused, "Escape must not pause or recapture through the console")
 	assert_eq(Input.mouse_mode, Input.MOUSE_MODE_VISIBLE)
