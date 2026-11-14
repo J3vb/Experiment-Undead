@@ -84,7 +84,7 @@ func test_every_real_dispenser_sells_a_different_serum() -> void:
 		if machine:
 			assert_does_not_have(seen, machine.serum.id)
 			seen.append(machine.serum.id)
-	assert_eq(seen.size(), 6, "Ironhide, Quickhands, Overclock, Deadeye, Mule, Stride")
+	assert_eq(seen.size(), 7, "Ironhide, Quickhands, Overclock, Deadeye, Mule, Stride, Second Wind")
 
 
 func test_stride_doubles_sprint_and_speeds_up_sprint_to_fire() -> void:
@@ -95,3 +95,40 @@ func test_stride_doubles_sprint_and_speeds_up_sprint_to_fire() -> void:
 	weapon.sprinting = true
 	weapon._tick_timers(0.0)
 	assert_almost_eq(weapon._sprint_block, weapon.data.sprint_to_fire_time * 0.5, 0.001)
+
+
+func test_second_wind_gets_you_back_up() -> void:
+	level.turn_power_on()
+	_dispenser("ironhide").interact(player)
+	_dispenser("second_wind").interact(player)
+	player.second_wind_time = 0.2
+	watch_signals(Events)
+	player.health.take_damage(DamageInfo.create(1000.0, null))
+	assert_true(player.is_downed)
+	assert_false(player.is_alive(), "zombies leave a downed player alone")
+	assert_signal_not_emitted(Events, "player_died")
+	await wait_for_signal(Events.player_revived, 2.0)
+	assert_false(player.is_downed)
+	assert_true(player.is_alive())
+	assert_eq(player.health.current, 250.0, "full health, Ironhide kept")
+	assert_false(player.has_serum(&"second_wind"), "used up")
+	assert_true(player.has_serum(&"ironhide"))
+	assert_false(session.is_over)
+
+
+func test_without_second_wind_going_down_ends_the_run() -> void:
+	watch_signals(Events)
+	player.health.take_damage(DamageInfo.create(1000.0, null))
+	assert_false(player.is_downed)
+	assert_signal_emitted(Events, "player_died")
+
+
+func test_second_wind_dispenser_is_gone_after_3_sales() -> void:
+	level.turn_power_on()
+	var machine: MedDispenser = _dispenser("second_wind")
+	for i: int in 3:
+		assert_false(machine.is_queued_for_deletion(), "still there for sale %d" % (i + 1))
+		machine.interact(player)
+		player.serums.clear()
+	assert_true(machine.is_queued_for_deletion())
+	assert_eq(player.wallet.points, 20000 - 3 * 1500)

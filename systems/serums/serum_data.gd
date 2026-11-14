@@ -16,6 +16,9 @@ const STATS: Array[StringName] = [
 	&"sprint_out_time",
 ]
 
+## Serums whose effect is code that checks for their id, not a stat.
+const EFFECTS: Array[StringName] = [&"second_wind"]
+
 @export var id: StringName = &""
 @export var display_name: String = "Serum"
 @export var cost: int = 1000
