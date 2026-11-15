@@ -46,6 +46,7 @@ var _empty_reload: bool = false
 var _kick: float = 0.0
 var _flash_timer: float = 0.0
 var _rng: RandomNumberGenerator
+var _spin_up: SpinUp = SpinUp.new()
 
 var _flash_light: Light3D
 var _flash_mesh: Node3D
@@ -71,6 +72,7 @@ func _ready() -> void:
 		var vm: Node = data.viewmodel_scene.instantiate()
 		_viewmodel_root.add_child(vm)
 		_find_moving_parts(vm)
+	_spin_up.configure(data.spin_up_time, _viewmodel_root.find_child("SpinUpAudio", true, false) as AudioStreamPlayer)
 	_set_flash(false)
 	_fire_audio.stream = data.fire_sound
 	position = data.hip_position
@@ -95,6 +97,8 @@ func _find_moving_parts(vm: Node) -> void:
 func set_active(value: bool) -> void:
 	active = value
 	visible = value
+	if not value:
+		_spin_up.reset()
 	if value:
 		_emit_ammo()
 
@@ -113,6 +117,7 @@ func start_reload() -> bool:
 	if state == State.RELOADING or not instance.needs_reload():
 		return false
 	state = State.RELOADING
+	_spin_up.reset()
 	_burst_left = 0
 	_empty_reload = instance.ammo_in_mag == 0
 	_reload_duration = (data.empty_reload_time if _empty_reload else data.reload_time) * _stat(&"reload_time")
@@ -137,7 +142,9 @@ func tick(delta: float) -> void:
 		_reload_timer -= delta
 		if _reload_timer <= 0.0:
 			_finish_reload()
+	_spin_up.tick(delta, trigger_held and can_fire() and instance.ammo_in_mag > 0)
 	_handle_trigger()
+	_spin_up.tick(0.0, trigger_held and can_fire() and instance.ammo_in_mag > 0)
 	_trigger_was_held = trigger_held
 
 
@@ -193,7 +200,7 @@ func _handle_trigger() -> void:
 		fire()
 		_burst_left = maxi(_burst_left - 1, 0)
 		var extra: float = 0.12 if data.fire_mode == WeaponData.FireMode.BURST and _burst_left == 0 else 0.0
-		_shot_timer += data.get_fire_interval() * _stat(&"fire_interval") + extra
+		_shot_timer += _spin_up.scale_interval(data.get_fire_interval(), _shot_timer) * _stat(&"fire_interval") + extra
 	# Time spent blocked (reloading, sprinting, waiting for a press) is not
 	# banked as missed shots.
 	_shot_timer = maxf(_shot_timer, 0.0)

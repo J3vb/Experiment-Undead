@@ -1,9 +1,11 @@
-## Fires each of the five Vault guns in a real Halcyon Labs session: they hurt a
+## Fires each of the six Vault guns in a real Halcyon Labs session: they hurt a
 ## round-one Walker, the Mako fires three-round bursts and the Corvid one-shots.
 extends GutTest
 
 const SESSION: PackedScene = preload("res://systems/game/game_session.tscn")
-const VAULT_GUNS: Array[StringName] = [&"hollis_44", &"mako_pdw", &"atlas_auto", &"halberd_lmg", &"corvid_338"]
+const VAULT_GUNS: Array[StringName] = [
+	&"hollis_44", &"mako_pdw", &"atlas_auto", &"halberd_lmg", &"corvid_338", &"bastion_lmg"
+]
 
 var session: GameSession
 var player: Player

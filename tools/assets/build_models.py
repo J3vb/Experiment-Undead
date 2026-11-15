@@ -225,6 +225,7 @@ MODELS = {
     "mako_pdw": ("weapons/mako_pdw.glb", gun("mako_model")),
     "atlas_auto": ("weapons/atlas_auto.glb", gun("atlas_model")),
     "halberd_lmg": ("weapons/halberd_lmg.glb", gun("halberd_model")),
+    "bastion_lmg": ("weapons/bastion_lmg.glb", gun("bastion_model")),
     "corvid_338": ("weapons/corvid_338.glb", gun("corvid_model")),
     "shambler": ("zombies/shambler.glb", zombie_model.build_shambler),
     "crawler": ("zombies/crawler.glb", zombie_model.build_crawler),

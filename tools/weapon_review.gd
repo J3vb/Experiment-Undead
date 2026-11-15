@@ -11,6 +11,7 @@ const GUNS: Dictionary[String, String] = {
 	"mako_pdw": "mako_pdw",
 	"atlas_auto": "atlas_auto",
 	"halberd_lmg": "halberd_lmg",
+	"bastion_lmg": "bastion_lmg",
 	"corvid_338": "corvid_338",
 }
 const RARITIES: Dictionary[String, Color] = {
