@@ -3,7 +3,10 @@ extends GameSession
 
 
 func _ready() -> void:
-	pass
+	loot = LootService.new()
+	loot.name = "LootService"
+	loot.session = self
+	add_child(loot)
 
 
 func _exit_tree() -> void:

@@ -8,6 +8,7 @@ func _ready() -> void:
 	var rules: WaveRules = session.wave_rules.duplicate(true) as WaveRules
 	rules.first_round_delay = 0.2
 	session.wave_rules = rules
+	session.ready.connect(func() -> void: session.loot.drop_chance_override = 1.0)
 	Events.enemy_killed.connect(_on_test_kill)
 
 

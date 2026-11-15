@@ -19,6 +19,7 @@ func before_each() -> void:
 	add_child_autofree(session)
 	await wait_until(func() -> bool: return session.level.is_navigation_ready, 10.0, "navmesh ready")
 	session.director.stop()
+	session.loot.drop_chance_override = 0.0
 	player = session.get_players()[0]
 
 
@@ -176,12 +177,46 @@ func test_pause_main_menu_banks_before_leaving() -> void:
 	get_tree().root.add_child(session)
 	get_tree().current_scene = session
 	session.progression.add_xp(player, 75)
+	session.loot.pack.add({"uid": "menu-exit", "base": "vest_light", "rar": "common"})
 	session._set_paused(true)
 	(session.hud.get_node("Root/PausePanel/Menu/MainMenu") as Button).pressed.emit()
 	assert_eq(int(SaveFile.read(PATH)["total_xp"]), START_XP + 75)
 	await wait_process_frames(2)
+	assert_eq(CharacterProfile.load_or_create(ID).stash[0].get("uid"), "menu-exit")
 	var menu: Node = get_tree().current_scene
 	get_tree().current_scene = runner_scene
 	assert_false(get_tree().paused)
 	assert_eq(menu.scene_file_path, "res://systems/ui/main_menu.tscn")
 	menu.free()
+
+
+func test_pack_is_saved_on_death_and_banking_is_idempotent() -> void:
+	var item: Dictionary = {"uid": "kept-on-death", "base": "vest_light", "rar": "rare", "ilvl": 17}
+	assert_true(session.loot.pack.add(item))
+	player.take_damage(DamageInfo.create(10000.0, null))
+	await wait_until(func() -> bool: return session.hud.results_screen.visible, 2.0, "death results shown")
+	session.bank_run_xp()
+	var saved: CharacterProfile = CharacterProfile.load_or_create(ID)
+	assert_eq(saved.stash[0].uid, "kept-on-death")
+	assert_eq(saved.stash[1], {})
+	assert_eq(session.loot.results(), {"loot": [item], "loot_lost": 0})
+	assert_true(session.loot.pack.items.is_empty())
+	assert_eq(session.hud.results_screen.loot_items.get_child_count(), 1)
+
+
+func test_stash_full_keeps_what_fits_saves_and_reports_overflow() -> void:
+	for slot: int in CharacterProfile.STASH_SIZE - 1:
+		session._profile.stash[slot] = {"uid": "old-%d" % slot}
+	for index: int in 3:
+		session.loot.pack.add({"uid": "new-%d" % index, "base": "vest_light", "rar": "common"})
+	var lost_before: int = Log.event_counts.get("loot.stash_item_lost", 0)
+	session.finish_exfil()
+	await wait_until(func() -> bool: return session.hud.results_screen.visible, 2.0, "results shown")
+	var saved: CharacterProfile = CharacterProfile.load_or_create(ID)
+	assert_eq(saved.stash[59].uid, "new-0")
+	assert_eq(saved.stash[58].uid, "old-58")
+	assert_eq(session.loot.lost, 2)
+	assert_eq(Log.event_counts.get("loot.stash_item_lost", 0) - lost_before, 2)
+	assert_eq(session.hud.results_screen.loot_status.text, "Stash full · 1 kept, 2 items lost")
+	session.bank_run_xp()
+	assert_eq(session.loot.lost, 2)

@@ -1,5 +1,4 @@
-## One match. Owns the map, players, rules, RNG and tick counter, and wires
-## the session systems together. Built from MapData-style exports.
+## One match: owns map, players, rules, RNG and tick counter, and wires session systems.
 class_name GameSession
 extends Node
 
@@ -26,6 +25,7 @@ var players: PlayerSpawner
 var handshake: Handshake
 var look_sync: LookSync
 var hit_claims: HitClaims
+var loot: LootService
 var remote_shots: RemoteShots
 var is_over: bool = false
 var _kills: int = 0
@@ -125,12 +125,13 @@ func _setup_network() -> bool:
 func _setup_shooting() -> void:
 	hit_claims = HitClaims.new()
 	hit_claims.name = "HitClaims"
-	hit_claims.session = self
-	add_child(hit_claims)
+	loot = LootService.new()
 	remote_shots = RemoteShots.new()
 	remote_shots.name = "RemoteShots"
-	remote_shots.session = self
-	add_child(remote_shots)
+	for system: Node in [hit_claims, loot, remote_shots]:
+		system.set("session", self)
+		add_child(system)
+	(hud.get_node("Root/Pack") as PackOverlay).setup(loot)
 
 
 func _physics_process(_delta: float) -> void:
@@ -155,6 +156,7 @@ func _on_player_added(player: Player) -> void:
 	if player.is_multiplayer_authority():
 		progression.set_start_total(player, _start_total_xp)
 		_profile_player = player
+		loot.player = player
 	player.spawn(self, starting_loadout)
 	if player == _profile_player and _profile:
 		var loadout: Variant = _profile.to_dict().get("loadout", {})
@@ -246,10 +248,11 @@ func bank_run_xp() -> void:
 	if _xp_banked:
 		return
 	_xp_banked = true
+	var transport: MultiplayerPeer = progression.multiplayer.multiplayer_peer
 	if (
 		is_inside_tree()
-		and progression.multiplayer.multiplayer_peer != null
-		and progression.multiplayer.multiplayer_peer.get_connection_status() != MultiplayerPeer.CONNECTION_DISCONNECTED
+		and transport
+		and transport.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED
 		and progression.multiplayer.is_server()
 	):
 		for player: Player in get_players():
@@ -260,6 +263,7 @@ func bank_run_xp() -> void:
 	if not has_local_player or _profile == null or not is_instance_valid(_profile_player):
 		return
 	_profile.total_xp += progression.get_xp(_profile_player)
+	loot.bank(_profile)
 	_profile.save()
 
 
@@ -312,10 +316,7 @@ func _end_match(exfiled: bool) -> void:
 		"kills": _kills,
 		"headshots": _headshots,
 		"points": player.wallet.points if player else 0,
-		"xp": progression.get_xp(player),
 		"exfil": exfiled,
-		"start_total_xp": _start_total_xp,
-		"total_xp": progression.get_total_xp(_profile_player),
 	}
 	if not multiplayer.get_peers().is_empty():
 		_receive_match_end.rpc(stats)
@@ -328,7 +329,9 @@ func _receive_match_end(stats: Dictionary) -> void:
 	if is_over:
 		return
 	is_over = true
+	bank_run_xp()
 	_match_stats = stats.duplicate()
+	_match_stats.merge(loot.results(), true)
 	if is_instance_valid(_profile_player):
 		_match_stats["xp"] = progression.get_xp(_profile_player)
 		_match_stats["start_total_xp"] = _start_total_xp
