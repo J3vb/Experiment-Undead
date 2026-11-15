@@ -69,8 +69,14 @@ func test_thirteen_bases_are_indexed_and_reference_matching_visuals() -> void:
 		var visual: GearVisual = Content.get_item(&"gear_visuals", base.visual_id) as GearVisual
 		assert_not_null(visual, path + " visual exists")
 		if visual != null:
-			assert_eq(visual.slot, base.slot)
+			assert_eq(visual.slot, StringName(base.slot))
+			assert_same(GearVisual.find(base.visual_id), visual)
 	assert_eq(seen.size(), MODELS.size())
+
+
+func test_unknown_visual_and_fallback_slot_return_no_resource() -> void:
+	assert_null(GearVisual.find(&"unknown_visual"))
+	assert_null(GearVisual.fallback(&"unknown_slot"))
 
 
 func test_visual_scenes_load_and_attach_to_the_player_skeleton() -> void:
@@ -177,7 +183,7 @@ func _check_visual(id: StringName, skeleton: Skeleton3D) -> void:
 	assert_eq(visual.id, id)
 	assert_eq(String(visual.id), visual.resource_path.get_file().get_basename())
 	assert_has(MODELS, visual.id)
-	assert_has(SLOTS, StringName(visual.slot))
+	assert_has(SLOTS, visual.slot)
 	assert_eq(visual.set_id, &"")
 	assert_gte(skeleton.find_bone(visual.attach), 0, String(id) + " attachment bone exists")
 	assert_not_null(visual.scene, String(id) + " scene loads")

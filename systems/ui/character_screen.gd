@@ -225,7 +225,7 @@ func _item_name(item: Dictionary) -> String:
 		var gear: GearBaseData = Content.get_item(&"loot", base) as GearBaseData
 		if gear != null:
 			return gear.display_name
-	return String(base).capitalize() if GearVisual.SCENES.has(base) else "Unknown item"
+	return "Unknown item"
 
 
 func _inspect_button(button: Button) -> void:

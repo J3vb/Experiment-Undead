@@ -46,10 +46,11 @@ static func from_dict(data: Dictionary) -> CharacterProfile:
 	for slot: int in mini(saved_stash.size(), STASH_SIZE):
 		if saved_stash[slot] is Dictionary:
 			profile.stash[slot] = saved_stash[slot].duplicate(true)
-	var saved_loadout: Dictionary = data.get("loadout", {}) if data.get("loadout") is Dictionary else {}
-	for slot: String in profile.loadout:
-		if saved_loadout.get(slot) is Dictionary:
-			profile.loadout[slot] = saved_loadout[slot].duplicate(true)
+	var saved_loadout: Variant = data.get("loadout", {})
+	if saved_loadout is Dictionary:
+		for slot: String in profile.loadout:
+			if saved_loadout.get(slot) is Dictionary:
+				profile.loadout[slot] = saved_loadout[slot].duplicate(true)
 	profile._unknown = data.duplicate(true)
 	for key: String in ["id", "display_name", "total_xp", "skill_ranks", "stash", "loadout"]:
 		profile._unknown.erase(key)

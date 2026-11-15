@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 id = &"vest_medium"
-slot = "vest"
+slot = &"vest"
 scene = ExtResource("2")
 attach = &"spine_02"
 set_id = &""

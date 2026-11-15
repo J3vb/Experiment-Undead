@@ -5,6 +5,7 @@ var _scenario: String = ""
 var _port: int = 24654
 var _ready_file: String = ""
 var _net: Node
+var _handshake: Node
 
 
 func _initialize() -> void:
@@ -27,8 +28,13 @@ func _run() -> void:
 		root.add_child(player)
 		player.add_to_group(&"players")
 	assert(_net.host(_port, 1 if _scenario == "full" else _net.MAX_PLAYERS) == OK)
+	_handshake = (load("res://systems/net/handshake.gd") as GDScript).new() as Node
+	_handshake.has_local_player = _scenario == "full"
+	_handshake.max_players = _net.player_limit
+	root.add_child(_handshake)
 	if _scenario == "content":
-		_net._fingerprint = "different-game-content"
+		_handshake.fingerprint = "different-game-content"
+	_handshake.setup()
 	root.multiplayer.peer_connected.connect(_on_connected)
 	var marker: FileAccess = FileAccess.open(_ready_file, FileAccess.WRITE)
 	marker.store_string("ready")

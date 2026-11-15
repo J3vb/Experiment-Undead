@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 id = &"charm_keycard"
-slot = "charm"
+slot = &"charm"
 scene = ExtResource("2")
 attach = &"spine_03"
 set_id = &""

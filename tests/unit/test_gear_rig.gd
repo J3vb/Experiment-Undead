@@ -6,11 +6,14 @@ const BODY: PackedScene = preload("res://assets/models/characters/player.glb")
 
 func test_apply_attaches_one_piece_per_slot_on_the_expected_body_bones() -> void:
 	var rig: GearRig = _rig()
+	var bones: Dictionary[StringName, StringName] = {
+		&"vest": &"spine_02", &"charm": &"spine_03", &"implant": &"forearm_L"
+	}
 	rig.apply(_mixed_look())
 	for slot: StringName in CharacterLook.SLOTS:
 		var attachment: BoneAttachment3D = rig.skeleton.get_node(String(slot).capitalize()) as BoneAttachment3D
 		assert_not_null(attachment, String(slot) + " has a body attachment")
-		assert_eq(attachment.bone_name, GearVisual.BONES[slot])
+		assert_eq(attachment.bone_name, bones[slot])
 		assert_eq(attachment.get_child_count(), 1, "one equipped scene per filled slot")
 		assert_same(attachment.get_parent(), rig.skeleton)
 	assert_eq(_equipped_count(rig), 3)
@@ -113,8 +116,8 @@ func test_owner_body_and_new_pieces_cast_shadows_without_drawing_in_first_person
 
 func test_every_registered_visual_attaches_at_body_scale() -> void:
 	var rig: GearRig = _rig()
-	assert_eq(GearVisual.SCENES.size(), 13, "three vest frames, five charms and five implants")
-	for visual_id: StringName in GearVisual.SCENES:
+	assert_eq(Content.ids(&"gear_visuals").size(), 13, "three vest frames, five charms and five implants")
+	for visual_id: StringName in Content.ids(&"gear_visuals"):
 		var visual: GearVisual = GearVisual.find(visual_id)
 		assert_not_null(visual.scene, String(visual_id))
 		assert_ne(rig.skeleton.find_bone(visual.attach), -1, String(visual_id) + " has a body bone")
