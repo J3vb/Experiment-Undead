@@ -59,8 +59,12 @@ already reads `InputFrame`s, so the server could replay them.
 3. **Shooting:** hit claims to the server, damage, kills, points per player.
 4. **Player health and death:** zombie hits, down, revive (50 points), game
    over when everyone is down, results on every client.
-5. **Run end and saves:** XP and loot grants reach each client's own character
-   file; version check on join (`Build.PROTOCOL_VERSION`).
+5. **Run end and saves** (XP and handshake done; loot waits for L3): owner-only
+   reliable final XP grants bank through `bank_run_xp` into the client's own
+   character file. Live owner XP snapshots survive a mid-run disconnect; the
+   dedicated server saves no character. Hello checks protocol and the cached
+   hash of sorted Content ids before spawning, with version/content/full reasons.
+   Pack-to-stash banking cannot be connected until L3's Pack and stash exist.
 6. **Menu:** Host and play, direct connect field, plain-word errors (full,
    wrong version). Server browser and LAN discovery come with P8.
 

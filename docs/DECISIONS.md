@@ -97,8 +97,23 @@ built, what was simplified on purpose, and what is still to do.
 - **Emergency lighting (provisional):** every `CeilingLight` inside a `Level` with the power off runs at 30% brightness in red-orange with a red tube; on power-on each light switches back within 0.6 s (a ragged wave). No separate emergency fixtures or sound yet; the ambient light and fog stay the same. Lights outside a Level (look reference) are always normal.
 - **Co-op, steps 1-2 of 6 (provisional, see `docs/MULTIPLAYER.md`):** trusted client (the person's choice, 2026-11-15): each PC moves its own player and will claim its own hits; the server owns shared state. `Net.host/join/leave` with `--host` and `--join=addr:port` on the command line; `PlayerSpawner` gives each peer a `Player` named after its peer id (also its `net_id`), owned by that peer; `PoseSync` sends position, yaw and head pitch. Other players are a grey capsule (`RemoteBody`) with no first-person gun. The dedicated server runs one match at `/root/GameSession` with no player of its own; waves start once someone joins. Zombies (step 2): the server's `Spawner` spawns through a `MultiplayerSpawner`, and each zombie gets a `ZombieSync` (position, rotation, velocity, state, state time, vault time at 30 Hz); client copies run no AI and show the death pose when the state turns Dead, and vanish when the server frees the corpse. Not synced yet: shots, health, points, game over, saves (clients never bank XP). Losing the server returns to the main menu.
 
+- **Co-op run XP and handshake (step 5, partially built):** server-owned run XP
+  sends reliable cumulative snapshots only to its owner and one final grant at
+  run end. The owning client uses the solo `bank_run_xp` path to save its local
+  character once, including the latest received XP when disconnected. Dedicated
+  servers never load or save a character; clean shutdown waits briefly for final
+  grant acknowledgements. Godot's SceneMultiplayer authentication checks hello
+  before exposing the peer to replication, so rejected clients receive no Players.
+  The cached SHA256 covers every sorted Content category/id, including loot.
+  `Net.RefusalReason` and retained plain-word messages cover wrong protocol (both
+  versions), different content and full servers. Hello level is currently ignored.
+  L3's Pack/stash and co-op steps 3-4 are absent from the repository at this build;
+  loot banking remains blocked rather than introducing a second inventory format.
+  The existing synchronous host menu/restart path flushes final packets before
+  closing; unlike Quit and dedicated shutdown, it cannot wait for acknowledgements.
+
 ## Not started
 
 Reforger Tiers II and III, grenades (and Scavenger's +1 grenade), the other power-ups (Payday, Overkill, Purge, Scrap Kit, Stasis, Supply Crate),
 skills/loot,
-co-op steps 2-6 in `docs/MULTIPLAYER.md`, server browser, town hub.
+co-op steps 3-4 and 6 plus step 5 Pack-to-stash banking in `docs/MULTIPLAYER.md`, server browser, town hub.

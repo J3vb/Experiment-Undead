@@ -3,11 +3,17 @@
 ## loot) checks Net.is_authority(). See docs/MULTIPLAYER.md.
 extends Node
 
+enum RefusalReason { WRONG_VERSION, CONTENT_MISMATCH, SERVER_FULL }
+
 const DEFAULT_PORT: int = 7777
 const MAX_PLAYERS: int = 8
 
 ## "address:port" the next match should join; set by the menu before loading it.
 var pending_join: String = ""
+## Saved through disconnect so the next menu can explain why joining failed.
+var refusal_reason: int = -1
+var refusal_message: String = ""
+var player_limit: int = MAX_PLAYERS
 
 var _next_net_id: int = 1
 
@@ -22,14 +28,18 @@ func is_online() -> bool:
 
 func host(port: int, max_players: int = MAX_PLAYERS) -> Error:
 	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	var err: Error = peer.create_server(port, clampi(max_players, 1, MAX_PLAYERS))
+	# Pending hellos need a transport slot to receive SERVER_FULL before disconnect.
+	var err: Error = peer.create_server(port, MAX_PLAYERS * 2)
 	if err == OK:
+		player_limit = clampi(max_players, 1, MAX_PLAYERS)
 		multiplayer.multiplayer_peer = peer
 		Log.info(&"net", &"hosting", {"port": port, "max_players": max_players})
 	return err
 
 
 func join(address: String) -> Error:
+	refusal_reason = -1
+	refusal_message = ""
 	var target: Array = parse_address(address)
 	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
 	var err: Error = peer.create_client(target[0], target[1])

@@ -66,4 +66,4 @@ static func read_int_setting(arg_name: String, env_name: String, fallback: int) 
 func _check_stop_file() -> void:
 	if FileAccess.file_exists(stop_file):
 		print("Stop requested")
-		get_tree().quit()
+		session.quit_game()

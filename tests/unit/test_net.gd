@@ -30,6 +30,7 @@ func test_parse_address_reads_port_or_uses_default() -> void:
 func test_host_goes_online_and_leave_returns_to_solo() -> void:
 	assert_false(Net.is_online())
 	assert_eq(Net.host(24631, 2), OK)
+	assert_eq(Net.player_limit, 2, "hello admission uses the configured player limit")
 	assert_true(Net.is_online())
 	assert_true(Net.is_authority())
 	Net.leave()
