@@ -197,3 +197,99 @@ func test_talon_scope_has_three_times_zoom() -> void:
 	weapon.ads_progress = 0.0
 	lens._process(0.016)
 	assert_false(lens.is_rendering(), "Talon scope stops rendering after aiming")
+
+
+func _viewmodel(name: String) -> Node3D:
+	var packed: PackedScene = load("res://systems/weapons/viewmodels/%s_viewmodel.tscn" % name) as PackedScene
+	return autofree(packed.instantiate()) as Node3D
+
+
+func test_flash_meshes_share_their_material_without_changing_each_weapon_size() -> void:
+	var quad: QuadMesh = load("res://systems/weapons/viewmodels/flash_quad.tres") as QuadMesh
+	var shotgun_quad: QuadMesh = load("res://systems/weapons/viewmodels/shotgun_flash_quad.tres") as QuadMesh
+	assert_eq(quad.size, Vector2(0.22, 0.22))
+	assert_eq(shotgun_quad.size, Vector2(0.34, 0.34))
+	assert_eq(shotgun_quad.material, quad.material, "shotgun shares the same flash material")
+	var material: StandardMaterial3D = quad.material as StandardMaterial3D
+	assert_eq(material.transparency, BaseMaterial3D.TRANSPARENCY_ALPHA)
+	assert_eq(material.blend_mode, BaseMaterial3D.BLEND_MODE_ADD)
+	assert_eq(material.shading_mode, BaseMaterial3D.SHADING_MODE_UNSHADED)
+	assert_eq(material.cull_mode, BaseMaterial3D.CULL_DISABLED)
+	assert_eq(material.albedo_color, Color(1, 0.75, 0.35, 1))
+	var texture: GradientTexture2D = material.albedo_texture as GradientTexture2D
+	assert_eq(texture.fill, GradientTexture2D.FILL_RADIAL)
+	assert_eq(texture.fill_from, Vector2(0.5, 0.5))
+	assert_eq(texture.fill_to, Vector2(0.5, 0))
+	assert_eq(texture.gradient.colors, PackedColorArray([Color(1, 1, 0.8, 1), Color(1, 0.5, 0.1, 0)]))
+	for name: String in ["kestrel", "rifle", "shotgun", "talon", "pistol"]:
+		var scene: Node3D = _viewmodel(name)
+		var flash: Node3D = scene.find_child("FlashMesh", true, false) as Node3D
+		assert_eq(flash.get_child_count(), 3, name)
+		for node: Node in flash.get_children():
+			var mesh: MeshInstance3D = node as MeshInstance3D
+			assert_eq(mesh.mesh, shotgun_quad if name == "shotgun" else quad, name + " shares its flash geometry")
+
+
+func test_long_guns_share_arm_geometry_and_materials() -> void:
+	var first: Node3D = _viewmodel("rifle")
+	var sizes: Dictionary = {
+		"HandRight": Vector3(0.075, 0.09, 0.1),
+		"SleeveRight": Vector3(0.09, 0.09, 0.3),
+		"HandLeft": Vector3(0.09, 0.06, 0.11),
+		"SleeveLeft": Vector3(0.09, 0.09, 0.32),
+	}
+	for name: String in ["kestrel", "rifle", "shotgun", "talon"]:
+		var scene: Node3D = _viewmodel(name)
+		for part: String in sizes:
+			var mesh: MeshInstance3D = scene.find_child(part, true, false) as MeshInstance3D
+			var original: MeshInstance3D = first.find_child(part, true, false) as MeshInstance3D
+			assert_eq(mesh.mesh, original.mesh, name + " shares " + part)
+			assert_eq((mesh.mesh as BoxMesh).size, sizes[part], name + " retains " + part + " dimensions")
+			assert_eq(mesh.cast_shadow, GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
+		var hand: MeshInstance3D = scene.find_child("HandRight", true, false) as MeshInstance3D
+		var sleeve: MeshInstance3D = scene.find_child("SleeveRight", true, false) as MeshInstance3D
+		assert_eq((hand.mesh.material as StandardMaterial3D).albedo_color, Color(0.09, 0.1, 0.08, 1))
+		assert_almost_eq((hand.mesh.material as StandardMaterial3D).roughness, 0.95, 0.00001)
+		assert_eq((sleeve.mesh.material as StandardMaterial3D).albedo_color, Color(0.2, 0.22, 0.16, 1))
+		assert_eq((sleeve.mesh.material as StandardMaterial3D).roughness, 1.0)
+
+
+func test_shared_arm_scenes_preserve_weapon_specific_poses_and_pump_parenting() -> void:
+	var positions: Dictionary = {
+		"kestrel":
+		[
+			Vector3(0.015, -0.11, 0.135),
+			Vector3(0.04, -0.15, 0.325),
+			Vector3(-0.01, -0.035, -0.19),
+			Vector3(-0.12, -0.135, -0.04)
+		],
+		"rifle":
+		[
+			Vector3(0.015, -0.11, 0.135),
+			Vector3(0.04, -0.15, 0.325),
+			Vector3(-0.01, -0.035, -0.32),
+			Vector3(-0.12, -0.135, -0.15)
+		],
+		"talon":
+		[
+			Vector3(0.015, -0.11, 0.135),
+			Vector3(0.04, -0.15, 0.325),
+			Vector3(-0.01, -0.035, -0.32),
+			Vector3(-0.12, -0.135, -0.15)
+		],
+		"shotgun":
+		[
+			Vector3(0.015, -0.04, 0.12),
+			Vector3(0.04, -0.08, 0.31),
+			Vector3(-0.01, -0.037, 0),
+			Vector3(-0.11, -0.137, 0.17)
+		],
+	}
+	var parts: Array[String] = ["HandRight", "SleeveRight", "HandLeft", "SleeveLeft"]
+	for name: String in positions:
+		var scene: Node3D = _viewmodel(name)
+		for index: int in parts.size():
+			var part: Node3D = scene.find_child(parts[index], true, false) as Node3D
+			assert_eq(part.position, positions[name][index], name + " " + parts[index])
+			var expected_parent: StringName = &"Bolt" if name == "shotgun" and index >= 2 else &"Viewmodel"
+			assert_eq(part.get_parent().name, expected_parent, name + " " + parts[index] + " keeps its direct parent")

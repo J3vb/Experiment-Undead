@@ -1,0 +1,6 @@
+[gd_resource type="Shader" script_class="GrimeShader" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://levels/materials/grime_shader.gd" id="setup"]
+
+[resource]
+script = ExtResource("setup")

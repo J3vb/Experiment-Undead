@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://systems/weapons/viewmodels/sleeve_material.tres" id="material"]
+
+[sub_resource type="BoxMesh" id="mesh"]
+material = ExtResource("material")
+size = Vector3(0.09, 0.09, 0.3)
+
+[node name="SleeveRight" type="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 0.9397, 0.3420, 0, -0.3420, 0.9397, 0.04, -0.15, 0.325)
+cast_shadow = 0
+mesh = SubResource("mesh")

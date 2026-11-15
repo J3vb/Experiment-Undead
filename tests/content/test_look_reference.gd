@@ -68,7 +68,11 @@ func test_corridor_surfaces_have_procedural_detail() -> void:
 	var ceiling_mat: ShaderMaterial = (scene.find_child("Ceiling", true, false) as Block).material as ShaderMaterial
 	assert_not_null(ceiling_mat, "ceiling is a shader material")
 	if ceiling_mat:
-		assert_not_null(ceiling_mat.get_shader_parameter("noise"), "ceiling has its stain noise")
+		var noise: Texture2D = ceiling_mat.get_shader_parameter("noise") as Texture2D
+		if noise == null:
+			noise = ceiling_mat.shader.get_default_texture_parameter("noise")
+		assert_not_null(noise, "ceiling has its stain noise")
+		assert_same(noise, load("res://levels/materials/grime_noise.tres"), "ceiling uses the shared stain noise")
 
 
 func test_every_fixture_has_a_housing_and_the_rim_light_is_cheap() -> void:
