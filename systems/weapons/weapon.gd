@@ -182,7 +182,7 @@ func _handle_trigger() -> void:
 	var pressed_now: bool = trigger_held and not _trigger_was_held
 	if pressed_now:
 		_buffered = BUFFER_TIME
-	# Accumulator keeps the real fire rate independent of frame rate.
+	# Accumulate firing time; blocked time is discarded below.
 	while _shot_timer <= 0.0:
 		var wants: bool = false
 		match data.fire_mode:
@@ -206,8 +206,6 @@ func _handle_trigger() -> void:
 		_burst_left = maxi(_burst_left - 1, 0)
 		var extra: float = 0.12 if data.fire_mode == WeaponData.FireMode.BURST and _burst_left == 0 else 0.0
 		_shot_timer += _spin_up.scale_interval(data.get_fire_interval(), _shot_timer) * _stat(&"fire_interval") + extra
-	# Time spent blocked (reloading, sprinting, waiting for a press) is not
-	# banked as missed shots.
 	_shot_timer = maxf(_shot_timer, 0.0)
 
 
