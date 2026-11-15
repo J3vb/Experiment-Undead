@@ -324,6 +324,7 @@ func _on_damaged(info: DamageInfo) -> void:
 	Events.enemy_damaged.emit(self, info)
 	if state == State.DEAD:
 		return
+	DoubleBarrel.apply_impulse(self, info)
 	# Flinch: small shove of the body mesh, reads as impact.
 	visual.position += global_basis.inverse() * info.impulse.normalized() * 0.06
 	visual.pulse_belly()

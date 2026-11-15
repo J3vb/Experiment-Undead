@@ -177,7 +177,7 @@ func test_things_that_move_or_vanish_are_not_baked() -> void:
 	var blocks: Array[Node] = level.get_node("NavigationRegion3D/Doors").find_children("Blocker", "StaticBody3D")
 	blocks.append_array(level.find_children("Board", "StaticBody3D"))
 	blocks.append(level.get_node("NavigationRegion3D/Machines/SpecimenVault/Body"))
-	assert_eq(blocks.size(), 9 + 4 + 1, "9 doors, 4 wall-buys, the vault")
+	assert_eq(blocks.size(), 9 + 5 + 1, "9 doors, 5 wall-buys, the vault")
 	for node: Node in blocks:
 		assert_false((node as Block).baked, "%s is not baked" % level.get_path_to(node))
 	var planks: Array[Node] = level.get_node("Barriers").find_children("Plank*", "MeshInstance3D", true, false)
@@ -195,3 +195,22 @@ func test_ceiling_lights_stay_real_time() -> void:
 	for node: Node in fixtures:
 		assert_eq((node as Light3D).light_bake_mode, Light3D.BAKE_DYNAMIC, "fixtures bake only their bounce")
 	assert_eq(level.find_children("Spill*", "Light3D", true, false).size(), 0, "bounce comes from the bake")
+
+
+func test_coachman_wall_buy_matches_the_layout_and_sells_for_900() -> void:
+	var level: Node = (load(MAP) as PackedScene).instantiate()
+	add_child_autofree(level)
+	var wall: WallBuy = level.find_child("WallBuyCoachman", true, false) as WallBuy
+	assert_not_null(wall, "Halcyon has its signature wall gun")
+	if wall == null:
+		return
+	assert_eq(wall.weapon, Content.weapon(&"coachman_2b"))
+	assert_eq(wall.weapon.cost, 900)
+	assert_eq(wall.position, Vector3(38.25, 1.4, 38), "Mess Hall west wall, clear of doors and windows")
+	assert_eq((wall.get_node("Label") as Label3D).text, "Coachman 900")
+	var layout: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://levels/halcyon_labs/layout.json"))
+	var placement: Dictionary = layout["wall_buys"][0]
+	assert_eq(placement["id"], "coachman_2b")
+	assert_eq(placement["area"], "mess_hall", "outside the Loading Dock")
+	assert_eq(placement["position"], [38.25, 1.4, 38.0])
+	assert_eq(int(placement["cost"]), wall.weapon.cost)

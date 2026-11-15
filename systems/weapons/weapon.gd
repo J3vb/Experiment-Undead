@@ -52,6 +52,7 @@ var _bolt: Node3D
 var _magazine_rest: Vector3
 var _bolt_rest: Vector3
 
+@onready var _double_barrel: DoubleBarrel = DoubleBarrel.attach_to(self)
 @onready var _viewmodel_root: Node3D = $Viewmodel
 @onready var _fire_audio: AudioStreamPlayer = $FireAudio
 @onready var _mech_audio: AudioStreamPlayer = $MechAudio
@@ -163,7 +164,7 @@ func _process(delta: float) -> void:
 func _tick_timers(delta: float) -> void:
 	_shot_timer -= delta
 	_since_last_shot += delta
-	_buffered = maxf(_buffered - delta, 0.0)
+	_buffered = _double_barrel.buffer(maxf(_buffered - delta, 0.0)) if _double_barrel else maxf(_buffered - delta, 0.0)
 	_bloom = move_toward(_bloom, 0.0, data.spread_recovery * delta)
 	_sprint_block = (
 		data.sprint_to_fire_time * _stat(&"sprint_out_time") if sprinting else maxf(_sprint_block - delta, 0.0)
@@ -179,7 +180,6 @@ func _handle_trigger() -> void:
 	var pressed_now: bool = trigger_held and not _trigger_was_held
 	if pressed_now:
 		_buffered = BUFFER_TIME
-	# Accumulate firing time; blocked time is discarded below.
 	while _shot_timer <= 0.0:
 		var wants: bool = false
 		match data.fire_mode:
@@ -209,11 +209,11 @@ func _handle_trigger() -> void:
 ## Fires one shot (all pellets) right now. Public for tests and AI.
 func fire() -> void:
 	RoundReload.cancel(self)
-	instance.ammo_in_mag -= 1
+	var rounds: int = DoubleBarrel.consume_rounds(self, _double_barrel)
 	var spread: float = get_current_spread()
 	var origin: Vector3 = camera.global_position
 	var basis: Basis = camera.global_basis
-	for i: int in data.pellets:
+	for i: int in data.pellets * rounds:
 		_trace(origin, _spread_direction(basis, spread))
 	_bloom = minf(_bloom + data.spread_per_shot, data.max_spread)
 	_apply_recoil()
@@ -267,7 +267,7 @@ func _hit(result: Dictionary, origin: Vector3, direction: Vector3) -> void:
 	info.weapon_id = data.id
 	info.position = point
 	info.normal = normal
-	info.impulse = direction * 2.0
+	info.impulse = _double_barrel.impulse(direction) if _double_barrel else direction * 2.0
 	info.amount *= data.get_zone_multiplier(hit_zone.zone)
 	if hit_zone.zone == DamageInfo.Zone.HEAD:
 		info.amount *= _stat(&"head_damage")
