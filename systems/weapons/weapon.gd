@@ -20,6 +20,7 @@ var data: WeaponData:
 	get:
 		return instance.data
 var shooter: Player
+var item: ItemInstance
 var camera: Camera3D
 
 var trigger_held: bool = false
@@ -123,7 +124,9 @@ func start_reload() -> bool:
 
 
 func _stat(stat: StringName) -> float:
-	return shooter.get_stat(stat) if shooter else 1.0
+	if shooter:
+		return shooter.get_stat(stat, 1.0, item.stats if item else null)
+	return item.weapon_stat(stat) if item else 1.0
 
 
 func can_fire() -> bool:
