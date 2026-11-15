@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="GearVisual" format=3]
+
+[ext_resource type="Script" path="res://systems/gear/gear_visual.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/gear/vest_medium.glb" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"vest_medium"
+slot = "vest"
+scene = ExtResource("2")
+attach = &"spine_02"
+set_id = &""

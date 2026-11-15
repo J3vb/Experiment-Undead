@@ -16,7 +16,7 @@ func test_loot_ids_are_unique_across_subfolders() -> void:
 		seen.append(id)
 		assert_eq(String(id), path.get_file().get_basename())
 		assert_eq(Content.get_item(&"loot", id), resource)
-	assert_eq(paths.size(), 31)
+	assert_eq(paths.size(), 68)
 	assert_eq(Content.ids(&"loot").size(), paths.size())
 
 
@@ -24,7 +24,7 @@ func test_weapon_affixes_have_five_equal_rising_tiers() -> void:
 	var kinds: Dictionary = {"prefix": 0, "suffix": 0, "implicit": 0}
 	for id: StringName in Content.ids(&"loot"):
 		var affix: AffixData = Content.get_item(&"loot", id) as AffixData
-		if affix == null:
+		if affix == null or not affix.slots.has(&"primary"):
 			continue
 		kinds[affix.kind] += 1
 		assert_true(affix.single_value or affix.text.contains("{v}"), String(id))
