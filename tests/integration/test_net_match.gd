@@ -130,6 +130,17 @@ func test_two_clients_meet_on_a_dedicated_server() -> void:
 		if zombie:
 			assert_false(zombie.is_physics_processing(), "client zombies only show the server's")
 	await _claim_a_kill(mine)
+	await wait_until(
+		func() -> bool: return session.loot.get_child_count() > 0, 3.0, "real client received personal loot"
+	)
+	var drop: LootDrop = session.loot.get_child(0) as LootDrop
+	assert_not_null(drop)
+	if drop:
+		assert_eq(drop.player, mine)
+		assert_false(drop.item.is_empty())
+		mine.global_position = drop.global_position
+		drop.interact(mine)
+		assert_eq(session.loot.pack.items.size(), 1)
 
 
 func _claim_a_kill(mine: Player) -> void:

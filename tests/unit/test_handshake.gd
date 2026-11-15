@@ -99,6 +99,8 @@ func test_matching_hello_spawns_the_player_on_both_peers() -> void:
 		"matching client spawned"
 	)
 	var peer_id: int = client_root.multiplayer.get_unique_id()
+	assert_eq(server_handshake.player_level(peer_id), 7, "accepted hello level is available to loot")
+	assert_eq(server_handshake.player_level(1), 12, "host uses its own hello level")
 	assert_not_null(server_spawner.find_player(peer_id))
 	var client_spawner: PlayerSpawner = client_root.get_node("PlayerSpawner") as PlayerSpawner
 	assert_not_null(client_spawner.find_player(peer_id))

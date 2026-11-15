@@ -1,0 +1,217 @@
+## Server rolls personal loot; each owner alone presents drops and banks its Pack.
+class_name LootService
+extends Node
+
+const DROP: PackedScene = preload("res://systems/loot/loot_drop.tscn")
+
+var session: GameSession
+var pack: Pack = Pack.new()
+var player: Player
+var taken: Array[Dictionary] = []
+var lost: int = 0
+## Test fixture override; negative uses the normal source chance.
+var drop_chance_override: float = -1.0
+var _banked: bool = false
+var _last_luck: float = -1.0
+var _peer_luck: Dictionary[int, float] = {}
+
+
+func _init() -> void:
+	name = "LootService"
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+
+
+func _ready() -> void:
+	Events.enemy_killed.connect(_on_enemy_killed)
+	process_physics_priority = 1
+	multiplayer.peer_disconnected.connect(func(peer_id: int) -> void: _peer_luck.erase(peer_id))
+	if multiplayer.is_server():
+		Log.info(&"loot", &"seed_selected", {"seed": session.rng.seed})
+
+
+func _physics_process(_delta: float) -> void:
+	if multiplayer.multiplayer_peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED:
+		return
+	if session.is_over or _banked or not is_instance_valid(player) or not player.input_enabled:
+		return
+	_sync_luck()
+	# Player already calls Interactable on solo/host. Clients consume the same input frame here.
+	if not multiplayer.is_server() and player.last_frame.has(InputFrame.INTERACT) and player.focus is LootDrop:
+		player.focus.interact(player)
+
+
+func _on_enemy_killed(enemy: Node3D, _info: DamageInfo) -> void:
+	if not multiplayer.is_server() or session.is_over or session._xp_banked:
+		return
+	var zombie: Zombie = enemy as Zombie
+	if zombie == null or zombie.data == null or not session.spawner.is_ancestor_of(zombie):
+		return
+	for owner_player: Player in session.get_players():
+		var owner_id: int = owner_player.get_multiplayer_authority()
+		var level: int = session.handshake.player_level(owner_id)
+		var gear_luck: float = _peer_luck.get(owner_id, player_luck(owner_player, 1))
+		var luck: float = clampf(gear_luck + maxf(session.director.round_number - 10, 0) * 0.02, 0, 1)
+		var item: Dictionary = roll_drop(zombie.data.id, level, luck)
+		if not item.is_empty():
+			send_drop(owner_id, item, zombie.global_position)
+
+
+func _sync_luck() -> void:
+	if multiplayer.is_server():
+		return
+	var luck: float = player_luck(player, 1)
+	if luck != _last_luck:
+		_last_luck = luck
+		_receive_luck.rpc_id(1, luck)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _receive_luck(luck: float) -> void:
+	if not multiplayer.is_server() or not is_finite(luck):
+		return
+	var sender: int = multiplayer.get_remote_sender_id()
+	if multiplayer.get_peers().has(sender):
+		_peer_luck[sender] = clampf(luck, 0.0, 1.0)
+
+
+static func player_luck(owner_player: Player, round_number: int) -> float:
+	var luck: float = maxf(round_number - 10, 0) * 0.02
+	for modifier: Modifier in owner_player.stats.modifiers:
+		if modifier.stat == &"loot_luck":
+			luck += modifier.value
+	return clampf(luck, 0.0, 1.0)
+
+
+func _round() -> int:
+	return clampi(session.director.round_number, 1, 50)
+
+
+func roll_drop(enemy_id: StringName, character_level: int, luck: float = 0.0) -> Dictionary:
+	var chance: float = drop_chance(enemy_id, session.director.round_number)
+	if drop_chance_override >= 0.0:
+		chance = drop_chance_override
+	if session.rng.randf() >= chance:
+		return {}
+	var rarity: StringName = _rarity(enemy_id, luck)
+	var pool: Array[Resource] = eligible_bases(character_level, rarity)
+	if pool.is_empty():
+		return {}
+	var total: float = 0.0
+	for base: Resource in pool:
+		total += _weight(base)
+	var choice: float = session.rng.randf() * total
+	var selected: Resource = pool.back()
+	for base: Resource in pool:
+		choice -= _weight(base)
+		if choice < 0.0:
+			selected = base
+			break
+	if selected is GearBaseData:
+		return ItemRoller.roll_gear(session.rng, selected, rarity, _round())
+	if rarity == &"prototype":
+		return _prototype(selected as WeaponData)
+	return ItemRoller.roll_weapon(session.rng, selected, rarity, _round(), character_level)
+
+
+func _rarity(enemy_id: StringName, luck: float) -> StringName:
+	var rarity: StringName = ItemRoller.roll_rarity(session.rng, false, luck)
+	if enemy_id == &"zombie_brute":
+		while ItemRoller.RARITIES.find(rarity) < ItemRoller.RARITIES.find(&"rare"):
+			rarity = ItemRoller.roll_rarity(session.rng, false, luck)
+	return rarity
+
+
+static func drop_chance(enemy_id: StringName, round_number: int) -> float:
+	match enemy_id:
+		&"zombie_brute":
+			return 1.0
+		&"zombie_bloater", &"zombie_stalker":
+			return 0.05
+		_:
+			return minf(0.015 + maxi(round_number, 1) * 0.001, 0.05)
+
+
+static func eligible_bases(character_level: int, rarity: StringName) -> Array[Resource]:
+	var pool: Array[Resource] = []
+	var ids: Array = Content.ids(&"weapons")
+	ids.sort()
+	for id: StringName in ids:
+		var weapon: WeaponData = Content.weapon(id)
+		if String(id).ends_with("_reforged") or weapon.loot_tags.has(&"prototype") != (rarity == &"prototype"):
+			continue
+		if character_level < int(weapon.get_meta(&"unlock_level", 1)) or _weight(weapon) <= 0.0:
+			continue
+		var floor_rank: int = ItemRoller.RARITIES.find(weapon.get_meta(&"min_rarity", &"common"))
+		if ItemRoller.RARITIES.find(rarity) >= floor_rank:
+			pool.append(weapon)
+	if rarity == &"prototype":
+		return pool
+	ids = Content.ids(&"loot")
+	ids.sort()
+	for id: StringName in ids:
+		var gear: GearBaseData = Content.get_item(&"loot", id) as GearBaseData
+		if gear and gear.unlock_level <= character_level and gear.drop_weight > 0.0:
+			pool.append(gear)
+	return pool
+
+
+static func _weight(base: Resource) -> float:
+	if base is GearBaseData:
+		return (base as GearBaseData).drop_weight
+	return float(base.get_meta(&"drop_weight", (base as WeaponData).crate_weight * 100.0))
+
+
+func _prototype(base: WeaponData) -> Dictionary:
+	return {
+		"v": 1,
+		"uid":
+		"%08x-%08x-%08x-%08x" % [session.rng.randi(), session.rng.randi(), session.rng.randi(), session.rng.randi()],
+		"base": String(base.id),
+		"rar": "prototype",
+		"ilvl": _round(),
+		"aff": [],
+		"imp": ["fabricator", 1.0],
+		"trait": null,
+		"set": null,
+		"craft": {},
+	}
+
+
+func send_drop(owner_id: int, item: Dictionary, at: Vector3) -> void:
+	if not multiplayer.is_server():
+		return
+	if owner_id == multiplayer.get_unique_id():
+		_receive_drop(item, at)
+	elif multiplayer.get_peers().has(owner_id):
+		_receive_drop.rpc_id(owner_id, item, at)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _receive_drop(item: Dictionary, at: Vector3) -> void:
+	if _banked or session.is_over or not session.has_local_player or not is_instance_valid(player):
+		return
+	var drop: LootDrop = DROP.instantiate() as LootDrop
+	drop.item = item.duplicate(true)
+	drop.pack = pack
+	drop.player = player
+	add_child(drop)
+	drop.global_position = at
+	Log.info(&"loot", &"drop_received", {"uid": item.get("uid"), "base": item.get("base")})
+
+
+## Called alongside XP banking before the owning profile saves. Dedicated servers never call this.
+func bank(profile: CharacterProfile) -> void:
+	if _banked:
+		return
+	_banked = true
+	taken = pack.items
+	for item: Dictionary in taken:
+		if Inventory.add_to_stash(profile, item) < 0:
+			lost += 1
+			Log.info(&"loot", &"stash_item_lost", {"uid": item.get("uid"), "base": item.get("base")})
+	while not pack.items.is_empty():
+		pack.remove(0)
+
+
+func results() -> Dictionary:
+	return {"loot": taken.duplicate(true), "loot_lost": lost}

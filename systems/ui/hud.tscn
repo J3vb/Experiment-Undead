@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://systems/ui/hud.gd" id="1"]
 [ext_resource type="Script" path="res://systems/net/coop_hud.gd" id="coop"]
@@ -16,6 +16,8 @@
 [ext_resource type="Theme" path="res://systems/ui/results_screen.tres" id="xp_theme"]
 
 [ext_resource type="FontFile" path="res://assets/fonts/AtkinsonHyperlegibleMono.ttf" id="round_font"]
+
+[ext_resource type="Script" path="res://systems/loot/pack_overlay.gd" id="pack"]
 
 [sub_resource type="FontVariation" id="round_bold"]
 base_font = ExtResource("round_font")
@@ -456,3 +458,13 @@ bus = &"Music"
 [node name="RoundEndSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("sfx_round_end")
 bus = &"SFX"
+
+[node name="Pack" type="Control" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("pack")

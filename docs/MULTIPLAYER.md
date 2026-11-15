@@ -65,12 +65,16 @@ already reads `InputFrame`s, so the server could replay them.
 4. **Player health and death — done:** server health snapshots, 30 s bleed-out,
    sidearm crawl, 3 s revives within 1.5 m (50 points), teammate spectating,
    next-round pistol respawns, and shared results when the connected squad is down.
-5. **Run end and saves** (XP and handshake done; loot waits for L3): owner-only
+5. **Run end and saves (done):** owner-only
    reliable final XP grants bank through `bank_run_xp` into the client's own
    character file. Live owner XP snapshots survive a mid-run disconnect; the
    dedicated server saves no character. Hello checks protocol and the cached
    hash of sorted Content ids before spawning, with version/content/full reasons.
-   Pack-to-stash banking waits for L3's Pack and loot delivery; the stash is built.
+   The server's LootService rolls personal guns/gear using the accepted hello level,
+   match RNG and current round, then sends each drop only to its owner. Each local
+   Pack banks through Inventory into that client's stash at every run exit,
+   including death and disconnect; overflow is logged and shown in results.
+   Drops expire after 60 seconds and never replicate to another player.
 6. **Menu (done):** Play solo, Host and play with a port field (default 7777),
    and Join with an address field (port optional). Settings remembers the last
    address and port. Joining shows the target and Cancel, with a 6-second

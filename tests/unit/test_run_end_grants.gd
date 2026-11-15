@@ -47,6 +47,7 @@ func before_each() -> void:
 	for index: int in range(2):
 		var session: GameSession = clients[index].get_node("GameSession") as GameSession
 		session._profile_player = _player(clients[index], peer_ids[index])
+		session.loot.player = session._profile_player
 		session._profile = CharacterProfile.load_or_create(IDS[index])
 		session._profile.total_xp = 100 * (index + 1)
 		assert_eq(session._profile.save(), OK)
@@ -100,6 +101,8 @@ func _remove_profiles() -> void:
 
 
 func test_final_grant_reaches_only_owner_and_banks_once() -> void:
+	sessions[0].loot.pack.add({"uid": "personal-a", "base": "vest_light", "rar": "rare"})
+	sessions[1].loot.pack.add({"uid": "personal-b", "base": "charm_coin", "rar": "common"})
 	var service: ProgressionService = _service(server_root)
 	var owner: Player = _player(server_root, peer_ids[0])
 	service.add_xp(owner, 75)
@@ -111,6 +114,8 @@ func test_final_grant_reaches_only_owner_and_banks_once() -> void:
 	await service.wait_for_run_grants()
 	assert_true(service._pending_grants.is_empty(), "owner acknowledges after saving")
 	await wait_until(func() -> bool: return _read_xp(0) == 175, 5.0, "owner profile banked")
+	assert_eq(CharacterProfile.load_or_create(IDS[0]).stash[0].get("uid"), "personal-a")
+	assert_eq(CharacterProfile.load_or_create(IDS[1]).stash[0].get("uid"), "personal-b")
 	assert_eq(_read_xp(0), 175)
 	assert_eq(_read_xp(1), 200, "another client's character is untouched")
 	assert_eq(_service(clients[0]).get_total_xp(_player(clients[0], peer_ids[0])), 175, "HUD includes saved XP")
