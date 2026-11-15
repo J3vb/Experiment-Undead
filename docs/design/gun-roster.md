@@ -81,7 +81,7 @@ Oriel test weapons with live Fenlight. Fixed signature traits, no random affixes
 | --- | --- | --- | --- |
 | Cryo Lance | designed | Freezes, then shatters | Vault, drops, Halcyon secret |
 | Siphon | designed | Gravity well pulls and crushes up to 12 zombies | Vault, drops |
-| Synapse | new | A continuous beam that jumps along the Fenlight in the nerves: hits chain to up to 3 nearby Lit, and the beam ramps damage while it stays on target. Hitscan, so it fits "bullets only" | Vault, drops |
+| Synapse | new | Auto rifle firing Fenlight-laced rounds. Each hit jumps along the Fenlight in the nerves to up to 3 nearby Lit for 60% damage each, and hits on the same zombie ramp damage while you stay on it. Normal bullets, so it fits "bullets only" | Vault, drops |
 
 ## Wall guns per map
 
@@ -166,7 +166,7 @@ Each gun needs: a model script using `tools/assets/gun_parts.py` (PR #65), a `We
 | A1 | P3, Vault pool for v0.1 | Hollis .44, Mako PDW, Atlas Auto, Halberd LMG, Corvid .338 | None (burst and scope exist) | 5 x S |
 | A2 | P3 | Cryo Lance, Siphon | Freeze/shatter, gravity well | 2 x M |
 | B | P6 loot, after A | Wren MP, Coachman, Fieldhand, Rampart BR, Grubber, Sentry, Nightjar SD | Shell-by-shell reload (also fixes the Brenner), both-barrels alt fire, innate pierce, no-flash flag | 4 x S, 3 x M |
-| C | P6 to P10 | Bastion, Ironwood .50, Synapse | Fire-rate ramp (shared with the Furnace trait), pierce 2 + plate break, continuous beam with chain | 3 x M |
+| C | P6 to P10 | Bastion, Ironwood .50, Synapse | Fire-rate ramp (shared with the Furnace trait), pierce 2 + plate break, on-hit chain to nearby zombies (shared with the Chain shock affix) | 3 x M |
 
 Build A1 first: the Vault in v0.1 needs those guns and they need no new code. Signature wall guns in batch B land with their map, except the Coachman, which can go on Halcyon Labs as soon as it is built.
 
