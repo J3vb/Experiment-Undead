@@ -96,10 +96,10 @@ func test_zombie_imports_use_only_zombie_finishes_and_main_paint_zones() -> void
 			var mesh: Mesh = (node as MeshInstance3D).mesh
 			for surface: int in mesh.get_surface_count():
 				var material: ShaderMaterial = mesh.surface_get_material(surface) as ShaderMaterial
-				assert_not_null(material, kind + " uses the shared gear shader")
+				assert_not_null(material, kind + " uses the zombie finish shader")
 				if material == null:
 					continue
-				assert_eq(material.shader.resource_path, "res://assets/materials/gear.gdshader")
+				assert_eq(material.shader.resource_path, "res://assets/materials/zombie_finish.gdshader")
 				var finish: int = material.get_shader_parameter(&"finish")
 				assert_between(finish, 7, 10, kind + " cannot acquire a player finish")
 				if finish == 10:

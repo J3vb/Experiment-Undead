@@ -133,10 +133,10 @@ func _check_zombie_finishes(zombie: Node3D) -> void:
 		var mesh: Mesh = (node as MeshInstance3D).mesh
 		for surface: int in mesh.get_surface_count():
 			var mat: ShaderMaterial = mesh.surface_get_material(surface) as ShaderMaterial
-			assert_not_null(mat, "zombie surfaces use the gear shader")
+			assert_not_null(mat, "zombie surfaces use their procedural finish")
 			if mat == null:
 				continue
-			assert_eq(mat.shader.resource_path, "res://assets/materials/gear.gdshader")
+			assert_eq(mat.shader.resource_path, "res://assets/materials/zombie_finish.gdshader")
 			var color: Color = mat.get_shader_parameter(&"albedo")
 			if mat.resource_name.begins_with("ZombieSkinHead"):
 				head_value = color.get_luminance()
@@ -168,7 +168,7 @@ func _check_zombie(id: String) -> Node3D:
 	var settings: ConfigFile = ConfigFile.new()
 	assert_eq(settings.load((ZOMBIES % id) + ".import"), OK)
 	assert_eq(settings.get_value("params", "meshes/light_baking"), 3)
-	assert_eq(settings.get_value("params", "import_script/path"), "res://tools/assets/gear_import.gd")
+	assert_eq(settings.get_value("params", "import_script/path"), "res://tools/assets/zombie_finish_import.gd")
 	return zombie
 
 

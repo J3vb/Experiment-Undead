@@ -19,6 +19,7 @@ const GLOWING: Dictionary[String, String] = {
 }
 const GUN_SHADER: String = "res://assets/materials/gun_finish.gdshader"
 const GEAR_SHADER: String = "res://assets/materials/gear.gdshader"
+const ZOMBIE_SHADER: String = "res://assets/materials/zombie_finish.gdshader"
 const WALL: String = "res://assets/models/kit/wall_panel.glb"
 
 
@@ -31,7 +32,7 @@ func _model(id: String) -> Node3D:
 ## Procedural finishes multiply albedo by the baked vertex colour themselves.
 func _uses_shading(material: Material) -> bool:
 	if material is ShaderMaterial:
-		return (material as ShaderMaterial).shader.resource_path in [GUN_SHADER, GEAR_SHADER]
+		return (material as ShaderMaterial).shader.resource_path in [GUN_SHADER, GEAR_SHADER, ZOMBIE_SHADER]
 	return (material as BaseMaterial3D).vertex_color_use_as_albedo
 
 
