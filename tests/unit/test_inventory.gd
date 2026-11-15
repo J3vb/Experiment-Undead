@@ -136,7 +136,14 @@ func test_empty_and_invalid_slots_leave_profile_unchanged() -> void:
 
 
 func test_slot_for_maps_primary_and_sidearm_bases() -> void:
-	for base: String in ["pistol_service", "pistol_service_reforged", "hollis_44", "hollis_44_reforged"]:
+	for base: String in [
+		"pistol_service",
+		"pistol_service_reforged",
+		"hollis_44",
+		"hollis_44_reforged",
+		"wren_mp",
+		"wren_mp_reforged",
+	]:
 		assert_eq(Inventory.slot_for(_item(base, "sidearm")), &"sidearm", base)
 	for base: String in [
 		"rifle_ar",
@@ -148,6 +155,11 @@ func test_slot_for_maps_primary_and_sidearm_bases() -> void:
 		"talon_dmr",
 		"halberd_lmg",
 		"corvid_338",
+		"fieldhand_lever",
+		"fieldhand_lever_reforged",
+		"ironwood_50",
+		"ironwood_50_reforged",
+		"siphon",
 	]:
 		assert_eq(Inventory.slot_for(_item(base, "primary")), &"primary", base)
 

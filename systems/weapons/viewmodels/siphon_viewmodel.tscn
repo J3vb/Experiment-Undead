@@ -1,0 +1,48 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/weapons/siphon.glb" id="model"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/hand_right.tscn" id="hand_right"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/sleeve_right.tscn" id="sleeve_right"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/hand_left.tscn" id="hand_left"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/sleeve_left.tscn" id="sleeve_left"]
+
+[sub_resource type="StandardMaterial3D" id="flash_material"]
+shading_mode = 0
+albedo_color = Color(0.553, 1, 0.227, 1)
+emission_enabled = true
+emission = Color(0.553, 1, 0.227, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="SphereMesh" id="flash_mesh"]
+material = SubResource("flash_material")
+radius = 0.035
+height = 0.07
+radial_segments = 12
+rings = 6
+
+[node name="Viewmodel" type="Node3D"]
+
+[node name="Siphon" parent="." instance=ExtResource("model")]
+
+[node name="FlashLight" type="OmniLight3D" parent="Siphon/Receiver/Muzzle"]
+light_color = Color(0.553, 1, 0.227, 1)
+light_energy = 2.0
+light_bake_mode = 0
+omni_range = 3.0
+
+[node name="FlashMesh" type="MeshInstance3D" parent="Siphon/Receiver/Muzzle"]
+position = Vector3(0, 0, -0.04)
+cast_shadow = 0
+mesh = SubResource("flash_mesh")
+
+[node name="HandRight" parent="." instance=ExtResource("hand_right")]
+position = Vector3(0.012, -0.065, 0.07)
+
+[node name="SleeveRight" parent="." instance=ExtResource("sleeve_right")]
+transform = Transform3D(1, 0, 0, 0, 0.9397, 0.3420, 0, -0.3420, 0.9397, 0.037, -0.105, 0.26)
+
+[node name="HandLeft" parent="." instance=ExtResource("hand_left")]
+position = Vector3(-0.035, -0.07, -0.22)
+
+[node name="SleeveLeft" parent="." instance=ExtResource("sleeve_left")]
+transform = Transform3D(1, 0, 0, 0, 0.9063, 0.4226, 0, -0.4226, 0.9063, -0.14, -0.18, -0.01)

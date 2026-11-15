@@ -1,0 +1,20 @@
+[gd_scene format=3]
+
+[ext_resource type="QuadMesh" path="res://systems/weapons/viewmodels/flash_quad.tres" id="flash_quad"]
+
+[node name="FlashMesh" type="Node3D"]
+
+[node name="A" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.05)
+cast_shadow = 0
+mesh = ExtResource("flash_quad")
+
+[node name="B" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, -0.08)
+cast_shadow = 0
+mesh = ExtResource("flash_quad")
+
+[node name="C" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0, -0.08)
+cast_shadow = 0
+mesh = ExtResource("flash_quad")

@@ -1,0 +1,58 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://systems/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Script" path="res://systems/weapons/recoil_data.gd" id="2"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/siphon_viewmodel.tscn" id="3"]
+[ext_resource type="AudioStream" path="res://assets/audio/siphon_fire.wav" id="4"]
+[ext_resource type="AudioStream" path="res://assets/audio/dry_fire.wav" id="5"]
+[ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
+
+[sub_resource type="Resource" id="recoil"]
+script = ExtResource("2")
+pattern = Array[Vector2]([Vector2(0, 2.2)])
+random_spread = Vector2(0.1, 0.1)
+recovery_speed = 9.0
+ads_multiplier = 0.65
+permanent_ratio = 0.05
+reset_time = 0.3
+repeat_last = 1
+
+[resource]
+script = ExtResource("1")
+id = &"siphon"
+slot = 0
+loot_tags = Array[StringName]([&"prototype"])
+display_name = "Siphon"
+cost = 0
+crate_weight = 0.05
+damage = 22.8
+min_damage = 22.8
+falloff_start = 0.0
+falloff_end = 25.0
+max_range = 25.0
+pellets = 1
+head_multiplier = 1.0
+limb_multiplier = 1.0
+fire_mode = 0
+rounds_per_minute = 40.0
+magazine_size = 3
+starting_reserve = 15
+max_reserve = 15
+reload_time = 3.5
+empty_reload_time = 3.5
+ads_time = 0.25
+ads_fov = 65.0
+move_speed_multiplier = 1.0
+hip_spread = 0.0
+ads_spread = 0.0
+move_spread = 0.0
+spread_per_shot = 0.0
+max_spread = 0.0
+recoil = SubResource("recoil")
+viewmodel_kick = 0.035
+hip_position = Vector3(0.2, -0.2, -0.43)
+ads_position = Vector3(0, -0.14, -0.34)
+viewmodel_scene = ExtResource("3")
+fire_sound = ExtResource("4")
+dry_fire_sound = ExtResource("5")
+reload_sound = ExtResource("6")

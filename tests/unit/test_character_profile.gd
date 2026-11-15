@@ -89,6 +89,25 @@ func test_old_v1_save_defaults_to_empty_inventory_without_migration() -> void:
 	assert_eq(int(SaveFile.read(PATH)["save_version"]), 1)
 
 
+func test_legacy_v1_empty_loadout_array_keeps_xp_and_remains_saveable() -> void:
+	_write_raw('{"save_version": 1, "id": "test_character_profile", "total_xp": 400, "loadout": []}')
+	var profile: CharacterProfile = CharacterProfile.load_or_create(ID)
+	assert_eq(profile.total_xp, 400)
+	assert_eq(profile.stash.size(), 60)
+	for item: Dictionary in profile.stash:
+		assert_eq(item, {})
+	var empty_loadout: Dictionary = {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}}
+	assert_eq(profile.loadout, empty_loadout)
+	var parsed: CharacterProfile = CharacterProfile.from_dict({"loadout": []})
+	assert_eq(parsed.loadout, empty_loadout)
+	assert_eq(profile.save(), OK)
+	var saved: Dictionary = SaveFile.read(PATH)
+	assert_true(saved["loadout"] is Dictionary)
+	assert_eq(saved["loadout"], empty_loadout)
+	assert_eq(int(saved["total_xp"]), 400)
+	assert_eq(int(saved["save_version"]), 1)
+
+
 func test_unknown_fields_survive_load_and_save() -> void:
 	var data: Dictionary = {
 		"id": String(ID),
@@ -175,7 +194,7 @@ func test_malformed_fields_use_temporary_profile() -> void:
 		{"id": []},
 		{"stash": {}},
 		{"stash": ["bad"]},
-		{"loadout": []},
+		{"loadout": [{}]},
 		{"loadout": {"primary": "bad"}},
 	]:
 		assert_eq(SaveFile.write(PATH, fields), OK)

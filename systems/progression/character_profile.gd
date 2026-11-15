@@ -46,10 +46,11 @@ static func from_dict(data: Dictionary) -> CharacterProfile:
 	for slot: int in mini(saved_stash.size(), STASH_SIZE):
 		if saved_stash[slot] is Dictionary:
 			profile.stash[slot] = saved_stash[slot].duplicate(true)
-	var saved_loadout: Dictionary = data.get("loadout", {})
-	for slot: String in profile.loadout:
-		if saved_loadout.get(slot) is Dictionary:
-			profile.loadout[slot] = saved_loadout[slot].duplicate(true)
+	var saved_loadout: Variant = data.get("loadout", {})
+	if saved_loadout is Dictionary:
+		for slot: String in profile.loadout:
+			if saved_loadout.get(slot) is Dictionary:
+				profile.loadout[slot] = saved_loadout[slot].duplicate(true)
 	profile._unknown = data.duplicate(true)
 	for key: String in ["id", "display_name", "total_xp", "skill_ranks", "stash", "loadout"]:
 		profile._unknown.erase(key)
@@ -86,6 +87,8 @@ static func load_or_create(profile_id: StringName) -> CharacterProfile:
 static func _valid_inventory(data: Dictionary) -> bool:
 	var saved_stash: Variant = data.get("stash", [])
 	var saved_loadout: Variant = data.get("loadout", {})
+	if saved_loadout is Array and saved_loadout.is_empty():
+		saved_loadout = {}
 	if not saved_stash is Array or not saved_loadout is Dictionary:
 		return false
 	if saved_stash.size() > STASH_SIZE:
