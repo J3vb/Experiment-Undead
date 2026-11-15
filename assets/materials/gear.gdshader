@@ -10,9 +10,15 @@ const int POLYMER = 3;
 const int RUBBER = 4;
 const int KNIT = 5;
 const int LENS = 6;
+const int ZOMBIE_SKIN = 7;
+const int ZOMBIE_CLOTH = 8;
+const int ZOMBIE_SHOE = 9;
+const int ZOMBIE_GLOW = 10;
 
 uniform vec3 albedo : source_color = vec3(0.2);
-uniform int finish : hint_range(0, 6) = 0;
+uniform int finish : hint_range(0, 10) = 0;
+uniform vec3 emission_color : source_color = vec3(0.0);
+uniform float emission_strength : hint_range(0.0, 2.0) = 0.0;
 
 instance uniform vec4 dye_main : source_color = vec4(1.0);
 instance uniform vec4 dye_accent : source_color = vec4(1.0);
@@ -92,7 +98,10 @@ void fragment() {
 	vec2 uv = surface_uv(p, obj_normal);
 	int zone = int(round(COLOR.a * 3.0));
 	vec3 color = albedo;
-	if (zone == 3) {
+	bool zombie = finish >= ZOMBIE_SKIN;
+	if (zombie) {
+		color = albedo;
+	} else if (zone == 3) {
 		color *= dye_main.rgb;
 	} else if (zone == 2) {
 		color *= dye_accent.rgb;
@@ -113,7 +122,7 @@ void fragment() {
 	float detail = clamp(1.0 - length(fwidth(p)) / pitch, 0.0, 1.0);
 	float grain = noise(p * 1600.0);
 
-	if (finish == FABRIC || finish == WEBBING || finish == KNIT) {
+	if (finish == FABRIC || finish == WEBBING || finish == KNIT || finish == ZOMBIE_CLOTH) {
 		vec2 thread = uv / pitch;
 		float warp = sin(thread.x * TAU);
 		float weft = sin(thread.y * TAU);
@@ -131,6 +140,11 @@ void fragment() {
 			rough = 0.96;
 		}
 		color *= 1.0 + weave * 0.09 * detail;
+		if (finish == ZOMBIE_CLOTH) {
+			float stain = smoothstep(0.38, 0.7, fbm(p * 11.0));
+			color *= mix(1.0, 0.48, stain);
+			rough = 0.96;
+		}
 		height = (weave * 0.00009 + grain * 0.000035) * detail;
 		rough += weave * 0.035 * detail;
 	} else if (finish == PLATE) {
@@ -152,14 +166,31 @@ void fragment() {
 		rough = 0.12 + grain * 0.025 * detail;
 		metal = 0.15;
 		height = grain * 0.000002 * detail;
+	} else if (finish == ZOMBIE_SKIN) {
+		float mottling = fbm(p * 19.0);
+		float wet = smoothstep(0.35, 0.75, fbm(p * 36.0));
+		color *= mix(0.72, 1.02, mottling);
+		rough = mix(0.46, 0.25, wet);
+		height = grain * 0.000035 * detail;
+	} else if (finish == ZOMBIE_SHOE) {
+		color *= mix(0.65, 1.0, blotch);
+		rough = 0.88;
+		height = grain * 0.00006 * detail;
+	} else if (finish == ZOMBIE_GLOW) {
+		rough = 0.3;
 	}
 
 	ALBEDO = color * COLOR.r;
 	ROUGHNESS = clamp(rough + (1.0 - COLOR.r) * 0.08, 0.05, 1.0);
 	METALLIC = metal;
-	SPECULAR = finish == LENS ? 0.65 : 0.5;
+	SPECULAR = finish == LENS || finish == ZOMBIE_SKIN ? 0.65 : 0.5;
+	BACKLIGHT = finish == ZOMBIE_SKIN ? color * 0.16 : vec3(0.0);
 	RIM = fuzz;
 	RIM_TINT = 0.65;
 	NORMAL = bump(NORMAL, VERTEX, height);
-	EMISSION = zone == 0 ? glow_color.rgb * clamp(glow_strength, 0.0, 2.0) * glow_motion() : vec3(0.0);
+	if (finish == ZOMBIE_GLOW) {
+		EMISSION = emission_color * clamp(emission_strength, 0.0, 2.0);
+	} else {
+		EMISSION = !zombie && zone == 0 ? glow_color.rgb * clamp(glow_strength, 0.0, 2.0) * glow_motion() : vec3(0.0);
+	}
 }

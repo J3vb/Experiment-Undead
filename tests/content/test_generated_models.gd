@@ -13,7 +13,7 @@ const HALBERD: String = "res://assets/models/weapons/halberd_lmg.glb"
 const CORVID: String = "res://assets/models/weapons/corvid_338.glb"
 const WALL: String = "res://assets/models/kit/wall_panel.glb"
 const ZOMBIES: String = "res://assets/models/zombies/%s.glb"
-const ZOMBIE_PARTS: Array[String] = ["Hips", "Torso", "Head", "EyeL", "EyeR", "ArmL", "ArmR"]
+const ZOMBIE_PARTS: Array[String] = ["Body", "Eyes", "EyeL", "EyeR"]
 ## The viewmodels place their ScopeLens disc at this Z (towards the player); scope geometry must stay in front.
 const SCOPE_LENS_Z: float = 0.128
 const SCOPE_BOTTOM: float = 0.074
@@ -122,26 +122,53 @@ func test_wall_panel_fits_the_kit_grid() -> void:
 	wall.free()
 
 
-func _material(mesh_node: MeshInstance3D) -> BaseMaterial3D:
-	return mesh_node.mesh.surface_get_material(0) as BaseMaterial3D
+func _zombie_material(mesh_node: MeshInstance3D) -> ShaderMaterial:
+	return mesh_node.mesh.surface_get_material(0) as ShaderMaterial
+
+
+func _check_zombie_finishes(zombie: Node3D) -> void:
+	var head_value: float = -1.0
+	var plain_colors: Array[Color] = []
+	for node: Node in zombie.find_children("*", "MeshInstance3D", true, false):
+		var mesh: Mesh = (node as MeshInstance3D).mesh
+		for surface: int in mesh.get_surface_count():
+			var mat: ShaderMaterial = mesh.surface_get_material(surface) as ShaderMaterial
+			assert_not_null(mat, "zombie surfaces use the gear shader")
+			if mat == null:
+				continue
+			assert_eq(mat.shader.resource_path, "res://assets/materials/gear.gdshader")
+			var color: Color = mat.get_shader_parameter(&"albedo")
+			if mat.resource_name.begins_with("ZombieSkinHead"):
+				head_value = color.get_luminance()
+			elif not mat.resource_name.begins_with("ZombieGlow"):
+				plain_colors.append(color)
+	assert_gt(head_value, 0.0, "zombie head retains its own light skin finish")
+	for color: Color in plain_colors:
+		assert_gt(head_value, color.get_luminance(), "head is the lightest nonemissive surface")
 
 
 func _check_zombie(id: String) -> Node3D:
 	var zombie: Node3D = _load(ZOMBIES % id)
 	if zombie == null:
 		return null
+	add_child(zombie)
 	for part: String in ZOMBIE_PARTS:
 		assert_not_null(zombie.find_child(part, true, false), id + " has " + part)
-	var eye: Node3D = zombie.find_child("EyeL", true, false) as Node3D
-	if eye:
-		assert_gt(eye.position.z, 0.0, id + " faces +Z (eyes on the front of the head)")
-	var head: MeshInstance3D = zombie.find_child("Head", true, false) as MeshInstance3D
-	if head:
-		var head_value: float = _material(head).albedo_color.get_luminance()
-		for node: Node in zombie.find_children("*", "MeshInstance3D", true, false):
-			var mat: BaseMaterial3D = _material(node as MeshInstance3D)
-			if node != head and not mat.emission_enabled:
-				assert_gt(head_value, mat.albedo_color.get_luminance(), id + " head is lighter than " + node.name)
+	var skeletons: Array[Node] = zombie.find_children("*", "Skeleton3D", true, false)
+	assert_eq(skeletons.size(), 1, id + " has one shared character skeleton")
+	if skeletons.size() == 1:
+		var skeleton: Skeleton3D = skeletons[0] as Skeleton3D
+		assert_eq(skeleton.get_bone_count(), 22, id + " keeps all character bones")
+		skeleton.force_update_all_bone_transforms()
+		var eyes: Node3D = zombie.find_child("Eyes", true, false) as Node3D
+		var head: Vector3 = skeleton.global_transform * skeleton.get_bone_global_rest(skeleton.find_bone("head")).origin
+		if eyes:
+			assert_gt(eyes.global_position.z, head.z, id + " eyes face +Z")
+	_check_zombie_finishes(zombie)
+	var settings: ConfigFile = ConfigFile.new()
+	assert_eq(settings.load((ZOMBIES % id) + ".import"), OK)
+	assert_eq(settings.get_value("params", "meshes/light_baking"), 3)
+	assert_eq(settings.get_value("params", "import_script/path"), "res://tools/assets/gear_import.gd")
 	return zombie
 
 
@@ -177,7 +204,7 @@ func test_bloater_is_wide_with_a_glowing_belly() -> void:
 	var belly: MeshInstance3D = zombie.find_child("Belly", true, false) as MeshInstance3D
 	assert_not_null(belly, "bloater has a Belly code can pulse")
 	if belly:
-		assert_true(_material(belly).emission_enabled, "belly glows")
+		assert_gt(float(_zombie_material(belly).get_shader_parameter(&"emission_strength")), 0.0, "belly glows")
 	zombie.free()
 
 

@@ -23,6 +23,7 @@ import bpy
 # bpy must load before bmesh.
 import bmesh
 import character_checks
+import zombie_checks
 from mathutils import Vector
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -31,20 +32,10 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 BUDGETS = {
     "kit": (2_000, 4),
     "weapons": (8_000, 6),
-    "zombies": (6_000, 8),
+    "zombies": (9_000, 8),
 }
 BUDGETS.update(character_checks.BUDGETS)
 
-ZOMBIE_UPPER = {
-    "Hips": None,
-    "Torso": "Hips",
-    "Head": "Torso",
-    "ArmL": "Torso",
-    "ArmR": "Torso",
-    "EyeL": "Head",
-    "EyeR": "Head",
-}
-ZOMBIE_LEGS = {"LegL": "Hips", "LegR": "Hips"}
 GUN = {"Receiver": None, "Muzzle": "Receiver", "Bolt": "Receiver"}
 GUN_WITH_MAG = {**GUN, "Magazine": "Receiver"}
 
@@ -60,9 +51,7 @@ JOINTS = {
     "atlas_auto": GUN_WITH_MAG,
     "halberd_lmg": GUN_WITH_MAG,
     "corvid_338": GUN_WITH_MAG,
-    "shambler": {**ZOMBIE_UPPER, **ZOMBIE_LEGS},
-    "bloater": {**ZOMBIE_UPPER, **ZOMBIE_LEGS, "Belly": "Torso"},
-    "crawler": ZOMBIE_UPPER,
+    **zombie_checks.JOINTS,
 }
 JOINTS.update(character_checks.JOINTS)
 
@@ -170,10 +159,6 @@ def check_forward(nodes: dict, objects: list, folder: str) -> list:
         tip = nodes["Muzzle"].matrix_world.translation.y
         if tip < hi.y - 0.05 or tip <= 0.0:
             return [f"Muzzle (y {tip:.3f}) must be at the front of the gun (y {hi.y:.3f}); forward is Godot -Z"]
-    if folder == "zombies" and {"Head", "EyeL", "EyeR"} <= nodes.keys():
-        eyes = (nodes["EyeL"].matrix_world.translation + nodes["EyeR"].matrix_world.translation) / 2
-        if eyes.y >= nodes["Head"].matrix_world.translation.y:
-            return ["eyes are on the back of the head; zombies must face Godot +Z"]
     return []
 
 
@@ -227,6 +212,7 @@ def check_model(path: str) -> list:
         + check_forward(nodes, objects, folder)
         + check_joints(nodes, stem)
         + character_checks.check(objects, folder, stem)
+        + (zombie_checks.check(objects, stem) if folder == "zombies" else [])
     )
 
 
