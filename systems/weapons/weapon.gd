@@ -317,6 +317,7 @@ func _pose_moving_parts() -> void:
 
 
 func _set_flash(on: bool) -> void:
+	on = on and not data.no_muzzle_flash
 	if _flash_light:
 		_flash_light.visible = on
 	if _flash_mesh:

@@ -51,6 +51,9 @@ JOINTS = {
     "atlas_auto": GUN_WITH_MAG,
     "halberd_lmg": GUN_WITH_MAG,
     "corvid_338": GUN_WITH_MAG,
+    "sentry_br3": GUN_WITH_MAG,
+    "nightjar_sd": {**GUN_WITH_MAG, "Suppressor": "Receiver"},
+    "rampart_br": GUN_WITH_MAG,
     **zombie_checks.JOINTS,
 }
 JOINTS.update(character_checks.JOINTS)

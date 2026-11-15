@@ -20,7 +20,7 @@ A base gun is a model, a handling feel and a niche. Loot does not add new guns; 
 
 ## The 22 guns
 
-Status: **designed** = already in the design doc and `weapons.csv`; **new** = added by this plan. Damage is balance-sheet damage (the game uses x 0.57 for now, see the README).
+Status: **designed** = in `weapons.csv`; **new** = plan-only. The CSV's Build batch marks completed guns as **built**. Damage is balance-sheet damage (the game uses x 0.57 for now, see the README).
 
 ### Sidearms (4)
 
@@ -39,15 +39,15 @@ The loadout has a Sidearm slot, so it needs real choice, not just the start pist
 | --- | --- | --- | --- | --- |
 | Kestrel SMG | designed | SMG, auto | Mobile hip fire, best point farm | Wall, all maps |
 | Mako PDW | designed | SMG, burst | Burst headshots up close, big mag | Loot / Vault |
-| Nightjar SD | new | Suppressed SMG | Head x3, low recoil and **no muzzle flash**, so it keeps your view clear in Blackout rounds | Loot / Vault |
+| Nightjar SD | designed | Suppressed SMG | Head x3, low recoil and **no muzzle flash**, so it keeps your view clear in Blackout rounds | Loot / Vault |
 
 ### Rifles (4)
 
 | Gun | Status | Class | Niche | Source |
 | --- | --- | --- | --- | --- |
 | Vanguard AR | designed | Assault rifle, auto | The all-rounder everything is measured against | Wall, all maps |
-| Sentry | new | Burst rifle | Three-round bursts; rewards mid-range headshots more than the AR | Loot / Vault |
-| Rampart BR | new | Battle rifle, auto | Heavy 95-damage rounds at 480 rpm, big stagger, slower to move and aim | Wall on Marrow Junction; loot |
+| Sentry | designed | Burst rifle | Three-round bursts; rewards mid-range headshots more than the AR | Loot / Vault |
+| Rampart BR | designed | Battle rifle, auto | Heavy 95-damage rounds at 480 rpm, big stagger, slower to move and aim | Wall on Marrow Junction; loot |
 | Fieldhand | new | Lever-action rifle | Hard hits (150, head x3) that pierce one zombie, full move speed, rounds load one by one | Wall on Kessel Dam; loot |
 
 ### Marksman and snipers (3)
@@ -165,7 +165,7 @@ Each gun needs: a model script using `tools/assets/gun_parts.py` (PR #65), a `We
 | A0 | Done or in PR #65 | Warden P9 (as M-9), Brenner Trench, Kestrel SMG, Vanguard AR (as AR-7), Talon DMR | - | - |
 | A1 | Built (Vault pool, Halcyon Labs) | Hollis .44, Mako PDW, Atlas Auto, Halberd LMG, Corvid .338 | None (burst and scope exist) | 5 x S |
 | A2 | P3 | Cryo Lance, Siphon | Freeze/shatter, gravity well | 2 x M |
-| B | P6 loot, after A | Wren MP, Coachman, Fieldhand, Rampart BR, Grubber, Sentry, Nightjar SD | Shell-by-shell reload (also fixes the Brenner), both-barrels alt fire, innate pierce, no-flash flag | 4 x S, 3 x M |
+| B | Sentry, Nightjar SD, Rampart BR built; rest with P6 loot | Wren MP, Coachman, Fieldhand, Rampart BR, Grubber, Sentry, Nightjar SD | Shell-by-shell reload (also fixes the Brenner), both-barrels alt fire, innate pierce, no-flash flag | 4 x S, 3 x M |
 | C | P6 to P10 | Bastion, Ironwood .50, Synapse | Fire-rate ramp (shared with the Furnace trait), pierce 2 + plate break, on-hit chain to nearby zombies (shared with the Chain shock affix) | 3 x M |
 
 Build A1 first: the Vault in v0.1 needs those guns and they need no new code. Signature wall guns in batch B land with their map, except the Coachman, which can go on Halcyon Labs as soon as it is built.

@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://systems/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Script" path="res://systems/weapons/recoil_data.gd" id="2"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/sentry_viewmodel.tscn" id="3"]
+[ext_resource type="AudioStream" path="res://assets/audio/sentry_fire.wav" id="4"]
+[ext_resource type="AudioStream" path="res://assets/audio/dry_fire.wav" id="5"]
+[ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
+[ext_resource type="Resource" path="res://content/weapons/sentry_br3_reforged.tres" id="7"]
+
+[sub_resource type="Resource" id="recoil"]
+script = ExtResource("2")
+pattern = Array[Vector2]([Vector2(0.08, 1.15), Vector2(-0.12, 1.25), Vector2(0.1, 1.35)])
+random_spread = Vector2(0.16, 0.1)
+recovery_speed = 12.0
+ads_multiplier = 0.6
+permanent_ratio = 0.2
+reset_time = 0.24
+repeat_last = 1
+
+[resource]
+script = ExtResource("1")
+id = &"sentry_br3"
+loot_tags = Array[StringName]([&"rifle", &"burst"])
+display_name = "Sentry"
+cost = 0
+crate_weight = 1.0
+damage = 39.9
+min_damage = 25.935
+falloff_start = 30.0
+falloff_end = 70.0
+max_range = 200.0
+pellets = 1
+head_multiplier = 2.5
+fire_mode = 1
+rounds_per_minute = 900.0
+burst_count = 3
+magazine_size = 30
+starting_reserve = 180
+max_reserve = 180
+reload_time = 2.2
+empty_reload_time = 2.8
+ads_time = 0.25
+ads_fov = 55.0
+move_speed_multiplier = 0.95
+hip_spread = 2.5
+ads_spread = 0.1
+move_spread = 2.0
+spread_per_shot = 0.22
+max_spread = 6.0
+recoil = SubResource("recoil")
+viewmodel_kick = 0.042
+hip_position = Vector3(0.17, -0.18, -0.34)
+ads_position = Vector3(0, -0.079, -0.26)
+viewmodel_scene = ExtResource("3")
+fire_sound = ExtResource("4")
+dry_fire_sound = ExtResource("5")
+reload_sound = ExtResource("6")
+upgraded = ExtResource("7")

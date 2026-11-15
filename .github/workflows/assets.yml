@@ -35,7 +35,8 @@ jobs:
         run: |
           python tools/assets/build_models.py --out "$RUNNER_TEMP/models"
           for f in kit/wall_panel.glb weapons/rifle_ar.glb weapons/hollis_44.glb weapons/mako_pdw.glb \
-            weapons/atlas_auto.glb weapons/halberd_lmg.glb weapons/corvid_338.glb zombies/shambler.glb \
+            weapons/atlas_auto.glb weapons/halberd_lmg.glb weapons/corvid_338.glb \
+            weapons/sentry_br3.glb weapons/nightjar_sd.glb weapons/rampart_br.glb zombies/shambler.glb \
             zombies/crawler.glb zombies/bloater.glb characters/player.glb characters/player_arms.glb; do
             test -s "$RUNNER_TEMP/models/$f" || { echo "missing $f"; exit 1; }
           done
