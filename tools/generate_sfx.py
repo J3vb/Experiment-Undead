@@ -233,3 +233,12 @@ x = crack * 1.4 + thump * 1.8 + tail
 click(0.8, 650, 80, 0.3)
 click(1.0, 950, 90, 0.25)
 save("corvid_fire.wav", x)
+
+# Wren MP: a crisp, light pistol crack; an independent seed keeps existing shots stable.
+rng = np.random.default_rng(29)
+tt = t(0.12)
+crack = rng.standard_normal(len(tt)) * np.exp(-tt * 135)
+thump = np.sin(2 * np.pi * (230 * tt - 95 * tt**2)) * np.exp(-tt * 52)
+snap = np.sin(2 * np.pi * 2800 * tt) * np.exp(-tt * 210)
+tail = lowpass(rng.standard_normal(len(tt)), 0.22) * np.exp(-tt * 45)
+save("wren_fire.wav", crack + thump * 0.4 + snap * 0.3 + tail * 0.55)
