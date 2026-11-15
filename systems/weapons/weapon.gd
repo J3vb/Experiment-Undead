@@ -6,7 +6,6 @@ signal ammo_changed(in_mag: int, reserve: int)
 signal fired
 signal reload_started(duration: float)
 signal hit_landed(is_kill: bool, is_headshot: bool)
-## Presentation hook: where a bullet ended. Effects listen, logic never does.
 signal traced(point: Vector3, normal: Vector3, hit_flesh: bool)
 
 enum State { IDLE, RELOADING }
@@ -153,7 +152,6 @@ func tick(delta: float) -> void:
 	_trigger_was_held = trigger_held
 
 
-## Presentation only: viewmodel pose and muzzle flash.
 func _process(delta: float) -> void:
 	if not active:
 		return
@@ -247,6 +245,9 @@ func _spread_direction(basis: Basis, spread_degrees: float) -> Vector3:
 
 
 func _trace(origin: Vector3, direction: Vector3) -> void:
+	if data.id == &"siphon":
+		GravityWell.launch(self)
+		return
 	var hits: Array[Dictionary] = Pierce.trace(self, origin, direction)
 	if shooter and shooter.session and shooter.session.remote_shots:
 		var end: Vector3 = hits[-1].position if not hits.is_empty() else origin + direction * data.max_range
@@ -315,7 +316,6 @@ func _update_pose(delta: float) -> void:
 	_pose_moving_parts()
 
 
-## Bolt rides back with the kick; on reload the magazine drops out and comes back.
 func _pose_moving_parts() -> void:
 	if _bolt:
 		var back: float = _kick / maxf(data.viewmodel_kick, 0.001)

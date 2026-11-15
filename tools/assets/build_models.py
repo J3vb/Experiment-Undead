@@ -231,6 +231,7 @@ MODELS = {
     "ironwood_50": ("weapons/ironwood_50.glb", gun("ironwood_model")),
     "warden_p9": ("weapons/warden_p9.glb", gun("pistol_model")),
     "wren_mp": ("weapons/wren_mp.glb", gun("wren_model")),
+    "siphon": ("weapons/siphon.glb", gun("siphon_model")),
     "shambler": ("zombies/shambler.glb", zombie_model.build_shambler),
     "crawler": ("zombies/crawler.glb", zombie_model.build_crawler),
     "bloater": ("zombies/bloater.glb", zombie_model.build_bloater),
