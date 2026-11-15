@@ -20,6 +20,7 @@ repeat_last = 1
 [resource]
 script = ExtResource("1")
 id = &"coachman_2b_reforged"
+slot = 0
 loot_tags = Array[StringName]([&"shotgun", &"double"])
 display_name = "Coachman Reforged"
 cost = 0

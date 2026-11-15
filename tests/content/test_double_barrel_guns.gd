@@ -23,6 +23,8 @@ func test_double_barrels_match_the_roster() -> void:
 		assert_eq(gun.fire_mode, WeaponData.FireMode.SEMI, String(id) + " semi-auto")
 		assert_eq(gun.rounds_per_minute, row[2], String(id) + " rpm")
 		assert_eq(gun.magazine_size, 2, String(id) + " two barrels")
+		var role: WeaponData.Slot = WeaponData.Slot.SIDEARM if id == &"grubber_sawnoff" else WeaponData.Slot.PRIMARY
+		assert_eq(gun.slot, role, String(id) + " equipment role")
 		assert_eq(gun.starting_reserve, row[3], String(id) + " reserve")
 		assert_eq(gun.max_reserve, row[3], String(id) + " max reserve")
 		assert_eq(gun.reload_time, row[4], String(id) + " reload")
@@ -49,6 +51,7 @@ func test_reforged_double_barrels_keep_two_rounds() -> void:
 		assert_eq(up.max_reserve, gun.max_reserve * 2)
 		assert_eq(up.pellets, gun.pellets)
 		assert_eq(up.loot_tags, gun.loot_tags)
+		assert_eq(up.slot, gun.slot, "Reforging preserves the equipment role")
 		assert_eq(up.viewmodel_scene, gun.viewmodel_scene)
 
 

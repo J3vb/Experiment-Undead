@@ -179,19 +179,15 @@ func test_coachman_primary_packet_still_relays_one_barrel() -> void:
 	assert_eq(weapon.instance.ammo_in_mag, 1)
 
 
-func test_grubber_plus_one_pellet_primary_relays_nine_endpoints() -> void:
+func test_grubber_plus_one_pellet_relays_nine_primary_and_eighteen_alt_endpoints() -> void:
 	await _check_runtime_pellets(&"grubber_sawnoff", 1, false)
-
-
-func test_grubber_plus_one_pellet_alt_relays_eighteen_endpoints() -> void:
+	await _wait_for_previous_tracers()
 	await _check_runtime_pellets(&"grubber_sawnoff", 1, true)
 
 
-func test_coachman_plus_one_pellet_primary_relays_eleven_endpoints() -> void:
+func test_coachman_plus_one_pellet_relays_eleven_primary_and_twenty_two_alt_endpoints() -> void:
 	await _check_runtime_pellets(&"coachman_2b", 1, false)
-
-
-func test_coachman_plus_one_pellet_alt_relays_twenty_two_endpoints() -> void:
+	await _wait_for_previous_tracers()
 	await _check_runtime_pellets(&"coachman_2b", 1, true)
 
 
@@ -209,6 +205,17 @@ func test_coachman_max_pellet_bonus_primary_relays_twelve_endpoints() -> void:
 
 func test_coachman_max_pellet_bonus_alt_relays_twenty_four_endpoints() -> void:
 	await _check_runtime_pellets(&"coachman_2b", 2, true)
+
+
+func _wait_for_previous_tracers() -> void:
+	var peer_id: int = _roots[1].multiplayer.get_unique_id()
+	var expired: bool = await wait_until(
+		func() -> bool:
+			return not _effects(0, peer_id).has_node("Tracers") and not _effects(2, peer_id).has_node("Tracers"),
+		3.0,
+		"the previous host and observer tracers expire"
+	)
+	assert_true(expired, "the next payload is checked separately from the previous shot")
 
 
 func _check_runtime_pellets(weapon_id: StringName, bonus: int, alternate: bool) -> void:

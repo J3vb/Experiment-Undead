@@ -61,3 +61,24 @@ func test_primary_shotgun_is_rejected_in_the_sidearm_slot() -> void:
 	assert_eq(player.weapons.weapons[0], starter, "shotgun and double tags alone do not allow a Sidearm")
 	assert_eq(player.weapons.weapons[1], primary)
 	assert_eq(player.weapons.current, primary)
+
+
+func test_inventory_stashes_and_equips_both_grubbers_as_sidearms() -> void:
+	for id: StringName in [&"grubber_sawnoff", &"grubber_sawnoff_reforged"]:
+		var profile: CharacterProfile = CharacterProfile.new()
+		var primary_item: Dictionary = {"uid": "primary", "base": "rifle_ar"}
+		var starter: Dictionary = {"uid": "starter", "base": "pistol_service"}
+		profile.loadout[&"primary"] = primary_item
+		profile.loadout[&"sidearm"] = starter
+		var item: Dictionary = _loadout("inventory_grubber", String(id))["sidearm"]
+		var stash_slot: int = Inventory.add_to_stash(profile, item)
+		assert_eq(stash_slot, 0)
+		assert_eq(Inventory.slot_for(item), &"sidearm", String(id) + " has the explicit Sidearm slot")
+		assert_true(Inventory.equip(profile, stash_slot))
+		assert_eq(profile.loadout[&"sidearm"], item)
+		assert_eq(profile.loadout[&"primary"], primary_item, "equipping Grubber cannot replace the saved Primary")
+		assert_eq(profile.stash[stash_slot], starter, "the old Sidearm returns to the same stash slot")
+		ItemLoadout.apply(player, profile.loadout)
+		assert_eq(player.weapons.weapons[0].data.id, id)
+		assert_eq(player.weapons.weapons[0].data.slot, WeaponData.Slot.SIDEARM)
+		assert_eq(player.weapons.weapons[1], primary, "the saved loadout also preserves the live Primary")
