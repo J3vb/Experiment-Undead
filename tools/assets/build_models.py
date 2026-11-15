@@ -18,6 +18,8 @@ import bpy  # noqa: I001  bpy must load before bmesh
 import bmesh
 from mathutils import Vector
 
+import finish
+
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Cold Containment palette (see the visual style guide).
@@ -72,6 +74,9 @@ def material(name: str, color: tuple, metallic: float = 0.0, roughness: float = 
     return mat
 
 
+polish = True  # harden bevelled edges; off for models in UNFINISHED
+
+
 def box(name: str, size: tuple, at: tuple, mat, bevel: float = 0.0, parent=None):
     """A box of `size` (x, y, z) centred on `at`, with optional bevelled edges."""
     bpy.ops.mesh.primitive_cube_add(size=1.0, location=at)
@@ -84,6 +89,7 @@ def box(name: str, size: tuple, at: tuple, mat, bevel: float = 0.0, parent=None)
         mod.width = bevel
         mod.segments = 2
         mod.limit_method = "ANGLE"
+        mod.harden_normals = polish
         bpy.ops.object.modifier_apply(modifier=mod.name)
     obj.data.materials.append(mat)
     obj.parent = parent
@@ -309,6 +315,7 @@ def limb(name: str, start: tuple, end: tuple, radius: float, mat, parent=None):
     mod.width = radius * 0.6
     mod.segments = 3
     mod.limit_method = "ANGLE"
+    mod.harden_normals = polish
     bpy.ops.object.modifier_apply(modifier=mod.name)
     drop_degenerate_faces(obj)
     bpy.ops.object.shade_auto_smooth()
@@ -401,6 +408,10 @@ def build_bloater() -> None:
         limb("Arm" + side, (x * 0.38, 0, 1.45), (x * 0.56, -0.18, 0.98), 0.085, skin, torso)
 
 
+# Not finished yet: the Halcyon Labs lightmap was baked on this mesh, so changing it
+# needs a GPU re-bake. Remove it from this set together with that bake.
+UNFINISHED = {"wall_panel"}
+
 MODELS = {
     "wall_panel": ("kit/wall_panel.glb", build_wall_panel),
     "rifle_ar": ("weapons/rifle_ar.glb", build_rifle_ar),
@@ -415,10 +426,11 @@ MODELS = {
 
 def export(path: str) -> None:
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    bpy.ops.export_scene.gltf(filepath=path, export_format="GLB", export_yup=True, export_apply=True)
+    bpy.ops.export_scene.gltf(filepath=path, export_format="GLB", export_yup=True, export_apply=True, export_vertex_color="ACTIVE")
 
 
 def main(argv: list) -> None:
+    global polish
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("names", nargs="*", help="models to build (default: all)")
     parser.add_argument("--out", default=os.path.join(REPO, "assets", "models"))
@@ -428,7 +440,10 @@ def main(argv: list) -> None:
             sys.exit(f"unknown model: {name} (known: {', '.join(MODELS)})")
         rel_path, build = MODELS[name]
         reset_scene()
+        polish = name not in UNFINISHED
         build()
+        if polish:
+            finish.finish()
         export(os.path.join(args.out, rel_path))
         print(f"built {name} -> {rel_path}")
 
