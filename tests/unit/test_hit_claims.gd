@@ -255,6 +255,45 @@ func test_kill_marker_expires_after_half_a_second() -> void:
 	assert_signal_emit_count(Events, "hit_confirmed", 1)
 
 
+func test_multiple_pending_hits_prune_freed_zombies_without_skipping_live_entries() -> void:
+	var pairs: Array[Array] = []
+	for index: int in 3:
+		pairs.append(await _zombies())
+	client.set_physics_process(false)
+	for pair: Array in pairs:
+		var info: DamageInfo = DamageInfo.create(1.0, mine)
+		info.weapon_id = RIFLE.id
+		client.submit_hit(mine.weapons.current, (pair[1] as Zombie).head_zone, info)
+	assert_signal_emit_count(Events, "hit_confirmed", 3)
+	(pairs[0][0] as Zombie).queue_free()
+	await wait_until(func() -> bool: return not is_instance_valid(pairs[0][1]), 3.0, "first zombie despawned")
+	(pairs[1][1] as Zombie).state = Zombie.State.DEAD
+	client._physics_process(0.1)
+	assert_signal_emit_count(Events, "hit_confirmed", 4)
+	(pairs[2][1] as Zombie).state = Zombie.State.DEAD
+	client._physics_process(0.1)
+	assert_signal_emit_count(Events, "hit_confirmed", 5)
+	client._physics_process(0.1)
+	assert_signal_emit_count(Events, "hit_confirmed", 5, "each tracked death confirms once")
+
+
+func test_repeated_hit_refreshes_kill_window_and_remembers_the_latest_zone() -> void:
+	var pair: Array[Zombie] = await _zombies()
+	client.set_physics_process(false)
+	var info: DamageInfo = DamageInfo.create(1.0, mine)
+	info.weapon_id = RIFLE.id
+	client.submit_hit(mine.weapons.current, pair[1].head_zone, info)
+	client._physics_process(0.4)
+	client.submit_hit(mine.weapons.current, pair[1].hit_zones[1], info)
+	client._physics_process(0.2)
+	pair[1].state = Zombie.State.DEAD
+	client._physics_process(0.01)
+	assert_signal_emit_count(Events, "hit_confirmed", 3, "one kill inside the latest hit's window")
+	assert_eq(get_signal_parameters(Events, "hit_confirmed"), [mine, true, false])
+	client._physics_process(0.01)
+	assert_signal_emit_count(Events, "hit_confirmed", 3)
+
+
 func test_solo_weapon_trace_still_applies_direct_hit_zone_damage() -> void:
 	var pair: Array[Zombie] = await _zombies()
 	var zombie: Zombie = pair[0]
