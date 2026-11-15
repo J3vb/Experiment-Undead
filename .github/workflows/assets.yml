@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "tools/assets/**"
+      - "assets/models/**"
       - ".github/workflows/assets.yml"
 
 jobs:
@@ -19,8 +20,16 @@ jobs:
           cache: pip
           cache-dependency-path: tools/assets/requirements.txt
 
-      - name: Install Blender as a Python module
-        run: pip install -r tools/assets/requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: tools/assets/package-lock.json
+
+      - name: Install Blender as a Python module and the glTF validator
+        run: |
+          pip install -r tools/assets/requirements.txt
+          npm ci --prefix tools/assets
 
       - name: Build every model headless
         run: |
@@ -28,3 +37,18 @@ jobs:
           for f in kit/wall_panel.glb weapons/rifle_ar.glb zombies/shambler.glb zombies/crawler.glb zombies/bloater.glb; do
             test -s "$RUNNER_TEMP/models/$f" || { echo "missing $f"; exit 1; }
           done
+
+      - name: Khronos glTF validator (fresh build and committed models)
+        run: |
+          node tools/assets/validate_gltf.mjs "$RUNNER_TEMP/models"
+          node tools/assets/validate_gltf.mjs assets/models
+
+      - name: Model rules (budget, origin, forward axis, joints, normals, materials)
+        run: |
+          python tools/assets/check_models.py --dir "$RUNNER_TEMP/models"
+          python tools/assets/check_models.py --dir assets/models
+
+      - name: Tests for the model checks
+        run: |
+          python -m pytest tools/assets/tests -q -p no:cacheprovider
+          node --test tools/assets/tests/validate_gltf.test.mjs

@@ -73,7 +73,8 @@ Edit skills in `.agents/skills/` only, then run
    third-party file (code or asset) gets one line in `docs/CREDITS.md`: name,
    author, link, licence. CC0 first, CC-BY with credit, MIT for code. No
    "non-commercial" or "no AI" licences. No Git LFS for now.
-   How to build, import and check models: the skills below.
+   How to build, import and check models (including `check_models.py` and the
+   glTF validator the Assets CI runs): the skills below.
 9. **Names.** Use the design doc's words in code and data:
    - Machines: `SpecimenVault` (random gun), `MedDispenser` (gives a serum),
      `Reforger` (upgrades a gun). Not "mystery box" or "perk machine".

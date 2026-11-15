@@ -30,3 +30,6 @@ mono_crash.*.json
 __pycache__/
 /version.json
 /deploy/server/server/
+
+# Asset check tools
+node_modules/

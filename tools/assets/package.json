@@ -1,0 +1,9 @@
+{
+  "name": "experiment-undead-asset-checks",
+  "private": true,
+  "type": "module",
+  "description": "Khronos glTF validator for the asset CI (tools/assets/validate_gltf.mjs).",
+  "dependencies": {
+    "gltf-validator": "2.0.0-dev.3.10"
+  }
+}

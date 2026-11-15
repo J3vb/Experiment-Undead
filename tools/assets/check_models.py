@@ -1,0 +1,223 @@
+"""Checks exported .glb models against the project's model rules.
+
+Run from the repo root:
+    python tools/assets/check_models.py                   # every .glb in assets/models/
+    python tools/assets/check_models.py --dir /tmp/models # a build output folder
+
+Checks per model: triangle and material budget, origin, forward axis, named
+joints with the right parents, closed shells with outward normals, materials.
+Rules come from the model's folder (kit/weapons/zombies) and its file name.
+
+After import, Blender axes are: +Z up, Godot's +Z (zombie front) is Blender -Y,
+Godot's -Z (gun forward) is Blender +Y.
+"""
+
+import argparse
+import glob
+import os
+import sys
+
+import bpy  # noqa: I001  bpy must load before bmesh
+import bmesh
+from mathutils import Vector
+
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Per folder: triangle budget, material budget.
+BUDGETS = {
+    "kit": (2_000, 4),
+    "weapons": (8_000, 6),
+    "zombies": (6_000, 8),
+}
+
+ZOMBIE_UPPER = {"Hips": None, "Torso": "Hips", "Head": "Torso", "ArmL": "Torso", "ArmR": "Torso", "EyeL": "Head", "EyeR": "Head"}
+ZOMBIE_LEGS = {"LegL": "Hips", "LegR": "Hips"}
+GUN = {"Receiver": None, "Muzzle": "Receiver", "Bolt": "Receiver"}
+GUN_WITH_MAG = {**GUN, "Magazine": "Receiver"}
+
+# Required node -> required ancestor (None = any). Code finds these by name.
+JOINTS = {
+    "wall_panel": {},
+    "rifle_ar": GUN_WITH_MAG,
+    "kestrel_smg": GUN_WITH_MAG,
+    "talon_dmr": GUN_WITH_MAG,
+    "shotgun_brenner": GUN,
+    "shambler": {**ZOMBIE_UPPER, **ZOMBIE_LEGS},
+    "bloater": {**ZOMBIE_UPPER, **ZOMBIE_LEGS, "Belly": "Torso"},
+    "crawler": ZOMBIE_UPPER,
+}
+
+TOLERANCE = 0.01
+
+
+def load_glb(path: str) -> list:
+    """Empties the scene, imports `path` and returns its objects."""
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.ops.import_scene.gltf(filepath=path)
+    return list(bpy.context.scene.objects)
+
+
+def world_mesh(obj) -> bmesh.types.BMesh:
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    bm.transform(obj.matrix_world)
+    bmesh.ops.triangulate(bm, faces=bm.faces[:])
+    return bm
+
+
+def bounds(objects: list) -> tuple:
+    lo, hi = Vector((1e9, 1e9, 1e9)), Vector((-1e9, -1e9, -1e9))
+    for obj in objects:
+        if obj.type != "MESH":
+            continue
+        for corner in obj.bound_box:
+            p = obj.matrix_world @ Vector(corner)
+            lo, hi = Vector(map(min, lo, p)), Vector(map(max, hi, p))
+    return lo, hi
+
+
+def shell_volumes(bm: bmesh.types.BMesh) -> list:
+    """Signed volume of each closed shell; negative means the normals point inwards.
+    glTF splits vertices at hard edges, so they are welded first."""
+    bmesh.ops.remove_doubles(bm, verts=bm.verts[:], dist=1e-5)
+    seen, volumes = set(), []
+    for start in bm.faces:
+        if start.index in seen:
+            continue
+        shell, todo = [], [start]
+        seen.add(start.index)
+        while todo:
+            face = todo.pop()
+            shell.append(face)
+            for edge in face.edges:
+                for other in edge.link_faces:
+                    if other.index not in seen:
+                        seen.add(other.index)
+                        todo.append(other)
+        if all(len(e.link_faces) == 2 for f in shell for e in f.edges):
+            volumes.append(sum(f.verts[0].co.dot(f.verts[1].co.cross(f.verts[2].co)) for f in shell) / 6.0)
+    return volumes
+
+
+def check_geometry(objects: list, folder: str) -> list:
+    errors = []
+    tri_budget, mat_budget = BUDGETS[folder]
+    tris, materials = 0, set()
+    for obj in objects:
+        if obj.type != "MESH":
+            continue
+        bm = world_mesh(obj)
+        bm.faces.index_update()
+        tris += len(bm.faces)
+        if any(f.calc_area() < 1e-10 for f in bm.faces):
+            errors.append(f"{obj.name}: has zero-area faces")
+        if any(v < -1e-9 for v in shell_volumes(bm)):
+            errors.append(f"{obj.name}: a closed part has inward normals (flipped faces)")
+        bm.free()
+        slots = list(obj.data.materials)
+        if not slots or any(m is None for m in slots):
+            errors.append(f"{obj.name}: every mesh needs a material in every slot")
+        for mat in filter(None, slots):
+            materials.add(mat.name)
+            if mat.name.startswith("Material"):
+                errors.append(f"{obj.name}: material '{mat.name}' needs a real name")
+    if tris > tri_budget:
+        errors.append(f"{tris} triangles, budget for {folder} is {tri_budget}")
+    if len(materials) > mat_budget:
+        errors.append(f"{len(materials)} materials, budget for {folder} is {mat_budget}")
+    return errors
+
+
+def check_origin(objects: list, folder: str) -> list:
+    lo, hi = bounds(objects)
+    centre = (lo + hi) / 2
+    if folder == "weapons":
+        inside = all(lo[i] - TOLERANCE <= 0.0 <= hi[i] + TOLERANCE for i in range(3))
+        return [] if inside else [f"origin must sit inside the gun, bounds are {fmt(lo)} to {fmt(hi)}"]
+    errors = []
+    if abs(lo.z) > TOLERANCE:
+        errors.append(f"lowest point is at height {lo.z:.3f}, must be 0 (feet/bottom on the origin)")
+    limit = 0.05 if folder == "kit" else 0.35
+    if Vector((centre.x, centre.y)).length > limit:
+        errors.append(f"origin is {Vector((centre.x, centre.y)).length:.2f} m from the footprint centre (max {limit})")
+    return errors
+
+
+def check_forward(nodes: dict, objects: list, folder: str) -> list:
+    if folder == "weapons" and "Muzzle" in nodes:
+        lo, hi = bounds(objects)
+        tip = nodes["Muzzle"].matrix_world.translation.y
+        if tip < hi.y - 0.05 or tip <= 0.0:
+            return [f"Muzzle (y {tip:.3f}) must be at the front of the gun (y {hi.y:.3f}); forward is Godot -Z"]
+    if folder == "zombies" and {"Head", "EyeL", "EyeR"} <= nodes.keys():
+        eyes = (nodes["EyeL"].matrix_world.translation + nodes["EyeR"].matrix_world.translation) / 2
+        if eyes.y >= nodes["Head"].matrix_world.translation.y:
+            return ["eyes are on the back of the head; zombies must face Godot +Z"]
+    return []
+
+
+def check_joints(nodes: dict, stem: str) -> list:
+    errors = []
+    for name, ancestor in JOINTS[stem].items():
+        node = nodes.get(name)
+        if node is None:
+            errors.append(f"missing node '{name}'")
+            continue
+        chain, parent = [], node.parent
+        while parent:
+            chain.append(parent.name)
+            parent = parent.parent
+        if ancestor and ancestor not in chain:
+            errors.append(f"'{name}' must be under '{ancestor}'")
+        if node.type == "MESH":
+            lo, hi = bounds([node])
+            at = node.matrix_world.translation
+            if not all(lo[i] - 0.03 <= at[i] <= hi[i] + 0.03 for i in range(3)):
+                errors.append(f"'{name}' pivot {fmt(at)} is off the part; put the origin on the joint")
+    return errors
+
+
+def fmt(v: Vector) -> str:
+    return "(" + ", ".join(f"{c:.3f}" for c in v) + ")"
+
+
+def check_model(path: str) -> list:
+    """All rule breaks for one .glb, as readable strings."""
+    folder = os.path.basename(os.path.dirname(path))
+    stem = os.path.splitext(os.path.basename(path))[0]
+    if folder not in BUDGETS:
+        return [f"unknown model folder '{folder}', add it to BUDGETS in check_models.py"]
+    if stem not in JOINTS:
+        return [f"no rules for '{stem}', add it to JOINTS in check_models.py"]
+    objects = load_glb(path)
+    nodes = {obj.name: obj for obj in objects}
+    return (
+        check_geometry(objects, folder)
+        + check_origin(objects, folder)
+        + check_forward(nodes, objects, folder)
+        + check_joints(nodes, stem)
+    )
+
+
+def main(argv: list) -> int:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--dir", default=os.path.join(REPO, "assets", "models"))
+    args = parser.parse_args(argv)
+    paths = sorted(glob.glob(os.path.join(args.dir, "**", "*.glb"), recursive=True))
+    if not paths:
+        print(f"no .glb files in {args.dir}")
+        return 1
+    failed = 0
+    for path in paths:
+        errors = check_model(path)
+        rel = os.path.relpath(path, args.dir)
+        print(("FAIL " if errors else "ok   ") + rel)
+        for error in errors:
+            print(f"     - {error}")
+        failed += bool(errors)
+    print(f"{len(paths) - failed}/{len(paths)} models pass")
+    return 1 if failed else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
