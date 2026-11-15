@@ -18,7 +18,17 @@ import build_models as bm
 import check_models
 import gun_parts as g
 
-GUNS = ("rifle_ar", "shotgun_brenner", "kestrel_smg", "talon_dmr")
+GUNS = (
+    "rifle_ar",
+    "shotgun_brenner",
+    "kestrel_smg",
+    "talon_dmr",
+    "hollis_44",
+    "mako_pdw",
+    "atlas_auto",
+    "halberd_lmg",
+    "corvid_338",
+)
 DETAIL_FLOOR = 4_000  # the old box-built guns were 1,700-4,800 triangles
 
 

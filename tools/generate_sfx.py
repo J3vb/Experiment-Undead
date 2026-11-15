@@ -191,3 +191,45 @@ crack = rng.standard_normal(len(tt)) * np.exp(-tt * 45)
 thump = np.sin(2 * np.pi * (75 * tt - 40 * tt**2)) * np.exp(-tt * 14)
 tail = lowpass(rng.standard_normal(len(tt)), 0.07) * np.exp(-tt * 5) * 3.0
 save("talon_fire.wav", crack * 1.3 + thump * 1.5 + tail)
+
+# Hollis .44: a deep, round magnum boom with a short ring from the cylinder gap.
+tt = t(0.8)
+crack = rng.standard_normal(len(tt)) * np.exp(-tt * 50)
+boom = np.sin(2 * np.pi * (70 * tt - 35 * tt**2)) * np.exp(-tt * 11)
+ring = np.sin(2 * np.pi * 1450 * tt) * np.exp(-tt * 40)
+tail = lowpass(rng.standard_normal(len(tt)), 0.06) * np.exp(-tt * 5.5) * 3.0
+save("hollis_fire.wav", crack * 1.2 + boom * 1.6 + ring * 0.15 + tail)
+
+# Mako PDW: very short, light snap so three-round bursts stay crisp.
+tt = t(0.14)
+crack = rng.standard_normal(len(tt)) * np.exp(-tt * 120)
+thump = np.sin(2 * np.pi * (210 * tt - 90 * tt**2)) * np.exp(-tt * 45)
+snap = np.sin(2 * np.pi * 2600 * tt) * np.exp(-tt * 190)
+tail = lowpass(rng.standard_normal(len(tt)), 0.2) * np.exp(-tt * 38)
+save("mako_fire.wav", crack + thump * 0.45 + snap * 0.35 + tail * 0.6)
+
+# Atlas Auto: a shotgun boom cut short for fast follow-up shots, plus the action cycling.
+tt = t(0.42)
+boom = np.sin(2 * np.pi * (65 * tt - 40 * tt**2)) * np.exp(-tt * 12)
+blast = lowpass(rng.standard_normal(len(tt)), 0.28) * np.exp(-tt * 30) * 1.5
+tail = lowpass(rng.standard_normal(len(tt)), 0.06) * np.exp(-tt * 9) * 2.5
+x = boom * 1.3 + blast + tail
+click(0.09, 900, 110, 0.18)
+save("atlas_fire.wav", x)
+
+# Halberd LMG: a mid, chesty report that stacks well at 600 rpm.
+tt = t(0.3)
+crack = rng.standard_normal(len(tt)) * np.exp(-tt * 75)
+thump = np.sin(2 * np.pi * (110 * tt - 60 * tt**2)) * np.exp(-tt * 22)
+tail = lowpass(rng.standard_normal(len(tt)), 0.1) * np.exp(-tt * 14) * 2.0
+save("halberd_fire.wav", crack + thump * 1.3 + tail)
+
+# Corvid .338: the biggest crack in the game, a long rolling tail and the bolt cycling after.
+tt = t(1.3)
+crack = rng.standard_normal(len(tt)) * np.exp(-tt * 38)
+thump = np.sin(2 * np.pi * (60 * tt - 25 * tt**2)) * np.exp(-tt * 9)
+tail = lowpass(rng.standard_normal(len(tt)), 0.05) * np.exp(-tt * 3.2) * 3.5
+x = crack * 1.4 + thump * 1.8 + tail
+click(0.8, 650, 80, 0.3)
+click(1.0, 950, 90, 0.25)
+save("corvid_fire.wav", x)

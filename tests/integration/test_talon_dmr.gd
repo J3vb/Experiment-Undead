@@ -103,6 +103,7 @@ func test_map_vault_can_offer_and_give_talon() -> void:
 	session.level.turn_power_on()
 	var offered: bool = false
 	for attempt: int in 30:
+		player.wallet.set_points(10000)
 		vault.interact(player)
 		vault._physics_process(SpecimenVault.ROLL_TIME + 0.01)
 		if vault.offer == Content.weapon(&"talon_dmr"):

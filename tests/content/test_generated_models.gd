@@ -6,6 +6,11 @@ const RIFLE: String = "res://assets/models/weapons/rifle_ar.glb"
 const SHOTGUN: String = "res://assets/models/weapons/shotgun_brenner.glb"
 const KESTREL: String = "res://assets/models/weapons/kestrel_smg.glb"
 const TALON: String = "res://assets/models/weapons/talon_dmr.glb"
+const HOLLIS: String = "res://assets/models/weapons/hollis_44.glb"
+const MAKO: String = "res://assets/models/weapons/mako_pdw.glb"
+const ATLAS: String = "res://assets/models/weapons/atlas_auto.glb"
+const HALBERD: String = "res://assets/models/weapons/halberd_lmg.glb"
+const CORVID: String = "res://assets/models/weapons/corvid_338.glb"
 const WALL: String = "res://assets/models/kit/wall_panel.glb"
 const ZOMBIES: String = "res://assets/models/zombies/%s.glb"
 const ZOMBIE_PARTS: Array[String] = ["Hips", "Torso", "Head", "EyeL", "EyeR", "ArmL", "ArmR"]
@@ -204,7 +209,7 @@ func test_rebuilt_guns_keep_rifle_triangle_budget_and_distinct_materials() -> vo
 	var rifle: Node3D = _load(RIFLE)
 	var budget: int = int(_triangle_count(rifle) * 1.5)
 	rifle.free()
-	for path: String in [KESTREL, TALON]:
+	for path: String in [KESTREL, TALON, MAKO, ATLAS, HALBERD]:
 		var gun: Node3D = _load(path)
 		var triangles: int = _triangle_count(gun)
 		assert_gt(triangles, 0, path + " has geometry")
@@ -221,7 +226,7 @@ func test_rebuilt_guns_keep_rifle_triangle_budget_and_distinct_materials() -> vo
 
 
 func test_rebuilt_gun_animation_parts_have_independent_pivots() -> void:
-	for path: String in [KESTREL, TALON]:
+	for path: String in [KESTREL, TALON, MAKO, ATLAS, HALBERD]:
 		var gun: Node3D = _load(path)
 		var receiver: Node3D = gun.find_child("Receiver", true, false) as Node3D
 		var magazine: MeshInstance3D = gun.find_child("Magazine", true, false) as MeshInstance3D
@@ -239,7 +244,7 @@ func test_rebuilt_gun_animation_parts_have_independent_pivots() -> void:
 
 
 func test_rebuilt_guns_use_dynamic_light_baking() -> void:
-	for path: String in [KESTREL, TALON]:
+	for path: String in [KESTREL, TALON, HOLLIS, MAKO, ATLAS, HALBERD, CORVID]:
 		var settings: ConfigFile = ConfigFile.new()
 		assert_eq(settings.load(path + ".import"), OK, path + " import settings are committed")
 		assert_eq(settings.get_value("params", "meshes/light_baking"), 3, path + " receives dynamic probe lighting")
@@ -261,7 +266,7 @@ func _rearmost_scope_z(node: Node, xform: Transform3D) -> float:
 
 
 func test_scope_display_sits_behind_the_rebuilt_eyepiece() -> void:
-	for path: String in [RIFLE, TALON]:
+	for path: String in [RIFLE, TALON, CORVID]:
 		var gun: Node3D = _load(path)
 		var rear: float = _rearmost_scope_z(gun, Transform3D.IDENTITY)
 		assert_lt(rear, SCOPE_LENS_Z, path + " eyepiece stays in front of the picture-in-picture lens")

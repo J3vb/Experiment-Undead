@@ -1,29 +1,33 @@
 ## Entry point of the dedicated server build (main scene for the
-## dedicated_server feature). Opens the ENet port and waits for players.
-## Placeholder until co-op (P7) lands: it opens the port but runs no match yet.
+## dedicated_server feature). Opens the ENet port and runs one match that
+## players join. The match sits at /root/GameSession like on clients.
 class_name DedicatedServer
 extends Node
 
-const DEFAULT_PORT: int = 7777
-const DEFAULT_MAX_PLAYERS: int = 8
+const MATCH_SCENE: PackedScene = preload("res://systems/game/game_session.tscn")
 
-var port: int = DEFAULT_PORT
-var max_players: int = DEFAULT_MAX_PLAYERS
+var port: int = Net.DEFAULT_PORT
+var max_players: int = Net.MAX_PLAYERS
+var session: GameSession
 ## Godot does not catch SIGTERM, so the Docker entrypoint creates this file
 ## on "docker stop" and the server quits cleanly when it sees it.
 var stop_file: String = ""
 
 
 func _ready() -> void:
-	port = read_int_setting("port", "EU_PORT", DEFAULT_PORT)
-	max_players = clampi(read_int_setting("max-players", "EU_MAX_PLAYERS", DEFAULT_MAX_PLAYERS), 1, DEFAULT_MAX_PLAYERS)
-	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	var err: Error = peer.create_server(port, max_players)
+	port = read_int_setting("port", "EU_PORT", Net.DEFAULT_PORT)
+	max_players = clampi(read_int_setting("max-players", "EU_MAX_PLAYERS", Net.MAX_PLAYERS), 1, Net.MAX_PLAYERS)
+	var err: Error = Net.host(port, max_players)
 	if err != OK:
 		push_error("Could not open UDP port %d: %s" % [port, error_string(err)])
 		get_tree().quit(1)
 		return
-	multiplayer.multiplayer_peer = peer
+	multiplayer.peer_connected.connect(func(id: int) -> void: print("Player connected: %d" % id))
+	multiplayer.peer_disconnected.connect(func(id: int) -> void: print("Player left: %d" % id))
+	session = MATCH_SCENE.instantiate() as GameSession
+	session.has_local_player = false
+	session.profile_id = &""
+	get_tree().root.add_child.call_deferred(session)
 	stop_file = OS.get_environment("EU_STOP_FILE")
 	if stop_file != "":
 		var timer: Timer = Timer.new()
@@ -41,8 +45,9 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
-	if multiplayer.multiplayer_peer:
-		multiplayer.multiplayer_peer.close()
+	if is_instance_valid(session):
+		session.queue_free()
+	Net.leave()
 	print("Server stopped")
 
 

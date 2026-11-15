@@ -11,6 +11,8 @@ GUT (Godot Unit Test) 9.7.1, `addons/gut/`
 Butch Wesley and contributors
 https://github.com/bitwes/Gut · MIT"""
 
+static var launch_consumed: bool = false
+
 var _panel_tween: Tween
 var _drift_time: float = 0.0
 
@@ -34,6 +36,38 @@ func _ready() -> void:
 	$Screens/Root/CreditsPanel/Box/Text.text = CREDITS
 	$Screens/Root.add_child(VersionLabel.new())
 	play_button.grab_focus()
+	_launch_from_command_line.call_deferred(OS.get_cmdline_user_args())
+
+
+## Command-line launches run once per process, so returning to the menu
+## after a failed join or a hosted match does not start them again.
+func _launch_from_command_line(args: PackedStringArray) -> void:
+	if launch_consumed:
+		return
+	launch_consumed = true
+	var launch: Dictionary = parse_launch(args)
+	if launch.has("join"):
+		Net.pending_join = launch["join"]
+	elif launch.has("host"):
+		var err: Error = Net.host(launch["host"])
+		if err != OK:
+			Log.error(&"net", &"host_failed", {"port": launch["host"], "error": error_string(err)})
+			return
+	else:
+		return
+	get_tree().change_scene_to_file(PLAY_SCENE)
+
+
+## "--join=address:port" -> {"join": "address:port"}; "--host" or "--host=port" -> {"host": port}.
+static func parse_launch(args: PackedStringArray) -> Dictionary:
+	for arg: String in args:
+		if arg.begins_with("--join="):
+			return {"join": arg.substr(7)}
+		if arg == "--host":
+			return {"host": Net.DEFAULT_PORT}
+		if arg.begins_with("--host=") and arg.substr(7).is_valid_int():
+			return {"host": arg.substr(7).to_int()}
+	return {}
 
 
 func _process(delta: float) -> void:

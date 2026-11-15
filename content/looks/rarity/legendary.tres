@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="RarityLook" format=3]
+
+[ext_resource type="Script" path="res://systems/gear/rarity_look.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+rarity = &"legendary"
+trim_color = Color(1.000000000, 0.541176471, 0.109803922, 1)
+glow_strength = 2.0
+pulse_seconds = 4.0
+flicker = false
