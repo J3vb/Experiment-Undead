@@ -85,12 +85,8 @@ func _down_host() -> void:
 	await wait_until(func() -> bool: return _client().is_downed, 3.0, "downed state reached client")
 
 
-func _hold_interact(player: Player, held: bool) -> void:
-	player.revive.set_held(held)
-
-
 func _start_revive() -> void:
-	_hold_interact(_client(client_id), true)
+	_client(client_id).revive.set_held(true)
 	await wait_until(
 		func() -> bool: return _server(client_id).revive._active == _server(), 3.0, "server accepted revive"
 	)
@@ -161,6 +157,24 @@ func test_revive_is_refused_out_of_range() -> void:
 	assert_eq(_server(client_id).wallet.points, 0)
 
 
+func test_held_revive_retries_after_initial_server_pose_rejection() -> void:
+	await _down_host()
+	var mine: Player = _client(client_id)
+	var remote: Player = _server(client_id)
+	(mine.get_node("PoseSync") as MultiplayerSynchronizer).replication_interval = 1000.0
+	await wait_physics_frames(3)
+	remote.position = Vector3(20, 0, 5)
+	mine.revive.set_held(true)
+	assert_not_null(mine.revive._requested)
+	await wait_until(func() -> bool: return mine.revive._requested == null, 3.0, "rejected")
+	assert_null(remote.revive._active)
+	assert_null(mine.revive._requested, "rejection releases the pending intent")
+	remote.position = mine.position
+	mine.revive.set_held(true)
+	await wait_until(func() -> bool: return remote.revive._active == _server(), 3.0, "held intent retried")
+	assert_eq(remote.revive._active, _server(), "held input retries after the server catches up")
+
+
 func test_downed_reviver_is_refused() -> void:
 	await _down_host()
 	_server(client_id).take_damage(DamageInfo.create(1000.0, null))
@@ -179,16 +193,17 @@ func test_moving_out_of_range_cancels_an_existing_hold() -> void:
 	_server(client_id).revive._physics_process(1.0)
 	_client(client_id).position = Vector3(20, 0, 5)
 	await wait_until(func() -> bool: return _server(client_id).position.x == 20.0, 3.0, "reviver moved away")
+	await wait_until(func() -> bool: return _client(client_id).revive._requested == null, 3.0, "hold canceled")
 	_server(client_id).revive._physics_process(3.0)
 	assert_true(_server().is_downed)
-	assert_eq(_server(client_id).wallet.points, 0)
+	assert_null(_client(client_id).revive._requested, "the owner can restart a canceled hold")
 
 
 func test_releasing_interact_cancels_an_existing_hold() -> void:
 	await _down_host()
 	await _start_revive()
 	_server(client_id).revive._physics_process(1.0)
-	_hold_interact(_client(client_id), false)
+	_client(client_id).revive.set_held(false)
 	await wait_until(func() -> bool: return _server(client_id).revive._active == null, 3.0, "release reached server")
 	_server(client_id).revive._physics_process(3.0)
 	assert_true(_server().is_downed)

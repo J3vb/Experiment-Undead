@@ -84,7 +84,9 @@ func _physics_process(delta: float) -> void:
 	if not multiplayer.is_server() or not is_instance_valid(_active):
 		return
 	if not can_revive(_active) or not _connected(_player) or not _connected(_active):
+		var target_id: int = _active.net_id
 		_begin(null)
+		_notify_rejected(target_id)
 		return
 	_elapsed += delta
 	if _elapsed < HOLD_TIME:
@@ -106,6 +108,23 @@ func _request(target_id: int) -> void:
 			target = candidate
 			break
 	_begin(target)
+	if target_id != 0 and _active == null:
+		_notify_rejected(target_id)
+
+
+func _notify_rejected(target_id: int) -> void:
+	if _player.is_multiplayer_authority():
+		_rejected(target_id)
+	elif _connected(_player):
+		_rejected.rpc_id(_player.get_multiplayer_authority(), target_id)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _rejected(target_id: int) -> void:
+	if is_instance_valid(_requested) and _requested.net_id == target_id:
+		_requested = null
+		_local_elapsed = 0.0
+		progress = 0.0
 
 
 func _begin(target: Player) -> void:
