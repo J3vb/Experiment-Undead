@@ -171,7 +171,7 @@ func _flash_center(text: String, seconds: float) -> void:
 
 
 func _on_player_spawned(player: Player) -> void:
-	if _player == null:
+	if _player == null and player.is_multiplayer_authority():
 		_player = player
 		if player.session:
 			player.session.progression.xp_gained.connect(_on_xp_gained)

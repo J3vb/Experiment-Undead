@@ -3,6 +3,8 @@
 class_name GameSession
 extends Node
 
+const MENU_SCENE: String = "res://systems/ui/main_menu.tscn"
+
 @export var level_scene: PackedScene
 @export var player_scene: PackedScene
 @export var starting_loadout: Array[WeaponData] = []
@@ -13,11 +15,14 @@ extends Node
 @export var restart_delay: float = 2.5
 ## Empty disables local character persistence for tests and tools.
 @export var profile_id: StringName = &"solo"
+## False on a dedicated server, which has no player of its own.
+@export var has_local_player: bool = true
 
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var tick: int = 0
 var level: Level
 var spawner: Spawner
+var players: PlayerSpawner
 var is_over: bool = false
 var _kills: int = 0
 var _headshots: int = 0
@@ -50,6 +55,14 @@ func _ready() -> void:
 	Events.player_died.connect(_on_player_died)
 	Events.enemy_killed.connect(_on_enemy_killed)
 
+	var join_error: Error = Net.start_pending_join()
+	if join_error != OK:
+		Log.warn(&"net", &"join_failed", {"error": error_string(join_error)})
+		_on_connection_lost()
+		return
+	multiplayer.server_disconnected.connect(_on_connection_lost)
+	multiplayer.connection_failed.connect(_on_connection_lost)
+
 	level = level_scene.instantiate() as Level
 	level.process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_child(level)
@@ -59,11 +72,15 @@ func _ready() -> void:
 	level.add_child(spawner)
 	director.spawner = spawner
 
-	_spawn_player()
-	if level.is_navigation_ready:
-		director.start()
-	else:
-		level.navigation_ready.connect(director.start, CONNECT_ONE_SHOT)
+	players = PlayerSpawner.new()
+	players.name = "PlayerSpawner"
+	players.player_scene = player_scene
+	players.spawn_local = has_local_player
+	players.player_added.connect(_on_player_added)
+	add_child(players)
+	if not level.is_navigation_ready:
+		level.navigation_ready.connect(_try_start, CONNECT_ONE_SHOT)
+	players.setup(level, level.get_player_spawn())
 	_capture_mouse(true)
 
 
@@ -72,20 +89,38 @@ func _physics_process(_delta: float) -> void:
 		tick += 1
 
 
+func _exit_tree() -> void:
+	if has_local_player:
+		Net.leave()
+
+
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		bank_run_xp()
 
 
-func _spawn_player() -> Player:
-	var player: Player = player_scene.instantiate() as Player
-	player.net_id = Net.allocate_id()
-	level.add_child(player)
-	player.global_transform = level.get_player_spawn()
-	progression.set_start_total(player, _start_total_xp)
+func _on_player_added(player: Player) -> void:
+	if player.is_multiplayer_authority():
+		progression.set_start_total(player, _start_total_xp)
+		_profile_player = player
 	player.spawn(self, starting_loadout)
-	_profile_player = player
-	return player
+	_try_start()
+
+
+## Waves start once the navmesh is baked and someone is playing.
+func _try_start() -> void:
+	if is_over:
+		return
+	if director.phase == WaveDirector.Phase.IDLE and level.is_navigation_ready and not get_players().is_empty():
+		director.start()
+
+
+func _on_connection_lost() -> void:
+	Log.warn(&"net", &"connection_lost", {})
+	Net.leave()
+	if get_tree().current_scene == self:
+		get_tree().paused = false
+		get_tree().change_scene_to_file(MENU_SCENE)
 
 
 func get_players() -> Array[Player]:
