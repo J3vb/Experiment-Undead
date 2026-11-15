@@ -20,6 +20,7 @@ repeat_last = 4
 [resource]
 script = ExtResource("1")
 id = &"rifle_ar_reforged"
+slot = 0
 loot_tags = Array[StringName]([&"rifle"])
 display_name = "AR-7 Reforged"
 cost = 1200
