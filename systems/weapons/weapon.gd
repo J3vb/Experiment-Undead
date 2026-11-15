@@ -267,7 +267,10 @@ func _trace(origin: Vector3, direction: Vector3) -> void:
 		if shooter and shooter.session:
 			shooter.session.hit_claims.submit_hit(self, hit_zone, info)
 		return
-	hit_zone.receive_hit(info)
+	if shooter and shooter.session and shooter.session.hit_claims:
+		shooter.session.hit_claims.apply_server_hit(hit_zone, info)
+	else:
+		hit_zone.receive_hit(info)
 	hit_landed.emit(hit_zone.health.is_dead, info.is_headshot())
 
 

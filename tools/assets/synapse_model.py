@@ -13,6 +13,14 @@ BORE_Z = 0.024
 SIGHT_Z = 0.084
 
 
+def glow_zone(obj):
+    """Keep ordinary surfaces unpainted and encode this Prototype emitter separately from rarity inlay."""
+    g.mark_inlay(obj)
+    for color in obj.data.color_attributes["Color"].data:
+        color.color[3] = 1 / 3
+    return obj
+
+
 def nerve(name, points, radius, mat):
     """A capped, gently curved sample tube, with tapered terminal connections."""
     curve = bpy.data.curves.new(name, "CURVE")
@@ -269,7 +277,7 @@ def cabling(m, receiver, black, live):
             fittings.append(
                 g.lathe("SampleCoupler", [(0.008, -0.006), (0.008, 0.006)], (side * 0.029, y, 0.019), black, 12)
             )
-    bundles = [g.mark_inlay(obj) for obj in bundles]
+    bundles = [glow_zone(obj) for obj in bundles]
     trunk = bundles.pop(0)
     trunk.name = "Cabling"
     m.join_into(trunk, bundles)
@@ -282,7 +290,7 @@ def build(m) -> None:
     metal = m.material("GunMetal", m.GUN_METAL, metallic=0.8, roughness=0.4)
     black = m.material("MatteBlack", m.MATTE_BLACK, roughness=0.78)
     grey = m.material("GreyPolymer", m.srgb("#5F6D68"), roughness=0.8)
-    live = m.material("OlivePolymer", m.srgb("#8DFF3A"), roughness=0.55, glow=1.2)
+    live = m.material("OlivePolymer", m.srgb("#8DFF3A"), roughness=0.55, glow=1.5)
     receiver = g.slab("Receiver", g.rounded(-0.145, -0.015, 0.125, 0.025, 0.004), 0.045, metal, bevel=0.001)
     m.join_into(receiver, action(metal, black, grey) + cage(metal, black, grey))
     furniture(m, receiver, metal, black, grey)

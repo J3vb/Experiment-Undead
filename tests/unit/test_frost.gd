@@ -102,3 +102,17 @@ func test_dead_zombies_do_not_build_frost() -> void:
 	zombie.health.is_dead = true
 	assert_false(_hit(zombie))
 	assert_false(zombie.has_node("Frost"))
+
+
+func test_frozen_late_join_copy_initializes_its_pose_once() -> void:
+	var zombie: Zombie = _zombie()
+	zombie.visual.position = Vector3(0, -1.8, 0)
+	zombie.state = Zombie.State.SPAWNING
+	zombie.state_time = 0.0
+	zombie.frozen = true
+	zombie.state = Zombie.State.CHASING
+	zombie._process(0.5)
+	assert_eq(zombie.visual.position.y, 0.0, "a frozen late joiner is visible above the ground")
+	var pose: Vector3 = zombie.visual.get_offset(&"Head")
+	zombie._process(0.5)
+	assert_eq(zombie.visual.get_offset(&"Head"), pose, "the pose stays locked after initialization")

@@ -13,9 +13,11 @@ var _next_warning: float = 0.0
 var _claims: Dictionary[int, Dictionary] = {}
 var _recent_hits: Array[Dictionary] = []
 var _weapons: Dictionary[StringName, WeaponData] = {}
+var _chain: Chain = Chain.new()
 
 
 func _ready() -> void:
+	add_child(_chain)
 	multiplayer.peer_disconnected.connect(_forget_peer)
 	for id: StringName in Content.ids(&"weapons"):
 		_weapons[id] = Content.weapon(id)
@@ -91,6 +93,26 @@ func claim_hit(zombie_name: StringName, zone: int, amount: float, weapon_id: Str
 	info.weapon_id = weapon_id
 	info.position = point
 	info.impulse = (point - player.camera.global_position).normalized() * 2.0
+	apply_server_hit(hit_zone, info)
+
+
+## Shared effect hook for validated claims and the host's direct hits.
+func apply_server_hit(hit_zone: HitZone, info: DamageInfo) -> void:
+	if not multiplayer.is_server():
+		return
+	var zombie: Zombie = hit_zone.health.get_parent() as Zombie if hit_zone.health else null
+	if zombie == null:
+		hit_zone.receive_hit(info)
+		return
+	if zombie.health.is_dead or zombie.state == Zombie.State.DEAD:
+		return
+	info.hit_zone = hit_zone.zone
+	var base: String = String(info.weapon_id).trim_suffix("_reforged")
+	if base == "synapse":
+		_chain.apply(zombie, info)
+	if zombie.frozen or base == "cryo_lance":
+		if Frost.apply(zombie, info):
+			return
 	hit_zone.receive_hit(info)
 
 

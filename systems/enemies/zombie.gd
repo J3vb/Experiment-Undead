@@ -342,5 +342,7 @@ func _on_died(info: DamageInfo) -> void:
 
 
 func _process(delta: float) -> void:
-	if not frozen or state == State.DEAD:
+	if frozen and state != State.DEAD:
+		Frost.initialize_pose(self)
+	else:
 		visual.follow(self, delta)

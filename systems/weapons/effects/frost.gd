@@ -44,6 +44,8 @@ static func _effect(zombie: Zombie) -> Frost:
 ## Called by the synced flag; clients only change presentation.
 static func show_frozen(zombie: Zombie, enabled: bool) -> void:
 	var effect: Frost = _effect(zombie)
+	if enabled:
+		initialize_pose(zombie)
 	if effect._coating == null:
 		effect._coating = StandardMaterial3D.new()
 		effect._coating.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -51,6 +53,13 @@ static func show_frozen(zombie: Zombie, enabled: bool) -> void:
 		effect._coating.roughness = 0.25
 	for node: Node in zombie.visual.find_children("*", "MeshInstance3D", true, false):
 		(node as MeshInstance3D).material_overlay = effect._coating if enabled else null
+
+
+## A late-join copy may receive its state after the frozen flag and _ready.
+static func initialize_pose(zombie: Zombie) -> void:
+	if zombie.visual.position.y < -1.79:
+		zombie.visual.position = Vector3.ZERO
+		zombie.visual.follow(zombie, 0.0)
 
 
 func _physics_process(delta: float) -> void:

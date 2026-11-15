@@ -9,6 +9,14 @@ BORE_Z = 0.035
 SIGHT_Z = 0.105
 
 
+def glow_zone(obj):
+    """Keep ordinary surfaces unpainted and encode this Prototype emitter separately from rarity inlay."""
+    g.mark_inlay(obj)
+    for color in obj.data.color_attributes["Color"].data:
+        color.color[3] = 1 / 3
+    return obj
+
+
 def receiver_parts(metal, black, grey):
     """Faceted pressure housing, recessed service panel and large guarded controls."""
     upper = g.slab(
@@ -173,7 +181,7 @@ def barrel_parts(m, receiver, metal, black, frost):
     m.join_into(barrel, pieces)
     g.cut(barrel, [g.lathe("CrownBore", [(0.006, 0.47), (0.006, 0.51)], (0, 0, BORE_Z), black, 16)])
     m.attach(barrel, (0, 0.17, BORE_Z), receiver)
-    condenser = coil(m, frost)
+    condenser = glow_zone(coil(m, frost))
     m.attach(condenser, (0, 0.2, BORE_Z), receiver)
     m.marker("Muzzle", (0, 0.506, BORE_Z), parent=receiver)
 
@@ -291,7 +299,8 @@ def build(m) -> None:
     metal = m.material("GunMetal", m.GUN_METAL, metallic=0.8, roughness=0.4)
     black = m.material("MatteBlack", m.MATTE_BLACK, roughness=0.78)
     grey = m.material("GreyPolymer", m.srgb("#5F6D68"), roughness=0.8)
-    frost = m.material("GunMetalKnurled", m.srgb("#CDEEE8"), metallic=0.4, roughness=0.75)
+    frost = m.material("GunMetalKnurled", m.srgb("#CDEEE8"), metallic=0.4, roughness=0.75, glow=1.5)
+    live = m.material("OlivePolymer", m.srgb("#8DFF3A"), roughness=0.55, glow=1.5)
     receiver = g.slab(
         "Receiver", [(-0.15, -0.017), (0.16, -0.017), (0.16, 0.005), (-0.15, 0.005)], 0.055, metal, bevel=0.002
     )
@@ -303,6 +312,6 @@ def build(m) -> None:
     controls(m, receiver, metal, black)
     strips = []
     for side in (-1, 1):
-        strip = g.slab("CoolantIndicator", g.rounded(-0.105, 0.069, 0.1, 0.072, 0.001), 0.001, metal, x=side * 0.0325)
-        strips.append(g.mark_inlay(strip))
+        strip = g.slab("CoolantIndicator", g.rounded(-0.105, 0.069, 0.1, 0.072, 0.001), 0.001, live, x=side * 0.0325)
+        strips.append(glow_zone(strip))
     m.join_into(receiver, strips)

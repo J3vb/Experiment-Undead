@@ -54,7 +54,7 @@ func test_models_use_the_finish_shader_and_export_glow_mask() -> void:
 				var arrays: Array = mesh.surface_get_arrays(surface)
 				var colors: PackedColorArray = arrays[Mesh.ARRAY_COLOR]
 				for color: Color in colors:
-					if color.a < 0.1:
+					if color.a > 0.15 and color.a < 0.5:
 						glow_vertices += 1
 					else:
 						ordinary_vertices += 1
@@ -69,18 +69,18 @@ func test_models_use_the_finish_shader_and_export_glow_mask() -> void:
 		gun.free()
 
 
-func _crown_blocks_ray(node: Node, transform: Transform3D, from: Vector3) -> bool:
+func _crown_blocks_ray(node: Node, transform: Transform3D, ray_start: Vector3) -> bool:
 	var here: Transform3D = transform * (node as Node3D).transform if node is Node3D else transform
 	if node is MeshInstance3D:
 		var faces: PackedVector3Array = (node as MeshInstance3D).mesh.get_faces()
 		for i: int in range(0, faces.size(), 3):
 			var point: Variant = Geometry3D.ray_intersects_triangle(
-				from, Vector3.BACK, here * faces[i], here * faces[i + 1], here * faces[i + 2]
+				ray_start, Vector3.BACK, here * faces[i], here * faces[i + 1], here * faces[i + 2]
 			)
-			if point is Vector3 and from.distance_to(point as Vector3) < 0.04:
+			if point is Vector3 and ray_start.distance_to(point as Vector3) < 0.04:
 				return true
 	for child: Node in node.get_children():
-		if _crown_blocks_ray(child, here, from):
+		if _crown_blocks_ray(child, here, ray_start):
 			return true
 	return false
 
@@ -90,6 +90,6 @@ func test_muzzle_crowns_have_open_bores() -> void:
 		var packed: PackedScene = load("res://assets/models/weapons/%s.glb" % id) as PackedScene
 		var gun: Node3D = packed.instantiate() as Node3D
 		var muzzle: Node3D = gun.find_child("Muzzle", true, false) as Node3D
-		var from: Vector3 = muzzle.position + Vector3.FORWARD * 0.01
-		assert_false(_crown_blocks_ray(gun, Transform3D.IDENTITY, from), "%s muzzle bore stays open" % id)
+		var ray_start: Vector3 = muzzle.position + Vector3.FORWARD * 0.01
+		assert_false(_crown_blocks_ray(gun, Transform3D.IDENTITY, ray_start), "%s muzzle bore stays open" % id)
 		gun.free()
