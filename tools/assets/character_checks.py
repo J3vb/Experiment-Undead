@@ -10,7 +10,7 @@ from mathutils import Vector
 BUDGETS = {"characters": (12_000, 4), "gear": (6_000, 4)}
 TRIANGLE_CAPS = {"player_arms": 8_000, "charm_*": 800, "implant_*": 1_500}
 # Add each new model stem here alongside its character_models.MODELS entry.
-JOINTS = {}
+JOINTS = {"player": {"Eyes": None}}
 TOLERANCE = 0.01
 
 
