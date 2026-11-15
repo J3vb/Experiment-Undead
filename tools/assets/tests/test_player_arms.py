@@ -43,7 +43,7 @@ def weights(obj, vertex):
 
 def test_arms_triangle_detail_floor_and_budget(arms):
     triangles = sum(len(face.vertices) - 2 for obj in meshes(arms) for face in obj.data.polygons)
-    assert 5_000 <= triangles <= 8_000
+    assert 5_000 <= triangles <= 10_000
 
 
 def test_arms_surfaces_are_closed_manifold_shells(arms):

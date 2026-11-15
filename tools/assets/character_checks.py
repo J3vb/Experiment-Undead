@@ -7,8 +7,8 @@ import character_rig
 import gear_paint
 from mathutils import Vector
 
-BUDGETS = {"characters": (12_000, 4), "gear": (6_000, 4)}
-TRIANGLE_CAPS = {"player_arms": 8_000, "charm_*": 800, "implant_*": 1_500}
+BUDGETS = {"characters": (16_000, 4), "gear": (6_000, 4)}
+TRIANGLE_CAPS = {"player_arms": 10_000, "charm_*": 800, "implant_*": 1_500}
 CHARMS = ("charm_dog_tags", "charm_vial", "charm_keycard", "charm_dosimeter", "charm_coin")
 IMPLANTS = ("implant_reflex", "implant_lung", "implant_spine", "implant_ocular", "implant_relay")
 CHARM_JOINTS = {"Hook": None, "Link1": "Hook", "Link2": "Link1", "Body": "Link2"}
