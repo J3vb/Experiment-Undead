@@ -86,6 +86,59 @@ func test_empty_equipped_slot_and_equal_stats_have_no_compare_arrows() -> void:
 	assert_eq(tooltip.affixes.get_child_count(), 0)
 
 
+func test_known_visual_gear_uses_its_name_and_actual_slot() -> void:
+	var names: Dictionary[String, String] = {
+		"vest_medium": "Salvager Vest", "charm_dog_tags": "Tether Tags", "implant_reflex": "Ridge Reflex"
+	}
+	for base: String in names:
+		var item: Dictionary = _item(base)
+		item.imp = null
+		tooltip.show_item(item)
+		assert_eq(tooltip.item_name.text, names[base])
+		assert_eq(tooltip.stats.get_child_count(), 1)
+		var slot: Label = tooltip.stats.get_child(0) as Label
+		assert_eq(slot.text, "Slot: " + base.get_slice("_", 0).capitalize())
+
+
+func test_gear_affix_value_and_range_render_with_null_implicit_ammo() -> void:
+	var item: Dictionary = _item("vest_medium", [["max_health", 2, 0.5]])
+	item.imp = null
+	tooltip.show_item(item)
+	assert_eq(tooltip.affixes.get_child_count(), 1)
+	var line: RichTextLabel = tooltip.affixes.get_child(0) as RichTextLabel
+	assert_eq(line.get_parsed_text(), "+19 max health (10-40)")
+	assert_string_contains(line.text, "[color=#8fa3a8](10-40)[/color]")
+	assert_null(item.imp)
+
+
+func test_real_gear_rolls_render_every_bonus_and_compare_without_implicit_ammo() -> void:
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.seed = 73021
+	var base: GearBaseData = Content.get_item(&"loot", &"vest_medium") as GearBaseData
+	var item: Dictionary = ItemRoller.roll_gear(rng, base, &"rare", 17)
+	var equipped: Dictionary = ItemRoller.roll_gear(rng, base, &"rare", 17)
+	assert_null(item.imp)
+	tooltip.show_item(item, equipped)
+	tooltip.set_comparing(true)
+	assert_eq(tooltip.affixes.get_child_count(), item.aff.size())
+	for line: RichTextLabel in tooltip.affixes.get_children():
+		assert_false(line.get_parsed_text().contains("Inactive bonus"))
+	assert_eq(tooltip.comparison.text, "Compared with Salvager Vest (equipped)")
+
+
+func test_weapon_comparison_fits_a_390_pixel_column() -> void:
+	tooltip.show_item(_item("rifle_ar"), _item("talon_dmr"))
+	tooltip.set_comparing(true)
+	tooltip.size = Vector2(390.0, 0.0)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert_lte(tooltip.get_combined_minimum_size().x, 390.0)
+	for row: Control in tooltip.stats.get_children():
+		assert_lte(row.get_global_rect().end.x, tooltip.get_global_rect().end.x)
+		assert_eq(row.get_child_count(), 3)
+		assert_gte((row.get_child(1) as ProgressBar).size.x, 50.0)
+
+
 func _item(base: String, aff: Array = []) -> Dictionary:
 	return {"uid": "test", "base": base, "rar": "rare", "ilvl": 17, "aff": aff, "imp": []}
 

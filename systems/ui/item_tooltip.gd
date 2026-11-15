@@ -7,7 +7,7 @@ const TEXT: Color = Color("e6ecec")
 const BETTER: Color = Color("7fd6e0")
 const WORSE: Color = Color("ff9f1c")
 const SHAPES: Array[String] = ["●", "▲", "■", "◆", "⬟", "⚠"]
-const STAT_NAMES: Array[String] = ["Damage", "Fire rate /m", "Magazine", "Handling (ADS)"]
+const STAT_NAMES: Array[String] = ["Damage", "Fire rate /m", "Magazine", "Handling"]
 const STAT_LIMITS: Array[float] = [150.0, 1200.0, 100.0, 1.0]
 
 var _item: Dictionary = {}
@@ -49,8 +49,8 @@ func _refresh() -> void:
 	_fill_stats()
 	for line: Array in _item.get("aff", []):
 		_add_affix(line, false)
-	var implicit: Array = _item.get("imp", [])
-	if not implicit.is_empty():
+	var implicit: Variant = _item.get("imp")
+	if implicit is Array and not implicit.is_empty():
 		_add_affix(implicit, true)
 	comparison.text = "Hold Shift / X to compare"
 	if _comparing:
@@ -81,18 +81,16 @@ func _fill_header() -> void:
 func _fill_stats() -> void:
 	var values: Array[float] = _weapon_stats(_item)
 	if values.is_empty():
-		var gear: Resource = _base(_item, &"gear")
-		if gear:
-			var slot_label: Label = Label.new()
-			slot_label.text = "Slot: %s" % String(gear.get("slot")).capitalize()
-			stats.add_child(slot_label)
+		_fill_gear_slot()
 		return
 	var other: Array[float] = _weapon_stats(_equipped)
 	for index: int in values.size():
 		var row: HBoxContainer = HBoxContainer.new()
 		var label: Label = Label.new()
 		label.text = STAT_NAMES[index]
-		label.custom_minimum_size.x = 155.0
+		label.custom_minimum_size.x = 135.0
+		if index == 3:
+			label.tooltip_text = "Aim-down-sights time in seconds. Lower is better."
 		label.add_theme_constant_override("outline_size", 0)
 		row.add_child(label)
 		var bar: ProgressBar = ProgressBar.new()
@@ -117,6 +115,22 @@ func _fill_stats() -> void:
 			_mark_comparison(value, values[index], other[index], index == 3)
 		row.add_child(value)
 		stats.add_child(row)
+
+
+func _fill_gear_slot() -> void:
+	var gear: GearBaseData = _base(_item, &"loot") as GearBaseData
+	var slot: StringName = &""
+	if gear:
+		slot = StringName(gear.slot)
+	else:
+		var visual: GearVisual = GearVisual.find(StringName(_item.get("base", "")))
+		if visual:
+			slot = visual.slot
+	if not slot.is_empty():
+		var label: Label = Label.new()
+		label.text = "Slot: %s" % String(slot).capitalize()
+		label.add_theme_constant_override("outline_size", 0)
+		stats.add_child(label)
 
 
 func _add_affix(line: Array, implicit: bool) -> void:
@@ -166,7 +180,10 @@ func _rolled_affix(line: Array, implicit: bool, item: Dictionary) -> Dictionary:
 
 
 func _equipped_affix_value(id: StringName, implicit: bool) -> float:
-	var lines: Array = [_equipped.get("imp", [])] if implicit else _equipped.get("aff", [])
+	var lines: Array = _equipped.get("aff", [])
+	if implicit:
+		var ammo: Variant = _equipped.get("imp")
+		lines = [ammo] if ammo is Array else []
 	for line: Array in lines:
 		if not line.is_empty() and StringName(line[0]) == id:
 			var rolled: Dictionary = _rolled_affix(line, implicit, _equipped)
@@ -200,9 +217,13 @@ func _weapon_stats(item: Dictionary) -> Array[float]:
 
 func _display_name(item: Dictionary) -> String:
 	var base: Resource = _base(item, &"weapons")
-	if base == null:
-		base = _base(item, &"gear")
-	return base.get("display_name") if base else "Unknown item"
+	if base:
+		return base.get("display_name")
+	var gear: GearBaseData = _base(item, &"loot") as GearBaseData
+	if gear:
+		return gear.display_name
+	var visual: GearVisual = GearVisual.find(StringName(item.get("base", "")))
+	return String(visual.id).capitalize() if visual else "Unknown item"
 
 
 func _base(item: Dictionary, type: StringName) -> Resource:

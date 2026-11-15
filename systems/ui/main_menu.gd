@@ -3,6 +3,7 @@ class_name MainMenu
 extends Control
 
 const PLAY_SCENE: String = "res://systems/game/game_session.tscn"
+const CHARACTER_SCENE: String = "res://systems/ui/character_screen.tscn"
 const CREDITS: String = """Atkinson Hyperlegible Next and Mono, `assets/fonts/`
 Braille Institute of America, Applied Design Works
 https://github.com/googlefonts/atkinson-hyperlegible-next · SIL OFL 1.1
@@ -13,11 +14,14 @@ https://github.com/bitwes/Gut · MIT"""
 
 static var launch_consumed: bool = false
 
+var character_screen: CharacterScreen
+
 var _panel_tween: Tween
 var _drift_time: float = 0.0
 
 @onready var menu: VBoxContainer = $Screens/Root/Menu
 @onready var play_button: Button = $Screens/Root/Menu/Play
+@onready var character_button: Button = $Screens/Root/Menu/Character
 @onready var settings_button: Button = $Screens/Root/Menu/Settings
 @onready var credits_button: Button = $Screens/Root/Menu/Credits
 @onready var settings_screen: SettingsScreen = $Screens/Root/SettingsScreen
@@ -26,8 +30,22 @@ var _drift_time: float = 0.0
 
 
 func _ready() -> void:
+	var pad_actions: Dictionary = {
+		&"ui_accept": JOY_BUTTON_A,
+		&"ui_cancel": JOY_BUTTON_B,
+		&"ui_up": JOY_BUTTON_DPAD_UP,
+		&"ui_down": JOY_BUTTON_DPAD_DOWN,
+		&"ui_left": JOY_BUTTON_DPAD_LEFT,
+		&"ui_right": JOY_BUTTON_DPAD_RIGHT
+	}
+	for action: StringName in pad_actions:
+		var binding: InputEventJoypadButton = InputEventJoypadButton.new()
+		binding.button_index = pad_actions[action]
+		if not InputMap.action_has_event(action, binding):
+			InputMap.action_add_event(action, binding)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	play_button.pressed.connect(func() -> void: get_tree().change_scene_to_file(PLAY_SCENE))
+	character_button.pressed.connect(_open_character)
 	settings_button.pressed.connect(_open_settings)
 	credits_button.pressed.connect(_open_credits)
 	$Screens/Root/Menu/Quit.pressed.connect(func() -> void: get_tree().quit())
@@ -77,7 +95,7 @@ func _process(delta: float) -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if not event.is_action_pressed(&"ui_cancel"):
+	if is_instance_valid(character_screen) or not event.is_action_pressed(&"ui_cancel"):
 		return
 	if settings_screen.visible:
 		settings_screen._close()
@@ -124,3 +142,21 @@ func _close_credits() -> void:
 	credits_panel.hide()
 	menu.show()
 	credits_button.grab_focus()
+
+
+func _open_character() -> void:
+	if is_instance_valid(character_screen):
+		return
+	character_screen = (load(CHARACTER_SCENE) as PackedScene).instantiate() as CharacterScreen
+	character_screen.closed.connect(_close_character)
+	$Screens/Root.add_child(character_screen)
+	menu.hide()
+	character_screen.open(CharacterProfile.load_or_create(&"solo"))
+
+
+func _close_character() -> void:
+	character_screen.hide()
+	character_screen.queue_free()
+	character_screen = null
+	menu.show()
+	character_button.grab_focus()

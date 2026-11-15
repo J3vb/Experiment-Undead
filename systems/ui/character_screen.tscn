@@ -1,0 +1,265 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://systems/gear/gear_rig.gd" id="rig"]
+[ext_resource type="Theme" path="res://systems/ui/theme.tres" id="theme"]
+[ext_resource type="PackedScene" path="res://assets/models/characters/player.glb" id="body"]
+[ext_resource type="Script" path="res://systems/ui/character_screen.gd" id="script"]
+[ext_resource type="PackedScene" path="res://systems/ui/item_tooltip.tscn" id="tooltip"]
+
+[sub_resource type="StyleBoxFlat" id="panel"]
+bg_color = Color(0.071, 0.102, 0.125, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.173, 0.231, 0.267, 1)
+content_margin_left = 18.0
+content_margin_top = 18.0
+content_margin_right = 18.0
+content_margin_bottom = 18.0
+
+[sub_resource type="Environment" id="booth"]
+background_mode = 1
+background_color = Color(0.039, 0.078, 0.086, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.72, 0.7, 0.66, 1)
+ambient_light_energy = 0.55
+reflected_light_source = 2
+tonemap_mode = 4
+tonemap_exposure = 1.05
+
+[node name="CharacterScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("theme")
+script = ExtResource("script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.043, 0.063, 0.078, 1)
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 20
+
+[node name="Layout" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Header" type="HBoxContainer" parent="Margin/Layout"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Margin/Layout/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 36
+text = "Character"
+
+[node name="Section" type="Label" parent="Margin/Layout/Header"]
+layout_mode = 2
+text = "Loadout and stash"
+theme_override_colors/font_color = Color(0.561, 0.639, 0.659, 1)
+
+[node name="Columns" type="HBoxContainer" parent="Margin/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="Loadout" type="PanelContainer" parent="Margin/Layout/Columns"]
+layout_mode = 2
+custom_minimum_size = Vector2(350, 0)
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.85
+theme_override_styles/panel = SubResource("panel")
+
+[node name="Box" type="VBoxContainer" parent="Margin/Layout/Columns/Loadout"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Name" type="Label" parent="Margin/Layout/Columns/Loadout/Box"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Survivor"
+theme_override_font_sizes/font_size = 28
+
+[node name="Preview" type="SubViewportContainer" parent="Margin/Layout/Columns/Loadout/Box"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 270)
+size_flags_vertical = 3
+stretch = true
+mouse_filter = 0
+
+[node name="Viewport" type="SubViewport" parent="Margin/Layout/Columns/Loadout/Box/Preview"]
+msaa_3d = 2
+size = Vector2i(360, 350)
+own_world_3d = true
+handle_input_locally = false
+render_target_update_mode = 4
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Margin/Layout/Columns/Loadout/Box/Preview/Viewport"]
+environment = SubResource("booth")
+
+[node name="Key" type="DirectionalLight3D" parent="Margin/Layout/Columns/Loadout/Box/Preview/Viewport"]
+rotation_degrees = Vector3(-40, -45, 0)
+light_color = Color(1, 0.851, 0.627, 1)
+light_energy = 1.15
+
+[node name="Rim" type="OmniLight3D" parent="Margin/Layout/Columns/Loadout/Box/Preview/Viewport"]
+position = Vector3(2, 2.6, -2)
+light_color = Color(0.804, 0.933, 0.910, 1)
+light_energy = 1.6
+omni_range = 8.0
+
+[node name="Camera" type="Camera3D" parent="Margin/Layout/Columns/Loadout/Box/Preview/Viewport"]
+position = Vector3(0, 1.05, 3.4)
+fov = 36.0
+current = true
+
+[node name="Turntable" type="Node3D" parent="Margin/Layout/Columns/Loadout/Box/Preview/Viewport"]
+unique_name_in_owner = true
+rotation_degrees = Vector3(0, -15, 0)
+
+[node name="Body" parent="Margin/Layout/Columns/Loadout/Box/Preview/Viewport/Turntable" instance=ExtResource("body")]
+
+[node name="GearRig" type="Node3D" parent="Margin/Layout/Columns/Loadout/Box/Preview/Viewport/Turntable" node_paths=PackedStringArray("body")]
+unique_name_in_owner = true
+script = ExtResource("rig")
+body = NodePath("../Body")
+
+[node name="RotateHint" type="Label" parent="Margin/Layout/Columns/Loadout/Box"]
+layout_mode = 2
+text = "Drag to rotate"
+theme_override_colors/font_color = Color(0.561, 0.639, 0.659, 1)
+
+[node name="Slots" type="VBoxContainer" parent="Margin/Layout/Columns/Loadout/Box"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Level" type="Label" parent="Margin/Layout/Columns/Loadout/Box"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelMono"
+theme_override_colors/font_color = Color(0.89, 0.812, 0.604, 1)
+text = "Level 1"
+
+[node name="Stash" type="PanelContainer" parent="Margin/Layout/Columns"]
+layout_mode = 2
+custom_minimum_size = Vector2(610, 0)
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.35
+theme_override_styles/panel = SubResource("panel")
+
+[node name="Box" type="VBoxContainer" parent="Margin/Layout/Columns/Stash"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Count" type="Label" parent="Margin/Layout/Columns/Stash/Box"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Stash 0 / 60"
+theme_override_font_sizes/font_size = 28
+
+[node name="Filters" type="HBoxContainer" parent="Margin/Layout/Columns/Stash/Box"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Category" type="OptionButton" parent="Margin/Layout/Columns/Stash/Box/Filters"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+item_count = 3
+selected = 0
+popup/item_0/text = "All items"
+popup/item_1/text = "Weapons"
+popup/item_1/id = 1
+popup/item_2/text = "Gear"
+popup/item_2/id = 2
+
+[node name="Rarity" type="OptionButton" parent="Margin/Layout/Columns/Stash/Box/Filters"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+item_count = 7
+selected = 0
+popup/item_0/text = "All rarities"
+popup/item_1/text = "Common"
+popup/item_1/id = 1
+popup/item_2/text = "Uncommon"
+popup/item_2/id = 2
+popup/item_3/text = "Rare"
+popup/item_3/id = 3
+popup/item_4/text = "Epic"
+popup/item_4/id = 4
+popup/item_5/text = "Legendary"
+popup/item_5/id = 5
+popup/item_6/text = "Prototype"
+popup/item_6/id = 6
+
+[node name="Sort" type="OptionButton" parent="Margin/Layout/Columns/Stash/Box"]
+unique_name_in_owner = true
+layout_mode = 2
+item_count = 3
+selected = 0
+popup/item_0/text = "Sort: rarity"
+popup/item_1/text = "Sort: item level"
+popup/item_1/id = 1
+popup/item_2/text = "Sort: newest"
+popup/item_2/id = 2
+
+[node name="Scroll" type="ScrollContainer" parent="Margin/Layout/Columns/Stash/Box"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Grid" type="GridContainer" parent="Margin/Layout/Columns/Stash/Box/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 5
+theme_override_constants/v_separation = 8
+columns = 10
+
+[node name="Status" type="Label" parent="Margin/Layout/Columns/Stash/Box"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+theme_override_colors/font_color = Color(0.561, 0.639, 0.659, 1)
+text = "Select an item to inspect"
+
+[node name="ItemTooltip" parent="Margin/Layout/Columns" instance=ExtResource("tooltip")]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(390, 0)
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.0
+
+[node name="Footer" type="HBoxContainer" parent="Margin/Layout"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Hints" type="Label" parent="Margin/Layout/Footer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "E Equip / unequip    Shift Compare    Esc Back"
+
+[node name="Back" type="Button" parent="Margin/Layout/Footer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Back"
