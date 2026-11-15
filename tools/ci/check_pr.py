@@ -56,11 +56,15 @@ def run(cmd: list[str]) -> bool:
     return subprocess.run(cmd).returncode == 0
 
 
+# Third-party code we keep as published: Godot addons and the vendored agent skills.
+VENDORED = ("addons/", ".agents/skills/", ".claude/skills/")
+
+
 def main() -> int:
     base = sys.argv[1]
     skip_tests_rule = "--no-tests-label" in sys.argv
     files = changed_files(base)
-    gd_files = [f for f in files if f.endswith(".gd") and not f.startswith("addons/")]
+    gd_files = [f for f in files if f.endswith(".gd") and not f.startswith(VENDORED)]
     ok = True
 
     if gd_files:
