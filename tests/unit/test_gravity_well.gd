@@ -80,6 +80,17 @@ func test_acquires_zombies_spawned_after_the_well_opens() -> void:
 	assert_almost_eq(zombie.health.current, 1000.0 - TOTAL_DAMAGE / 6.0, 0.001)
 
 
+func test_killing_the_captured_crowd_does_not_capture_more_than_twelve() -> void:
+	for _index: int in 12:
+		_zombie(Vector3(4.0, 0.0, 0.0)).health.reset(1.0)
+	var untouched: Zombie = _zombie(Vector3(5.0, 0.0, 0.0))
+	var well: GravityWell = _well()
+	well.tick(0.5)
+	well.tick(0.5)
+	assert_eq(untouched.global_position, Vector3(5.0, 0.0, 0.0))
+	assert_eq(untouched.health.current, 1000.0, "a well captures at most twelve over its lifetime")
+
+
 func test_only_zombies_within_six_metres_are_pulled_and_damaged() -> void:
 	var inside: Zombie = _zombie(Vector3(5.9, 0.0, 0.0))
 	var boundary: Zombie = _zombie(Vector3(-6.0, 0.0, 0.0))

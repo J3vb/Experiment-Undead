@@ -25,6 +25,7 @@ var _claim: bool = false
 var _direction: Vector3 = Vector3.FORWARD
 var _travelled: float = 0.0
 var _candidates: Array[Zombie] = []
+var _captured: Array[Zombie] = []
 var _targets: Array[Zombie] = []
 var _claims: Node
 var _orb_query: PhysicsRayQueryParameters3D
@@ -142,6 +143,10 @@ func _select_targets() -> void:
 			continue
 		if global_position.distance_squared_to(zombie.global_position) > RADIUS * RADIUS:
 			continue
+		if not _captured.has(zombie):
+			if _captured.size() == MAX_TARGETS:
+				continue
+			_captured.append(zombie)
 		_targets.append(zombie)
 		if _targets.size() == MAX_TARGETS:
 			break
