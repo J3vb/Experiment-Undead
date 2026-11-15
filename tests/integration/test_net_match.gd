@@ -62,3 +62,9 @@ func test_two_clients_meet_on_a_dedicated_server() -> void:
 	assert_eq(_remote_players().size(), 1, "the other client's player is here too")
 	assert_null(session.players.find_player(1), "a dedicated server has no player of its own")
 	assert_eq(session.director.phase, WaveDirector.Phase.IDLE, "clients never run the waves")
+	var has_zombie: Callable = func() -> bool: return session.spawner.alive_count() > 0
+	await wait_until(has_zombie, 30.0, "the server's first wave reached this client")
+	for child: Node in session.spawner.get_children():
+		var zombie: Zombie = child as Zombie
+		if zombie:
+			assert_false(zombie.is_physics_processing(), "client zombies only show the server's")
