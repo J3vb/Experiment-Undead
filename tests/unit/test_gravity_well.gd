@@ -72,6 +72,14 @@ func test_pulls_at_most_twelve_zombies() -> void:
 	assert_eq(damaged, 12)
 
 
+func test_acquires_zombies_spawned_after_the_well_opens() -> void:
+	var well: GravityWell = _well()
+	var zombie: Zombie = _zombie(Vector3(4.0, 0.0, 0.0))
+	well.tick(0.5)
+	assert_lt(zombie.global_position.length(), 4.0)
+	assert_almost_eq(zombie.health.current, 1000.0 - TOTAL_DAMAGE / 6.0, 0.001)
+
+
 func test_only_zombies_within_six_metres_are_pulled_and_damaged() -> void:
 	var inside: Zombie = _zombie(Vector3(5.9, 0.0, 0.0))
 	var boundary: Zombie = _zombie(Vector3(-6.0, 0.0, 0.0))

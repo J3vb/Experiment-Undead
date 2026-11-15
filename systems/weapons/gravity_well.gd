@@ -24,8 +24,10 @@ var _orb: bool = false
 var _claim: bool = false
 var _direction: Vector3 = Vector3.FORWARD
 var _travelled: float = 0.0
+var _candidates: Array[Zombie] = []
 var _targets: Array[Zombie] = []
 var _claims: Node
+var _orb_query: PhysicsRayQueryParameters3D
 
 
 static func launch(weapon: Weapon) -> void:
@@ -55,6 +57,10 @@ static func spawn_orb(
 	orb.attacker = player
 	orb._claims = claims
 	orb._direction = direction.normalized()
+	orb._orb_query = PhysicsRayQueryParameters3D.new()
+	orb._orb_query.collision_mask = Layers.WORLD | Layers.HIT_ZONE
+	orb._orb_query.collide_with_areas = true
+	orb._orb_query.exclude = [player.get_rid()]
 	parent.add_child(orb)
 	orb.global_position = origin
 	orb.scale = Vector3.ONE * 0.18
@@ -91,6 +97,16 @@ func setup(player: Player, point: Vector3, total_damage: float) -> void:
 func _ready() -> void:
 	if not _orb:
 		add_to_group(&"gravity_wells")
+		if gameplay and Net.is_authority() and multiplayer.is_server():
+			for node: Node in get_tree().get_nodes_in_group(&"enemies"):
+				_track_enemy(node as Node3D)
+			Events.enemy_spawned.connect(_track_enemy)
+
+
+func _track_enemy(node: Node3D) -> void:
+	var zombie: Zombie = node as Zombie
+	if zombie and zombie.multiplayer == multiplayer and not _candidates.has(zombie):
+		_candidates.append(zombie)
 
 
 func _physics_process(delta: float) -> void:
@@ -121,9 +137,8 @@ func tick(delta: float) -> void:
 
 func _select_targets() -> void:
 	_targets.clear()
-	for node: Node in get_tree().get_nodes_in_group(&"enemies"):
-		var zombie: Zombie = node as Zombie
-		if zombie == null or zombie.multiplayer != multiplayer or zombie.health.is_dead:
+	for zombie: Zombie in _candidates:
+		if not is_instance_valid(zombie) or zombie.health.is_dead:
 			continue
 		if global_position.distance_squared_to(zombie.global_position) > RADIUS * RADIUS:
 			continue
@@ -155,11 +170,9 @@ func _tick_orb(delta: float) -> void:
 		return
 	var distance: float = minf(ORB_SPEED * delta, ORB_RANGE - _travelled)
 	var end: Vector3 = global_position + _direction * distance
-	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
-		global_position, end, Layers.WORLD | Layers.HIT_ZONE, [attacker.get_rid()]
-	)
-	query.collide_with_areas = true
-	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
+	_orb_query.from = global_position
+	_orb_query.to = end
+	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(_orb_query)
 	_travelled += distance
 	global_position = hit.get("position", end)
 	if not hit.is_empty() or _travelled >= ORB_RANGE:

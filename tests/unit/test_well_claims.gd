@@ -5,7 +5,7 @@ const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
 const HUD: PackedScene = preload("res://systems/ui/hud.tscn")
 const WALKER: EnemyData = preload("res://content/enemies/zombie_walker.tres")
 const RULES: WaveRules = preload("res://content/waves/default_waves.tres")
-const ECONOMY: EconomyRules = preload("res://content/economy/default_economy.tres")
+const ECONOMY: String = "res://content/economy/default_economy.tres"
 const PORT: int = 24665
 
 var _server: GameSession
@@ -25,16 +25,9 @@ class FixtureSession:
 		pass
 
 
-class QuietEconomy:
-	extends Economy
-
-	func _ready() -> void:
-		pass
-
-
 func before_each() -> void:
-	_server = _make_side("WellServer", true)
-	_client = _make_side("WellClient", false)
+	_server = _make_side("WellServer")
+	_client = _make_side("WellClient")
 	_server_claims = _server.get_node("HitClaims") as HitClaims
 	_client_claims = _client.get_node("HitClaims") as HitClaims
 	var server_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
@@ -64,7 +57,7 @@ func after_each() -> void:
 		get_tree().set_multiplayer(null, path)
 
 
-func _make_side(side_name: String, server: bool) -> GameSession:
+func _make_side(side_name: String) -> GameSession:
 	var root: Node = Node.new()
 	root.name = side_name
 	add_child(root)
@@ -72,8 +65,8 @@ func _make_side(side_name: String, server: bool) -> GameSession:
 	var session: GameSession = FixtureSession.new()
 	session.name = "GameSession"
 	session.rng.seed = 7
-	var economy: Economy = Economy.new() if server else QuietEconomy.new()
-	economy.rules = ECONOMY
+	var economy: Economy = Economy.new()
+	economy.rules = load(ECONOMY)
 	var children: Dictionary[StringName, Node] = {
 		&"WaveDirector": WaveDirector.new(),
 		&"Economy": economy,
@@ -114,6 +107,7 @@ func _add_player(session: GameSession, peer_id: int) -> void:
 	player.net_id = peer_id
 	player.set_multiplayer_authority(peer_id)
 	session.get_node("Actors").add_child(player)
+	session.economy._on_player_spawned(player)
 	player.wallet.set_points(0)
 	player.local_input.enabled = false
 	player.set_physics_process(false)
@@ -129,7 +123,7 @@ func _wells(session: GameSession) -> Array[GravityWell]:
 
 
 func _rejections() -> int:
-	return Log.event_counts.get("net.well_claim_rejected", 0)
+	return Log.event_counts.get("net.hit_claim_rejected", 0)
 
 
 func _spawn_pair() -> Array[Zombie]:
@@ -150,8 +144,14 @@ func test_client_claim_kill_pays_the_claiming_player_instead_of_the_host() -> vo
 	assert_same(well.attacker, _server.players.find_player(_peer_id))
 	well.tick(0.5)
 	assert_true(pair[0].health.is_dead)
-	assert_eq(_server.players.find_player(_peer_id).wallet.points, ECONOMY.points_per_hit + ECONOMY.points_per_kill)
+	var expected: int = _server.economy.rules.points_per_hit + _server.economy.rules.points_per_kill
+	assert_eq(_server.players.find_player(_peer_id).wallet.points, expected)
 	assert_eq(_server.players.find_player(1).wallet.points, 0)
+	await wait_until(
+		func() -> bool: return _client.players.find_player(_peer_id).wallet.points == expected,
+		3.0,
+		"claimant received their points"
+	)
 
 
 func test_client_well_is_cosmetic_and_cannot_damage_either_zombie_copy() -> void:
