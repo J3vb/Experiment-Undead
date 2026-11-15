@@ -2,6 +2,8 @@
 class_name GearRig
 extends Node3D
 
+signal look_changed(look: CharacterLook)
+
 @export var body: Node3D
 @export var pitch_source: Node3D
 
@@ -61,6 +63,7 @@ func apply(look: CharacterLook) -> void:
 		var dyes: Array = entry.get("dyes", [CharacterLook.DEFAULT_DYE_MAIN, CharacterLook.DEFAULT_DYE_ACCENT])
 		GearLook.apply(piece, finish, dyes[0], dyes[1])
 		_set_geometry(piece)
+	look_changed.emit(look)
 
 
 func _attach(visual: GearVisual) -> Node3D:
