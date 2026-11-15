@@ -5,6 +5,7 @@ import math
 import bpy
 import gear_paint as paint
 from body_parts import loft, mesh, pad
+from gear_parts import engrave, outlined_plate, refine_face, strap
 from gun_parts import lathe, rounded
 
 
@@ -35,25 +36,29 @@ def _plate(name, size, at, mat, value=paint.ZONE_MAIN):
         outline = rounded(
             -width / 2 + inset, -height / 2 + inset, width / 2 - inset, height / 2 - inset, width * 0.18, 2
         )
-        rings.append([(x + at[0], y + at[1], z + at[2]) for x, z in outline])
-    return _paint(loft(name, rings, mat), value)
+        rings.append([(x, y, z) for x, z in outline])
+    obj = _paint(loft(name, rings, mat), value)
+    obj.location = at
+    return obj
 
 
 def _ring(name, centre, radii, mat, value=paint.ZONE_ACCENT, plane="xz"):
     vertices, faces = [], []
     rx, rz, thickness = radii
-    for i in range(8):
-        angle = math.tau * i / 8
-        for j in range(4):
-            around = math.tau * j / 4
+    segments = 20 if max(rx, rz) > 0.01 else 12
+    for i in range(segments):
+        angle = math.tau * i / segments
+        for j in range(6):
+            around = math.tau * j / 6
             x = (rx + thickness * math.cos(around)) * math.cos(angle)
             y = thickness * math.sin(around)
             z = (rz + thickness * math.cos(around)) * math.sin(angle)
             local = {"xz": (x, y, z), "yz": (y, x, z), "xy": (x, z, y)}[plane]
             vertices.append(tuple(a + b for a, b in zip(centre, local, strict=True)))
-    for i in range(8):
-        for j in range(4):
-            faces.append((i * 4 + j, i * 4 + (j + 1) % 4, ((i + 1) % 8) * 4 + (j + 1) % 4, ((i + 1) % 8) * 4 + j))
+    for i in range(segments):
+        for j in range(6):
+            following = (i + 1) % segments
+            faces.append((i * 6 + j, i * 6 + (j + 1) % 6, following * 6 + (j + 1) % 6, following * 6 + j))
     return _paint(mesh(name, vertices, faces, mat), value)
 
 
@@ -76,8 +81,8 @@ def _finish(parts, mat):
     join_into(body, parts)
     body.name = "Body"
     hook = marker("Hook", (0, 0, 0))
-    first = _ring("Link1", (0, 0, -0.006), (0.0032, 0.0051, 0.0009), mat)
-    second = _ring("Link2", (0, 0, -0.018), (0.0032, 0.0051, 0.0009), mat, plane="yz")
+    first = _ring("Link1", (0, 0, -0.0066), (0.0032, 0.0057, 0.0009), mat)
+    second = _ring("Link2", (0, 0, -0.018), (0.0032, 0.0063, 0.0009), mat, plane="yz")
     attach(first, (0, 0, 0), hook)
     attach(second, (0, 0, -0.012), first)
     attach(body, (0, 0, -0.024), second)
@@ -85,55 +90,78 @@ def _finish(parts, mat):
 
 
 def build_charm_dog_tags():
-    """A Lantern Post tether-tag pair with coded stamp rows and a bead chain."""
+    """A tether-tag pair with recessed serial strokes and open suspension bails."""
     mat = _materials()
     parts = []
     for index, (x, y, z) in enumerate(((-0.004, 0.002, -0.052), (0.005, -0.002, -0.057))):
-        parts.append(_plate(f"Tag{index}", (0.023, 0.0018, 0.038), (x, y, z), mat["plate"]))
+        tag = _plate(f"Tag{index}", (0.023, 0.0018, 0.038), (x, y, z), mat["plate"])
+        engrave(
+            tag,
+            [
+                (-0.005, 0, 0.004, 0.001),
+                (0.002, 0, 0.006, 0.001),
+                (-0.004, -0.004, 0.005, 0.001),
+                (0.003, -0.004, 0.004, 0.001),
+            ],
+            0.0003,
+            mat["rubber"],
+        )
+        refine_face(tag)
+        parts.append(tag)
         parts.append(
             _pad("TetherStripe", (0.020, 0.002, 0.0035), (x, y - 0.001, z + 0.008), mat["polymer"], paint.ZONE_TRIM)
         )
-        for row, width in enumerate((0.013, 0.016)):
-            parts.append(
-                _pad("StampedCode", (width, 0.0005, 0.001), (x - 0.002, y - 0.0011, z - row * 0.003), mat["rubber"])
-            )
-    for index, at in enumerate(
-        (
-            (-0.002, 0, -0.026),
-            (-0.004, 0, -0.029),
-            (-0.005, 0, -0.032),
-            (-0.004, 0, -0.035),
-            (0.002, 0, -0.026),
-            (0.004, 0, -0.030),
-            (0.005, 0, -0.0335),
-            (0.005, 0, -0.037),
-        )
-    ):
-        parts.append(_bead(f"ChainBead{index}", at, 0.002, mat["plate"]))
+    for x in (-0.0025, 0.0025):
+        parts.append(_ring("TagBail", (x, 0, -0.030), (0.0024, 0.0048, 0.0012), mat["plate"]))
     _finish(parts, mat["plate"])
 
 
 def build_charm_vial():
-    """A sealed Halcyon specimen ampoule protected by a four-rib metal cage."""
+    """A sealed glass ampoule with a raised meniscus inside a three-rib metal cage."""
+    from build_models import material, srgb
+
     mat = _materials()
+    glass = material("GearGlass", srgb("#CDEEE8"), roughness=0.10)
+    glass.node_tree.nodes["Principled BSDF"].inputs["Alpha"].default_value = 0.14
+    glass.surface_render_method = "DITHERED"
+    mat["polymer"].name = "GearLiquid"
+    mat["polymer"].node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = srgb("#8DFF3A")
+    mat["polymer"].node_tree.nodes["Principled BSDF"].inputs["Roughness"].default_value = 0.12
     ampoule = _turned(
         "GlassAmpoule",
-        [(0.0055, -0.064), (0.0068, -0.062), (0.0068, -0.057), (0.0068, -0.035), (0.0045, -0.031)],
+        [
+            (0.0055, -0.064),
+            (0.0068, -0.062),
+            (0.0068, -0.035),
+            (0.0045, -0.031),
+            (0.0038, -0.031),
+            (0.0058, -0.035),
+            (0.0058, -0.061),
+            (0.0052, -0.062),
+        ],
+        (0, 0, 0),
+        glass,
+        sides=16,
+    )
+    liquid = _turned(
+        "SpecimenLiquid",
+        [(0.0049, -0.0617), (0.0056, -0.061), (0.0056, -0.050), (0.0055, -0.0495), (0.0046, -0.050)],
         (0, 0, 0),
         mat["polymer"],
+        sides=16,
     )
     liquid_window = [
-        face.index for face in ampoule.data.polygons if -0.062 < face.center.z < -0.057 and face.center.y < -0.002
+        face.index for face in liquid.data.polygons if -0.050 < face.center.z < -0.0495 and face.center.y < -0.002
     ]
-    paint.zone(ampoule, paint.ZONE_GLOW, liquid_window)
-    parts = [ampoule]
+    paint.zone(liquid, paint.ZONE_GLOW, liquid_window)
+    parts = [ampoule, liquid]
     for z in (-0.064, -0.032):
         parts.append(
             _turned(
                 "CageCap", [(0.006, -0.003), (0.0085, -0.002), (0.0085, 0.002), (0.006, 0.003)], (0, 0, z), mat["plate"]
             )
         )
-    for x, y in ((-0.007, 0), (0.007, 0), (0, -0.007), (0, 0.007)):
+    for x, y in ((-0.007, 0), (0.007, 0), (0, 0.007)):
         parts.append(_pad("CageRib", (0.002, 0.002, 0.030), (x, y, -0.048), mat["plate"], paint.ZONE_MAIN))
     parts.append(_ring("SealBand", (0, 0, -0.027), (0.005, 0.002, 0.001), mat["plate"], paint.ZONE_TRIM))
     parts.append(_pad("SampleLabel", (0.0045, 0.001, 0.009), (0.001, -0.007, -0.042), mat["rubber"]))
@@ -141,50 +169,65 @@ def build_charm_vial():
 
 
 def build_charm_keycard():
-    """Original Halcyon lab credential: clipped header, H monogram and serial bars."""
+    """Clipped access credential with stamped code, inset contacts and a spring clip."""
     mat = _materials()
-    parts = [_plate("Credential", (0.034, 0.0022, 0.049), (0, 0, -0.055), mat["plate"])]
+    outline = [(-0.017, -0.0245), (0.017, -0.0245), (0.017, 0.0145), (0.007, 0.0245), (-0.017, 0.0245)]
+    card = outlined_plate("Credential", outline, 0.0022, (0, 0, -0.055), mat["plate"])
+    strokes = [
+        (-0.008, 0.002, 0.0015, 0.008),
+        (-0.004, 0.006, 0.005, 0.0015),
+        (0.003, 0.002, 0.0015, 0.008),
+        (0.007, -0.002, 0.005, 0.0015),
+        (-0.006, -0.012, 0.008, 0.001),
+        (0.005, -0.012, 0.007, 0.001),
+        (-0.003, -0.016, 0.015, 0.001),
+    ]
+    engrave(card, strokes, 0.00035, mat["rubber"])
+    refine_face(card)
+    parts = [card]
     parts.append(_plate("SpringClip", (0.010, 0.004, 0.015), (0, 0, -0.0315), mat["plate"], paint.ZONE_ACCENT))
     parts.append(_pad("AccessStripe", (0.031, 0.0025, 0.005), (0, -0.0003, -0.042), mat["polymer"], paint.ZONE_TRIM))
-    for x in (-0.005, 0.005):
-        parts.append(_pad("HalcyonH", (0.002, 0.0006, 0.012), (x, -0.0013, -0.055), mat["rubber"]))
-    parts.append(_pad("HalcyonH", (0.010, 0.0006, 0.002), (0, -0.0013, -0.055), mat["rubber"]))
-    for index, width in enumerate((0.019, 0.024, 0.015)):
-        parts.append(
-            _pad("ClearanceCode", (width, 0.0006, 0.0012), (-0.002, -0.0013, -0.066 - index * 0.003), mat["rubber"])
-        )
-    parts.append(
-        _pad("SealWindow", (0.0035, 0.0007, 0.002), (0.011, -0.0015, -0.054), mat["polymer"], paint.ZONE_ACCENT)
+    contact = _plate("Contacts", (0.008, 0.0008, 0.005), (0.008, -0.0013, -0.060), mat["polymer"])
+    engrave(
+        contact, [(-0.002, 0, 0.0005, 0.003), (0, 0, 0.0005, 0.003), (0.002, 0, 0.0005, 0.003)], 0.0002, mat["rubber"]
     )
+    parts.append(contact)
     _finish(parts, mat["plate"])
 
 
 def build_charm_dosimeter():
     """A clipped pen dosimeter with a sealed reading slot and knurled end collar."""
     mat = _materials()
-    parts = [
-        _turned(
-            "PenBarrel",
-            [(0.0027, -0.087), (0.004, -0.084), (0.004, -0.035), (0.0036, -0.031), (0.0028, -0.030)],
-            (0, 0, 0),
-            mat["plate"],
-        )
-    ]
-    parts.append(
-        _turned(
-            "EndCap",
-            [(0.003, -0.004), (0.0046, -0.003), (0.0046, 0.002), (0.003, 0.003)],
-            (0, 0, -0.031),
-            mat["rubber"],
-            paint.ZONE_ACCENT,
-        )
+    profile = [(0.0027, -0.087), (0.004, -0.084), (0.004, -0.035), (0.0036, -0.031), (0.0028, -0.030)]
+    parts = [_turned("PenBarrel", profile, (0, 0, 0), mat["plate"])]
+    cap = _turned(
+        "EndCap",
+        [(0.003, -0.004), (0.0046, -0.003), (0.0046, 0.002), (0.003, 0.003)],
+        (0, 0, -0.031),
+        mat["rubber"],
+        paint.ZONE_ACCENT,
     )
+    for vertex in cap.data.vertices:
+        angle = math.atan2(vertex.co.y, vertex.co.x)
+        if round(angle / (math.tau / 12)) % 2:
+            vertex.co.x *= 0.88
+            vertex.co.y *= 0.88
+    parts.append(cap)
     for z in (-0.078, -0.041):
         parts.append(
             _ring("ReadingCollar", (0, 0, z), (0.0042, 0.0042, 0.0006), mat["polymer"], paint.ZONE_TRIM, plane="xy")
         )
-    parts.append(_pad("PocketClip", (0.0025, 0.0015, 0.026), (0, 0.005, -0.045), mat["plate"], paint.ZONE_ACCENT))
-    parts.append(_pad("ReadingRecess", (0.0035, 0.001, 0.017), (0, -0.0035, -0.057), mat["rubber"]))
+    parts.append(
+        strap(
+            "PocketClip",
+            [(0, 0.0036, -0.032), (0, 0.005, -0.034), (0, 0.005, -0.056), (0, 0.0036, -0.058)],
+            (0.0025, 0.0015),
+            mat["plate"],
+        )
+    )
+    meter = _pad("ReadingRecess", (0.0035, 0.001, 0.017), (0, -0.00375, -0.057), mat["rubber"])
+    engrave(meter, [(0, -0.005, 0.002, 0.0005), (0, -0.0025, 0.001, 0.0005)], 0.0002, mat["plate"])
+    parts.append(meter)
     parts.append(_pad("DoseIndicator", (0.002, 0.0012, 0.003), (0, -0.0038, -0.054), mat["polymer"], paint.ZONE_ACCENT))
     parts.append(
         _turned(
@@ -205,7 +248,7 @@ def build_charm_coin():
     coin = _paint(
         lathe(
             "SalvageToken",
-            [(0.0115, -0.0013), (0.0128, -0.0008), (0.0128, 0.0008), (0.0115, 0.0013)],
+            [(0.0115, -0.0013), (0.0124, -0.0013), (0.0128, -0.0008), (0.0128, 0.0008), (0.0115, 0.0013)],
             (0, 0, -0.044),
             mat["plate"],
             segments=20,
@@ -215,17 +258,14 @@ def build_charm_coin():
     for vertex in coin.data.vertices:
         if vertex.co.x < -0.008 and vertex.co.z > -0.040:
             vertex.co.x *= 0.95
+    strokes = []
+    for index, height in enumerate((0.006, 0.011, 0.015)):
+        strokes.append((-0.006 + index * 0.005, -0.048 + height / 2, 0.002, height))
+    strokes.extend(((-0.006, -0.051, 0.001, 0.002), (-0.003, -0.052, 0.001, 0.002), (0.007, -0.049, 0.001, 0.003)))
+    engrave(coin, strokes, 0.00035, mat["rubber"])
+    refine_face(coin)
     parts = [coin]
     parts.append(_ring("TokenBezel", (0, 0, -0.044), (0.0141, 0.0141, 0.0012), mat["polymer"], paint.ZONE_TRIM))
-    for index, height in enumerate((0.006, 0.011, 0.015)):
-        parts.append(
-            _pad(
-                "LedgerStamp",
-                (0.003, 0.0008, height),
-                (-0.006 + index * 0.005, -0.0014, -0.048 + height / 2),
-                mat["rubber"],
-            )
-        )
     for x, z, height in ((-0.013, -0.044, 0.004), (0.013, -0.044, 0.004), (0, -0.028, 0.008)):
         parts.append(_pad("BezelClaw", (0.003, 0.004, height), (x, 0, z), mat["plate"], paint.ZONE_MAIN))
     parts.append(_bead("AssaySeal", (0, -0.0016, -0.052), 0.0012, mat["polymer"], paint.ZONE_ACCENT))
