@@ -103,4 +103,6 @@ func _add(affix: AffixData, rolled: float) -> void:
 		rolled /= 100.0
 	elif affix.op == "more":
 		rolled = 1.0 + rolled / 100.0
+	elif affix.op == "flat" and affix.stat == &"regen_delay":
+		rolled = -rolled
 	stats.add_modifier(affix.stat, affix.op, rolled, StringName(data.get("uid", "")))

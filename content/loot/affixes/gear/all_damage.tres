@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="AffixData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://systems/loot/affix_data.gd" id="1"]
+[ext_resource type="Script" path="res://systems/loot/affix_tier.gd" id="2"]
+
+[sub_resource type="Resource" id="tier_1"]
+script = ExtResource("2")
+min_ilvl = 1
+low = 2
+high = 2.8
+
+[sub_resource type="Resource" id="tier_2"]
+script = ExtResource("2")
+min_ilvl = 8
+low = 2.8
+high = 3.6
+
+[sub_resource type="Resource" id="tier_3"]
+script = ExtResource("2")
+min_ilvl = 15
+low = 3.6
+high = 4.4
+
+[sub_resource type="Resource" id="tier_4"]
+script = ExtResource("2")
+min_ilvl = 22
+low = 4.4
+high = 5.2
+
+[sub_resource type="Resource" id="tier_5"]
+script = ExtResource("2")
+min_ilvl = 30
+low = 5.2
+high = 6
+
+[resource]
+script = ExtResource("1")
+id = &"all_damage"
+kind = "prefix"
+family = &"all_damage"
+slots = Array[StringName]([&"vest", &"charm", &"implant"])
+min_ilvl = 1
+min_rarity = &"common"
+stat = &"dmg_pct"
+op = "increased"
+tiers = Array[ExtResource("2")]([SubResource("tier_1"), SubResource("tier_2"), SubResource("tier_3"), SubResource("tier_4"), SubResource("tier_5")])
+weight = 50.0
+step = 0.1
+text = "+{v}% damage with all guns"

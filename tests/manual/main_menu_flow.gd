@@ -13,14 +13,20 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	assert(current_scene.scene_file_path == "res://systems/ui/main_menu.tscn")
-	var down: InputEventJoypadButton = InputEventJoypadButton.new()
-	down.button_index = JOY_BUTTON_DPAD_DOWN
-	down.pressed = true
-	Input.parse_input_event(down)
-	await process_frame
+	await _press_dpad_down()
+	assert((current_scene.get_node("Screens/Root/Menu/Host") as Button).has_focus())
+	await _press_action(&"ui_accept")
+	assert((current_scene.get_node("Screens/Root/HostPanel/Box/Port") as LineEdit).has_focus())
+	await _press_action(&"ui_cancel")
+	assert((current_scene.get_node("Screens/Root/Menu/Host") as Button).has_focus())
+	await _press_dpad_down()
+	assert((current_scene.get_node("Screens/Root/Menu/Join") as Button).has_focus())
+	await _press_action(&"ui_accept")
+	assert((current_scene.get_node("Screens/Root/JoinPanel/Box/Address") as LineEdit).has_focus())
+	await _press_action(&"ui_cancel")
+	assert((current_scene.get_node("Screens/Root/Menu/Join") as Button).has_focus())
+	await _press_dpad_down()
 	assert((current_scene.get_node("Screens/Root/Menu/Settings") as Button).has_focus())
-	down.pressed = false
-	Input.parse_input_event(down)
 	await _press_action(&"ui_accept")
 	assert((current_scene.get_node("Screens/Root/SettingsScreen") as Control).visible)
 	await _press_action(&"ui_cancel")
@@ -37,7 +43,7 @@ func _run() -> void:
 	assert(not paused)
 	assert(current_scene.scene_file_path == "res://systems/ui/main_menu.tscn")
 	await _results_flow()
-	print("Main menu flow passed: controller settings/back, Play, pause/menu, results/restart/menu, Quit")
+	print("Main menu flow passed: controller co-op/settings/back, Play solo, pause/menu, results/restart/menu, Quit")
 	(current_scene.get_node("Screens/Root/Menu/Quit") as Button).pressed.emit()
 
 
@@ -70,6 +76,17 @@ func _press_action(action: StringName) -> void:
 	await process_frame
 	event.pressed = false
 	Input.parse_input_event(event)
+	await process_frame
+
+
+func _press_dpad_down() -> void:
+	var down: InputEventJoypadButton = InputEventJoypadButton.new()
+	down.button_index = JOY_BUTTON_DPAD_DOWN
+	down.pressed = true
+	Input.parse_input_event(down)
+	await process_frame
+	down.pressed = false
+	Input.parse_input_event(down)
 	await process_frame
 
 

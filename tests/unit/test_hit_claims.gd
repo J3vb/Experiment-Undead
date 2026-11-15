@@ -30,6 +30,9 @@ func _make_side(side_name: String) -> HitClaims:
 	economy.name = "Economy"
 	economy.rules = load("res://content/economy/default_economy.tres")
 	root.add_child(economy)
+	var rewards: ProgressionService = ProgressionService.new()
+	rewards.name = "Progression"
+	root.add_child(rewards)
 	session.spawner = Spawner.new()
 	session.spawner.name = "Enemies"
 	session.spawner.spawn_group = &"test_hit_claim_points"
@@ -56,8 +59,7 @@ func _prepare_player(player: Player, session: GameSession) -> void:
 func before_each() -> void:
 	server = _make_side("Server")
 	client = _make_side("Client")
-	progression = ProgressionService.new()
-	server.get_parent().add_child(progression)
+	progression = server.get_parent().get_node("Progression") as ProgressionService
 	var marker: Marker3D = Marker3D.new()
 	marker.add_to_group(&"test_hit_claim_points")
 	marker.position = Vector3(0, 0, -4)
@@ -308,3 +310,31 @@ func test_solo_weapon_trace_still_applies_direct_hit_zone_damage() -> void:
 	var before: float = zombie.health.current
 	weapon._trace(origin, Vector3.FORWARD)
 	assert_lt(zombie.health.current, before, "server keeps Weapon's direct damage path")
+
+
+func test_downed_sidearm_claims_damage_but_rifles_dead_and_finished_claims_do_not() -> void:
+	var pair: Array[Zombie] = await _zombies()
+	var pistol: WeaponData = Content.weapon(&"pistol_service")
+	claimant.take_damage(DamageInfo.create(1000.0, null))
+	await wait_until(func() -> bool: return mine.is_downed, 3.0, "claimant is downed on both peers")
+	assert_eq(mine.weapons.current.data.id, pistol.id)
+	var info: DamageInfo = DamageInfo.create(pistol.damage, mine)
+	info.weapon_id = pistol.id
+	client.submit_hit(mine.weapons.current, pair[1].hit_zones[1], info)
+	await wait_until(func() -> bool: return pair[0].health.current == 100.0 - pistol.damage, 3.0, "sidearm hit applied")
+	var remaining: float = pair[0].health.current
+	var points: int = claimant.wallet.points
+	_claim(pair[0].name, RIFLE.damage)
+	await _flush_claims()
+	assert_eq(pair[0].health.current, remaining, "downed rifle claims are refused")
+	server.session.is_over = true
+	client.claim_hit.rpc_id(1, pair[0].name, DamageInfo.Zone.BODY, pistol.damage, pistol.id, Vector3.ZERO)
+	await _flush_claims()
+	assert_eq(pair[0].health.current, remaining, "finished matches accept no sidearm claims")
+	server.session.is_over = false
+	claimant.state_sync._physics_process(30.0)
+	assert_true(claimant.is_dead)
+	client.claim_hit.rpc_id(1, pair[0].name, DamageInfo.Zone.BODY, pistol.damage, pistol.id, Vector3.ZERO)
+	await _flush_claims()
+	assert_eq(pair[0].health.current, remaining, "dead players cannot claim sidearm damage")
+	assert_eq(claimant.wallet.points, points, "refused claims award no points")

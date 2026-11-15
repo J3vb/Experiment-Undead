@@ -45,7 +45,6 @@ var _kick: float = 0.0
 var _flash_timer: float = 0.0
 var _rng: RandomNumberGenerator
 var _spin_up: SpinUp = SpinUp.new()
-
 var _flash_light: Light3D
 var _flash_mesh: Node3D
 var _magazine: Node3D
@@ -331,6 +330,7 @@ func _pose_moving_parts() -> void:
 
 
 func _set_flash(on: bool) -> void:
+	on = on and not data.no_muzzle_flash
 	if _flash_light:
 		_flash_light.visible = on
 	if _flash_mesh:

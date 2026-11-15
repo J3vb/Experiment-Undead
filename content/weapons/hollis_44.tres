@@ -21,6 +21,7 @@ repeat_last = 1
 [resource]
 script = ExtResource("1")
 id = &"hollis_44"
+slot = 1
 loot_tags = Array[StringName]([&"pistol", &"revolver"])
 display_name = "Hollis .44"
 cost = 0

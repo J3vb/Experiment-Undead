@@ -1,4 +1,4 @@
-## A weapon affix; implicit ammo uses rarity ranges instead of item-level tiers.
+## A slot-filtered loot affix; implicit ammo uses rarity ranges instead of item-level tiers.
 class_name AffixData
 extends Resource
 
@@ -6,8 +6,10 @@ extends Resource
 @export_enum("prefix", "suffix", "implicit") var kind: String = "prefix"
 @export var family: StringName = &""
 @export var exclusive_families: Array[StringName] = []
+@export var slots: Array[StringName] = [&"primary", &"sidearm"]
 @export var allowed_tags: Array[StringName] = []
 @export var blocked_tags: Array[StringName] = []
+@export var min_ilvl: int = 1
 @export var min_rarity: StringName = &"common"
 @export var stat: StringName = &""
 @export_enum("increased", "more", "flat", "proc") var op: String = "increased"
