@@ -8,7 +8,7 @@ var _timer: float = 0.0
 
 
 func _ready() -> void:
-	_timer = randf_range(1.0, 5.0)
+	_timer = randf_range(1.0, 5.0)  # cosmetic
 
 
 func _process(delta: float) -> void:
@@ -16,15 +16,15 @@ func _process(delta: float) -> void:
 		return
 	_timer -= delta
 	if _timer <= 0.0:
-		_timer = randf_range(3.0, 8.0)
-		say(groans[randi() % groans.size()])
+		_timer = randf_range(3.0, 8.0)  # cosmetic
+		say(groans[randi() % groans.size()])  # cosmetic
 
 
 func say(sound: AudioStream) -> void:
 	if sound == null:
 		return
 	stream = sound
-	pitch_scale = randf_range(0.85, 1.15)
+	pitch_scale = randf_range(0.85, 1.15)  # cosmetic
 	play()
 
 

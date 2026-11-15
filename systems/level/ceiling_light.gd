@@ -36,7 +36,7 @@ func _ready() -> void:
 
 
 func _on_power_on() -> void:
-	await get_tree().create_timer(randf() * POWER_ON_SPREAD).timeout
+	await get_tree().create_timer(randf() * POWER_ON_SPREAD).timeout  # cosmetic
 	_set_emergency(false)
 
 

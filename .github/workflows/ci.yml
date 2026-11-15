@@ -42,6 +42,9 @@ jobs:
           if [ "$NO_TESTS_LABEL" = "true" ]; then args="$args --no-tests-label"; fi
           python tools/ci/check_pr.py $args
 
+      - name: Structure rules
+        run: python tools/ci/check_rules.py
+
       - name: Skills copies match (.agents/skills = .claude/skills)
         run: python tools/ci/check_skills_mirror.py
 

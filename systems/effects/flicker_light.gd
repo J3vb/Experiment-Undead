@@ -20,7 +20,7 @@ func _ready() -> void:
 		light = get_parent() as Light3D
 	if light:
 		base_energy = light.light_energy
-	_noise.seed = randi()
+	_noise.seed = randi()  # cosmetic
 	_noise.frequency = 1.0
 
 
@@ -32,7 +32,7 @@ func _process(delta: float) -> void:
 		_dropout -= delta
 		light.light_energy = base_energy * 0.05
 		return
-	if randf() < dropout_chance * delta * 10.0:
-		_dropout = randf_range(0.05, 0.25)
+	if randf() < dropout_chance * delta * 10.0:  # cosmetic
+		_dropout = randf_range(0.05, 0.25)  # cosmetic
 	var n: float = (_noise.get_noise_1d(_time) + 1.0) * 0.5
 	light.light_energy = base_energy * lerpf(min_energy, max_energy, n)

@@ -270,7 +270,7 @@ func _on_fired() -> void:
 	_set_flash(true)
 	_flash_timer = 0.045
 	if _fire_audio.stream:
-		_fire_audio.pitch_scale = randf_range(0.95, 1.05)
+		_fire_audio.pitch_scale = randf_range(0.95, 1.05)  # cosmetic
 		_fire_audio.play()
 
 

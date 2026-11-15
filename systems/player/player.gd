@@ -236,9 +236,10 @@ func _move(delta: float, frame: InputFrame) -> void:
 
 
 func _on_damaged(info: DamageInfo) -> void:
-	hurt_sound.pitch_scale = randf_range(0.9, 1.1)
+	hurt_sound.pitch_scale = randf_range(0.9, 1.1)  # cosmetic
 	hurt_sound.play()
-	camera_rig.add_flinch(randf_range(1.0, 2.5))
+	var rng: RandomNumberGenerator = get_rng()
+	camera_rig.add_flinch(rng.randf_range(1.0, 2.5), rng.randf_range(-1.0, 1.0))
 	Events.player_damaged.emit(self, info)
 
 

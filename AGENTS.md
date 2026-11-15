@@ -82,6 +82,26 @@ Edit skills in `.agents/skills/` only, then run
      `EconomyRules`, `SerumData`, `AmmoModData`, `BuyableData`,
      `PowerUpData`, `MapData`. Not `PerkData` or `RoundCurve`.
 
+## Structure rules (CI checked)
+
+Examples and fixes: [docs/CODE_RULES.md](docs/CODE_RULES.md).
+
+- `core-no-features`: core never depends on systems or levels.
+- `content-is-data`: content contains only resources and their Godot sidecars.
+- `file-names`: scripts, scenes, resources, Python and models use snake_case.
+- `class-name-matches-file`: class names match their snake_case script filenames.
+- `input-only-in-input`: direct input stays in input, UI, debug and tools.
+- `session-rng`: gameplay uses the session RNG; visual randomness ends in `# cosmetic`.
+- `log-not-print`: game diagnostics use Log outside the three allowed log entry points.
+- `no-absolute-paths`: use autoload names, signals or exported paths instead of climbing the tree.
+- `autoload-list`: autoload names must be explicitly allowed in the checker.
+- `no-weakening`: keep lint limits and Godot warning levels at least as strict.
+- `no-todo`: finish work or open an issue; no unfinished-work markers in scripts.
+- `warning-ignore-reason`: every warning ignore explains why on the same line.
+- `doc-comment`: core and systems scripts have a `##` comment in their first five lines.
+- `no-triple-copy`: extract a shared operation when an eight-line block has a third copy.
+- `tested-scripts`: core and systems scripts need test references; the baseline only shrinks.
+
 ## Keep it simple
 
 The game will grow to loot, co-op and a town hub, but it grows by adding
@@ -190,6 +210,7 @@ Run the same `quality` check locally before you push:
 pip install "gdtoolkit==4.5.0" "ruff==0.17.5"
 python -m unittest discover -s tools/ci -p "test_*.py"
 python tools/ci/check_pr.py origin/main
+python tools/ci/check_rules.py
 ```
 
 ### Test rules

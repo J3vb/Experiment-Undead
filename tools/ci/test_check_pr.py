@@ -100,11 +100,25 @@ class RepositoryScopeTests(unittest.TestCase):
             patch.object(check_pr, "tracked_files", side_effect=[["core/net.gd"], ["tools/ci/check_pr.py"]]),
             patch.object(check_pr, "check_gdscript", return_value=True) as gdscript,
             patch.object(check_pr, "check_python", return_value=True) as python,
+            patch.object(check_pr, "run", return_value=True) as structure,
             contextlib.redirect_stdout(io.StringIO()),
         ):
             self.assertEqual(check_pr.main(), 0)
         gdscript.assert_called_once_with(["core/net.gd"])
         python.assert_called_once_with(["tools/ci/check_pr.py"])
+        structure.assert_called_once_with(
+            [check_pr.sys.executable, str(Path(check_pr.__file__).with_name("check_rules.py"))]
+        )
+
+    def test_structure_failure_fails_local_quality_check(self):
+        with (
+            patch.object(check_pr.sys, "argv", ["check_pr.py", "origin/main"]),
+            patch.object(check_pr, "changed_files", return_value=[]),
+            patch.object(check_pr, "tracked_files", return_value=[]),
+            patch.object(check_pr, "run", return_value=False),
+            contextlib.redirect_stdout(io.StringIO()),
+        ):
+            self.assertEqual(check_pr.main(), 1)
 
 
 if __name__ == "__main__":
