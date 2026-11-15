@@ -256,3 +256,55 @@ def test_per_stem_triangle_caps(monkeypatch, stem, cap):
     bm.free()
     errors = check(monkeypatch, stem=stem)
     assert any(f"budget for '{stem}' is {cap}" in error for error in errors)
+
+
+def vest():
+    armature = character_rig.build_armature()
+    shell = cube("GearFabric", at=(0, 0, 1.3))
+    shell.name = "Shell"
+    character_rig.bind(shell, armature)
+    for side, x in (("L", 0.55), ("R", -0.55)):
+        cuff = cube("GearFabric", at=(x, 0, 1.1))
+        cuff.name = f"CuffFP_{side}"
+    clip = bpy.data.objects.new("CharmClip", None)
+    bpy.context.collection.objects.link(clip)
+    bpy.context.view_layer.update()
+    return shell, armature
+
+
+def test_vest_origin_uses_shared_rig_instead_of_torso_bounds(monkeypatch):
+    vest()
+    monkeypatch.setitem(character_checks.VEST_BUDGETS, "vest_light", (0, 4_500))
+    gear_paint.zone(bpy.data.objects["Shell"], gear_paint.ZONE_TRIM)
+    assert check(monkeypatch, stem="vest_light") == []
+
+
+@pytest.mark.parametrize("name", ("Shell", "CuffFP_L", "CuffFP_R", "CharmClip"))
+def test_vest_requires_all_attachment_nodes(monkeypatch, name):
+    vest()
+    bpy.data.objects.remove(bpy.data.objects[name], do_unlink=True)
+    assert any(f"missing node '{name}'" in error for error in check(monkeypatch, stem="vest_light"))
+
+
+def test_vest_shell_requires_skin(monkeypatch):
+    shell, _armature = vest()
+    shell.modifiers.clear()
+    assert any("Shell must be one mesh skinned" in error for error in check(monkeypatch, stem="vest_light"))
+
+
+def test_vest_first_person_cuffs_must_remain_unskinned(monkeypatch):
+    _shell, armature = vest()
+    character_rig.bind_rigid(bpy.data.objects["CuffFP_L"], armature, "forearm_L")
+    errors = check(monkeypatch, stem="vest_light")
+    assert any("CuffFP_L must be a separate unskinned" in error for error in errors)
+    assert any("only skinned mesh" in error for error in errors)
+
+
+def test_vest_requires_readable_trim_share(monkeypatch):
+    vest()
+    assert any("trim zone covers 0.0%" in error for error in check(monkeypatch, stem="vest_light"))
+
+
+def test_vest_has_a_triangle_detail_floor(monkeypatch):
+    vest()
+    assert any("must have 3000-4500" in error for error in check(monkeypatch, stem="vest_light"))

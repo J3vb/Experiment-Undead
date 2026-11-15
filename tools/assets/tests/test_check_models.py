@@ -15,6 +15,7 @@ import bpy
 # bpy must load before bmesh.
 import bmesh
 import build_models
+import character_rig
 import check_models
 import pytest
 
@@ -164,6 +165,22 @@ def test_joint_pivot_off_the_part(tmp_path):
         build_models.attach(objects["ArmL"], (-1.5, 0, 1.5))
 
     assert has(broken(tmp_path, "shambler", move_pivot), "'ArmL' pivot")
+
+
+@pytest.mark.parametrize(
+    ("bound", "pivot", "fails"), [(True, (0, 0, 0), False), (False, (0, 0, 0), True), (True, (0, 0, 0.2), True)]
+)
+def test_vest_shell_accepts_only_a_skinned_rig_origin(bound, pivot, fails):
+    build_models.reset_scene()
+    armature = character_rig.build_armature()
+    mat = build_models.material("GearFabric", (0.2, 0.2, 0.2, 1))
+    shell = build_models.box("Shell", (0.2, 0.2, 0.2), (0, 0, 1.3), mat)
+    if bound:
+        character_rig.bind(shell, armature)
+    build_models.attach(shell, pivot)
+    bpy.context.view_layer.update()
+    errors = check_models.check_joints({"Shell": shell}, "vest_light")
+    assert has(errors, "'Shell' pivot") == fails
 
 
 def test_unknown_folder(tmp_path):

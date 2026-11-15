@@ -9,8 +9,12 @@ from mathutils import Vector
 
 BUDGETS = {"characters": (12_000, 4), "gear": (6_000, 4)}
 TRIANGLE_CAPS = {"player_arms": 8_000, "charm_*": 800, "implant_*": 1_500}
+VEST_BUDGETS = {"vest_light": (3_000, 4_500), "vest_medium": (4_000, 5_500), "vest_heavy": (4_500, 6_000)}
 # Add each new model stem here alongside its character_models.MODELS entry.
-JOINTS = {"player": {"Eyes": None}}
+JOINTS = {
+    "player": {"Eyes": None},
+    **{stem: dict.fromkeys(("Shell", "CuffFP_L", "CuffFP_R", "CharmClip")) for stem in VEST_BUDGETS},
+}
 TOLERANCE = 0.01
 
 
@@ -102,8 +106,8 @@ def _surface_area(obj) -> float:
     return area
 
 
-def _check_zones(meshes: list) -> list:
-    errors, total_area, glow_area = [], 0.0, 0.0
+def _check_zones(meshes: list, min_trim=0.0) -> list:
+    errors, total_area, glow_area, trim_area = [], 0.0, 0.0, 0.0
     for obj in meshes:
         try:
             shares = gear_paint.zone_shares(obj)
@@ -113,8 +117,49 @@ def _check_zones(meshes: list) -> list:
         area = _surface_area(obj)
         total_area += area
         glow_area += shares[gear_paint.ZONE_GLOW] * area
+        trim_area += shares[gear_paint.ZONE_TRIM] * area
     if total_area > 0 and glow_area / total_area > 0.05 + 1e-6:
         errors.append(f"glow zone covers {glow_area / total_area:.1%} of surface area, maximum is 5%")
+    if total_area > 0 and trim_area / total_area + 1e-6 < min_trim:
+        errors.append(f"trim zone covers {trim_area / total_area:.1%} of surface area, minimum is {min_trim:.0%}")
+    return errors
+
+
+def _check_vest_attachments(nodes: dict) -> list:
+    errors = []
+    for name in ("CuffFP_L", "CuffFP_R"):
+        cuff = nodes.get(name)
+        if cuff is None:
+            continue
+        if cuff.type != "MESH" or cuff.find_armature() is not None or cuff.parent_type == "BONE":
+            errors.append(f"{name} must be a separate unskinned cuff mesh")
+        elif (_bounds([cuff])[0] + _bounds([cuff])[1] - 2 * cuff.matrix_world.translation).length > 0.02:
+            errors.append(f"{name} origin must sit at the cuff centre")
+    clip = nodes.get("CharmClip")
+    if clip is not None and clip.type != "EMPTY":
+        errors.append("CharmClip must be an empty")
+    return errors
+
+
+def _check_vest(objects: list, armatures: list, stem: str, tris: int) -> list:
+    nodes = {obj.name: obj for obj in objects}
+    errors = _check_vest_attachments(nodes)
+    for name in JOINTS[stem]:
+        if name not in nodes:
+            errors.append(f"missing node '{name}'")
+    if len(armatures) != 1:
+        errors.append("vests need exactly one armature with the 22 character bones")
+    elif armatures[0].matrix_world.translation.length > TOLERANCE:
+        errors.append("vest skeleton must use the player rig origin")
+    shell = nodes.get("Shell")
+    if shell is not None and (shell.type != "MESH" or shell.find_armature() not in armatures):
+        errors.append("Shell must be one mesh skinned to the vest skeleton")
+    low, high = VEST_BUDGETS[stem]
+    if not low <= tris <= high:
+        errors.append(f"{tris} triangles, '{stem}' must have {low}-{high}")
+    skinned = [obj for obj in objects if obj.type == "MESH" and obj.find_armature() is not None]
+    if shell is not None and skinned != [shell]:
+        errors.append("Shell must be the vest's only skinned mesh")
     return errors
 
 
@@ -144,9 +189,11 @@ def check(objects: list, folder: str, stem: str) -> list:
         errors.append(f"{tris} triangles, budget for '{stem}' is {cap}")
     lo, hi = _bounds(meshes)
     if folder == "gear":
-        if Vector(max(lo[i], -hi[i], 0.0) for i in range(3)).length > 0.05:
+        if stem in VEST_BUDGETS:
+            errors += _check_vest(objects, armatures, stem, tris)
+        elif Vector(max(lo[i], -hi[i], 0.0) for i in range(3)).length > 0.05:
             errors.append("gear origin must be inside the piece's bounds or within 0.05 m")
-        errors += _check_zones(meshes)
+        errors += _check_zones(meshes, min_trim=0.05 if stem in VEST_BUDGETS else 0.0)
     else:
         if abs(lo.z) > TOLERANCE:
             errors.append(f"lowest point is at height {lo.z:.3f}, feet must be at z = 0")
