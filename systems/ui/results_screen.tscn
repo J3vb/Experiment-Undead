@@ -111,6 +111,48 @@ theme_type_variation = &"LabelMono"
 text = "0"
 horizontal_alignment = 2
 
+[node name="LootPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchor_left = 0.28
+anchor_top = 0.25
+anchor_right = 0.69
+anchor_bottom = 0.9
+
+[node name="Box" type="VBoxContainer" parent="LootPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LootTitle" type="Label" parent="LootPanel/Box"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Loot kept"
+
+[node name="LootStatus" type="Label" parent="LootPanel/Box"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+theme_override_font_sizes/font_size = 18
+autowrap_mode = 3
+
+[node name="LootEmpty" type="Label" parent="LootPanel/Box"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "No loot taken this run"
+
+[node name="Scroll" type="ScrollContainer" parent="LootPanel/Box"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+follow_focus = true
+
+[node name="LootItems" type="VBoxContainer" parent="LootPanel/Box/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
 [node name="ProgressPanel" type="PanelContainer" parent="."]
 layout_mode = 1
 anchor_left = 0.71
@@ -185,4 +227,4 @@ anchor_left = 0.03
 anchor_top = 0.95
 anchor_right = 0.97
 theme_type_variation = &"LabelDim"
-text = "Enter / A: select     R: restart     Esc / B: main menu"
+text = "← / →: loot / actions     ↑ / ↓: browse     Enter / A: select     R: restart     Esc / B: menu"
