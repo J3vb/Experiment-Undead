@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="AffixData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://systems/loot/affix_data.gd" id="1"]
+[ext_resource type="Script" path="res://systems/loot/affix_tier.gd" id="2"]
+
+[sub_resource type="Resource" id="tier_1"]
+script = ExtResource("2")
+min_ilvl = 1
+low = 0.3
+high = 0.44
+
+[sub_resource type="Resource" id="tier_2"]
+script = ExtResource("2")
+min_ilvl = 8
+low = 0.44
+high = 0.58
+
+[sub_resource type="Resource" id="tier_3"]
+script = ExtResource("2")
+min_ilvl = 15
+low = 0.58
+high = 0.72
+
+[sub_resource type="Resource" id="tier_4"]
+script = ExtResource("2")
+min_ilvl = 22
+low = 0.72
+high = 0.86
+
+[sub_resource type="Resource" id="tier_5"]
+script = ExtResource("2")
+min_ilvl = 30
+low = 0.86
+high = 1
+
+[resource]
+script = ExtResource("1")
+id = &"regen_delay"
+kind = "suffix"
+family = &"regen_delay"
+slots = Array[StringName]([&"vest"])
+min_ilvl = 1
+min_rarity = &"common"
+stat = &"regen_delay"
+op = "flat"
+tiers = Array[ExtResource("2")]([SubResource("tier_1"), SubResource("tier_2"), SubResource("tier_3"), SubResource("tier_4"), SubResource("tier_5")])
+weight = 100.0
+step = 0.01
+text = "-{v} s before health regen"

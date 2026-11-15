@@ -28,9 +28,12 @@ const BONES: Dictionary[StringName, StringName] = {
 @export var slot: StringName = &""
 @export var scene: PackedScene
 @export var attach: StringName = &""
+@export var set_id: StringName = &""
 
 
 static func find(visual_id: StringName) -> GearVisual:
+	if Content.ids(&"gear_visuals").has(visual_id):
+		return Content.get_item(&"gear_visuals", visual_id) as GearVisual
 	if not SCENES.has(visual_id):
 		return null
 	var visual: GearVisual = GearVisual.new()

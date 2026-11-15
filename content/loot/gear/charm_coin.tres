@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GearBaseData" format=3]
+
+[ext_resource type="Script" path="res://systems/loot/gear_base_data.gd" id="1"]
+
+[resource]
+resource_name = "Post Token (provisional)"
+script = ExtResource("1")
+id = &"charm_coin"
+slot = "charm"
+display_name = "Post Token"
+visual_id = &"charm_coin"
+loot_tags = Array[StringName]([&"charm"])
+unlock_level = 1
+drop_weight = 100.0
