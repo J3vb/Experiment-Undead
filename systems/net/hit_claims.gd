@@ -118,7 +118,8 @@ func _take_claim(sender: int, weapon: WeaponData) -> bool:
 	var recent: Array = per_weapon.get(weapon.id, [])
 	while not recent.is_empty() and float(recent[0]) <= _time - 1.0:
 		recent.pop_front()
-	var limit: float = weapon.rounds_per_minute / 60.0 * weapon.pellets * SLACK + 2.0
+	var hits_per_shot: int = weapon.pellets * (maxi(weapon.pierce_count, 0) + 1)
+	var limit: float = weapon.rounds_per_minute / 60.0 * hits_per_shot * SLACK + 2.0
 	per_weapon[weapon.id] = recent
 	if recent.size() + 1 > limit:
 		return false
