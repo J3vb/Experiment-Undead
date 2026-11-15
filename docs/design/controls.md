@@ -24,6 +24,7 @@ The layout follows what military-shooter players already expect, so nobody has t
 | Move | W A S D | - | Physical keys, so AZERTY gets Z Q S D |
 | Look | Mouse | - | Raw mouse input, no acceleration |
 | Fire | Left mouse | - |  |
+| Alt fire (`alt_fire`) | Middle mouse | Press | Both barrels on Coachman and Grubber; with one round left, fires it normally |
 | Aim down sights | Right mouse | Hold |  |
 | Reload | R | - |  |
 | Interact, buy, repair barrier | E | Hold 0.3 s | Tap option in settings |
@@ -36,7 +37,7 @@ The layout follows what military-shooter players already expect, so nobody has t
 | Field ability | F | - | From the skill tree |
 | Weapon slot 1, 2, 3 | 1, 2, 3 | - |  |
 | Next or previous weapon | Mouse wheel | - |  |
-| Ping | Middle mouse | - | Double tap for danger ping |
+| Ping | Unbound | - | Planned; middle mouse is used by alt fire |
 | Scoreboard | Tab | Hold |  |
 | Inventory | I | - | Town and between rounds only |
 | Map | M | - |  |
@@ -55,6 +56,7 @@ The game shows Xbox or PlayStation button icons to match the controller that is 
 | Move | Left stick | Left stick |  |
 | Look | Right stick | Right stick |  |
 | Fire | RT | R2 |  |
+| Alt fire (`alt_fire`) | Right stick click | R3 | Both barrels on Coachman and Grubber |
 | Aim down sights | LT | L2 | Hold by default |
 | Jump, mantle | A | Cross |  |
 | Crouch, slide | B | Circle | Toggle by default |
@@ -62,7 +64,7 @@ The game shows Xbox or PlayStation button icons to match the controller that is 
 | Interact, buy, repair | X (hold) | Square (hold) | Can move to its own button |
 | Swap weapon | Y | Triangle | Hold for third slot |
 | Sprint | Left stick click | L3 | Toggle by default; auto sprint option |
-| Melee | Right stick click | R3 |  |
+| Melee | Unbound | Unbound | Planned; right stick click is used by alt fire |
 | Lethal | RB | R1 | Hold to cook |
 | Tactical | LB | L1 |  |
 | Field ability | D-pad down | D-pad down |  |

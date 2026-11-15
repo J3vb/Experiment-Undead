@@ -210,6 +210,8 @@ The save file gets an `unlocked_dyes` list per character.
 
 ### Network sync
 
+Implemented authority and wire format: see [DECISIONS.md — Co-op gear looks](../DECISIONS.md); trusted clients send their own look, superseding the server-owned inventory model below.
+
 The server owns inventories, so the server builds each player's `CharacterLook` and sends it. Clients never send their own look, so nobody can fake a Legendary.
 
 - Sent once on join (all players' looks to the new player) and again only when someone's gear, dye or transmog changes. Never per frame.

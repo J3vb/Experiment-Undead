@@ -8,11 +8,16 @@ var _points: PackedVector3Array = PackedVector3Array()
 var _muzzles: Dictionary[Weapon, Node3D] = {}
 var _effects: Dictionary[Player, RemoteShotEffects] = {}
 var _weapons: Dictionary[StringName, WeaponData] = {}
+var _max_extra_pellets: int = 0
 
 
 func _ready() -> void:
 	for weapon_id: StringName in Content.ids(&"weapons"):
 		_weapons[weapon_id] = Content.weapon(weapon_id)
+	var pellets: AffixData = Content.get_item(&"loot", &"pellets") as AffixData
+	if pellets:
+		for tier: AffixTier in pellets.tiers:
+			_max_extra_pellets = maxi(_max_extra_pellets, roundi(tier.high))
 
 
 func watch_player(player: Player) -> void:
@@ -74,12 +79,19 @@ func shot(weapon_id: StringName, origin: Vector3, points: PackedVector3Array) ->
 		or data == null
 	):
 		return
-	if points.size() != data.pellets or not origin.is_finite():
+	if not _valid_pellet_count(data, points.size()) or not origin.is_finite():
 		return
 	for point: Vector3 in points:
 		if not point.is_finite():
 			return
 	_relay(sender, weapon_id, origin, points)
+
+
+func _valid_pellet_count(data: WeaponData, count: int) -> bool:
+	var max_pellets: int = data.pellets + (_max_extra_pellets if data.loot_tags.has(&"shotgun") else 0)
+	if count >= data.pellets and count <= max_pellets:
+		return true
+	return data.loot_tags.has(&"double") and count % 2 == 0 and count >= data.pellets * 2 and count <= max_pellets * 2
 
 
 func _relay(peer_id: int, weapon_id: StringName, origin: Vector3, points: PackedVector3Array) -> void:

@@ -119,6 +119,15 @@ func test_wrong_protocol_is_refused_with_both_versions_without_spawning() -> voi
 	assert_true(client_handshake.refusal_message.contains(str(Build.PROTOCOL_VERSION)))
 
 
+func test_protocol_before_look_sync_is_refused_without_spawning() -> void:
+	client_handshake.protocol_version = 1
+	_join(client_root)
+	await _assert_refused(Net.RefusalReason.WRONG_VERSION)
+	assert_signal_emitted_with_parameters(
+		client_handshake, "refused", [Net.RefusalReason.WRONG_VERSION, 1, Build.PROTOCOL_VERSION]
+	)
+
+
 func test_wrong_content_hash_is_refused_without_spawning() -> void:
 	client_handshake.content_hash = "different-content"
 	_join(client_root)

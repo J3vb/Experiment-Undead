@@ -149,6 +149,20 @@ func test_gear_affix_ranges_weights_kinds_and_slots_match_the_tables() -> void:
 		assert_eq(affix.min_rarity, &"rare" if id in [&"skill_rank", &"extra_grenade", &"vault_favour"] else &"common")
 
 
+func test_shared_gear_bonus_stat_keys_match_runtime_consumers() -> void:
+	var expected: Dictionary[StringName, StringName] = {
+		&"all_damage": &"dmg_pct",
+		&"reload_focus": &"reload_pct",
+		&"headshot_focus": &"hs_pct",
+		&"sprint_duration": &"sprint_time",
+		&"mule": &"deep_reserve",
+	}
+	for id: StringName in expected:
+		var affix: AffixData = Content.get_item(&"loot", id) as AffixData
+		assert_eq(affix.stat, expected[id], String(id))
+		assert_eq(affix.op, "increased", String(id))
+
+
 func test_single_value_lines_keep_their_fixed_value_and_level_gate() -> void:
 	for id: StringName in RANGES:
 		var affix: AffixData = Content.get_item(&"loot", id) as AffixData

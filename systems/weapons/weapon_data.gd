@@ -29,6 +29,7 @@ enum Slot { PRIMARY, SIDEARM }
 @export_group("Handling")
 @export var fire_mode: FireMode = FireMode.AUTO
 @export var rounds_per_minute: float = 600.0
+@export var spin_up_time: float = 0.0
 @export var burst_count: int = 3
 @export var magazine_size: int = 30
 @export var starting_reserve: int = 120

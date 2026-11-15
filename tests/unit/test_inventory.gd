@@ -1,4 +1,4 @@
-## Fixed stash capacity, lossless equipment moves and weapon/gear slot lookup.
+## Fixed stash capacity, acquisition order and lossless equipment moves for weapon and gear slots.
 extends GutTest
 
 
@@ -11,9 +11,15 @@ func test_add_until_full_then_refuse_without_changes() -> void:
 	for slot: int in range(60):
 		var item: Dictionary = _item("rifle_ar", str(slot))
 		assert_eq(Inventory.add_to_stash(profile, item), slot)
-		assert_eq(profile.stash[slot], item)
+		var expected: Dictionary = item.duplicate(true)
+		expected["acquired"] = slot + 1
+		assert_eq(profile.stash[slot], expected)
+		assert_false(item.has("acquired"), "Acquisition metadata belongs to the stored copy")
 	var before: Dictionary = profile.to_dict()
-	assert_eq(Inventory.add_to_stash(profile, _item("pistol_service", "overflow")), -1)
+	var overflow: Dictionary = _item("pistol_service", "overflow")
+	var original: Dictionary = overflow.duplicate(true)
+	assert_eq(Inventory.add_to_stash(profile, overflow), -1)
+	assert_eq(overflow, original)
 	assert_eq(profile.to_dict(), before)
 	assert_eq(profile.stash.size(), 60)
 
@@ -31,6 +37,8 @@ func test_added_item_is_independent_of_callers_dictionary() -> void:
 	item["future"] = {"nested": [1, null, {"retired_affix": true}]}
 	var expected: Dictionary = item.duplicate(true)
 	assert_eq(Inventory.add_to_stash(profile, item), 0)
+	assert_eq(item, expected, "Adding never changes the caller's item")
+	expected["acquired"] = 1
 	item["uid"] = "changed"
 	item["aff"][0][2] = 0.0
 	item["future"]["nested"][2]["retired_affix"] = false
@@ -51,7 +59,10 @@ func test_remove_keeps_slot_positions_and_add_reuses_first_gap() -> void:
 	assert_eq(profile.stash[2], last)
 	var replacement: Dictionary = _item("rifle_ar", "replacement")
 	assert_eq(Inventory.add_to_stash(profile, replacement), 1)
-	assert_eq(profile.stash[1], replacement)
+	var expected: Dictionary = replacement.duplicate(true)
+	expected["acquired"] = 3
+	assert_eq(profile.stash[1], expected)
+	assert_false(replacement.has("acquired"))
 
 
 func test_equip_into_empty_slot_empties_only_source_stash_slot() -> void:
@@ -137,12 +148,7 @@ func test_empty_and_invalid_slots_leave_profile_unchanged() -> void:
 
 func test_slot_for_maps_primary_and_sidearm_bases() -> void:
 	for base: String in [
-		"pistol_service",
-		"pistol_service_reforged",
-		"hollis_44",
-		"hollis_44_reforged",
-		"wren_mp",
-		"wren_mp_reforged",
+		"pistol_service", "pistol_service_reforged", "hollis_44", "hollis_44_reforged", "wren_mp", "wren_mp_reforged"
 	]:
 		assert_eq(Inventory.slot_for(_item(base, "sidearm")), &"sidearm", base)
 	for base: String in [
@@ -192,21 +198,27 @@ func test_every_rolled_gear_base_adds_equips_swaps_and_unequips_losslessly() -> 
 		first["future"] = {"nested": [null, {"retired_affix": true}]}
 		first["craft"] = {"locked": [0], "unknown_rule": 3}
 		var second: Dictionary = ItemRoller.roll_gear(rng, base, &"legendary", 50)
+		var first_before: Dictionary = first.duplicate(true)
+		var second_before: Dictionary = second.duplicate(true)
 		assert_eq(Inventory.add_to_stash(profile, first), 0, String(id))
+		var stored_first: Dictionary = profile.stash[0].duplicate(true)
+		assert_eq(first, first_before, "Adding preserves the caller's first roll")
 		assert_true(Inventory.equip(profile, 0), String(id))
-		expected_loadout[base.slot] = first
+		expected_loadout[base.slot] = stored_first
 		assert_eq(profile.loadout, expected_loadout, "only the gear slot changes")
 		assert_eq(profile.stash[0], {})
 		assert_eq(Inventory.add_to_stash(profile, second), 0, String(id))
+		var stored_second: Dictionary = profile.stash[0].duplicate(true)
+		assert_eq(second, second_before, "Adding preserves the caller's second roll")
 		assert_true(Inventory.equip(profile, 0), String(id))
-		expected_loadout[base.slot] = second
+		expected_loadout[base.slot] = stored_second
 		assert_eq(profile.loadout, expected_loadout)
-		assert_eq(profile.stash[0], first, "swapping preserves every previous item field")
+		assert_eq(profile.stash[0], stored_first, "swapping preserves every previous item field")
 		assert_true(Inventory.unequip(profile, StringName(base.slot)), String(id))
 		expected_loadout[base.slot] = {}
 		assert_eq(profile.loadout, expected_loadout)
-		assert_eq(profile.stash[0], first)
-		assert_eq(profile.stash[1], second, "unequipping preserves the rolled item")
+		assert_eq(profile.stash[0], stored_first)
+		assert_eq(profile.stash[1], stored_second, "unequipping preserves the rolled item")
 		assert_eq(profile.stash.size(), 60)
 	assert_eq(checked, 13)
 

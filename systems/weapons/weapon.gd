@@ -1,5 +1,4 @@
-## Hitscan gun driven by a WeaponInstance; owns firing, spread, recoil, reload and viewmodel pose.
-## Public input vars let a player, bot or test drive it the same way.
+## Hitscan WeaponInstance node; public inputs drive firing, spread, recoil, reload and viewmodel poses.
 class_name Weapon
 extends Node3D
 
@@ -7,7 +6,6 @@ signal ammo_changed(in_mag: int, reserve: int)
 signal fired
 signal reload_started(duration: float)
 signal hit_landed(is_kill: bool, is_headshot: bool)
-## Presentation hook: where a bullet ended. Effects listen, logic never does.
 signal traced(point: Vector3, normal: Vector3, hit_flesh: bool)
 
 enum State { IDLE, RELOADING }
@@ -46,7 +44,7 @@ var _empty_reload: bool = false
 var _kick: float = 0.0
 var _flash_timer: float = 0.0
 var _rng: RandomNumberGenerator
-
+var _spin_up: SpinUp = SpinUp.new()
 var _flash_light: Light3D
 var _flash_mesh: Node3D
 var _magazine: Node3D
@@ -54,6 +52,7 @@ var _bolt: Node3D
 var _magazine_rest: Vector3
 var _bolt_rest: Vector3
 
+@onready var _double_barrel: DoubleBarrel = DoubleBarrel.attach_to(self)
 @onready var _viewmodel_root: Node3D = $Viewmodel
 @onready var _fire_audio: AudioStreamPlayer = $FireAudio
 @onready var _mech_audio: AudioStreamPlayer = $MechAudio
@@ -71,6 +70,7 @@ func _ready() -> void:
 		var vm: Node = data.viewmodel_scene.instantiate()
 		_viewmodel_root.add_child(vm)
 		_find_moving_parts(vm)
+	_spin_up.configure(data.spin_up_time, _viewmodel_root.find_child("SpinUpAudio", true, false) as AudioStreamPlayer)
 	_set_flash(false)
 	_fire_audio.stream = data.fire_sound
 	position = data.hip_position
@@ -95,6 +95,8 @@ func _find_moving_parts(vm: Node) -> void:
 func set_active(value: bool) -> void:
 	active = value
 	visible = value
+	if not value:
+		_spin_up.reset()
 	if value:
 		_emit_ammo()
 
@@ -113,6 +115,7 @@ func start_reload() -> bool:
 	if state == State.RELOADING or not instance.needs_reload():
 		return false
 	state = State.RELOADING
+	_spin_up.reset()
 	_burst_left = 0
 	_empty_reload = instance.ammo_in_mag == 0
 	_reload_duration = (data.empty_reload_time if _empty_reload else data.reload_time) * _stat(&"reload_time")
@@ -143,11 +146,12 @@ func tick(delta: float) -> void:
 		_reload_timer -= delta
 		if _reload_timer <= 0.0:
 			_finish_reload()
+	_spin_up.tick(delta, trigger_held and can_fire() and instance.ammo_in_mag > 0)
 	_handle_trigger()
+	_spin_up.tick(0.0, trigger_held and can_fire() and instance.ammo_in_mag > 0)
 	_trigger_was_held = trigger_held
 
 
-## Presentation only: viewmodel pose and muzzle flash.
 func _process(delta: float) -> void:
 	if not active:
 		return
@@ -160,7 +164,7 @@ func _process(delta: float) -> void:
 func _tick_timers(delta: float) -> void:
 	_shot_timer -= delta
 	_since_last_shot += delta
-	_buffered = maxf(_buffered - delta, 0.0)
+	_buffered = _double_barrel.buffer(maxf(_buffered - delta, 0.0)) if _double_barrel else maxf(_buffered - delta, 0.0)
 	_bloom = move_toward(_bloom, 0.0, data.spread_recovery * delta)
 	_sprint_block = (
 		data.sprint_to_fire_time * _stat(&"sprint_out_time") if sprinting else maxf(_sprint_block - delta, 0.0)
@@ -176,7 +180,6 @@ func _handle_trigger() -> void:
 	var pressed_now: bool = trigger_held and not _trigger_was_held
 	if pressed_now:
 		_buffered = BUFFER_TIME
-	# Accumulator keeps the real fire rate independent of frame rate.
 	while _shot_timer <= 0.0:
 		var wants: bool = false
 		match data.fire_mode:
@@ -199,21 +202,19 @@ func _handle_trigger() -> void:
 		fire()
 		_burst_left = maxi(_burst_left - 1, 0)
 		var extra: float = 0.12 if data.fire_mode == WeaponData.FireMode.BURST and _burst_left == 0 else 0.0
-		_shot_timer += data.get_fire_interval() * _stat(&"fire_interval") + extra
-	# Time spent blocked (reloading, sprinting, waiting for a press) is not banked as missed shots.
+		_shot_timer += _spin_up.scale_interval(data.get_fire_interval(), _shot_timer) * _stat(&"fire_interval") + extra
 	_shot_timer = maxf(_shot_timer, 0.0)
 
 
 ## Fires one shot (all pellets) right now. Public for tests and AI.
 func fire() -> void:
 	RoundReload.cancel(self)
-	instance.ammo_in_mag -= 1
+	var rounds: int = DoubleBarrel.consume_rounds(self, _double_barrel)
 	var spread: float = get_current_spread()
 	var origin: Vector3 = camera.global_position
 	var basis: Basis = camera.global_basis
-	for i: int in data.pellets:
+	for i: int in data.pellets * rounds:
 		_trace(origin, _spread_direction(basis, spread))
-
 	_bloom = minf(_bloom + data.spread_per_shot, data.max_spread)
 	_apply_recoil()
 	_shots_in_string += 1
@@ -266,7 +267,7 @@ func _hit(result: Dictionary, origin: Vector3, direction: Vector3) -> void:
 	info.weapon_id = data.id
 	info.position = point
 	info.normal = normal
-	info.impulse = direction * 2.0
+	info.impulse = _double_barrel.impulse(direction) if _double_barrel else direction * 2.0
 	info.amount *= data.get_zone_multiplier(hit_zone.zone)
 	if hit_zone.zone == DamageInfo.Zone.HEAD:
 		info.amount *= _stat(&"head_damage")
@@ -314,7 +315,6 @@ func _update_pose(delta: float) -> void:
 	_pose_moving_parts()
 
 
-## Bolt rides back with the kick; on reload the magazine drops out and comes back.
 func _pose_moving_parts() -> void:
 	if _bolt:
 		var back: float = _kick / maxf(data.viewmodel_kick, 0.001)

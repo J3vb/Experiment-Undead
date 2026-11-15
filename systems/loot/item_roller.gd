@@ -15,11 +15,19 @@ static func roll_rarity(rng: RandomNumberGenerator, vault: bool, luck: float) ->
 	return RARITIES[_pick_index(rng, weights)]
 
 
+## Unlocks use character level; item level comes from the drop's round. Omitted level means a new character.
 static func roll_weapon(
-	rng: RandomNumberGenerator, weapon: WeaponData, rarity_id: StringName, item_level: int
+	rng: RandomNumberGenerator, weapon: WeaponData, rarity_id: StringName, item_level: int, player_level: int = 1
 ) -> Dictionary:
 	if rarity_id == &"prototype" or weapon.loot_tags.has(&"prototype"):
 		push_error("ItemRoller: Prototypes are fixed items, not random weapon rolls")
+		return {}
+	var rarity_floor: int = RARITIES.find(weapon.get_meta(&"min_rarity", &"common"))
+	if (
+		player_level < int(weapon.get_meta(&"unlock_level", 1))
+		or rarity_floor < 0
+		or RARITIES.find(rarity_id) < rarity_floor
+	):
 		return {}
 	var rarity: RarityData = Content.get_item(&"loot", rarity_id) as RarityData
 	if rarity == null:

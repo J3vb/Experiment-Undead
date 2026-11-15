@@ -38,9 +38,12 @@ func test_counts_families_kind_limits_and_weapon_restrictions() -> void:
 		if weapon.loot_tags.has(&"prototype"):
 			continue
 		for rarity: StringName in [&"common", &"uncommon", &"rare", &"epic", &"legendary"]:
+			if ItemRoller.RARITIES.find(rarity) < ItemRoller.RARITIES.find(weapon.get_meta(&"min_rarity", &"common")):
+				assert_eq(ItemRoller.roll_weapon(rng, weapon, rarity, 30, 30), {})
+				continue
 			var data: RarityData = Content.get_item(&"loot", rarity) as RarityData
 			for sample: int in 60:
-				var item: Dictionary = ItemRoller.roll_weapon(rng, weapon, rarity, 30)
+				var item: Dictionary = ItemRoller.roll_weapon(rng, weapon, rarity, 30, 30)
 				assert_has(data.affix_count_weights, item.aff.size())
 				_check_lines(item, weapon)
 				var ammo: AffixData = Content.get_item(&"loot", item.imp[0]) as AffixData
@@ -80,6 +83,8 @@ func _check_lines(item: Dictionary, weapon: WeaponData) -> void:
 		assert_false(ids.has("penetration"))
 	if weapon.loot_tags.has(&"pump"):
 		assert_false(ids.has("fire_rate_pct"))
+	if weapon.loot_tags.has(&"belt"):
+		assert_false(ids.has("mag_pct"))
 	if weapon.loot_tags.has(&"smg"):
 		assert_false(ids.has("long_shot_pct"))
 		assert_false(ids.has("penetration"))

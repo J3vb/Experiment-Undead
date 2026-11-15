@@ -270,3 +270,19 @@ pulse = np.sin(2 * np.pi * (75 * tt - 20 * tt**2)) * np.exp(-tt * 9)
 coil = np.sin(2 * np.pi * (560 * tt - 210 * tt**2)) * np.exp(-tt * 5)
 breath = lowpass(np.random.default_rng(73).standard_normal(len(tt)), 0.035) * np.exp(-tt * 6)
 save("siphon_fire.wav", (pulse * 1.3 + coil * 0.45 + breath * 0.6) * np.minimum(tt * 500, 1))
+
+# Bastion uses its own sequence so adding this gun leaves all earlier sounds unchanged.
+rng = np.random.default_rng(29)
+tt = t(0.24)
+crack = rng.standard_normal(len(tt)) * np.exp(-tt * 90)
+thump = np.sin(2 * np.pi * (95 * tt - 45 * tt**2)) * np.exp(-tt * 27)
+tail = lowpass(rng.standard_normal(len(tt)), 0.09) * np.exp(-tt * 18) * 1.8
+x = crack * 1.1 + thump * 1.4 + tail
+click(0.035, 1300, 140, 0.15)
+save("bastion_fire.wav", x)
+
+# Periodic feed-drive whirr. Whole cycles meet at the loop seam; runtime raises pitch.
+tt = t(0.5)
+drive = np.sin(2 * np.pi * 148 * tt) + 0.45 * np.sin(2 * np.pi * 296 * tt)
+feed = np.sin(2 * np.pi * 740 * tt) * (0.65 + 0.35 * np.cos(2 * np.pi * 28 * tt))
+save("bastion_spin_up.wav", drive * 0.7 + feed * 0.2)

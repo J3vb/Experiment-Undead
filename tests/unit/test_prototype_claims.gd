@@ -30,6 +30,9 @@ func _side(side_name: String) -> HitClaims:
 	economy.name = "Economy"
 	economy.rules = load("res://content/economy/default_economy.tres")
 	root.add_child(economy)
+	var rewards: ProgressionService = ProgressionService.new()
+	rewards.name = "Progression"
+	root.add_child(rewards)
 	session.spawner = Spawner.new()
 	session.spawner.name = "Enemies"
 	session.spawner.spawn_group = &"test_prototype_claim_points"
@@ -56,8 +59,7 @@ func _prepare(player: Player, session: GameSession) -> void:
 func before_each() -> void:
 	_server = _side("Server")
 	_client = _side("Client")
-	_progression = ProgressionService.new()
-	_server.get_parent().add_child(_progression)
+	_progression = _server.get_parent().get_node("Progression") as ProgressionService
 	var marker: Marker3D = Marker3D.new()
 	marker.add_to_group(&"test_prototype_claim_points")
 	_server.get_parent().add_child(marker)
@@ -158,7 +160,7 @@ func test_client_cryo_claims_freeze_sync_stop_and_shatter_with_one_credited_kill
 	assert_eq(warm[0].health.current, 1000.0, "unfrozen neighbours receive no shatter damage")
 	assert_true(cold[0].frozen, "secondary damage never recursively shatters")
 	await wait_until(func() -> bool: return pair[1].state == Zombie.State.DEAD, 3.0, "shatter death synced")
-	_assert_single_kill_credit(pair[0], 5)
+	await _assert_single_kill_credit(pair[0], 5)
 	await wait_until(func() -> bool: return _mine.wallet.points == _claimant.wallet.points, 3.0, "owner points synced")
 	assert_eq(pair[1].health.current, pair[1].health.max_health, "clients never apply authoritative damage")
 
@@ -180,6 +182,9 @@ func _assert_single_kill_credit(zombie: Zombie, hits: int) -> void:
 	assert_eq((killed[1] as DamageInfo).attacker, _claimant)
 	assert_eq(_progression.get_xp(_claimant), WALKER.xp_reward)
 	assert_eq(_progression.get_xp(_host), 0)
+	var rewards: ProgressionService = _client.get_parent().get_node("Progression") as ProgressionService
+	await wait_until(func() -> bool: return rewards.get_xp(_mine) == WALKER.xp_reward, 3.0, "owner XP synced")
+	assert_eq(rewards.get_xp(_mine), WALKER.xp_reward)
 	var economy: Economy = _server.get_parent().get_node("Economy") as Economy
 	assert_eq(_host.wallet.points, economy.rules.starting_points)
 	assert_eq(
@@ -216,7 +221,7 @@ func test_client_synapse_claim_chains_three_server_hits_and_sends_cosmetic_arcs(
 		func() -> bool: return get_signal_emit_count(client_chain, "child_entered_tree") == 3, 3.0, "three client arcs"
 	)
 	assert_signal_emit_count(client_chain, "child_entered_tree", 3)
-	_assert_single_kill_credit(pairs[0][0] as Zombie, 4)
+	await _assert_single_kill_credit(pairs[0][0] as Zombie, 4)
 	await wait_until(func() -> bool: return _received_kill(_mine), 3.0, "chain kill confirmation reached the owner")
 	assert_true(_received_kill(_mine), "the owning client's Player receives a reliable secondary kill confirmation")
 	assert_false(source[0].health.is_dead, "the client kill marker belongs to a secondary kill")

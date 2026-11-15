@@ -24,6 +24,7 @@ var level: Level
 var spawner: Spawner
 var players: PlayerSpawner
 var handshake: Handshake
+var look_sync: LookSync
 var hit_claims: HitClaims
 var remote_shots: RemoteShots
 var is_over: bool = false
@@ -97,8 +98,12 @@ func _setup_level() -> void:
 	players.name = "PlayerSpawner"
 	players.player_scene = player_scene
 	players.spawn_local = has_local_player
-	players.player_added.connect(_on_player_added)
 	add_child(players)
+	look_sync = LookSync.new()
+	look_sync.name = "LookSync"
+	add_child(look_sync)
+	look_sync.setup(players)
+	players.player_added.connect(_on_player_added)
 	if not level.is_navigation_ready:
 		level.navigation_ready.connect(_try_start, CONNECT_ONE_SHOT)
 	players.setup(level, level.get_player_spawn())
@@ -155,6 +160,8 @@ func _on_player_added(player: Player) -> void:
 		var loadout: Variant = _profile.to_dict().get("loadout", {})
 		if loadout is Dictionary:
 			ItemLoadout.apply(player, loadout)
+	if player.is_multiplayer_authority():
+		player.gear_rig.apply(LookBuilder.from_equipped(_profile.loadout if _profile else {}))
 	if is_over and multiplayer.is_server():
 		_receive_match_end.rpc_id(player.net_id, _match_stats)
 
