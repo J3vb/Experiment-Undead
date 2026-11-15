@@ -112,8 +112,24 @@ built, what was simplified on purpose, and what is still to do.
 
 - **Co-op, step 4 (see `docs/MULTIPLAYER.md`):** `PlayerStateSync` is a server-authority child of each client-owned Player. Reliable snapshots send current/max health, downed/dead state and per-player points/Serums, including an initial snapshot for late joins. Health regeneration and the 30 s bleed-out run on server physics ticks. Co-op lethal damage allows slow sidearm crawl with a temporary pistol when needed; reviving restores the previous gun without altering inventory; a standing teammate holds F within 1.5 m for 3 server-timed seconds to revive at full health and earn 50 points. Release, range or state changes cancel; rejected held requests retry once the server pose catches up. Dead players hide, lose collision and spectate until `round_started` respawns them at the map spawn with only the start pistol. The server ends the match when no connected squad member stands and reliably sends identical results to every client. Solo Second Wind and results timing stay unchanged. Med Dispensers/Serums remain personal; general client machine requests and save grants stay in later steps.
 
+- **Co-op run XP and handshake (step 5, partially built):** server-owned run XP
+  sends reliable cumulative snapshots only to its owner and one final grant at
+  run end. The owning client uses the solo `bank_run_xp` path to save its local
+  character once, including the latest received XP when disconnected. Dedicated
+  servers never load or save a character; clean shutdown waits briefly for final
+  grant acknowledgements. Godot's SceneMultiplayer authentication checks hello
+  before exposing the peer to replication, so rejected clients receive no Players.
+  The cached SHA256 covers every sorted Content category/id, including loot.
+  `Net.RefusalReason` and retained plain-word messages cover wrong protocol (both
+  versions), different content and full servers. Hello level is currently ignored.
+  L3 draft PR #86 contains Pack data and results UI, but still lacks loot delivery;
+  its stash prerequisite PR #88 is merged. Loot banking remains blocked on L3
+  rather than introducing a second inventory format.
+  Final XP precedes the menu's host-ended notice on the same reliable channel;
+  graceful host leave drains client disconnects before closing its transport.
+
 ## Not started
 
 Reforger Tiers II and III, grenades (and Scavenger's +1 grenade), the other power-ups (Payday, Overkill, Purge, Scrap Kit, Stasis, Supply Crate),
 skills/loot,
-co-op step 5 in `docs/MULTIPLAYER.md`, server browser, town hub.
+co-op step 5 Pack-to-stash banking in `docs/MULTIPLAYER.md`, server browser, town hub.

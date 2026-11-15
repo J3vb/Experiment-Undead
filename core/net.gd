@@ -6,6 +6,8 @@ signal connection_error(reason: StringName, details: Dictionary)
 signal join_started(address: String)
 signal join_succeeded
 
+enum RefusalReason { WRONG_VERSION, CONTENT_MISMATCH, SERVER_FULL }
+
 const DEFAULT_PORT: int = 7777
 const MAX_PLAYERS: int = 8
 const CONNECT_TIMEOUT: float = 6.0
@@ -14,15 +16,16 @@ const CONNECT_TIMEOUT: float = 6.0
 var pending_join: String = ""
 var last_error: Dictionary = {}
 var joining: bool = false
+## Kept through disconnect so the menu can explain rejected hellos.
+var refusal_reason: int = -1
+var refusal_message: String = ""
+var player_limit: int = MAX_PLAYERS
 
 var _next_net_id: int = 1
 var _target: String = ""
-var _capacity: int = MAX_PLAYERS
-var _fingerprint: String = ""
 var _deadline: Timer
 var _signals_bound: bool = false
 var _connected: bool = false
-var _reserved: Dictionary[int, bool] = {}
 
 
 func is_authority() -> bool:
@@ -40,22 +43,23 @@ func is_online() -> bool:
 func host(port: int, max_players: int = MAX_PLAYERS) -> Error:
 	_configure()
 	last_error.clear()
-	_capacity = clampi(max_players, 1, MAX_PLAYERS)
+	player_limit = clampi(max_players, 1, MAX_PLAYERS)
 	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	# One spare transport slot lets a full server explain its refusal before admission.
-	var err: Error = peer.create_server(port, MAX_PLAYERS + 1)
+	# Pending hellos need transport slots to receive SERVER_FULL before disconnect.
+	var err: Error = peer.create_server(port, MAX_PLAYERS * 2)
 	if err != OK:
 		_record_error(&"port_in_use", {"port": port})
 		return err
-	_fingerprint = content_fingerprint()
 	multiplayer.multiplayer_peer = peer
-	Log.info(&"net", &"hosting", {"port": port, "max_players": _capacity})
+	Log.info(&"net", &"hosting", {"port": port, "max_players": player_limit})
 	return OK
 
 
 func join(address: String) -> Error:
 	_configure()
 	last_error.clear()
+	refusal_reason = -1
+	refusal_message = ""
 	var target: Array = parse_address(address)
 	_target = "%s:%d" % target
 	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
@@ -63,7 +67,6 @@ func join(address: String) -> Error:
 	if err != OK:
 		_record_error(&"timeout", {"address": _target})
 		return err
-	_fingerprint = content_fingerprint()
 	joining = true
 	multiplayer.multiplayer_peer = peer
 	_deadline.start(CONNECT_TIMEOUT)
@@ -92,7 +95,7 @@ func leave() -> void:
 			_notify_host_ended()
 		multiplayer.multiplayer_peer.close()
 	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
-	_reserved.clear()
+	player_limit = MAX_PLAYERS
 
 
 func _exit_tree() -> void:
@@ -119,6 +122,11 @@ func _notify_host_ended() -> void:
 
 
 func _configure() -> void:
+	var api: SceneMultiplayer = multiplayer as SceneMultiplayer
+	if not api.auth_callback.is_valid():
+		# The match installs Handshake before processing hellos; transport alone never admits a peer.
+		api.auth_callback = func(_peer_id: int, _packet: PackedByteArray) -> void: pass
+	api.auth_timeout = CONNECT_TIMEOUT
 	if _signals_bound:
 		return
 	_signals_bound = true
@@ -127,71 +135,28 @@ func _configure() -> void:
 	_deadline.process_mode = Node.PROCESS_MODE_ALWAYS
 	_deadline.timeout.connect(func() -> void: _fail_join(&"timeout", {"address": _target}))
 	add_child(_deadline)
-	var api: SceneMultiplayer = multiplayer as SceneMultiplayer
-	api.auth_callback = _authenticate
-	api.auth_timeout = CONNECT_TIMEOUT
-	api.peer_authenticating.connect(_on_authenticating)
-	api.peer_authentication_failed.connect(_on_authentication_failed)
-	api.peer_connected.connect(func(id: int) -> void: _reserved.erase(id))
-	api.peer_disconnected.connect(func(id: int) -> void: _reserved.erase(id))
+	api.peer_authentication_failed.connect(_on_authentication_failed, CONNECT_DEFERRED)
 	api.connected_to_server.connect(_on_connected)
 	api.connection_failed.connect(_on_connection_failed)
 	api.server_disconnected.connect(_on_server_disconnected)
 
 
-func _on_authenticating(peer_id: int) -> void:
-	if not multiplayer.is_server():
-		(multiplayer as SceneMultiplayer).send_auth(peer_id, var_to_bytes(_hello()))
-
-
-func _hello() -> Dictionary:
-	return {"version": Build.version, "protocol": Build.PROTOCOL_VERSION, "content": _fingerprint}
-
-
-func _authenticate(peer_id: int, packet: PackedByteArray) -> void:
-	var decoded: Variant = bytes_to_var(packet)
-	if not decoded is Dictionary:
+## Handshake owns admission. Keep its reason while the refusal ACK reaches the server.
+func report_refusal(reason: RefusalReason, details: Dictionary) -> void:
+	if not joining:
 		return
-	var remote: Dictionary = decoded
-	var api: SceneMultiplayer = multiplayer as SceneMultiplayer
-	if multiplayer.is_server():
-		var reply: Dictionary = _hello()
-		var rejection: Dictionary = rejection_for(remote)
-		if not rejection.is_empty():
-			reply.merge(rejection)
-		else:
-			_reserved[peer_id] = true
-		api.send_auth(peer_id, var_to_bytes(reply))
-		if rejection.is_empty():
-			api.complete_auth(peer_id)
-	elif peer_id == 1:
-		if remote.has("reason"):
-			_fail_join.call_deferred(StringName(remote["reason"]), remote.get("details", {}))
-		else:
-			api.complete_auth(peer_id)
+	refusal_reason = reason
+	_deadline.stop()
+	_record_error(StringName(RefusalReason.keys()[reason].to_lower()), details)
 
 
-## Admission reasons remain data; the menu owns their wording.
-func rejection_for(remote: Dictionary) -> Dictionary:
-	var count: int = multiplayer.get_peers().size() + _reserved.size()
-	for player: Node in get_tree().get_nodes_in_group(&"players"):
-		if player.get_multiplayer_authority() == 1:
-			count += 1
-	if count >= _capacity:
-		return {"reason": &"server_full", "details": {"players": count, "max_players": _capacity}}
-	if remote.get("protocol") != Build.PROTOCOL_VERSION or remote.get("version") != Build.version:
-		return {
-			"reason": &"wrong_version",
-			"details": {"server_version": Build.version, "client_version": str(remote.get("version", "unknown"))}
-		}
-	if remote.get("content") != _fingerprint:
-		return {"reason": &"content_mismatch", "details": {}}
-	return {}
-
-
-func _on_authentication_failed(peer_id: int) -> void:
-	_reserved.erase(peer_id)
-	if joining:
+func _on_authentication_failed(_peer_id: int) -> void:
+	if not joining:
+		return
+	if refusal_reason >= 0:
+		leave()
+		multiplayer.connection_failed.emit()
+	else:
 		_fail_join(&"timeout", {"address": _target})
 
 
@@ -212,6 +177,9 @@ func _on_connection_failed() -> void:
 
 
 func _on_server_disconnected() -> void:
+	if joining and refusal_reason >= 0:
+		leave()
+		return
 	if not joining and not _connected:
 		return
 	var reason: StringName = &"timeout" if joining else &"lost_connection"

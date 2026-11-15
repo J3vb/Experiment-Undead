@@ -10,11 +10,14 @@ const CRASH_MARKER: String = "user://running.lock"
 var version: String = "dev"
 var commit: String = "editor"
 var built_at: String = ""
+## Sorted Content ids, cached once after Content loads at startup.
+var content_hash: String = ""
 ## True when the previous run did not quit cleanly.
 var crashed_last_run: bool = false
 
 
 func _ready() -> void:
+	content_hash = calculate_content_hash()
 	load_version_file(VERSION_FILE)
 	ProjectSettings.set_setting("application/config/version", version)
 	_log_header()
@@ -52,6 +55,22 @@ func is_server() -> bool:
 
 func is_protocol_compatible(remote_protocol: int) -> bool:
 	return remote_protocol == PROTOCOL_VERSION
+
+
+func calculate_content_hash() -> String:
+	var ids: PackedStringArray = []
+	var root: DirAccess = DirAccess.open(Content.ROOT)
+	if root:
+		for category: String in root.get_directories():
+			for id: StringName in Content.ids(StringName(category)):
+				ids.append(category + "/" + String(id))
+	return hash_content_ids(ids)
+
+
+static func hash_content_ids(ids: PackedStringArray) -> String:
+	var sorted: PackedStringArray = ids.duplicate()
+	sorted.sort()
+	return "\n".join(sorted).sha256_text()
 
 
 func logs_dir() -> String:

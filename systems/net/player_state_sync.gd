@@ -101,7 +101,12 @@ func _snapshot() -> Dictionary:
 
 
 func _request_snapshot() -> void:
-	if is_inside_tree() and not multiplayer.is_server():
+	if not is_inside_tree():
+		return
+	var peer: MultiplayerPeer = multiplayer.multiplayer_peer
+	if peer == null or peer.get_connection_status() != MultiplayerPeer.CONNECTION_CONNECTED:
+		return
+	if not multiplayer.is_server():
 		_send_snapshot.rpc_id(1)
 
 
