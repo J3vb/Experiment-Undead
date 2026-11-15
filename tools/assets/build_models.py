@@ -19,6 +19,7 @@ import bpy
 # isort: split
 # bpy must load before bmesh.
 import bmesh
+import character_models
 import finish
 from mathutils import Vector
 
@@ -331,6 +332,7 @@ MODELS = {
     "crawler": ("zombies/crawler.glb", build_crawler),
     "bloater": ("zombies/bloater.glb", build_bloater),
 }
+MODELS.update(character_models.MODELS)
 
 
 def export(path: str) -> None:
