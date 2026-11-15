@@ -155,7 +155,7 @@ func down_player() -> void:
 	bleed_left = BLEED_OUT_TIME
 	_present()
 	publish()
-	if _player.session:
+	if _player.session and _player.session.is_inside_tree():
 		_player.session.check_squad()
 
 

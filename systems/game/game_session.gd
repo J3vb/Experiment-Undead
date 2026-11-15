@@ -23,6 +23,8 @@ var tick: int = 0
 var level: Level
 var spawner: Spawner
 var players: PlayerSpawner
+var hit_claims: HitClaims
+var remote_shots: RemoteShots
 var is_over: bool = false
 var _kills: int = 0
 var _headshots: int = 0
@@ -67,6 +69,7 @@ func _ready() -> void:
 	spawner.session = self
 	level.add_child(spawner)
 	director.spawner = spawner
+	_setup_shooting()
 
 	players = PlayerSpawner.new()
 	players.name = "PlayerSpawner"
@@ -92,6 +95,17 @@ func _setup_network() -> bool:
 	return true
 
 
+func _setup_shooting() -> void:
+	hit_claims = HitClaims.new()
+	hit_claims.name = "HitClaims"
+	hit_claims.session = self
+	add_child(hit_claims)
+	remote_shots = RemoteShots.new()
+	remote_shots.name = "RemoteShots"
+	remote_shots.session = self
+	add_child(remote_shots)
+
+
 func _physics_process(_delta: float) -> void:
 	if not get_tree().paused and not is_over:
 		tick += 1
@@ -114,6 +128,8 @@ func _on_player_added(player: Player) -> void:
 	player.spawn(self, starting_loadout)
 	if is_over and multiplayer.is_server():
 		_receive_match_end.rpc_id(player.net_id, _match_stats)
+
+	remote_shots.watch_player(player)
 	_try_start()
 
 
