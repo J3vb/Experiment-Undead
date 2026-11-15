@@ -167,6 +167,13 @@ func test_coachman_client_alt_fire_claims_twenty_knockback_pellets() -> void:
 	assert_eq(copy.velocity, zombie.velocity, "the client observes the server-owned knockback")
 	assert_eq(copy.health.current, client_health, "the client never applies claimed damage locally")
 	assert_false(zombie.health.is_dead)
+	var before: float = zombie.position.z
+	zombie.state = Zombie.State.ATTACKING
+	zombie.state_time = 0.0
+	zombie.set_physics_process(true)
+	await wait_physics_frames(3)
+	zombie.set_physics_process(false)
+	assert_lt(zombie.position.z, before - 0.1, "the server body actually moves away after the blast")
 
 
 func test_grubber_client_alt_fire_claims_sixteen_knockback_pellets() -> void:
