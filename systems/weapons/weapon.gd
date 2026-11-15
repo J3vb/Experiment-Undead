@@ -201,8 +201,7 @@ func _handle_trigger() -> void:
 		_burst_left = maxi(_burst_left - 1, 0)
 		var extra: float = 0.12 if data.fire_mode == WeaponData.FireMode.BURST and _burst_left == 0 else 0.0
 		_shot_timer += data.get_fire_interval() * _stat(&"fire_interval") + extra
-	# Time spent blocked (reloading, sprinting, waiting for a press) is not
-	# banked as missed shots.
+	# Time spent blocked (reloading, sprinting, waiting for a press) is not banked as missed shots.
 	_shot_timer = maxf(_shot_timer, 0.0)
 
 
