@@ -57,7 +57,9 @@ func _ready() -> void:
 
 	var join_error: Error = Net.start_pending_join()
 	if join_error != OK:
-		Log.error(&"net", &"join_failed", {"error": error_string(join_error)})
+		Log.warn(&"net", &"join_failed", {"error": error_string(join_error)})
+		_on_connection_lost()
+		return
 	multiplayer.server_disconnected.connect(_on_connection_lost)
 	multiplayer.connection_failed.connect(_on_connection_lost)
 

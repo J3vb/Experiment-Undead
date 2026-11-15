@@ -46,3 +46,16 @@ func test_pending_join_is_used_once() -> void:
 	Net.leave()
 	assert_eq(Net.start_pending_join(), OK, "nothing to join is fine")
 	assert_false(Net.is_online())
+
+
+func test_a_join_that_cannot_start_never_becomes_solo_play() -> void:
+	Net.pending_join = "127.0.0.1:70000"
+	var session: GameSession = (
+		(load("res://systems/game/game_session.tscn") as PackedScene).instantiate() as GameSession
+	)
+	session.profile_id = &""
+	add_child_autofree(session)
+	assert_null(session.level, "the match stops before loading the map")
+	assert_true(session.get_players().is_empty())
+	assert_false(Net.is_online())
+	assert_engine_error_count(2, "ENet refuses the bad port")
