@@ -39,7 +39,7 @@ func test_match_start_applies_the_saved_loadout_and_leaves_the_profile_unchanged
 		assert_not_null(attachment)
 		assert_eq(attachment.bone_name, String(GearVisual.find(StringName(loadout[slot].base)).attach))
 		var piece: Node = attachment.get_child(0)
-		assert_eq(piece.scene_file_path, GearVisual.SCENES[StringName(loadout[slot].base)])
+		assert_eq(piece.scene_file_path, "res://assets/models/gear/%s.glb" % loadout[slot].base)
 		var mesh: GeometryInstance3D = (
 			piece.find_children("*", "GeometryInstance3D", true, false)[0] as GeometryInstance3D
 		)
