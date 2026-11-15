@@ -50,7 +50,10 @@ class ReferenceTests(unittest.TestCase):
 class ApprovedFramingTests(unittest.TestCase):
     def test_every_view_is_centred_and_not_clipped(self):
         for category, name, _ in turnarounds.find_models():
-            with Image.open(turnarounds.approved_path(category, name)) as image:
+            path = turnarounds.approved_path(category, name)
+            if not path.is_file():
+                continue  # reported by test_every_committed_model_has_an_approved_turnaround
+            with Image.open(path) as image:
                 pixels = np.asarray(image.convert("RGB"), dtype=np.int16)
             size = pixels.shape[0]
             for index, (view, _) in enumerate(turnarounds.VIEWS):

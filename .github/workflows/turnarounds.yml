@@ -40,6 +40,7 @@ jobs:
         run: python -m unittest tools/test_turnarounds.py -v
 
       - name: Render turnarounds and compare with approved
+        if: success() || failure()
         run: python tools/render_turnarounds.py --out turnarounds --fail-on-change
 
       - name: Write job summary
