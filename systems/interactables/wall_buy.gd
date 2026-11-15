@@ -15,7 +15,7 @@ func get_prompt(player: Player) -> String:
 
 
 func ammo_cost(owned: Weapon) -> int:
-	return int(weapon.cost * 0.5) if owned.data == weapon else reforged_ammo_cost
+	return int(weapon.cost * 0.5) if owned.data.id == weapon.id else reforged_ammo_cost
 
 
 func interact(player: Player) -> void:
@@ -32,6 +32,6 @@ func interact(player: Player) -> void:
 
 func _owned(player: Player) -> Weapon:
 	for owned: Weapon in player.weapons.weapons:
-		if owned.data == weapon or owned.data == weapon.upgraded:
+		if owned.data.id == weapon.id or (weapon.upgraded != null and owned.data.id == weapon.upgraded.id):
 			return owned
 	return null

@@ -116,8 +116,11 @@ func test_wall_buy_sells_ammo_and_guns() -> void:
 	assert_eq(player.wallet.points, 4400, "ammo costs half")
 	wall_buy.weapon = rifle.data.duplicate() as WeaponData
 	wall_buy.interact(player)
+	assert_eq(player.wallet.points, 4400, "the same gun id is already owned even through a copy")
+	wall_buy.weapon = Content.weapon(&"kestrel_smg")
+	wall_buy.interact(player)
 	assert_eq(player.weapons.current.data, wall_buy.weapon, "new gun in hand")
-	assert_eq(player.wallet.points, 3200, "gun costs its WeaponData cost")
+	assert_eq(player.wallet.points, 4400 - wall_buy.weapon.cost, "gun costs its WeaponData cost")
 
 
 func test_brenner_wall_buy_sells_the_shotgun() -> void:
