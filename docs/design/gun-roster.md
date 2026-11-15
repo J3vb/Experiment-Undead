@@ -20,7 +20,7 @@ A base gun is a model, a handling feel and a niche. Loot does not add new guns; 
 
 ## The 22 guns
 
-Status: **designed** = in `weapons.csv`; **new** = plan-only. The CSV's Build batch marks completed guns as **built**. Damage is balance-sheet damage (the game uses x 0.57 for now, see the README).
+Status: **built** = implemented, **designed** = in `weapons.csv`; **new** = plan-only. The CSV's Build batch marks completed guns as **built**. Damage is balance-sheet damage (the game uses x 0.57 for now, see the README).
 
 ### Sidearms (4)
 
@@ -39,15 +39,15 @@ The loadout has a Sidearm slot, so it needs real choice, not just the start pist
 | --- | --- | --- | --- | --- |
 | Kestrel SMG | designed | SMG, auto | Mobile hip fire, best point farm | Wall, all maps |
 | Mako PDW | designed | SMG, burst | Burst headshots up close, big mag | Loot / Vault |
-| Nightjar SD | designed | Suppressed SMG | Head x3, low recoil and **no muzzle flash**, so it keeps your view clear in Blackout rounds | Loot / Vault |
+| Nightjar SD | built | Suppressed SMG | Head x3, low recoil and **no muzzle flash**, so it keeps your view clear in Blackout rounds | Loot / Vault |
 
 ### Rifles (4)
 
 | Gun | Status | Class | Niche | Source |
 | --- | --- | --- | --- | --- |
 | Vanguard AR | designed | Assault rifle, auto | The all-rounder everything is measured against | Wall, all maps |
-| Sentry | designed | Burst rifle | Three-round bursts; rewards mid-range headshots more than the AR | Loot / Vault |
-| Rampart BR | designed | Battle rifle, auto | Heavy 95-damage rounds at 480 rpm, big stagger, slower to move and aim | Wall on Marrow Junction; loot |
+| Sentry | built | Burst rifle | Three-round bursts; rewards mid-range headshots more than the AR | Loot / Vault |
+| Rampart BR | built | Battle rifle, auto | Heavy 95-damage rounds at 480 rpm, big stagger, slower to move and aim | Wall on Marrow Junction; loot |
 | Fieldhand | new | Lever-action rifle | Hard hits (150, head x3) that pierce one zombie, full move speed, rounds load one by one | Wall on Kessel Dam; loot |
 
 ### Marksman and snipers (3)

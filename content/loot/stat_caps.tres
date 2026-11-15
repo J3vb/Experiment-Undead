@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="StatCaps" format=3]
+
+[ext_resource type="Script" path="res://systems/loot/stat_caps.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"stat_caps"
+caps = Dictionary[StringName, float]({
+&"move_speed": 0.15,
+&"damage_reduction": 0.3,
+&"ability_cooldown_reduction": 0.4,
+&"loot_luck": 1.0,
+&"bonus_skill_ranks": 3.0,
+&"fire_rate_pct": 0.3,
+&"leech": 6.0
+})

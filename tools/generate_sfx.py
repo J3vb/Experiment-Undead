@@ -254,3 +254,12 @@ crack = rng.standard_normal(len(tt)) * np.exp(-tt * 65)
 thump = np.sin(2 * np.pi * (80 * tt - 35 * tt**2)) * np.exp(-tt * 18)
 tail = lowpass(rng.standard_normal(len(tt)), 0.075) * np.exp(-tt * 10)
 save("rampart_fire.wav", crack + thump * 1.6 + tail * 2.2)
+
+# Wren MP: a crisp, light pistol crack; an independent seed keeps existing shots stable.
+rng = np.random.default_rng(29)
+tt = t(0.12)
+crack = rng.standard_normal(len(tt)) * np.exp(-tt * 135)
+thump = np.sin(2 * np.pi * (230 * tt - 95 * tt**2)) * np.exp(-tt * 52)
+snap = np.sin(2 * np.pi * 2800 * tt) * np.exp(-tt * 210)
+tail = lowpass(rng.standard_normal(len(tt)), 0.22) * np.exp(-tt * 45)
+save("wren_fire.wav", crack + thump * 0.4 + snap * 0.3 + tail * 0.55)

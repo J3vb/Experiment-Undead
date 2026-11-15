@@ -15,6 +15,10 @@ const GUNS: Dictionary[String, String] = {
 	"sentry_br3": "sentry_br3",
 	"nightjar_sd": "nightjar_sd",
 	"rampart_br": "rampart_br",
+	"fieldhand_lever": "fieldhand_lever",
+	"ironwood_50": "ironwood_50",
+	"warden_p9": "pistol_service",
+	"wren_mp": "wren_mp",
 }
 const RARITIES: Dictionary[String, Color] = {
 	"common": Color("#D9D9D2"),
