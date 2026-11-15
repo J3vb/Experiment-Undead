@@ -2,10 +2,14 @@
 
 import math
 
-import body_parts as soft
 import bpy
+
+# isort: split
+import bmesh
+import body_parts as soft
 import character_rig as rig
 import gear_paint as paint
+import zombie_details
 from mathutils import Matrix, Vector
 
 
@@ -20,6 +24,7 @@ def _materials():
         "shirt": material("ZombieClothShirt", srgb("#2F393B"), roughness=0.96),
         "trousers": material("ZombieClothTrousers", srgb("#1C2122"), roughness=0.96),
         "shoe": material("ZombieShoe", srgb("#0E1010"), roughness=0.72),
+        "decay": material("ZombieSkinDecay", srgb("#5A0E0C"), roughness=0.72),
         "glow": material("ZombieGlow", srgb("#8DFF3A"), roughness=0.28, glow=0.6),
     }
 
@@ -79,7 +84,7 @@ def _body(armature, mats, kind):
         soft.select(obj)
         bpy.ops.object.modifier_apply(modifier=modifier.name)
     soft.clean(obj)
-    for name in ("head", "shirt", "trousers"):
+    for name in ("head", "shirt", "trousers", "decay"):
         obj.data.materials.append(mats[name])
     for face in obj.data.polygons:
         point = sum((obj.data.vertices[i].co for i in face.vertices), Vector()) / len(face.vertices)
@@ -89,6 +94,8 @@ def _body(armature, mats, kind):
             face.material_index = 3
         elif abs(point.x) < 0.21 and point.z < 1.47 and kind != "bloater":
             face.material_index = 2
+    _decay_faces(obj, kind)
+    zombie_details.carve_mouth(obj, mats)
     _bind(obj, armature)
     if kind == "bloater":
         _swollen_weights(obj)
@@ -102,6 +109,17 @@ def _swollen_weights(obj):
             for group in obj.vertex_groups:
                 group.remove([vertex.index])
             obj.vertex_groups["spine_01" if vertex.co.z < 1.2 else "spine_02"].add([vertex.index], 1.0, "REPLACE")
+
+
+def _decay_faces(obj, kind):
+    """Broad asymmetric abrasions use existing body faces instead of floating decals."""
+    for face in obj.data.polygons:
+        point = face.center
+        forearm = 0.46 < point.x < 0.59 and point.y < -0.022 and 1.07 < point.z < 1.2
+        cheek = -0.075 < point.x < -0.035 and point.y < -0.065 and 1.64 < point.z < 1.68
+        stump = kind == "crawler" and point.z < 0.80
+        if forearm or cheek or stump:
+            face.material_index = 4
 
 
 def _cloth(name, grid, holes, mat):
@@ -126,32 +144,57 @@ def _cloth(name, grid, holes, mat):
     return soft.mesh(name, vertices, faces, mat)
 
 
-def _coat(armature, mats, kind):
+def _coat_grid(kind):
     swollen = kind == "bloater"
     grid = []
-    for row in range(10):
-        t = row / 9
+    for row in range(11):
+        t = min(row / 9, 1.0)
         z = 0.57 + 0.92 * t
-        width = (0.30 - 0.12 * t) if not swollen else (0.29 + 0.16 * math.sin(t * math.pi))
-        depth = (0.17 - 0.07 * t) if not swollen else (0.24 + 0.12 * math.sin(t * math.pi))
+        width = (0.30 - 0.12 * t + 0.06 * t**6) if not swollen else (0.29 + 0.16 * math.sin(t * math.pi))
+        depth = (0.17 - 0.045 * t) if not swollen else (0.24 + 0.12 * math.sin(t * math.pi))
+        if row == 10:
+            z, width, depth = 1.535, 0.078, 0.074
         ring = []
         for col in range(25):
             angle = -math.pi / 2 + 0.44 + (2 * math.pi - 0.88) * col / 24
             hem = (0.025 * math.sin(col * 2.8) + 0.045 * (col % 4 == 0)) * (1 - t) ** 5
-            folds = 0.012 * math.sin(col * 2.4 + t * 0.8)
-            ring.append(((width + folds) * math.cos(angle), (depth + folds) * math.sin(angle), z + hem))
+            folds = 0.009 * math.sin(col * 2.4 + t * 0.8)
+            stagger = 0.013 * math.sin(col * 2.1 + row) if 0 < row < 8 else 0.0
+            ring.append(((width + folds) * math.cos(angle), (depth + folds) * math.sin(angle), z + hem + stagger))
         grid.append(ring)
+    return grid
+
+
+def _shoulder_weights(coat):
+    """Let the shoulder cloth follow the arm while the hanging coat stays on the spine."""
+    groups = {side: coat.vertex_groups.new(name="upperarm_" + side) for side in ("L", "R")}
+    for vertex in coat.data.vertices:
+        across = max(0.0, min(0.85, (abs(vertex.co.x) - 0.12) / 0.16))
+        high = max(0.0, min(1.0, (vertex.co.z - 1.32) / 0.14))
+        weight = across * high
+        if weight <= 0.0:
+            continue
+        existing = [(group.group, group.weight) for group in vertex.groups]
+        for index, value in existing:
+            coat.vertex_groups[index].add([vertex.index], value * (1 - weight), "REPLACE")
+        groups["L" if vertex.co.x > 0 else "R"].add([vertex.index], weight, "REPLACE")
+
+
+def _coat(armature, mats, kind):
+    swollen = kind == "bloater"
+    grid = _coat_grid(kind)
     holes = {(1, 3), (2, 3), (0, 9), (0, 10), (3, 17), (4, 17), (1, 21)}
     coat = _cloth("CoatSkirt", grid, holes, mats["shirt" if swollen else "coat"])
     deform = {bone: bone.use_deform for bone in armature.data.bones}
     for bone in deform:
         bone.use_deform = bone.name.startswith(("pelvis", "spine_", "neck"))
     _bind(coat, armature)
+    _shoulder_weights(coat)
     for bone, enabled in deform.items():
         bone.use_deform = enabled
     for sign in (-1, 1):
-        points = [(sign * 0.20, -0.042, 1.47), (sign * 0.29, -0.02, 1.40), (sign * 0.36, 0, 1.31)]
-        sleeve = soft.tube("RippedSleeve", points, [0.10, 0.084, 0.068], mats["coat"], 16)
+        points = [(sign * 0.16, 0, 1.49), (sign * 0.22, 0, 1.46), (sign * 0.29, 0, 1.39), (sign * 0.36, 0, 1.31)]
+        sleeve = soft.torn_sleeve("RippedSleeve", points, [0.058, 0.085, 0.074, 0.06], mats["coat"])
         _bind(sleeve, armature)
         lapel = soft.loft(
             "FoldedLapel",
@@ -167,56 +210,6 @@ def _coat(armature, mats, kind):
         _bind(lapel, armature, "spine_02")
     pocket = soft.pad("SaggingPocket", (0.085, 0.018, 0.10), (0.14, -0.114, 1.31), mats["coat"], 0.006)
     _bind(pocket, armature, "spine_02")
-
-
-def _details(armature, mats, kind):
-    for sign in (-1, 1):
-        ear = soft.ellipsoid("Ear", (sign * 0.093, -0.005, 1.696), (0.019, 0.017, 0.032), mats["head"])
-        _bind(ear, armature, "head")
-        brow = soft.tube(
-            "Brow",
-            [(sign * 0.018, -0.092, 1.722), (sign * 0.044, -0.101, 1.728), (sign * 0.073, -0.079, 1.712)],
-            [0.012, 0.013, 0.008],
-            mats["head"],
-        )
-        _bind(brow, armature, "head")
-        eye = soft.ellipsoid(
-            "EyeL" if sign > 0 else "EyeR", (sign * 0.041, -0.095, 1.705), (0.013, 0.008, 0.009), mats["glow"]
-        )
-        _bind(eye, armature, "head")
-        for index, length in enumerate((0.046, 0.064, 0.057, 0.043)):
-            x = sign * (0.659 + (index - 1.5) * 0.013)
-            z = 0.994 + (index - 1.5) * 0.013
-            finger = soft.tube(
-                "Finger",
-                [
-                    (x, -0.006, z),
-                    (x + sign * length * 0.6, -0.016, z - length * 0.6),
-                    (x + sign * length * 0.7, -0.04, z - length * 0.7),
-                ],
-                [0.010, 0.008, 0.0045],
-                mats["skin"],
-                8,
-            )
-            _bind(finger, armature, "hand_L" if sign > 0 else "hand_R")
-    nose = soft.ellipsoid("Nose", (0, -0.103, 1.686), (0.018, 0.031, 0.027), mats["head"])
-    _bind(nose, armature, "head")
-    jaw = soft.ellipsoid("Jaw", (0, -0.049, 1.635), (0.062, 0.048, 0.031), mats["head"])
-    _bind(jaw, armature, "head")
-    if kind == "crawler":
-        return
-    for side, sign in (("L", 1), ("R", -1)):
-        shoe = kind == "bloater" or side == "R"
-        foot = soft.ellipsoid(
-            "Shoe" + side if shoe else "BareFoot",
-            (sign * 0.11, -0.07, 0.065),
-            (0.069, 0.14, 0.063),
-            mats["shoe" if shoe else "skin"],
-        )
-        _bind(foot, armature, "foot_" + side)
-        if shoe:
-            sole = soft.pad("WornSole", (0.13, 0.26, 0.022), (sign * 0.11, -0.07, 0.014), mats["shoe"], 0.008)
-            _bind(sole, armature, "foot_" + side)
 
 
 def _aim(armature, name, direction):
@@ -287,17 +280,25 @@ def _finish_meshes(armature, kind):
     for obj in bpy.context.scene.objects:
         if obj.type == "MESH":
             soft.clean(obj)
+            if obj.name == "CoatSkirt":
+                shell = bmesh.new()
+                shell.from_mesh(obj.data)
+                if shell.calc_volume(signed=True) < 0:
+                    bmesh.ops.reverse_faces(shell, faces=shell.faces[:])
+                    shell.to_mesh(obj.data)
+                shell.free()
     detail = [
         o
         for o in bpy.context.scene.objects
-        if o.type == "MESH" and o.name.startswith(("Ear", "Brow", "Nose", "Jaw", "Finger"))
+        if o.type == "MESH"
+        and o.name.startswith(("Ear", "Brow", "Nose", "Jaw", "Finger", "Mouth", "Cheek", "Palm", "Thumb"))
     ]
     join_into(detail[0], detail[1:])
     detail[0].name = "AnatomyDetails"
     clothing = [
         o
         for o in bpy.context.scene.objects
-        if o.type == "MESH" and o.name.startswith(("RippedSleeve", "FoldedLapel", "SaggingPocket"))
+        if o.type == "MESH" and o.name.startswith(("RippedSleeve", "FoldedLapel", "SaggingPocket", "Badge"))
     ]
     join_into(bpy.data.objects["CoatSkirt"], clothing)
     bpy.context.view_layer.update()
@@ -312,11 +313,11 @@ def _build(kind):
         _marker(armature, "Crawler", (0, 0, 0.99), "pelvis")
     _body(armature, mats, kind)
     _coat(armature, mats, kind)
-    _details(armature, mats, kind)
+    zombie_details.build(armature, mats, kind, _bind)
     _marker(armature, "Eyes", (0, -0.095, 1.705))
     _marker(armature, "HeadCenter", (0, -0.015, 1.70))
     if kind == "bloater":
-        belly = soft.ellipsoid("Belly", (0, -0.245, 1.15), (0.33, 0.235, 0.31), mats["glow"])
+        belly = soft.ellipsoid("Belly", (0, -0.245, 1.15), (0.33, 0.235, 0.31), mats["glow"], (24, 16))
         _bind(belly, armature, "spine_01")
     for bone in armature.data.bones:
         bone.use_deform = not bone.name.startswith("sock_")

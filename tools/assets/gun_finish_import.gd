@@ -1,7 +1,7 @@
 ## Post-import script for the code-built guns: swaps each glTF material for the
 ## shared gun finish shader, keeping its colour, metal and roughness. The finish
 ## comes from the Blender material name; a "Knurled" suffix adds the knurl pattern.
-## Optic glass keeps its standard material.
+## Optic glass keeps its opaque, non-emissive standard material.
 @tool
 extends EditorScenePostImport
 
@@ -27,6 +27,7 @@ func _post_import(scene: Node) -> Object:
 				continue
 			if source.resource_name in STANDARD:
 				source.vertex_color_use_as_albedo = true
+				source.emission_enabled = false
 				continue
 			mesh.surface_set_material(i, finish_material(source))
 	return scene

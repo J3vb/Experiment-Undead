@@ -21,11 +21,11 @@ def action_parts(metal, black):
         g.slab("RailBase", [(-0.15, 0.038), (0.13, 0.038), (0.13, 0.05), (-0.15, 0.05)], 0.026, black),
         g.slab("RailTeeth", g.teeth(-0.145, 0.125, 0.05, 0.057, pitch=0.012), 0.022, black),
         g.slab("Lug", [(0.08, -0.004), (0.1, -0.004), (0.1, -0.022), (0.08, -0.022)], 0.04, metal, bevel=0.0015),
-        g.slab("Port", g.rounded(-0.07, 0.008, 0.03, 0.035, 0.006), 0.002, black, x=0.0232),
         g.slab(
             "WellLip", [(0.006, -0.052), (0.096, -0.052), (0.098, -0.062), (0.004, -0.062)], 0.05, black, bevel=0.0015
         ),
     ]
+    g.cut(parts[0], [g.slab("PortCut", g.rounded(-0.07, 0.008, 0.03, 0.035, 0.006), 0.035, metal, x=0.0255)])
     for x in (-1, 1):
         for y in (-0.12, 0.09):
             parts.append(
@@ -61,6 +61,7 @@ def stock_parts(m, receiver, metal, black, tan):
         (-0.15, -0.005),
     ]
     stock = g.slab("Stock", outline, 0.05, tan, bevel=0.004)
+    g.cut(stock, [g.slab("ThumbholeCut", g.rounded(-0.143, -0.047, -0.098, -0.011, 0.01), 0.07, tan)])
     guard = [
         (0.016, -0.05),
         (0.016, -0.09),
@@ -81,17 +82,16 @@ def stock_parts(m, receiver, metal, black, tan):
             bevel=0.005,
         ),
         g.slab("TriggerGuard", guard, 0.014, black, bevel=0.0015),
-        g.slab("Thumbhole", g.rounded(-0.14, -0.03, -0.1, -0.008, 0.008), 0.052, black),
     ]
     for y in (-0.37, -0.29):
         pieces.append(g.lathe(f"CheekPost{y}", [(0.005, 0.02), (0.005, 0.034)], (0, y, 0), metal, 10, axis="z"))
     for x in (-1, 1):
         pieces.append(g.slab(f"Stipple{x}", g.rounded(-0.13, -0.155, -0.11, -0.08, 0.006), 0.002, black, x=x * 0.0255))
-        for i in range(4):
-            y = 0.18 + i * 0.055
-            pieces.append(
-                g.slab(f"Vent{x}{i}", g.rounded(y, -0.03, y + 0.035, -0.014, 0.006), 0.002, black, x=x * 0.0255)
-            )
+    vents = []
+    for i in range(4):
+        y = 0.18 + i * 0.055
+        vents.append(g.slab(f"VentCut{i}", g.rounded(y, -0.024, y + 0.035, -0.011, 0.005), 0.07, tan))
+    g.cut(stock, vents)
     pieces.append(g.lathe("SlingStud", [(0.005, -0.04), (0.005, -0.03)], (0, 0.38, 0), metal, 10, axis="z"))
     m.join_into(stock, pieces)
     m.attach(stock, (0, -0.15, 0.0), receiver)
@@ -149,36 +149,27 @@ def barrel_parts(m, receiver, metal, black):
     )
     flutes = []
     for i in range(6):
-        flute = g.slab(f"Flute{i}", g.rounded(0.24, -0.003, 0.72, 0.003, 0.0029), 0.002, black, x=0.0156)
+        flute = g.slab(f"FluteCut{i}", g.rounded(0.24, -0.003, 0.72, 0.003, 0.0029), 0.008, metal, x=0.018)
         flute.rotation_euler = (0.0, i * math.pi / 3, 0.0)
         flute.location = (0.0, 0.0, BORE_Z)
         flutes.append(flute)
-    m.join_into(barrel, flutes)
+    g.cut(barrel, flutes)
     m.attach(barrel, (0, 0.12, BORE_Z), receiver)
     brake = g.lathe(
         "MuzzleBrake", [(0.019, 0.796), (0.021, 0.8), (0.021, 0.875), (0.019, 0.88)], (0, 0, BORE_Z), metal, 16
     )
-    ports = [g.lathe("Bore", [(0.008, 0.88), (0.008, 0.881)], (0, 0, BORE_Z), black, 12)]
-    for x in (-1, 1):
-        for i in range(3):
-            y = 0.806 + i * 0.023
-            ports.append(
-                g.slab(
-                    f"Port{x}{i}",
-                    g.rounded(y, BORE_Z - 0.012, y + 0.016, BORE_Z + 0.012, 0.005),
-                    0.002,
-                    black,
-                    x=x * 0.0205,
-                )
-            )
-    m.join_into(brake, ports)
+    cuts = [g.lathe("BoreCut", [(0.007, 0.79), (0.007, 0.89)], (0, 0, BORE_Z), metal, 16)]
+    for i in range(3):
+        y = 0.806 + i * 0.023
+        cuts.append(g.slab(f"PortCut{i}", g.rounded(y, BORE_Z - 0.009, y + 0.016, BORE_Z + 0.009, 0.004), 0.06, metal))
+    g.cut(brake, cuts)
     m.attach(brake, (0, 0.84, BORE_Z), barrel)
     m.marker("Muzzle", (0, 0.882, BORE_Z), parent=receiver)
 
 
 def moving_parts(m, receiver, metal, black):
     """Bolt body with its handle and knob; flush 5-round magazine pivots at its feed end."""
-    bolt = g.lathe("Bolt", [(0.0125, -0.155), (0.0125, -0.05)], (0, 0, BORE_Z + 0.008), metal, 16)
+    bolt = g.lathe("Bolt", [(0.0125, -0.155), (0.0125, 0.03)], (0, 0, BORE_Z + 0.008), metal, 16)
     m.attach(bolt, (0, -0.1, BORE_Z + 0.008), receiver)
     arm = [(0.004, 0.0), (0.004, 0.04)]
     handle = g.lathe("ChargingHandle", arm, (0, -0.135, BORE_Z + 0.008), metal, 10, axis="x")
@@ -235,3 +226,6 @@ def build(m) -> None:
     scope_parts(m, receiver, metal, black, glass)
     barrel_parts(m, receiver, metal, black)
     moving_parts(m, receiver, metal, black)
+    for side in (-1, 1):
+        inlay = g.slab("Inlay", g.rounded(-0.14, 0.041, 0.09, 0.043, 0.001), 0.001, metal, x=side * 0.0132)
+        m.join_into(receiver, [g.mark_inlay(inlay)])

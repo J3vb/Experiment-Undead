@@ -12,7 +12,7 @@ AXIS_Z = 0.016  # barrel and handguard centre height
 
 
 def upper(m, metal, black):
-    """Flat-top upper with brass deflector, forward assist, dust cover and full-length rail."""
+    """Flat-top upper with a recessed ejection port, brass deflector and full-length rail."""
     receiver = g.slab(
         "Receiver",
         [(-0.17, -0.004), (0.17, -0.004), (0.17, 0.046), (-0.152, 0.046), (-0.17, 0.034)],
@@ -20,6 +20,7 @@ def upper(m, metal, black):
         metal,
         bevel=0.002,
     )
+    g.cut(receiver, [g.slab("PortCut", g.rounded(-0.03, 0.002, 0.065, 0.034, 0.004), 0.018, metal, x=0.028)])
     parts = [
         g.slab("RailBase", [(-0.168, 0.046), (0.475, 0.046), (0.475, 0.051), (-0.168, 0.051)], 0.024, black),
         g.slab("RailTeeth", g.teeth(-0.165, 0.47, 0.051, 0.059), 0.021, black),
@@ -31,7 +32,7 @@ def upper(m, metal, black):
             x=0.027,
             bevel=0.002,
         ),
-        g.slab("DustCover", g.rounded(-0.03, 0.002, 0.065, 0.034, 0.004), 0.002, black, x=0.026),
+        g.lathe("DustCoverHinge", [(0.002, -0.03), (0.002, 0.065)], (0.026, 0, 0.001), black, 10),
         g.lathe(
             "ForwardAssist",
             [(0.009, -0.11), (0.009, -0.07), (0.0065, -0.065), (0.0065, -0.05)],
@@ -154,16 +155,12 @@ def handguard(m, black, tan):
             "RearSight", [(-0.15, 0.059), (-0.12, 0.059), (-0.125, 0.068), (-0.15, 0.068)], 0.02, black, bevel=0.001
         ),
     ]
-    side = 0.033 * math.cos(flat) + 0.0004
+    cuts = [g.lathe("GuardCore", [(0.025, 0.165), (0.025, 0.48)], (0, 0, AXIS_Z), tan, 8, turn=flat)]
     for i in range(4):
         y = 0.215 + i * 0.062
-        for x in (-1, 1):
-            parts.append(g.slab(f"Slot{x}{i}", g.rounded(y, 0.009, y + 0.032, 0.023, 0.006), 0.002, black, x=x * side))
-        parts.append(
-            g.slab(
-                f"SlotBottom{i}", [(y, -0.0153), (y + 0.032, -0.0153), (y + 0.032, -0.0133), (y, -0.0133)], 0.012, black
-            )
-        )
+        cuts.append(g.slab(f"SlotCut{i}", g.rounded(y, 0.009, y + 0.032, 0.023, 0.006), 0.08, tan))
+    g.cut(parts[0], cuts)
+    parts.append(g.lathe("InnerBarrel", [(0.009, 0.17), (0.009, 0.475)], (0, 0, AXIS_Z), black, 12))
     return parts
 
 
@@ -260,20 +257,13 @@ def barrel(m, metal, black, receiver):
     m.attach(pipe, (0, 0.475, AXIS_Z), receiver)
     hider = [(0.01, 0.108), (0.011, 0.112), (0.011, 0.145), (0.0095, 0.15)]
     brake = g.lathe("MuzzleBrake", hider, (0, 0.475, AXIS_Z), black, 16)
-    slots = []
-    for i in range(5):
-        a = 2 * math.pi * i / 5 + math.pi / 2
-        y, z = 0.475 + 0.128, AXIS_Z + 0.0105 * math.sin(a)
-        slots.append(
-            g.slab(
-                f"Prong{i}",
-                [(y - 0.012, z - 0.0015), (y + 0.017, z - 0.0015), (y + 0.017, z + 0.0015), (y - 0.012, z + 0.0015)],
-                0.003,
-                metal,
-                x=0.0105 * math.cos(a),
-            )
-        )
-    m.join_into(brake, slots)
+    g.cut(
+        brake,
+        [
+            g.lathe("BoreCut", [(0.0045, 0.575), (0.0045, 0.635)], (0, 0, AXIS_Z), black, 16),
+            g.slab("BrakePorts", g.rounded(0.594, AXIS_Z - 0.003, 0.615, AXIS_Z + 0.003, 0.002), 0.03, black),
+        ],
+    )
     m.attach(brake, (0, 0.583, AXIS_Z), pipe)
 
 
@@ -281,12 +271,15 @@ def build(m) -> None:
     metal = m.material("GunMetal", m.GUN_METAL, metallic=0.8, roughness=0.4)
     black = m.material("MatteBlack", m.MATTE_BLACK, roughness=0.75)
     tan = m.material("Tan", m.TAN, roughness=0.8)
-    glass = m.material("OpticGlass", m.LENS, metallic=0.3, roughness=0.05, glow=0.6)
+    glass = m.material("OpticGlass", m.LENS, metallic=0.3, roughness=0.05)
     receiver = upper(m, metal, black)
     m.join_into(receiver, lower(m, metal, black) + handguard(m, black, tan) + stock(m, metal, black, tan))
     scope(m, metal, black, glass, receiver)
     magazine(m, black, receiver)
     barrel(m, metal, black, receiver)
-    bolt = g.slab("Bolt", g.rounded(-0.015, 0.012, 0.045, 0.026, 0.003), 0.002, metal, x=0.0275)
+    bolt = g.slab("Bolt", g.rounded(-0.015, 0.012, 0.045, 0.026, 0.003), 0.002, metal, x=0.022)
     m.attach(bolt, (0.0275, 0.015, 0.019), receiver)
     m.marker("Muzzle", (0, 0.627, AXIS_Z), parent=receiver)
+    for side in (-1, 1):
+        inlay = g.slab("Inlay", g.rounded(-0.145, 0.038, 0.14, 0.040, 0.001), 0.001, metal, x=side * 0.0252)
+        m.join_into(receiver, [g.mark_inlay(inlay)])

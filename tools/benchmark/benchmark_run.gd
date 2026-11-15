@@ -132,7 +132,7 @@ func _report() -> void:
 	var result: Dictionary = {
 		"status": "ok",
 		"zombies": _zombies,
-		"spawned_zombies": _session.spawner.get_child_count(),
+		"spawned_zombies": get_tree().get_nodes_in_group(&"enemies").size(),
 		"alive_zombies": _session.spawner.alive_count(),
 		"player_alive": _session.get_players()[0].is_alive(),
 		"seed": _seed,

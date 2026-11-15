@@ -9,7 +9,8 @@ import math
 import gun_parts as g
 
 BORE_Z = 0.04
-CYL_R = 0.0215
+CYL_Z = BORE_Z - 0.013
+CYL_R = 0.0255
 SIGHT_Z = 0.074
 
 
@@ -24,7 +25,7 @@ def frame_parts(metal, black):
             bevel=0.002,
         ),
         g.slab(
-            "TopStrap", [(-0.033, 0.062), (0.042, 0.062), (0.042, 0.071), (-0.033, 0.071)], 0.02, metal, bevel=0.002
+            "TopStrap", [(-0.033, 0.056), (0.042, 0.056), (0.042, 0.071), (-0.033, 0.071)], 0.02, metal, bevel=0.002
         ),
         g.slab(
             "FrameFront",
@@ -33,9 +34,7 @@ def frame_parts(metal, black):
             metal,
             bevel=0.002,
         ),
-        g.slab(
-            "FrameBottom", [(-0.052, -0.004), (0.05, -0.004), (0.05, 0.017), (-0.052, 0.017)], 0.03, metal, bevel=0.002
-        ),
+        g.slab("FrameBottom", [(-0.052, -0.004), (0.05, -0.004), (0.05, 0.0), (-0.052, 0.0)], 0.03, metal, bevel=0.001),
         g.slab(
             "TriggerGuard",
             [
@@ -69,31 +68,41 @@ def frame_parts(metal, black):
         )
     for x in (-1, 1):
         for y, z in ((-0.044, 0.008), (-0.04, 0.04), (0.042, 0.008)):
-            parts.append(g.lathe(f"Screw{x}{y}{z}", [(0.003, 0.0145), (0.003, 0.0165)], (0, y, z), black, 8, axis="x"))
+            ends = sorted((x * 0.0145, x * 0.0165))
+            parts.append(g.lathe(f"Screw{x}{y}{z}", [(0.003, end) for end in ends], (0, y, z), black, 8, axis="x"))
+    g.cut(parts[2], [g.lathe("FrameBoreCut", [(0.006, 0.032), (0.006, 0.052)], (0, 0, BORE_Z), metal, 16)])
     return parts
 
 
 def cylinder_parts(metal, black):
-    """Fluted cylinder with six chamber mouths, on its crane between the frame halves."""
-    cylinder = [
-        g.lathe("Cylinder", [(0.019, -0.03), (CYL_R, -0.027), (CYL_R, 0.03), (0.019, 0.033)], (0, 0, BORE_Z), metal, 48)
-    ]
+    """Six bored chambers; the top chamber follows the barrel and hammer axis above the cylinder axle."""
+    profile = [(CYL_R - 0.002, -0.03), (CYL_R, -0.027), (CYL_R, 0.03), (CYL_R - 0.002, 0.033)]
+    cylinder = g.lathe("Cylinder", profile, (0, 0, CYL_Z), metal, 48)
+    cutters = []
     for i in range(6):
-        a = math.pi / 6 + i * math.pi / 3
-        flute = g.slab(f"Flute{i}", g.rounded(-0.018, -0.0035, 0.022, 0.0035, 0.0034), 0.002, black, x=CYL_R - 0.0006)
-        flute.rotation_euler = (0.0, a, 0.0)
-        flute.location = (0.0, 0.0, BORE_Z)
-        mouth = (0.013 * math.cos(a + math.pi / 6), 0.0, BORE_Z + 0.013 * math.sin(a + math.pi / 6))
-        cylinder += [flute, g.lathe(f"Chamber{i}", [(0.0048, 0.032), (0.0048, 0.0336)], mouth, black, 14)]
-    cylinder.append(g.lathe("Pin", [(0.004, 0.033), (0.004, 0.036)], (0, 0, BORE_Z), metal, 10))
-    return cylinder
+        a = math.pi / 2 + i * math.pi / 3
+        at = ((CYL_R + 0.002) * math.cos(a), 0, CYL_Z + (CYL_R + 0.002) * math.sin(a))
+        flute_profile = [
+            (0.001, -0.022),
+            (0.005, -0.018),
+            (0.0058, -0.013),
+            (0.0058, 0.014),
+            (0.005, 0.019),
+            (0.001, 0.023),
+        ]
+        flute = g.lathe(f"FluteCut{i}", flute_profile, at, metal, 16)
+        mouth = (0.013 * math.cos(a), 0.0, CYL_Z + 0.013 * math.sin(a))
+        chamber = [(0.0055, -0.031), (0.0048, -0.028), (0.0048, 0.031), (0.0055, 0.034)]
+        cutters += [flute, g.lathe(f"ChamberCut{i}", chamber, mouth, metal, 16)]
+    g.cut(cylinder, cutters)
+    return [cylinder, g.lathe("Pin", [(0.003, 0.033), (0.003, 0.036)], (0, 0, CYL_Z), black, 12)]
 
 
 def barrel_parts(metal, black):
     """Full-lug barrel: round tube, vented top rib, underlug with ejector rod and the front blade."""
     parts = [
         g.lathe(
-            "BarrelTube", [(0.011, 0.05), (0.0095, 0.054), (0.0095, 0.2), (0.008, 0.203)], (0, 0, BORE_Z), metal, 32
+            "BarrelTube", [(0.011, 0.036), (0.0095, 0.054), (0.0095, 0.2), (0.008, 0.203)], (0, 0, BORE_Z), metal, 32
         ),
         g.slab("TopRib", [(0.05, 0.046), (0.2, 0.046), (0.2, 0.055), (0.05, 0.055)], 0.011, metal, bevel=0.0015),
         g.slab(
@@ -109,16 +118,21 @@ def barrel_parts(metal, black):
             0.004,
             black,
         ),
-        g.lathe("Bore", [(0.0055, 0.2025), (0.0055, 0.2035)], (0, 0, BORE_Z), black, 12),
         g.lathe(
             "EjectorRod", [(0.003, 0.033), (0.003, 0.06), (0.0045, 0.062), (0.0045, 0.07)], (0, 0, 0.024), metal, 12
         ),
     ]
+    bore = [(0.0055, 0.035), (0.0055, 0.2015), (0.0062, 0.203), (0.0062, 0.205)]
+    g.cut(parts[0], [g.lathe("BoreCut", bore, (0, 0, BORE_Z), metal, 24)])
+    vents = []
     for i in range(5):
         y = 0.065 + i * 0.026
-        parts.append(g.slab(f"Vent{i}", g.rounded(y, 0.0465, y + 0.016, 0.0535, 0.003), 0.013, black))
+        vents.append(g.slab(f"VentCut{i}", g.rounded(y, 0.05, y + 0.016, 0.0535, 0.0015), 0.02, metal))
+    g.cut(parts[1], vents)
+    cuts = []
     for x in (-1, 1):
-        parts.append(g.slab(f"LugFlat{x}", g.rounded(0.06, 0.016, 0.19, 0.032, 0.006), 0.001, black, x=x * 0.0088))
+        cuts.append(g.slab(f"LugCut{x}", g.rounded(0.06, 0.016, 0.19, 0.032, 0.006), 0.004, metal, x=x * 0.009))
+    g.cut(parts[2], cuts)
     return parts
 
 
@@ -159,7 +173,14 @@ def grip_parts(m, receiver, metal, wood, checker):
             )
         )
         pieces.append(
-            g.lathe(f"GripScrew{x}", [(0.004, 0.0165), (0.004, 0.0185)], (0, -0.058, -0.055), metal, 12, axis="x")
+            g.lathe(
+                f"GripScrew{x}",
+                [(0.004, end) for end in sorted((x * 0.0165, x * 0.0185))],
+                (0, -0.058, -0.055),
+                metal,
+                12,
+                axis="x",
+            )
         )
     m.join_into(grip, pieces)
     m.attach(grip, (0, -0.04, 0.0), receiver)
@@ -200,8 +221,12 @@ def build(m) -> None:
     wood = m.material("Wood", m.WOOD, roughness=0.7)
     checker = m.material("WoodKnurled", m.WOOD, roughness=0.8)
     receiver = g.slab(
-        "Receiver", [(-0.03, 0.017), (0.034, 0.017), (0.034, 0.024), (-0.03, 0.024)], 0.026, metal, bevel=0.001
+        "Receiver", [(-0.03, -0.004), (0.034, -0.004), (0.034, 0.0), (-0.03, 0.0)], 0.026, metal, bevel=0.001
     )
     m.join_into(receiver, frame_parts(metal, black) + cylinder_parts(metal, black) + barrel_parts(metal, black))
     grip_parts(m, receiver, metal, wood, checker)
     moving_parts(m, receiver, metal, black)
+    strips = [
+        g.slab(f"Inlay{x}", g.rounded(-0.024, 0.064, 0.031, 0.066, 0.0008), 0.001, metal, x=x * 0.0104) for x in (-1, 1)
+    ]
+    m.join_into(receiver, [g.mark_inlay(strip) for strip in strips])

@@ -142,9 +142,9 @@ def pad(name, size, at, mat, bevel=None):
     return obj
 
 
-def ellipsoid(name, at, size, mat):
+def ellipsoid(name, at, size, mat, resolution=(12, 8)):
     """Small padded details need fewer rings than the main body."""
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=12, ring_count=8, radius=1, location=at)
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=resolution[0], ring_count=resolution[1], radius=1, location=at)
     obj = bpy.context.active_object
     obj.name, obj.scale = name, size
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
@@ -152,6 +152,41 @@ def ellipsoid(name, at, size, mat):
     for face in obj.data.polygons:
         face.use_smooth = True
     return obj
+
+
+def torn_sleeve(name, points, radii, mat, sides=10):
+    """Open fabric tube with a closed 4 mm wall and uneven final cuff outline."""
+    points = [Vector(point) for point in points]
+    rings = []
+    for inset in (0.0, 0.004):
+        for index, (point, radius) in enumerate(zip(points, radii, strict=True)):
+            tangent = (points[min(index + 1, len(points) - 1)] - points[max(index - 1, 0)]).normalized()
+            across = tangent.cross(Vector((0, 1, 0)))
+            if across.length < 0.1:
+                across = tangent.cross(Vector((1, 0, 0)))
+            across.normalize()
+            other = tangent.cross(across)
+            ring = []
+            for side in range(sides):
+                angle = math.tau * side / sides
+                tear = (0.009 if side % 3 == 0 else -0.006) if index == len(points) - 1 else 0.0
+                ring.append(
+                    point + tangent * tear + (radius - inset) * (across * math.cos(angle) + other * math.sin(angle))
+                )
+            rings.append(ring)
+    count = len(points)
+    faces = []
+    for layer in (0, 1):
+        for row in range(count - 1):
+            for side in range(sides):
+                a = (layer * count + row) * sides + side
+                b = (layer * count + row) * sides + (side + 1) % sides
+                faces.append((a, b, b + sides, a + sides))
+    for row in (0, count - 1):
+        for side in range(sides):
+            a, b = row * sides + side, row * sides + (side + 1) % sides
+            faces.append((a, b, b + count * sides, a + count * sides))
+    return mesh(name, [point for ring in rings for point in ring], faces, mat)
 
 
 def clean(obj):

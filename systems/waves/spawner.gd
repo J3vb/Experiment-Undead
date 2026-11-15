@@ -7,28 +7,51 @@ extends Node3D
 
 var session: GameSession
 
+var _net: MultiplayerSpawner
+
+
+func _ready() -> void:
+	_net = MultiplayerSpawner.new()
+	_net.name = "Net"
+	_net.spawn_function = _create
+	add_child(_net)
+	_net.spawn_path = _net.get_path_to(self)
+	_net.spawned.connect(func(node: Node) -> void: Events.enemy_spawned.emit(node as Zombie))
+
 
 func spawn(enemy: EnemyData, round_number: int, rules: WaveRules) -> Zombie:
 	if not Net.is_authority() or enemy == null or enemy.scene == null:
 		return null
 	var marker: Node3D = _pick_marker(rules.min_spawn_distance)
 	var point: Vector3 = _place(marker)
-	var zombie: Zombie = enemy.scene.instantiate() as Zombie
-	zombie.setup(
-		enemy,
+	var spawn_point: ZombieSpawnPoint = marker as ZombieSpawnPoint
+	var barrier_path: NodePath = get_path_to(spawn_point.barrier) if spawn_point and spawn_point.barrier else ^""
+	var data: Array = [
+		enemy.resource_path,
 		Net.allocate_id(),
 		rules.get_health_multiplier(round_number),
 		rules.get_speed_multiplier(round_number),
 		rules.get_damage_multiplier(round_number),
-		session.rng
-	)
-	var spawn_point: ZombieSpawnPoint = marker as ZombieSpawnPoint
-	if spawn_point:
-		zombie.barrier = spawn_point.barrier
-	add_child(zombie)
-	zombie.global_position = point
+		barrier_path,
+		to_local(point),
+	]
+	var zombie: Zombie = _net.spawn(data) as Zombie
 	zombie.rotation.y = session.rng.randf() * TAU
 	Events.enemy_spawned.emit(zombie)
+	return zombie
+
+
+## Runs on the server and on every client with the same data.
+func _create(data: Array) -> Node:
+	var enemy: EnemyData = load(data[0]) as EnemyData
+	var zombie: Zombie = enemy.scene.instantiate() as Zombie
+	var rng: RandomNumberGenerator = session.rng if Net.is_authority() else RandomNumberGenerator.new()
+	zombie.setup(enemy, data[1], data[2], data[3], data[4], rng)
+	zombie.name = "Zombie%d" % zombie.net_id
+	zombie.position = data[6]
+	if not (data[5] as NodePath).is_empty():
+		zombie.barrier = get_node(data[5]) as Barrier
+	zombie.add_child(ZombieSync.new())
 	return zombie
 
 

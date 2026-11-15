@@ -68,7 +68,7 @@ func test_one_ads_headshot_kills_a_fresh_round_one_walker_but_body_does_not() ->
 	watch_signals(weapon)
 	player.camera.look_at(zombie.global_position + Vector3(0, 0.9, 0))
 	weapon.fire()
-	assert_almost_eq(zombie.health.current, expected_health - 68.0 * 0.57, 0.001, "one body hit")
+	assert_almost_eq(zombie.health.current, expected_health - 120.0 * 0.57, 0.001, "one body hit")
 	assert_false(zombie.health.is_dead, "body hit does not kill")
 	zombie.free()
 	zombie = _walker()
