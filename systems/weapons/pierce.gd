@@ -3,7 +3,6 @@ class_name Pierce
 extends RefCounted
 
 const DAMAGE_RETAINED: float = 0.8
-const SURFACE_STEP: float = 0.001
 
 
 static func trace(weapon: Weapon, origin: Vector3, direction: Vector3) -> Array[Dictionary]:
@@ -29,7 +28,8 @@ static func trace(weapon: Weapon, origin: Vector3, direction: Vector3) -> Array[
 		hits.append(result)
 		if not _exclude_zombie(result.collider as HitZone, exclude):
 			break
-		start = result.position + direction * SURFACE_STEP
+		# RID exclusions pass the zombie without skipping thin world geometry.
+		start = result.position
 		if (end - start).dot(direction) <= 0.0:
 			break
 	return hits

@@ -124,6 +124,16 @@ func test_a_wall_containing_the_continuation_origin_stops_piercing() -> void:
 	assert_signal_emit_count(_weapon, "hit_landed", 1)
 
 
+func test_a_wall_within_one_millimetre_after_the_hit_is_not_skipped() -> void:
+	_weapon.data.pierce_count = 2
+	_wall(2.7753, 0.0002)
+	await wait_physics_frames(2)
+	_weapon.fire()
+	_assert_health([900.0, 1000.0, 1000.0])
+	assert_signal_emit_count(_weapon, "traced", 2)
+	assert_signal_emit_count(_weapon, "hit_landed", 1)
+
+
 func test_overlapping_head_and_body_count_as_one_zombie() -> void:
 	_weapon.data.pierce_count = 1
 	_weapon.data.head_multiplier = 3.0
