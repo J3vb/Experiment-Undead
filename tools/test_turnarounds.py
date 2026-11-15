@@ -5,6 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import numpy as np
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -44,6 +45,23 @@ class ReferenceTests(unittest.TestCase):
         for category, name, _ in turnarounds.find_models():
             path = turnarounds.approved_path(category, name)
             self.assertTrue(path.is_file(), f"run tools/render_turnarounds.py --approve for {category}/{name}")
+
+
+class ApprovedFramingTests(unittest.TestCase):
+    def test_every_view_is_centred_and_not_clipped(self):
+        for category, name, _ in turnarounds.find_models():
+            with Image.open(turnarounds.approved_path(category, name)) as image:
+                pixels = np.asarray(image.convert("RGB"), dtype=np.int16)
+            size = pixels.shape[0]
+            for index, (view, _) in enumerate(turnarounds.VIEWS):
+                panel = pixels[size // 8 :, index * size : (index + 1) * size]
+                content = np.abs(panel - panel[-1, -1]).max(axis=2) > turnarounds.PIXEL_TOLERANCE
+                columns = np.flatnonzero(content.any(axis=0))
+                label = f"{category}/{name} {view}"
+                self.assertGreater(columns.size, 0, label)
+                self.assertGreater(columns[0], 0, f"{label} touches the left edge")
+                self.assertLess(columns[-1], size - 1, f"{label} touches the right edge")
+                self.assertLess(abs((columns[0] + columns[-1]) / 2 - size / 2), size * 0.08, f"{label} is off-centre")
 
 
 class CompareTests(unittest.TestCase):

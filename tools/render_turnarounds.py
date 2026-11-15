@@ -58,7 +58,7 @@ def setup_scene(size, samples):
         add_light(name, at, energy)
     data = bpy.data.cameras.new("TurnaroundCamera")
     data.type = "ORTHO"
-    data.ortho_scale = 1.2
+    data.ortho_scale = 1.1
     camera = bpy.data.objects.new("TurnaroundCamera", data)
     scene.collection.objects.link(camera)
     camera.location = (0, -5 * math.cos(ELEVATION), 5 * math.sin(ELEVATION))
@@ -80,25 +80,28 @@ def add_light(name, at, energy):
 
 
 def import_model(path):
-    """Import a .glb under one root, scaled so its largest side is 1 and centred on the origin."""
+    """Import a .glb, centred on a turntable pivot and scaled so every view fits a 1 m frame."""
     bpy.ops.import_scene.gltf(filepath=str(path))
     imported = list(bpy.context.selected_objects)
-    root = bpy.data.objects.new("TurntableRoot", None)
-    bpy.context.scene.collection.objects.link(root)
+    pivot = bpy.data.objects.new("TurntablePivot", None)
+    offset = bpy.data.objects.new("TurntableOffset", None)
+    for empty in (pivot, offset):
+        bpy.context.scene.collection.objects.link(empty)
+    offset.parent = pivot
     for obj in imported:
         if obj.parent is None:
-            obj.parent = root
+            obj.parent = offset
     bpy.context.view_layer.update()
     meshes = [obj for obj in imported if obj.type == "MESH"]
     corners = [obj.matrix_world @ Vector(corner) for obj in meshes for corner in obj.bound_box]
     low = Vector(tuple(min(c[i] for c in corners) for i in range(3)))
     high = Vector(tuple(max(c[i] for c in corners) for i in range(3)))
     size = high - low
-    scale = 1 / max(size)
-    root.scale = (scale, scale, scale)
-    root.location = -(low + high) / 2 * scale
+    scale = 1 / max(math.hypot(size.x, size.y), size.z)
+    offset.location = -(low + high) / 2
+    pivot.scale = (scale, scale, scale)
     triangles = sum(len(poly.vertices) - 2 for obj in meshes for poly in obj.data.polygons)
-    return root, size, triangles
+    return pivot, size, triangles
 
 
 def render_model(path, directory, args):
