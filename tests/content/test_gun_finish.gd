@@ -12,7 +12,8 @@ const GUNS: Array[String] = [
 	"mako_pdw",
 	"atlas_auto",
 	"halberd_lmg",
-	"corvid_338"
+	"corvid_338",
+	"siphon"
 ]
 const SHADER: String = "res://assets/materials/gun_finish.gdshader"
 const IMPORTER: GDScript = preload("res://tools/assets/gun_finish_import.gd")
