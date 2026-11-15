@@ -205,6 +205,51 @@ func test_address_validation_accepts_hosts_and_optional_port() -> void:
 		assert_eq(MainMenu.normalized_address(invalid), "", "Must reject: " + invalid)
 
 
+func test_ipv6_addresses_normalize_for_the_existing_net_parser() -> void:
+	var addresses: Dictionary[String, Array] = {
+		"::1:24670": ["::1", 24670],
+		"::1": ["::1", 7777],
+		"[::1]": ["::1", 7777],
+		"[::1]:24670": ["::1", 24670],
+		"::": ["::", 7777],
+		"2001:db8::a": ["2001:db8::a", 7777],
+		"2001:db8::1:24670": ["2001:db8::1", 24670],
+		"2001:db8::1:2467": ["2001:db8::1", 2467],
+		"[2001:db8::1:2467]": ["2001:db8::1:2467", 7777],
+		"[2001:db8::1:2467]:1234": ["2001:db8::1:2467", 1234],
+		"::ffff:192.168.1.20": ["::ffff:192.168.1.20", 7777],
+	}
+	for address: String in addresses:
+		var target: Array = addresses[address]
+		var normalized: String = MainMenu.normalized_address(address)
+		assert_eq(normalized, "%s:%d" % target, "Must accept: " + address)
+		assert_eq(Net.parse_address(normalized), target, "Net must receive the intended host and port")
+	var launch: Dictionary = MainMenu.parse_launch(PackedStringArray(["--join=::1:24670"]))
+	assert_eq(Net.parse_address(MainMenu.normalized_address(launch["join"])), ["::1", 24670])
+
+
+func test_ipv6_addresses_reject_bad_brackets_and_invalid_ports() -> void:
+	for invalid: String in [
+		"[::1",
+		"::1]",
+		"[]",
+		"[localhost]",
+		"[192.168.1.20]",
+		"[::1]oops",
+		"[[::1]]",
+		"[::1]]:7777",
+		"[::1]:",
+		"[::1]:abc",
+		"[::1]:0",
+		"[::1]:65536",
+		"[::1]:7777:8888",
+		"::1:0",
+		"::1:65536",
+		"::g",
+	]:
+		assert_eq(MainMenu.normalized_address(invalid), "", "Must reject: " + invalid)
+
+
 func test_bad_host_port_stays_in_menu_and_explains_valid_range() -> void:
 	menu.host_button.pressed.emit()
 	menu.port_field.text = "70000"
