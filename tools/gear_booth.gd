@@ -1,7 +1,8 @@
-## Renders models in the warm Lantern Post booth; --lineup/--rarities/--distance show worn vest frames.
+## Renders worn vest frames, rigid gear close-ups, or a fully dressed player in the Lantern Post booth.
 ## godot --path . --rendering-driver opengl3 tools/gear_booth.tscn -- --out screenshots/gear --rarity all
 extends Node3D
 
+const ASSEMBLY: Script = preload("res://tools/gear_booth_assembly.gd")
 const MODELS: Array[String] = [
 	"res://assets/models/characters/player.glb",
 ]
@@ -14,6 +15,7 @@ const CAPTURES: Array[String] = ["--medium", "--lineup", "--rarities", "--distan
 
 var _out: String = ""
 var _rarity: String = "common"
+var _mode: String = "models"
 var _model: Node3D
 var _capture_mode: String = ""
 
@@ -35,7 +37,7 @@ func _ready() -> void:
 		set_process(false)
 		_render_lineup.call_deferred()
 		return
-	if not _show_model(MODELS[0]):
+	if not _show_mode():
 		get_tree().quit(1)
 		return
 	if _out.is_empty():
@@ -58,10 +60,8 @@ func _read_arguments(args: PackedStringArray) -> bool:
 				_capture_mode = option
 			index += 1
 			continue
-		if option not in ["--out", "--rarity"] or index + 1 >= args.size():
-			push_error(
-				"Gear booth expects --out <directory> [--rarity common|uncommon|rare|epic|legendary|prototype|all]"
-			)
+		if option not in ["--out", "--rarity", "--mode"] or index + 1 >= args.size():
+			push_error("Gear booth expects --out <directory> [--rarity <name>|all] [--mode models|lineup|character]")
 			return false
 		var value: String = args[index + 1]
 		if value.is_empty() or value.begins_with("--"):
@@ -69,12 +69,30 @@ func _read_arguments(args: PackedStringArray) -> bool:
 			return false
 		if option == "--out":
 			_out = value
-		else:
+		elif option == "--rarity":
 			_rarity = value
+		else:
+			_mode = value
 		index += 2
+	if _mode not in ["models", "lineup", "character"]:
+		push_error("Unknown gear booth mode: " + _mode)
+		return false
 	if _rarity != "all" and _rarity not in RARITIES:
 		push_error("Unknown gear booth rarity: " + _rarity)
 		return false
+	return true
+
+
+func _show_mode() -> bool:
+	if _mode == "models":
+		return _show_model(MODELS[0])
+	_model = ASSEMBLY.build_lineup() if _mode == "lineup" else ASSEMBLY.build_character()
+	add_child(_model)
+	_frame_model()
+	if _mode == "lineup":
+		_camera.projection = Camera3D.PROJECTION_ORTHOGONAL
+		_camera.size = 2.0
+		($Floor as MeshInstance3D).visible = false
 	return true
 
 
@@ -91,24 +109,9 @@ func _show_model(path: String) -> bool:
 		return false
 	add_child(_model)
 	if path == MODELS[0]:
-		_attach_vest(_model, "medium")
+		ASSEMBLY.attach_vest(_model, "medium")
 	_frame_model()
 	return true
-
-
-func _attach_vest(player: Node3D, frame: String) -> void:
-	var skeleton: Skeleton3D = player.find_children("*", "Skeleton3D", true, false)[0] as Skeleton3D
-	var packed: PackedScene = load("res://assets/models/gear/vest_%s.glb" % frame) as PackedScene
-	var vest: Node3D = packed.instantiate() as Node3D
-	player.add_child(vest)
-	var shell: MeshInstance3D = vest.find_child("Shell", true, false) as MeshInstance3D
-	shell.skeleton = shell.get_path_to(skeleton)
-	for node: Node in vest.find_children("*", "BoneAttachment3D", true, false):
-		var attachment: BoneAttachment3D = node as BoneAttachment3D
-		attachment.use_external_skeleton = true
-		attachment.external_skeleton = attachment.get_path_to(skeleton)
-	for cuff: String in ["CuffFP_L", "CuffFP_R"]:
-		(vest.find_child(cuff, true, false) as MeshInstance3D).hide()
 
 
 func _render_lineup() -> void:
@@ -122,7 +125,7 @@ func _render_lineup() -> void:
 		var player: Node3D = (load(MODELS[0]) as PackedScene).instantiate() as Node3D
 		_model.add_child(player)
 		player.position.x = (index - (count - 1) * 0.5) * 1.65
-		_attach_vest(player, frame)
+		ASSEMBLY.attach_vest(player, frame)
 		var look: RarityLook = load("res://content/looks/rarity/%s.tres" % rarity) as RarityLook
 		GearLook.apply(player, look, Color.WHITE, Color.WHITE)
 		_lineup_label(rarity.capitalize() if count == 6 else frame.capitalize(), player.position.x, look.trim_color)
@@ -214,6 +217,10 @@ func _frame_model() -> void:
 func _apply_rarity(rarity: String) -> void:
 	var look: RarityLook = load("res://content/looks/rarity/%s.tres" % rarity) as RarityLook
 	GearLook.apply(_model, look, Color.WHITE, Color.WHITE)
+	if _mode != "models":
+		for node: Node in _model.find_children("*", "MeshInstance3D", true, false):
+			if node.name in ["Module", "Port"] or node.find_parent("charm_vial") != null:
+				(node as MeshInstance3D).set_instance_shader_parameter(&"glow_color", Color("#8DFF3A"))
 	_label.text = "%s  /  %s" % [_model.name, rarity.capitalize()]
 
 
@@ -226,6 +233,9 @@ func _render() -> void:
 	if DirAccess.make_dir_recursive_absolute(directory) != OK:
 		push_error("Gear booth cannot create output directory: " + directory)
 		get_tree().quit(1)
+		return
+	if _mode != "models":
+		await _render_display(directory)
 		return
 	var rarities: Array[String] = RARITIES if _rarity == "all" else [_rarity]
 	for path: String in MODELS:
@@ -260,3 +270,20 @@ func _render_model(model_name: String, rarities: Array[String], directory: Strin
 		return false
 	print("Gear booth saved %d views and %s" % [rarities.size() * VIEWS.size(), sheet_path])
 	return true
+
+
+func _render_display(directory: String) -> void:
+	_apply_rarity(_rarity if _rarity != "all" else RARITIES[0])
+	_turntable.rotation.y = deg_to_rad(25.0) if _mode == "character" else 0.0
+	_label.text = (
+		"FIELD GEAR / ECONOMY + LUCK / ABILITIES" if _mode == "lineup" else "MEDIUM VEST / OCULAR / HALCYON KEYCARD"
+	)
+	for _frame: int in WARMUP_FRAMES:
+		await RenderingServer.frame_post_draw
+	var filename: String = directory.path_join("gear_%s.png" % _mode)
+	var error: Error = get_viewport().get_texture().get_image().save_png(filename)
+	if error != OK:
+		push_error("Gear booth cannot save " + filename)
+	else:
+		print("Gear booth saved ", filename)
+	get_tree().quit(error)

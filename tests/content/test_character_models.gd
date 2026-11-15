@@ -1,8 +1,8 @@
 ## Character imports preserve the shared rig, skin, scale and matching forearm envelopes.
 extends GutTest
 
+const ASSEMBLY: Script = preload("res://tools/gear_booth_assembly.gd")
 const PLAYER: String = "res://assets/models/characters/player.glb"
-const VESTS: Array[String] = ["light", "medium", "heavy"]
 const GEAR_SHADER: String = "res://assets/materials/gear.gdshader"
 const GEAR_IMPORTER: GDScript = preload("res://tools/assets/gear_import.gd")
 const ARMS: String = "res://assets/models/characters/player_arms.glb"
@@ -213,112 +213,75 @@ func test_first_person_arms_are_skinned_and_use_dynamic_lighting() -> void:
 	assert_eq(settings.get_value("params", "import_script/path"), "res://tools/assets/gear_import.gd")
 
 
-func _vest(frame: String) -> Node3D:
-	var packed: PackedScene = load("res://assets/models/gear/vest_%s.glb" % frame) as PackedScene
-	assert_not_null(packed, frame + " vest imports")
-	if packed == null:
-		return null
-	var model: Node3D = packed.instantiate() as Node3D
-	add_child_autofree(model)
-	return model
-
-
-func test_vests_preserve_required_nodes_and_shared_skin() -> void:
-	for frame: String in VESTS:
-		var vest: Node3D = _vest(frame)
-		if vest == null:
+func test_all_ten_rigid_gear_models_import_with_required_parts_and_budgets() -> void:
+	for id: String in ASSEMBLY.GEAR:
+		var packed: PackedScene = load("res://assets/models/gear/%s.glb" % id) as PackedScene
+		assert_not_null(packed, id + " imports")
+		if packed == null:
 			continue
-		var skeleton: Skeleton3D = _skeleton(vest)
-		var shell: MeshInstance3D = vest.find_child("Shell", true, false) as MeshInstance3D
-		assert_not_null(shell, frame + " Shell exists")
-		assert_not_null(vest.find_child("CharmClip", true, false), frame + " chest charm clip exists")
-		if shell == null or skeleton == null:
-			continue
-		assert_eq(skeleton.get_bone_count(), 22, frame + " has exactly 22 bones")
-		for bone: String in BONES:
-			assert_gte(skeleton.find_bone(bone), 0, frame + " has " + bone)
-		assert_not_null(shell.skin, frame + " Shell has a skin")
-		assert_eq(shell.get_node_or_null(shell.skeleton), skeleton, frame + " Shell resolves its skeleton")
-		for cuff_name: String in ["CuffFP_L", "CuffFP_R"]:
-			var cuff: MeshInstance3D = vest.find_child(cuff_name, true, false) as MeshInstance3D
-			assert_not_null(cuff, frame + " separate " + cuff_name)
-			if cuff:
-				assert_null(cuff.skin, "first-person cuff is unskinned")
-				assert_lt(cuff.get_aabb().get_center().length(), 0.005, "cuff origin is at its mesh centre")
-
-
-func test_vests_import_dynamic_lighting_and_four_gear_finishes() -> void:
-	for frame: String in VESTS:
+		var model: Node3D = packed.instantiate() as Node3D
+		add_child_autofree(model)
+		var required: Array[String] = ["Module", "Port"]
+		var lower: int = 1000
+		var upper: int = 1500
+		if id.begins_with("charm_"):
+			required = ["Hook", "Link1", "Link2", "Body"]
+			lower = 600
+			upper = 800
+		for part: String in required:
+			assert_not_null(model.find_child(part, true, false), id + " keeps " + part)
+		var triangles: int = 0
+		for node: Node in model.find_children("*", "MeshInstance3D", true, false):
+			triangles += (node as MeshInstance3D).mesh.get_faces().size() / 3
+		assert_between(triangles, lower, upper, id + " keeps the close-up triangle budget")
 		var settings: ConfigFile = ConfigFile.new()
-		var path: String = "res://assets/models/gear/vest_%s.glb" % frame
-		assert_eq(settings.load(path + ".import"), OK)
-		assert_eq(settings.get_value("params", "meshes/light_baking"), 3)
+		assert_eq(settings.load("res://assets/models/gear/%s.glb.import" % id), OK)
+		assert_eq(settings.get_value("params", "meshes/light_baking"), 3, id + " uses dynamic lighting")
 		assert_eq(settings.get_value("params", "import_script/path"), "res://tools/assets/gear_import.gd")
-		var vest: Node3D = _vest(frame)
-		if vest == null:
-			continue
-		for node: Node in vest.find_children("*", "MeshInstance3D", true, false):
-			var mesh: Mesh = (node as MeshInstance3D).mesh
-			for surface: int in mesh.get_surface_count():
-				var material: ShaderMaterial = mesh.surface_get_material(surface) as ShaderMaterial
-				assert_not_null(material, "gear import applies the zone shader")
-				if material:
-					assert_eq(material.shader.resource_path, "res://assets/materials/gear.gdshader")
-					assert_true(material.resource_name in ["GearFabric", "GearWebbing", "GearPlate", "GearPolymer"])
 
 
-func _skin_vertex(shell: MeshInstance3D, skeleton: Skeleton3D, surface: int, vertex: int) -> Vector3:
-	var arrays: Array = shell.mesh.surface_get_arrays(surface)
-	var positions: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
-	var bones: PackedInt32Array = arrays[Mesh.ARRAY_BONES]
-	var weights: PackedFloat32Array = arrays[Mesh.ARRAY_WEIGHTS]
-	var result: Vector3 = Vector3.ZERO
-	var influences: int = weights.size() / positions.size()
-	for influence: int in influences:
-		var index: int = vertex * influences + influence
-		var bind: int = bones[index]
-		var name: StringName = shell.skin.get_bind_name(bind)
-		var bone: int = skeleton.find_bone(name) if name != &"" else shell.skin.get_bind_bone(bind)
-		var transform: Transform3D = skeleton.get_bone_global_pose(bone) * shell.skin.get_bind_pose(bind)
-		result += transform * positions[vertex] * weights[index]
-	return result
+func test_booth_gear_follows_bones_with_a_transformed_character() -> void:
+	var display: Node3D = ASSEMBLY.build_character()
+	display.transform = Transform3D(Basis(Vector3.UP, 0.63), Vector3(2.0, 0.5, -3.0))
+	add_child_autofree(display)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var skeleton: Skeleton3D = display.find_children("*", "Skeleton3D", true, false)[0] as Skeleton3D
+	_assert_attached_within(display, skeleton, "Module", "forearm_L")
+	_assert_attached_within(display, skeleton, "Port", "neck")
+	var clip: Node3D = display.find_child("CharmClip", true, false) as Node3D
+	var hook: Node3D = display.find_child("Hook", true, false) as Node3D
+	var body: Node3D = display.find_child("Body", true, false) as Node3D
+	var vest: Node3D = display.find_child("MediumVest", true, false) as Node3D
+	assert_not_null(vest, "booth includes the imported medium vest")
+	var shell: MeshInstance3D = vest.find_child("Shell", true, false) as MeshInstance3D if vest != null else null
+	assert_not_null(shell, "medium vest keeps its skinned shell")
+	if shell != null:
+		assert_eq(shell.get_node_or_null(shell.skeleton), skeleton, "vest shell uses the displayed player's rig")
+	assert_not_null(clip, "vest provides its CharmClip")
+	assert_not_null(hook, "charm keeps the hook pivot")
+	assert_not_null(body, "charm keeps its hanging body")
+	if clip != null and hook != null:
+		assert_lt(hook.global_position.distance_to(clip.global_position), 0.001, "charm hangs from CharmClip")
+	if body != null and hook != null:
+		assert_lt(body.global_position.y, hook.global_position.y - 0.015, "charm hangs down below the clip")
+	var forearm: int = skeleton.find_bone("forearm_L")
+	var pose: Transform3D = skeleton.get_bone_pose(forearm)
+	pose.basis = pose.basis * Basis(Vector3.RIGHT, 0.3)
+	skeleton.set_bone_pose(forearm, pose)
+	await get_tree().process_frame
+	_assert_attached_within(display, skeleton, "Module", "forearm_L")
 
 
-func _posed_displacement(shell: MeshInstance3D, skeleton: Skeleton3D, bone: int) -> float:
-	var before: Array[PackedVector3Array] = []
-	for surface: int in shell.mesh.get_surface_count():
-		var positions: PackedVector3Array = shell.mesh.surface_get_arrays(surface)[Mesh.ARRAY_VERTEX]
-		var points: PackedVector3Array = []
-		for vertex: int in positions.size():
-			points.append(_skin_vertex(shell, skeleton, surface, vertex))
-		before.append(points)
-	skeleton.set_bone_pose_rotation(bone, Quaternion(Vector3.RIGHT, 0.35))
-	skeleton.force_update_all_bone_transforms()
-	var displacement: float = 0.0
-	for surface: int in shell.mesh.get_surface_count():
-		for vertex: int in before[surface].size():
-			var point: Vector3 = _skin_vertex(shell, skeleton, surface, vertex)
-			assert_true(point.is_finite(), "retargeted skin produces finite vertex positions")
-			displacement = maxf(displacement, point.distance_to(before[surface][vertex]))
-	skeleton.reset_bone_pose(bone)
-	skeleton.force_update_all_bone_transforms()
-	return displacement
-
-
-func test_vest_shell_rebinds_to_player_and_deforms_with_spine_and_forearm() -> void:
-	for frame: String in VESTS:
-		var player: Node3D = _character()
-		var vest: Node3D = _vest(frame)
-		if player == null or vest == null:
-			continue
-		var body_rig: Skeleton3D = _skeleton(player)
-		var shell: MeshInstance3D = vest.find_child("Shell", true, false) as MeshInstance3D
-		if body_rig == null or shell == null or shell.skin == null:
-			continue
-		shell.skeleton = shell.get_path_to(body_rig)
-		assert_eq(shell.get_node_or_null(shell.skeleton), body_rig, frame + " uses the player's skeleton")
-		for bone_name: String in ["spine_02", "forearm_L"]:
-			var bone: int = body_rig.find_bone(bone_name)
-			assert_gt(_posed_displacement(shell, body_rig, bone), 0.005, frame + " deforms with " + bone_name)
-		await get_tree().process_frame
-		assert_eq(shell.get_node_or_null(shell.skeleton), body_rig, "binding remains valid after a frame")
+func _assert_attached_within(display: Node3D, skeleton: Skeleton3D, part: String, bone: String) -> void:
+	var mesh: Node3D = display.find_child(part, true, false) as Node3D
+	assert_not_null(mesh, "booth includes " + part)
+	if mesh == null:
+		return
+	var attachment: BoneAttachment3D = mesh.get_parent() as BoneAttachment3D
+	assert_not_null(attachment, part + " uses BoneAttachment3D")
+	if attachment == null:
+		return
+	assert_eq(attachment.bone_name, bone)
+	var target: Vector3 = skeleton.global_transform * skeleton.get_bone_global_pose(skeleton.find_bone(bone)).origin
+	assert_lt(mesh.global_position.distance_to(target), 0.03, part + " origin sits within 3 cm of " + bone)

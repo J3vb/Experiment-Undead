@@ -69,6 +69,14 @@ built, what was simplified on purpose, and what is still to do.
 
 ## Simplified on purpose (fix before or during the matching build step)
 
+- **Rigid charm and implant inspect assets:** five charms (600–800 triangles) and five implants
+  (1,000–1,500 triangles) use the shared gear paint masks and dynamic import. These close-view
+  budgets supersede the provisional 300/500 triangle estimates in `gear-visuals.md` for these ten
+  assets. Charms expose `Hook → Link1 → Link2 → Body`; implants expose independent `Module`
+  and `Port` attachment origins. `tools/gear_booth.gd` previews the player with the shared
+  skinned medium vest and bone-attached gear, plus a close-up lineup. This adds no
+  equipment gameplay or chain simulation.
+
 - **Music first slice:** generated Halcyon Bed + Drive (100 BPM, D minor, 16 bars), synchronized in a scene-local MusicPlayer; round/proximity intensity, 3 s combat/breather fades and 2 s game-over fade, on the existing Music bus. Warm 70 BPM breather also lives in the standalone main-menu scene (menu flow is not built yet). Four stems, stingers, ducking and `music_config.tres` wait.
 
 - **Navmesh bakes at load** from the grey-box blocks instead of being baked ahead. Keeps edits safe while the map changes; switch to a baked `.tres` when the layout settles.

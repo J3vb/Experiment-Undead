@@ -30,3 +30,12 @@ func test_booth_model_list_and_rarity_rows_load() -> void:
 		assert_not_null(load(path) as PackedScene, "booth model loads: " + path)
 	for rarity: String in SCRIPT.RARITIES:
 		assert_not_null(load("res://content/looks/rarity/%s.tres" % rarity) as RarityLook)
+
+
+func test_booth_accepts_lineup_and_dressed_character_modes() -> void:
+	for mode: String in ["lineup", "character"]:
+		var booth: Node3D = BOOTH.instantiate() as Node3D
+		autofree(booth)
+		var arguments: PackedStringArray = PackedStringArray(["--mode", mode, "--out", "screenshots/gear"])
+		assert_true(booth.call("_read_arguments", arguments), mode + " is a booth display mode")
+		assert_eq(booth.get("_mode"), mode)
