@@ -4,7 +4,7 @@ class_name ZombieSync
 extends MultiplayerSynchronizer
 
 const SYNCED: Array[NodePath] = [
-	^".:position", ^".:rotation", ^".:velocity", ^".:state", ^".:state_time", ^".:_vault_time"
+	^".:position", ^".:rotation", ^".:velocity", ^".:state", ^".:state_time", ^".:_vault_time", ^".:frozen"
 ]
 ## Seconds between updates; the visual rig smooths the gaps.
 const INTERVAL: float = 1.0 / 30.0

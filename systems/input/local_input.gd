@@ -54,16 +54,8 @@ func sample(tick: int) -> InputFrame:
 	if invert_y:
 		f.look.y = -f.look.y
 	_look_accum = Vector2.ZERO
-	var b: int = _pressed
+	var b: int = _pressed | _held_buttons()
 	_pressed = 0
-	if Input.is_action_pressed(&"fire"):
-		b |= InputFrame.FIRE
-	if Input.is_action_pressed(&"ads"):
-		b |= InputFrame.ADS
-	if Input.is_action_pressed(&"sprint"):
-		b |= InputFrame.SPRINT
-	if Input.is_action_pressed(&"crouch"):
-		b |= InputFrame.CROUCH
 	if Input.is_action_just_pressed(&"jump"):
 		b |= InputFrame.JUMP
 	if Input.is_action_just_pressed(&"reload"):
@@ -72,3 +64,18 @@ func sample(tick: int) -> InputFrame:
 		b |= InputFrame.INTERACT
 	f.buttons = b
 	return f
+
+
+func _held_buttons() -> int:
+	var b: int = 0
+	if Input.is_action_pressed(&"alt_fire"):
+		b |= InputFrame.ALT_FIRE
+	if Input.is_action_pressed(&"fire"):
+		b |= InputFrame.FIRE
+	if Input.is_action_pressed(&"ads"):
+		b |= InputFrame.ADS
+	if Input.is_action_pressed(&"sprint"):
+		b |= InputFrame.SPRINT
+	if Input.is_action_pressed(&"crouch"):
+		b |= InputFrame.CROUCH
+	return b

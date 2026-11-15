@@ -56,5 +56,8 @@
 	],
 	"ramps": [
 		{"from": [52, 0, 18], "to": [60, -3, 18], "width": 4}
+	],
+	"wall_buys": [
+		{"id": "coachman_2b", "node": "WallBuyCoachman", "area": "mess_hall", "position": [38.25, 1.4, 38], "cost": 900}
 	]
 }

@@ -2,13 +2,17 @@
 extends GutTest
 
 const BOOTH: GDScript = preload("res://tools/weapon_review.gd")
+const PROTOTYPE_BOOTH: GDScript = preload("res://tests/manual/prototype_finish.gd")
 const WEAPON: PackedScene = preload("res://systems/weapons/weapon.tscn")
 
 
 func test_review_includes_every_exported_weapon() -> void:
 	for file: String in DirAccess.get_files_at("res://assets/models/weapons"):
 		if file.ends_with(".glb"):
-			assert_true(BOOTH.GUNS.has(file.get_basename()), file + " needs a matching review capture")
+			assert_true(
+				BOOTH.GUNS.has(file.get_basename()) or PROTOTYPE_BOOTH.GUNS.has(file.get_basename()),
+				file + " needs a matching review capture"
+			)
 
 
 func test_review_poses_match_content_and_player_camera() -> void:

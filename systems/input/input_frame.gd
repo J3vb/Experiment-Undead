@@ -12,6 +12,7 @@ const RELOAD: int = 1 << 5  ## Pressed this tick.
 const NEXT_WEAPON: int = 1 << 6  ## Pressed this tick.
 const PREV_WEAPON: int = 1 << 7  ## Pressed this tick.
 const INTERACT: int = 1 << 8  ## Pressed this tick.
+const ALT_FIRE: int = 1 << 9
 
 var tick: int = 0
 var move: Vector2 = Vector2.ZERO

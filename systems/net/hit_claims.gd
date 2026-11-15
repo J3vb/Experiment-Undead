@@ -5,6 +5,7 @@ extends Node
 
 const KILL_WINDOW: float = 0.5
 const SLACK: float = 1.5
+const MAX_IMPULSE: float = 12.0
 const WELL_FLIGHT_TIME: float = GravityWell.ORB_RANGE / GravityWell.ORB_SPEED + 1.0
 
 var session: GameSession
@@ -16,9 +17,11 @@ var _orb_claims: Dictionary[int, Array] = {}
 var _well_launches: Dictionary[int, Array] = {}
 var _recent_hits: Array[Dictionary] = []
 var _weapons: Dictionary[StringName, WeaponData] = {}
+var _chain: Chain = Chain.new()
 
 
 func _ready() -> void:
+	add_child(_chain)
 	multiplayer.peer_disconnected.connect(_forget_peer)
 	for id: StringName in Content.ids(&"weapons"):
 		_weapons[id] = Content.weapon(id)
@@ -48,7 +51,7 @@ func submit_hit(weapon: Weapon, hit_zone: HitZone, info: DamageInfo) -> void:
 	info.hit_zone = hit_zone.zone
 	weapon.hit_landed.emit(false, info.is_headshot())
 	_remember_hit(zombie, weapon.shooter, info.is_headshot())
-	claim_hit.rpc_id(1, zombie.name, hit_zone.zone, info.amount, info.weapon_id, info.position)
+	claim_hit.rpc_id(1, zombie.name, hit_zone.zone, info.amount, info.weapon_id, info.position, info.impulse)
 
 
 func _remember_hit(zombie: Zombie, player: Player, headshot: bool) -> void:
@@ -62,7 +65,14 @@ func _remember_hit(zombie: Zombie, player: Player, headshot: bool) -> void:
 
 
 @rpc("any_peer", "call_remote", "reliable")
-func claim_hit(zombie_name: StringName, zone: int, amount: float, weapon_id: StringName, point: Vector3) -> void:
+func claim_hit(
+	zombie_name: StringName,
+	zone: int,
+	amount: float,
+	weapon_id: StringName,
+	point: Vector3,
+	impulse: Vector3 = Vector3.ZERO
+) -> void:
 	if not multiplayer.is_server():
 		return
 	var sender: int = multiplayer.get_remote_sender_id()
@@ -86,7 +96,7 @@ func claim_hit(zombie_name: StringName, zone: int, amount: float, weapon_id: Str
 		_reject(sender, &"zombie_not_alive")
 		return
 	var weapon: WeaponData = _weapons.get(weapon_id)
-	if not _valid_hit(player, weapon, amount, point):
+	if not _valid_hit(player, weapon, amount, point, impulse):
 		_reject(sender, &"hit_out_of_bounds")
 		return
 	var hit_zone: HitZone = _find_zone(zombie, zone)
@@ -99,12 +109,50 @@ func claim_hit(zombie_name: StringName, zone: int, amount: float, weapon_id: Str
 	var info: DamageInfo = DamageInfo.create(amount, player)
 	info.weapon_id = weapon_id
 	info.position = point
-	info.impulse = (point - player.camera.global_position).normalized() * 2.0
+	info.impulse = impulse if impulse != Vector3.ZERO else (point - player.camera.global_position).normalized() * 2.0
+	apply_server_hit(hit_zone, info)
+
+
+## Standalone weapon tests retain the direct path without a live session.
+static func apply_host_hit(shooter: Player, hit_zone: HitZone, info: DamageInfo) -> void:
+	if shooter and shooter.session and shooter.session.hit_claims:
+		shooter.session.hit_claims.apply_server_hit(hit_zone, info)
+	else:
+		hit_zone.receive_hit(info)
+
+
+## Shared effect hook for validated claims and the host's direct hits.
+func apply_server_hit(hit_zone: HitZone, info: DamageInfo) -> void:
+	if not multiplayer.is_server():
+		return
+	var zombie: Zombie = hit_zone.health.get_parent() as Zombie if hit_zone.health else null
+	if zombie == null:
+		hit_zone.receive_hit(info)
+		return
+	if zombie.health.is_dead or zombie.state == Zombie.State.DEAD:
+		return
+	info.hit_zone = hit_zone.zone
+	var base: String = String(info.weapon_id).trim_suffix("_reforged")
+	var collateral_killed: bool = false
+	if base == "synapse":
+		collateral_killed = _chain.apply(zombie, info)
+	if zombie.frozen or base == "cryo_lance":
+		if Frost.apply(zombie, info):
+			return
 	hit_zone.receive_hit(info)
+	_confirm_secondary_kill(zombie, info, collateral_killed)
 
 
-func _valid_hit(player: Player, weapon: WeaponData, amount: float, point: Vector3) -> bool:
+## Defer past the normal hit marker; primary kills already confirm themselves.
+func _confirm_secondary_kill(zombie: Zombie, info: DamageInfo, killed: bool) -> void:
+	if killed and not zombie.health.is_dead and info.attacker is Player:
+		confirm_well_hit.call_deferred(info.attacker as Player, true)
+
+
+func _valid_hit(player: Player, weapon: WeaponData, amount: float, point: Vector3, impulse: Vector3) -> bool:
 	if weapon == null or not is_finite(amount) or amount <= 0.0 or not point.is_finite():
+		return false
+	if not impulse.is_finite() or impulse.length_squared() > MAX_IMPULSE * MAX_IMPULSE:
 		return false
 	if player.camera.global_position.distance_to(point) > weapon.max_range + 2.0:
 		return false

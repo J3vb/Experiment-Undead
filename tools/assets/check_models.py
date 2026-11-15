@@ -51,6 +51,8 @@ JOINTS = {
     "atlas_auto": GUN_WITH_MAG,
     "halberd_lmg": GUN_WITH_MAG,
     "corvid_338": GUN_WITH_MAG,
+    "cryo_lance": {**GUN_WITH_MAG, "Trigger": "Receiver", "CondenserCoils": "Receiver"},
+    "synapse": {**GUN_WITH_MAG, "Trigger": "Receiver", "Cabling": "Receiver"},
     "sentry_br3": GUN_WITH_MAG,
     "nightjar_sd": {**GUN_WITH_MAG, "Suppressor": "Receiver"},
     "rampart_br": GUN_WITH_MAG,
@@ -59,6 +61,8 @@ JOINTS = {
     "warden_p9": {**GUN_WITH_MAG, "Slide": "Bolt", "Trigger": "Receiver"},
     "wren_mp": {**GUN_WITH_MAG, "Slide": "Bolt", "Trigger": "Receiver", "Brace": "Receiver"},
     "siphon": {**GUN_WITH_MAG, "Emitter": "Receiver", "Core": "Receiver", "Stock": "Receiver"},
+    "coachman_2b": {**GUN, "BarrelL": "Receiver", "BarrelR": "Receiver", "Stock": "Receiver", "Trigger": "Receiver"},
+    "grubber_sawnoff": {**GUN, "BarrelL": "Receiver", "BarrelR": "Receiver", "Grip": "Receiver", "Trigger": "Receiver"},
     **zombie_checks.JOINTS,
 }
 JOINTS.update(character_checks.JOINTS)

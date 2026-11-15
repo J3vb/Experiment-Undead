@@ -44,7 +44,9 @@ func weapon_data(base: WeaponData, extra: StatBlock = null) -> WeaponData:
 	var result: WeaponData = base.duplicate() as WeaponData
 	result.damage = value(&"dmg_pct", base.damage, extra)
 	result.min_damage = value(&"dmg_pct", base.min_damage, extra)
-	result.magazine_size = maxi(roundi(value(&"mag_pct", base.magazine_size, extra)), 1)
+	result.magazine_size = (
+		2 if base.loot_tags.has(&"double") else maxi(roundi(value(&"mag_pct", base.magazine_size, extra)), 1)
+	)
 	result.starting_reserve = maxi(roundi(value(&"deep_reserve", base.starting_reserve, extra)), 0)
 	result.max_reserve = maxi(roundi(value(&"deep_reserve", base.max_reserve, extra)), 0)
 	result.pellets = maxi(roundi(value(&"pellets", base.pellets, extra)), 1)
