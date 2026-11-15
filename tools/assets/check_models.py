@@ -58,6 +58,8 @@ JOINTS = {
         "CarryHandle": "Receiver",
     },
     "corvid_338": GUN_WITH_MAG,
+    "fieldhand_lever": {**GUN, "Lever": "Receiver", "MagazineTube": "Receiver"},
+    "ironwood_50": {**GUN_WITH_MAG, "ScopeLensMount": "Receiver"},
     **zombie_checks.JOINTS,
 }
 JOINTS.update(character_checks.JOINTS)

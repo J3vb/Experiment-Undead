@@ -227,6 +227,8 @@ MODELS = {
     "halberd_lmg": ("weapons/halberd_lmg.glb", gun("halberd_model")),
     "bastion_lmg": ("weapons/bastion_lmg.glb", gun("bastion_model")),
     "corvid_338": ("weapons/corvid_338.glb", gun("corvid_model")),
+    "fieldhand_lever": ("weapons/fieldhand_lever.glb", gun("fieldhand_model")),
+    "ironwood_50": ("weapons/ironwood_50.glb", gun("ironwood_model")),
     "shambler": ("zombies/shambler.glb", zombie_model.build_shambler),
     "crawler": ("zombies/crawler.glb", zombie_model.build_crawler),
     "bloater": ("zombies/bloater.glb", zombie_model.build_bloater),

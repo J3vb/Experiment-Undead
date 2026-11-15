@@ -1,6 +1,4 @@
-## Hitscan gun node driven by a WeaponInstance. Owns firing, spread, recoil,
-## reload and the procedural viewmodel pose. Input arrives through the public
-## vars, so a player, bot or test can drive it the same way.
+## Hitscan WeaponInstance node; public inputs drive firing, spread, recoil, reload and viewmodel poses.
 class_name Weapon
 extends Node3D
 
@@ -121,6 +119,8 @@ func start_reload() -> bool:
 	_burst_left = 0
 	_empty_reload = instance.ammo_in_mag == 0
 	_reload_duration = (data.empty_reload_time if _empty_reload else data.reload_time) * _stat(&"reload_time")
+	if data.reload_per_round:
+		_reload_duration = RoundReload.duration(self)
 	_reload_timer = _reload_duration
 	_play_mech(data.reload_sound)
 	reload_started.emit(_reload_duration)
@@ -132,13 +132,15 @@ func _stat(stat: StringName) -> float:
 
 
 func can_fire() -> bool:
-	return active and state == State.IDLE and _sprint_block <= 0.0 and not sprinting
+	return active and (state == State.IDLE or RoundReload.can_fire(self)) and _sprint_block <= 0.0 and not sprinting
 
 
 ## Simulation step, run from the owner's physics tick.
 func tick(delta: float) -> void:
 	_tick_timers(delta)
-	if state == State.RELOADING:
+	if state == State.RELOADING and data.reload_per_round:
+		RoundReload.tick(self, delta)
+	elif state == State.RELOADING:
 		_reload_timer -= delta
 		if _reload_timer <= 0.0:
 			_finish_reload()
@@ -208,6 +210,7 @@ func _handle_trigger() -> void:
 
 ## Fires one shot (all pellets) right now. Public for tests and AI.
 func fire() -> void:
+	RoundReload.cancel(self)
 	instance.ammo_in_mag -= 1
 	var spread: float = get_current_spread()
 	var origin: Vector3 = camera.global_position
@@ -244,23 +247,23 @@ func _spread_direction(basis: Basis, spread_degrees: float) -> Vector3:
 
 
 func _trace(origin: Vector3, direction: Vector3) -> void:
-	var exclude: Array[RID] = []
-	if shooter:
-		exclude.append(shooter.get_rid())
-	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
-		origin, origin + direction * data.max_range, Layers.WORLD | Layers.HIT_ZONE, exclude
-	)
-	query.collide_with_areas = true
-	var result: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
-	if result.is_empty():
-		return
+	var hits: Array[Dictionary] = Pierce.trace(self, origin, direction)
+	if shooter and shooter.session and shooter.session.remote_shots:
+		var end: Vector3 = hits[-1].position if not hits.is_empty() else origin + direction * data.max_range
+		shooter.session.remote_shots.record_trace(self, end)
+	for result: Dictionary in hits:
+		_hit(result, origin, direction)
+
+
+func _hit(result: Dictionary, origin: Vector3, direction: Vector3) -> void:
 	var point: Vector3 = result.position
 	var normal: Vector3 = result.normal
 	var hit_zone: HitZone = result.collider as HitZone
 	traced.emit(point, normal, hit_zone != null)
-	if hit_zone == null or not Net.is_authority():
+	if hit_zone == null:
 		return
 	var info: DamageInfo = DamageInfo.create(data.get_damage_at(origin.distance_to(point)), shooter)
+	info.amount *= float(result.damage_scale)
 	info.weapon_id = data.id
 	info.position = point
 	info.normal = normal
@@ -268,6 +271,10 @@ func _trace(origin: Vector3, direction: Vector3) -> void:
 	info.amount *= data.get_zone_multiplier(hit_zone.zone)
 	if hit_zone.zone == DamageInfo.Zone.HEAD:
 		info.amount *= _stat(&"head_damage")
+	if not Net.is_authority():
+		if shooter and shooter.session:
+			shooter.session.hit_claims.submit_hit(self, hit_zone, info)
+		return
 	hit_zone.receive_hit(info)
 	hit_landed.emit(hit_zone.health.is_dead, info.is_headshot())
 

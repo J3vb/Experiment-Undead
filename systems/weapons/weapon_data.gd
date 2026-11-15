@@ -22,6 +22,7 @@ enum FireMode { SEMI, BURST, AUTO }
 @export var pellets: int = 1
 @export var head_multiplier: float = 2.0
 @export var limb_multiplier: float = 0.8
+@export var pierce_count: int = 0
 
 @export_group("Handling")
 @export var fire_mode: FireMode = FireMode.AUTO
@@ -33,6 +34,8 @@ enum FireMode { SEMI, BURST, AUTO }
 @export var max_reserve: int = 240
 @export var reload_time: float = 2.2
 @export var empty_reload_time: float = 2.8
+@export var reload_per_round: bool = false
+@export var per_round_time: float = 0.5
 @export var ads_time: float = 0.2
 @export var ads_fov: float = 55.0
 @export var sprint_to_fire_time: float = 0.18
