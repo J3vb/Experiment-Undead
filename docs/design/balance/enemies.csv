@@ -1,0 +1,21 @@
+Enemies
+"Health = round base health x multiplier. Yellow attack damage = not in the GDD yet, assumed."
+
+Enemy,First round,Health mult,Speed m/s,Attack dmg,Loot drop,Note,Hits to down (100 HP),Hits with Ironhide (250),Health r10,Health r20,Health r30,Bodyshots r20 (Tier I AR)
+Shambler,1,1,,40,1.5% + 0.1%/round (max 5%),Speed from the round speed mix,3,7,915.6,2167.558,5131.398,19
+Crawler,1,0.6,1,25,1.5% + 0.1%/round (max 5%),Made when explosives take a Shambler's legs,4,10,549.36,1300.535,3078.839,11
+Bloater,8,3,1.4,40,5%,"Death gas: 10 dmg/s for 6 s, slows 30%",3,7,2746.8,6502.675,15394.195,55
+Stalker,12,0.6,5.8,50,5%,"Pounce from 8 m, 1 s shriek tell",2,5,549.36,1300.535,3078.839,11
+Brute,15,12,2.2,80,"100%, Rare or better",Head plate absorbs 75% until 25% health lost. Charges at 7 m/s,2,4,10987.2,26010.698,61576.782,217
+Glower,6,0.4,5,20,1.5% + 0.1%/round (max 5%),"Blackout rounds only, packs of 4-6, 1.5x count",5,13,366.24,867.023,2052.559,8
+"Brute effective health if the plate also blocks body damage: health x 1.75 (25% of health at 25% effect, then 75% at full)."
+
+"Speed mix (share of zombies by speed, per round band)"
+From round,Shamble,Jog,Run,Sprint,Check (=100%)
+Speed m/s,1.2,2.6,4.2,5.6
+1,1,0,0,0,1
+4,0.6,0.4,0,0,1
+7,0.3,0.5,0.2,0,1
+10,0.1,0.4,0.5,0,1
+15,0,0.25,0.65,0.1,1
+20,0,0.1,0.6,0.3,1

@@ -1,0 +1,43 @@
+Loot ammo affixes (PROVISIONAL)
+"Vault and loot guns have no wall, so every loot gun rolls one implicit ammo affix. Weights and ranges per rarity below (blue). Tables show how many rounds one full load lasts. 99 = the gun sustains itself."
+
+Affix,Effect,Rarity,Roll weight,Min,Max,Mid roll,Chance at this rarity
+Deep Reserve,Reserve ammo +%,Common,60,0.3,0.5,0.4,0.6
+Deep Reserve,Reserve ammo +%,Uncommon,50,0.5,0.75,0.625,0.5
+Deep Reserve,Reserve ammo +%,Rare,40,0.75,1,0.875,0.4
+Deep Reserve,Reserve ammo +%,Epic,30,1,1.5,1.25,0.3
+Deep Reserve,Reserve ammo +%,Legendary,25,1.5,2,1.75,0.25
+Reclaimer,Kills return % of the bullets that hit that zombie,Common,30,0.15,0.2,0.175,0.3
+Reclaimer,Kills return % of the bullets that hit that zombie,Uncommon,35,0.2,0.3,0.25,0.35
+Reclaimer,Kills return % of the bullets that hit that zombie,Rare,35,0.3,0.4,0.35,0.35
+Reclaimer,Kills return % of the bullets that hit that zombie,Epic,35,0.4,0.5,0.45,0.35
+Reclaimer,Kills return % of the bullets that hit that zombie,Legendary,35,0.5,0.6,0.55,0.35
+Fabricator,Regenerates % of full ammo every 10 s,Common,10,0.02,0.03,0.025,0.1
+Fabricator,Regenerates % of full ammo every 10 s,Uncommon,15,0.03,0.04,0.035,0.15
+Fabricator,Regenerates % of full ammo every 10 s,Rare,25,0.04,0.05,0.045,0.25
+Fabricator,Regenerates % of full ammo every 10 s,Epic,35,0.05,0.07,0.06,0.35
+Fabricator,Regenerates % of full ammo every 10 s,Legendary,40,0.07,0.09,0.08,0.4
+Fabricator,Regenerates % of full ammo every 10 s,Prototype,100,0.09,0.09,0.09,1
+
+"Rounds one full load lasts, by round (rarity = la_rarity, mid roll)"
+Round,Avg dmg / hit,Zombie health,Bullets needed,Round time s,Resupply drops,No ammo affix,Deep Reserve,Reclaimer,Fabricator
+3,165.88,300,37.143,45.197,0.051,57.362,99,99,99
+5,172.26,480,85.714,58.87,0.079,12.542,97.222,24.485,99
+8,181.83,750,178.571,62.375,0.099,4.312,11.46,6.626,99
+10,188.21,915.6,214.286,66.722,0.118,3.593,9.55,5.522,99
+12,194.59,1087.824,300,69.724,0.138,2.396,5.739,3.556,9.657
+15,204.16,1408.764,440,74.373,0.174,1.56,3.515,2.266,3.264
+18,213.73,1824.39,694.286,77.735,0.213,0.932,1.961,1.32,1.384
+20,220.11,2167.558,900,81.32,0.249,0.705,1.452,0.991,0.951
+25,236.06,3335.057,1842.857,85.333,0.34,0.325,0.633,0.447,0.372
+30,252.01,5131.398,3420,87.27,0.45,0.17,0.321,0.231,0.182
+
+"Rounds one full load lasts at round la_round, by rarity (mid roll)"
+Rarity,,,,,,No ammo affix,Deep Reserve,Reclaimer,Fabricator,Expected (weighted)
+Common,,,,,,0.705,1.02,0.824,0.823,0.941
+Uncommon,,,,,,0.705,1.216,0.888,0.882,1.051
+Rare,,,,,,0.705,1.452,0.991,0.951,1.165
+Epic,,,,,,0.705,1.85,1.12,1.075,1.323
+Legendary,,,,,,0.705,2.479,1.288,1.303,1.592
+
+"Model: bullets needed = zombies x shots to kill / accuracy. Each round uses that minus Reclaimer refunds, Fabricator regen (over the round time) and Resupply drops. Deep Reserve makes the load bigger. Prototypes keep fixed traits and always get Fabricator 9%."

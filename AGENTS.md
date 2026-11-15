@@ -4,8 +4,29 @@ Experiment Undead is an original wave-based zombie FPS in **Godot 4.7.2**,
 written in **typed GDScript**. It will get RPG progression and self-hosted
 8-player servers later, so code must stay multiplayer-ready from day one.
 
-Read `docs/DECISIONS.md` before you start. It lists what is built, what is
+Read `docs/PROCESS.md` (pillars, milestones, how work flows) and
+`docs/DECISIONS.md` before you start. DECISIONS.md lists what is built, what is
 simplified on purpose, and what is not started.
+
+**Design references:** read `docs/design/` before any UI, art, audio,
+weapon, enemy or map work. Start with `docs/design/README.md`; for anything
+visual, `docs/design/look-rules.md` is the style to match. Use its colours,
+names and numbers instead of inventing new ones.
+
+## Skills
+
+Step-by-step guides in `.agents/skills/<name>/SKILL.md` (Codex) and the same
+files in `.claude/skills/` (Claude Code). Load the one that fits your task:
+
+| Skill | Use it for |
+|---|---|
+| `blender-model` | Building or changing a code-made model in `tools/assets/` |
+| `godot-asset-import` | Import settings, files to commit and tests for anything in `assets/` |
+| `look-check` | Rendering a visual change and comparing it with the style guide |
+| `design-change` | Changing a game number or adding content in line with the balance sheet |
+
+Edit skills in `.agents/skills/` only, then run
+`python tools/ci/check_skills_mirror.py --fix`. CI fails if the copies differ.
 
 ## Folders
 
@@ -52,10 +73,8 @@ simplified on purpose, and what is not started.
    third-party file (code or asset) gets one line in `docs/CREDITS.md`: name,
    author, link, licence. CC0 first, CC-BY with credit, MIT for code. No
    "non-commercial" or "no AI" licences. No Git LFS for now.
-   Models: `pip install -r tools/assets/requirements.txt` (Python 3.13), then
-   `python tools/assets/build_models.py [name]`. Commit the `.glb` and its
-   `.import` file, and keep a test in `tests/content/test_generated_models.gd`
-   for any part code needs by name (like `Magazine` or `Muzzle`).
+   How to build, import and check models (including `check_models.py` and the
+   glTF validator the Assets CI runs): the skills below.
 9. **Names.** Use the design doc's words in code and data:
    - Machines: `SpecimenVault` (random gun), `MedDispenser` (gives a serum),
      `Reforger` (upgrades a gun). Not "mystery box" or "perk machine".
@@ -81,6 +100,7 @@ things to build only when needed: `docs/KEEP_IT_SIMPLE.md`.
    empty stubs, no "Service" that only forwards to another class.
 4. **Size limits** (CI enforces these in the `quality` check):
    - function: 50 lines max
+   - complexity: 10 max
    - file: 350 lines max
    - function arguments: 6 max
 
@@ -146,13 +166,15 @@ If you cannot download Godot, say so in the PR and let CI run the checks.
 
 CI has two required checks. A PR can only merge when both are green.
 
-- **`quality`** (pull requests only, checks only the files your PR changed):
+- **`quality`** (pull requests only, all tracked `.gd` and `.py` files outside `addons/`):
   - `gdlint` with the repo `gdlintrc`: lines max 120, files max 350 lines,
     functions max 6 arguments, Godot style guide names and member order.
   - `gdformat --check --line-length 120`. Fix with
     `gdformat --line-length 120 <files>`. When you touch an old file, format
     the whole file.
-  - Functions max 50 lines.
+  - Functions max 50 lines; cyclomatic complexity max 10 (`gdradon cc`).
+  - Python: `ruff check` and `ruff format --check`, line length 120, complexity max 10.
+  - Quality-gate unit tests in `tools/ci/`.
   - **Tests required:** if you change a `.gd` file in `core/` or `systems/`,
     you must also add or change a file in `tests/`. Only for visual-only or
     pure-rename changes, add the label `no-tests-needed` and say why in the PR.
@@ -165,7 +187,8 @@ CI has two required checks. A PR can only merge when both are green.
 Run the same `quality` check locally before you push:
 
 ```bash
-pip install "gdtoolkit==4.5.0"
+pip install "gdtoolkit==4.5.0" "ruff==0.17.5"
+python -m unittest discover -s tools/ci -p "test_*.py"
 python tools/ci/check_pr.py origin/main
 ```
 
@@ -189,11 +212,17 @@ lines for its early warning signs and list them in that doc's catalogue.
 
 ## Merging
 
-- When both checks are green you may mark your PR ready and merge it yourself
-  (squash merge). No human approval is needed.
-- Second-agent review first when the PR changes more than 300 lines, or touches
-  `core/`, `project.godot`, `.github/` or networking code: Codex reviews Claude
-  PRs and Claude reviews Codex PRs. Fix or answer every comment, then merge.
+- **Codex reviews every PR**, from Claude and from Codex. It runs when the PR
+  is opened as ready or marked ready. It does **not** run on later pushes:
+  after each push with changes, comment `@codex review` on the PR once.
+- You may merge your PR yourself (squash merge), no human approval needed,
+  when all of these hold for the current head commit:
+  1. `quality` and `test` checks are green.
+  2. The Codex review for that commit is finished: its "Codex Review
+     Summary" comment shows ✅ Completed for that commit (or a 👍 reaction).
+  3. Every review comment is fixed, or answered with a reason if it is a
+     "Suggestion" you decline, and its conversation is resolved. A comment
+     marked "Blocking" or a P0/P1 finding must be fixed, not declined.
 - Never merge with a red or pending check, and never merge someone else's PR.
 - Each PR gets exactly one label for release notes: `new`, `fix`, `balance`
   or `tech`.

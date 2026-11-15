@@ -29,24 +29,31 @@ extends Resource
 @export_group("Spawning")
 @export var min_spawn_distance: float = 10.0
 
+
 func get_enemy_count(round_number: int, players: int = 1) -> int:
 	var n: float = float(round_number - 1)
 	return base_count + int(round(count_linear * n + count_quadratic * n * n)) + extra_per_player * maxi(players - 1, 0)
 
+
 func get_max_alive(players: int = 1) -> int:
 	return max_alive + max_alive_per_extra_player * maxi(players - 1, 0)
+
 
 func get_spawn_interval(round_number: int) -> float:
 	return maxf(spawn_interval_start - spawn_interval_step * (round_number - 1), spawn_interval_min)
 
+
 func get_health_multiplier(round_number: int) -> float:
 	return 1.0 + health_growth_per_round * (round_number - 1)
+
 
 func get_speed_multiplier(round_number: int) -> float:
 	return minf(1.0 + speed_growth_per_round * (round_number - 1), max_speed_multiplier)
 
+
 func get_damage_multiplier(round_number: int) -> float:
 	return 1.0 + damage_growth_per_round * (round_number - 1)
+
 
 func pick_enemy(round_number: int, rng: RandomNumberGenerator) -> EnemyData:
 	var total: float = 0.0

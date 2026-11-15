@@ -1,0 +1,315 @@
+[gd_scene load_steps=10 format=3]
+[ext_resource type="Script" path="res://systems/ui/settings_screen.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="Background"]
+bg_color = Color(0.043, 0.063, 0.078, 0.97)
+[sub_resource type="StyleBoxFlat" id="Panel"]
+bg_color = Color(0.071, 0.102, 0.125, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.173, 0.231, 0.267, 1)
+content_margin_left = 24.0
+content_margin_right = 24.0
+content_margin_top = 24.0
+content_margin_bottom = 24.0
+[sub_resource type="StyleBoxFlat" id="Button"]
+bg_color = Color(0.071, 0.102, 0.125, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.173, 0.231, 0.267, 1)
+content_margin_left = 20.0
+content_margin_right = 20.0
+content_margin_top = 12.0
+content_margin_bottom = 12.0
+[sub_resource type="StyleBoxFlat" id="Selected"]
+bg_color = Color(0.102, 0.145, 0.176, 1)
+border_width_top = 3
+border_color = Color(0.498, 0.839, 0.878, 1)
+content_margin_left = 20.0
+content_margin_right = 20.0
+content_margin_top = 12.0
+content_margin_bottom = 12.0
+[sub_resource type="StyleBoxFlat" id="Focus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.498, 0.839, 0.878, 1)
+[sub_resource type="StyleBoxFlat" id="Track"]
+bg_color = Color(0.173, 0.231, 0.267, 1)
+content_margin_top = 3.0
+content_margin_bottom = 3.0
+[sub_resource type="StyleBoxFlat" id="Fill"]
+bg_color = Color(0.498, 0.839, 0.878, 1)
+content_margin_top = 3.0
+content_margin_bottom = 3.0
+[sub_resource type="Theme" id="MenuTheme"]
+default_font_size = 24
+Label/colors/font_color = Color(0.902, 0.925, 0.925, 1)
+Label/constants/outline_size = 0
+Label/constants/shadow_offset_x = 0
+Label/constants/shadow_offset_y = 0
+LabelDim/base_type = &"Label"
+LabelDim/colors/font_color = Color(0.561, 0.639, 0.659, 1)
+PanelContainer/styles/panel = SubResource("Background")
+TabContainer/styles/panel = SubResource("Panel")
+PopupMenu/styles/panel = SubResource("Panel")
+HSlider/styles/slider = SubResource("Track")
+HSlider/styles/grabber_area = SubResource("Fill")
+HSlider/styles/grabber_area_highlight = SubResource("Fill")
+HSlider/styles/focus = SubResource("Focus")
+Button/colors/font_color = Color(0.902, 0.925, 0.925, 1)
+Button/colors/font_hover_color = Color(0.902, 0.925, 0.925, 1)
+Button/colors/font_pressed_color = Color(0.902, 0.925, 0.925, 1)
+Button/colors/font_focus_color = Color(0.902, 0.925, 0.925, 1)
+OptionButton/colors/font_color = Color(0.902, 0.925, 0.925, 1)
+OptionButton/colors/font_hover_color = Color(0.902, 0.925, 0.925, 1)
+OptionButton/colors/font_pressed_color = Color(0.902, 0.925, 0.925, 1)
+OptionButton/colors/font_focus_color = Color(0.902, 0.925, 0.925, 1)
+CheckBox/colors/font_color = Color(0.902, 0.925, 0.925, 1)
+CheckBox/colors/font_hover_color = Color(0.902, 0.925, 0.925, 1)
+CheckBox/colors/font_pressed_color = Color(0.902, 0.925, 0.925, 1)
+CheckBox/colors/font_focus_color = Color(0.902, 0.925, 0.925, 1)
+TabBar/colors/font_color = Color(0.902, 0.925, 0.925, 1)
+TabBar/colors/font_selected_color = Color(0.902, 0.925, 0.925, 1)
+TabBar/colors/font_unselected_color = Color(0.902, 0.925, 0.925, 1)
+TabBar/colors/font_hover_color = Color(0.902, 0.925, 0.925, 1)
+PopupMenu/colors/font_color = Color(0.902, 0.925, 0.925, 1)
+PopupMenu/colors/font_selected_color = Color(0.902, 0.925, 0.925, 1)
+PopupMenu/colors/font_unselected_color = Color(0.902, 0.925, 0.925, 1)
+PopupMenu/colors/font_hover_color = Color(0.902, 0.925, 0.925, 1)
+Button/styles/normal = SubResource("Button")
+Button/styles/hover = SubResource("Selected")
+Button/styles/pressed = SubResource("Selected")
+Button/styles/focus = SubResource("Focus")
+OptionButton/styles/normal = SubResource("Button")
+OptionButton/styles/hover = SubResource("Selected")
+OptionButton/styles/pressed = SubResource("Selected")
+OptionButton/styles/focus = SubResource("Focus")
+CheckBox/styles/focus = SubResource("Focus")
+TabBar/styles/tab_selected = SubResource("Selected")
+TabBar/styles/tab_unselected = SubResource("Button")
+TabBar/styles/tab_hovered = SubResource("Selected")
+TabBar/styles/tab_focus = SubResource("Focus")
+TabContainer/colors/font_color = Color(0.902, 0.925, 0.925, 1)
+TabContainer/colors/font_selected_color = Color(0.902, 0.925, 0.925, 1)
+TabContainer/colors/font_unselected_color = Color(0.902, 0.925, 0.925, 1)
+TabContainer/colors/font_hover_color = Color(0.902, 0.925, 0.925, 1)
+TabContainer/styles/tab_selected = SubResource("Selected")
+TabContainer/styles/tab_unselected = SubResource("Button")
+TabContainer/styles/tab_hovered = SubResource("Selected")
+TabContainer/styles/tab_focus = SubResource("Focus")
+[node name="SettingsScreen" type="PanelContainer"]
+process_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+theme = SubResource("MenuTheme")
+[node name="Margin" type="MarginContainer" parent="."]
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_bottom = 24
+[node name="Box" type="VBoxContainer" parent="Margin"]
+theme_override_constants/separation = 16
+[node name="Title" type="Label" parent="Margin/Box"]
+text = "Settings"
+theme_override_font_sizes/font_size = 36
+[node name="Tabs" type="TabContainer" parent="Margin/Box"]
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 24
+[node name="Controls" type="VBoxContainer" parent="Margin/Box/Tabs"]
+theme_override_constants/separation = 16
+[node name="mouse_sensitivityRow" type="HBoxContainer" parent="Margin/Box/Tabs/Controls"]
+theme_override_constants/separation = 16
+[node name="Label" type="Label" parent="Margin/Box/Tabs/Controls/mouse_sensitivityRow"]
+text = "Mouse sensitivity"
+custom_minimum_size = Vector2(450, 40)
+theme_override_font_sizes/font_size = 24
+[node name="mouse_sensitivity" type="HSlider" parent="Margin/Box/Tabs/Controls/mouse_sensitivityRow"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+size_flags_vertical = 4
+custom_minimum_size = Vector2(220, 40)
+min_value = 0
+max_value = 0.02
+step = 0.0001
+[node name="Number" type="Label" parent="Margin/Box/Tabs/Controls/mouse_sensitivityRow"]
+custom_minimum_size = Vector2(110, 40)
+theme_override_font_sizes/font_size = 24
+[node name="mouse_sensitivityHint" type="Label" parent="Margin/Box/Tabs/Controls"]
+theme_type_variation = &"LabelDim"
+text = "How quickly the view turns when you move the mouse."
+[node name="ads_sensitivity_multiplierRow" type="HBoxContainer" parent="Margin/Box/Tabs/Controls"]
+theme_override_constants/separation = 16
+[node name="Label" type="Label" parent="Margin/Box/Tabs/Controls/ads_sensitivity_multiplierRow"]
+text = "ADS sensitivity multiplier"
+custom_minimum_size = Vector2(450, 40)
+theme_override_font_sizes/font_size = 24
+[node name="ads_sensitivity_multiplier" type="HSlider" parent="Margin/Box/Tabs/Controls/ads_sensitivity_multiplierRow"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+size_flags_vertical = 4
+custom_minimum_size = Vector2(220, 40)
+min_value = 0
+max_value = 3
+step = 0.01
+[node name="Number" type="Label" parent="Margin/Box/Tabs/Controls/ads_sensitivity_multiplierRow"]
+custom_minimum_size = Vector2(110, 40)
+theme_override_font_sizes/font_size = 24
+[node name="ads_sensitivity_multiplierHint" type="Label" parent="Margin/Box/Tabs/Controls"]
+theme_type_variation = &"LabelDim"
+text = "Scales mouse sensitivity while aiming down sights."
+[node name="invert_y" type="CheckBox" parent="Margin/Box/Tabs/Controls"]
+unique_name_in_owner = true
+text = "Invert Y"
+theme_override_font_sizes/font_size = 24
+[node name="invert_yHint" type="Label" parent="Margin/Box/Tabs/Controls"]
+theme_type_variation = &"LabelDim"
+text = "Move the mouse up to look down."
+[node name="Video" type="VBoxContainer" parent="Margin/Box/Tabs"]
+theme_override_constants/separation = 16
+[node name="fovRow" type="HBoxContainer" parent="Margin/Box/Tabs/Video"]
+theme_override_constants/separation = 16
+[node name="Label" type="Label" parent="Margin/Box/Tabs/Video/fovRow"]
+text = "Field of view (horizontal, 16:9)"
+custom_minimum_size = Vector2(450, 40)
+theme_override_font_sizes/font_size = 24
+[node name="fov" type="HSlider" parent="Margin/Box/Tabs/Video/fovRow"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+size_flags_vertical = 4
+custom_minimum_size = Vector2(220, 40)
+min_value = 70
+max_value = 120
+step = 1
+[node name="Number" type="Label" parent="Margin/Box/Tabs/Video/fovRow"]
+custom_minimum_size = Vector2(110, 40)
+theme_override_font_sizes/font_size = 24
+[node name="fovHint" type="Label" parent="Margin/Box/Tabs/Video"]
+theme_type_variation = &"LabelDim"
+text = "Wider values show more of your surroundings."
+[node name="max_fpsRow" type="HBoxContainer" parent="Margin/Box/Tabs/Video"]
+theme_override_constants/separation = 16
+[node name="Label" type="Label" parent="Margin/Box/Tabs/Video/max_fpsRow"]
+text = "Max FPS"
+custom_minimum_size = Vector2(450, 40)
+theme_override_font_sizes/font_size = 24
+[node name="max_fps" type="OptionButton" parent="Margin/Box/Tabs/Video/max_fpsRow"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+item_count = 6
+popup/item_0/text = "60"
+popup/item_0/id = 0
+popup/item_1/text = "120"
+popup/item_1/id = 1
+popup/item_2/text = "144"
+popup/item_2/id = 2
+popup/item_3/text = "165"
+popup/item_3/id = 3
+popup/item_4/text = "240"
+popup/item_4/id = 4
+popup/item_5/text = "Unlimited"
+popup/item_5/id = 5
+[node name="max_fpsHint" type="Label" parent="Margin/Box/Tabs/Video"]
+theme_type_variation = &"LabelDim"
+text = "Limits frames per second. Unlimited removes the cap."
+[node name="vsync" type="CheckBox" parent="Margin/Box/Tabs/Video"]
+unique_name_in_owner = true
+text = "VSync"
+theme_override_font_sizes/font_size = 24
+[node name="vsyncHint" type="Label" parent="Margin/Box/Tabs/Video"]
+theme_type_variation = &"LabelDim"
+text = "Synchronizes frames with the display to reduce tearing."
+[node name="show_fps" type="CheckBox" parent="Margin/Box/Tabs/Video"]
+unique_name_in_owner = true
+text = "Show FPS"
+theme_override_font_sizes/font_size = 24
+[node name="show_fpsHint" type="Label" parent="Margin/Box/Tabs/Video"]
+theme_type_variation = &"LabelDim"
+text = "Shows a small frames-per-second counter in the HUD."
+[node name="Audio" type="VBoxContainer" parent="Margin/Box/Tabs"]
+theme_override_constants/separation = 16
+[node name="master_volumeRow" type="HBoxContainer" parent="Margin/Box/Tabs/Audio"]
+theme_override_constants/separation = 16
+[node name="Label" type="Label" parent="Margin/Box/Tabs/Audio/master_volumeRow"]
+text = "Master volume"
+custom_minimum_size = Vector2(450, 40)
+theme_override_font_sizes/font_size = 24
+[node name="master_volume" type="HSlider" parent="Margin/Box/Tabs/Audio/master_volumeRow"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+size_flags_vertical = 4
+custom_minimum_size = Vector2(220, 40)
+min_value = 0
+max_value = 100
+step = 1
+[node name="Number" type="Label" parent="Margin/Box/Tabs/Audio/master_volumeRow"]
+custom_minimum_size = Vector2(110, 40)
+theme_override_font_sizes/font_size = 24
+[node name="master_volumeHint" type="Label" parent="Margin/Box/Tabs/Audio"]
+theme_type_variation = &"LabelDim"
+text = "Adjusts the volume of all sounds."
+[node name="music_volumeRow" type="HBoxContainer" parent="Margin/Box/Tabs/Audio"]
+theme_override_constants/separation = 16
+[node name="Label" type="Label" parent="Margin/Box/Tabs/Audio/music_volumeRow"]
+text = "Music volume"
+custom_minimum_size = Vector2(450, 40)
+theme_override_font_sizes/font_size = 24
+[node name="music_volume" type="HSlider" parent="Margin/Box/Tabs/Audio/music_volumeRow"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+size_flags_vertical = 4
+custom_minimum_size = Vector2(220, 40)
+min_value = 0
+max_value = 100
+step = 1
+[node name="Number" type="Label" parent="Margin/Box/Tabs/Audio/music_volumeRow"]
+custom_minimum_size = Vector2(110, 40)
+theme_override_font_sizes/font_size = 24
+[node name="music_volumeHint" type="Label" parent="Margin/Box/Tabs/Audio"]
+theme_type_variation = &"LabelDim"
+text = "Adjusts music independently of sound effects."
+[node name="sfx_volumeRow" type="HBoxContainer" parent="Margin/Box/Tabs/Audio"]
+theme_override_constants/separation = 16
+[node name="Label" type="Label" parent="Margin/Box/Tabs/Audio/sfx_volumeRow"]
+text = "SFX volume"
+custom_minimum_size = Vector2(450, 40)
+theme_override_font_sizes/font_size = 24
+[node name="sfx_volume" type="HSlider" parent="Margin/Box/Tabs/Audio/sfx_volumeRow"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+size_flags_vertical = 4
+custom_minimum_size = Vector2(220, 40)
+min_value = 0
+max_value = 100
+step = 1
+[node name="Number" type="Label" parent="Margin/Box/Tabs/Audio/sfx_volumeRow"]
+custom_minimum_size = Vector2(110, 40)
+theme_override_font_sizes/font_size = 24
+[node name="sfx_volumeHint" type="Label" parent="Margin/Box/Tabs/Audio"]
+theme_type_variation = &"LabelDim"
+text = "Adjusts weapons, enemies and world sounds."
+[node name="Buttons" type="HBoxContainer" parent="Margin/Box"]
+theme_override_constants/separation = 24
+[node name="Reset" type="Button" parent="Margin/Box/Buttons"]
+unique_name_in_owner = true
+text = "Reset to defaults"
+theme_override_font_sizes/font_size = 24
+[node name="Back" type="Button" parent="Margin/Box/Buttons"]
+unique_name_in_owner = true
+text = "Back"
+theme_override_font_sizes/font_size = 24
+[node name="Hint" type="Label" parent="Margin/Box/Buttons"]
+size_flags_horizontal = 3
+horizontal_alignment = 2
+vertical_alignment = 1
+theme_type_variation = &"LabelDim"
+text = "Tab: move   Arrows: change   Esc: back"

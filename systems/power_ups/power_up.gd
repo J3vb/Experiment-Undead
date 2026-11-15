@@ -1,5 +1,5 @@
-## A power-up floating where a zombie died. The first living player to touch
-## it collects it for the whole squad. It vanishes after LIFETIME seconds and
+## A power-up (or a Scavenger ammo pack) floating where a zombie died. The
+## first living player to touch it collects it. It vanishes after LIFETIME seconds and
 ## blinks for the last BLINK_TIME.
 class_name PowerUp
 extends Area3D
@@ -41,6 +41,14 @@ func collect(player: Player) -> void:
 				for weapon: Weapon in (node as Player).weapons.weapons:
 					weapon.instance.refill_all()
 					weapon.ammo_changed.emit(weapon.instance.ammo_in_mag, weapon.instance.ammo_reserve)
+		&"ammo_pack":
+			for weapon: Weapon in player.weapons.weapons:
+				weapon.instance.add_reserve(weapon.data.magazine_size)
+				weapon.ammo_changed.emit(weapon.instance.ammo_in_mag, weapon.instance.ammo_reserve)
+	var sound: AudioStreamPlayer = $CollectSound
+	sound.reparent(get_parent())
+	sound.finished.connect(sound.queue_free)
+	sound.play()
 	Events.power_up_collected.emit(player, data)
 	queue_free()
 

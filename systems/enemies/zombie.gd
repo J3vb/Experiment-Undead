@@ -1,20 +1,20 @@
-## Basic zombie brain: rises, chases the nearest living player over the navmesh,
-## swings when close, dies. State machine is a plain enum + match. The body
+## Basic zombie brain: rises, queues at and tears through its window barrier
+## (if it spawned behind one), vaults in, chases the nearest living player over
+## the navmesh, swings when close, dies. State machine is a plain enum + match. The body
 ## (ZombieRig) and voice (ZombieVoice) are child nodes with their own scripts.
 class_name Zombie
 extends CharacterBody3D
 
-enum State { SPAWNING, CHASING, ATTACKING, DEAD }
+enum State { SPAWNING, ENTERING, CHASING, ATTACKING, DEAD }
 
 const SPAWN_TIME: float = 0.9
 const SEPARATION_RADIUS: float = 0.9
 const SEPARATION_FORCE: float = 2.5
 const STRIKE_TIME: float = 0.35
-## A chasing zombie that moves less than STUCK_DISTANCE in STUCK_TIME seconds
-## while out of reach is reported to the Log once.
-const STUCK_TIME: float = 3.0
-const STUCK_DISTANCE: float = 0.3
-const FELL_OUT_Y: float = -50.0
+## A swing still lands this far past attack_range (also the reach through a window).
+const HIT_SLACK: float = 0.3
+## Seconds to climb through an open window (AI doc: 1.0 s vault).
+const VAULT_TIME: float = 1.0
 
 var data: EnemyData
 var net_id: int = 0
@@ -22,17 +22,20 @@ var state: State = State.SPAWNING
 ## Seconds since the current state began.
 var state_time: float = 0.0
 var target: Player
+## The window this zombie climbs through; set by the Spawner, cleared once inside.
+var barrier: Barrier
 
 var _max_health: float = 100.0
 var _speed: float = 1.8
 var _damage: float = 35.0
 var _attack_cooldown: float = 0.0
 var _attack_landed: bool = false
+var _tear_timer: float = 0.0
+var _vault_time: float = -1.0
+var _vault_from: Vector3 = Vector3.ZERO
 var _repath_timer: float = 0.0
 var _retarget_timer: float = 0.0
-var _stuck_timer: float = 0.0
-var _stuck_from: Vector3 = Vector3.ZERO
-var _stuck_reported: bool = false
+var _stuck_watch: ZombieStuckWatch = ZombieStuckWatch.new()
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _rng: RandomNumberGenerator
 
@@ -91,6 +94,8 @@ func _physics_process(delta: float) -> void:
 	match state:
 		State.SPAWNING:
 			_tick_spawning()
+		State.ENTERING:
+			_tick_entering(delta)
 		State.CHASING:
 			_tick_chasing(delta)
 		State.ATTACKING:
@@ -111,8 +116,9 @@ func _tick_spawning() -> void:
 	velocity.x = 0.0
 	velocity.z = 0.0
 	if state_time >= SPAWN_TIME:
-		_stuck_from = global_position
-		_enter(State.CHASING)
+		_stuck_watch.restart(global_position)
+		_tear_timer = data.plank_time
+		_enter(State.ENTERING if barrier else State.CHASING)
 
 
 func _tick_chasing(delta: float) -> void:
@@ -123,7 +129,7 @@ func _tick_chasing(delta: float) -> void:
 	var to_target: Vector3 = target.global_position - global_position
 	to_target.y = 0.0
 	var distance: float = to_target.length()
-	_watch_progress(delta, distance)
+	_stuck_watch.tick(self, delta, distance)
 	if distance <= data.attack_range * 0.85 and _attack_cooldown <= 0.0 and _can_see(target):
 		_enter(State.ATTACKING)
 		voice.say(data.attack_sound)
@@ -146,27 +152,71 @@ func _tick_chasing(delta: float) -> void:
 	_face(to_target, delta)
 
 
-## Early warning for navmesh holes, bad spawn points and zombies wedged in
-## geometry. Logs only; the zombie keeps trying.
-func _watch_progress(delta: float, distance: float) -> void:
-	_stuck_timer += delta
-	if _stuck_timer < STUCK_TIME or _stuck_reported:
+## Take an attack slot at the window (or wait in the queue), tear planks or
+## swipe a player through the gap, then vault in once the window is open.
+func _tick_entering(delta: float) -> void:
+	if _vault_time >= 0.0:
+		_tick_vault(delta)
 		return
-	_stuck_timer = 0.0
-	var moved: float = global_position.distance_to(_stuck_from)
-	_stuck_from = global_position
-	var fell: bool = global_position.y < FELL_OUT_Y
-	if fell or (moved < STUCK_DISTANCE and distance > data.attack_range):
-		_stuck_reported = true
-		var data_out: Dictionary = {
-			"net_id": net_id,
-			"enemy": data.resource_path.get_file().get_basename(),
-			"at": str(global_position.snappedf(0.1)),
-			"target_distance": snappedf(distance, 0.1),
-			"next_path_point": str(agent.get_next_path_position().snappedf(0.1)),
-			"path_finished": agent.is_navigation_finished(),
-		}
-		Log.warn(&"enemies", &"zombie_fell_out" if fell else &"zombie_stuck", data_out)
+	var slot: int = barrier.claim_slot(self)
+	var spot: Vector3 = barrier.slot_point(slot) if slot >= 0 else barrier.queue_point(net_id)
+	_update_target(delta)
+	var to_spot: Vector3 = spot - global_position
+	to_spot.y = 0.0
+	if to_spot.length() > 0.3:
+		_steer(to_spot.normalized() * _speed + _separation(), delta)
+		_face(to_spot, delta)
+		return
+	_steer(Vector3.ZERO, delta)
+	_face(barrier.global_position - global_position, delta)
+	if slot < 0:
+		return
+	if barrier.is_broken():
+		if barrier.try_start_vault(self):
+			_vault_from = global_position
+			_vault_time = 0.0
+		return
+	if (
+		target
+		and _attack_cooldown <= 0.0
+		and _flat_distance(target) <= data.attack_range + HIT_SLACK
+		and _can_see(target)
+	):
+		_enter(State.ATTACKING)
+		voice.say(data.attack_sound)
+		return
+	_tear_timer -= delta
+	if _tear_timer <= 0.0:
+		_tear_timer = data.plank_time
+		barrier.tear_plank()
+
+
+## Over the sill on a fixed path; the rig adds the hop (see vault_progress).
+func _tick_vault(delta: float) -> void:
+	_vault_time += delta
+	var t: float = clampf(_vault_time / VAULT_TIME, 0.0, 1.0)
+	var landing: Vector3 = barrier.inside_point()
+	landing.y = _vault_from.y
+	velocity = Vector3.ZERO
+	global_position = _vault_from.lerp(landing, t)
+	_face(landing - _vault_from, delta)
+	if t >= 1.0:
+		barrier.release(self)
+		barrier = null
+		_vault_time = -1.0
+		_stuck_watch.restart(global_position)
+		_enter(State.CHASING)
+
+
+## 0..1 while vaulting through a window, -1 otherwise.
+func vault_progress() -> float:
+	return clampf(_vault_time / VAULT_TIME, 0.0, 1.0) if _vault_time >= 0.0 else -1.0
+
+
+func _flat_distance(other: Node3D) -> float:
+	var flat: Vector3 = other.global_position - global_position
+	flat.y = 0.0
+	return flat.length()
 
 
 func _tick_attacking(delta: float) -> void:
@@ -179,7 +229,7 @@ func _tick_attacking(delta: float) -> void:
 		_try_hit_target()
 	if state_time >= data.attack_windup + STRIKE_TIME:
 		_attack_cooldown = data.attack_cooldown
-		_enter(State.CHASING)
+		_enter(State.ENTERING if barrier else State.CHASING)
 
 
 func _try_hit_target() -> void:
@@ -187,7 +237,7 @@ func _try_hit_target() -> void:
 		return
 	var flat: Vector3 = target.global_position - global_position
 	flat.y = 0.0
-	if flat.length() <= data.attack_range + 0.3 and _can_see(target):
+	if flat.length() <= data.attack_range + HIT_SLACK and _can_see(target):
 		var info: DamageInfo = DamageInfo.create(_damage, self, DamageInfo.Type.MELEE)
 		info.position = target.global_position
 		info.impulse = flat.normalized()
@@ -196,9 +246,9 @@ func _try_hit_target() -> void:
 
 ## True when no world geometry sits between our chest and the target's.
 func _can_see(other: Node3D) -> bool:
-	var from: Vector3 = global_position + Vector3.UP * 1.2
-	var to: Vector3 = other.global_position + Vector3.UP * 1.2
-	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(from, to, Layers.WORLD)
+	var start: Vector3 = global_position + Vector3.UP * 1.2
+	var end: Vector3 = other.global_position + Vector3.UP * 1.2
+	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(start, end, Layers.WORLD)
 	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
 
 
@@ -269,6 +319,8 @@ func _on_damaged(info: DamageInfo) -> void:
 
 func _on_died(info: DamageInfo) -> void:
 	_enter(State.DEAD)
+	if barrier:
+		barrier.release(self)
 	collision_layer = 0
 	for zone: HitZone in hit_zones:
 		zone.set_enabled(false)

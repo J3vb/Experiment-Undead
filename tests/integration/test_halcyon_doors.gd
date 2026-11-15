@@ -1,7 +1,7 @@
 ## Plays Halcyon Labs headless: buying doors costs points and opens areas,
 ## doors to the same area open together, power doors wait for the power
-## switch, wall-buys sell guns and ammo, and with everything open every spawn
-## point can walk to the start.
+## switch, wall-buys (rifle and Brenner Trench) sell guns and ammo, and with
+## everything open every spawn point can walk to the start.
 extends GutTest
 
 const SESSION: PackedScene = preload("res://systems/game/game_session.tscn")
@@ -14,6 +14,7 @@ var level: Level
 
 func before_each() -> void:
 	session = SESSION.instantiate() as GameSession
+	session.profile_id = &""
 	session.rng_seed = 99
 	add_child_autofree(session)
 	await wait_until(func() -> bool: return session.level.is_navigation_ready, 15.0, "navmesh baked")
@@ -101,7 +102,8 @@ func test_machines_are_placed() -> void:
 	assert_eq(get_tree().get_nodes_in_group(&"exfil").size(), 1, "1 exfil point")
 	assert_not_null(level.find_child("PowerSwitch", true, false), "1 power switch")
 	var wall_buys: int = level.find_children("*", "Area3D").filter(func(n: Node) -> bool: return n is WallBuy).size()
-	assert_eq(wall_buys + get_tree().get_nodes_in_group(&"wall_buy_spot").size(), 4, "4 wall guns")
+	assert_eq(wall_buys, 4, "4 real wall guns")
+	assert_eq(get_tree().get_nodes_in_group(&"wall_buy_spot").size(), 0, "no wall-gun placeholders remain")
 
 
 func test_wall_buy_sells_ammo_and_guns() -> void:
@@ -116,6 +118,22 @@ func test_wall_buy_sells_ammo_and_guns() -> void:
 	wall_buy.interact(player)
 	assert_eq(player.weapons.current.data, wall_buy.weapon, "new gun in hand")
 	assert_eq(player.wallet.points, 3200, "gun costs its WeaponData cost")
+
+
+func test_brenner_wall_buy_sells_the_shotgun() -> void:
+	var wall_buy: WallBuy = level.find_child("WallBuyBrennerTrench", true, false) as WallBuy
+	assert_not_null(wall_buy, "Brenner Trench is a real wall-buy")
+	if wall_buy == null:
+		return
+	player.global_position = Vector3(44.6, 0.0, 52.0)
+	player.rotation = Vector3(0.0, -PI * 0.5, 0.0)
+	await wait_physics_frames(3)
+	assert_eq(player.focus, wall_buy as Interactable, "board under the crosshair")
+	player.wallet.set_points(1000)
+	wall_buy.interact(player)
+	assert_eq(player.weapons.current.data.id, &"brenner_trench", "shotgun in hand")
+	assert_eq(player.weapons.weapons.size(), 2, "two slots: it replaced the gun in hand")
+	assert_eq(player.wallet.points, 250, "costs 750")
 
 
 func test_player_sees_the_door_prompt_from_near_and_far() -> void:

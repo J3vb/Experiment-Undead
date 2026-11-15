@@ -81,6 +81,8 @@ The server also prints every warning and error to stdout as
 | `waves.round_ended` | info | Round cleared |
 | `waves.round_stalled` | warn | 90 s in a round with no kill; lists where the living zombies are |
 | `player.player_spawned` / `player_died` | info | Player `net_id`, spawn position |
+| `progression.profile_save_failed` | warn | Character could not be saved; `id`, `path`, `error` (Godot Error code). Check folder permissions and disk space |
+| `progression.profile_unreadable` | warn | Existing character is unreadable, malformed or newer; file stays untouched, this match uses a temporary character. `id`, `path`; inspect nearby engine errors |
 | `game.game_over` | info | Final stats |
 | `net.peer_connected` / `peer_disconnected` | info | Server side, peer id |
 
@@ -95,3 +97,20 @@ The server also prints every warning and error to stdout as
 - Never log per frame, per shot or per hit. Group repeats (see
   `perf.long_frames`) or report once per object (see `zombie_stuck`).
 - Add new events to the catalogue above in the same PR.
+
+## Soak test
+
+Run `godot --headless --path . --script res://tools/soak/soak.gd -- --rounds 10 --seed 1 --timescale 4`.
+It loads the normal Halcyon Labs session, powers on and opens every door, keeps
+an immortal player stationary, and hits one living zombie every 30 physics ticks
+only after spawning and window entry finish. Stops after the target round ends
+or 10 real minutes. The table includes rounds, kills, points, real run time,
+and counts plus the first JSON line for each warning/error in this run's log.
+
+Exit 1: any `error` level, `waves.round_stalled`, `enemies.zombie_fell_out`,
+`perf.orphan_nodes_growing`, `level.navigation_not_ready`, an unreadable or
+malformed log, or a target round that never finishes. `enemies.zombie_stuck`
+and `perf.long_frames` only warn (exit 0); other warning lines are also listed.
+The event lists are constants at the top of `tools/soak/soak.gd`.
+The separate PR/manual Soak workflow writes the table to the job summary and
+uploads `user://logs/` on failure. It is not a required check yet.

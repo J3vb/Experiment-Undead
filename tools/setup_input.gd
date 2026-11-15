@@ -23,6 +23,7 @@ const MOUSE: Dictionary = {
 	"weapon_prev": [MOUSE_BUTTON_WHEEL_UP],
 }
 
+
 func _initialize() -> void:
 	for action: String in KEYS:
 		var events: Array = []

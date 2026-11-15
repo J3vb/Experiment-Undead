@@ -16,6 +16,7 @@ extends Resource
 @export var reset_time: float = 0.3
 @export var repeat_last: int = 4
 
+
 func get_kick(shot_index: int, rng: RandomNumberGenerator) -> Vector2:
 	if pattern.is_empty():
 		return Vector2.ZERO

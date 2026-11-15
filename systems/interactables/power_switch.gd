@@ -9,4 +9,7 @@ func get_prompt(_player: Player) -> String:
 
 
 func interact(_player: Player) -> void:
+	if _level().power_on:
+		return
 	_level().turn_power_on()
+	($PowerSound as AudioStreamPlayer3D).play()

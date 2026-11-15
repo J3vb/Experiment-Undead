@@ -102,3 +102,28 @@ func test_bloater_has_its_own_model_and_wider_body() -> void:
 	var belly: Node3D = zombie.visual.find_child("Belly", true, false) as Node3D
 	zombie.visual.pulse_belly()
 	assert_gt(belly.scale.x, 1.0, "belly swells when hit")
+
+
+func test_moving_limbs_skip_lightmap_probes() -> void:
+	for path: String in [WALKER, BLOATER]:
+		var zombie: Zombie = _spawn(path)
+		var meshes: Array[Node] = zombie.visual.find_children("*", "GeometryInstance3D", true, false)
+		assert_gt(meshes.size(), 0, "%s has meshes" % path)
+		for mesh: Node in meshes:
+			var gi: int = (mesh as GeometryInstance3D).gi_mode
+			assert_eq(gi, GeometryInstance3D.GI_MODE_DISABLED, "%s: no per-frame probe capture" % mesh.name)
+
+
+func test_vault_pose_hops_and_reaches_forward() -> void:
+	var zombie: Zombie = _spawn(WALKER)
+	var rig: ZombieRig = zombie.visual
+	rig.pose_vault(0.0)
+	assert_almost_eq(rig.position.y, 0.0, 0.001, "starts on the ground")
+	assert_lt(rig.get_offset(&"ArmL").x, -1.0, "hands reach for the sill")
+	rig.pose_vault(0.5)
+	assert_almost_eq(rig.position.y, ZombieRig.VAULT_HEIGHT, 0.001, "top of the hop")
+	assert_gt(rig.get_offset(&"Torso").x, 0.4, "body pitches forward over the sill")
+	assert_lt(rig.get_offset(&"LegL").x, -0.5, "legs tuck")
+	rig.pose_vault(1.0)
+	assert_almost_eq(rig.position.y, 0.0, 0.001, "lands")
+	assert_eq(zombie.vault_progress(), -1.0, "not vaulting outside a window")

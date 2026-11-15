@@ -3,6 +3,10 @@ class_name MedDispenser
 extends Interactable
 
 @export var serum: SerumData
+## After this many sales in a run the dispenser is gone. 0 = no limit.
+@export var max_sales: int = 0
+
+var sales: int = 0
 
 
 func _ready() -> void:
@@ -25,6 +29,14 @@ func interact(player: Player) -> void:
 		return
 	if _pay(player, serum.cost):
 		player.add_serum(serum)
+		sales += 1
+		if sales == max_sales:
+			var sound: AudioStreamPlayer3D = $BuySound
+			sound.stop()
+			sound.reparent(_level())
+			sound.finished.connect(sound.queue_free)
+			sound.play()
+			queue_free()
 
 
 func _light_up() -> void:

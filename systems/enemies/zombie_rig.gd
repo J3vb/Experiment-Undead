@@ -1,5 +1,5 @@
 ## A zombie's visible body: loads its code-built model and poses the limbs in
-## code (walk, reach, attack, death). Presentation only; the Zombie owns state.
+## code (walk, reach, attack, vault, death). Presentation only; the Zombie owns state.
 class_name ZombieRig
 extends Node3D
 
@@ -10,6 +10,8 @@ const ATTACK_DROP: float = 0.7
 ## Arms start lifting toward a target closer than this.
 const REACH_DISTANCE: float = 3.0
 const CORPSE_TIME: float = 5.0
+## How high the body hops at the middle of a window vault.
+const VAULT_HEIGHT: float = 0.45
 
 ## A .glb from tools/assets/build_models.py (faces +Z, one node per limb).
 @export var model: PackedScene
@@ -27,6 +29,10 @@ func _ready() -> void:
 	var body: Node3D = model.instantiate() as Node3D
 	body.rotation.y = PI
 	add_child(body)
+	# Limbs move every frame; Dynamic GI would re-sample the lightmap probes for
+	# each one each frame (about a quarter of the frame with 24 zombies).
+	for mesh: Node in body.find_children("*", "GeometryInstance3D", true, false):
+		(mesh as GeometryInstance3D).gi_mode = GeometryInstance3D.GI_MODE_DISABLED
 	for part_name: StringName in PARTS:
 		var part: Node3D = body.find_child(part_name, true, false) as Node3D
 		if part:
@@ -46,6 +52,10 @@ func follow(zombie: Zombie, delta: float) -> void:
 		return
 	if zombie.state == Zombie.State.DEAD:
 		return
+	var vault: float = zombie.vault_progress()
+	if vault >= 0.0:
+		pose_vault(vault)
+		return
 	position = position.lerp(Vector3.ZERO, clampf(delta * 10.0, 0.0, 1.0))
 	if zombie.state == Zombie.State.ATTACKING:
 		var windup: float = maxf(zombie.data.attack_windup, 0.01)
@@ -55,7 +65,9 @@ func follow(zombie: Zombie, delta: float) -> void:
 			pose_attack(1.0 + (t - windup) / Zombie.STRIKE_TIME)
 		return
 	var reach: float = 0.0
-	if zombie.target:
+	if zombie.state == Zombie.State.ENTERING:
+		reach = 1.0
+	elif zombie.target:
 		var distance: float = zombie.global_position.distance_to(zombie.target.global_position)
 		reach = clampf(1.0 - distance / REACH_DISTANCE, 0.0, 1.0)
 	pose_walk(Vector2(zombie.velocity.x, zombie.velocity.z).length(), reach, delta)
@@ -123,6 +135,19 @@ func pose_attack(t: float) -> void:
 	_pose_part(&"Torso", Vector3(lean, 0.0, 0.0))
 	_pose_part(&"LegL", Vector3(0.15, 0.0, 0.0))
 	_pose_part(&"LegR", Vector3(-0.1, 0.0, 0.0))
+
+
+## Climb over a window sill. `t` 0..1: hands reach for the sill, the body
+## hops up and pitches forward, legs tuck, then it drops into the room.
+func pose_vault(t: float) -> void:
+	var hop: float = sin(t * PI)
+	position = Vector3(0.0, VAULT_HEIGHT * hop, 0.0)
+	_pose_part(&"ArmL", Vector3(-1.4 + 0.9 * t, 0.0, -0.2))
+	_pose_part(&"ArmR", Vector3(-1.4 + 0.9 * t, 0.0, 0.2))
+	_pose_part(&"Torso", Vector3(0.6 * hop, 0.0, 0.0))
+	_pose_part(&"LegL", Vector3(-0.9 * hop, 0.0, 0.0))
+	_pose_part(&"LegR", Vector3(-0.6 * hop, 0.0, 0.0))
+	_pose_part(&"Head", Vector3(-0.2 * hop, 0.0, 0.0))
 
 
 ## Limbs go slack as the body falls.

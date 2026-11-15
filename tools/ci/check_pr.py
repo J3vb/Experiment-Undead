@@ -2,7 +2,8 @@
 
     python tools/ci/check_pr.py <base-ref> [--no-tests-label]
 
-Checks only the .gd files the PR changed, so old code is cleaned up as it is touched.
+Checks all tracked GDScript and Python outside addons/. Only the tests-required
+rule uses the files the PR changed.
 """
 
 import re
@@ -11,21 +12,43 @@ import sys
 from pathlib import Path
 
 MAX_FUNCTION_LINES = 50
+MAX_COMPLEXITY = 10
 LINE_LENGTH = "120"
 LOGIC_DIRS = ("core/", "systems/")
 FUNC_RE = re.compile(r"^(\s*)(static\s+)?func\s+(\w+)")
+COMPLEXITY_RE = re.compile(r"^\s*F\s+(\d+):\d+\s+(\S+)\s+-\s+[A-F]\s+\((\d+)\)\s*$")
 
 
 def changed_files(base: str) -> list[str]:
     out = subprocess.run(
         ["git", "diff", "--name-only", "--diff-filter=ACMR", f"{base}...HEAD"],
-        check=True, capture_output=True, text=True,
+        check=True,
+        capture_output=True,
+        text=True,
     ).stdout
     return [line for line in out.splitlines() if line]
 
 
 def indent_of(line: str) -> int:
     return len(line) - len(line.lstrip("\t "))
+
+
+def tracked_files(suffix: str) -> list[str]:
+    out = subprocess.run(["git", "ls-files", "-z"], check=True, capture_output=True, text=True).stdout
+    return [path for path in out.split("\0") if path.endswith(suffix) and not path.startswith("addons/")]
+
+
+def function_lines(lines: list[str], start: int) -> int:
+    depth = indent_of(lines[start])
+    body = 0
+    for later in lines[start + 1 :]:
+        stripped = later.strip()
+        if not stripped:
+            continue
+        if indent_of(later) <= depth and not stripped.startswith("#"):
+            break
+        body += 1
+    return body
 
 
 def long_functions(path: str) -> list[str]:
@@ -35,55 +58,85 @@ def long_functions(path: str) -> list[str]:
         match = FUNC_RE.match(line)
         if not match:
             continue
-        depth = indent_of(line)
-        body = 0
-        for later in lines[i + 1:]:
-            stripped = later.strip()
-            if not stripped:
-                continue
-            if indent_of(later) <= depth and not stripped.startswith("#"):
-                break
-            body += 1
+        body = function_lines(lines, i)
         if body > MAX_FUNCTION_LINES:
-            problems.append(
-                f"{path}:{i + 1}: function '{match.group(3)}' has {body} lines (max {MAX_FUNCTION_LINES})"
-            )
+            problems.append(f"{path}:{i + 1}: function '{match.group(3)}' has {body} lines (max {MAX_FUNCTION_LINES})")
     return problems
 
 
 def run(cmd: list[str]) -> bool:
     print("$ " + " ".join(cmd), flush=True)
-    return subprocess.run(cmd).returncode == 0
+    return subprocess.run(cmd, check=False).returncode == 0
+
+
+def complex_functions(output: str) -> list[str]:
+    problems = []
+    path = ""
+    for line in output.splitlines():
+        match = COMPLEXITY_RE.match(line)
+        if match:
+            number, name, score = match.groups()
+            if int(score) > MAX_COMPLEXITY:
+                problems.append(f"{path}:{number}: function '{name}' has complexity {score} (max {MAX_COMPLEXITY})")
+        elif line and not line[0].isspace():
+            path = line
+    return problems
+
+
+def check_complexity(files: list[str]) -> bool:
+    cmd = ["gdradon", "cc", *files]
+    print("$ " + " ".join(cmd), flush=True)
+    result = subprocess.run(cmd, check=False, capture_output=True, text=True)
+    problems = complex_functions(result.stdout)
+    for problem in problems:
+        print(problem)
+    if result.stderr:
+        print(result.stderr, file=sys.stderr, end="")
+    # gdradon reports processing errors on stderr even when it exits zero.
+    return result.returncode == 0 and not result.stderr and not problems
+
+
+def check_gdscript(files: list[str]) -> bool:
+    if not files:
+        return True
+    ok = run(["gdlint", *files])
+    ok &= run(["gdformat", "--check", "--line-length", LINE_LENGTH, *files])
+    long = [problem for path in files for problem in long_functions(path)]
+    for problem in long:
+        print(problem)
+    ok &= not long
+    ok &= check_complexity(files)
+    return ok
+
+
+def check_python(files: list[str]) -> bool:
+    if not files:
+        return True
+    ok = run(["ruff", "check", *files])
+    ok &= run(["ruff", "format", "--check", *files])
+    return ok
+
+
+def tests_required(files: list[str], skip_tests_rule: bool) -> bool:
+    logic_changed = [f for f in files if f.endswith(".gd") and f.startswith(LOGIC_DIRS)]
+    tests_changed = [f for f in files if f.startswith("tests/")]
+    if not logic_changed or tests_changed:
+        return True
+    if skip_tests_rule:
+        print("Code changed without tests; allowed by the 'no-tests-needed' label.")
+        return True
+    print("Code in core/ or systems/ changed but no file in tests/ changed:")
+    for path in logic_changed:
+        print("  " + path)
+    print("Add or update a test, or add the 'no-tests-needed' label if this is visual-only.")
+    return False
 
 
 def main() -> int:
-    base = sys.argv[1]
-    skip_tests_rule = "--no-tests-label" in sys.argv
-    files = changed_files(base)
-    gd_files = [f for f in files if f.endswith(".gd") and not f.startswith("addons/")]
-    ok = True
-
-    if gd_files:
-        ok &= run(["gdlint", *gd_files])
-        ok &= run(["gdformat", "--check", "--line-length", LINE_LENGTH, *gd_files])
-        long = [p for f in gd_files for p in long_functions(f)]
-        for problem in long:
-            print(problem)
-        ok &= not long
-    else:
-        print("No GDScript files changed.")
-
-    logic_changed = [f for f in gd_files if f.startswith(LOGIC_DIRS)]
-    tests_changed = [f for f in files if f.startswith("tests/")]
-    if logic_changed and not tests_changed:
-        if skip_tests_rule:
-            print("Code changed without tests; allowed by the 'no-tests-needed' label.")
-        else:
-            print("Code in core/ or systems/ changed but no file in tests/ changed:")
-            for f in logic_changed:
-                print("  " + f)
-            print("Add or update a test, or add the 'no-tests-needed' label if this is visual-only.")
-            ok = False
+    files = changed_files(sys.argv[1])
+    ok = check_gdscript(tracked_files(".gd"))
+    ok &= check_python(tracked_files(".py"))
+    ok &= tests_required(files, "--no-tests-label" in sys.argv)
 
     print("Quality checks passed." if ok else "Quality checks failed. Fix the problems above.")
     return 0 if ok else 1

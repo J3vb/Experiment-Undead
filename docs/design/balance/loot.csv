@@ -1,0 +1,20 @@
+Loot
+"Rarity odds, luck, and expected items per run (up to run_round). Luck rule is a PROPOSAL: the GDD does not define the maths yet."
+Luck at run_round,,0.1
+
+Rarity,Colour,Affixes,Zombie drop share,Vault share,Zombie share with luck,Brute (Rare+),Cache (Uncommon+),Expected per run,Runs per item
+Common,#D9D9D2,0,0.55,0.4,0.526,0,0,6.988,0.143
+Uncommon,#3FE0C8,1,0.28,0.3,0.295,0,0.622,6.16,0.162
+Rare,#3D7DFF,2,0.12,0.18,0.126,0.706,0.267,3.603,0.278
+Epic,#A64DFF,3,0.04,0.09,0.042,0.235,0.089,1.351,0.74
+Legendary,#FF8A1C,3 + trait,0.009,0.025,0.009,0.053,0.02,0.328,3.051
+Prototype,#8DFF3A,Fixed traits,0.001,0.005,0.001,0.006,0.002,0.048,21.041
+Check,,,1,1,1,1,1,18.478
+
+Zombie drops per run,,9.478
+Brute drops per run,,1
+Supply caches per run,,3
+Vault rolls per run,,5
+Pack slots,,6
+
+"Luck rule used here: every non-Common share x (1 + luck), then all shares rescaled to 100%. Expected per run excludes the optional exfil cache."

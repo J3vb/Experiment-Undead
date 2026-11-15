@@ -8,19 +8,28 @@
 [ext_resource type="PackedScene" path="res://systems/effects/film_post.tscn" id="film"]
 [ext_resource type="Material" path="res://levels/materials/rust.tres" id="rust"]
 [ext_resource type="Material" path="res://levels/materials/wood.tres" id="wood"]
-[ext_resource type="Script" path="res://systems/interactables/door.gd" id="door"]
-[ext_resource type="Script" path="res://systems/interactables/power_switch.gd" id="power"]
-[ext_resource type="Script" path="res://systems/interactables/wall_buy.gd" id="wallbuy"]
+[ext_resource type="PackedScene" path="res://systems/interactables/door.tscn" id="door"]
+[ext_resource type="PackedScene" path="res://systems/interactables/power_switch.tscn" id="power"]
+[ext_resource type="PackedScene" path="res://systems/interactables/wall_buy.tscn" id="wallbuy"]
 [ext_resource type="Resource" path="res://content/weapons/rifle_ar.tres" id="rifle"]
+[ext_resource type="Resource" path="res://content/weapons/brenner_trench.tres" id="brenner"]
+[ext_resource type="Resource" path="res://content/weapons/kestrel_smg.tres" id="kestrel"]
+[ext_resource type="Resource" path="res://content/weapons/talon_dmr.tres" id="talon"]
 [ext_resource type="PackedScene" path="res://systems/interactables/med_dispenser.tscn" id="meddisp"]
 [ext_resource type="PackedScene" path="res://systems/interactables/reforger.tscn" id="reforger"]
+[ext_resource type="PackedScene" path="res://systems/interactables/specimen_vault.tscn" id="vault"]
+[ext_resource type="Script" path="res://systems/weapons/weapon_data.gd" id="weapon_data"]
 [ext_resource type="PackedScene" path="res://systems/interactables/exfil_hatch.tscn" id="exfil"]
+[ext_resource type="PackedScene" path="res://systems/interactables/barrier.tscn" id="barrier"]
 [ext_resource type="Resource" path="res://content/serums/ironhide.tres" id="serum_ironhide"]
 [ext_resource type="Resource" path="res://content/serums/quickhands.tres" id="serum_quickhands"]
 [ext_resource type="Resource" path="res://content/serums/overclock.tres" id="serum_overclock"]
 [ext_resource type="Resource" path="res://content/serums/deadeye.tres" id="serum_deadeye"]
 [ext_resource type="Resource" path="res://content/serums/mule.tres" id="serum_mule"]
 [ext_resource type="Resource" path="res://content/serums/stride.tres" id="serum_stride"]
+[ext_resource type="Resource" path="res://content/serums/second_wind.tres" id="serum_second_wind"]
+[ext_resource type="Resource" path="res://content/serums/scavenger.tres" id="serum_scavenger"]
+[ext_resource type="LightmapGIData" uid="uid://bbbon50dn5n3m" path="res://levels/halcyon_labs/map.lmbake" id="lightmap"]
 
 [sub_resource type="NavigationMesh" id="navmesh"]
 resource_local_to_scene = true
@@ -123,9 +132,8 @@ omni_range = 9.0
 
 [node name="Doors" type="Node3D" parent="NavigationRegion3D"]
 
-[node name="GuardPostDoor" type="Area3D" parent="NavigationRegion3D/Doors"]
+[node name="GuardPostDoor" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 22, 1.3, 48)
-script = ExtResource("door")
 opens_area = &"guard_post"
 cost = 750
 needs_power = false
@@ -138,10 +146,10 @@ shape = SubResource("door_area_2")
 script = ExtResource("block")
 size = Vector3(2, 2.6, 0.5)
 material = SubResource("door_dev")
+baked = false
 
-[node name="MessHallDebris" type="Area3D" parent="NavigationRegion3D/Doors"]
+[node name="MessHallDebris" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 1.3, 46)
-script = ExtResource("door")
 opens_area = &"mess_hall"
 cost = 1000
 needs_power = false
@@ -154,10 +162,10 @@ shape = SubResource("door_area_4")
 script = ExtResource("block")
 size = Vector3(4, 2.6, 0.5)
 material = SubResource("door_dev")
+baked = false
 
-[node name="CorridorDoorGuardPost" type="Area3D" parent="NavigationRegion3D/Doors"]
+[node name="CorridorDoorGuardPost" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1.3, 30)
-script = ExtResource("door")
 opens_area = &"main_corridor"
 cost = 1000
 needs_power = false
@@ -170,10 +178,10 @@ shape = SubResource("door_area_2")
 script = ExtResource("block")
 size = Vector3(2, 2.6, 0.5)
 material = SubResource("door_dev")
+baked = false
 
-[node name="CorridorDoorMessHall" type="Area3D" parent="NavigationRegion3D/Doors"]
+[node name="CorridorDoorMessHall" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 1.3, 30)
-script = ExtResource("door")
 opens_area = &"main_corridor"
 cost = 1000
 needs_power = false
@@ -186,10 +194,10 @@ shape = SubResource("door_area_2")
 script = ExtResource("block")
 size = Vector3(2, 2.6, 0.5)
 material = SubResource("door_dev")
+baked = false
 
-[node name="GeneratorHallDoor" type="Area3D" parent="NavigationRegion3D/Doors"]
+[node name="GeneratorHallDoor" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 1.3, 26)
-script = ExtResource("door")
 opens_area = &"generator_hall"
 cost = 1250
 needs_power = false
@@ -202,10 +210,10 @@ shape = SubResource("door_area_2")
 script = ExtResource("block")
 size = Vector3(2, 2.6, 0.5)
 material = SubResource("door_dev")
+baked = false
 
-[node name="LabsDebris" type="Area3D" parent="NavigationRegion3D/Doors"]
+[node name="LabsDebris" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 1.3, 26)
-script = ExtResource("door")
 opens_area = &"labs"
 cost = 1500
 needs_power = true
@@ -218,10 +226,10 @@ shape = SubResource("door_area_4")
 script = ExtResource("block")
 size = Vector3(4, 2.6, 0.5)
 material = SubResource("door_dev")
+baked = false
 
-[node name="TunnelWestShutter" type="Area3D" parent="NavigationRegion3D/Doors"]
+[node name="TunnelWestShutter" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 28, 1.3, 12.5)
-script = ExtResource("door")
 opens_area = &"coolant_tunnel"
 cost = 0
 needs_power = true
@@ -234,10 +242,10 @@ shape = SubResource("door_area_3")
 script = ExtResource("block")
 size = Vector3(3, 2.6, 0.5)
 material = SubResource("door_dev")
+baked = false
 
-[node name="TunnelEastShutter" type="Area3D" parent="NavigationRegion3D/Doors"]
+[node name="TunnelEastShutter" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 36, 1.3, 12.5)
-script = ExtResource("door")
 opens_area = &"coolant_tunnel"
 cost = 0
 needs_power = true
@@ -250,10 +258,10 @@ shape = SubResource("door_area_3")
 script = ExtResource("block")
 size = Vector3(3, 2.6, 0.5)
 material = SubResource("door_dev")
+baked = false
 
-[node name="ContainmentDoor" type="Area3D" parent="NavigationRegion3D/Doors"]
+[node name="ContainmentDoor" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 52, 1.3, 18)
-script = ExtResource("door")
 opens_area = &"containment_wing"
 cost = 1500
 needs_power = true
@@ -266,6 +274,7 @@ shape = SubResource("door_area_4")
 script = ExtResource("block")
 size = Vector3(4, 2.6, 0.5)
 material = SubResource("door_dev")
+baked = false
 
 [node name="Machines" type="Node3D" parent="NavigationRegion3D"]
 
@@ -273,35 +282,18 @@ material = SubResource("door_dev")
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 10.5, 1, 40)
 serum = ExtResource("serum_quickhands")
 
-[node name="MedDispenserSecondWind" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["med_dispenser"]]
+[node name="MedDispenserSecondWind" parent="NavigationRegion3D/Machines" instance=ExtResource("meddisp")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 1, 30.5)
-script = ExtResource("block")
-size = Vector3(1, 2, 0.6)
-material = SubResource("machine_dev")
-
-[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/MedDispenserSecondWind"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
-billboard = 1
-pixel_size = 0.004
-font_size = 40
-text = "Second Wind"
+serum = ExtResource("serum_second_wind")
+max_sales = 3
 
 [node name="MedDispenserIronhide" parent="NavigationRegion3D/Machines" instance=ExtResource("meddisp")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 1, 26.5)
 serum = ExtResource("serum_ironhide")
 
-[node name="MedDispenserScavenger" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["med_dispenser"]]
+[node name="MedDispenserScavenger" parent="NavigationRegion3D/Machines" instance=ExtResource("meddisp")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 1, 6.5)
-script = ExtResource("block")
-size = Vector3(1, 2, 0.6)
-material = SubResource("machine_dev")
-
-[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/MedDispenserScavenger"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
-billboard = 1
-pixel_size = 0.004
-font_size = 40
-text = "Scavenger"
+serum = ExtResource("serum_scavenger")
 
 [node name="MedDispenserDeadeye" parent="NavigationRegion3D/Machines" instance=ExtResource("meddisp")]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 51.5, 1, 24)
@@ -319,83 +311,27 @@ serum = ExtResource("serum_stride")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68, -2, 4.5)
 serum = ExtResource("serum_mule")
 
-[node name="VaultSpotMessHall" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
+[node name="VaultSpotMessHall" type="Marker3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0.5, 45.4)
-script = ExtResource("block")
-size = Vector3(2, 1, 1)
-material = SubResource("machine_dev")
 
-[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/VaultSpotMessHall"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
-billboard = 1
-pixel_size = 0.004
-font_size = 40
-text = "Specimen Vault (first)"
+[node name="SpecimenVault" parent="NavigationRegion3D/Machines" instance=ExtResource("vault")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0.5, 45.4)
+pool = Array[ExtResource("weapon_data")]([ExtResource("rifle"), ExtResource("brenner"), ExtResource("kestrel"), ExtResource("talon")])
 
-[node name="VaultSpotGuardPost" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
+[node name="VaultSpotGuardPost" type="Marker3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0.5, 49.4)
-script = ExtResource("block")
-size = Vector3(2, 1, 1)
-material = SubResource("machine_dev")
 
-[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/VaultSpotGuardPost"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
-billboard = 1
-pixel_size = 0.004
-font_size = 40
-text = "Specimen Vault"
-
-[node name="VaultSpotCorridor" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
+[node name="VaultSpotCorridor" type="Marker3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0.5, 29.4)
-script = ExtResource("block")
-size = Vector3(2, 1, 1)
-material = SubResource("machine_dev")
 
-[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/VaultSpotCorridor"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
-billboard = 1
-pixel_size = 0.004
-font_size = 40
-text = "Specimen Vault"
+[node name="VaultSpotGeneratorHall" type="Marker3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 27.4, 0.5, 20)
 
-[node name="VaultSpotGeneratorHall" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.4, 0.5, 20)
-script = ExtResource("block")
-size = Vector3(1, 1, 2)
-material = SubResource("machine_dev")
-
-[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/VaultSpotGeneratorHall"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
-billboard = 1
-pixel_size = 0.004
-font_size = 40
-text = "Specimen Vault"
-
-[node name="VaultSpotLabs" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
+[node name="VaultSpotLabs" type="Marker3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 0.5, 10.6)
-script = ExtResource("block")
-size = Vector3(2, 1, 1)
-material = SubResource("machine_dev")
 
-[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/VaultSpotLabs"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
-billboard = 1
-pixel_size = 0.004
-font_size = 40
-text = "Specimen Vault"
-
-[node name="VaultSpotContainment" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
+[node name="VaultSpotContainment" type="Marker3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, -2.5, 31.4)
-script = ExtResource("block")
-size = Vector3(2, 1, 1)
-material = SubResource("machine_dev")
-
-[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/VaultSpotContainment"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
-billboard = 1
-pixel_size = 0.004
-font_size = 40
-text = "Specimen Vault"
 
 [node name="Reforger" parent="NavigationRegion3D/Machines" instance=ExtResource("reforger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.6, 1, 22)
@@ -403,11 +339,18 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.6, 1, 22)
 [node name="ExfilHatch" parent="NavigationRegion3D/Machines" instance=ExtResource("exfil")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70, -2.97, 18)
 
-[node name="WallBuyBrennerTrench" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["wall_buy_spot"]]
+[node name="WallBuyBrennerTrench" parent="NavigationRegion3D/Machines" instance=ExtResource("wallbuy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.75, 1.4, 52)
+weapon = ExtResource("brenner")
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyBrennerTrench"]
+shape = SubResource("wallbuy_area")
+
+[node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/WallBuyBrennerTrench"]
 script = ExtResource("block")
 size = Vector3(0.1, 0.8, 1.6)
-material = SubResource("machine_dev")
+material = ExtResource("wood")
+baked = false
 
 [node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyBrennerTrench"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
@@ -416,11 +359,18 @@ pixel_size = 0.004
 font_size = 40
 text = "Brenner Trench 750"
 
-[node name="WallBuyKestrel" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["wall_buy_spot"]]
+[node name="WallBuyKestrel" parent="NavigationRegion3D/Machines" instance=ExtResource("wallbuy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.25, 1.4, 32)
+weapon = ExtResource("kestrel")
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyKestrel"]
+shape = SubResource("wallbuy_area")
+
+[node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/WallBuyKestrel"]
 script = ExtResource("block")
 size = Vector3(0.1, 0.8, 1.6)
-material = SubResource("machine_dev")
+material = ExtResource("wood")
+baked = false
 
 [node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyKestrel"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
@@ -429,11 +379,18 @@ pixel_size = 0.004
 font_size = 40
 text = "Kestrel SMG 1000"
 
-[node name="WallBuyTalon" type="StaticBody3D" parent="NavigationRegion3D/Machines" groups=["wall_buy_spot"]]
+[node name="WallBuyTalon" parent="NavigationRegion3D/Machines" instance=ExtResource("wallbuy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.25, 1.4, 20)
+weapon = ExtResource("talon")
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyTalon"]
+shape = SubResource("wallbuy_area")
+
+[node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/WallBuyTalon"]
 script = ExtResource("block")
 size = Vector3(0.1, 0.8, 1.6)
-material = SubResource("machine_dev")
+material = ExtResource("wood")
+baked = false
 
 [node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyTalon"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
@@ -442,9 +399,8 @@ pixel_size = 0.004
 font_size = 40
 text = "Talon DMR 1500"
 
-[node name="PowerSwitch" type="Area3D" parent="NavigationRegion3D/Machines"]
+[node name="PowerSwitch" parent="NavigationRegion3D/Machines" instance=ExtResource("power")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 1.3, 16)
-script = ExtResource("power")
 
 [node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/PowerSwitch"]
 shape = SubResource("switch_area")
@@ -461,9 +417,8 @@ pixel_size = 0.004
 font_size = 40
 text = "Power"
 
-[node name="WallBuyRifle" type="Area3D" parent="NavigationRegion3D/Machines"]
+[node name="WallBuyRifle" parent="NavigationRegion3D/Machines" instance=ExtResource("wallbuy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.75, 1.4, 38)
-script = ExtResource("wallbuy")
 weapon = ExtResource("rifle")
 
 [node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyRifle"]
@@ -473,6 +428,7 @@ shape = SubResource("wallbuy_area")
 script = ExtResource("block")
 size = Vector3(0.1, 0.8, 1.6)
 material = ExtResource("wood")
+baked = false
 
 [node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyRifle"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
@@ -484,76 +440,140 @@ text = "AR-7 Rifle 1200"
 [node name="PlayerSpawn" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 0.1, 47.5)
 
+[node name="Barriers" type="Node3D" parent="."]
+
+[node name="LoadingDock1" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 22, 0, 54)
+
+[node name="LoadingDock2" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 46, 0, 54)
+
+[node name="LoadingDock3" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 28, 0, 60)
+
+[node name="LoadingDock4" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 40, 0, 60)
+
+[node name="GuardPost1" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 10, 0, 36)
+
+[node name="GuardPost2" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 10, 0, 46)
+
+[node name="MessHall1" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 58, 0, 34)
+
+[node name="MessHall2" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 58, 0, 42)
+
+[node name="MainCorridor1" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 18, 0, 28)
+
+[node name="MainCorridor2" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 48, 0, 28)
+
+[node name="GeneratorHall1" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 8, 0, 10)
+
+[node name="GeneratorHall2" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23, 0, 6)
+
+[node name="Labs1" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0, 10)
+
+[node name="Labs2" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 52, 0, 12)
+
+[node name="ContainmentWing1" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 76, -3, 8)
+
+[node name="ContainmentWing2" parent="Barriers" instance=ExtResource("barrier")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 76, -3, 28)
+
 [node name="ZombieSpawns" type="Node3D" parent="."]
 
-[node name="LoadingDock1" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23, 0.1, 54)
+[node name="LoadingDock1" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, 0.1, 54)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/LoadingDock1")
 area = &"loading_dock"
 
-[node name="LoadingDock2" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 0.1, 54)
+[node name="LoadingDock2" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 0.1, 54)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/LoadingDock2")
 area = &"loading_dock"
 
-[node name="LoadingDock3" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0.1, 59)
+[node name="LoadingDock3" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0.1, 61.5)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/LoadingDock3")
 area = &"loading_dock"
 
-[node name="LoadingDock4" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.1, 59)
+[node name="LoadingDock4" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.1, 61.5)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/LoadingDock4")
 area = &"loading_dock"
 
-[node name="GuardPost1" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 0.1, 36)
+[node name="GuardPost1" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.1, 36)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/GuardPost1")
 area = &"guard_post"
 
-[node name="GuardPost2" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 0.1, 46)
+[node name="GuardPost2" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0.1, 46)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/GuardPost2")
 area = &"guard_post"
 
-[node name="MessHall1" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 0.1, 34)
+[node name="MessHall1" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59.5, 0.1, 34)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/MessHall1")
 area = &"mess_hall"
 
-[node name="MessHall2" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 0.1, 42)
+[node name="MessHall2" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59.5, 0.1, 42)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/MessHall2")
 area = &"mess_hall"
 
-[node name="MainCorridor1" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 0.1, 28)
+[node name="MainCorridor1" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, 0.1, 28)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/MainCorridor1")
 area = &"main_corridor"
 
-[node name="MainCorridor2" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 0.1, 28)
+[node name="MainCorridor2" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 0.1, 28)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/MainCorridor2")
 area = &"main_corridor"
 
-[node name="GeneratorHall1" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.1, 10)
+[node name="GeneratorHall1" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 0.1, 10)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/GeneratorHall1")
 area = &"generator_hall"
 
-[node name="GeneratorHall2" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0.1, 7)
+[node name="GeneratorHall2" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23, 0.1, 4.5)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/GeneratorHall2")
 area = &"generator_hall"
 
-[node name="Labs1" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.1, 11)
+[node name="Labs1" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.1, 8.5)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/Labs1")
 area = &"labs"
 
-[node name="Labs2" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51, 0.1, 12)
+[node name="Labs2" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.5, 0.1, 12)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/Labs2")
 area = &"labs"
 
 [node name="Labs3" type="Marker3D" parent="ZombieSpawns"]
@@ -566,14 +586,16 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 0.1, 22)
 script = ExtResource("spawn")
 area = &"labs"
 
-[node name="ContainmentWing1" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, -2.9, 8)
+[node name="ContainmentWing1" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77.5, -2.9, 8)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/ContainmentWing1")
 area = &"containment_wing"
 
-[node name="ContainmentWing2" type="Marker3D" parent="ZombieSpawns"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, -2.9, 28)
+[node name="ContainmentWing2" type="Marker3D" parent="ZombieSpawns" node_paths=PackedStringArray("barrier")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77.5, -2.9, 28)
 script = ExtResource("spawn")
+barrier = NodePath("../../Barriers/ContainmentWing2")
 area = &"containment_wing"
 
 [node name="ContainmentWing3" type="Marker3D" parent="ZombieSpawns"]
@@ -592,3 +614,8 @@ script = ExtResource("spawn")
 area = &"coolant_tunnel"
 
 [node name="FilmPost" parent="." instance=ExtResource("film")]
+
+[node name="LightmapGI" type="LightmapGI" parent="."]
+quality = 2
+texel_scale = 1.5
+light_data = ExtResource("lightmap")

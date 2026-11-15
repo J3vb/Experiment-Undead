@@ -23,7 +23,12 @@ func interact(_player: Player) -> void:
 
 func _pay(player: Player, amount: int) -> bool:
 	var session: GameSession = get_tree().get_first_node_in_group(&"game_session") as GameSession
-	return session != null and session.economy.try_spend(player, amount)
+	var paid: bool = session != null and session.economy.try_spend(player, amount)
+	if paid:
+		($BuySound as AudioStreamPlayer3D).play()
+	else:
+		($DeniedSound as AudioStreamPlayer3D).play()
+	return paid
 
 
 func _level() -> Level:

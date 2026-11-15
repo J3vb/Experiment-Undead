@@ -10,6 +10,7 @@ extends Resource
 ## 0 = no limit.
 @export var last_round: int = 0
 
+
 func get_weight(round_number: int) -> float:
 	if round_number < first_round or (last_round > 0 and round_number > last_round):
 		return 0.0

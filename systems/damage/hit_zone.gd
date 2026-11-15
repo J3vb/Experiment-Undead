@@ -7,10 +7,12 @@ extends Area3D
 @export var zone: DamageInfo.Zone = DamageInfo.Zone.BODY
 @export var damage_multiplier: float = 1.0
 
+
 func _ready() -> void:
 	collision_layer = Layers.HIT_ZONE
 	collision_mask = 0
 	monitoring = false
+
 
 func receive_hit(info: DamageInfo) -> void:
 	if health == null or health.is_dead:
@@ -18,6 +20,7 @@ func receive_hit(info: DamageInfo) -> void:
 	info.amount *= damage_multiplier
 	info.hit_zone = zone
 	health.take_damage(info)
+
 
 func set_enabled(enabled: bool) -> void:
 	collision_layer = Layers.HIT_ZONE if enabled else 0

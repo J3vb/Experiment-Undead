@@ -20,6 +20,9 @@ extends CharacterBody3D
 @export var jump_velocity: float = 4.8
 @export var gravity_multiplier: float = 1.3
 
+## Seconds spent down before Second Wind gets the player back up.
+@export var second_wind_time: float = 3.0
+
 @export_group("Interact")
 @export var interact_range: float = 2.5
 
@@ -34,6 +37,8 @@ var input_enabled: bool = true
 var is_sprinting: bool = false
 var is_aiming: bool = false
 var is_crouching: bool = false
+## Down but not out: Second Wind brings the player back up soon.
+var is_downed: bool = false
 var move_input: Vector2 = Vector2.ZERO
 var sprint_left: float = 4.0
 var last_frame: InputFrame = InputFrame.new()
@@ -61,7 +66,7 @@ var _sprint_cooldown_left: float = 0.0
 func _ready() -> void:
 	add_to_group(&"players")
 	collision_layer = Layers.PLAYER
-	collision_mask = Layers.WORLD | Layers.ENEMY
+	collision_mask = Layers.WORLD | Layers.ENEMY | Layers.BARRIER
 	health.damaged.connect(_on_damaged)
 	health.health_changed.connect(_on_health_changed)
 	health.died.connect(_on_died)
@@ -97,6 +102,13 @@ func get_stat(stat: StringName) -> float:
 	for serum: SerumData in serums:
 		value *= serum.multipliers.get(stat, 1.0)
 	return value
+
+
+func has_serum(id: StringName) -> bool:
+	for serum: SerumData in serums:
+		if serum.id == id:
+			return true
+	return false
 
 
 func add_serum(serum: SerumData) -> void:
@@ -241,8 +253,30 @@ func _on_points_changed(total: int, delta: int) -> void:
 func _on_died(_info: DamageInfo) -> void:
 	input_enabled = false
 	weapons.set_trigger(false)
+	if has_serum(&"second_wind"):
+		_go_down()
+		return
 	weapons.visible = false
 	var tween: Tween = create_tween().set_parallel()
 	tween.tween_property(camera_rig, "position:y", 0.3, 0.8).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 	tween.tween_property(camera_rig, "rotation:z", deg_to_rad(70.0), 0.8)
 	Events.player_died.emit(self)
+
+
+## Second Wind: stay down for second_wind_time, then get up with full health.
+## Uses up Second Wind; the other Serums stay.
+func _go_down() -> void:
+	is_downed = true
+	is_crouching = true
+	create_tween().tween_property(camera_rig, "rotation:z", deg_to_rad(25.0), 0.4)
+	await get_tree().create_timer(second_wind_time, false, true).timeout
+	for serum: SerumData in serums:
+		if serum.id == &"second_wind":
+			serums.erase(serum)
+			break
+	is_downed = false
+	is_crouching = false
+	input_enabled = true
+	health.reset(health.max_health)
+	create_tween().tween_property(camera_rig, "rotation:z", 0.0, 0.4)
+	Events.player_revived.emit(self)

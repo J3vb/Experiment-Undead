@@ -8,3 +8,6 @@ extends Resource
 @export var headshot_kill_bonus: int = 40
 @export var melee_kill_bonus: int = 70
 @export var round_clear_bonus: int = 0
+## Barrier repair pays per plank, up to a cap per player per round.
+@export var points_per_plank: int = 10
+@export var max_repair_points_per_round: int = 500

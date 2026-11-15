@@ -11,6 +11,7 @@ var player: Player
 
 func before_each() -> void:
 	session = SESSION.instantiate() as GameSession
+	session.profile_id = &""
 	var rules: WaveRules = (session.wave_rules.duplicate(true)) as WaveRules
 	rules.first_round_delay = 0.2
 	rules.spawn_interval_start = 0.2
@@ -36,10 +37,17 @@ func _zombies() -> Array[Zombie]:
 	return out
 
 
+## The first zombie, already through its window barrier and chasing.
 func _wait_for_zombie() -> Zombie:
 	await wait_until(func() -> bool: return not _zombies().is_empty(), 5.0, "a zombie spawned")
 	var all: Array[Zombie] = _zombies()
-	return all[0] if not all.is_empty() else null
+	if all.is_empty():
+		return null
+	var z: Zombie = all[0]
+	while z.barrier and not z.barrier.is_broken():
+		z.barrier.tear_plank()
+	await wait_until(func() -> bool: return z.state == Zombie.State.CHASING, 8.0, "zombie climbed in")
+	return z
 
 
 func test_navmesh_has_paths() -> void:
@@ -75,8 +83,10 @@ func test_headshots_kill_and_pay() -> void:
 	if z == null:
 		fail_test("no zombie")
 		return
-	# A rising zombie's head is still below its body zone, so wait until it stands.
-	await wait_until(func() -> bool: return z.state != Zombie.State.SPAWNING, 2.0, "zombie stood up")
+	# Zombies that spawned while this one climbed in would soak up the shots.
+	for other: Zombie in _zombies():
+		if other != z:
+			other.free()
 	watch_signals(Events)
 	var weapon: Weapon = player.weapons.current
 	watch_signals(weapon)
@@ -147,3 +157,33 @@ func test_zombie_cannot_hit_through_walls() -> void:
 	z.global_position = player.global_position + Vector3(1.2, 0.0, 0.0)
 	await wait_physics_frames(2)
 	assert_true(z._can_see(player), "open ground does not")
+
+
+func test_game_over_shows_results_with_headshot_kills_and_xp() -> void:
+	session.director.stop()
+	var zombie: Zombie = session.spawner.spawn(Content.enemy(&"zombie_walker"), 1, session.wave_rules)
+	assert_not_null(zombie)
+	if zombie == null:
+		return
+	var headshot: DamageInfo = DamageInfo.create(1.0, player)
+	headshot.hit_zone = DamageInfo.Zone.HEAD
+	zombie.health.take_damage(headshot)
+	assert_eq(session._headshots, 0, "nonlethal head hit is not a headshot kill")
+	headshot.amount = 10000.0
+	zombie.health.take_damage(headshot)
+	var body_kill: Zombie = session.spawner.spawn(Content.enemy(&"zombie_walker"), 1, session.wave_rules)
+	body_kill.health.take_damage(DamageInfo.create(10000.0, player))
+	session.restart_delay = 0.01
+	watch_signals(Events)
+	player.health.take_damage(DamageInfo.create(10000.0, null))
+	await wait_for_signal(Events.game_over, 2.0)
+	var stats: Dictionary = get_signal_parameters(Events, "game_over")[0]
+	assert_eq(stats["kills"], 2)
+	assert_eq(stats["headshots"], 1)
+	var results: ResultsScreen = session.hud.results_screen
+	assert_true(results.visible)
+	assert_eq(results.kills_label.text, "2")
+	assert_eq(results.headshots_label.text, "1")
+	assert_eq(results.xp_label.text, "XP +%d" % session.progression.get_xp(player))
+	assert_true(results.main_menu_button.has_focus())
+	assert_false(results.exfil_banner.visible)

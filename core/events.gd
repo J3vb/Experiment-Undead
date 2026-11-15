@@ -22,8 +22,12 @@ signal player_spawned(player: Player)
 signal player_damaged(player: Player, info: DamageInfo)
 ## A player's health changed (damage or regen).
 signal player_health_changed(player: Player, current: float, maximum: float)
+## A downed player got back up (Second Wind).
+signal player_revived(player: Player)
 ## A player died.
 signal player_died(player: Player)
+## A player reached a new level.
+signal player_leveled_up(player: Player, level: int)
 ## A player's points changed.
 signal points_changed(player: Player, total: int, delta: int)
 

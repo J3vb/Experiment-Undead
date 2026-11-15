@@ -1,5 +1,6 @@
 ## Turns levels/<map>/layout.json into levels/<map>/blockout.tscn: floors,
-## ceilings, panelled walls with door cuts, ramps and ceiling lights.
+## ceilings, panelled walls with door and window cuts, ramps and ceiling lights.
+## Rooms with "lights": false (the small spaces behind windows) get no lights.
 ## Never hand-edit the output; change the JSON and run this again:
 ##   godot --headless --path . -s res://tools/blockout_builder.gd -- halcyon_labs
 extends SceneTree
@@ -67,7 +68,8 @@ static func _build_room(root: Node3D, room: Dictionary, openings: Array) -> void
 	]
 	for i: int in edges.size():
 		_build_wall(root, walls, "Edge%d" % i, edges[i], openings, centre)
-	_build_lights(root, node, size, minf(h, LIGHT_HANG) - 0.03)
+	if room.get("lights", true):
+		_build_lights(root, node, size, minf(h, LIGHT_HANG) - 0.03)
 
 
 static func _build_wall(
@@ -143,6 +145,7 @@ static func _wall_run(root: Node3D, walls: Node3D, label: String, at: Transform3
 		upper.name = "Upper"
 		var mesh: BoxMesh = BoxMesh.new()
 		mesh.size = Vector3(length, h - PANEL_HEIGHT, WALL_THICKNESS)
+		mesh.add_uv2 = true
 		mesh.material = load(MATERIALS % "panel_paint")
 		upper.mesh = mesh
 		upper.position.y = PANEL_HEIGHT + (h - PANEL_HEIGHT) * 0.5
@@ -185,14 +188,14 @@ static func _build_lights(root: Node3D, room: Node3D, size: Vector2, height: flo
 
 
 static func _build_ramp(root: Node3D, parent: Node3D, ramp: Dictionary, index: int) -> void:
-	var from: Vector3 = Vector3(ramp["from"][0], ramp["from"][1], ramp["from"][2])
-	var to: Vector3 = Vector3(ramp["to"][0], ramp["to"][1], ramp["to"][2])
-	var forward: Vector3 = (to - from).normalized()
+	var start: Vector3 = Vector3(ramp["from"][0], ramp["from"][1], ramp["from"][2])
+	var end: Vector3 = Vector3(ramp["to"][0], ramp["to"][1], ramp["to"][2])
+	var forward: Vector3 = (end - start).normalized()
 	var side: Vector3 = forward.cross(Vector3.UP).normalized()
 	var up: Vector3 = side.cross(forward).normalized()
-	var size: Vector3 = Vector3(from.distance_to(to), 0.4, float(ramp["width"]))
+	var size: Vector3 = Vector3(start.distance_to(end), 0.4, float(ramp["width"]))
 	var block: Block = _block(root, parent, "Ramp%d" % index, size, Vector3.ZERO, "tiled_wet_floor")
-	block.transform = Transform3D(Basis(forward, up, side), (from + to) * 0.5 - up * 0.2)
+	block.transform = Transform3D(Basis(forward, up, side), (start + end) * 0.5 - up * 0.2)
 
 
 static func _block(root: Node3D, parent: Node3D, label: String, size: Vector3, at: Vector3, mat: String) -> Block:

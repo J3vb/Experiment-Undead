@@ -9,6 +9,7 @@ var session: GameSession
 
 func before_each() -> void:
 	session = SESSION.instantiate() as GameSession
+	session.profile_id = &""
 	var rules: WaveRules = (session.wave_rules.duplicate(true)) as WaveRules
 	rules.first_round_delay = 0.2
 	rules.spawn_interval_start = 0.2
@@ -33,7 +34,8 @@ func test_frozen_zombie_is_reported_stuck() -> void:
 	var before: int = Log.event_counts.get("enemies.zombie_stuck", 0)
 	await wait_until(func() -> bool: return get_tree().get_node_count_in_group(&"enemies") > 0, 5.0, "a zombie spawned")
 	var zombie: Zombie = get_tree().get_first_node_in_group(&"enemies") as Zombie
+	zombie.barrier = null
 	zombie._speed = 0.0
 	var reported: Callable = func() -> bool: return Log.event_counts.get("enemies.zombie_stuck", 0) > before
-	await wait_until(reported, Zombie.STUCK_TIME * 2.0 + 2.0, "stuck warning")
+	await wait_until(reported, ZombieStuckWatch.STUCK_TIME * 2.0 + 2.0, "stuck warning")
 	assert_true(reported.call(), "frozen zombie logged as stuck")
