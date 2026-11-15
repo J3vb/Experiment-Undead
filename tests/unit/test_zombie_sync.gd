@@ -80,6 +80,7 @@ func test_client_copy_follows_the_server_zombie() -> void:
 	if copy == null:
 		return
 	assert_eq(copy.net_id, zombie.net_id)
+	assert_true(copy.get_node("Sync") is ZombieSync)
 	assert_eq(copy.data.resource_path, WALKER)
 	assert_false(copy.is_physics_processing(), "clients run no zombie AI")
 	assert_true(zombie.is_physics_processing(), "the server runs the AI")
