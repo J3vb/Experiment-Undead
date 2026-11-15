@@ -4,7 +4,7 @@ class_name DoubleBarrel
 extends Node
 
 const KNOCKBACK_SPEED: float = 8.0
-const ALT_FIRE: int = 1 << 9
+const ALT_FIRE: int = InputFrame.ALT_FIRE
 
 var weapon: Weapon
 var _held: bool = false

@@ -56,6 +56,8 @@ func sample(tick: int) -> InputFrame:
 	_look_accum = Vector2.ZERO
 	var b: int = _pressed
 	_pressed = 0
+	if Input.is_action_pressed(&"alt_fire"):
+		b |= InputFrame.ALT_FIRE
 	if Input.is_action_pressed(&"fire"):
 		b |= InputFrame.FIRE
 	if Input.is_action_pressed(&"ads"):

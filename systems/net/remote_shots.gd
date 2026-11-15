@@ -67,7 +67,8 @@ func shot(weapon_id: StringName, origin: Vector3, points: PackedVector3Array) ->
 	var data: WeaponData = _weapons.get(weapon_id)
 	if player == null or not player.is_alive() or data == null:
 		return
-	if points.size() != data.pellets or not origin.is_finite():
+	var both: bool = data.loot_tags.has(&"double") and points.size() == data.pellets * data.magazine_size
+	if (points.size() != data.pellets and not both) or not origin.is_finite():
 		return
 	for point: Vector3 in points:
 		if not point.is_finite():

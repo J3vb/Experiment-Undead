@@ -162,6 +162,9 @@ func test_coachman_client_alt_fire_claims_twenty_knockback_pellets() -> void:
 	assert_signal_emit_count(weapon, "fired", 1)
 	await _assert_receipts(20, Vector3(0, 0, -8))
 	assert_almost_eq(zombie.health.current, 10000.0 - weapon.data.damage * 20, 0.01)
+	assert_eq(zombie.velocity, Vector3(0, 0, -8), "twenty pellets produce one bounded shove")
+	await wait_until(func() -> bool: return copy.velocity == Vector3(0, 0, -8), 3.0, "knockback synced")
+	assert_eq(copy.velocity, zombie.velocity, "the client observes the server-owned knockback")
 	assert_eq(copy.health.current, client_health, "the client never applies claimed damage locally")
 	assert_false(zombie.health.is_dead)
 
@@ -174,6 +177,9 @@ func test_grubber_client_alt_fire_claims_sixteen_knockback_pellets() -> void:
 	assert_signal_emit_count(weapon, "fired", 1)
 	await _assert_receipts(16, Vector3(0, 0, -8))
 	assert_almost_eq(zombie.health.current, 10000.0 - weapon.data.damage * 16, 0.01)
+	assert_eq(zombie.velocity, Vector3(0, 0, -8), "sixteen pellets do not accumulate sixteen impulses")
+	await wait_until(func() -> bool: return copy.velocity == Vector3(0, 0, -8), 3.0, "knockback synced")
+	assert_eq(copy.velocity, zombie.velocity, "the client observes the server-owned knockback")
 	assert_eq(copy.health.current, client_health)
 	assert_false(zombie.health.is_dead)
 
@@ -184,12 +190,14 @@ func test_primary_and_single_round_client_fallback_keep_normal_impulse() -> void
 	_shoot(weapon, false)
 	assert_eq(weapon.instance.ammo_in_mag, 1)
 	await _assert_receipts(10, Vector3(0, 0, -2))
+	assert_eq(zombie.velocity, Vector3.ZERO, "normal impacts only flinch the visual")
 	damage_events.clear()
 	weapon = _gun(&"coachman_2b")
 	weapon.instance.ammo_in_mag = 1
 	_shoot(weapon, true)
 	assert_eq(weapon.instance.ammo_in_mag, 0)
 	await _assert_receipts(10, Vector3(0, 0, -2))
+	assert_eq(zombie.velocity, Vector3.ZERO, "one-round fallback cannot apply both-barrel knockback")
 	assert_eq(copy.health.current, client_health)
 
 

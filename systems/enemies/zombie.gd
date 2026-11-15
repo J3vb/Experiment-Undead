@@ -312,6 +312,9 @@ func _on_damaged(info: DamageInfo) -> void:
 	Events.enemy_damaged.emit(self, info)
 	if state == State.DEAD:
 		return
+	# Ordinary bullet impulses only flinch; stronger hits push the server-owned body.
+	if Net.is_authority() and info.impulse.length_squared() > 4.0:
+		velocity = info.impulse
 	# Flinch: small shove of the body mesh, reads as impact.
 	visual.position += global_basis.inverse() * info.impulse.normalized() * 0.06
 	visual.pulse_belly()
