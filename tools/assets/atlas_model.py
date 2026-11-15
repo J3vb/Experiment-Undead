@@ -13,13 +13,6 @@ SIGHT_Z = 0.078
 def receiver_parts(metal, black, olive):
     """Tall receiver with a flared magazine well, carry rail and the trigger housing."""
     parts = [
-        g.slab(
-            "Upper",
-            [(-0.16, -0.004), (0.16, -0.004), (0.16, 0.052), (0.145, 0.058), (-0.145, 0.058), (-0.16, 0.046)],
-            0.058,
-            black,
-            bevel=0.003,
-        ),
         g.slab("RailBase", [(-0.14, 0.058), (0.155, 0.058), (0.155, 0.062), (-0.14, 0.062)], 0.026, black),
         g.slab("RailTeeth", g.teeth(-0.135, 0.15, 0.062, 0.069, pitch=0.012), 0.023, black),
         g.slab(
@@ -41,7 +34,7 @@ def receiver_parts(metal, black, olive):
         g.slab(
             "WellLip", [(0.024, -0.064), (0.146, -0.064), (0.148, -0.078), (0.022, -0.078)], 0.062, black, bevel=0.002
         ),
-        g.slab("EjectionPort", g.rounded(-0.06, 0.012, 0.05, 0.046, 0.005), 0.002, metal, x=0.0295),
+        g.slab("PortFloor", g.rounded(-0.059, 0.013, 0.049, 0.045, 0.004), 0.001, black, x=0.0195),
         g.slab("BoltRelease", g.rounded(0.0, -0.03, 0.02, -0.018, 0.003), 0.004, metal, x=-0.028),
         g.lathe("Selector", [(0.009, -0.031), (0.009, -0.027)], (0, -0.095, -0.03), metal, 12, axis="x"),
         g.lathe("MagRelease", [(0.007, 0.027), (0.007, 0.033)], (0, 0.012, -0.04), metal, 12, axis="x"),
@@ -91,43 +84,24 @@ def grip_parts(black, olive):
 
 def front_parts(m, receiver, metal, black, olive):
     """Ribbed round handguard, heavy barrel with gas block, ported choke, and ghost-ring sights."""
-    guard = g.lathe(
-        "Handguard",
-        [(0.03, 0.155), (0.034, 0.16), (0.034, 0.44), (0.03, 0.445)],
-        (0, 0, BORE_Z),
-        olive,
-        20,
-    )
-    ribs = [
-        g.lathe(f"Rib{i}", [(0.0352, y), (0.0352, y + 0.008)], (0, 0, BORE_Z), black, 20)
-        for i, y in enumerate((0.19, 0.25, 0.31, 0.37, 0.42))
-    ]
-    m.join_into(guard, ribs)
+    guard = handguard(olive, black)
     m.attach(guard, (0, 0.16, BORE_Z), receiver)
     barrel = g.lathe(
         "Barrel",
-        [(0.017, 0.44), (0.017, 0.47), (0.014, 0.473), (0.014, 0.6), (0.0165, 0.603), (0.0165, 0.66), (0.015, 0.663)],
+        [(0.017, 0.16), (0.017, 0.47), (0.014, 0.473), (0.014, 0.6), (0.0165, 0.603), (0.0165, 0.66), (0.015, 0.663)],
         (0, 0, BORE_Z),
         metal,
         20,
     )
+    cutters = [g.lathe("BoreCut", [(0.0115, 0.59), (0.0115, 0.67)], (0, 0, BORE_Z), metal, 20)]
+    for i in range(4):
+        y = 0.61 + i * 0.012
+        cutters.append(g.slab("PortCut", g.rounded(y, BORE_Z - 0.006, y + 0.007, BORE_Z + 0.006, 0.003), 0.05, metal))
+    g.cut(barrel, cutters)
     choke = [
         g.lathe("GasBlock", [(0.02, 0.45), (0.02, 0.47)], (0, 0, BORE_Z), black, 16),
         g.lathe("MagTube", [(0.008, 0.44), (0.008, 0.6)], (0, 0, BORE_Z - 0.028), metal, 10),
-        g.lathe("Bore", [(0.0115, 0.6625), (0.0115, 0.6635)], (0, 0, BORE_Z), black, 16),
     ]
-    for x in (-1, 1):
-        for i in range(4):
-            y = 0.61 + i * 0.012
-            choke.append(
-                g.slab(
-                    f"Port{x}{i}",
-                    g.rounded(y, BORE_Z - 0.006, y + 0.007, BORE_Z + 0.006, 0.003),
-                    0.002,
-                    black,
-                    x=x * 0.016,
-                )
-            )
     m.join_into(barrel, choke)
     m.attach(barrel, (0, 0.44, BORE_Z), receiver)
     m.marker("Muzzle", (0, 0.665, BORE_Z), parent=receiver)
@@ -156,6 +130,23 @@ def front_parts(m, receiver, metal, black, olive):
     ]
     m.join_into(sights, pieces)
     m.attach(sights, (0, -0.11, 0.069), receiver)
+
+
+def handguard(olive, black):
+    """One ribbed polymer sleeve with an open core and rounded cooling windows."""
+    profile = [(0.03, 0.155), (0.034, 0.16)]
+    for y in (0.19, 0.25, 0.31, 0.37, 0.42):
+        profile += [(0.034, y), (0.0352, y + 0.001), (0.0352, y + 0.007), (0.034, y + 0.008)]
+    profile += [(0.034, 0.44), (0.03, 0.445)]
+    guard = g.lathe("Handguard", profile, (0, 0, BORE_Z), olive, 20)
+    guard.data.materials.append(black)
+    for face in guard.data.polygons:
+        if any(y < face.center.y < y + 0.008 for y in (0.19, 0.25, 0.31, 0.37, 0.42)):
+            face.material_index = 1
+    cutters = [g.lathe("GuardCavity", [(0.026, 0.15), (0.026, 0.45)], (0, 0, BORE_Z), olive, 20)]
+    for y in (0.205, 0.265, 0.325, 0.385):
+        cutters.append(g.slab("VentCut", g.rounded(y, 0.025, y + 0.024, 0.047, 0.006), 0.09, olive))
+    return g.cut(guard, cutters)
 
 
 def stock_parts(m, receiver, metal, black, olive):
@@ -207,7 +198,7 @@ def moving_parts(m, receiver, metal, black, olive):
     m.join_into(magazine, pieces)
     m.attach(magazine, (0, 0.085, -0.07), receiver)
     magazine.rotation_euler.x = 0.06
-    bolt = g.slab("Bolt", g.rounded(-0.055, 0.016, 0.045, 0.042, 0.003), 0.002, metal, x=0.0305)
+    bolt = g.slab("Bolt", g.rounded(-0.055, 0.016, 0.045, 0.042, 0.003), 0.002, metal, x=0.024)
     m.attach(bolt, (0.0305, -0.005, 0.03), receiver)
     knob = [(0.0045, 0.03), (0.0045, 0.05), (0.009, 0.052), (0.009, 0.066), (0.007, 0.068)]
     handle = g.lathe("ChargingHandle", knob, (0, 0.03, 0.03), black, 12, axis="x")
@@ -226,8 +217,18 @@ def build(m) -> None:
     metal = m.material("GunMetal", m.GUN_METAL, metallic=0.8, roughness=0.4)
     black = m.material("MatteBlack", m.MATTE_BLACK, roughness=0.75)
     olive = m.material("OlivePolymer", m.srgb("#5F6D68"), roughness=0.85)
-    receiver = g.slab("Receiver", [(-0.15, 0.0), (0.15, 0.0), (0.15, 0.05), (-0.15, 0.05)], 0.05, metal, bevel=0.001)
+    receiver = g.slab(
+        "Receiver",
+        [(-0.16, -0.004), (0.16, -0.004), (0.16, 0.052), (0.145, 0.058), (-0.145, 0.058), (-0.16, 0.046)],
+        0.058,
+        black,
+        bevel=0.003,
+    )
+    g.cut(receiver, [g.slab("PortCut", g.rounded(-0.06, 0.012, 0.05, 0.046, 0.005), 0.022, black, x=0.03)])
     m.join_into(receiver, receiver_parts(metal, black, olive) + grip_parts(black, olive))
     front_parts(m, receiver, metal, black, olive)
     stock_parts(m, receiver, metal, black, olive)
     moving_parts(m, receiver, metal, black, olive)
+    for side in (-1, 1):
+        strip = g.slab("Inlay", g.rounded(-0.13, 0.052, 0.13, 0.054, 0.0008), 0.001, metal, x=side * 0.029)
+        m.join_into(receiver, [g.mark_inlay(strip)])

@@ -19,6 +19,7 @@ def receiver(m, metal, black):
         metal,
         bevel=0.002,
     )
+    g.cut(body, [g.slab("PortCut", g.rounded(0.0, 0.004, 0.075, 0.034, 0.004), 0.024, metal, x=0.027)])
     guard = [
         (0.012, -0.02),
         (0.012, -0.058),
@@ -30,7 +31,8 @@ def receiver(m, metal, black):
         (0.005, -0.02),
     ]
     parts = [
-        g.slab("EjectionPort", g.rounded(0.0, 0.004, 0.075, 0.034, 0.004), 0.002, black, x=0.026),
+        g.slab("PortFloor", g.rounded(0.001, 0.005, 0.074, 0.033, 0.003), 0.001, black, x=0.0155),
+        g.slab("Breech", g.rounded(0.008, 0.009, 0.068, 0.028, 0.003), 0.002, metal, x=0.019),
         g.slab("LoadingPort", [(0.02, -0.022), (0.11, -0.022), (0.11, -0.019), (0.02, -0.019)], 0.034, black),
         g.slab("TriggerPlate", [(-0.08, -0.02), (0.02, -0.02), (0.02, -0.026), (-0.08, -0.026)], 0.03, black),
         g.slab("TriggerGuard", guard, 0.012, black, bevel=0.0015),
@@ -78,10 +80,12 @@ def stock(metal, black, wood):
 
 def barrel(metal, black):
     """Barrel and magazine tube, band, bead sight, bayonet lug and a perforated heat shield."""
+    pipe = g.lathe(
+        "Barrel", [(0.0125, 0.125), (0.0115, 0.13), (0.0115, 0.62), (0.0105, 0.623)], (0, 0, BORE_Z), metal, 20
+    )
+    g.cut(pipe, [g.lathe("BoreCut", [(0.009, 0.59), (0.009, 0.63)], (0, 0, BORE_Z), metal, 20)])
     parts = [
-        g.lathe(
-            "Barrel", [(0.0125, 0.125), (0.0115, 0.13), (0.0115, 0.62), (0.0105, 0.623)], (0, 0, BORE_Z), metal, 20
-        ),
+        pipe,
         g.lathe("MagTube", [(0.011, 0.125), (0.011, 0.52)], (0, 0, TUBE_Z), metal, 16),
         g.lathe(
             "TubeCap",
@@ -103,24 +107,26 @@ def barrel(metal, black):
         g.lathe(
             "Bead", [(0.0025, 0.0), (0.0025, 0.004), (0.0015, 0.006)], (0, 0.612, BORE_Z + 0.011), metal, 8, axis="z"
         ),
-        g.slab(
-            "Shield",
-            [(0.14, 0.019), (0.47, 0.019), (0.47, 0.042), (0.46, 0.045), (0.15, 0.045), (0.14, 0.04)],
-            0.036,
-            black,
-            bevel=0.002,
-        ),
+        heat_shield(black),
     ]
-    for side in (-1, 1):
-        for i in range(7):
-            y = 0.165 + i * 0.042
-            parts.append(
-                g.slab(f"Hole{side}{i}", g.rounded(y, 0.027, y + 0.026, 0.045, 0.006), 0.002, metal, x=side * 0.018)
-            )
-    for i in range(7):
-        y = 0.17 + i * 0.042
-        parts.append(g.lathe(f"TopHole{i}", [(0.004, 0.0445), (0.004, 0.0455)], (0, y + 0.008, 0), metal, 10, axis="z"))
     return parts
+
+
+def heat_shield(black):
+    """Thin steel shell with open side vents and top perforations above the exposed barrel."""
+    shield = g.slab(
+        "Shield",
+        [(0.14, 0.019), (0.47, 0.019), (0.47, 0.042), (0.46, 0.045), (0.15, 0.045), (0.14, 0.04)],
+        0.036,
+        black,
+        bevel=0.002,
+    )
+    cutters = [g.lathe("ShieldCavity", [(0.0135, 0.13), (0.0135, 0.48)], (0, 0, BORE_Z), black, 20)]
+    for i in range(7):
+        y = 0.165 + i * 0.042
+        cutters.append(g.slab("VentCut", g.rounded(y, 0.025, y + 0.026, 0.039, 0.005), 0.05, black))
+        cutters.append(g.lathe("TopCut", [(0.004, 0.037), (0.004, 0.05)], (0, y + 0.013, 0), black, 12, axis="z"))
+    return g.cut(shield, cutters)
 
 
 def pump(m, black, wood, body):
@@ -149,3 +155,6 @@ def build(m) -> None:
     m.join_into(body, stock(metal, black, wood) + barrel(metal, black))
     pump(m, black, wood, body)
     m.marker("Muzzle", (0, 0.625, BORE_Z), parent=body)
+    for side in (-1, 1):
+        strip = g.slab("Inlay", g.rounded(-0.028, 0.040, 0.096, 0.042, 0.0008), 0.001, metal, x=side * 0.025)
+        m.join_into(body, [g.mark_inlay(strip)])

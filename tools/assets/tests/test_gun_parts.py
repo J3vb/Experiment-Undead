@@ -12,6 +12,7 @@ import bpy
 # isort: split
 # bpy must load before bmesh.
 import bmesh
+from mathutils import Vector
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import build_models as bm
@@ -91,6 +92,77 @@ class ShapeToolTest(unittest.TestCase):
         tops = [p for p in points if math.isclose(p[1], 0.008)]
         self.assertEqual(len(tops), 20)
         self.assertTrue(all(0.0 <= z <= 0.008 for _, z in points))
+
+    def test_cut_makes_a_through_port_with_closed_outward_walls(self) -> None:
+        body = g.slab("Body", [(0, 0), (0.1, 0), (0.1, 0.1), (0, 0.1)], 0.05, self.mat)
+        cutter = g.slab("Port", [(0.02, 0.02), (0.08, 0.02), (0.08, 0.08), (0.02, 0.08)], 0.07, self.mat)
+        self.assertIs(g.cut(body, [cutter]), body)
+        self.assertNotIn("Port", bpy.data.objects)
+        self.assertAlmostEqual(volumes(body)[0], (0.1**2 - 0.06**2) * 0.05, places=7)
+        self.assertFalse(body.ray_cast(Vector((0.1, 0.05, 0.05)), Vector((-1, 0, 0)))[0])
+        self.assertTrue(body.ray_cast(Vector((0.1, 0.01, 0.05)), Vector((-1, 0, 0)))[0])
+        mesh = bmesh.new()
+        mesh.from_mesh(body.data)
+        self.assertTrue(all(edge.is_manifold for edge in mesh.edges))
+        mesh.free()
+        self.assertEqual(zero_area_faces(body), 0)
+
+    def test_cut_keeps_a_blind_port_floor_and_transformed_part_pivot(self) -> None:
+        parent = bm.marker("Receiver", (0, 0, 0))
+        body = g.slab("Bolt", [(0, 0), (0.1, 0), (0.1, 0.1), (0, 0.1)], 0.05, self.mat)
+        bm.attach(body, (0, 0.03, 0.04), parent)
+        bpy.context.view_layer.update()
+        before = body.matrix_world.copy()
+        cutter = g.slab("Pocket", [(0.02, 0.02), (0.08, 0.02), (0.08, 0.08), (0.02, 0.08)], 0.02, self.mat, x=0.025)
+        g.cut(body, [cutter])
+        self.assertEqual(body.name, "Bolt")
+        self.assertEqual(body.parent, parent)
+        self.assertEqual(body.matrix_world, before)
+        self.assertAlmostEqual(volumes(body)[0], 0.1**2 * 0.05 - 0.06**2 * 0.01, places=7)
+        hit, point, _normal, _face = body.ray_cast(Vector((0.1, 0.02, 0.01)), Vector((-1, 0, 0)))
+        self.assertTrue(hit)
+        self.assertAlmostEqual(point.x, 0.015, places=6)
+        self.assertEqual(list(body.data.materials), [self.mat])
+        self.assertEqual(zero_area_faces(body), 0)
+
+    def test_cut_bores_a_muzzle_without_leaving_a_cap(self) -> None:
+        body = g.lathe("MuzzleBrake", [(0.012, 0.0), (0.012, 0.06)], (0, 0, 0), self.mat, segments=16)
+        cutter = g.lathe("Bore", [(0.006, -0.01), (0.006, 0.07)], (0, 0, 0), self.mat, segments=16)
+        g.cut(body, [cutter])
+        self.assertEqual(len(volumes(body)), 1)
+        expected = 8 * math.sin(math.pi / 8) * (0.012**2 - 0.006**2) * 0.06
+        self.assertAlmostEqual(volumes(body)[0], expected, places=9)
+        self.assertFalse(body.ray_cast(Vector((0, 0.1, 0)), Vector((0, -1, 0)))[0])
+        self.assertTrue(body.ray_cast(Vector((0.009, 0.1, 0)), Vector((0, -1, 0)))[0])
+        self.assertEqual(zero_area_faces(body), 0)
+
+    def test_cut_locks_valid_export_triangles_at_collinear_port_intersections(self) -> None:
+        body = g.lathe(
+            "Brake", [(0.016, 0.796), (0.018, 0.8), (0.018, 0.862), (0.016, 0.866)], (0, 0, 0.016), self.mat, 12
+        )
+        cutters = [g.lathe("Core", [(0.006, 0.79), (0.006, 0.875)], (0, 0, 0.016), self.mat, 12)]
+        for i in range(3):
+            y = 0.806 + i * 0.019
+            cutters.append(g.slab("Port", g.rounded(y, 0.009, y + 0.012, 0.023, 0.003), 0.05, self.mat))
+        g.cut(body, cutters)
+        bm.attach(body, (0, 0.831, 0.016))
+        body.data.calc_loop_triangles()
+        self.assertGreater(len(body.data.loop_triangles), 0)
+        self.assertTrue(all(triangle.area >= 1e-10 for triangle in body.data.loop_triangles))
+        self.assertEqual(len(volumes(body)), 1)
+        self.assertGreater(volumes(body)[0], 0)
+
+    def test_inlay_mask_survives_join_without_recolouring_the_body(self) -> None:
+        body = g.slab("Receiver", [(0, 0), (0.1, 0), (0.1, 0.1), (0, 0.1)], 0.05, self.mat)
+        strip = g.slab("Inlay", [(0.01, 0.01), (0.09, 0.01), (0.09, 0.013), (0.01, 0.013)], 0.001, self.mat, x=0.026)
+        body_loops, strip_loops = len(body.data.loops), len(strip.data.loops)
+        self.assertIs(g.mark_inlay(strip), strip)
+        bm.join_into(body, [strip])
+        colors = body.data.color_attributes["Color"].data
+        self.assertEqual(sum(color.color[3] == 1.0 for color in colors), body_loops)
+        self.assertEqual(sum(color.color[3] == 0.0 for color in colors), strip_loops)
+        self.assertTrue(all(tuple(color.color[:3]) == (1.0, 1.0, 1.0) for color in colors))
+        self.assertEqual(list(body.data.materials), [self.mat])
 
 
 class DetailedGunTest(unittest.TestCase):

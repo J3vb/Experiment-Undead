@@ -109,3 +109,39 @@ def rounded(y0: float, z0: float, y1: float, z1: float, r: float, steps: int = 3
     if math.dist(points[0], points[-1]) <= 1e-6:
         points.pop()
     return points
+
+
+def cut(obj, cutters: list):
+    """Subtracts closed world-space cutters, consuming them while keeping the target's pivot and parent."""
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.context.view_layer.update()
+    for cutter in cutters:
+        modifier = obj.modifiers.new("Machined", "BOOLEAN")
+        modifier.operation = "DIFFERENCE"
+        modifier.solver = "EXACT"
+        modifier.object = cutter
+        bpy.ops.object.modifier_apply(modifier=modifier.name)
+        bpy.data.objects.remove(cutter, do_unlink=True)
+    mesh = bmesh.new()
+    mesh.from_mesh(obj.data)
+    bmesh.ops.dissolve_degenerate(mesh, edges=mesh.edges[:], dist=1e-5)
+    bmesh.ops.recalc_face_normals(mesh, faces=mesh.faces[:])
+    bmesh.ops.triangulate(mesh, faces=mesh.faces[:])
+    mesh.to_mesh(obj.data)
+    mesh.free()
+    return obj
+
+
+def mark_inlay(obj):
+    """Marks the last-built strip with alpha zero, initializing this gun's unpainted meshes to alpha one."""
+    for part in bpy.context.scene.objects:
+        if part.type != "MESH" or part.data.color_attributes.get("Color") is not None:
+            continue
+        colors = part.data.color_attributes.new("Color", "FLOAT_COLOR", "CORNER")
+        for color in colors.data:
+            color.color = (1.0, 1.0, 1.0, 1.0)
+    for color in obj.data.color_attributes["Color"].data:
+        color.color[3] = 0.0
+    return obj
