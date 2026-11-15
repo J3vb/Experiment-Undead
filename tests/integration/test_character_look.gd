@@ -58,8 +58,10 @@ func test_profile_without_loadout_clears_previously_applied_gear() -> void:
 
 func test_legacy_array_loadout_is_empty() -> void:
 	_save({"loadout": []})
+	var before: String = FileAccess.get_file_as_string(PATH)
 	player.spawn(session, [])
 	_assert_empty_gear()
+	assert_eq(FileAccess.get_file_as_string(PATH), before, "Rendering legacy gear does not rewrite the profile")
 
 
 func test_new_character_starts_with_empty_gear_and_creates_no_save() -> void:
@@ -75,8 +77,8 @@ func _assert_empty_gear() -> void:
 
 func _save(fields: Dictionary) -> void:
 	fields["id"] = String(ID)
-	var profile: CharacterProfile = CharacterProfile.from_dict(fields)
-	assert_eq(profile.save(), OK)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(CharacterProfile.DIRECTORY))
+	assert_eq(SaveFile.write(PATH, fields), OK)
 
 
 func _remove_files() -> void:

@@ -106,6 +106,7 @@ func test_solo_host_join_are_focusable_in_keyboard_and_gamepad_order() -> void:
 		menu.play_button,
 		menu.host_button,
 		menu.join_button,
+		menu.character_button,
 		menu.settings_button,
 		menu.credits_button,
 		menu.get_node("Screens/Root/Menu/Quit") as Button,
@@ -300,3 +301,30 @@ func test_command_line_launch_runs_once_per_process() -> void:
 	assert_true(MainMenu.launch_consumed, "the first menu used up the launch arguments")
 	menu._launch_from_command_line(PackedStringArray(["--host=24634"]))
 	assert_false(Net.is_online(), "a later menu does not host or join again")
+
+
+func test_character_opens_solo_profile_and_close_restores_menu_focus() -> void:
+	menu.character_button.pressed.emit()
+	var screen: CharacterScreen = menu.character_screen
+	assert_eq(screen.scene_file_path, MainMenu.CHARACTER_SCENE)
+	assert_true(screen.is_visible_in_tree())
+	assert_false(menu.menu.visible)
+	assert_true(screen.is_ancestor_of(get_viewport().gui_get_focus_owner()))
+	screen.closed.emit()
+	assert_null(menu.character_screen)
+	assert_true(menu.menu.visible)
+	assert_true(menu.character_button.has_focus())
+	assert_true(screen.is_queued_for_deletion())
+
+
+func test_character_owns_cancel_and_only_one_screen_opens() -> void:
+	menu.character_button.pressed.emit()
+	var screen: CharacterScreen = menu.character_screen
+	menu.character_button.pressed.emit()
+	assert_eq(menu.character_screen, screen)
+	var cancel: InputEventAction = InputEventAction.new()
+	cancel.action = &"ui_cancel"
+	cancel.pressed = true
+	menu._input(cancel)
+	assert_eq(menu.character_screen, screen, "Character screen receives its own back input")
+	assert_false(menu.menu.visible)

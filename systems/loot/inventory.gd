@@ -8,7 +8,17 @@ static func add_to_stash(profile: CharacterProfile, item: Dictionary) -> int:
 		return -1
 	for slot: int in profile.stash.size():
 		if profile.stash[slot].is_empty():
-			profile.stash[slot] = item.duplicate(true)
+			var stored: Dictionary = item.duplicate(true)
+			if not stored.has("acquired"):
+				var newest: int = 0
+				for index: int in profile.stash.size():
+					var entry: Dictionary = profile.stash[index]
+					if not entry.is_empty():
+						newest = maxi(newest, int(entry.get("acquired", index)))
+				for equipped: Dictionary in profile.loadout.values():
+					newest = maxi(newest, int(equipped.get("acquired", 0)))
+				stored["acquired"] = newest + 1
+			profile.stash[slot] = stored
 			return slot
 	return -1
 
@@ -33,10 +43,12 @@ static func equip(profile: CharacterProfile, stash_slot: int) -> bool:
 static func unequip(profile: CharacterProfile, slot: StringName) -> bool:
 	if not profile.loadout.has(slot) or profile.loadout[slot].is_empty():
 		return false
-	if add_to_stash(profile, profile.loadout[slot]) == -1:
-		return false
-	profile.loadout[slot] = {}
-	return true
+	for stash_slot: int in profile.stash.size():
+		if profile.stash[stash_slot].is_empty():
+			profile.stash[stash_slot] = profile.loadout[slot].duplicate(true)
+			profile.loadout[slot] = {}
+			return true
+	return false
 
 
 static func slot_for(item: Dictionary) -> StringName:
