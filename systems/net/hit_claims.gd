@@ -67,7 +67,13 @@ func claim_hit(zombie_name: StringName, zone: int, amount: float, weapon_id: Str
 		return
 	var sender: int = multiplayer.get_remote_sender_id()
 	var player: Player = session.players.find_player(sender)
-	if player == null or not player.is_alive():
+	if (
+		player == null
+		or player.is_dead
+		or not (player.is_alive() or player.is_downed)
+		or session.is_over
+		or (player.is_downed and weapon_id != PlayerStateSync.PISTOL)
+	):
 		_reject(sender, &"player_not_alive")
 		return
 	var zombie: Zombie = session.spawner.get_node_or_null(NodePath(String(zombie_name))) as Zombie
