@@ -200,42 +200,10 @@ def build_rifle_ar() -> None:
 
 
 def build_talon_dmr() -> None:
-    """Talon marksman rifle: long braked barrel, fixed stock and a longer scope.
-    Keeps the rifle's moving parts and eyepiece position for the shared viewmodel."""
-    metal = material("GunMetal", GUN_METAL, metallic=0.8, roughness=0.4)
-    black = material("MatteBlack", MATTE_BLACK, roughness=0.75)
-    tan = material("Tan", TAN, roughness=0.8)
-    glass = material("OpticGlass", LENS, metallic=0.3, roughness=0.05, glow=0.6)
-    receiver = box("Receiver", (0.04, 0.12, 0.03), (0, 0, 0), metal, bevel=0.004)
-    parts: list = []
-    rifle_upper(metal, black, tan, parts)
-    rifle_scope(metal, black, glass, parts)
-    # Keep the eyepiece aligned with ScopeLens while extending the objective.
-    for part in parts:
-        if part.name in ("ScopeBell", "ScopeCone"):
-            part.location.y += 0.12
-        elif part.name == "ScopeTube":
-            part.scale.y = 1.6
-            part.location.y += 0.06
-    parts += [
-        box("Grip", (0.036, 0.05, 0.11), (0, -0.115, -0.095), black, bevel=0.008),
-        box("FixedStock", (0.046, 0.25, 0.09), (0, -0.285, -0.005), tan, bevel=0.01),
-        box("CheekRiser", (0.045, 0.17, 0.03), (0, -0.29, 0.055), black, bevel=0.006),
-        box("ButtPad", (0.05, 0.025, 0.12), (0, -0.42, -0.015), black, bevel=0.006),
-    ]
-    join_into(receiver, parts)
-    barrel = cylinder("Barrel", 0.013, 0.35, (0, 0.65, 0.016), metal, parent=receiver)
-    brake = box("MuzzleBrake", (0.038, 0.07, 0.032), (0, 0.18, 0), metal, bevel=0.003, parent=barrel)
-    ports: list = []
-    for side in (-1, 1):
-        for i in range(3):
-            ports.append(box(f"BrakePort{side}{i}", (0.002, 0.01, 0.018), (side * 0.019, 0.81 + i * 0.02, 0.016), black))
-    join_into(brake, ports)
-    mag = box("Magazine", (0.04, 0.085, 0.105), (0, 0.065, -0.115), black, bevel=0.004, parent=receiver)
-    box("MagBase", (0.044, 0.09, 0.01), (0, 0, -0.055), metal, bevel=0.002, parent=mag)
-    box("Bolt", (0.014, 0.05, 0.016), (0.034, -0.03, 0.03), metal, bevel=0.003, parent=receiver)
-    cylinder("OpticGlass", 0.02, 0.002, (0, 0.311, 0.09), glass, parent=receiver)
-    marker("Muzzle", (0, 0.865, 0.016), parent=receiver)
+    """Build the detailed DMR using the same primitives as the rifle and shotgun."""
+    from talon_model import build_talon_dmr as build
+
+    build(sys.modules[__name__])
 
 
 def shotgun_body(metal, black, wood, parts: list) -> None:
@@ -286,40 +254,10 @@ def build_shotgun_brenner() -> None:
 
 
 def build_kestrel_smg() -> None:
-    """Compact iron-sighted SMG with a hinged wire stock and straight magazine."""
-    metal = material("GunMetal", GUN_METAL, metallic=0.8, roughness=0.4)
-    black = material("MatteBlack", MATTE_BLACK, roughness=0.75)
-    accent = material("MutedTeal", WALL_PAINT, roughness=0.85)
-    receiver = box("Receiver", (0.05, 0.28, 0.065), (0, 0, 0), metal, bevel=0.005)
-    parts: list = [
-        box("Lower", (0.044, 0.19, 0.035), (0, -0.02, -0.045), black, bevel=0.004),
-        box("Handguard", (0.056, 0.13, 0.06), (0, 0.19, -0.005), black, bevel=0.006),
-        box("Grip", (0.034, 0.05, 0.105), (0, -0.095, -0.105), black, bevel=0.007),
-        box("MagWell", (0.043, 0.06, 0.035), (0, 0.055, -0.055), black, bevel=0.003),
-        box("TriggerGuard", (0.012, 0.07, 0.007), (0, -0.035, -0.09), black),
-        box("GuardPost", (0.012, 0.007, 0.04), (0, 0, -0.07), black),
-        box("Trigger", (0.006, 0.008, 0.025), (0, -0.04, -0.065), metal),
-        cylinder("Barrel", 0.011, 0.1, (0, 0.29, 0.008), metal),
-        cylinder("MuzzleCap", 0.014, 0.025, (0, 0.345, 0.008), black),
-        cylinder("StockHinge", 0.018, 0.06, (0, -0.145, -0.006), metal, axis="x"),
-        box("StockLatch", (0.008, 0.025, 0.02), (0.033, -0.14, 0), accent, bevel=0.002),
-        box("ButtPad", (0.05, 0.015, 0.095), (0, -0.35, -0.035), black, bevel=0.003),
-        box("FrontPost", (0.003, 0.008, 0.018), (0, 0.245, 0.051), metal),
-        box("RearBase", (0.036, 0.012, 0.008), (0, -0.115, 0.036), black),
-    ]
-    for side in (-1, 1):
-        parts += [
-            cylinder(f"StockWire{side}", 0.004, 0.2, (side * 0.022, -0.25, -0.005), metal),
-            box(f"RearNotch{side}", (0.008, 0.012, 0.02), (side * 0.014, -0.115, 0.05), metal),
-            box(f"FrontGuard{side}", (0.004, 0.016, 0.028), (side * 0.018, 0.245, 0.046), black),
-        ]
-        for i in range(3):
-            parts.append(box(f"Vent{side}{i}", (0.002, 0.018, 0.01), (side * 0.028, 0.15 + i * 0.032, 0.012), metal))
-    join_into(receiver, parts)
-    mag = box("Magazine", (0.032, 0.048, 0.17), (0, 0.055, -0.145), black, bevel=0.004, parent=receiver)
-    box("MagBase", (0.037, 0.055, 0.009), (0, 0, -0.087), accent, bevel=0.002, parent=mag)
-    box("Bolt", (0.012, 0.045, 0.014), (0.031, -0.02, 0.015), metal, bevel=0.002, parent=receiver)
-    marker("Muzzle", (0, 0.358, 0.008), parent=receiver)
+    """Build the detailed SMG using the same primitives as the rifle and shotgun."""
+    from kestrel_model import build_kestrel_smg as build
+
+    build(sys.modules[__name__])
 
 
 def join_into(target, parts: list) -> None:
@@ -456,7 +394,6 @@ MODELS = {
     "wall_panel": ("kit/wall_panel.glb", build_wall_panel),
     "rifle_ar": ("weapons/rifle_ar.glb", build_rifle_ar),
     "kestrel_smg": ("weapons/kestrel_smg.glb", build_kestrel_smg),
-
     "talon_dmr": ("weapons/talon_dmr.glb", build_talon_dmr),
     "shotgun_brenner": ("weapons/shotgun_brenner.glb", build_shotgun_brenner),
     "shambler": ("zombies/shambler.glb", build_shambler),

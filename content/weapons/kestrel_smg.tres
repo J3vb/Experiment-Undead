@@ -21,6 +21,7 @@ repeat_last = 4
 [resource]
 script = ExtResource("1")
 id = &"kestrel_smg"
+loot_tags = Array[StringName]([&"smg"])
 display_name = "Kestrel SMG"
 cost = 1000
 damage = 14.82

@@ -289,10 +289,11 @@ func _on_game_over(stats: Dictionary) -> void:
 	game_over_panel.visible = true
 	_exfil = null
 	exfil_box.hide()
+	($Root/GameOverPanel/Box/MainMenu as Button).grab_focus()
 	game_over_stats.text = (
 		("Exfil successful: +50% XP\n" if stats.get("exfil", false) else "")
 		+ (
-			"You survived %d round%s\n%d kills    %d points    %d XP\n\nPress ENTER to try again"
+			"You survived %d round%s\n%d kills    %d points    %d XP\n\nR: restart    Esc: main menu"
 			% [
 				stats.get("round", 0),
 				"" if stats.get("round", 0) == 1 else "s",
@@ -308,7 +309,9 @@ func _setup_pause_menu() -> void:
 	pause_panel.theme = settings_screen.theme
 	resume_button.pressed.connect(func() -> void: (get_parent() as GameSession).resume())
 	settings_button.pressed.connect(_open_settings)
-	$Root/PausePanel/Menu/Quit.pressed.connect(func() -> void: get_tree().quit())
+	$Root/PausePanel/Menu/MainMenu.pressed.connect(_return_to_menu)
+	$Root/PausePanel/Menu/QuitGame.pressed.connect(func() -> void: (get_parent() as GameSession).quit_game())
+	$Root/GameOverPanel/Box/MainMenu.pressed.connect(_return_to_menu)
 	settings_screen.closed.connect(_close_settings)
 	_fps_label = Label.new()
 	_fps_label.position = Vector2(12, 12)
@@ -326,3 +329,20 @@ func _open_settings() -> void:
 func _close_settings() -> void:
 	pause_menu.show()
 	settings_button.grab_focus()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not game_over_panel.visible:
+		return
+	if event.is_action_pressed(&"ui_cancel"):
+		get_viewport().set_input_as_handled()
+		_return_to_menu()
+	elif event.is_action_pressed(&"reload") and not event.is_echo():
+		get_viewport().set_input_as_handled()
+		(get_parent() as GameSession).restart()
+
+
+func _return_to_menu() -> void:
+	(get_parent() as GameSession).bank_run_xp()
+	get_tree().paused = false
+	get_tree().change_scene_to_file("res://systems/ui/main_menu.tscn")

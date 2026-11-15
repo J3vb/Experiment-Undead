@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="SkillNodeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/progression/skill_node_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"fast_hands"
+display_name = "Fast Hands"
+description = "Reload +{v}% per rank."
+branch = &"Marksman"
+row = 1
+column = 1
+max_ranks = 3
+requires = Array[StringName]([])
+branch_points_needed = 0
+stat = &"reload_time"
+per_rank = 5.0

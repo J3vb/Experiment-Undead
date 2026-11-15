@@ -1,5 +1,5 @@
 ## Window barriers on Halcyon Labs: every window spawn has one, zombies tear
-## the planks and climb in, swipe players through the gap, players repair
+## the planks and vault in, queue when the window's slots are full, swipe players through the gap, players repair
 ## planks for capped points and cannot leave through a window.
 extends GutTest
 
@@ -12,6 +12,7 @@ var level: Level
 
 func before_each() -> void:
 	session = SESSION.instantiate() as GameSession
+	session.profile_id = &""
 	session.rng_seed = 7
 	add_child_autofree(session)
 	await wait_until(func() -> bool: return session.level.is_navigation_ready, 15.0, "navmesh baked")
@@ -65,6 +66,8 @@ func test_zombie_tears_through_and_climbs_in() -> void:
 	assert_lt(barrier.planks, Barrier.PLANKS, "zombie tears planks")
 	while barrier.planks > 1:
 		barrier.tear_plank()
+	await wait_until(func() -> bool: return zombie.vault_progress() >= 0.0, 6.0, "vault starts")
+	assert_gt(zombie.vault_progress(), -1.0, "zombie vaults through the open window")
 	await wait_until(func() -> bool: return zombie.state == Zombie.State.CHASING, 8.0, "climbed in")
 	assert_true(barrier.is_broken())
 	assert_null(zombie.barrier, "barrier forgotten once inside")
@@ -126,3 +129,26 @@ func test_players_cannot_leave_through_a_window() -> void:
 	barrier.planks = 0
 	hit = level.get_world_3d().direct_space_state.intersect_ray(query)
 	assert_false(hit.is_empty(), "even with every plank gone")
+
+
+func test_zombie_waits_in_the_queue_when_slots_are_full() -> void:
+	var zombie: Zombie = await _first_zombie()
+	if zombie == null:
+		fail_test("no zombie")
+		return
+	var barrier: Barrier = zombie.barrier
+	var holders: Array[Node3D] = []
+	for i: int in Barrier.SLOTS:
+		var holder: Node3D = Node3D.new()
+		add_child_autofree(holder)
+		holder.global_position = barrier.slot_point(i)
+		barrier.claim_slot(holder)
+		holders.append(holder)
+	await wait_seconds(5.0)
+	assert_eq(barrier.planks, Barrier.PLANKS, "a queued zombie does not tear planks")
+	assert_lt(
+		zombie.global_position.distance_to(barrier.queue_point(zombie.net_id)), 0.6, "it waits at its queue point"
+	)
+	barrier.release(holders[1])
+	await wait_until(func() -> bool: return barrier.planks < Barrier.PLANKS, 6.0, "slot taken, tearing")
+	assert_lt(barrier.planks, Barrier.PLANKS, "the freed slot lets it reach the planks")

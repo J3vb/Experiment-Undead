@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="RarityData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/loot/rarity_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"common"
+colour = Color(0.850980392, 0.850980392, 0.823529412, 1)
+affix_count_weights = Dictionary[int, float]({0: 1.0})
+tier_bonus = 0
+zombie_share = 0.55
+vault_share = 0.4
