@@ -218,3 +218,12 @@ func test_claims_reject_excessive_and_nonfinite_impulses() -> void:
 	client.claim_hit.rpc_id(1, zombie.name, DamageInfo.Zone.BODY, 1.0, &"coachman_2b", point, Vector3(0, 0, -8))
 	await _assert_receipts(1, Vector3(0, 0, -8))
 	assert_eq(zombie.health.current, 9999.0, "a valid shotgun impulse still works")
+
+
+func test_normal_non_axis_impulse_preserves_zombie_movement() -> void:
+	var movement: Vector3 = Vector3(1.9, 0, 0)
+	zombie.velocity = movement
+	var impulse: Vector3 = Vector3(0.0006, 0.006, -1.0).normalized() * 2.0
+	client.claim_hit.rpc_id(1, zombie.name, DamageInfo.Zone.BODY, 1.0, &"coachman_2b", copy.position, impulse)
+	await _assert_receipts(1, impulse)
+	assert_eq(zombie.velocity, movement, "floating-point normal flinches cannot replace movement")
