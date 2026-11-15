@@ -11,8 +11,8 @@ out = sys.argv[1]
 rng = np.random.default_rng(7)
 
 
-def save(name, x):
-    x = np.clip(x / (np.max(np.abs(x)) + 1e-9) * 0.9, -1, 1)
+def save(name, x, peak=0.9):
+    x = np.clip(x / (np.max(np.abs(x)) + 1e-9) * peak, -1, 1)
     with wave.open(os.path.join(out, name), "wb") as w:
         w.setnchannels(1)
         w.setsampwidth(2)
@@ -233,3 +233,40 @@ x = crack * 1.4 + thump * 1.8 + tail
 click(0.8, 650, 80, 0.3)
 click(1.0, 950, 90, 0.25)
 save("corvid_fire.wav", x)
+
+# Sentry: a clipped rifle crack with a tight body; each round stays distinct in a burst.
+tt = t(0.22)
+crack = rng.standard_normal(len(tt)) * np.exp(-tt * 105)
+thump = np.sin(2 * np.pi * (135 * tt - 65 * tt**2)) * np.exp(-tt * 32)
+tail = lowpass(rng.standard_normal(len(tt)), 0.12) * np.exp(-tt * 25)
+save("sentry_fire.wav", crack * 1.1 + thump + tail * 1.4)
+
+# Nightjar SD: a short, low-passed puff and action click, kept quiet after normalization.
+tt = t(0.1)
+puff = lowpass(rng.standard_normal(len(tt)), 0.055) * np.exp(-tt * 65)
+body = np.sin(2 * np.pi * 190 * tt) * np.exp(-tt * 60)
+action = np.sin(2 * np.pi * 1700 * tt) * np.exp(-tt * 180)
+save("nightjar_fire.wav", puff * 1.4 + body * 0.35 + action * 0.08, peak=0.18)
+
+# Rampart: a deep battle-rifle report and heavier action underneath a rolling tail.
+tt = t(0.5)
+crack = rng.standard_normal(len(tt)) * np.exp(-tt * 65)
+thump = np.sin(2 * np.pi * (80 * tt - 35 * tt**2)) * np.exp(-tt * 18)
+tail = lowpass(rng.standard_normal(len(tt)), 0.075) * np.exp(-tt * 10)
+save("rampart_fire.wav", crack + thump * 1.6 + tail * 2.2)
+
+# Wren MP: a crisp, light pistol crack; an independent seed keeps existing shots stable.
+rng = np.random.default_rng(29)
+tt = t(0.12)
+crack = rng.standard_normal(len(tt)) * np.exp(-tt * 135)
+thump = np.sin(2 * np.pi * (230 * tt - 95 * tt**2)) * np.exp(-tt * 52)
+snap = np.sin(2 * np.pi * 2800 * tt) * np.exp(-tt * 210)
+tail = lowpass(rng.standard_normal(len(tt)), 0.22) * np.exp(-tt * 45)
+save("wren_fire.wav", crack + thump * 0.4 + snap * 0.3 + tail * 0.55)
+
+# Siphon: a low pressure pulse and falling coil tone; energy, without a bullet crack.
+tt = t(0.8)
+pulse = np.sin(2 * np.pi * (75 * tt - 20 * tt**2)) * np.exp(-tt * 9)
+coil = np.sin(2 * np.pi * (560 * tt - 210 * tt**2)) * np.exp(-tt * 5)
+breath = lowpass(np.random.default_rng(73).standard_normal(len(tt)), 0.035) * np.exp(-tt * 6)
+save("siphon_fire.wav", (pulse * 1.3 + coil * 0.45 + breath * 0.6) * np.minimum(tt * 500, 1))

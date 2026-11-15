@@ -51,6 +51,14 @@ JOINTS = {
     "atlas_auto": GUN_WITH_MAG,
     "halberd_lmg": GUN_WITH_MAG,
     "corvid_338": GUN_WITH_MAG,
+    "sentry_br3": GUN_WITH_MAG,
+    "nightjar_sd": {**GUN_WITH_MAG, "Suppressor": "Receiver"},
+    "rampart_br": GUN_WITH_MAG,
+    "fieldhand_lever": {**GUN, "Lever": "Receiver", "MagazineTube": "Receiver"},
+    "ironwood_50": {**GUN_WITH_MAG, "ScopeLensMount": "Receiver"},
+    "warden_p9": {**GUN_WITH_MAG, "Slide": "Bolt", "Trigger": "Receiver"},
+    "wren_mp": {**GUN_WITH_MAG, "Slide": "Bolt", "Trigger": "Receiver", "Brace": "Receiver"},
+    "siphon": {**GUN_WITH_MAG, "Emitter": "Receiver", "Core": "Receiver", "Stock": "Receiver"},
     **zombie_checks.JOINTS,
 }
 JOINTS.update(character_checks.JOINTS)
