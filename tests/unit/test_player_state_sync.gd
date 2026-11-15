@@ -316,3 +316,20 @@ func test_late_join_gets_existing_dead_state() -> void:
 	assert_eq(_client().health.current, 0.0)
 	assert_false(_client().visible)
 	assert_eq(_client().collision_layer, 0)
+
+
+func test_revive_restores_full_inventory_after_temporary_sidearm() -> void:
+	var mine: Player = _client(client_id)
+	var rifle: Weapon = mine.weapons.give(Content.weapon(&"rifle_ar"))
+	var shotgun: Weapon = mine.weapons.give(Content.weapon(&"brenner_trench"))
+	var inventory: Array[Weapon] = [rifle, shotgun]
+	_server(client_id).take_damage(DamageInfo.create(1000.0, null))
+	await wait_until(func() -> bool: return mine.is_downed, 3.0, "owner gets downed sidearm")
+	assert_eq(mine.weapons.current.data.id, &"pistol_service")
+	assert_true(mine.weapons.weapons.has(rifle))
+	assert_true(mine.weapons.weapons.has(shotgun))
+	assert_eq(mine.weapons.max_slots, 2, "the temporary slot does not raise inventory capacity")
+	_server(client_id).state_sync.revive_player()
+	await wait_until(func() -> bool: return mine.is_alive(), 3.0, "owner revived")
+	assert_eq(mine.weapons.weapons, inventory, "reviving preserves purchased guns and their live state")
+	assert_eq(mine.weapons.current, shotgun, "the previous equipped gun is restored")

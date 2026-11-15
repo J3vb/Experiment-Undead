@@ -11,6 +11,9 @@ var _initial_spawn: Transform3D
 var _publish_queued: bool = false
 var _icon: Label3D
 var _spectating: Player
+var _standing_weapon: Weapon
+var _downed_sidearm: Weapon
+var _sidearm_selected: bool = false
 
 
 func _init() -> void:
@@ -189,6 +192,7 @@ func respawn_player() -> void:
 
 @rpc("authority", "call_local", "reliable")
 func _respawn(spawn_point: Transform3D) -> void:
+	_restore_weapons()
 	_player.global_transform = spawn_point
 	_player.velocity = Vector3.ZERO
 	_player.reset_physics_interpolation()
@@ -213,6 +217,8 @@ func _present() -> void:
 	_icon.visible = _player.is_downed and not local
 	if _player.is_downed:
 		_equip_sidearm()
+	else:
+		_restore_weapons()
 	if local and not _player.is_dead:
 		_spectating = null
 		_player.camera.make_current()
@@ -222,11 +228,33 @@ func _present() -> void:
 
 
 func _equip_sidearm() -> void:
+	if _sidearm_selected:
+		return
+	_sidearm_selected = true
+	_standing_weapon = _player.weapons.current
 	for index: int in _player.weapons.weapons.size():
 		if _player.weapons.weapons[index].data.id == PISTOL:
 			_player.weapons.equip(index)
 			return
-	_player.weapons.give(Content.weapon(PISTOL))
+	var slots: int = _player.weapons.max_slots
+	_player.weapons.max_slots = maxi(slots, _player.weapons.weapons.size() + 1)
+	_downed_sidearm = _player.weapons.give(Content.weapon(PISTOL))
+	_player.weapons.max_slots = slots
+
+
+func _restore_weapons() -> void:
+	if not _sidearm_selected:
+		return
+	_sidearm_selected = false
+	if is_instance_valid(_downed_sidearm):
+		_player.weapons.weapons.erase(_downed_sidearm)
+		_downed_sidearm.set_active(false)
+		_player.weapons.current = null
+		_downed_sidearm.queue_free()
+	_downed_sidearm = null
+	if is_instance_valid(_standing_weapon):
+		_player.weapons.equip(_player.weapons.weapons.find(_standing_weapon))
+	_standing_weapon = null
 
 
 func _spectate() -> void:
