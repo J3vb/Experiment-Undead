@@ -242,7 +242,11 @@ func _spread_direction(basis: Basis, spread_degrees: float) -> Vector3:
 
 
 func _trace(origin: Vector3, direction: Vector3) -> void:
-	for result: Dictionary in Pierce.trace(self, origin, direction):
+	var hits: Array[Dictionary] = Pierce.trace(self, origin, direction)
+	if shooter and shooter.session and shooter.session.remote_shots:
+		var end: Vector3 = hits[-1].position if not hits.is_empty() else origin + direction * data.max_range
+		shooter.session.remote_shots.record_trace(self, end)
+	for result: Dictionary in hits:
 		_hit(result, origin, direction)
 
 
@@ -251,7 +255,7 @@ func _hit(result: Dictionary, origin: Vector3, direction: Vector3) -> void:
 	var normal: Vector3 = result.normal
 	var hit_zone: HitZone = result.collider as HitZone
 	traced.emit(point, normal, hit_zone != null)
-	if hit_zone == null or not Net.is_authority():
+	if hit_zone == null:
 		return
 	var info: DamageInfo = DamageInfo.create(data.get_damage_at(origin.distance_to(point)), shooter)
 	info.amount *= float(result.damage_scale)
@@ -262,6 +266,10 @@ func _hit(result: Dictionary, origin: Vector3, direction: Vector3) -> void:
 	info.amount *= data.get_zone_multiplier(hit_zone.zone)
 	if hit_zone.zone == DamageInfo.Zone.HEAD:
 		info.amount *= _stat(&"head_damage")
+	if not Net.is_authority():
+		if shooter and shooter.session:
+			shooter.session.hit_claims.submit_hit(self, hit_zone, info)
+		return
 	hit_zone.receive_hit(info)
 	hit_landed.emit(hit_zone.health.is_dead, info.is_headshot())
 
