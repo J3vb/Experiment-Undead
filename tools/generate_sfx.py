@@ -233,3 +233,10 @@ x = crack * 1.4 + thump * 1.8 + tail
 click(0.8, 650, 80, 0.3)
 click(1.0, 950, 90, 0.25)
 save("corvid_fire.wav", x)
+
+# Siphon: a low pressure pulse and falling coil tone; energy, without a bullet crack.
+tt = t(0.8)
+pulse = np.sin(2 * np.pi * (75 * tt - 20 * tt**2)) * np.exp(-tt * 9)
+coil = np.sin(2 * np.pi * (560 * tt - 210 * tt**2)) * np.exp(-tt * 5)
+breath = lowpass(np.random.default_rng(73).standard_normal(len(tt)), 0.035) * np.exp(-tt * 6)
+save("siphon_fire.wav", (pulse * 1.3 + coil * 0.45 + breath * 0.6) * np.minimum(tt * 500, 1))
