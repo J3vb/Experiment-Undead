@@ -1,9 +1,17 @@
-## A zombie's visible body: loads its code-built model and poses the limbs in
-## code (walk, reach, attack, vault, death). Presentation only; the Zombie owns state.
+## A zombie's skinned body: poses its shared skeleton for walking, reaching,
+## attacking, vaulting and death. Presentation only; the Zombie owns state.
 class_name ZombieRig
 extends Node3D
 
-const PARTS: Array[StringName] = [&"Hips", &"Torso", &"Head", &"ArmL", &"ArmR", &"LegL", &"LegR"]
+const PARTS: Dictionary[StringName, StringName] = {
+	&"Hips": &"pelvis",
+	&"Torso": &"spine_02",
+	&"Head": &"head",
+	&"ArmL": &"upperarm_L",
+	&"ArmR": &"upperarm_R",
+	&"LegL": &"thigh_L",
+	&"LegR": &"thigh_R",
+}
 ## Arm lift (radians) at the top of an attack wind-up, and the drop past rest at the end of the strike.
 const ATTACK_LIFT: float = 1.3
 const ATTACK_DROP: float = 0.7
@@ -13,14 +21,17 @@ const CORPSE_TIME: float = 5.0
 ## How high the body hops at the middle of a window vault.
 const VAULT_HEIGHT: float = 0.45
 
-## A .glb from tools/assets/build_models.py (faces +Z, one node per limb).
+## A skinned .glb from tools/assets/zombie_model.py, facing +Z.
 @export var model: PackedScene
 
 var head: Node3D
 
-var _parts: Dictionary[StringName, Node3D] = {}
-var _rest: Dictionary[StringName, Vector3] = {}
-var _hips_rest_y: float = 0.0
+var _skeleton: Skeleton3D
+var _bones: Dictionary[StringName, int] = {}
+var _rest: Dictionary[StringName, Quaternion] = {}
+var _axes: Dictionary[StringName, Quaternion] = {}
+var _offsets: Dictionary[StringName, Vector3] = {}
+var _hips_rest: Vector3 = Vector3.ZERO
 var _belly: Node3D
 var _phase: float = 0.0
 
@@ -29,19 +40,63 @@ func _ready() -> void:
 	var body: Node3D = model.instantiate() as Node3D
 	body.rotation.y = PI
 	add_child(body)
-	# Limbs move every frame; Dynamic GI would re-sample the lightmap probes for
-	# each one each frame (about a quarter of the frame with 24 zombies).
+	# Keep the existing horde's lighting cost: no per-frame lightmap probe capture.
 	for mesh: Node in body.find_children("*", "GeometryInstance3D", true, false):
 		(mesh as GeometryInstance3D).gi_mode = GeometryInstance3D.GI_MODE_DISABLED
+	_skeleton = body.find_children("*", "Skeleton3D", true, false)[0] as Skeleton3D
+	var crawler: bool = body.find_child("Crawler", true, false) != null
 	for part_name: StringName in PARTS:
-		var part: Node3D = body.find_child(part_name, true, false) as Node3D
-		if part:
-			_parts[part_name] = part
-			_rest[part_name] = part.rotation
-	head = _parts.get(&"Head")
-	_belly = body.find_child("Belly", true, false) as Node3D
-	if _parts.has(&"Hips"):
-		_hips_rest_y = _parts[&"Hips"].position.y
+		if crawler and part_name in [&"LegL", &"LegR"]:
+			continue
+		_cache_bone(part_name, PARTS[part_name])
+	for bone_name: StringName in [&"forearm_L", &"forearm_R", &"shin_L", &"shin_R"]:
+		_cache_bone(bone_name, bone_name)
+	_hips_rest = _skeleton.get_bone_pose_position(_bones[&"Hips"])
+	_attach_head(body)
+	_attach_belly(body)
+
+
+func _cache_bone(part_name: StringName, bone_name: StringName) -> void:
+	var bone: int = _skeleton.find_bone(bone_name)
+	_bones[part_name] = bone
+	_rest[part_name] = _skeleton.get_bone_pose_rotation(bone)
+	_axes[part_name] = _skeleton.get_bone_global_rest(bone).basis.get_rotation_quaternion()
+	_offsets[part_name] = Vector3.ZERO
+
+
+func _attach_head(body: Node3D) -> void:
+	head = body.find_child("HeadCenter", true, false) as Node3D
+	var center: Transform3D = _skeleton.global_transform.affine_inverse() * head.global_transform
+	var attachment: BoneAttachment3D = BoneAttachment3D.new()
+	attachment.name = "HeadAttachment"
+	attachment.bone_name = &"head"
+	_skeleton.add_child(attachment)
+	attachment.transform = _skeleton.get_bone_global_rest(_bones[&"Head"])
+	head.reparent(attachment, false)
+	head.transform = attachment.transform.affine_inverse() * center
+
+
+func _attach_belly(body: Node3D) -> void:
+	var belly: MeshInstance3D = body.find_child("Belly", true, false) as MeshInstance3D
+	if belly == null:
+		return
+	# glTF skins put the vertices in skeleton space. Give this rigid mesh a
+	# centered pivot so its hit pulse grows in place instead of away from the feet.
+	var mesh_rest: Transform3D = _skeleton.global_transform.affine_inverse() * belly.global_transform
+	var center: Vector3 = belly.get_aabb().get_center()
+	var attachment: BoneAttachment3D = BoneAttachment3D.new()
+	attachment.name = "BellyAttachment"
+	attachment.bone_name = &"spine_01"
+	_skeleton.add_child(attachment)
+	attachment.transform = _skeleton.get_bone_global_rest(_skeleton.find_bone("spine_01"))
+	_belly = Node3D.new()
+	_belly.name = "BellyPulse"
+	attachment.add_child(_belly)
+	_belly.transform = attachment.transform.affine_inverse() * mesh_rest * Transform3D(Basis.IDENTITY, center)
+	belly.skin = null
+	belly.skeleton = NodePath()
+	belly.reparent(_belly, false)
+	belly.transform = Transform3D(Basis.IDENTITY, -center)
 
 
 ## Code-driven limb animation for the zombie's current state, until real clips arrive.
@@ -91,14 +146,12 @@ func fall_over() -> Tween:
 
 
 func has_part(part_name: StringName) -> bool:
-	return _parts.has(part_name)
+	return _bones.has(part_name)
 
 
 ## Limb angle away from the model's rest pose (x = pitch), for tests and effects.
 func get_offset(part_name: StringName) -> Vector3:
-	if not _parts.has(part_name):
-		return Vector3.ZERO
-	return _parts[part_name].rotation - _rest[part_name]
+	return _offsets.get(part_name, Vector3.ZERO)
 
 
 ## Walk cycle scaled by ground speed; `reach` (0..1) lifts the arms toward a close target.
@@ -113,8 +166,12 @@ func pose_walk(speed: float, reach: float, delta: float) -> void:
 	_pose_part(&"ArmR", Vector3(lift + swing * 0.2 + cos(_phase * 0.8) * 0.1, 0.0, 0.0))
 	_pose_part(&"Torso", Vector3(0.1 * stride + 0.05 * reach, 0.0, sin(_phase) * 0.07))
 	_pose_part(&"Head", Vector3(0.0, 0.0, sin(_phase * 0.5) * 0.18))
-	if _parts.has(&"Hips"):
-		_parts[&"Hips"].position.y = _hips_rest_y - absf(cos(_phase)) * 0.035 * stride
+	_pose_part(&"forearm_L", Vector3(-0.12 - 0.15 * reach, 0.0, 0.0))
+	_pose_part(&"forearm_R", Vector3(-0.12 - 0.15 * reach, 0.0, 0.0))
+	_pose_part(&"shin_L", Vector3(maxf(0.0, swing) * 0.3, 0.0, 0.0))
+	_pose_part(&"shin_R", Vector3(maxf(0.0, -swing) * 0.3, 0.0, 0.0))
+	var bob: Vector3 = Vector3.DOWN * absf(cos(_phase)) * 0.035 * stride
+	_skeleton.set_bone_pose_position(_bones[&"Hips"], _hips_rest + bob)
 
 
 ## Attack swing. `t` 0..1 is the wind-up (arms rise, body leans back),
@@ -135,6 +192,10 @@ func pose_attack(t: float) -> void:
 	_pose_part(&"Torso", Vector3(lean, 0.0, 0.0))
 	_pose_part(&"LegL", Vector3(0.15, 0.0, 0.0))
 	_pose_part(&"LegR", Vector3(-0.1, 0.0, 0.0))
+	_pose_part(&"forearm_L", Vector3(-0.35, 0.0, 0.0))
+	_pose_part(&"forearm_R", Vector3(-0.35, 0.0, 0.0))
+	_pose_part(&"shin_L", Vector3(0.1, 0.0, 0.0))
+	_pose_part(&"shin_R", Vector3(0.15, 0.0, 0.0))
 
 
 ## Climb over a window sill. `t` 0..1: hands reach for the sill, the body
@@ -148,6 +209,10 @@ func pose_vault(t: float) -> void:
 	_pose_part(&"LegL", Vector3(-0.9 * hop, 0.0, 0.0))
 	_pose_part(&"LegR", Vector3(-0.6 * hop, 0.0, 0.0))
 	_pose_part(&"Head", Vector3(-0.2 * hop, 0.0, 0.0))
+	_pose_part(&"forearm_L", Vector3(-0.35 * hop, 0.0, 0.0))
+	_pose_part(&"forearm_R", Vector3(-0.35 * hop, 0.0, 0.0))
+	_pose_part(&"shin_L", Vector3(0.75 * hop, 0.0, 0.0))
+	_pose_part(&"shin_R", Vector3(0.6 * hop, 0.0, 0.0))
 
 
 ## Limbs go slack as the body falls.
@@ -160,10 +225,14 @@ func pose_dead() -> void:
 		&"LegL": Vector3(0.2, 0.0, 0.0),
 		&"LegR": Vector3(-0.15, 0.0, 0.0),
 		&"Torso": Vector3.ZERO,
+		&"forearm_L": Vector3(-0.2, 0.0, 0.0),
+		&"forearm_R": Vector3(-0.15, 0.0, 0.0),
+		&"shin_L": Vector3(0.25, 0.0, 0.0),
+		&"shin_R": Vector3(0.2, 0.0, 0.0),
 	}
 	for part_name: StringName in slack:
-		if _parts.has(part_name):
-			tween.tween_property(_parts[part_name], "rotation", _rest[part_name] + slack[part_name], 0.4)
+		if _bones.has(part_name):
+			tween.tween_method(_tween_pose.bind(part_name), get_offset(part_name), slack[part_name], 0.4)
 
 
 ## Bloater belly swells for a moment when hit.
@@ -175,5 +244,11 @@ func pulse_belly() -> void:
 
 
 func _pose_part(part_name: StringName, offset: Vector3) -> void:
-	if _parts.has(part_name):
-		_parts[part_name].rotation = _rest[part_name] + offset
+	if _bones.has(part_name):
+		_offsets[part_name] = offset
+		var turn: Quaternion = _axes[part_name].inverse() * Quaternion.from_euler(offset) * _axes[part_name]
+		_skeleton.set_bone_pose_rotation(_bones[part_name], _rest[part_name] * turn)
+
+
+func _tween_pose(offset: Vector3, part_name: StringName) -> void:
+	_pose_part(part_name, offset)

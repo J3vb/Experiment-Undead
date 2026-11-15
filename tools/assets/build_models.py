@@ -22,6 +22,7 @@ import bpy
 import bmesh
 import character_models
 import finish
+import zombie_model
 from mathutils import Vector
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -44,18 +45,6 @@ def srgb(hex_code: str) -> tuple:
         c = int(hex_code[i : i + 2], 16) / 255.0
         out.append(c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4)
     return (*out, 1.0)
-
-
-# Zombies: heads are always the lightest value in the silhouette; only bio-green glows.
-SKIN_HEAD = srgb("#B9C2B0")
-SKIN = srgb("#8E9887")
-SKIN_DARK = srgb("#6C7566")
-LAB_COAT = srgb("#8A918C")
-SHIRT = srgb("#2F393B")
-TROUSERS = srgb("#1C2122")
-SHOES = srgb("#0E1010")
-BLOATER_SKIN = srgb("#4A5446")
-BIO_GREEN = srgb("#8DFF3A")
 
 
 def reset_scene() -> None:
@@ -222,84 +211,6 @@ def tilted_box(name: str, size: tuple, at: tuple, lean: float, mat, pivot: tuple
     return obj
 
 
-def head(at: tuple, radius: float, parent, glow: float = 4.0):
-    """Light head with two faint green eyes on its front (-Y)."""
-    skull = ball("Head", radius, at, material("SkinHead", SKIN_HEAD, roughness=0.7), (0.9, 1.0, 1.12), parent)
-    eye = material("Eye", BIO_GREEN, roughness=0.4, glow=glow)
-    for side, x in (("EyeL", -0.4), ("EyeR", 0.4)):
-        spot = (at[0] + x * radius, at[1] - radius * 0.86, at[2] + radius * 0.1)
-        ball(side, radius * 0.16, spot, eye, (1.3, 0.5, 0.7), skull)
-    return skull
-
-
-def build_shambler() -> None:
-    """Shambler in a lab coat, leaning in with both arms reaching. Faces -Y (Godot +Z), feet at 0."""
-    skin = material("Skin", SKIN, roughness=0.8)
-    coat = material("LabCoat", LAB_COAT, roughness=0.9)
-    trousers = material("Trousers", TROUSERS, roughness=0.95)
-    shoes = material("Shoes", SHOES, roughness=0.7)
-    hips = box("Hips", (0.34, 0.22, 0.16), (0, 0, 0.95), trousers, bevel=0.04)
-    for side, x, foot_y in (("L", -0.1, 0.06), ("R", 0.1, -0.16)):
-        leg = limb("Leg" + side, (x, 0, 0.94), (x * 1.2, foot_y, 0.09), 0.075, trousers, hips)
-        foot = (x * 1.2, foot_y - 0.06, 0.04)
-        attach(box("Foot" + side, (0.11, 0.24, 0.08), foot, shoes, bevel=0.02), foot, leg)
-    torso = tilted_box("Torso", (0.42, 0.25, 0.58), (0, 0, 1.3), 0.22, coat, (0, 0, 1.0), hips)
-    tilted_box(
-        "Shirt", (0.13, 0.03, 0.42), (0, -0.12, 1.3), 0.22, material("Shirt", SHIRT, roughness=0.9), (0, 0, 1.0), torso
-    )
-    bpy.ops.mesh.primitive_cone_add(vertices=16, radius1=0.3, radius2=0.23, depth=0.6, location=(0, 0.02, 0.78))
-    skirt = bpy.context.active_object
-    skirt.name = "CoatSkirt"
-    skirt.scale = (1, 0.7, 1)
-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-    skirt.data.materials.append(coat)
-    attach(skirt, (0, 0, 1.0), hips)
-    head((0.02, -0.2, 1.71), 0.125, torso)
-    for side, x, hand in (("L", -0.25, (-0.4, -0.66, 1.4)), ("R", 0.25, (0.44, -0.56, 1.26))):
-        arm = limb("Arm" + side, (x, -0.13, 1.5), hand, 0.05, skin, torso)
-        limb(
-            "Sleeve" + side,
-            (x, -0.13, 1.5),
-            [(p + q) / 2 for p, q in zip((x, -0.13, 1.5), hand, strict=True)],
-            0.07,
-            coat,
-            arm,
-        )
-
-
-def build_crawler() -> None:
-    """Crawler: legs gone, chest low, dragging itself on its arms. Faces -Y, belly at 0."""
-    skin = material("SkinDark", SKIN_DARK, roughness=0.85)
-    shirt = material("Shirt", SHIRT, roughness=0.9)
-    hips = box("Hips", (0.32, 0.24, 0.16), (0, 0.42, 0.16), material("Trousers", TROUSERS, roughness=0.95), bevel=0.04)
-    for side, x in (("L", -0.09), ("R", 0.1)):
-        limb("Stump" + side, (x, 0.48, 0.14), (x * 1.3, 0.72, 0.1), 0.07, hips.data.materials[0], hips)
-    torso = tilted_box("Torso", (0.38, 0.22, 0.55), (0, 0.38, 0.455), 1.2, shirt, (0, 0.38, 0.18), hips)
-    head((0, -0.25, 0.5), 0.12, torso)
-    for side, x, reach in (("L", -1, 0.72), ("R", 1, 0.45)):
-        elbow = (x * 0.4, -0.2, 0.3)
-        arm = limb("Arm" + side, (x * 0.2, -0.08, 0.38), elbow, 0.05, skin, torso)
-        limb("Forearm" + side, elbow, (x * 0.36, -reach, 0.03), 0.045, skin, arm)
-
-
-def build_bloater() -> None:
-    """Bloater: wide and slow, with a glowing green belly (pulses in code when hurt). Faces -Y."""
-    skin = material("BloaterSkin", BLOATER_SKIN, roughness=0.75)
-    trousers = material("Trousers", TROUSERS, roughness=0.95)
-    hips = box("Hips", (0.5, 0.36, 0.2), (0, 0, 0.8), trousers, bevel=0.05)
-    for side, x in (("L", -0.17), ("R", 0.17)):
-        leg = limb("Leg" + side, (x, 0, 0.8), (x * 1.15, 0, 0.1), 0.11, trousers, hips)
-        foot = (x * 1.15, -0.05, 0.045)
-        attach(box("Foot" + side, (0.15, 0.26, 0.09), foot, material("Shoes", SHOES), bevel=0.02), foot, leg)
-    torso = ball("Torso", 0.4, (0, 0.04, 1.25), skin, (1.05, 0.85, 1.0), hips)
-    ball(
-        "Belly", 0.36, (0, -0.16, 1.13), material("Belly", BIO_GREEN, roughness=0.3, glow=1.6), (1.0, 0.85, 0.95), torso
-    )
-    head((0, -0.06, 1.72), 0.12, torso, glow=3.0)
-    for side, x in (("L", -1), ("R", 1)):
-        limb("Arm" + side, (x * 0.38, 0, 1.45), (x * 0.56, -0.18, 0.98), 0.085, skin, torso)
-
-
 # Not finished yet: the Halcyon Labs lightmap was baked on this mesh, so changing it
 # needs a GPU re-bake. Remove it from this set together with that bake.
 UNFINISHED = {"wall_panel"}
@@ -315,9 +226,9 @@ MODELS = {
     "atlas_auto": ("weapons/atlas_auto.glb", gun("atlas_model")),
     "halberd_lmg": ("weapons/halberd_lmg.glb", gun("halberd_model")),
     "corvid_338": ("weapons/corvid_338.glb", gun("corvid_model")),
-    "shambler": ("zombies/shambler.glb", build_shambler),
-    "crawler": ("zombies/crawler.glb", build_crawler),
-    "bloater": ("zombies/bloater.glb", build_bloater),
+    "shambler": ("zombies/shambler.glb", zombie_model.build_shambler),
+    "crawler": ("zombies/crawler.glb", zombie_model.build_crawler),
+    "bloater": ("zombies/bloater.glb", zombie_model.build_bloater),
 }
 MODELS.update(character_models.MODELS)
 

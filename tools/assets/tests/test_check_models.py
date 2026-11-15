@@ -141,30 +141,30 @@ def test_gun_facing_backwards(tmp_path):
 
 def test_zombie_facing_backwards(tmp_path):
     def turn(objects):
-        objects["Hips"].rotation_euler.z = math.pi
+        objects["Skeleton"].rotation_euler.z = math.pi
 
-    assert has(broken(tmp_path, "shambler", turn), "eyes are on the back of the head")
-
-
-def test_missing_joint(tmp_path):
-    assert has(broken(tmp_path, "shambler", lambda o: setattr(o["ArmL"], "name", "LeftArm")), "missing node 'ArmL'")
+    assert has(broken(tmp_path, "shambler", turn), "Eyes must sit in front of the head")
 
 
-def test_joint_with_wrong_parent(tmp_path):
-    def unparent(objects):
-        belly = objects["Belly"]
-        world = belly.matrix_world.copy()
-        belly.parent = None
-        belly.matrix_world = world
+def test_missing_zombie_bone(tmp_path):
+    def rename(objects):
+        objects["Skeleton"].data.bones["upperarm_L"].name = "left_upperarm"
 
-    assert has(broken(tmp_path, "bloater", unparent), "'Belly' must be under 'Torso'")
+    assert has(broken(tmp_path, "shambler", rename), "missing bones upperarm_L")
 
 
-def test_joint_pivot_off_the_part(tmp_path):
-    def move_pivot(objects):
-        build_models.attach(objects["ArmL"], (-1.5, 0, 1.5))
+def test_belly_with_wrong_bone(tmp_path):
+    def rebind(objects):
+        character_rig.bind_rigid(objects["Belly"], objects["Skeleton"], "spine_02")
 
-    assert has(broken(tmp_path, "shambler", move_pivot), "'ArmL' pivot")
+    assert has(broken(tmp_path, "bloater", rebind), "Belly must be bound rigidly to spine_01")
+
+
+def test_eyes_with_wrong_bone_parent(tmp_path):
+    def reparent(objects):
+        objects["Eyes"].parent_bone = "neck"
+
+    assert has(broken(tmp_path, "shambler", reparent), "Eyes must be a child of the head bone")
 
 
 @pytest.mark.parametrize(
