@@ -36,13 +36,61 @@ def _select_only(obj) -> None:
     bpy.context.view_layer.objects.active = obj
 
 
+def _morph_sharp_edges(obj, target) -> None:
+    """A crease in any authored shape needs its own split normal in every shape."""
+    mesh = target.data
+    neighbors = [[] for _edge in mesh.edges]
+    for face in mesh.polygons:
+        for loop in face.loop_indices:
+            neighbors[mesh.loops[loop].edge_index].append(face.index)
+    threshold = math.cos(SMOOTH_ANGLE)
+    basis = [tuple(vertex.co) for vertex in mesh.vertices]
+    for key in obj.data.shape_keys.key_blocks:
+        for vertex, point in zip(mesh.vertices, key.data, strict=True):
+            vertex.co = point.co
+        mesh.update()
+        for edge, faces in zip(mesh.edges, neighbors, strict=True):
+            if len(faces) == 2 and mesh.polygons[faces[0]].normal.dot(mesh.polygons[faces[1]].normal) < threshold:
+                edge.use_edge_sharp = True
+    for source, edge in zip(obj.data.edges, mesh.edges, strict=True):
+        source.use_edge_sharp = edge.use_edge_sharp
+    for vertex, position in zip(mesh.vertices, basis, strict=True):
+        vertex.co = position
+    obj.data.update()
+    mesh.update()
+
+
 def fix_normals(obj) -> None:
     _select_only(obj)
     bpy.ops.object.shade_smooth_by_angle(angle=SMOOTH_ANGLE, keep_sharp_edges=True)
-    mod = obj.modifiers.new("Weighted", "WEIGHTED_NORMAL")
-    mod.keep_sharp = True
-    mod.weight = 50
-    bpy.ops.object.modifier_apply(modifier=mod.name)
+    target = obj
+    if obj.data.shape_keys:
+        target = obj.copy()
+        target.data = obj.data.copy()
+        bpy.context.collection.objects.link(target)
+        target.shape_key_clear()
+        for modifier in list(target.modifiers):
+            target.modifiers.remove(modifier)
+    try:
+        if target is not obj:
+            _morph_sharp_edges(obj, target)
+        _select_only(target)
+        mod = target.modifiers.new("Weighted", "WEIGHTED_NORMAL")
+        mod.keep_sharp = True
+        mod.weight = 50
+        bpy.ops.object.modifier_apply(modifier=mod.name)
+        if target is not obj:
+            source = [tuple(face.vertices) for face in obj.data.polygons]
+            finished = [tuple(face.vertices) for face in target.data.polygons]
+            if source != finished or len(obj.data.vertices) != len(target.data.vertices):
+                raise ValueError("normal finishing changed morph topology")
+            obj.data.normals_split_custom_set([corner.vector for corner in target.data.corner_normals])
+    finally:
+        if target is not obj:
+            mesh = target.data
+            bpy.data.objects.remove(target, do_unlink=True)
+            bpy.data.meshes.remove(mesh)
+            _select_only(obj)
 
 
 def unwrap(obj) -> None:

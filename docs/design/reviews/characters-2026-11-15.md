@@ -36,8 +36,12 @@ the committed-vest clearance test. All three unchanged vests now pass the 3 mm
 clearance requirement. Raised boot lacing is projected onto the actual vamp,
 with regression tests against buried or floating detail.
 
-Gameplay still uses the older hand meshes. First-person evidence uses an explicit
-inspection pose with the unchanged rifle, not a new gameplay animation.
+The new arms replace the local gameplay hand meshes through the shared weapon
+holder. One rig follows the active weapon through aiming, kick, reload and pump
+motion; camera-relative shoulders prevent the entire arm moving like a rigid prop.
+Ten authored grip profiles cover the twenty base/Reforged weapon definitions.
+Nine glove morphs preserve the accepted rifle as the default shape. Common medium
+cuffs are cosmetic; this adds no equipment or rarity gameplay.
 
 Results: body **11,892 → 15,380** triangles; arms **7,628 → 9,828**.
 The strongest gains are local cloth compression, shaped face covering, seated
@@ -53,10 +57,11 @@ and elbows, and shoulder positions are bounded relative to the imported body.
 Minimum imported-vertex grip clearances are **1.724 mm left / 2.103 mm right**.
 The right index clears the guard by 1.183 mm; both hands clear the adjacent
 receiver, trigger and rail geometry. The camera and rifle stay at the runtime hip
-placement. Finger/thumb markers retain their existing
-32/45 mm gaps. Regression tests also catch reversed anatomy, twisted sweep rings,
-buried reinforcement and grip penetration. The fixed index curl is not a trigger
-animation; other weapon poses remain future integration work.
+placement. Rifle finger/thumb markers retain their 32/45 mm gaps; the other grips
+stay within the existing 25–40 mm right / 40–50 mm left limits. Regression tests
+also catch reversed anatomy, twisted sweep rings, buried reinforcement, grip
+penetration and discontinuous elbow movement. Fingers use fixed authored curls;
+individual trigger pulls and magazine-handling animation remain deferred.
 
 | Model | Before: strip + Common/Legendary booth | After: strip + Common/Legendary booth |
 | --- | --- | --- |
@@ -75,12 +80,27 @@ The same image directory contains Common/Legendary cuff views, arm silhouettes,
 and uncropped 10/30 m images at 110° horizontal FOV. These software OpenGL
 captures verify shape, colour and fit, not Forward+ performance.
 
+Gameplay comparisons use the original placeholder hands before and the imported
+rig after, with identical cameras and lighting. Each sheet includes Common and
+Legendary at hip (110° horizontal FOV) and ADS (the weapon's vertical FOV):
+[rifle](images/characters-2026-11-15/runtime_rifle_ar.png),
+[Talon](images/characters-2026-11-15/runtime_talon_dmr.png),
+[Kestrel](images/characters-2026-11-15/runtime_kestrel_smg.png),
+[Mako](images/characters-2026-11-15/runtime_mako_pdw.png),
+[Atlas](images/characters-2026-11-15/runtime_atlas_auto.png),
+[Halberd](images/characters-2026-11-15/runtime_halberd_lmg.png),
+[Corvid](images/characters-2026-11-15/runtime_corvid_338.png),
+[Brenner](images/characters-2026-11-15/runtime_brenner_trench.png),
+[Hollis](images/characters-2026-11-15/runtime_hollis_44.png),
+[service pistol](images/characters-2026-11-15/runtime_pistol_service.png).
+
 Reproduce after building/importing the project:
 
 ```sh
 python tools/render_turnarounds.py player player_arms --out /tmp/characters-turnarounds
 godot --path . --rendering-driver opengl3 tools/gear_booth.tscn -- --rarity all --out /tmp/characters-booth
 godot --path . --rendering-driver opengl3 tools/character_review.tscn -- /tmp/characters-inspection
+godot --path . --rendering-driver opengl3 tools/weapon_arm_review.tscn -- /tmp/characters-runtime
 ```
 
 Use `--rarity all` and compare Common/Legendary: the existing single-rarity booth

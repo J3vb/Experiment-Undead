@@ -1,5 +1,6 @@
 """First-person thermal sleeves and reinforced grip gloves on the shared body rig."""
 
+import json
 import math
 
 import bpy
@@ -10,11 +11,48 @@ import body_parts as soft
 import character_rig as rig
 import gear_paint as paint
 import player_body_model as body
+import player_grip_profiles as profiles
 from mathutils import Matrix, Vector
-
-GRIP_HALVES = {0.032: (0.026, 0.0185), 0.045: (0.033, 0.033)}
-FINGER_RADII = (0.010, 0.010, 0.0105, 0.010, 0.009, 0.009, 0.008, 0.007, 0.005, 0.002)
-FINGER_SCALES = (0.98, 1.0, 0.96, 0.86)
+from player_arm_morphs import add_variant
+from player_grip_model import (
+    FINGER_RADII as FINGER_RADII,
+)
+from player_grip_model import (
+    FINGER_SCALES as FINGER_SCALES,
+)
+from player_grip_model import (
+    GRIP_HALVES as GRIP_HALVES,
+)
+from player_grip_model import (
+    _bore_point as _bore_point,
+)
+from player_grip_model import (
+    _finger_pad as _finger_pad,
+)
+from player_grip_model import (
+    _finger_path as _finger_path,
+)
+from player_grip_model import (
+    _finger_radii as _finger_radii,
+)
+from player_grip_model import (
+    _firing_curl as _firing_curl,
+)
+from player_grip_model import (
+    _frame as _frame,
+)
+from player_grip_model import (
+    _grip_axes as _grip_axes,
+)
+from player_grip_model import (
+    _grip_centre as _grip_centre,
+)
+from player_grip_model import (
+    _grip_tube as _grip_tube,
+)
+from player_grip_model import (
+    _thumb_path as _thumb_path,
+)
 
 
 def _materials():
@@ -52,146 +90,6 @@ def _sleeves(mats):
     bpy.data.objects.remove(source, do_unlink=True)
 
 
-def _frame(sign):
-    """Index-to-little, wrist-to-fingers and palm inward; each hand keeps its chirality."""
-    across = Vector((-sign, 0, -1)).normalized()
-    along = Vector((sign, 0, -1)).normalized()
-    inward = Vector((0, -1, 0))
-    return across, along, inward
-
-
-def _grip_axes(sign, gap):
-    """Weapon axis and depth direction in a naturally oblique grasp frame."""
-    across, along, inward = _frame(sign)
-    if gap == 0.045:
-        return -across * 0.8 + along * (0.6 * math.sqrt(0.96)) - inward * 0.12, along
-    angle = math.atan2(0.34, 0.94) + math.pi / 6
-    return across * math.cos(angle) - along * math.sin(angle), across * math.sin(angle) + along * math.cos(angle)
-
-
-def _grip_centre(root, sign, gap):
-    across, _along, _inward = _frame(sign)
-    axis, _depth = _grip_axes(sign, gap)
-    centre = Vector((sign * 0.675, -0.045 if gap == 0.032 else -0.057, 0.985))
-    return centre + axis * ((root - centre).dot(across) / axis.dot(across))
-
-
-def _bore_point(centre, sign, gap, angle, radius):
-    """Offset a fingertip or phalanx from the actual grip cross section."""
-    across, along, inward = _frame(sign)
-    axis, depth = _grip_axes(sign, gap)
-    half_length, half_depth = GRIP_HALVES[gap]
-    direction = along * math.cos(angle) + inward * math.sin(angle)
-    if gap == 0.045:
-        radial = direction - axis * direction.dot(axis)
-        surface = direction * (half_length / radial.length)
-        normal = radial.normalized()
-    else:
-        u, v = direction.dot(depth) / half_length, direction.dot(inward) / half_depth
-        distance = (abs(u) ** 8 + abs(v) ** 8) ** (-1 / 8)
-        surface = direction * distance
-        normal = (
-            depth * ((u * distance) ** 7 / half_length) + inward * ((v * distance) ** 7 / half_depth)
-        ).normalized()
-    outward = (normal - across * normal.dot(across)).normalized()
-    return centre + surface + outward * ((radius + 0.0015) / outward.dot(normal))
-
-
-def _finger_path(root, sign, diameter, index):
-    """Curl around the grip while leaving the fingertips opposed to the thumb."""
-    _across, along, _inward = _frame(sign)
-    centre = _grip_centre(root, sign, diameter)
-    low, high = -math.pi, 0.0
-    for _step in range(24):
-        angle = (low + high) / 2
-        start = _bore_point(centre, sign, diameter, angle, FINGER_RADII[0] * FINGER_SCALES[index])
-        if (start - root).dot(along) > 0:
-            high = angle
-        else:
-            low = angle
-    start_angle = (low + high) / 2
-    end_angle = 0.65 + (0, 0.20, 0.15, -0.12)[index]
-    fractions = (0, 0.13, 0.27, 0.40, 0.50, 0.61, 0.72, 0.83, 0.94, 1.0)
-    angles = [start_angle + (end_angle - start_angle) * fraction for fraction in fractions]
-    if diameter == 0.032:
-        axis, _depth = _grip_axes(sign, diameter)
-        across, _along, _inward = _frame(sign)
-        corner = math.atan(GRIP_HALVES[diameter][1] * axis.dot(across) / GRIP_HALVES[diameter][0])
-        angles = [start_angle, (start_angle - corner - 0.18) / 2]
-        angles += [-corner + offset for offset in (-0.18, -0.08, 0, 0.08, 0.18)]
-        angles += [0] + [corner + offset for offset in (-0.18, -0.08, 0, 0.08, 0.18)] + [end_angle]
-    points = [
-        _bore_point(centre, sign, diameter, angle, radius)
-        for angle, radius in zip(angles, _finger_radii(diameter, index), strict=True)
-    ]
-    return _firing_curl(points, sign, index) if diameter == 0.032 else points
-
-
-def _firing_curl(points, sign, index):
-    """Separate the trigger finger from the three curls beneath the guard."""
-    across, along, _inward = _frame(sign)
-    axis, _depth = _grip_axes(sign, 0.032)
-    shift = (across * math.sqrt(0.75) - along * 0.5) * 0.018 if index == 0 else axis * 0.027
-    result = []
-    for row, point in enumerate(points):
-        blend = min(1.0, row / 4)
-        result.append(point + shift * blend * blend * (3 - 2 * blend))
-    return result
-
-
-def _finger_radii(gap, index):
-    radii = FINGER_RADII
-    if gap == 0.032:
-        radii = (0.010, 0.010, 0.0105, 0.0105, 0.010, 0.0097, 0.0095, 0.009, 0.0085, 0.008, 0.007, 0.006, 0.004, 0.002)
-    return [radius * FINGER_SCALES[index] for radius in radii]
-
-
-def _grip_tube(name, points, radii, mat, sign):
-    """Keep the sweep frame continuous while fingers bend past the grip centre."""
-    across, _along, _inward = _frame(sign)
-    rings = []
-    for index, (point, radius) in enumerate(zip(points, radii, strict=True)):
-        tangent = (points[min(index + 1, len(points) - 1)] - points[max(0, index - 1)]).normalized()
-        width = (across - tangent * across.dot(tangent)).normalized()
-        normal = tangent.cross(width)
-        rings.append(
-            [
-                point + radius * (width * math.cos(angle) + normal * math.sin(angle))
-                for angle in (2 * math.pi * step / 12 for step in range(12))
-            ]
-        )
-    return soft.loft(name, rings, mat)
-
-
-def _finger_pad(points, radii, joint, sign, mat):
-    """A thin curved reinforcement seats into the rubber around a knuckle."""
-    across, _along, _inward = _frame(sign)
-    rings = []
-    outline = [
-        (-1, -0.0005),
-        (-0.75, -0.0012),
-        (0.75, -0.0012),
-        (1, -0.0005),
-        (0.75, 0.0012),
-        (0, 0.0012),
-        (-0.75, 0.0012),
-    ]
-    for index, width in ((joint - 1, 0.72), (joint, 1.0), (joint + 1, 0.72)):
-        tangent = (points[index + 1] - points[index - 1]).normalized()
-        width_axis = (across - tangent * across.dot(tangent)).normalized()
-        outward = tangent.cross(width_axis) * sign
-        half_width = min(0.008, radii[index] * 0.82) * width
-        rings.append(
-            [
-                points[index]
-                + outward * (math.sqrt(radii[index] ** 2 - (side * half_width) ** 2) + depth)
-                + width_axis * side * half_width
-                for side, depth in outline
-            ]
-        )
-    return soft.loft("FingerPad" + ("L" if sign == 1 else "R"), rings, mat)
-
-
 def _tip_marker(name, point, armature, side):
     obj = bpy.data.objects.new(name + "_" + side, None)
     bpy.context.collection.objects.link(obj)
@@ -200,75 +98,54 @@ def _tip_marker(name, point, armature, side):
     obj.matrix_world = Matrix.Translation(point)
 
 
-def _fingers(armature, mats, side, sign):
+def _fingers(armature, mats, side, sign, profile="rifle_ar", markers=True):
     across, _along, _inward = _frame(sign)
     diameter = 0.032 if side == "R" else 0.045
+    parts = []
     for index in range(4):
         offset = (index - 1.5) * 0.016
         root = Vector((sign * 0.675, -0.017 if side == "R" else -0.012, 0.985)) + across * offset
-        points = _finger_path(root, sign, diameter, index)
+        points = _finger_path(root, sign, diameter, index, profile)
         radii = _finger_radii(diameter, index)
         finger = _grip_tube("GripFinger" + side, points, radii, mats["rubber"], sign)
+        parts.append(finger)
         paint.zone(finger, paint.ZONE_ACCENT)
         for joint in (4, 10) if side == "R" else (3, 6):
             pad = _finger_pad(points, radii, joint, sign, mats["knit"])
+            parts.append(pad)
             paint.zone(pad, paint.ZONE_ACCENT)
         if index == 0:
             index_tip = points[-1]
-            centre = _grip_centre(root, sign, diameter)
-            _tip_marker("GripIndexTip", index_tip, armature, side)
-    points = _thumb_path(index_tip, centre, sign, diameter)
+            centre = _grip_centre(root, sign, diameter, profile)
+            if markers:
+                _tip_marker("GripIndexTip", index_tip, armature, side)
+    points = _thumb_path(index_tip, centre, sign, diameter, profile)
     radii = [0.014, 0.014, 0.013, 0.011, 0.008, 0.002]
     if side == "R":
         radii = [0.014, 0.014, 0.013, 0.012, 0.011, 0.010, 0.008, 0.006, 0.004, 0.002]
     thumb = _grip_tube("GripThumb" + side, points, radii, mats["rubber"], sign)
+    parts.append(thumb)
     paint.zone(thumb, paint.ZONE_ACCENT)
-    _tip_marker("GripThumbTip", points[-1], armature, side)
+    if markers:
+        _tip_marker("GripThumbTip", points[-1], armature, side)
+    return parts, {
+        "center": [sign * 0.675, -profiles.section(profile, diameter)[2], 0.985],
+        "index": list(index_tip),
+        "thumb": list(points[-1]),
+    }
 
 
-def _thumb_path(index_tip, centre, sign, gap):
-    """Oppose the thumb around the clear bore; tip spacing is a chord, not its diameter."""
-    across, along, inward = _frame(sign)
-    if gap == 0.032:
-        index_tip = index_tip - (across * math.sqrt(0.75) - along * 0.5) * 0.018
-    high = 0.65
-    low = high - math.pi
-    for _step in range(32):
-        angle = (low + high) / 2
-        tip = _bore_point(centre, sign, gap, angle, 0.002)
-        if (tip - index_tip).length > gap:
-            low = angle
-        else:
-            high = angle
-    angle = (low + high) / 2
-    start = Vector((sign * 0.649, 0, 1.011)) - across * 0.034 - along * 0.006 + inward * 0.008
-    axis, _depth = _grip_axes(sign, gap)
-    points = [start]
-    sections = [
-        (-2.62, 0.014, 0.009),
-        (-1.92, 0.013, 0.014),
-        (-1.31, 0.011, 0.010),
-        ((-1.31 + angle) / 2, 0.008, 0.004),
-        (angle, 0.002, 0),
-    ]
-    if gap == 0.032:
-        corner = math.atan(GRIP_HALVES[gap][1] * axis.dot(across) / GRIP_HALVES[gap][0])
-        sections = [(-2.62, 0.014, 0.009), (-1.92, 0.013, 0.014), (-1.31, 0.012, 0.012)]
-        sections += [((-1.31 - corner - 0.18) / 2, 0.011, 0.010)]
-        sections += [
-            (-corner + delta, radius, offset)
-            for delta, radius, offset in [
-                (-0.18, 0.010, 0.008),
-                (-0.08, 0.008, 0.006),
-                (0, 0.006, 0.004),
-                (0.08, 0.004, 0.002),
-            ]
-        ]
-        sections += [(angle, 0.002, 0)]
-    for theta, radius, offset in sections:
-        row = centre - axis * (offset / axis.dot(across))
-        points.append(_bore_point(row, sign, gap, theta, radius))
-    return _firing_curl(points, sign, 0) if gap == 0.032 else points
+def _grip_variants(armature, mats, base, metadata):
+    for profile in profiles.PROFILES:
+        if profile == "rifle_ar":
+            continue
+        key = "grip_" + profile
+        info = {"morph": key}
+        for side, sign in (("L", 1), ("R", -1)):
+            parts, info[side] = _fingers(armature, mats, side, sign, profile, markers=False)
+            add_variant(base[side], parts, key)
+        metadata[profile] = info
+    bpy.context.scene["player_arm_grips"] = json.dumps({"version": 1, "profiles": metadata}, allow_nan=False)
 
 
 def _wrist_details(mats, side, sign):
@@ -317,10 +194,12 @@ def build_player_arms():
     for obj in list(bpy.context.scene.objects):
         if obj.name.startswith(("GloveFinger", "GloveThumb")):
             bpy.data.objects.remove(obj, do_unlink=True)
+    base, metadata = {}, {"rifle_ar": {"morph": ""}}
     for side, sign in (("L", 1), ("R", -1)):
-        _fingers(armature, mats, side, sign)
+        base[side], metadata["rifle_ar"][side] = _fingers(armature, mats, side, sign)
         _wrist_details(mats, side, sign)
         _stitching(mats, side, sign)
+    _grip_variants(armature, mats, base, metadata)
     objects = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
     target = objects[0]
     join_into(target, objects[1:])
