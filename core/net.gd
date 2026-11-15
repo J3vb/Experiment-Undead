@@ -62,6 +62,7 @@ func leave() -> void:
 	if is_online():
 		multiplayer.multiplayer_peer.close()
 	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
+	player_limit = MAX_PLAYERS
 
 
 ## "1.2.3.4:7777" -> ["1.2.3.4", 7777]. Missing or bad port uses DEFAULT_PORT.

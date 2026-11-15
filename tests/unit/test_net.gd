@@ -34,6 +34,7 @@ func test_host_goes_online_and_leave_returns_to_solo() -> void:
 	assert_true(Net.is_online())
 	assert_true(Net.is_authority())
 	Net.leave()
+	assert_eq(Net.player_limit, Net.MAX_PLAYERS, "a match's player limit does not leak into the next session")
 	assert_false(Net.is_online())
 	assert_true(Net.is_authority())
 
