@@ -1,0 +1,20 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/hand_right.tscn" id="hand_right"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/sleeve_right.tscn" id="sleeve_right"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/hand_left.tscn" id="hand_left"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/sleeve_left.tscn" id="sleeve_left"]
+
+[node name="Hands" type="Node3D"]
+
+[node name="HandRight" parent="." instance=ExtResource("hand_right")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.012, -0.065, 0.07)
+
+[node name="SleeveRight" parent="." instance=ExtResource("sleeve_right")]
+transform = Transform3D(1, 0, 0, 0, 0.9397, 0.3420, 0, -0.3420, 0.9397, 0.037, -0.105, 0.26)
+
+[node name="HandLeft" parent="." instance=ExtResource("hand_left")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.03, -0.08, 0.06)
+
+[node name="SleeveLeft" parent="." instance=ExtResource("sleeve_left")]
+transform = Transform3D(1, 0, 0, 0, 0.9063, 0.4226, 0, -0.4226, 0.9063, -0.14, -0.18, 0.23)
