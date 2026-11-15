@@ -91,10 +91,14 @@ func _receive_run_xp(total: int, final: bool) -> void:
 		var player: Player = node as Player
 		if player == null or player.multiplayer != multiplayer or not player.is_multiplayer_authority():
 			continue
+		var previous_level: int = get_level(player)
 		var amount: int = total - get_xp(player)
 		_xp[player] = total
+		var new_level: int = get_level(player)
 		if amount > 0:
 			xp_gained.emit(player, amount, total)
+		for level: int in range(previous_level + 1, new_level + 1):
+			Events.player_leveled_up.emit(player, level)
 		if final:
 			_final_received = true
 			run_xp_finalized.emit()

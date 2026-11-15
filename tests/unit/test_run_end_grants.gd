@@ -143,6 +143,28 @@ func test_different_players_bank_their_own_totals() -> void:
 	assert_eq(_read_xp(1), 290)
 
 
+func test_owner_snapshot_announces_each_new_level_once() -> void:
+	var service: ProgressionService = _service(server_root)
+	var owner: Player = _player(server_root, peer_ids[0])
+	var local_service: ProgressionService = _service(clients[0])
+	var local_player: Player = _player(clients[0], peer_ids[0])
+	sessions[0]._profile.total_xp = 450
+	assert_eq(sessions[0]._profile.save(), OK)
+	local_service.set_start_total(local_player, 450)
+	service.add_xp(owner, 3200)
+	# Server events fire synchronously; only the subsequent client RPC is observed.
+	watch_signals(Events)
+	await wait_until(func() -> bool: return local_service.get_level(local_player) == 4, 5.0, "owner reached level four")
+	assert_signal_emit_count(Events, "player_leveled_up", 3)
+	for index: int in range(3):
+		assert_eq(get_signal_parameters(Events, "player_leveled_up", index), [local_player, index + 2])
+	service._receive_run_xp.rpc_id(peer_ids[0], 3200, false)
+	service.finish_run(owner)
+	await service.wait_for_run_grants()
+	assert_signal_emit_count(Events, "player_leveled_up", 3, "duplicate and final totals do not repeat level-ups")
+	assert_eq(_read_xp(0), 3650)
+
+
 func test_disconnect_banks_last_received_xp_without_final_grant() -> void:
 	var local_player: Player = _player(clients[0], peer_ids[0])
 	var local_service: ProgressionService = _service(clients[0])
