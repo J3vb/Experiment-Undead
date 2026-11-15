@@ -1,117 +1,20 @@
 [gd_scene format=3]
 
-[ext_resource type="QuadMesh" path="res://systems/weapons/viewmodels/flash_quad.tres" id="flash_quad"]
-[ext_resource type="Material" path="res://systems/weapons/viewmodels/glove_material.tres" id="glove"]
-[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/sleeve_right.tscn" id="sleeve_right"]
+[ext_resource type="PackedScene" path="res://assets/models/weapons/warden_p9.glb" id="1"]
 
-[sub_resource type="StandardMaterial3D" id="m_metal"]
-albedo_color = Color(0.13, 0.13, 0.14, 1)
-metallic = 0.8
-roughness = 0.45
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/sidearm_flash.tscn" id="flash"]
 
-[sub_resource type="StandardMaterial3D" id="m_polymer"]
-albedo_color = Color(0.06, 0.06, 0.06, 1)
-roughness = 0.75
-
-[sub_resource type="StandardMaterial3D" id="m_tan"]
-albedo_color = Color(0.33, 0.28, 0.2, 1)
-roughness = 0.8
-
-[sub_resource type="StandardMaterial3D" id="m_sight"]
-albedo_color = Color(1, 0.55, 0.1, 1)
-emission_enabled = true
-emission = Color(1, 0.5, 0.1, 1)
-emission_energy_multiplier = 2.0
-
-[sub_resource type="BoxMesh" id="b1"]
-material = SubResource("m_metal")
-size = Vector3(0.035, 0.04, 0.2)
-
-[sub_resource type="BoxMesh" id="b2"]
-material = SubResource("m_polymer")
-size = Vector3(0.033, 0.03, 0.17)
-
-[sub_resource type="BoxMesh" id="b3"]
-material = SubResource("m_metal")
-size = Vector3(0.03, 0.012, 0.01)
-
-[sub_resource type="BoxMesh" id="b4"]
-material = SubResource("m_sight")
-size = Vector3(0.008, 0.014, 0.01)
-
-[sub_resource type="BoxMesh" id="b5"]
-material = SubResource("m_polymer")
-size = Vector3(0.032, 0.12, 0.055)
-
-[sub_resource type="BoxMesh" id="b6"]
-material = ExtResource("glove")
-size = Vector3(0.07, 0.09, 0.09)
-
-[sub_resource type="BoxMesh" id="b7"]
-material = ExtResource("glove")
-size = Vector3(0.065, 0.08, 0.08)
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/sidearm_hands.tscn" id="hands"]
 
 [node name="Viewmodel" type="Node3D"]
 
-[node name="Slide" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -0.08)
-cast_shadow = 0
-mesh = SubResource("b1")
+[node name="Warden" parent="." instance=ExtResource("1")]
 
-[node name="Frame" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.012, -0.07)
-cast_shadow = 0
-mesh = SubResource("b2")
-
-[node name="RearSight" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.046, 0.015)
-cast_shadow = 0
-mesh = SubResource("b3")
-
-[node name="FrontSight" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.047, -0.17)
-cast_shadow = 0
-mesh = SubResource("b4")
-
-[node name="Grip" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.9781, 0.2079, 0, -0.2079, 0.9781, 0, -0.075, 0.0)
-cast_shadow = 0
-mesh = SubResource("b5")
-
-[node name="HandRight" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.01, -0.09, 0.01)
-cast_shadow = 0
-mesh = SubResource("b6")
-
-[node name="HandLeft" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.03, -0.095, 0.0)
-cast_shadow = 0
-mesh = SubResource("b7")
-
-[node name="SleeveRight" parent="." instance=ExtResource("sleeve_right")]
-transform = Transform3D(1, 0, 0, 0, 0.9397, 0.3420, 0, -0.3420, 0.9397, 0.05, -0.15, 0.2)
-
-[node name="Muzzle" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.012, -0.19)
-
-[node name="FlashLight" type="OmniLight3D" parent="Muzzle"]
+[node name="FlashLight" type="OmniLight3D" parent="Warden/Receiver/Muzzle"]
 light_color = Color(1, 0.7, 0.35, 1)
 light_energy = 4.0
 omni_range = 6.0
 
-[node name="FlashMesh" type="Node3D" parent="Muzzle"]
+[node name="FlashMesh" parent="Warden/Receiver/Muzzle" instance=ExtResource("flash")]
 
-[node name="A" type="MeshInstance3D" parent="Muzzle/FlashMesh"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.05)
-cast_shadow = 0
-mesh = ExtResource("flash_quad")
-
-[node name="B" type="MeshInstance3D" parent="Muzzle/FlashMesh"]
-transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, -0.08)
-cast_shadow = 0
-mesh = ExtResource("flash_quad")
-
-[node name="C" type="MeshInstance3D" parent="Muzzle/FlashMesh"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0, -0.08)
-cast_shadow = 0
-mesh = ExtResource("flash_quad")
+[node name="Hands" parent="." instance=ExtResource("hands")]

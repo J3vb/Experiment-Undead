@@ -249,3 +249,12 @@ tt = t(0.5)
 drive = np.sin(2 * np.pi * 148 * tt) + 0.45 * np.sin(2 * np.pi * 296 * tt)
 feed = np.sin(2 * np.pi * 740 * tt) * (0.65 + 0.35 * np.cos(2 * np.pi * 28 * tt))
 save("bastion_spin_up.wav", drive * 0.7 + feed * 0.2)
+
+# Wren MP: a crisp, light pistol crack; an independent seed keeps existing shots stable.
+rng = np.random.default_rng(29)
+tt = t(0.12)
+crack = rng.standard_normal(len(tt)) * np.exp(-tt * 135)
+thump = np.sin(2 * np.pi * (230 * tt - 95 * tt**2)) * np.exp(-tt * 52)
+snap = np.sin(2 * np.pi * 2800 * tt) * np.exp(-tt * 210)
+tail = lowpass(rng.standard_normal(len(tt)), 0.22) * np.exp(-tt * 45)
+save("wren_fire.wav", crack + thump * 0.4 + snap * 0.3 + tail * 0.55)

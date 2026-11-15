@@ -22,6 +22,7 @@
 [ext_resource type="Resource" path="res://content/weapons/corvid_338.tres" id="corvid"]
 [ext_resource type="Resource" path="res://content/weapons/bastion_lmg.tres" id="bastion"]
 [ext_resource type="Resource" path="res://content/weapons/fieldhand_lever.tres" id="fieldhand"]
+[ext_resource type="Resource" path="res://content/weapons/wren_mp.tres" id="wren"]
 [ext_resource type="PackedScene" path="res://systems/interactables/med_dispenser.tscn" id="meddisp"]
 [ext_resource type="PackedScene" path="res://systems/interactables/reforger.tscn" id="reforger"]
 [ext_resource type="PackedScene" path="res://systems/interactables/specimen_vault.tscn" id="vault"]
@@ -323,7 +324,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0.5, 45.4)
 
 [node name="SpecimenVault" parent="NavigationRegion3D/Machines" instance=ExtResource("vault")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0.5, 45.4)
-pool = Array[ExtResource("weapon_data")]([ExtResource("rifle"), ExtResource("brenner"), ExtResource("kestrel"), ExtResource("talon"), ExtResource("hollis"), ExtResource("mako"), ExtResource("atlas"), ExtResource("halberd"), ExtResource("corvid"), ExtResource("fieldhand"), ExtResource("bastion")])
+pool = Array[ExtResource("weapon_data")]([ExtResource("rifle"), ExtResource("brenner"), ExtResource("kestrel"), ExtResource("talon"), ExtResource("hollis"), ExtResource("mako"), ExtResource("atlas"), ExtResource("halberd"), ExtResource("corvid"), ExtResource("fieldhand"), ExtResource("bastion"), ExtResource("wren")])
 
 [node name="VaultSpotGuardPost" type="Marker3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0.5, 49.4)
