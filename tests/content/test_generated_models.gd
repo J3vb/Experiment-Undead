@@ -9,6 +9,10 @@ const TALON: String = "res://assets/models/weapons/talon_dmr.glb"
 const WALL: String = "res://assets/models/kit/wall_panel.glb"
 const ZOMBIES: String = "res://assets/models/zombies/%s.glb"
 const ZOMBIE_PARTS: Array[String] = ["Hips", "Torso", "Head", "EyeL", "EyeR", "ArmL", "ArmR"]
+## The viewmodels place their ScopeLens disc at this Z (towards the player); scope geometry must stay in front.
+const SCOPE_LENS_Z: float = 0.128
+const SCOPE_BOTTOM: float = 0.074
+const SCOPE_HALF_WIDTH: float = 0.03
 
 
 func _bounds(node: Node, xform: Transform3D, out: Array[AABB]) -> void:
@@ -239,3 +243,26 @@ func test_rebuilt_guns_use_dynamic_light_baking() -> void:
 		var settings: ConfigFile = ConfigFile.new()
 		assert_eq(settings.load(path + ".import"), OK, path + " import settings are committed")
 		assert_eq(settings.get_value("params", "meshes/light_baking"), 3, path + " receives dynamic probe lighting")
+
+
+func _rearmost_scope_z(node: Node, xform: Transform3D) -> float:
+	var here: Transform3D = xform
+	if node is Node3D:
+		here = xform * (node as Node3D).transform
+	var rear: float = -INF
+	if node is MeshInstance3D:
+		for vertex: Vector3 in (node as MeshInstance3D).mesh.get_faces():
+			var p: Vector3 = here * vertex
+			if p.y > SCOPE_BOTTOM and absf(p.x) < SCOPE_HALF_WIDTH:
+				rear = maxf(rear, p.z)
+	for child: Node in node.get_children():
+		rear = maxf(rear, _rearmost_scope_z(child, here))
+	return rear
+
+
+func test_scope_display_sits_behind_the_rebuilt_eyepiece() -> void:
+	for path: String in [RIFLE, TALON]:
+		var gun: Node3D = _load(path)
+		var rear: float = _rearmost_scope_z(gun, Transform3D.IDENTITY)
+		assert_lt(rear, SCOPE_LENS_Z, path + " eyepiece stays in front of the picture-in-picture lens")
+		gun.free()

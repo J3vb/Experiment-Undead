@@ -202,8 +202,8 @@ def stock(m, metal, black, tan):
 def scope(m, metal, black, glass, receiver):
     """Turned 1-4x scope on two rings, with knurled turrets and a sunshade."""
     tube = [
-        (0.017, -0.135),
-        (0.019, -0.128),
+        (0.017, -0.126),
+        (0.019, -0.12),
         (0.019, -0.092),
         (0.016, -0.084),
         (0.0125, -0.066),
@@ -230,7 +230,7 @@ def scope(m, metal, black, glass, receiver):
             )
         )
         parts.append(g.lathe(f"RingBolt{y}", [(0.004, 0.012), (0.004, 0.018)], (0, y, 0.066), metal, 8, axis="x"))
-    parts.append(g.lathe("EyeLens", [(0.016, -0.1355), (0.016, -0.1345)], (0, 0, 0.09), glass, 20))
+    parts.append(g.lathe("EyeLens", [(0.016, -0.1265), (0.016, -0.1255)], (0, 0, 0.09), glass, 20))
     m.join_into(receiver, parts)
     g.lathe("OpticGlass", [(0.018, 0.1902), (0.018, 0.1912)], (0, 0, 0.09), glass, 20, parent=receiver)
 
