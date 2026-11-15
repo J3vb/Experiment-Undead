@@ -223,11 +223,11 @@ func test_all_ten_rigid_gear_models_import_with_required_parts_and_budgets() -> 
 		add_child_autofree(model)
 		var required: Array[String] = ["Module", "Port"]
 		var lower: int = 1000
-		var upper: int = 1500
+		var upper: int = 1800 if id == "implant_ocular" else (1600 if id == "implant_spine" else 1500)
 		if id.begins_with("charm_"):
 			required = ["Hook", "Link1", "Link2", "Body"]
 			lower = 600
-			upper = 800
+			upper = {"charm_vial": 1200, "charm_dog_tags": 1300, "charm_coin": 1200}.get(id, 1000)
 		for part: String in required:
 			assert_not_null(model.find_child(part, true, false), id + " keeps " + part)
 		var triangles: int = 0

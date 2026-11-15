@@ -81,6 +81,9 @@ def add_light(name, at, energy):
 
 def _gear_preview(material):
     """Preview gear.gdshader's Common palette and finish means with baked AO."""
+    if material.name == "GearGlass":
+        _glass_preview(material)
+        return
     nodes, links = material.node_tree.nodes, material.node_tree.links
     original = nodes.get("Principled BSDF")
     base = original.inputs["Base Color"]
@@ -88,7 +91,12 @@ def _gear_preview(material):
         multiply = base.links[0].from_node
         base = next(socket for socket in multiply.inputs if socket.name == "B" and socket.type == "RGBA")
     albedo = tuple(base.default_value[:3])
-    metallic, roughness = {"GearPlate": (0.05, 0.64), "GearPolymer": (0, 0.72), "GearRubber": (0, 0.95)}[material.name]
+    metallic, roughness = {
+        "GearPlate": (0.05, 0.64),
+        "GearPolymer": (0, 0.72),
+        "GearRubber": (0, 0.95),
+        "GearLiquid": (0.15, 0.12),
+    }[material.name]
     nodes.clear()
     output = nodes.new("ShaderNodeOutputMaterial")
     surface = nodes.new("ShaderNodeBsdfPrincipled")
@@ -112,6 +120,28 @@ def _gear_preview(material):
     links.new(painted.outputs["Color"], ao.inputs[1])
     links.new(separate.outputs["Red"], ao.inputs[2])
     links.new(ao.outputs["Color"], surface.inputs["Base Color"])
+    links.new(surface.outputs["BSDF"], output.inputs["Surface"])
+
+
+def _glass_preview(material):
+    """Use the same clear face/strong rim alpha as the Godot optical pass."""
+    nodes, links = material.node_tree.nodes, material.node_tree.links
+    nodes.clear()
+    output = nodes.new("ShaderNodeOutputMaterial")
+    surface = nodes.new("ShaderNodeBsdfPrincipled")
+    surface.inputs["Base Color"].default_value = (*linear("#CDEEE8"), 1)
+    surface.inputs["Roughness"].default_value = 0.10
+    surface.inputs["Specular IOR Level"].default_value = 0.65
+    weight = nodes.new("ShaderNodeLayerWeight")
+    rim = nodes.new("ShaderNodeMath")
+    rim.operation = "POWER"
+    rim.inputs[1].default_value = 4.0
+    links.new(weight.outputs["Facing"], rim.inputs[0])
+    alpha = nodes.new("ShaderNodeMapRange")
+    alpha.inputs["To Min"].default_value = 0.12
+    alpha.inputs["To Max"].default_value = 0.52
+    links.new(rim.outputs[0], alpha.inputs["Value"])
+    links.new(alpha.outputs[0], surface.inputs["Alpha"])
     links.new(surface.outputs["BSDF"], output.inputs["Surface"])
 
 

@@ -1,10 +1,13 @@
-"""Sewn pouches, swept webbing and bevelled hardware for the three vest frames."""
+"""Sewn gear, swept webbing and bevelled hardware with recessed inspection marks."""
 
 import math
 
 import bpy
+
+# isort: split
+import bmesh
 import gear_paint as paint
-from body_parts import mesh
+from body_parts import loft, mesh, select
 from gun_parts import rounded, slab
 from mathutils import Vector
 
@@ -34,6 +37,112 @@ def plate(name, size, at, mat, radius=0.01, bevel=0.002):
     obj = slab(name, outline, depth, mat, bevel=min(bevel, depth * 0.24))
     obj.rotation_euler.z = -math.pi / 2
     return _finish(obj, at)
+
+
+def _inset_outline(outline, amount):
+    points = [Vector(point) for point in outline]
+    area = sum(a.x * b.y - b.x * a.y for a, b in zip(points, points[1:] + points[:1], strict=True))
+    if abs(area) < 1e-12:
+        raise ValueError("a plate outline must enclose an area")
+    winding = 1 if area > 0 else -1
+    inset = []
+    for index, point in enumerate(points):
+        before = (point - points[index - 1]).normalized()
+        after = (points[(index + 1) % len(points)] - point).normalized()
+        normal_a = Vector((-before.y, before.x)) * winding
+        normal_b = Vector((-after.y, after.x)) * winding
+        bisector = normal_a + normal_b
+        divisor = bisector.dot(normal_a)
+        if divisor < 1e-6:
+            raise ValueError("a plate outline cannot double back along an edge")
+        inset.append(point + bisector * (amount / divisor))
+    return inset
+
+
+def outlined_plate(name, outline, depth, at, mat, bevel=0.0004):
+    """Closed X/Z outline with one chamfer per face; coordinates are local to `at`.
+
+    Simple concave outlines are supported. Keep the bevel smaller than the narrowest
+    outline feature; eight corners cost 60 triangles with bevel or 28 without it.
+    """
+    if len(outline) < 3 or depth <= 0 or bevel < 0:
+        raise ValueError("a plate needs an outline, positive depth and a non-negative bevel")
+    edge = min(bevel, depth * 0.24)
+    inset = _inset_outline(outline, edge)
+    sections = ((-depth / 2, outline), (depth / 2, outline))
+    if edge:
+        sections = ((-depth / 2, inset), (-depth / 2 + edge, outline), (depth / 2 - edge, outline), (depth / 2, inset))
+    obj = loft(name, [[(x, y, z) for x, z in ring] for y, ring in sections], mat)
+    return _finish(obj, at)
+
+
+def engrave(obj, strokes, depth, mat):
+    """Cut rectangular stamps into a flat local -Y face, leaving its outer bounds intact.
+
+    Strokes are local (centre X, centre Z, width, height), inside the flat face.
+    Existing paint stays on original faces; recessed walls/floors use accent and `mat`.
+    """
+    front = min(vertex.co.y for vertex in obj.data.vertices)
+    thickness = max(vertex.co.y for vertex in obj.data.vertices) - front
+    if not 0 < depth < thickness - 1e-5:
+        raise ValueError("an engraving must be shallower than the plate")
+    if any(width <= 0 or height <= 0 for _x, _z, width, height in strokes):
+        raise ValueError("stamp widths and heights must be positive")
+    if mat.name not in obj.data.materials:
+        obj.data.materials.append(mat)
+    material_index = obj.data.materials.find(mat.name)
+    bpy.context.view_layer.update()
+    for x, z, width, height in strokes:
+        outline = [
+            (x - width / 2, z - height / 2),
+            (x + width / 2, z - height / 2),
+            (x + width / 2, z + height / 2),
+            (x - width / 2, z + height / 2),
+        ]
+        cutter = loft("StampCutter", [[(px, y, pz) for px, pz in outline] for y in (front - depth, front + depth)], mat)
+        cutter.matrix_world = obj.matrix_world.copy()
+        cutter.data.materials.clear()
+        for slot in obj.data.materials:
+            cutter.data.materials.append(slot)
+        for face in cutter.data.polygons:
+            face.material_index = material_index
+            face.use_smooth = False
+        paint.zone(cutter, paint.ZONE_ACCENT)
+        select(obj)
+        modifier = obj.modifiers.new("Recessed stamp", "BOOLEAN")
+        modifier.operation = "DIFFERENCE"
+        modifier.solver = "EXACT"
+        modifier.object = cutter
+        bpy.ops.object.modifier_apply(modifier=modifier.name)
+        bpy.data.objects.remove(cutter, do_unlink=True)
+    return obj
+
+
+def refine_face(obj, pitch=0.006):
+    """Split flat -Y caps without displacement so vertex AO stays near stamps and seams."""
+    if pitch <= 0:
+        raise ValueError("face refinement pitch must be positive")
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    bm.normal_update()
+    for axis in (0, 2):
+        low = min(vertex.co[axis] for vertex in bm.verts)
+        high = max(vertex.co[axis] for vertex in bm.verts)
+        for index in range(1, math.ceil((high - low) / pitch)):
+            faces = [face for face in bm.faces if face.normal.y < -0.999]
+            face_edges = {edge for face in faces for edge in face.edges}
+            face_vertices = {vertex for face in faces for vertex in face.verts}
+            edges = [edge for edge in bm.edges if edge in face_edges]
+            vertices = [vertex for vertex in bm.verts if vertex in face_vertices]
+            origin, normal = Vector(), Vector()
+            origin[axis], normal[axis] = low + index * pitch, 1.0
+            bmesh.ops.bisect_plane(bm, geom=[*faces, *edges, *vertices], dist=1e-8, plane_co=origin, plane_no=normal)
+            bm.normal_update()
+    # Keep the valid tessellation: glTF's n-gon path can connect three collinear grid vertices.
+    bmesh.ops.triangulate(bm, faces=bm.faces[:])
+    bm.to_mesh(obj.data)
+    bm.free()
+    return obj
 
 
 def strap(name, path, section, mat, axis=(1, 0, 0)):

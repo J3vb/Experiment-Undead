@@ -69,10 +69,14 @@ built, what was simplified on purpose, and what is still to do.
 
 ## Simplified on purpose (fix before or during the matching build step)
 
-- **Rigid charm and implant inspect assets:** five charms (600–800 triangles) and five implants
-  (1,000–1,500 triangles) use the shared gear paint masks and dynamic import. These close-view
+- **Rigid charm and implant inspect assets:** five charms (600–1,000 triangles; token and glass vial up to 1,200, tags 1,300) and five implants
+  (1,000–1,500 triangles; spine up to 1,600 and ocular up to 1,800) use the shared gear paint masks and dynamic import. These close-view
   budgets supersede the provisional 300/500 triangle estimates in `gear-visuals.md` for these ten
-  assets. Charms expose `Hook → Link1 → Link2 → Body`; implants expose independent `Module`
+  assets. The small-gear visual review raises the former 800/1,500 caps for
+  rounded chain links, local engraving topology for clean baked shading, hollow
+  glass with liquid and distinct implant shells.
+  GearGlass is the fourth material only on the specimen vial and ocular optics;
+  other pieces keep the original three finishes. Charms expose `Hook → Link1 → Link2 → Body`; implants expose independent `Module`
   and `Port` attachment origins. `tools/gear_booth.gd` previews the player with the shared
   skinned medium vest and bone-attached gear, plus a close-up lineup. This adds no
   equipment gameplay or chain simulation.
