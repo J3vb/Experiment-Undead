@@ -1,9 +1,10 @@
-## The player import preserves the shared rig, skin, scale and forward eye marker.
+## Character imports preserve the shared rig, skin, scale and matching forearm envelopes.
 extends GutTest
 
 const PLAYER: String = "res://assets/models/characters/player.glb"
 const GEAR_SHADER: String = "res://assets/materials/gear.gdshader"
 const GEAR_IMPORTER: GDScript = preload("res://tools/assets/gear_import.gd")
+const ARMS: String = "res://assets/models/characters/player_arms.glb"
 const BONES: Array[String] = [
 	"pelvis",
 	"spine_01",
@@ -30,9 +31,9 @@ const BONES: Array[String] = [
 ]
 
 
-func _player() -> Node3D:
-	var packed: PackedScene = load(PLAYER) as PackedScene
-	assert_not_null(packed, "player.glb imports as a PackedScene")
+func _character(path: String = PLAYER) -> Node3D:
+	var packed: PackedScene = load(path) as PackedScene
+	assert_not_null(packed, path + " imports as a PackedScene")
 	if packed == null:
 		return null
 	var model: Node3D = packed.instantiate() as Node3D
@@ -46,8 +47,7 @@ func _skeleton(model: Node3D) -> Skeleton3D:
 	return found[0] as Skeleton3D if found.size() == 1 else null
 
 
-func test_player_preserves_all_22_bone_names() -> void:
-	var model: Node3D = _player()
+func _assert_shared_bones(model: Node3D) -> void:
 	if model == null:
 		return
 	var skeleton: Skeleton3D = _skeleton(model)
@@ -60,8 +60,16 @@ func test_player_preserves_all_22_bone_names() -> void:
 	assert_eq(skeleton.get_bone_parent(skeleton.find_bone("sock_thigh_R")), skeleton.find_bone("thigh_R"))
 
 
+func test_player_preserves_all_22_bone_names() -> void:
+	_assert_shared_bones(_character())
+
+
+func test_first_person_arms_import_preserves_all_22_bone_names() -> void:
+	_assert_shared_bones(_character(ARMS))
+
+
 func test_player_import_contains_skinned_geometry_at_adult_scale() -> void:
-	var model: Node3D = _player()
+	var model: Node3D = _character()
 	if model == null:
 		return
 	var skeleton: Skeleton3D = _skeleton(model)
@@ -84,7 +92,7 @@ func test_player_import_contains_skinned_geometry_at_adult_scale() -> void:
 
 
 func test_player_faces_positive_z_with_eyes_on_the_head() -> void:
-	var model: Node3D = _player()
+	var model: Node3D = _character()
 	if model == null:
 		return
 	var skeleton: Skeleton3D = _skeleton(model)
@@ -108,8 +116,7 @@ func test_player_uses_dynamic_lighting_and_gear_import() -> void:
 	assert_eq(settings.get_value("params", "import_script/path"), "res://tools/assets/gear_import.gd")
 
 
-func test_every_player_material_uses_the_gear_shader_and_a_known_finish() -> void:
-	var model: Node3D = _player()
+func _assert_materials_have_gear_finish(model: Node3D) -> void:
 	if model == null:
 		return
 	var surfaces: int = 0
@@ -124,5 +131,82 @@ func test_every_player_material_uses_the_gear_shader_and_a_known_finish() -> voi
 			assert_eq(material.shader.resource_path, GEAR_SHADER)
 			assert_true(GEAR_IMPORTER.FINISHES.has(material.resource_name), material.resource_name + " is known")
 			assert_eq(material.get_shader_parameter(&"finish"), GEAR_IMPORTER.FINISHES.get(material.resource_name))
-	assert_gt(surfaces, 0, "player contains finished surfaces")
-	assert_push_error_count(0, "known player materials import without fallback errors")
+	assert_gt(surfaces, 0, "character contains finished surfaces")
+	assert_push_error_count(0, "known character materials import without fallback errors")
+
+
+func test_every_player_material_uses_the_gear_shader_and_a_known_finish() -> void:
+	_assert_materials_have_gear_finish(_character())
+
+
+func test_every_first_person_arm_material_uses_the_gear_shader_and_a_known_finish() -> void:
+	_assert_materials_have_gear_finish(_character(ARMS))
+
+
+func _triangle_radius(points: PackedVector3Array, center: Vector3, axis: Vector3) -> float:
+	var radius: float = 0.0
+	for edge: int in range(3):
+		var start: Vector3 = points[edge]
+		var finish: Vector3 = points[(edge + 1) % 3]
+		var distance_start: float = (start - center).dot(axis)
+		var distance_finish: float = (finish - center).dot(axis)
+		if distance_start * distance_finish > 0.0 or is_equal_approx(distance_start, distance_finish):
+			continue
+		var crossing: Vector3 = start.lerp(finish, distance_start / (distance_start - distance_finish))
+		var distance: float = crossing.distance_to(center)
+		if distance < 0.15:
+			radius = maxf(radius, distance)
+	return radius
+
+
+func _forearm_radius(model: Node3D, side: String, fraction: float) -> float:
+	var skeleton: Skeleton3D = _skeleton(model)
+	if skeleton == null:
+		return 0.0
+	var head: Vector3 = skeleton.get_bone_global_rest(skeleton.find_bone("forearm_" + side)).origin
+	var tail: Vector3 = skeleton.get_bone_global_rest(skeleton.find_bone("hand_" + side)).origin
+	head = skeleton.global_transform * head
+	tail = skeleton.global_transform * tail
+	var center: Vector3 = head.lerp(tail, fraction)
+	var axis: Vector3 = (tail - head).normalized()
+	var radius: float = 0.0
+	for node: Node in model.find_children("*", "MeshInstance3D", true, false):
+		var mesh: MeshInstance3D = node as MeshInstance3D
+		var faces: PackedVector3Array = mesh.mesh.get_faces()
+		for index: int in range(0, faces.size(), 3):
+			var triangle: PackedVector3Array = PackedVector3Array()
+			for corner: int in range(3):
+				triangle.append(mesh.global_transform * faces[index + corner])
+			radius = maxf(radius, _triangle_radius(triangle, center, axis))
+	return radius
+
+
+func test_first_person_forearms_fit_the_same_vest_cuffs_as_the_world_body() -> void:
+	var body: Node3D = _character()
+	var arms: Node3D = _character(ARMS)
+	if body == null or arms == null:
+		return
+	for side: String in ["L", "R"]:
+		for fraction: float in [0.4, 0.6, 0.8]:
+			var body_radius: float = _forearm_radius(body, side, fraction)
+			var arms_radius: float = _forearm_radius(arms, side, fraction)
+			assert_gt(body_radius, 0.02, "world body has a forearm section")
+			assert_gt(arms_radius, 0.02, "first-person arms have a forearm section")
+			assert_almost_eq(arms_radius, body_radius, 0.005, side + " forearm radius matches within 5 mm")
+
+
+func test_first_person_arms_are_skinned_and_use_dynamic_lighting() -> void:
+	var model: Node3D = _character(ARMS)
+	if model == null:
+		return
+	var skeleton: Skeleton3D = _skeleton(model)
+	var skinned: bool = false
+	for node: Node in model.find_children("*", "MeshInstance3D", true, false):
+		var mesh: MeshInstance3D = node as MeshInstance3D
+		if mesh.skin != null and mesh.get_node_or_null(mesh.skeleton) == skeleton:
+			skinned = true
+	assert_true(skinned, "first-person arm geometry is skinned to the shared skeleton")
+	var settings: ConfigFile = ConfigFile.new()
+	assert_eq(settings.load(ARMS + ".import"), OK, "first-person arm import settings are committed")
+	assert_eq(settings.get_value("params", "meshes/light_baking"), 3)
+	assert_eq(settings.get_value("params", "import_script/path"), "res://tools/assets/gear_import.gd")

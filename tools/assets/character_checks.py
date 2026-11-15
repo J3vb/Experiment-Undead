@@ -10,7 +10,8 @@ from mathutils import Vector
 BUDGETS = {"characters": (12_000, 4), "gear": (6_000, 4)}
 TRIANGLE_CAPS = {"player_arms": 8_000, "charm_*": 800, "implant_*": 1_500}
 # Add each new model stem here alongside its character_models.MODELS entry.
-JOINTS = {"player": {"Eyes": None}}
+JOINTS = {"player": {"Eyes": None}, "player_arms": {}}
+ARM_BONES = {f"{part}_{side}" for part in ("clavicle", "upperarm", "forearm", "hand") for side in ("L", "R")}
 TOLERANCE = 0.01
 
 
@@ -127,6 +128,23 @@ def _check_materials(meshes: list) -> list:
     return errors
 
 
+def _check_arm_weights(meshes: list) -> list:
+    errors = []
+    for obj in meshes:
+        if not any(modifier.type == "ARMATURE" and modifier.object is not None for modifier in obj.modifiers):
+            errors.append(f"{obj.name}: first-person arms must be skinned to the character armature")
+        weighted = {
+            obj.vertex_groups[group.group].name
+            for vertex in obj.data.vertices
+            for group in vertex.groups
+            if group.weight > 0.0
+        }
+        if weighted - ARM_BONES:
+            invalid = ", ".join(sorted(weighted - ARM_BONES))
+            errors.append(f"{obj.name}: first-person arms have weights on non-arm bones: {invalid}")
+    return errors
+
+
 def check(objects: list, folder: str, stem: str) -> list:
     """Extra checks for character/gear folders; existing model folders are untouched."""
     if folder not in BUDGETS:
@@ -147,6 +165,8 @@ def check(objects: list, folder: str, stem: str) -> list:
         if Vector(max(lo[i], -hi[i], 0.0) for i in range(3)).length > 0.05:
             errors.append("gear origin must be inside the piece's bounds or within 0.05 m")
         errors += _check_zones(meshes)
+    elif stem == "player_arms":
+        errors += _check_arm_weights(meshes) + _check_zones(meshes)
     else:
         if abs(lo.z) > TOLERANCE:
             errors.append(f"lowest point is at height {lo.z:.3f}, feet must be at z = 0")
