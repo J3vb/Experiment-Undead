@@ -27,6 +27,7 @@ var _shown_level: int = 1
 @onready var loot_status: Label = %LootStatus
 @onready var loot_items: VBoxContainer = %LootItems
 @onready var loot_empty: Label = %LootEmpty
+@onready var loot_scroll: ScrollContainer = $LootPanel/Box/Scroll
 @onready var main_menu_button: Button = %MainMenu
 @onready var restart_button: Button = %Restart
 
@@ -112,6 +113,8 @@ func _show_loot(items: Array, lost: int) -> void:
 	)
 	for index: int in sorted.size():
 		_add_loot_card(sorted[index], index == 0)
+	_configure_loot_navigation()
+	loot_scroll.scroll_vertical = 0
 
 
 func _add_loot_card(item: Dictionary, best: bool) -> void:
@@ -122,6 +125,7 @@ func _add_loot_card(item: Dictionary, best: bool) -> void:
 		rank = 0
 	var rarity: RarityData = Content.get_item(&"loot", rarity_id) as RarityData
 	var card: PanelContainer = PanelContainer.new()
+	card.focus_mode = Control.FOCUS_ALL
 	var style: StyleBoxFlat = get_theme_stylebox("panel", "PanelContainer").duplicate() as StyleBoxFlat
 	style.border_color = rarity.colour
 	style.content_margin_left = 12.0
@@ -129,6 +133,8 @@ func _add_loot_card(item: Dictionary, best: bool) -> void:
 	style.content_margin_top = 12.0 if best else 8.0
 	style.content_margin_bottom = style.content_margin_top
 	card.add_theme_stylebox_override("panel", style)
+	card.focus_entered.connect(func() -> void: style.set_border_width_all(3))
+	card.focus_exited.connect(func() -> void: style.set_border_width_all(1))
 	var lines: VBoxContainer = VBoxContainer.new()
 	card.add_child(lines)
 	var title: Label = Label.new()
@@ -146,6 +152,32 @@ func _add_loot_card(item: Dictionary, best: bool) -> void:
 	detail.add_theme_font_size_override("font_size", 18)
 	lines.add_child(detail)
 	loot_items.add_child(card)
+
+
+func _configure_loot_navigation() -> void:
+	main_menu_button.focus_next = main_menu_button.get_path_to(restart_button)
+	main_menu_button.focus_previous = main_menu_button.focus_next
+	restart_button.focus_previous = restart_button.get_path_to(main_menu_button)
+	restart_button.focus_next = restart_button.focus_previous
+	main_menu_button.focus_neighbor_left = NodePath()
+	restart_button.focus_neighbor_left = NodePath()
+	if loot_items.get_child_count() == 0:
+		return
+	var first: Control = loot_items.get_child(0) as Control
+	var last: Control = loot_items.get_child(-1) as Control
+	main_menu_button.focus_neighbor_left = main_menu_button.get_path_to(first)
+	restart_button.focus_neighbor_left = restart_button.get_path_to(first)
+	main_menu_button.focus_previous = main_menu_button.get_path_to(last)
+	restart_button.focus_next = restart_button.get_path_to(first)
+	for index: int in loot_items.get_child_count():
+		var card: Control = loot_items.get_child(index) as Control
+		var previous: Control = loot_items.get_child(index - 1) as Control if index > 0 else restart_button
+		var next: Control = loot_items.get_child(index + 1) as Control if card != last else main_menu_button
+		card.focus_previous = card.get_path_to(previous)
+		card.focus_next = card.get_path_to(next)
+		card.focus_neighbor_top = card.focus_previous
+		card.focus_neighbor_bottom = card.focus_next
+		card.focus_neighbor_right = card.get_path_to(main_menu_button)
 
 
 func _animate_panels() -> void:

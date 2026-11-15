@@ -160,3 +160,26 @@ func test_stash_overflow_message_and_reopening_clear_old_loot() -> void:
 
 func _loot_name(index: int) -> Label:
 	return screen.loot_items.get_child(index).get_child(0).get_child(0) as Label
+
+
+func test_loot_focus_is_visible_and_reopening_resets_navigation() -> void:
+	screen.show_results(
+		{"loot": [{"base": "rifle_ar", "rar": "rare", "ilvl": 4}, {"base": "talon_dmr", "rar": "rare", "ilvl": 2}]}
+	)
+	assert_true(screen.main_menu_button.has_focus())
+	assert_true(screen.loot_scroll.follow_focus)
+	var first: PanelContainer = screen.loot_items.get_child(0) as PanelContainer
+	var last: PanelContainer = screen.loot_items.get_child(1) as PanelContainer
+	assert_eq(screen.main_menu_button.get_node(screen.main_menu_button.focus_neighbor_left), first)
+	assert_eq(first.get_node(first.focus_neighbor_bottom), last)
+	assert_eq(last.get_node(last.focus_next), screen.main_menu_button)
+	first.grab_focus()
+	assert_eq((first.get_theme_stylebox("panel") as StyleBoxFlat).border_width_left, 3)
+	last.grab_focus()
+	assert_eq((first.get_theme_stylebox("panel") as StyleBoxFlat).border_width_left, 1)
+	assert_eq((last.get_theme_stylebox("panel") as StyleBoxFlat).border_width_left, 3)
+	screen.show_results({})
+	assert_true(screen.main_menu_button.has_focus())
+	assert_true(screen.main_menu_button.focus_neighbor_left.is_empty())
+	assert_eq(screen.restart_button.get_node(screen.restart_button.focus_next), screen.main_menu_button)
+	assert_eq(screen.loot_scroll.scroll_vertical, 0)
