@@ -1,6 +1,5 @@
-## Hitscan gun node driven by a WeaponInstance. Owns firing, spread, recoil,
-## reload and the procedural viewmodel pose. Input arrives through the public
-## vars, so a player, bot or test can drive it the same way.
+## Hitscan gun driven by a WeaponInstance; owns firing, spread, recoil, reload and viewmodel pose.
+## Public input vars let a player, bot or test drive it the same way.
 class_name Weapon
 extends Node3D
 
@@ -201,8 +200,7 @@ func _handle_trigger() -> void:
 		_burst_left = maxi(_burst_left - 1, 0)
 		var extra: float = 0.12 if data.fire_mode == WeaponData.FireMode.BURST and _burst_left == 0 else 0.0
 		_shot_timer += data.get_fire_interval() * _stat(&"fire_interval") + extra
-	# Time spent blocked (reloading, sprinting, waiting for a press) is not
-	# banked as missed shots.
+	# Time spent blocked (reloading, sprinting, waiting for a press) is not banked as missed shots.
 	_shot_timer = maxf(_shot_timer, 0.0)
 
 
@@ -245,6 +243,9 @@ func _spread_direction(basis: Basis, spread_degrees: float) -> Vector3:
 
 
 func _trace(origin: Vector3, direction: Vector3) -> void:
+	if data.id == &"siphon":
+		GravityWell.launch(self)
+		return
 	var hits: Array[Dictionary] = Pierce.trace(self, origin, direction)
 	if shooter and shooter.session and shooter.session.remote_shots:
 		var end: Vector3 = hits[-1].position if not hits.is_empty() else origin + direction * data.max_range
