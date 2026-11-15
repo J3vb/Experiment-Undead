@@ -33,3 +33,6 @@ __pycache__/
 
 # Asset check tools
 node_modules/
+
+# Local Godot MCP runtime files (screenshots, bridge)
+.mcp/
