@@ -94,8 +94,38 @@ func test_prototypes_have_models_recoil_and_audio() -> void:
 		assert_not_null(gun.fire_sound)
 		assert_not_null(gun.dry_fire_sound)
 		assert_not_null(gun.reload_sound)
-		assert_eq(gun.viewmodel_scene.resource_path, "res://assets/models/weapons/%s.glb" % id)
+		assert_eq(gun.viewmodel_scene.resource_path, "res://systems/weapons/viewmodels/%s_viewmodel.tscn" % id)
 		var model: Node = gun.viewmodel_scene.instantiate()
 		for part: String in ["Bolt", "Magazine", "Trigger", "Muzzle"]:
 			assert_not_null(model.find_child(part, true, false), String(id) + " has " + part)
 		model.free()
+
+
+func test_all_prototype_versions_flash_at_the_muzzle_when_fired() -> void:
+	for base: StringName in SHEET:
+		for id: StringName in [base, StringName(String(base) + "_reforged")]:
+			var camera: Camera3D = Camera3D.new()
+			add_child_autofree(camera)
+			var weapon: Weapon = load("res://systems/weapons/weapon.tscn").instantiate() as Weapon
+			weapon.setup(WeaponInstance.new(Content.weapon(id)), null, camera)
+			camera.add_child(weapon)
+			weapon.set_active(true)
+			var muzzle: Node3D = weapon.find_child("Muzzle", true, false) as Node3D
+			var light: OmniLight3D = weapon.find_child("FlashLight", true, false) as OmniLight3D
+			var flash: Node3D = weapon.find_child("FlashMesh", true, false) as Node3D
+			assert_not_null(light, String(id) + " caches a first-person muzzle flash light")
+			assert_not_null(flash, String(id) + " caches a first-person muzzle flash mesh")
+			if light == null or flash == null:
+				continue
+			assert_eq(light, weapon._flash_light)
+			assert_eq(flash, weapon._flash_mesh)
+			assert_eq(light.get_parent(), muzzle)
+			assert_eq(flash.get_parent(), muzzle)
+			assert_false(light.visible, "Weapon._ready hides the light before firing")
+			assert_false(flash.visible, "Weapon._ready hides the flash before firing")
+			weapon.fire()
+			assert_true(light.visible, String(id) + " lights its muzzle on a real shot")
+			assert_true(flash.visible, String(id) + " shows its flash on a real shot")
+			weapon._process(0.1)
+			assert_false(light.visible, "the presentation tick ends the light pulse")
+			assert_false(flash.visible, "the presentation tick ends the flash pulse")

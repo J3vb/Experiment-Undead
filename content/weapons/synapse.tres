@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://systems/weapons/weapon_data.gd" id="1"]
 [ext_resource type="Script" path="res://systems/weapons/recoil_data.gd" id="2"]
-[ext_resource type="PackedScene" path="res://assets/models/weapons/synapse.glb" id="3"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/synapse_viewmodel.tscn" id="3"]
 [ext_resource type="AudioStream" path="res://assets/audio/mako_fire.wav" id="4"]
 [ext_resource type="AudioStream" path="res://assets/audio/dry_fire.wav" id="5"]
 [ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
