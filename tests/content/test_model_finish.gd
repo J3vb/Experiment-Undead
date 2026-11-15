@@ -4,11 +4,18 @@
 extends GutTest
 
 const FINISHED: Array[String] = [
-	"weapons/rifle_ar", "weapons/kestrel_smg", "weapons/talon_dmr", "weapons/shotgun_brenner",
-	"zombies/shambler", "zombies/crawler", "zombies/bloater",
+	"weapons/rifle_ar",
+	"weapons/kestrel_smg",
+	"weapons/talon_dmr",
+	"weapons/shotgun_brenner",
+	"zombies/shambler",
+	"zombies/crawler",
+	"zombies/bloater",
 ]
 const GLOWING: Dictionary[String, String] = {
-	"weapons/rifle_ar": "OpticGlass", "zombies/shambler": "EyeL", "zombies/bloater": "Belly",
+	"weapons/rifle_ar": "OpticGlass",
+	"zombies/shambler": "EyeL",
+	"zombies/bloater": "Belly",
 }
 const WALL: String = "res://assets/models/kit/wall_panel.glb"
 
