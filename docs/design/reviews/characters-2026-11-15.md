@@ -78,6 +78,13 @@ Bastion uses an overhand brace at the receiver/barrel-base collar to route the
 support arm clear of its side ammunition box. Resolving the two remaining sleeve
 contacts is required before marking the character pass ready.
 
+Final validation: 692 asset tests; all 41 fresh and committed GLBs pass Khronos
+and model checks; all 41 approved turnarounds match. Imported contact checks cover
+115 sampled poses: 111 clear, with only the four upper-sleeve cases above failing.
+All hands, wrist fabric, forearms and armour cuffs clear those samples. Reported
+residual contact samples lie behind the first-person camera; this does not erase
+the geometric intersections. GUT and CI results are recorded on the PR.
+
 | Model | Before: strip + Common/Legendary booth | After: strip + Common/Legendary booth |
 | --- | --- | --- |
 | Body | [Before](images/characters-2026-11-15/player_before.png) | [After](images/characters-2026-11-15/player_after.png) |
@@ -129,6 +136,17 @@ Legendary at hip (110° horizontal FOV) and ADS (the weapon's vertical FOV):
 Close-up contact sheets show the
 [stock, pistol and support grips](images/characters-2026-11-15/runtime_contacts.png) and
 [cage, angled-stop and double-barrel grips](images/characters-2026-11-15/runtime_contacts_new.png).
+
+Actual GameSession camera captures also verify the integrated rig:
+[rifle hip](images/characters-2026-11-15/gameplay_rifle_ar_hip.png),
+[rifle ADS](images/characters-2026-11-15/gameplay_rifle_ar_ads.png),
+[pistol hip](images/characters-2026-11-15/gameplay_pistol_service_hip.png),
+[pistol ADS](images/characters-2026-11-15/gameplay_pistol_service_ads.png).
+
+The Linux client PCK loads all 22 profiles and 21 morphs. Server metadata is also
+present, but dedicated export startup encounters the existing stripped
+`PlaceholderMesh`/`QuadMesh` mismatch in `remote_shot_effects.gd`; it reproduces on
+the unchanged `2865d38` baseline. No unrelated networking or gun files were edited.
 
 Reproduce after building/importing the project:
 
