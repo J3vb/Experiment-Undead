@@ -78,18 +78,18 @@ func test_offer_runs_out() -> void:
 	assert_eq(player.weapons.current.data.id, &"rifle_ar", "offer left in the Vault")
 
 
-## Gives the player the Reforged version of every pool gun except `skip` (the Vault counts those as held).
+## Holds each pool gun except `skip`, using Reforged where available.
 func _hold_pool_except(skip: StringName) -> void:
 	player.weapons.max_slots = vault.pool.size() + 1
 	for gun: WeaponData in vault.pool:
 		if gun.id != skip and gun.id != &"rifle_ar":
-			player.weapons.give(gun.upgraded)
+			player.weapons.give(gun.upgraded if gun.upgraded else gun)
 	player.weapons.equip(0)
 
 
 func test_nothing_to_roll_when_the_player_holds_the_whole_pool() -> void:
 	level.turn_power_on()
-	assert_eq(vault.pool.size(), 9, "Halcyon pool: 4 wall guns and the 5 Vault guns")
+	assert_eq(vault.pool.size(), 11, "Halcyon pool: 4 wall guns, 5 Vault guns and 2 fixed Prototypes")
 	_hold_pool_except(&"")
 	assert_eq(vault.get_prompt(player), "")
 	vault.interact(player)
