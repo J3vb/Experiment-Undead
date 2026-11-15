@@ -248,13 +248,15 @@ func _trace(origin: Vector3, direction: Vector3) -> void:
 	)
 	query.collide_with_areas = true
 	var result: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
+	if shooter and shooter.session and shooter.session.remote_shots:
+		shooter.session.remote_shots.record_trace(self, result.get("position", origin + direction * data.max_range))
 	if result.is_empty():
 		return
 	var point: Vector3 = result.position
 	var normal: Vector3 = result.normal
 	var hit_zone: HitZone = result.collider as HitZone
 	traced.emit(point, normal, hit_zone != null)
-	if hit_zone == null or not Net.is_authority():
+	if hit_zone == null:
 		return
 	var info: DamageInfo = DamageInfo.create(data.get_damage_at(origin.distance_to(point)), shooter)
 	info.weapon_id = data.id
@@ -264,6 +266,10 @@ func _trace(origin: Vector3, direction: Vector3) -> void:
 	info.amount *= data.get_zone_multiplier(hit_zone.zone)
 	if hit_zone.zone == DamageInfo.Zone.HEAD:
 		info.amount *= _stat(&"head_damage")
+	if not Net.is_authority():
+		if shooter and shooter.session:
+			shooter.session.hit_claims.submit_hit(self, hit_zone, info)
+		return
 	hit_zone.receive_hit(info)
 	hit_landed.emit(hit_zone.health.is_dead, info.is_headshot())
 
