@@ -16,8 +16,25 @@ func test_loot_ids_are_unique_across_subfolders() -> void:
 		seen.append(id)
 		assert_eq(String(id), path.get_file().get_basename())
 		assert_eq(Content.get_item(&"loot", id), resource)
-	assert_eq(paths.size(), 31)
+	assert_eq(paths.size(), 32)
 	assert_eq(Content.ids(&"loot").size(), paths.size())
+
+
+func test_stat_caps_match_the_affix_design_table() -> void:
+	var caps: StatCaps = Content.get_item(&"loot", &"stat_caps") as StatCaps
+	assert_not_null(caps)
+	assert_eq(
+		caps.caps,
+		{
+			&"move_speed": 0.15,
+			&"damage_reduction": 0.3,
+			&"ability_cooldown_reduction": 0.4,
+			&"loot_luck": 1.0,
+			&"bonus_skill_ranks": 3.0,
+			&"fire_rate_pct": 0.3,
+			&"leech": 6.0,
+		}
+	)
 
 
 func test_weapon_affixes_have_five_equal_rising_tiers() -> void:
