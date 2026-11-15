@@ -1,4 +1,4 @@
-## Solo front end with shared settings and bundled third-party credits.
+## Solo and co-op front end with shared settings and plain-word network errors.
 class_name MainMenu
 extends Control
 
@@ -18,16 +18,32 @@ var _drift_time: float = 0.0
 
 @onready var menu: VBoxContainer = $Screens/Root/Menu
 @onready var play_button: Button = $Screens/Root/Menu/Play
+@onready var host_button: Button = $Screens/Root/Menu/Host
+@onready var join_button: Button = $Screens/Root/Menu/Join
 @onready var settings_button: Button = $Screens/Root/Menu/Settings
 @onready var credits_button: Button = $Screens/Root/Menu/Credits
 @onready var settings_screen: SettingsScreen = $Screens/Root/SettingsScreen
 @onready var credits_panel: PanelContainer = $Screens/Root/CreditsPanel
 @onready var camera: Camera3D = $Camera3D
+@onready var host_panel: PanelContainer = $Screens/Root/HostPanel
+@onready var join_panel: PanelContainer = $Screens/Root/JoinPanel
+@onready var port_field: LineEdit = $Screens/Root/HostPanel/Box/Port
+@onready var address_field: LineEdit = $Screens/Root/JoinPanel/Box/Address
+@onready var error_dialog: NetErrorDialog = $NetErrorDialog
 
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	play_button.pressed.connect(func() -> void: get_tree().change_scene_to_file(PLAY_SCENE))
+	host_button.pressed.connect(_open_host)
+	join_button.pressed.connect(_open_join)
+	$Screens/Root/HostPanel/Box/Start.pressed.connect(_host)
+	$Screens/Root/HostPanel/Box/Back.pressed.connect(_close_coop)
+	$Screens/Root/JoinPanel/Box/Connect.pressed.connect(_join)
+	$Screens/Root/JoinPanel/Box/Back.pressed.connect(_close_coop)
+	port_field.text_submitted.connect(func(_text: String) -> void: _host())
+	address_field.text_submitted.connect(func(_text: String) -> void: _join())
+	error_dialog.closed.connect(_close_error)
 	settings_button.pressed.connect(_open_settings)
 	credits_button.pressed.connect(_open_credits)
 	$Screens/Root/Menu/Quit.pressed.connect(func() -> void: get_tree().quit())
@@ -36,6 +52,9 @@ func _ready() -> void:
 	$Screens/Root/CreditsPanel/Box/Text.text = CREDITS
 	$Screens/Root.add_child(VersionLabel.new())
 	play_button.grab_focus()
+	if not Net.last_error.is_empty():
+		_show_error(Net.last_error["reason"], Net.last_error["details"])
+		Net.last_error.clear()
 	_launch_from_command_line.call_deferred(OS.get_cmdline_user_args())
 
 
@@ -47,15 +66,9 @@ func _launch_from_command_line(args: PackedStringArray) -> void:
 	launch_consumed = true
 	var launch: Dictionary = parse_launch(args)
 	if launch.has("join"):
-		Net.pending_join = launch["join"]
+		_start_join(launch["join"])
 	elif launch.has("host"):
-		var err: Error = Net.host(launch["host"])
-		if err != OK:
-			Log.error(&"net", &"host_failed", {"port": launch["host"], "error": error_string(err)})
-			return
-	else:
-		return
-	get_tree().change_scene_to_file(PLAY_SCENE)
+		_start_host(launch["host"])
 
 
 ## "--join=address:port" -> {"join": "address:port"}; "--host" or "--host=port" -> {"host": port}.
@@ -79,13 +92,122 @@ func _process(delta: float) -> void:
 func _input(event: InputEvent) -> void:
 	if not event.is_action_pressed(&"ui_cancel"):
 		return
-	if settings_screen.visible:
+	if error_dialog.visible:
+		return
+	if host_panel.visible or join_panel.visible:
+		_close_coop()
+	elif settings_screen.visible:
 		settings_screen._close()
 	elif credits_panel.visible:
 		_close_credits()
 	else:
 		return
 	get_viewport().set_input_as_handled()
+
+
+func _open_host() -> void:
+	menu.hide()
+	port_field.text = str(Settings.get_value(&"network", &"last_port"))
+	host_panel.show()
+	port_field.grab_focus()
+	port_field.select_all()
+
+
+func _open_join() -> void:
+	menu.hide()
+	address_field.text = str(Settings.get_value(&"network", &"last_address"))
+	join_panel.show()
+	address_field.grab_focus()
+	address_field.select_all()
+
+
+func _close_coop() -> void:
+	var return_focus: Button = host_button if host_panel.visible else join_button
+	host_panel.hide()
+	join_panel.hide()
+	menu.show()
+	return_focus.grab_focus()
+
+
+func _host() -> void:
+	var port: int = port_field.text.to_int()
+	if not port_field.text.is_valid_int() or port < 1 or port > 65535:
+		_show_error(&"invalid_port")
+		return
+	Settings.set_value(&"network", &"last_port", port)
+	_start_host(port)
+
+
+func _start_host(port: int) -> void:
+	if port < 1 or port > 65535:
+		_show_error(&"invalid_port")
+		return
+	var err: Error = Net.host(port)
+	if err != OK:
+		_show_error(&"port_in_use", {"port": port})
+		Net.last_error.clear()
+		return
+	get_tree().change_scene_to_file(PLAY_SCENE)
+
+
+func _join() -> void:
+	_start_join(address_field.text)
+
+
+func _start_join(address: String) -> void:
+	var target: String = normalized_address(address)
+	if target.is_empty():
+		_show_error(&"bad_address")
+		return
+	Settings.set_value(&"network", &"last_address", address.strip_edges())
+	Net.pending_join = target
+	error_dialog.reparent(get_tree().root)
+	error_dialog.show_connecting(target)
+	get_tree().change_scene_to_file(PLAY_SCENE)
+
+
+## Validate before Net.join so malformed input never opens a connection.
+static func normalized_address(text: String) -> String:
+	var parts: PackedStringArray = text.strip_edges().split(":")
+	if parts.size() > 2 or not _valid_host(parts[0]):
+		return ""
+	var port: int = Net.DEFAULT_PORT
+	if parts.size() == 2:
+		if not parts[1].is_valid_int():
+			return ""
+		port = parts[1].to_int()
+	if port < 1 or port > 65535:
+		return ""
+	return "%s:%d" % [parts[0], port]
+
+
+static func _valid_host(host: String) -> bool:
+	if host.is_empty() or host.length() > 253:
+		return false
+	if host.replace(".", "").is_valid_int():
+		return host.is_valid_ip_address()
+	var label_pattern: RegEx = RegEx.create_from_string("^[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?$")
+	for label: String in host.split("."):
+		if label_pattern.search(label) == null:
+			return false
+	return true
+
+
+func _show_error(reason: StringName, details: Dictionary = {}) -> void:
+	$Screens/Root.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED
+	$Screens/Root.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED
+	error_dialog.show_error(reason, details)
+
+
+func _close_error() -> void:
+	$Screens/Root.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_INHERITED
+	$Screens/Root.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_INHERITED
+	if host_panel.visible:
+		port_field.grab_focus()
+	elif join_panel.visible:
+		address_field.grab_focus()
+	else:
+		play_button.grab_focus()
 
 
 func _open_settings() -> void:
