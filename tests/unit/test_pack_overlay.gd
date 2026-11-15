@@ -15,6 +15,7 @@ func before_each() -> void:
 	add_child_autofree(hud)
 	overlay = hud.get_node("Root/Pack") as PackOverlay
 	session = GameSession.new()
+	session.rng.seed = 73
 	autofree(session)
 	service = LootService.new()
 	service.session = session
@@ -78,3 +79,35 @@ func test_discard_recreates_only_a_personal_drop() -> void:
 	var drop: LootDrop = service.get_child(0) as LootDrop
 	assert_eq(drop.item, item)
 	assert_eq(drop.player, player)
+
+
+func test_replaced_pack_guns_restore_ammo_including_an_empty_gun() -> void:
+	player.weapons.give(Content.weapon(&"pistol_service"))
+	player.weapons.give(Content.weapon(&"rifle_ar"))
+	for base: StringName in [&"rifle_ar", &"kestrel_smg"]:
+		service.pack.add(ItemRoller.roll_weapon(session.rng, Content.weapon(base), &"rare", 17))
+	overlay._select(0)
+	overlay._equip()
+	player.weapons.current.instance.ammo_in_mag = 2
+	player.weapons.current.instance.ammo_reserve = 7
+	overlay._select(1)
+	overlay._equip()
+	player.weapons.current.instance.ammo_in_mag = 3
+	player.weapons.current.instance.ammo_reserve = 9
+	overlay._select(0)
+	overlay._equip()
+	assert_eq(player.weapons.current.instance.ammo_in_mag, 2)
+	assert_eq(player.weapons.current.instance.ammo_reserve, 7)
+	player.weapons.current.instance.ammo_in_mag = 0
+	player.weapons.current.instance.ammo_reserve = 0
+	overlay._select(1)
+	overlay._equip()
+	assert_eq(player.weapons.current.instance.ammo_in_mag, 3)
+	assert_eq(player.weapons.current.instance.ammo_reserve, 9)
+	watch_signals(Events)
+	overlay._select(0)
+	overlay._equip()
+	assert_eq(player.weapons.current.instance.ammo_in_mag, 0)
+	assert_eq(player.weapons.current.instance.ammo_reserve, 0)
+	assert_eq(player.weapons.weapons.size(), 2)
+	assert_signal_emitted_with_parameters(Events, "ammo_changed", [player, 0, 0])
