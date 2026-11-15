@@ -34,7 +34,9 @@ def stock(m, receiver, metal, black, olive):
         m.box("ButtPad", (0.049, 0.012, 0.09), (0, -0.358, -0.022), black, bevel=0.003),
     ]
     for side in (-1, 1):
-        parts.append(m.box(f"StockStrut{side}", (0.008, 0.19, 0.012), (side * 0.018, -0.246, -0.006), metal, bevel=0.002))
+        parts.append(
+            m.box(f"StockStrut{side}", (0.008, 0.19, 0.012), (side * 0.018, -0.246, -0.006), metal, bevel=0.002)
+        )
     m.join_into(folding, parts)
     m.attach(folding, hinge_at, receiver)
 
@@ -69,7 +71,9 @@ def moving_parts(m, receiver, metal, black, olive):
     parts = [m.box("MagBase", (0.038, 0.056, 0.01), (0, 0.055, -0.228), olive, bevel=0.002)]
     for side in (-1, 1):
         for i in range(2):
-            parts.append(m.box(f"MagRib{side}{i}", (0.002, 0.005, 0.115), (side * 0.016, 0.044 + i * 0.022, -0.151), metal))
+            parts.append(
+                m.box(f"MagRib{side}{i}", (0.002, 0.005, 0.115), (side * 0.016, 0.044 + i * 0.022, -0.151), metal)
+            )
     m.join_into(magazine, parts)
     m.attach(magazine, (0, 0.055, -0.065), receiver)
     bolt = m.box("Bolt", (0.012, 0.047, 0.015), (0.029, -0.025, 0.016), metal, bevel=0.002)

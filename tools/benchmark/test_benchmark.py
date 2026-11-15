@@ -3,21 +3,32 @@
 import json
 import math
 import os
-from pathlib import Path
 import statistics
 import subprocess
 import tempfile
 import unittest
+from pathlib import Path
 
 
 class BenchmarkTests(unittest.TestCase):
     def run_benchmark(self, *args):
         with tempfile.TemporaryDirectory() as data_dir:
             completed = subprocess.run(
-                [os.environ.get("GODOT", "godot"), "--headless", "--path", ".",
-                 "--script", "res://tools/benchmark/benchmark.gd", "--", *args],
+                [
+                    os.environ.get("GODOT", "godot"),
+                    "--headless",
+                    "--path",
+                    ".",
+                    "--script",
+                    "res://tools/benchmark/benchmark.gd",
+                    "--",
+                    *args,
+                ],
                 env={**os.environ, "XDG_DATA_HOME": data_dir},
-                capture_output=True, text=True, timeout=60,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=60,
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertNotIn("SCRIPT ERROR", completed.stderr)
@@ -29,9 +40,7 @@ class BenchmarkTests(unittest.TestCase):
 
     def test_repeatable_population_and_statistics(self):
         for _ in range(2):
-            result, output = self.run_benchmark(
-                "--zombies", "4", "--seconds", "0.2", "--seed", "1"
-            )
+            result, output = self.run_benchmark("--zombies", "4", "--seconds", "0.2", "--seed", "1")
             self.assertEqual(result["status"], "ok")
             self.assertEqual(result["spawned_zombies"], 4)
             self.assertEqual(result["alive_zombies"], 4)

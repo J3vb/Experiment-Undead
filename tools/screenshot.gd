@@ -3,12 +3,16 @@
 #   xvfb-run -s "-screen 0 1600x900x24" godot --path . --rendering-driver vulkan res://tools/screenshot.tscn
 extends Node
 
+
 func _ready() -> void:
 	_run.call_deferred()
 
+
 func _run() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://screenshots"))
-	var session: GameSession = (load("res://systems/game/game_session.tscn") as PackedScene).instantiate() as GameSession
+	var session: GameSession = (
+		(load("res://systems/game/game_session.tscn") as PackedScene).instantiate() as GameSession
+	)
 	session.rng_seed = 7
 	add_child(session)
 	await _seconds(9.0)
@@ -16,7 +20,16 @@ func _run() -> void:
 	var nearest: Zombie = null
 	for n: Node in get_tree().get_nodes_in_group(&"enemies"):
 		var z: Zombie = n as Zombie
-		if z and (nearest == null or z.global_position.distance_to(player.global_position) < nearest.global_position.distance_to(player.global_position)):
+		if (
+			z
+			and (
+				nearest == null
+				or (
+					z.global_position.distance_to(player.global_position)
+					< nearest.global_position.distance_to(player.global_position)
+				)
+			)
+		):
 			nearest = z
 	if nearest:
 		# Stage the shot: put the nearest zombie a few metres in front.
@@ -41,8 +54,10 @@ func _run() -> void:
 	_save("03_behind.png")
 	get_tree().quit()
 
+
 func _seconds(t: float) -> void:
 	await get_tree().create_timer(t).timeout
+
 
 func _save(file: String) -> void:
 	var img: Image = get_viewport().get_texture().get_image()

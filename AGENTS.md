@@ -100,6 +100,7 @@ things to build only when needed: `docs/KEEP_IT_SIMPLE.md`.
    empty stubs, no "Service" that only forwards to another class.
 4. **Size limits** (CI enforces these in the `quality` check):
    - function: 50 lines max
+   - complexity: 10 max
    - file: 350 lines max
    - function arguments: 6 max
 
@@ -165,13 +166,15 @@ If you cannot download Godot, say so in the PR and let CI run the checks.
 
 CI has two required checks. A PR can only merge when both are green.
 
-- **`quality`** (pull requests only, checks only the files your PR changed):
+- **`quality`** (pull requests only, all tracked `.gd` and `.py` files outside `addons/`):
   - `gdlint` with the repo `gdlintrc`: lines max 120, files max 350 lines,
     functions max 6 arguments, Godot style guide names and member order.
   - `gdformat --check --line-length 120`. Fix with
     `gdformat --line-length 120 <files>`. When you touch an old file, format
     the whole file.
-  - Functions max 50 lines.
+  - Functions max 50 lines; cyclomatic complexity max 10 (`gdradon cc`).
+  - Python: `ruff check` and `ruff format --check`, line length 120, complexity max 10.
+  - Quality-gate unit tests in `tools/ci/`.
   - **Tests required:** if you change a `.gd` file in `core/` or `systems/`,
     you must also add or change a file in `tests/`. Only for visual-only or
     pure-rename changes, add the label `no-tests-needed` and say why in the PR.
@@ -184,7 +187,8 @@ CI has two required checks. A PR can only merge when both are green.
 Run the same `quality` check locally before you push:
 
 ```bash
-pip install "gdtoolkit==4.5.0"
+pip install "gdtoolkit==4.5.0" "ruff==0.17.5"
+python -m unittest discover -s tools/ci -p "test_*.py"
 python tools/ci/check_pr.py origin/main
 ```
 

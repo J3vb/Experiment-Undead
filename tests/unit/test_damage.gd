@@ -1,5 +1,6 @@
 extends GutTest
 
+
 func test_damage_falloff() -> void:
 	var w: WeaponData = WeaponData.new()
 	w.damage = 40.0
@@ -10,6 +11,7 @@ func test_damage_falloff() -> void:
 	assert_almost_eq(w.get_damage_at(20.0), 30.0, 0.001)
 	assert_eq(w.get_damage_at(100.0), 20.0)
 
+
 func test_zone_multipliers() -> void:
 	var w: WeaponData = WeaponData.new()
 	w.head_multiplier = 2.0
@@ -17,6 +19,7 @@ func test_zone_multipliers() -> void:
 	assert_eq(w.get_zone_multiplier(DamageInfo.Zone.HEAD), 2.0)
 	assert_eq(w.get_zone_multiplier(DamageInfo.Zone.BODY), 1.0)
 	assert_eq(w.get_zone_multiplier(DamageInfo.Zone.LIMB), 0.5)
+
 
 func test_health_component_dies_once() -> void:
 	var h: HealthComponent = HealthComponent.new()
@@ -29,6 +32,7 @@ func test_health_component_dies_once() -> void:
 	h.take_damage(DamageInfo.create(60.0, null))
 	assert_true(h.is_dead)
 	assert_signal_emit_count(h, "died", 1)
+
 
 func test_hit_zone_applies_zone() -> void:
 	var h: HealthComponent = HealthComponent.new()
@@ -43,6 +47,7 @@ func test_hit_zone_applies_zone() -> void:
 	zone.receive_hit(info)
 	assert_true(info.is_headshot())
 	assert_eq(h.current, 70.0)
+
 
 func test_weapon_instance_reload_math() -> void:
 	var w: WeaponData = WeaponData.new()
@@ -60,6 +65,7 @@ func test_weapon_instance_reload_math() -> void:
 	inst.add_reserve(500)
 	assert_eq(inst.ammo_reserve, 90)
 	assert_eq(w.starting_reserve, 40, "data is never mutated")
+
 
 func test_recoil_pattern_repeats_tail() -> void:
 	var r: RecoilData = RecoilData.new()

@@ -12,15 +12,15 @@ These are asset inspection renders, rather than Godot gameplay screenshots.
 import argparse
 import math
 import os
-from pathlib import Path
 import re
 import struct
 import tempfile
 import zlib
+from pathlib import Path
 
 import bpy
-from mathutils import Vector
 import numpy as np
+from mathutils import Vector
 
 REPO = Path(__file__).resolve().parents[1]
 GUNS = (
@@ -168,8 +168,11 @@ def combine_panels(paths, output):
     scanlines = b"".join(b"\0" + row.tobytes() for row in pixels)
     with output.open("wb") as stream:
         stream.write(b"\x89PNG\r\n\x1a\n")
-        for kind, data in ((b"IHDR", struct.pack(">2I5B", width, height, 8, 6, 0, 0, 0)),
-                           (b"IDAT", zlib.compress(scanlines)), (b"IEND", b"")):
+        for kind, data in (
+            (b"IHDR", struct.pack(">2I5B", width, height, 8, 6, 0, 0, 0)),
+            (b"IDAT", zlib.compress(scanlines)),
+            (b"IEND", b""),
+        ):
             stream.write(struct.pack(">I", len(data)) + kind + data)
             stream.write(struct.pack(">I", zlib.crc32(kind + data)))
     print(f"saved {output}", flush=True)

@@ -188,14 +188,14 @@ static func _build_lights(root: Node3D, room: Node3D, size: Vector2, height: flo
 
 
 static func _build_ramp(root: Node3D, parent: Node3D, ramp: Dictionary, index: int) -> void:
-	var from: Vector3 = Vector3(ramp["from"][0], ramp["from"][1], ramp["from"][2])
-	var to: Vector3 = Vector3(ramp["to"][0], ramp["to"][1], ramp["to"][2])
-	var forward: Vector3 = (to - from).normalized()
+	var start: Vector3 = Vector3(ramp["from"][0], ramp["from"][1], ramp["from"][2])
+	var end: Vector3 = Vector3(ramp["to"][0], ramp["to"][1], ramp["to"][2])
+	var forward: Vector3 = (end - start).normalized()
 	var side: Vector3 = forward.cross(Vector3.UP).normalized()
 	var up: Vector3 = side.cross(forward).normalized()
-	var size: Vector3 = Vector3(from.distance_to(to), 0.4, float(ramp["width"]))
+	var size: Vector3 = Vector3(start.distance_to(end), 0.4, float(ramp["width"]))
 	var block: Block = _block(root, parent, "Ramp%d" % index, size, Vector3.ZERO, "tiled_wet_floor")
-	block.transform = Transform3D(Basis(forward, up, side), (from + to) * 0.5 - up * 0.2)
+	block.transform = Transform3D(Basis(forward, up, side), (start + end) * 0.5 - up * 0.2)
 
 
 static func _block(root: Node3D, parent: Node3D, label: String, size: Vector3, at: Vector3, mat: String) -> Block:

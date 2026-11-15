@@ -6,8 +6,10 @@ const ROOT: String = "res://content"
 
 var _by_type: Dictionary[StringName, Dictionary] = {}
 
+
 func _ready() -> void:
 	reload()
+
 
 func reload() -> void:
 	_by_type.clear()
@@ -19,6 +21,7 @@ func reload() -> void:
 		var items: Dictionary = {}
 		_scan(ROOT.path_join(type_dir), items)
 		_by_type[StringName(type_dir)] = items
+
 
 func _scan(path: String, items: Dictionary) -> void:
 	var dir: DirAccess = DirAccess.open(path)
@@ -37,6 +40,7 @@ func _scan(path: String, items: Dictionary) -> void:
 			continue
 		items[id] = path.path_join(clean)
 
+
 func get_item(type: StringName, id: StringName) -> Resource:
 	var items: Dictionary = _by_type.get(type, {})
 	if not items.has(id):
@@ -44,11 +48,14 @@ func get_item(type: StringName, id: StringName) -> Resource:
 		return null
 	return load(items[id])
 
+
 func ids(type: StringName) -> Array:
 	return _by_type.get(type, {}).keys()
 
+
 func weapon(id: StringName) -> WeaponData:
 	return get_item(&"weapons", id) as WeaponData
+
 
 func enemy(id: StringName) -> EnemyData:
 	return get_item(&"enemies", id) as EnemyData

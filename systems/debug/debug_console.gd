@@ -157,35 +157,53 @@ func _change_game(args: PackedStringArray, name: StringName) -> void:
 	var session: GameSession = get_parent() as GameSession
 	match name:
 		&"give_points", &"set_round":
-			if args.size() != 1 or not args[0].is_valid_int() or args[0].to_int() <= 0:
-				write_line("Error: usage: " + str(name) + _usage(name))
+			if not _change_progress(args, name, session):
 				return
-			if name == &"give_points":
-				for player: Player in session.get_players():
-					player.wallet.add(args[0].to_int())
-			else:
-				session.director.skip_to_round(args[0].to_int())
 		&"spawn":
 			_spawn(args, session)
 			return
 		&"kill_all", &"skip_round":
-			if not args.is_empty():
-				write_line("Error: usage: " + str(name))
+			if not _clear_enemies(args, name, session):
 				return
-			for child: Node in session.spawner.get_children():
-				var zombie: Zombie = child as Zombie
-				if zombie and not zombie.health.is_dead:
-					zombie.health.take_damage(DamageInfo.create(zombie.health.current, null))
 		&"timescale":
-			if args.size() != 1 or not args[0].is_valid_float():
-				write_line("Error: usage: timescale" + _usage(name))
+			if not _set_timescale(args):
 				return
-			var scale: float = args[0].to_float()
-			if not is_finite(scale) or scale <= 0.0:
-				write_line("Error: timescale must be positive and finite.")
-				return
-			Engine.time_scale = scale
 	write_line("OK: " + str(name))
+
+
+func _change_progress(args: PackedStringArray, name: StringName, session: GameSession) -> bool:
+	if args.size() != 1 or not args[0].is_valid_int() or args[0].to_int() <= 0:
+		write_line("Error: usage: " + str(name) + _usage(name))
+		return false
+	if name == &"give_points":
+		for player: Player in session.get_players():
+			player.wallet.add(args[0].to_int())
+	else:
+		session.director.skip_to_round(args[0].to_int())
+	return true
+
+
+func _clear_enemies(args: PackedStringArray, name: StringName, session: GameSession) -> bool:
+	if not args.is_empty():
+		write_line("Error: usage: " + str(name))
+		return false
+	for child: Node in session.spawner.get_children():
+		var zombie: Zombie = child as Zombie
+		if zombie and not zombie.health.is_dead:
+			zombie.health.take_damage(DamageInfo.create(zombie.health.current, null))
+	return true
+
+
+func _set_timescale(args: PackedStringArray) -> bool:
+	if args.size() != 1 or not args[0].is_valid_float():
+		write_line("Error: usage: timescale" + _usage(&"timescale"))
+		return false
+	var scale: float = args[0].to_float()
+	if not is_finite(scale) or scale <= 0.0:
+		write_line("Error: timescale must be positive and finite.")
+		return false
+	Engine.time_scale = scale
+	return true
 
 
 func _spawn(args: PackedStringArray, session: GameSession) -> void:

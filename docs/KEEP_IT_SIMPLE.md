@@ -3,6 +3,9 @@
 The rules are in the "Keep it simple" section of `AGENTS.md`. This file shows
 what they mean in this codebase.
 
+Rule 4 size limits: function: 50 lines max; file: 350 lines max;
+function arguments: 6 max; complexity: 10 max.
+
 ## Examples
 
 **Good: direct call for a request.** `Economy.try_spend(player, cost) -> bool`.
