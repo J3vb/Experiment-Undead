@@ -12,6 +12,7 @@ const GUNS: Dictionary[String, String] = {
 	"atlas_auto": "atlas_auto",
 	"halberd_lmg": "halberd_lmg",
 	"corvid_338": "corvid_338",
+	"siphon": "siphon",
 }
 const RARITIES: Dictionary[String, Color] = {
 	"common": Color("#D9D9D2"),

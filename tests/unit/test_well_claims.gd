@@ -105,6 +105,7 @@ func _add_player(session: GameSession, peer_id: int) -> void:
 	var player: Player = PLAYER.instantiate() as Player
 	player.name = str(peer_id)
 	player.net_id = peer_id
+	player.session = session
 	player.set_multiplayer_authority(peer_id)
 	session.get_node("Actors").add_child(player)
 	session.economy._on_player_spawned(player)
@@ -224,3 +225,21 @@ func test_host_request_opens_directly_without_a_client_claim() -> void:
 	_server_claims.request_well(Vector3(2.0, 0.0, 0.0))
 	assert_eq(_wells(_server).size(), 1)
 	assert_same(_wells(_server)[0].attacker, _server.players.find_player(1))
+
+
+func test_owning_client_fires_an_orb_and_claims_only_when_it_lands() -> void:
+	var player: Player = _client.players.find_player(_peer_id)
+	var weapon: Weapon = player.weapons.give(Content.weapon(&"siphon"))
+	weapon.fire()
+	assert_eq(_wells(_server).size(), 0, "firing does not open a well instantly")
+	var orb: GravityWell
+	for child: Node in _client.get_children():
+		if child is GravityWell and not child.is_in_group(&"gravity_wells"):
+			orb = child as GravityWell
+	assert_not_null(orb, "owning client created its orb")
+	if orb == null:
+		return
+	orb.set_physics_process(false)
+	orb._tick_orb(2.5)
+	await wait_until(func() -> bool: return _wells(_server).size() == 1, 3.0, "landing claim opened server well")
+	assert_same(_wells(_server)[0].attacker, _server.players.find_player(_peer_id))

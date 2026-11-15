@@ -48,6 +48,47 @@ func test_orb_travels_slowly_and_makes_no_early_claim() -> void:
 	assert_eq(_claims.points.size(), 0)
 
 
+func test_firing_siphon_creates_one_orb_and_consumes_one_round() -> void:
+	var weapon: Weapon = _attacker.weapons.give(Content.weapon(&"siphon"))
+	weapon.fire()
+	var orbs: int = 0
+	for child: Node in _root.get_children():
+		if child is GravityWell:
+			orbs += 1
+	assert_eq(orbs, 1, "the owning gun launches its orb")
+	assert_eq(weapon.instance.ammo_in_mag, 2)
+	assert_null(_active_well(), "the well waits for the orb to land")
+
+
+func test_firing_siphon_does_not_apply_instant_hitscan_damage() -> void:
+	var session: GameSession = GameSession.new()
+	session.rng.seed = 7
+	var spawner: Spawner = Spawner.new()
+	spawner.session = session
+	spawner.spawn_group = &"test_siphon_fire_spawns"
+	var marker: Marker3D = Marker3D.new()
+	marker.add_to_group(&"test_siphon_fire_spawns")
+	_root.add_child(marker)
+	_root.add_child(spawner)
+	var zombie: Zombie = spawner.spawn(WALKER, 1, RULES)
+	zombie.set_physics_process(false)
+	zombie.global_position = Vector3(0.0, 0.0, -8.0)
+	zombie.health.reset(1000.0)
+	_attacker.camera.look_at(zombie.hit_zones[1].global_position)
+	await wait_physics_frames(1)
+	var weapon: Weapon = _attacker.weapons.give(Content.weapon(&"siphon"))
+	var ray: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
+		_attacker.camera.global_position,
+		_attacker.camera.global_position - _attacker.camera.global_basis.z * 25.0,
+		Layers.HIT_ZONE
+	)
+	ray.collide_with_areas = true
+	assert_false(_root.get_world_3d().direct_space_state.intersect_ray(ray).is_empty(), "hitscan would hit this zombie")
+	weapon.fire()
+	assert_eq(zombie.health.current, 1000.0, "firing only launches the travelling orb")
+	session.free()
+
+
 func test_orb_stops_at_twenty_five_metres_and_claims_once() -> void:
 	var orb: GravityWell = _orb()
 	orb._tick_orb(2.4)
