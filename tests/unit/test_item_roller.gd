@@ -35,6 +35,8 @@ func test_same_seed_produces_same_plain_dictionary_and_rng_state() -> void:
 func test_counts_families_kind_limits_and_weapon_restrictions() -> void:
 	for id: StringName in Content.ids(&"weapons"):
 		var weapon: WeaponData = Content.weapon(id)
+		if weapon.loot_tags.has(&"prototype"):
+			continue
 		for rarity: StringName in [&"common", &"uncommon", &"rare", &"epic", &"legendary"]:
 			if ItemRoller.RARITIES.find(rarity) < ItemRoller.RARITIES.find(weapon.get_meta(&"min_rarity", &"common")):
 				assert_eq(ItemRoller.roll_weapon(rng, weapon, rarity, 30, 30), {})

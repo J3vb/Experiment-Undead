@@ -58,6 +58,8 @@ JOINTS = {
         "CarryHandle": "Receiver",
     },
     "corvid_338": GUN_WITH_MAG,
+    "cryo_lance": {**GUN_WITH_MAG, "Trigger": "Receiver", "CondenserCoils": "Receiver"},
+    "synapse": {**GUN_WITH_MAG, "Trigger": "Receiver", "Cabling": "Receiver"},
     "sentry_br3": GUN_WITH_MAG,
     "nightjar_sd": {**GUN_WITH_MAG, "Suppressor": "Receiver"},
     "rampart_br": GUN_WITH_MAG,

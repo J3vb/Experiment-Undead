@@ -19,7 +19,7 @@ static func roll_rarity(rng: RandomNumberGenerator, vault: bool, luck: float) ->
 static func roll_weapon(
 	rng: RandomNumberGenerator, weapon: WeaponData, rarity_id: StringName, item_level: int, player_level: int = 1
 ) -> Dictionary:
-	if rarity_id == &"prototype":
+	if rarity_id == &"prototype" or weapon.loot_tags.has(&"prototype"):
 		push_error("ItemRoller: Prototypes are fixed items, not random weapon rolls")
 		return {}
 	var rarity_floor: int = RARITIES.find(weapon.get_meta(&"min_rarity", &"common"))
