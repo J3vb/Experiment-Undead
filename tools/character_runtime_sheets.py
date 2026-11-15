@@ -12,12 +12,16 @@ VIEWS = ("hip_common", "hip_legendary", "ads_common", "ads_legendary")
 CELL = (640, 360)
 HEADER = 40
 CONTACTS = (
-    "brenner_trench_under",
+    "brenner_trench_r",
+    "fieldhand_lever_r",
+    "corvid_338_r",
     "halberd_lmg_l",
+    "ironwood_50_l",
+    "siphon_l",
     "hollis_44_l",
     "pistol_service_l",
+    "wren_mp_r",
     "mako_pdw_l",
-    "corvid_338_r",
 )
 
 
@@ -52,7 +56,7 @@ def main() -> None:
     parser.add_argument("before", type=Path)
     parser.add_argument("after", type=Path)
     parser.add_argument("output", type=Path)
-    parser.add_argument("--contacts", action="store_true", help="Also pair six tailored grip closeups.")
+    parser.add_argument("--contacts", action="store_true", help="Also pair tailored grip closeups.")
     args = parser.parse_args()
     for path in compose(args.before, args.after, args.output):
         print(path)
@@ -62,7 +66,8 @@ def main() -> None:
 
 def compose_contacts(after: Path, output: Path) -> Path:
     """Keep the source captions and framing in a compact supplemental contact sheet."""
-    sheet = Image.new("RGB", (CELL[0] * 2, CELL[1] * 3), "#10191c")
+    rows = (len(CONTACTS) + 1) // 2
+    sheet = Image.new("RGB", (CELL[0] * 2, CELL[1] * rows), "#10191c")
     for index, name in enumerate(CONTACTS):
         with Image.open(after / f"{name}.png") as image:
             if image.size != (1280, 720):

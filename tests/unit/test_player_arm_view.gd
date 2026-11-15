@@ -245,10 +245,49 @@ func test_all_weapon_definitions_keep_firing_reloads_and_slots_with_the_imported
 			weapon.tick(weapon._reload_duration * .5)
 			weapon._process(.05)
 			_assert_arm_update_preserves_weapon_motion(holder)
-			weapon.tick(weapon._reload_duration)
+			var rounds: int = weapon.data.magazine_size if weapon.data.reload_per_round else 1
+			weapon.tick(weapon._reload_duration * rounds)
+			assert_false(weapon.is_reloading(), String(id) + " reload genuinely completes")
 			weapon._process(.05)
 			_assert_arm_update_preserves_weapon_motion(holder)
 			assert_eq(weapon.instance.ammo_in_mag, weapon.data.magazine_size, String(id))
 		holder.cycle(1)
 		assert_eq(holder.arm_view.weapon, holder.current)
 		assert_true(holder.arm_view.visible)
+
+
+func test_rifle_item_stat_copy_keeps_base_grip_and_shared_content_unchanged() -> void:
+	var holder: WeaponHolder = _holder()
+	var base: WeaponData = Content.weapon(&"rifle_ar")
+	var item: ItemInstance = ItemInstance.new({"aff": [["mag_pct", 5, 1.0], ["reload_pct", 5, 1.0]]})
+	var weapon: Weapon = holder.give(item.weapon_data(base))
+	weapon.item = item
+	weapon.set_process(false)
+	assert_ne(weapon.data, base)
+	assert_gt(weapon.data.magazine_size, base.magazine_size)
+	assert_eq(holder.arm_view.profile.id, base.id)
+	assert_eq(holder.arm_view.weapon, weapon)
+	weapon.fire()
+	assert_true(weapon.start_reload())
+	assert_almost_eq(weapon._reload_duration, base.reload_time * item.weapon_stat(&"reload_time"), .00001)
+	weapon._process(.05)
+	_assert_arm_update_preserves_weapon_motion(holder)
+	assert_eq(base, Content.weapon(&"rifle_ar"), "shared content is retained")
+
+
+func test_rifle_per_round_reload_keeps_current_arm_contacts_through_every_insert() -> void:
+	var holder: WeaponHolder = _holder()
+	var data: WeaponData = Content.weapon(&"rifle_ar").duplicate() as WeaponData
+	data.reload_per_round = true
+	data.magazine_size = 4
+	var weapon: Weapon = holder.give(data)
+	weapon.set_process(false)
+	weapon.instance.ammo_in_mag = 0
+	assert_true(weapon.start_reload())
+	for index: int in data.magazine_size:
+		weapon.tick(weapon._reload_duration)
+		weapon._process(.05)
+		assert_eq(weapon.instance.ammo_in_mag, index + 1, "each elapsed interval inserts exactly one round")
+		assert_eq(weapon.is_reloading(), index + 1 < data.magazine_size)
+		_assert_arm_update_preserves_weapon_motion(holder)
+	assert_true(holder.arm_view.visible)

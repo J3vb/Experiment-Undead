@@ -4,9 +4,15 @@ import math
 
 # isort: split
 import body_parts as soft
+import player_bipod_grip as bipod
+import player_emitter_grip as emitter
 import player_grip_profiles as profiles
 import player_handgun_grips as handgun
+import player_heavy_grip as heavy
+import player_lever_grip as lever
+import player_pistol_grips as pistol
 import player_precision_grip as precision
+import player_stock_grip as stock
 import player_support_grips as support
 from mathutils import Vector
 
@@ -47,7 +53,7 @@ def _bore_point(centre, sign, gap, angle, radius, profile="rifle_ar"):
     axis, depth = _grip_axes(sign, gap, profile)
     half_length, half_depth, _offset, _angle = profiles.section(profile, gap)
     direction = along * math.cos(angle) + inward * math.sin(angle)
-    if gap == 0.045 and profile == "corvid_338":
+    if gap == 0.045 and profile in ("corvid_338", "fieldhand_lever"):
         horizontal = across * 0.6 + along * (0.8 * math.sqrt(0.96)) - inward * 0.16
         vertical = along * 0.2 + inward * math.sqrt(0.96)
         surface, normal = _shaped_section(direction, horizontal, vertical, (half_length, half_depth), 4)
@@ -77,10 +83,19 @@ def _shaped_section(direction, first, second, halves, power):
 
 def _finger_path(root, sign, diameter, index, profile="rifle_ar"):
     """Curl around the grip while leaving the fingertips opposed to the thumb."""
-    if diameter == 0.045 and profile == "mako_pdw":
-        return support.mako_finger(_finger_path(root, sign, diameter, index), index)
-    if diameter == 0.045 and profile in handgun.PATHS:
-        return handgun.finger_path(profile, index)
+    custom = _custom_finger(root, sign, diameter, index, profile)
+    if custom is not None:
+        return custom
+    points = _standard_finger_path(root, sign, diameter, index, profile)
+    if diameter == 0.032 and index == 0:
+        if profile == "corvid_338":
+            return precision.finger_path(points[0])
+        if profile == "ironwood_50":
+            return precision.ironwood_finger(points[0])
+    return points
+
+
+def _standard_finger_path(root, sign, diameter, index, profile):
     _across, along, _inward = _frame(sign)
     centre = _grip_centre(root, sign, diameter, profile)
     low, high = -math.pi, 0.0
@@ -92,7 +107,7 @@ def _finger_path(root, sign, diameter, index, profile="rifle_ar"):
         else:
             low = angle
     start_angle = (low + high) / 2
-    end_angle = profiles.end_angle(profile, diameter) + (0, 0.20, 0.15, -0.12)[index]
+    end_angle = profiles.finger_angle(profile, diameter, index)
     fractions = (0, 0.13, 0.27, 0.40, 0.50, 0.61, 0.72, 0.83, 0.94, 1.0)
     angles = [start_angle + (end_angle - start_angle) * fraction for fraction in fractions]
     if diameter == 0.032:
@@ -105,11 +120,37 @@ def _finger_path(root, sign, diameter, index, profile="rifle_ar"):
         angles += [0] + [corner + offset for offset in (-0.18, -0.08, 0, 0.08, 0.18)] + [end_angle]
     points = [
         _bore_point(centre, sign, diameter, angle, radius, profile)
-        for angle, radius in zip(angles, _finger_radii(diameter, index), strict=True)
+        for angle, radius in zip(angles, _finger_radii(diameter, index, profile), strict=True)
     ]
-    if diameter == 0.032 and profile == "corvid_338" and index == 0:
-        return precision.finger_path(points[0])
     return _firing_curl(points, sign, index, profile) if diameter == 0.032 else points
+
+
+def _custom_finger(root, sign, gap, index, profile):
+    if gap == 0.045:
+        return _support_finger(root, sign, gap, index, profile)
+    if profile in pistol.PATHS:
+        return pistol.finger_path(profile, index)
+    if gap == 0.032 and profile == "fieldhand_lever":
+        return lever.finger_path(_finger_path(root, sign, gap, index)[0], index)
+    if gap == 0.032 and profile == "brenner_trench":
+        return stock.finger_path(_finger_path(root, sign, gap, index)[0], index, _finger_radii(gap, index, profile))
+    return None
+
+
+def _support_finger(root, sign, gap, index, profile):
+    if profile == "mako_pdw":
+        return support.mako_finger(_finger_path(root, sign, gap, index), index)
+    if profile in handgun.PATHS:
+        return handgun.finger_path(profile, index)
+    if profile == "halberd_lmg":
+        return bipod.finger_path(root, index, _finger_radii(gap, index, profile))
+    if profile == "siphon":
+        return emitter.finger_path(root, index)
+    if profile == "ironwood_50":
+        return heavy.finger_path(
+            _standard_finger_path(root, sign, gap, index, profile), _finger_radii(gap, index, profile)
+        )
+    return None
 
 
 def _firing_curl(points, sign, index, profile="rifle_ar"):
@@ -124,7 +165,9 @@ def _firing_curl(points, sign, index, profile="rifle_ar"):
     return result
 
 
-def _finger_radii(gap, index):
+def _finger_radii(gap, index, profile="rifle_ar"):
+    if gap == 0.032 and profile == "fieldhand_lever":
+        return lever.finger_radii(index)
     radii = FINGER_RADII
     if gap == 0.032:
         radii = (0.010, 0.010, 0.0105, 0.0105, 0.010, 0.0097, 0.0095, 0.009, 0.0085, 0.008, 0.007, 0.006, 0.004, 0.002)
@@ -179,12 +222,13 @@ def _finger_pad(points, radii, joint, sign, mat):
 
 def _thumb_path(index_tip, centre, sign, gap, profile="rifle_ar"):
     """Oppose the thumb around the clear bore; tip spacing is a chord, not its diameter."""
-    if gap == 0.045 and profile == "mako_pdw":
-        return support.mako_thumb()
-    if gap == 0.032 and profile == "corvid_338":
-        return precision.thumb_path()
-    if gap == 0.045 and profile in handgun.PATHS:
-        return handgun.thumb_path(profile)
+    custom = _custom_thumb(index_tip, gap, profile)
+    if custom is not None:
+        return custom
+    return _standard_thumb_path(index_tip, centre, sign, gap, profile)
+
+
+def _standard_thumb_path(index_tip, centre, sign, gap, profile):
     across, along, inward = _frame(sign)
     if gap == 0.032:
         index_tip = index_tip - (across * math.sqrt(0.75) - along * 0.5) * 0.018
@@ -227,3 +271,32 @@ def _thumb_path(index_tip, centre, sign, gap, profile="rifle_ar"):
         row = centre - axis * (offset / axis.dot(across))
         points.append(_bore_point(row, sign, gap, theta, radius, profile))
     return _firing_curl(points, sign, 0, profile) if gap == 0.032 else points
+
+
+def _custom_thumb(index_tip, gap, profile):
+    if gap == 0.045:
+        fixed = {
+            "mako_pdw": support.mako_thumb,
+            "halberd_lmg": bipod.thumb_path,
+            "siphon": emitter.thumb_path,
+            "ironwood_50": heavy.thumb_path,
+        }
+        if profile in fixed:
+            return fixed[profile]()
+        if profile in handgun.PATHS:
+            return handgun.thumb_path(profile)
+    if gap == 0.032:
+        if profile in pistol.PATHS:
+            return pistol.thumb_path(profile)
+        if profile == "corvid_338":
+            return precision.thumb_path()
+        if profile == "brenner_trench":
+            return stock.thumb_path(index_tip)
+        if profile == "fieldhand_lever":
+            return lever.thumb_path()
+        if profile == "ironwood_50":
+            across, _along, _inward = _frame(-1)
+            root = Vector((-0.675, -0.017, 0.985)) - across * 0.024
+            index = _standard_finger_path(root, -1, gap, 0, profile)[-1]
+            return _standard_thumb_path(index, _grip_centre(root, -1, gap, profile), -1, gap, profile)
+    return None

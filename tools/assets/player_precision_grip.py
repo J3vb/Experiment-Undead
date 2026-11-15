@@ -14,23 +14,13 @@ REST_ALONG = Vector((-1, 0, -1)).normalized()
 REST_INWARD = Vector((0, -1, 0))
 
 
-def _source(point):
-    relative = point - ANCHOR
+def _source(point, source=SOURCE, anchor=ANCHOR):
+    relative = point - anchor
     return (
-        SOURCE
+        source
         + REST_ACROSS * relative.dot(ACROSS)
         + REST_ALONG * relative.dot(ALONG)
         + REST_INWARD * relative.dot(INWARD)
-    )
-
-
-def _gun(point):
-    relative = point - SOURCE
-    return (
-        ANCHOR
-        + ACROSS * relative.dot(REST_ACROSS)
-        + ALONG * relative.dot(REST_ALONG)
-        + INWARD * relative.dot(REST_INWARD)
     )
 
 
@@ -69,3 +59,24 @@ def thumb_path():
         (-0.029, -0.136, -0.076),
     ]
     return [start, *[_source(Vector(point)) for point in controls]]
+
+
+def ironwood_finger(start):
+    """Rest the long trigger finger along the lower frame, outside the guard."""
+    controls = [
+        (0.0356461, -0.16049998, -0.08828231),
+        (0.0358461, -0.14999998, -0.07808231),
+        (0.0358461, -0.14089998, -0.06788231),
+        (0.0356461, -0.13179998, -0.06193231),
+        (0.0355261, -0.12339998, -0.05938231),
+        (0.0354461, -0.11639998, -0.05768231),
+        (0.0352461, -0.11009998, -0.05683231),
+        (0.0350461, -0.10449998, -0.05640731),
+        (0.0348461, -0.10029998, -0.05598231),
+        (0.0344461, -0.09749998, -0.05640731),
+        (0.0340461, -0.09539998, -0.05683231),
+        (0.0332461, -0.09399998, -0.05725731),
+        (0.0324461, -0.09329998, -0.05768231),
+    ]
+    source, anchor = Vector((-0.675, -0.048, 0.985)), Vector((0, -0.159, -0.122))
+    return [start, *[_source(Vector(point), source, anchor) for point in controls]]

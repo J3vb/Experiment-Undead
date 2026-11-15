@@ -1,6 +1,7 @@
 # Characters — 2026-11-15
 
-Baseline: `109bb6d`, rebuilt before editing. Scores are 1–5; compare with
+Initial baseline: `109bb6d`, rebuilt before editing. Final comparisons use
+`bfbddd2` so intervening gun and vest changes appear on both sides. Scores are 1–5; compare with
 `gear_sets.jpg`, `gear_fp.jpg`, `style_hub.jpg` and the rebuilt gun outlines.
 The guns set the bar for deliberate contours, edge treatment and material separation.
 
@@ -39,8 +40,8 @@ with regression tests against buried or floating detail.
 The new arms replace the local gameplay hand meshes through the shared weapon
 holder. One rig follows the active weapon through aiming, kick, reload and pump
 motion; camera-relative shoulders prevent the entire arm moving like a rigid prop.
-Ten authored grip profiles cover the twenty base/Reforged weapon definitions.
-Nine glove morphs preserve the accepted rifle as the default shape. Common medium
+Fourteen authored grip profiles cover the twenty-seven weapon definitions.
+Thirteen glove morphs preserve the accepted rifle as the default shape. Common medium
 cuffs are cosmetic; this adds no equipment or rarity gameplay.
 
 Results: body **11,892 → 15,380** triangles; arms **7,628 → 9,828**.
@@ -57,8 +58,9 @@ and elbows, and shoulder positions are bounded relative to the imported body.
 Minimum imported-vertex grip clearances are **1.724 mm left / 2.103 mm right**.
 The right index clears the guard by 1.183 mm; both hands clear the adjacent
 receiver, trigger and rail geometry. The camera and rifle stay at the runtime hip
-placement. Rifle finger/thumb markers retain their 32/45 mm gaps; the other grips
-stay within the existing 25–40 mm right / 40–50 mm left limits. Regression tests
+placement. The default rifle retains its 32/45 mm tip gaps and original clearance
+checks. Other profiles place markers on their actual fingertips; stock grips use
+wider gaps so thumbs can stay a natural length. Regression tests
 also catch reversed anatomy, twisted sweep rings, buried reinforcement, grip
 penetration and discontinuous elbow movement. Fingers use fixed authored curls;
 individual trigger pulls and magazine-handling animation remain deferred.
@@ -92,7 +94,11 @@ Legendary at hip (110° horizontal FOV) and ADS (the weapon's vertical FOV):
 [Corvid](images/characters-2026-11-15/runtime_corvid_338.png),
 [Brenner](images/characters-2026-11-15/runtime_brenner_trench.png),
 [Hollis](images/characters-2026-11-15/runtime_hollis_44.png),
-[service pistol](images/characters-2026-11-15/runtime_pistol_service.png).
+[service pistol](images/characters-2026-11-15/runtime_pistol_service.png),
+[Fieldhand](images/characters-2026-11-15/runtime_fieldhand_lever.png),
+[Ironwood](images/characters-2026-11-15/runtime_ironwood_50.png),
+[Wren](images/characters-2026-11-15/runtime_wren_mp.png),
+[Siphon](images/characters-2026-11-15/runtime_siphon.png).
 
 Reproduce after building/importing the project:
 

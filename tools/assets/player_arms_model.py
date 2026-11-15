@@ -106,7 +106,7 @@ def _fingers(armature, mats, side, sign, profile="rifle_ar", markers=True):
         offset = (index - 1.5) * 0.016
         root = Vector((sign * 0.675, -0.017 if side == "R" else -0.012, 0.985)) + across * offset
         points = _finger_path(root, sign, diameter, index, profile)
-        radii = _finger_radii(diameter, index)
+        radii = _finger_radii(diameter, index, profile)
         finger = _grip_tube("GripFinger" + side, points, radii, mats["rubber"], sign)
         parts.append(finger)
         paint.zone(finger, paint.ZONE_ACCENT)
@@ -182,8 +182,20 @@ def _stitching(mats, side, sign):
         paint.zone(seam, paint.ZONE_ACCENT)
 
 
+def _bind_parts(objects, armature):
+    """The fitted glove follows the hand; sleeve and cuff fabrics retain joint blending."""
+    rigid = ("GlovePalm", "KnucklePad", "GripFinger", "GripThumb", "FingerPad", "GloveStitch", "BackSeam")
+    bpy.context.view_layer.update()
+    for obj in objects:
+        if obj.name.startswith(rigid):
+            point = obj.matrix_world @ obj.data.vertices[0].co
+            rig.bind_rigid(obj, armature, "hand_L" if point.x > 0 else "hand_R")
+        else:
+            rig.bind(obj, armature, blend=0.08)
+
+
 def build_player_arms():
-    """Keep the body's A-pose rest rig; a later viewmodel task supplies the arm pose."""
+    """Keep the shared A-pose rig and author the weapon-specific grip shapes."""
     from build_models import join_into
 
     mats = _materials()
@@ -201,9 +213,9 @@ def build_player_arms():
         _stitching(mats, side, sign)
     _grip_variants(armature, mats, base, metadata)
     objects = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
+    _bind_parts(objects, armature)
     target = objects[0]
     join_into(target, objects[1:])
     target.name = "PlayerArms"
     soft.clean(target)
-    rig.bind(target, armature, blend=0.08)
     bpy.context.view_layer.update()

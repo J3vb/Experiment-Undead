@@ -14,6 +14,10 @@ const IDS: Array[StringName] = [
 	&"corvid_338",
 	&"hollis_44",
 	&"pistol_service",
+	&"fieldhand_lever",
+	&"ironwood_50",
+	&"wren_mp",
+	&"siphon",
 ]
 const RIGHT: Dictionary[StringName, Vector3] = {
 	&"rifle_ar": Vector3(0, -.129, -.111),
@@ -23,9 +27,13 @@ const RIGHT: Dictionary[StringName, Vector3] = {
 	&"atlas_auto": Vector3(0, -.127, -.11525),
 	&"halberd_lmg": Vector3(0, -.13375, -.1155),
 	&"hollis_44": Vector3(0, -.0575, -.069),
-	&"pistol_service": Vector3(0, .011, -.086),
-	&"corvid_338": Vector3(0, -.118, -.123),
+	&"pistol_service": Vector3(0, -.046, -.064),
+	&"corvid_338": Vector3(0, -.110, -.095),
 	&"brenner_trench": Vector3(0, -.134, -.020),
+	&"fieldhand_lever": Vector3(0, -.145, -.050),
+	&"ironwood_50": Vector3(0, -.159, -.122),
+	&"wren_mp": Vector3(.002, -.067, -.073),
+	&"siphon": Vector3(0, -.108, -.127),
 }
 const LEFT: Dictionary[StringName, Vector3] = {
 	&"rifle_ar": Vector3(0, .220, .016),
@@ -36,8 +44,12 @@ const LEFT: Dictionary[StringName, Vector3] = {
 	&"halberd_lmg": Vector3(-.021, .219, .030),
 	&"brenner_trench": Vector3(0, .260, -.005),
 	&"corvid_338": Vector3(0, .210, -.0241667),
-	&"hollis_44": Vector3(-.005, -.0475, -.080),
-	&"pistol_service": Vector3(-.003, .021, -.097),
+	&"hollis_44": Vector3(-.0085, -.0475, -.080),
+	&"pistol_service": Vector3(.007678149, -.036, -.075),
+	&"fieldhand_lever": Vector3(0, .195, -.031),
+	&"ironwood_50": Vector3(0, .220, .018),
+	&"wren_mp": Vector3(.006301256, -.057, -.084),
+	&"siphon": Vector3(-.030, .110, -.020),
 }
 
 static var _geometry: Dictionary = {}
@@ -48,6 +60,11 @@ class Hand:
 	var wrist: Vector3
 	var rotation: Basis
 	var shoulder: Vector3
+	## Lateral response to weapon height: x when lowering, y when raising.
+	var shoulder_sway: Vector2 = Vector2.ZERO
+	## Maximum vertical and fore/aft accommodation while the weapon rises.
+	var shoulder_lift: Vector2 = Vector2(.07, .112)
+	var shoulder_drop: float = 0.0
 	var source_index: Vector3
 	var source_thumb: Vector3
 
@@ -76,21 +93,37 @@ static func profile(weapon_id: StringName) -> Profile:
 	result.id = id
 	result.morph = StringName(source["morph"])
 	result.hip_position = (load("res://content/weapons/%s.tres" % id) as WeaponData).hip_position
-	var stock: bool = id == &"brenner_trench"
-	var handgun: bool = id in [&"hollis_44", &"pistol_service"]
+	var stock: bool = id in [&"brenner_trench", &"fieldhand_lever"]
+	var handgun: bool = id in [&"hollis_44", &"pistol_service", &"wren_mp"]
 	var right_forward: Vector3 = Vector3(-.45, .8, sqrt(.1575)) if stock else Vector3(0, sqrt(.75), .5)
 	var right_dorsal: Vector3 = Vector3(.287252039, .550451875, -.783893526) if stock else Vector3.RIGHT
 	var right_shoulder: Vector3 = Vector3(.25, -.225, -.234) if stock else Vector3(.19, -.115, -.234)
+	if handgun:
+		right_shoulder = Vector3(.19, -.155, -.234)
+	if id == &"fieldhand_lever":
+		right_shoulder = Vector3(.24, -.26, -.155)
+		right_forward = Vector3(0, cos(deg_to_rad(20.0)), sin(deg_to_rad(20.0)))
+		right_dorsal = Vector3.RIGHT
 	var left_forward: Vector3 = (
-		Vector3(.6, .55, sqrt(.3375)) if handgun else Vector3(.8 * sqrt(.96), .6 * sqrt(.96), .2)
+		Vector3(.7, .49, sqrt(.2699)) if handgun else Vector3(.8 * sqrt(.96), .6 * sqrt(.96), .2)
 	)
-	var left_dorsal: Vector3 = Vector3(-.8, .4125, sqrt(.3375) * .75) if handgun else Vector3(.16, .12, -sqrt(.96))
+	var left_dorsal: Vector3 = (
+		Vector3(-sqrt(.51), .7 * .49 / sqrt(.51), .7 * sqrt(.2699) / sqrt(.51))
+		if handgun
+		else Vector3(.16, .12, -sqrt(.96))
+	)
 	var left_shoulder: Vector3 = Vector3(-.14, -.02 if handgun else .03, -.234)
 	if id == &"halberd_lmg":
 		left_dorsal = Vector3(-.5090923495, .7927965138, -.3351099332)
 		left_shoulder = Vector3(-.115, .032, -.234)
+	elif id == &"siphon":
+		left_dorsal = Vector3(-.26310545, .60615542, -.75056720)
 	result.right = _hand("R", RIGHT[id], source["R"], right_forward, right_dorsal, right_shoulder)
 	result.left = _hand("L", LEFT[id], source["L"], left_forward, left_dorsal, left_shoulder)
+	if id == &"fieldhand_lever":
+		result.right.shoulder_sway = Vector2(1.0, .25)
+		result.right.shoulder_lift = Vector2(0, .004)
+		result.right.shoulder_drop = .35
 	result.support_part = ^"Shotgun/Receiver/Bolt" if id == &"brenner_trench" else NodePath()
 	return result
 
@@ -116,6 +149,7 @@ static func _hand(
 	result.wrist = conversion * (anchor - rotation * (centre - rest_wrist))
 	result.rotation = conversion * rotation * conversion.inverse()
 	result.shoulder = conversion * shoulder
+	result.shoulder_drop = .35 if side == "L" else 0.0
 	result.source_index = conversion * _vector(source["index"])
 	result.source_thumb = conversion * _vector(source["thumb"])
 	return result

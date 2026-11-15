@@ -34,11 +34,17 @@ func pose(
 	profile: PlayerArmProfiles.Profile, weapon_transform: Transform3D, pump_delta: Vector3 = Vector3.ZERO
 ) -> void:
 	var travel: Vector3 = weapon_transform.origin - profile.hip_position
-	var lift: Vector3 = Vector3(0, clampf(travel.y * 1.5, 0, .07), 0)
-	lift.z = clampf(travel.z * .5, 0, lift.y * 1.6)
-	_arm(0, profile.right, weapon_transform, Vector3.ZERO, lift)
-	lift.y += clampf(travel.y * .35, -.04, 0)
-	_arm(1, profile.left, weapon_transform, pump_delta, lift)
+	_arm(0, profile.right, weapon_transform, Vector3.ZERO, _shoulder_offset(profile.right, travel))
+	_arm(1, profile.left, weapon_transform, pump_delta, _shoulder_offset(profile.left, travel))
+
+
+func _shoulder_offset(grip: PlayerArmProfiles.Hand, travel: Vector3) -> Vector3:
+	var rise: float = clampf(travel.y * 1.5, 0, .07)
+	var lift: Vector3 = Vector3(0, minf(rise, grip.shoulder_lift.x), 0)
+	lift.x = clampf(travel.y, -.10, .10) * (grip.shoulder_sway.x if travel.y < 0 else grip.shoulder_sway.y)
+	lift.y += clampf(travel.y * grip.shoulder_drop, -.04, 0)
+	lift.z = minf(clampf(travel.z * .5, 0, rise * 1.6), grip.shoulder_lift.y)
+	return lift
 
 
 func _arm(

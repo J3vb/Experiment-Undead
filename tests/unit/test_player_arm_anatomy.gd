@@ -136,9 +136,12 @@ func test_every_weapon_keeps_anatomical_reload_and_sprint_joints() -> void:
 		assert_true(weapon.start_reload(), String(data.id) + " empty reload starts")
 		var previous: float = 0.0
 		for fraction: float in [0.25, 0.5, 0.75, 1.01]:
-			weapon.tick(data.empty_reload_time * (fraction - previous))
+			weapon.tick(weapon._reload_duration * (fraction - previous))
 			_assert_pose(holder, "%s reload %.2f" % [data.id, fraction])
 			previous = fraction
+		if weapon.is_reloading():
+			weapon.tick(weapon._reload_duration * data.magazine_size)
+		assert_false(weapon.is_reloading(), String(data.id) + " all inserts complete before sprint")
 		weapon.sprinting = true
 		weapon.tick(1.0)
 		_assert_pose(holder, String(data.id) + " sprint")
@@ -152,11 +155,12 @@ func _assert_motion_continuity(holder: WeaponHolder, phase: String) -> void:
 	else:
 		weapon.instance.ammo_in_mag = 0
 		assert_true(weapon.start_reload())
-	var duration: float = weapon.data.ads_time if phase == "ADS" else weapon.data.empty_reload_time
+	var duration: float = weapon.data.ads_time if phase == "ADS" else weapon._reload_duration
+	var inserts: int = weapon.data.magazine_size if phase == "reload" and weapon.data.reload_per_round else 1
 	var delta: float = duration / 400.0
 	var positions: Array[Vector3] = []
 	var rotations: Array[Quaternion] = []
-	for step: int in 401:
+	for step: int in 400 * inserts + 1:
 		if step > 0:
 			weapon.tick(delta)
 		weapon._process(delta)
@@ -183,3 +187,23 @@ func test_every_weapon_keeps_elbows_and_forearm_roll_continuous_during_ads_and_r
 			var holder: WeaponHolder = _holder(data)
 			_assert_motion_continuity(holder, phase)
 			holder.get_parent().free()
+
+
+func test_every_weapon_keeps_anatomical_joints_through_actual_firing_kick() -> void:
+	for data: WeaponData in _weapons():
+		var holder: WeaponHolder = _holder(data)
+		var weapon: Weapon = holder.current
+		for aiming: bool in [false, true]:
+			weapon.aiming = aiming
+			weapon.tick(data.ads_time)
+			_assert_pose(holder, String(data.id) + " before firing")
+			weapon.fire()
+			for frame: int in 12:
+				weapon.tick(1.0 / 120.0)
+				weapon._process(1.0 / 120.0)
+				holder.arm_view.update_pose()
+				var context: String = "%s fire ADS %s frame %d" % [data.id, aiming, frame]
+				for side: String in ["R", "L"]:
+					_assert_angles(holder.arm_view.skeleton, side, context)
+					_assert_shoulders(holder, side, context)
+		holder.get_parent().free()

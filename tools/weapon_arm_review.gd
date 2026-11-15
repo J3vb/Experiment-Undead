@@ -84,8 +84,10 @@ func _hand_detail(id: StringName, side: String) -> void:
 		skeleton.global_transform * skeleton.get_bone_global_pose(skeleton.find_bone("hand_" + side))
 	)
 	var target: Vector3 = hand.origin + hand.basis.y * .075
-	var offset: Vector3 = Vector3(.34, 0, -.28) if side == "R" else Vector3(.14, -.32, -.10)
+	var rest: Basis = skeleton.get_bone_global_rest(skeleton.find_bone("hand_" + side)).basis
+	var dorsal: Vector3 = hand.basis * rest.inverse() * Vector3.FORWARD
+	var offset: Vector3 = (dorsal + Vector3.DOWN * .3 + hand.basis.y * .15).normalized() * .5
 	_camera.fov = 50.0
-	_camera.position = target + offset * 1.25
+	_camera.position = target + offset
 	_camera.look_at(target)
 	await _shot("%s_%s" % [id, side.to_lower()], "%s / %s HAND / RUNTIME CONTACT" % [String(id).to_upper(), side])

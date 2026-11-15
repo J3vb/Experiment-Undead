@@ -1,8 +1,12 @@
 """Every generated weapon grip keeps connected anatomy, cap markers and shared topology."""
 
+import itertools
 import json
+import math
 import os
 import sys
+
+import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -23,8 +27,8 @@ from test_player_arm_morphs import accessor, glb
 
 
 @pytest.mark.parametrize("profile", profiles.PROFILES)
-@pytest.mark.parametrize(("side", "sign", "limits"), [("R", -1, (0.025, 0.040)), ("L", 1, (0.040, 0.050))])
-def test_profile_curls_keep_attached_roots_closed_surfaces_and_real_tip_markers(profile, side, sign, limits):
+@pytest.mark.parametrize(("side", "sign"), [("R", -1), ("L", 1)])
+def test_profile_curls_keep_attached_roots_closed_surfaces_and_real_tip_markers(profile, side, sign):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     mats = arms._materials()
     skeleton = character_rig.build_armature()
@@ -32,7 +36,9 @@ def test_profile_curls_keep_attached_roots_closed_surfaces_and_real_tip_markers(
     parts, metadata = arms._fingers(skeleton, mats, side, sign, profile, markers=False)
     bpy.context.view_layer.update()
     palm = bpy.data.objects["GlovePalm" + side]
-    assert limits[0] <= (Vector(metadata["index"]) - Vector(metadata["thumb"])).length <= limits[1]
+    if profile == "rifle_ar":
+        expected = 0.032 if side == "R" else 0.045
+        assert (Vector(metadata["index"]) - Vector(metadata["thumb"])).length == pytest.approx(expected, abs=1e-6)
     for obj in parts:
         mesh = bmesh.new()
         mesh.from_mesh(obj.data)
@@ -79,6 +85,7 @@ def test_finished_arm_export_has_all_zero_default_morphs_and_matching_metadata(t
         for weights in accessor(document, binary, base["WEIGHTS_0"]):
             assert sum(weights) == pytest.approx(1.0)
     assert_exported_cap_markers(document, binary, metadata)
+    assert_morph_normals_face_outward(document, binary)
 
 
 def assert_exported_cap_markers(document, binary, metadata):
@@ -106,3 +113,81 @@ def assert_exported_cap_markers(document, binary, metadata):
                 tip = Vector((x, z, -y))
                 distance = min((closest_point_on_tri(tip, *triangle) - tip).length for triangle in triangles)
                 assert distance < 0.001, (name, side, marker, "exported marker must touch its morphed cap", distance)
+
+
+def assert_morph_normals_face_outward(document, binary):
+    """Bent fingers require target sharp splits; Basis normals alone can turn inward."""
+    mesh = document["meshes"][0]
+    for primitive in mesh["primitives"]:
+        base = primitive["attributes"]
+        vertices = np.array(accessor(document, binary, base["POSITION"]))
+        normals = np.array(accessor(document, binary, base["NORMAL"]))
+        faces = np.array(accessor(document, binary, primitive["indices"])).reshape(-1, 3)
+        for name, target in zip(mesh["extras"]["targetNames"], primitive["targets"], strict=True):
+            delta = np.array(accessor(document, binary, target["POSITION"]))
+            points = (vertices + delta)[faces]
+            directions = np.cross(points[:, 1] - points[:, 0], points[:, 2] - points[:, 0])
+            lengths = np.linalg.norm(directions, axis=1)
+            changed = np.max(np.abs(delta[faces]), axis=(1, 2)) > 1e-6
+            valid = changed & (lengths > 1e-12)
+            directions = directions[valid] / lengths[valid, None]
+            target_normals = normals + np.array(accessor(document, binary, target["NORMAL"]))
+            dots = np.sum(target_normals[faces[valid]] * directions[:, None, :], axis=2)
+            assert not np.any(dots < -1e-4), (name, "a morphed corner normal faces into its triangle", dots.min())
+
+
+def test_precision_thumb_does_not_make_an_oversized_loop_to_force_a_rifle_tip_gap():
+    import player_precision_grip as precision
+
+    points = precision.thumb_path()
+    length = sum((second - first).length for first, second in itertools.pairwise(points))
+    assert length < 0.160, "the stock thumb must not stretch around the stock to meet a rifle-only tip chord"
+
+
+def test_stock_trigger_finger_reaches_forward_without_dorsal_mcp_hyperextension():
+    across, along, inward = arms._frame(-1)
+    root = Vector((-0.675, -0.017, 0.985)) - across * 0.024
+    points = arms._finger_path(root, -1, 0.032, 0, "brenner_trench")
+    for station in (1, 2, 3):
+        direction = (points[station] - points[0]).normalized()
+        extension = math.degrees(math.atan2(-direction.dot(inward), direction.dot(along)))
+        abduction = math.degrees(math.atan2(direction.dot(across), direction.dot(along)))
+        assert -75 < extension < 30, "the trigger reach must not bend backward into the glove's dorsal side"
+        assert abs(abduction) < 30, "the proximal index must follow the palm before its distal curl"
+
+
+def test_fitted_gloves_keep_rigid_hand_weights_after_join_and_cleanup(monkeypatch):
+    """Forearm influence must not pull a fitted palm through its grip during reload."""
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    hand_points, fabric_points = {}, set()
+    original = build_models.join_into
+    rigid = ("GlovePalm", "KnucklePad", "GripFinger", "GripThumb", "FingerPad", "GloveStitch", "BackSeam")
+
+    def record_parts(target, parts):
+        for obj in [target, *parts]:
+            if obj.type != "MESH":
+                continue
+            for vertex in obj.data.vertices:
+                point = obj.matrix_world @ vertex.co
+                key = tuple(round(value, 6) for value in point)
+                if obj.name.startswith(rigid):
+                    hand_points[key] = "hand_L" if point.x > 0 else "hand_R"
+                elif obj.name.startswith(("Sleeve", "GloveCuff", "CuffRib", "WristStrap", "StrapKeeper")):
+                    fabric_points.add(key)
+        original(target, parts)
+
+    monkeypatch.setattr(build_models, "join_into", record_parts)
+    arms.build_player_arms()
+    result = bpy.data.objects["PlayerArms"]
+    checked, blended = set(), 0
+    for vertex in result.data.vertices:
+        key = tuple(round(value, 6) for value in result.matrix_world @ vertex.co)
+        weights = {result.vertex_groups[group.group].name: group.weight for group in vertex.groups if group.weight}
+        if key in hand_points:
+            assert weights == {hand_points[key]: 1.0}, (key, "fitted glove moved with the forearm", weights)
+            checked.add(key)
+        elif key in fabric_points and len(weights) > 1:
+            blended += 1
+    assert len(checked) >= len(hand_points) * 0.95
+    assert set(hand_points.values()) == {"hand_L", "hand_R"}
+    assert blended > 0, "sleeves and wrist fabric still need a flexible transition"
