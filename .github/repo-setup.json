@@ -1,0 +1,19 @@
+{
+  "labels": [
+    {"name": "new", "color": "1f883d", "description": "New feature or content (release notes: New)"},
+    {"name": "fix", "color": "d1242f", "description": "Bug fix (release notes: Fixes)"},
+    {"name": "balance", "color": "bf8700", "description": "Numbers and tuning (release notes: Balance)"},
+    {"name": "tech", "color": "0969da", "description": "Tooling, CI, refactor, docs (release notes: Tech)"},
+    {"name": "no-tests-needed", "color": "8c959f", "description": "Visual-only or rename change, reason in the PR"},
+    {"name": "ignore-for-release", "color": "eaeef2", "description": "Leave out of release notes"},
+    {"name": "blocker", "color": "b60205", "description": "Crash, softlock or can't play. Fix before anything else"},
+    {"name": "idea", "color": "c5def5", "description": "Not planned yet. Lives in Later until a milestone needs it"},
+    {"name": "playtest", "color": "8250df", "description": "Notes from a play session"}
+  ],
+  "milestones": [
+    {"title": "v0.1 Vertical slice", "description": "Phases P0-P4. Halcyon Labs, 3 guns, rounds 1-10, wall buys, 1 power-up, final look, sound and HUD. 60 fps minimum, aim 120 fps at 1440p High on RTX 4080 Super."},
+    {"title": "v0.2 Progression and loot", "description": "Phases P5-P6. Levels, skills and loot, offline."},
+    {"title": "v0.9 Alpha", "description": "Phases P7-P9. Co-op, server package and town hub. Feature complete: no new features after this."},
+    {"title": "v1.0 Release", "description": "Beta work: bugs, balance, speed and polish only. 120 fps target met, no blocker bugs."}
+  ]
+}

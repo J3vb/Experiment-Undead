@@ -1,0 +1,32 @@
+name: Play-test notes
+description: Notes from a 15-minute play session
+title: "Play-test YYYY-MM-DD"
+labels: [playtest]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Version played
+      description: Shown bottom right in the game
+  - type: textarea
+    id: fun
+    attributes:
+      label: What was fun
+  - type: textarea
+    id: boring
+    attributes:
+      label: What was boring
+  - type: textarea
+    id: broke
+    attributes:
+      label: What broke
+  - type: textarea
+    id: confused
+    attributes:
+      label: What was confusing
+  - type: textarea
+    id: change
+    attributes:
+      label: The one thing to change next
+    validations:
+      required: true

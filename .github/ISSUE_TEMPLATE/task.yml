@@ -1,0 +1,40 @@
+name: Task
+description: A feature, content or tech job for Claude or Codex
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What the player gets, in one or two sentences
+    validations:
+      required: true
+  - type: dropdown
+    id: pillar
+    attributes:
+      label: Pillar it serves
+      options:
+        - Guns feel great
+        - The pressure always builds
+        - Every run makes you stronger
+        - None (tech or tooling)
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      description: Checks a test or a play session can confirm
+      placeholder: |
+        - [ ] ...
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Files and limits
+      description: Folders it may touch, and what is out of scope
+  - type: input
+    id: phase
+    attributes:
+      label: Roadmap phase
+      placeholder: P2

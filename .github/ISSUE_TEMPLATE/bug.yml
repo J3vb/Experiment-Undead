@@ -1,0 +1,43 @@
+name: Bug
+description: Something is broken or wrong
+labels: [fix]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should happen
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to make it happen again
+      placeholder: |
+        1. Start a match
+        2. ...
+  - type: dropdown
+    id: severity
+    attributes:
+      label: How bad is it
+      options:
+        - Blocker (crash, softlock, can't play)
+        - Major (a feature doesn't work)
+        - Minor (looks or feels wrong)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Shown bottom right in the game, like 0.1.1-dev.4+a1b2c3d
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshot, video or log
+      description: Logs are in %APPDATA%\Godot\app_userdata\Experiment Undead\logs
