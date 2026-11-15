@@ -15,7 +15,7 @@ import gun_parts as hard
 INNER_RADIUS = 0.060
 MODULE_START = 0.018
 MODULE_END = 0.160
-PORT_CENTRE = (0.072, -0.035, 0.050)
+PORT_CENTRE = (0.072, -0.065, 0.050)
 
 
 def _materials():

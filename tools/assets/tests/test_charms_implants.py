@@ -14,6 +14,7 @@ import check_models
 import gear_paint as paint
 import pytest
 from mathutils import Vector
+from mathutils.bvhtree import BVHTree
 from player_body_model import build_player
 
 NAMES = character_checks.CHARMS + character_checks.IMPLANTS
@@ -162,6 +163,26 @@ def test_implant_inner_shell_fits_the_built_forearm():
             module = bpy.data.objects["Module"]
             inner = _inner_radius(module)
             assert radius - 0.002 <= inner <= radius + 0.01, (name, version, inner, radius)
+
+
+def test_neck_light_ring_clears_the_actual_undersuit_collar():
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    build_player()
+    bpy.context.view_layer.update()
+    suit = bpy.data.objects["Undersuit"]
+    collar = BVHTree.FromObject(suit, bpy.context.evaluated_depsgraph_get())
+    neck = Vector(character_rig.BONES["neck"][1])
+    for name in character_checks.IMPLANTS:
+        path, _build = character_models.MODELS[name]
+        check_models.load_glb(str(Path(check_models.REPO) / "assets/models" / path))
+        port = bpy.data.objects["Port"]
+        ring = _zone_points(port, paint.ZONE_GLOW)
+        assert ring, "the neck port needs its own visible glowing ring"
+        point = min(ring, key=lambda vertex: (vertex.x, vertex.y)) + neck
+        start = Vector((point.x, -0.3, point.z))
+        surface, _normal, _index, _distance = collar.ray_cast(start, Vector((0, 1, 0)))
+        assert surface is not None, "measure the ring where it overlaps the actual thermal collar"
+        assert point.y <= surface.y - 0.004, (name, "neck ring is buried in the thermal collar")
 
 
 def test_checker_rejects_a_moved_hook_and_flattened_chain():

@@ -79,22 +79,6 @@ def add_light(name, at, energy):
     light.rotation_euler = (-light.location).to_track_quat("-Z", "Y").to_euler()
 
 
-def _gear_zone(nodes, links, alpha, previous, selection):
-    threshold, color = selection
-    mask = nodes.new("ShaderNodeMath")
-    mask.operation = "LESS_THAN"
-    mask.inputs[1].default_value = threshold
-    links.new(alpha, mask.inputs[0])
-    mix = nodes.new("ShaderNodeMixRGB")
-    mix.inputs[2].default_value = (*color, 1)
-    if isinstance(previous, tuple):
-        mix.inputs[1].default_value = (*previous, 1)
-    else:
-        links.new(previous, mix.inputs[1])
-    links.new(mask.outputs[0], mix.inputs[0])
-    return mix.outputs["Color"]
-
-
 def _gear_preview(material):
     """Preview gear.gdshader's Common palette and finish means with baked AO."""
     nodes, links = material.node_tree.nodes, material.node_tree.links
@@ -112,13 +96,20 @@ def _gear_preview(material):
     surface.inputs["Roughness"].default_value = roughness
     colors = nodes.new("ShaderNodeVertexColor")
     colors.layer_name = "Color"
-    painted = _gear_zone(nodes, links, colors.outputs["Alpha"], albedo, (0.5, linear("#D9D9D2")))
+    mask = nodes.new("ShaderNodeMath")
+    mask.operation = "LESS_THAN"
+    mask.inputs[1].default_value = 0.5
+    links.new(colors.outputs["Alpha"], mask.inputs[0])
+    painted = nodes.new("ShaderNodeMixRGB")
+    painted.inputs[1].default_value = (*albedo, 1)
+    painted.inputs[2].default_value = (*linear("#D9D9D2"), 1)
+    links.new(mask.outputs[0], painted.inputs[0])
     separate = nodes.new("ShaderNodeSeparateColor")
     links.new(colors.outputs["Color"], separate.inputs["Color"])
     ao = nodes.new("ShaderNodeMixRGB")
     ao.blend_type = "MULTIPLY"
     ao.inputs[0].default_value = 1
-    links.new(painted, ao.inputs[1])
+    links.new(painted.outputs["Color"], ao.inputs[1])
     links.new(separate.outputs["Red"], ao.inputs[2])
     links.new(ao.outputs["Color"], surface.inputs["Base Color"])
     links.new(surface.outputs["BSDF"], output.inputs["Surface"])

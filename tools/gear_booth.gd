@@ -77,6 +77,10 @@ func _show_mode() -> bool:
 	_model = ASSEMBLY.build_lineup() if _mode == "lineup" else ASSEMBLY.build_character()
 	add_child(_model)
 	_frame_model()
+	if _mode == "lineup":
+		_camera.projection = Camera3D.PROJECTION_ORTHOGONAL
+		_camera.size = 2.0
+		($Floor as MeshInstance3D).visible = false
 	return true
 
 
@@ -123,6 +127,10 @@ func _frame_model() -> void:
 func _apply_rarity(rarity: String) -> void:
 	var look: RarityLook = load("res://content/looks/rarity/%s.tres" % rarity) as RarityLook
 	GearLook.apply(_model, look, Color.WHITE, Color.WHITE)
+	if _mode != "models":
+		for node: Node in _model.find_children("*", "MeshInstance3D", true, false):
+			if node.name in ["Module", "Port"] or node.find_parent("charm_vial") != null:
+				(node as MeshInstance3D).set_instance_shader_parameter(&"glow_color", Color("#8DFF3A"))
 	_label.text = "%s  /  %s" % [_model.name, rarity.capitalize()]
 
 

@@ -79,6 +79,7 @@ static func build_lineup() -> Node3D:
 		piece.position = -bounds.get_center() * scale_factor
 		holder.position = Vector3((index % 5 - 2) * 0.64, 0.76 - (index / 5) * 0.77, 0)
 		_plate(lineup, Vector3(0.59, 0.52, 0.018), holder.position + Vector3(0, 0, -0.10), "#1C2122", "Panel")
+		_lineup_label(lineup, GEAR[index], holder.position + Vector3(0, -0.242, 0.04))
 	return lineup
 
 
@@ -161,3 +162,14 @@ static func _triangle(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3) 
 	surface.add_vertex(a)
 	surface.add_vertex(b)
 	surface.add_vertex(c)
+
+
+static func _lineup_label(parent: Node3D, id: String, at: Vector3) -> void:
+	var label: Label3D = Label3D.new()
+	label.text = id.trim_prefix("charm_").trim_prefix("implant_").replace("_", " ").to_upper()
+	label.font_size = 32
+	label.pixel_size = 0.001
+	label.modulate = Color("#D9D9D2")
+	label.outline_size = 3
+	label.position = at
+	parent.add_child(label)
