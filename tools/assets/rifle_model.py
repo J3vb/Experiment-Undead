@@ -115,7 +115,7 @@ def lower(m, metal, black):
                 f"GripPanel{side}",
                 [(-0.118, -0.06), (-0.152, -0.14), (-0.135, -0.155), (-0.112, -0.1), (-0.104, -0.07)],
                 0.002,
-                metal,
+                m.material("GunMetalKnurled", m.GUN_METAL, metallic=0.8, roughness=0.45),
                 x=side * 0.0165,
             )
         )
@@ -217,7 +217,11 @@ def scope(m, metal, black, glass, receiver):
     parts.append(g.lathe("Saddle", [(0.0155, -0.012), (0.0155, 0.024)], (0, 0, 0.09), black, 16))
     for name, axis, at in (("TurretTop", "z", (0, 0.006, 0.09)), ("TurretSide", "x", (0, 0.006, 0.09))):
         knob = [(0.007, 0.0), (0.007, 0.022), (0.0105, 0.023), (0.0105, 0.034), (0.0095, 0.036)]
-        parts.append(g.lathe(name, knob, at, metal, 16, axis=axis))
+        parts.append(
+            g.lathe(
+                name, knob, at, m.material("GunMetalKnurled", m.GUN_METAL, metallic=0.8, roughness=0.45), 16, axis=axis
+            )
+        )
     for y in (-0.045, 0.05):
         parts.append(g.lathe(f"Ring{y}", [(0.0158, y - 0.008), (0.0158, y + 0.008)], (0, 0, 0.09), black, 20))
         parts.append(

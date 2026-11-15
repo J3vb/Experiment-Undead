@@ -60,6 +60,13 @@ A new model is one `build_<name>()` function plus one line in `MODELS`
   Vault, Reforger. Never on clothes or guns.
 - Guns: matte black, gunmetal, polymer and one secondary colour (tan, olive
   or grey). No brand marks. Original shapes.
+- Gun surface detail (edge wear, roughness, wood grain, polymer stipple) comes
+  from `assets/materials/gun_finish.gdshader`, not textures. The import script
+  `tools/assets/gun_finish_import.gd` picks the finish from the Blender material
+  name (`FINISHES`: GunMetal, MatteBlack, Tan, OlivePolymer, GreyPolymer, Wood).
+  Add `Knurled` to the name (`GunMetalKnurled`) for grip panels and knobs.
+  A new gun material name needs a line in `FINISHES`; a new gun's `.import`
+  uses that script as `import_script/path`.
 - Bevel every visible box edge (`bevel=` on `box`). Unbevelled edges look like
   grey-box placeholders. About 1-3% of the part's smallest size works.
 - Each enemy type needs its own silhouette. Check it in black only.

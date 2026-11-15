@@ -297,3 +297,13 @@ func test_kestrel_rear_sight_leaves_the_aiming_line_open() -> void:
 	var eye: Vector3 = Vector3(0, -ads.ads_position.y, 0.5)
 	assert_false(_blocks_ray(gun, Transform3D.IDENTITY, eye, true), "nothing behind the receiver centre blocks the aim")
 	gun.free()
+
+
+func test_brenner_heat_shield_stays_under_the_aiming_line() -> void:
+	var gun: Node3D = _load(SHOTGUN)
+	var ads: WeaponData = load("res://content/weapons/brenner_trench.tres") as WeaponData
+	var eye: Vector3 = Vector3(0, -ads.ads_position.y, 0.5)
+	assert_false(_blocks_ray(gun, Transform3D.IDENTITY, eye, false), "nothing blocks the bead sight line")
+	var low: Vector3 = eye + Vector3(0, -0.005, 0)
+	assert_true(_blocks_ray(gun, Transform3D.IDENTITY, low, false), "the sight line rides just over the gun")
+	gun.free()

@@ -22,6 +22,7 @@ import bpy
 # isort: split
 # bpy must load before bmesh.
 import bmesh
+import character_checks
 from mathutils import Vector
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -32,6 +33,7 @@ BUDGETS = {
     "weapons": (8_000, 6),
     "zombies": (6_000, 8),
 }
+BUDGETS.update(character_checks.BUDGETS)
 
 ZOMBIE_UPPER = {
     "Hips": None,
@@ -62,6 +64,7 @@ JOINTS = {
     "bloater": {**ZOMBIE_UPPER, **ZOMBIE_LEGS, "Belly": "Torso"},
     "crawler": ZOMBIE_UPPER,
 }
+JOINTS.update(character_checks.JOINTS)
 
 TOLERANCE = 0.01
 
@@ -69,7 +72,7 @@ TOLERANCE = 0.01
 def load_glb(path: str) -> list:
     """Empties the scene, imports `path` and returns its objects."""
     bpy.ops.wm.read_factory_settings(use_empty=True)
-    bpy.ops.import_scene.gltf(filepath=path)
+    bpy.ops.import_scene.gltf(filepath=path, disable_bone_shape=True)
     return list(bpy.context.scene.objects)
 
 
@@ -145,6 +148,8 @@ def check_geometry(objects: list, folder: str) -> list:
 
 
 def check_origin(objects: list, folder: str) -> list:
+    if folder in character_checks.BUDGETS:
+        return []
     lo, hi = bounds(objects)
     centre = (lo + hi) / 2
     if folder == "weapons":
@@ -204,7 +209,8 @@ def check_model(path: str) -> list:
     if folder not in BUDGETS:
         return [f"unknown model folder '{folder}', add it to BUDGETS in check_models.py"]
     if stem not in JOINTS:
-        return [f"no rules for '{stem}', add it to JOINTS in check_models.py"]
+        target = "character_checks.py" if folder in character_checks.BUDGETS else "JOINTS in check_models.py"
+        return [f"no rules for '{stem}', add it to {target}"]
     objects = load_glb(path)
     nodes = {obj.name: obj for obj in objects}
     return (
@@ -212,6 +218,7 @@ def check_model(path: str) -> list:
         + check_origin(objects, folder)
         + check_forward(nodes, objects, folder)
         + check_joints(nodes, stem)
+        + character_checks.check(objects, folder, stem)
     )
 
 

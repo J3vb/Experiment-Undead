@@ -81,7 +81,7 @@ def add_light(name, at, energy):
 
 def import_model(path):
     """Import a .glb, centred on a turntable pivot and scaled so every view fits a 1 m frame."""
-    bpy.ops.import_scene.gltf(filepath=str(path))
+    bpy.ops.import_scene.gltf(filepath=str(path), disable_bone_shape=True)
     imported = list(bpy.context.selected_objects)
     pivot = bpy.data.objects.new("TurntablePivot", None)
     offset = bpy.data.objects.new("TurntableOffset", None)

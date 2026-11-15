@@ -17,6 +17,7 @@ const GLOWING: Dictionary[String, String] = {
 	"zombies/shambler": "EyeL",
 	"zombies/bloater": "Belly",
 }
+const GUN_SHADER: String = "res://assets/materials/gun_finish.gdshader"
 const WALL: String = "res://assets/models/kit/wall_panel.glb"
 
 
@@ -24,6 +25,13 @@ func _model(id: String) -> Node3D:
 	var packed: PackedScene = load("res://assets/models/%s.glb" % id) as PackedScene
 	assert_not_null(packed, id + " imports")
 	return packed.instantiate() as Node3D if packed else null
+
+
+## Guns use the gun finish shader, which multiplies albedo by COLOR itself.
+func _uses_shading(material: Material) -> bool:
+	if material is ShaderMaterial:
+		return (material as ShaderMaterial).shader.resource_path == GUN_SHADER
+	return (material as BaseMaterial3D).vertex_color_use_as_albedo
 
 
 func _shades(model: Node3D) -> PackedFloat32Array:
@@ -34,8 +42,7 @@ func _shades(model: Node3D) -> PackedFloat32Array:
 			var arrays: Array = mesh.surface_get_arrays(surface)
 			assert_not_null(arrays[Mesh.ARRAY_COLOR], "%s has a shading colour" % node.name)
 			assert_not_null(arrays[Mesh.ARRAY_TEX_UV], "%s has UVs" % node.name)
-			var material: BaseMaterial3D = mesh.surface_get_material(surface) as BaseMaterial3D
-			assert_true(material.vertex_color_use_as_albedo, "%s material uses the shading" % node.name)
+			assert_true(_uses_shading(mesh.surface_get_material(surface)), "%s material uses the shading" % node.name)
 			if arrays[Mesh.ARRAY_COLOR] != null:
 				for color: Color in arrays[Mesh.ARRAY_COLOR] as PackedColorArray:
 					values.append(color.r)

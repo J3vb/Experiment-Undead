@@ -1,5 +1,7 @@
 # Rules for coding agents (Codex, Claude, others)
 
+Adding something? Follow docs/HOW_TO_ADD.md.
+
 Experiment Undead is an original wave-based zombie FPS in **Godot 4.7.2**,
 written in **typed GDScript**. It will get RPG progression and self-hosted
 8-player servers later, so code must stay multiplayer-ready from day one.

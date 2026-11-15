@@ -75,16 +75,27 @@ def bake_ao(objs: list) -> None:
     if scene.world is None:
         scene.world = bpy.data.worlds.new("BakeWorld")
     scene.world.light_settings.distance = _model_size(objs) * AO_REACH
+    saved_alpha = {}
     for obj in objs:
         mesh = obj.data
-        attr = mesh.color_attributes.get(COLOR_NAME) or mesh.color_attributes.new(COLOR_NAME, "FLOAT_COLOR", "CORNER")
+        attr = mesh.color_attributes.get(COLOR_NAME)
+        if attr is not None:
+            saved_alpha[obj] = [color.color[3] for color in attr.data]
+        else:
+            attr = mesh.color_attributes.new(COLOR_NAME, "FLOAT_COLOR", "CORNER")
         mesh.color_attributes.active_color = attr
         mesh.color_attributes.render_color_index = mesh.color_attributes.active_color_index
     bpy.ops.object.select_all(action="DESELECT")
     for obj in objs:
         obj.select_set(True)
     bpy.context.view_layer.objects.active = objs[0]
-    bpy.ops.object.bake(type="AO", target="VERTEX_COLORS")
+    try:
+        bpy.ops.object.bake(type="AO", target="VERTEX_COLORS")
+    finally:
+        for obj, alphas in saved_alpha.items():
+            attr = obj.data.color_attributes[COLOR_NAME]
+            for color, alpha in zip(attr.data, alphas, strict=True):
+                color.color[3] = alpha
 
 
 def cavity(mesh) -> list:
@@ -125,7 +136,7 @@ def apply_mask(obj) -> None:
         else:
             ao = attr.data[loop.index].color[0]
             value = (1.0 - AO_STRENGTH + AO_STRENGTH * ao) * (1.0 - CAVITY_STRENGTH * cav[loop.vertex_index])
-        attr.data[loop.index].color = (value, value, value, 1.0)
+        attr.data[loop.index].color = (value, value, value, attr.data[loop.index].color[3])
 
 
 def finish() -> None:
