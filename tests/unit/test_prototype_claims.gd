@@ -30,6 +30,9 @@ func _side(side_name: String) -> HitClaims:
 	economy.name = "Economy"
 	economy.rules = load("res://content/economy/default_economy.tres")
 	root.add_child(economy)
+	var rewards: ProgressionService = ProgressionService.new()
+	rewards.name = "Progression"
+	root.add_child(rewards)
 	session.spawner = Spawner.new()
 	session.spawner.name = "Enemies"
 	session.spawner.spawn_group = &"test_prototype_claim_points"
@@ -56,8 +59,7 @@ func _prepare(player: Player, session: GameSession) -> void:
 func before_each() -> void:
 	_server = _side("Server")
 	_client = _side("Client")
-	_progression = ProgressionService.new()
-	_server.get_parent().add_child(_progression)
+	_progression = _server.get_parent().get_node("Progression") as ProgressionService
 	var marker: Marker3D = Marker3D.new()
 	marker.add_to_group(&"test_prototype_claim_points")
 	_server.get_parent().add_child(marker)

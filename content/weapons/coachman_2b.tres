@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://systems/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Script" path="res://systems/weapons/recoil_data.gd" id="2"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/coachman_viewmodel.tscn" id="3"]
+[ext_resource type="AudioStream" path="res://assets/audio/coachman_fire.wav" id="4"]
+[ext_resource type="AudioStream" path="res://assets/audio/dry_fire.wav" id="5"]
+[ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
+[ext_resource type="Resource" path="res://content/weapons/coachman_2b_reforged.tres" id="7"]
+
+[sub_resource type="Resource" id="recoil"]
+script = ExtResource("2")
+pattern = Array[Vector2]([Vector2(0.3, 5.2), Vector2(-0.4, 5.6)])
+random_spread = Vector2(0.8, 0.5)
+recovery_speed = 7.0
+ads_multiplier = 0.8
+permanent_ratio = 0.1
+reset_time = 0.35
+repeat_last = 1
+
+[resource]
+script = ExtResource("1")
+id = &"coachman_2b"
+slot = 0
+loot_tags = Array[StringName]([&"shotgun", &"double"])
+display_name = "Coachman"
+cost = 900
+crate_weight = 1.0
+damage = 21.66
+min_damage = 6.498
+falloff_start = 6.0
+falloff_end = 18.0
+max_range = 40.0
+pellets = 10
+head_multiplier = 2.5
+fire_mode = 0
+rounds_per_minute = 200.0
+magazine_size = 2
+starting_reserve = 30
+max_reserve = 30
+reload_time = 2.6
+empty_reload_time = 2.6
+ads_time = 0.25
+ads_fov = 62.0
+move_speed_multiplier = 1.0
+hip_spread = 4.5
+ads_spread = 2.8
+move_spread = 1.0
+spread_per_shot = 0.0
+max_spread = 6.0
+recoil = SubResource("recoil")
+viewmodel_kick = 0.1
+hip_position = Vector3(0.18, -0.17, -0.3)
+ads_position = Vector3(0, -0.069, -0.24)
+viewmodel_scene = ExtResource("3")
+fire_sound = ExtResource("4")
+dry_fire_sound = ExtResource("5")
+reload_sound = ExtResource("6")
+upgraded = ExtResource("7")

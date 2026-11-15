@@ -61,6 +61,8 @@ JOINTS = {
     "warden_p9": {**GUN_WITH_MAG, "Slide": "Bolt", "Trigger": "Receiver"},
     "wren_mp": {**GUN_WITH_MAG, "Slide": "Bolt", "Trigger": "Receiver", "Brace": "Receiver"},
     "siphon": {**GUN_WITH_MAG, "Emitter": "Receiver", "Core": "Receiver", "Stock": "Receiver"},
+    "coachman_2b": {**GUN, "BarrelL": "Receiver", "BarrelR": "Receiver", "Stock": "Receiver", "Trigger": "Receiver"},
+    "grubber_sawnoff": {**GUN, "BarrelL": "Receiver", "BarrelR": "Receiver", "Grip": "Receiver", "Trigger": "Receiver"},
     **zombie_checks.JOINTS,
 }
 JOINTS.update(character_checks.JOINTS)

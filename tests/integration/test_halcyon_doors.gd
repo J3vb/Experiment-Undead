@@ -102,7 +102,7 @@ func test_machines_are_placed() -> void:
 	assert_eq(get_tree().get_nodes_in_group(&"exfil").size(), 1, "1 exfil point")
 	assert_not_null(level.find_child("PowerSwitch", true, false), "1 power switch")
 	var wall_buys: int = level.find_children("*", "Area3D").filter(func(n: Node) -> bool: return n is WallBuy).size()
-	assert_eq(wall_buys, 4, "4 real wall guns")
+	assert_eq(wall_buys, 5, "four shared wall guns and the signature Coachman")
 	assert_eq(get_tree().get_nodes_in_group(&"wall_buy_spot").size(), 0, "no wall-gun placeholders remain")
 
 
@@ -167,3 +167,15 @@ func test_everything_open_lets_every_spawn_point_reach_the_start() -> void:
 func _reaches(map: RID, from: Vector3, to: Vector3) -> bool:
 	var path: PackedVector3Array = NavigationServer3D.map_get_path(map, from, to, true)
 	return not path.is_empty() and path[path.size() - 1].distance_to(to) < 1.0
+
+
+func test_coachman_wall_buy_sells_the_signature_shotgun() -> void:
+	var wall: WallBuy = level.find_child("WallBuyCoachman", true, false) as WallBuy
+	assert_not_null(wall)
+	if wall == null:
+		return
+	player.wallet.set_points(900)
+	wall.interact(player)
+	assert_eq(player.weapons.current.data.id, &"coachman_2b")
+	assert_eq(player.weapons.current.instance.ammo_in_mag, 2)
+	assert_eq(player.wallet.points, 0, "charges the roster price once")

@@ -17,7 +17,7 @@ static func apply(player: Player, loadout: Dictionary) -> void:
 	if not Content.ids(&"weapons").has(base):
 		return
 	var base_data: WeaponData = Content.weapon(base)
-	if not base_data.loot_tags.has(&"pistol"):
+	if not (base_data.loot_tags.has(&"pistol") or base_data.loot_tags.has(&"sidearm")):
 		return
 	var item: ItemInstance = ItemInstance.new(sidearm)
 	var data: WeaponData = item.weapon_data(base_data, player.stats)
@@ -31,7 +31,10 @@ static func apply(player: Player, loadout: Dictionary) -> void:
 
 static func _pistol_slot(player: Player) -> int:
 	for index: int in player.weapons.weapons.size():
-		if player.weapons.weapons[index].data.loot_tags.has(&"pistol"):
+		if (
+			player.weapons.weapons[index].data.loot_tags.has(&"pistol")
+			or player.weapons.weapons[index].data.loot_tags.has(&"sidearm")
+		):
 			return index
 	return -1
 
