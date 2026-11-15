@@ -1,6 +1,6 @@
 ---
 name: blender-model
-description: Build or change a code-made 3D model (zombie, gun, kit piece, prop) with Blender Python in tools/assets/. Use before editing build_models.py, kestrel_model.py, talon_model.py or adding a new model script.
+description: Build or change a code-made 3D model (zombie, gun, kit piece, prop) with Blender Python in tools/assets/. Use before editing build_models.py, a gun script (rifle_model.py, shotgun_model.py, kestrel_model.py, talon_model.py, gun_parts.py) or adding a new model script.
 ---
 
 # Build a model with Blender Python
@@ -16,6 +16,12 @@ source; the `.glb` in `assets/models/` is its output. Never hand-edit a `.glb`.
 3. Find a similar model in `tools/assets/build_models.py` and copy its pattern.
    Reuse the helpers there (`box`, `cylinder`, `ball`, `limb`, `attach`,
    `tilted_box`, `head`, `material`, `srgb`, `marker`, `join_into`).
+   Guns live in their own files (`rifle_model.py`, `shotgun_model.py`,
+   `kestrel_model.py`, `talon_model.py`) and are built from `gun_parts.py`:
+   `slab` (extrude a side outline, so grips, stocks and receivers get real
+   silhouettes), `lathe` (turn a radius profile: barrels, scopes, knobs, pins),
+   `teeth` (accessory rail) and `rounded` (slots, ports, plates). Prefer these
+   over stacked boxes for guns.
 
 ## Setup and build
 
@@ -66,7 +72,7 @@ zombies 6,000 / 8), origin, forward axis, named joints with the right parents
 (`JOINTS`), closed shells with outward normals, materials. A new model needs a
 line in `JOINTS`.
 
-Those are hard limits, not targets. Today: rifle 3,192 triangles, Talon 4,756,
+Those are hard limits, not targets. Today: rifle 6,332 triangles, Talon 7,452,
 Shambler 2,904, wall panel 240. Stay close to the similar model. Guns also have
 a test cap of 1.5x the rifle in `tests/content/test_generated_models.gd`.
 For gear pieces see the budget table in `docs/design/gear-visuals.md`.
