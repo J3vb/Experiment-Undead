@@ -4,7 +4,7 @@ import math
 
 import bpy
 import gear_paint as paint
-from body_parts import mesh
+from body_parts import loft, mesh
 from gun_parts import rounded, slab
 from mathutils import Vector
 
@@ -155,3 +155,33 @@ def velcro_patch(name, size, at, mat):
     paint.zone(patch, paint.ZONE_ACCENT)
     paint.zone(inset, paint.ZONE_ACCENT)
     return _join(name, [patch, inset])
+
+
+def shoulder_cap(name, profile, depth, mat, sign=1, thickness=0.016):
+    """Closed padded cap: crowned across the arm, rolled down at front and back."""
+    rings = []
+    cross = ((-1, -0.027), (-0.85, -0.012), (0, 0), (0.85, -0.012), (1, -0.027))
+    for x, z, taper in profile:
+        top = [(sign * x, y * depth * taper / 2, z + drop) for y, drop in cross]
+        bottom = [(px, py, pz - thickness) for px, py, pz in reversed(top)]
+        rings.append(top + bottom)
+    cap = loft(name, rings, mat)
+    paint.zone(cap, paint.ZONE_MAIN)
+    edges = [1 + ring * 10 + face for ring in range(len(rings) - 1) for face in (0, 3, 4, 9)]
+    paint.zone(cap, paint.ZONE_TRIM, edges)
+    return cap
+
+
+def rear_band(width, mats, light=False):
+    """Sewn identification band and closure seam across the rear harness/pocket."""
+    y, z = (0.156, 1.22) if light else (0.159, 1.36)
+    band = plate("RearStencil", (width, 0.004, 0.052), (0, y, z), mats["webbing"], bevel=0)
+    paint.zone(band, paint.ZONE_TRIM)
+    seam = strap(
+        "RearBinding",
+        [(-width / 2, y, z + 0.032), (0, y + 0.002, z + 0.032), (width / 2, y, z + 0.032)],
+        (0.006, 0.003),
+        mats["webbing"],
+        axis=(0, 0, 1),
+    )
+    return _join("RearIdentification", [band, seam])
