@@ -61,7 +61,11 @@ names and numbers instead of inventing new ones.
    Models: `pip install -r tools/assets/requirements.txt` (Python 3.13), then
    `python tools/assets/build_models.py [name]`. Commit the `.glb` and its
    `.import` file, and keep a test in `tests/content/test_generated_models.gd`
-   for any part code needs by name (like `Magazine` or `Muzzle`).
+   for any part code needs by name (like `Magazine` or `Muzzle`). Then run
+   `python tools/assets/check_models.py` (budgets, origin, facing, joints,
+   normals, materials; a new model needs a line in its `JOINTS`) and
+   `npm ci --prefix tools/assets && node tools/assets/validate_gltf.mjs`.
+   The Assets CI runs both.
 9. **Names.** Use the design doc's words in code and data:
    - Machines: `SpecimenVault` (random gun), `MedDispenser` (gives a serum),
      `Reforger` (upgrades a gun). Not "mystery box" or "perk machine".

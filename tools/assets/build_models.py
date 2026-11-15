@@ -14,7 +14,8 @@ import argparse
 import os
 import sys
 
-import bpy
+import bpy  # noqa: I001  bpy must load before bmesh
+import bmesh
 from mathutils import Vector
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -309,9 +310,19 @@ def limb(name: str, start: tuple, end: tuple, radius: float, mat, parent=None):
     mod.segments = 3
     mod.limit_method = "ANGLE"
     bpy.ops.object.modifier_apply(modifier=mod.name)
+    drop_degenerate_faces(obj)
     bpy.ops.object.shade_auto_smooth()
     obj.data.materials.append(mat)
     return attach(obj, start, parent)
+
+
+def drop_degenerate_faces(obj) -> None:
+    """A bevel wider than a cap ring collapses some faces to zero area; remove them."""
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    bmesh.ops.dissolve_degenerate(bm, edges=bm.edges[:], dist=1e-5)
+    bm.to_mesh(obj.data)
+    bm.free()
 
 
 def tilted_box(name: str, size: tuple, at: tuple, lean: float, mat, pivot: tuple, parent=None):
