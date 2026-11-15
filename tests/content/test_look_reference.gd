@@ -117,3 +117,21 @@ func test_zombies_and_rifle_are_not_baked() -> void:
 		for mesh: Node in meshes:
 			var gi_mode: int = (mesh as MeshInstance3D).gi_mode
 			assert_eq(gi_mode, GeometryInstance3D.GI_MODE_DYNAMIC, "%s lit by probes" % mesh.name)
+
+
+func test_each_fixture_glows_onto_the_ceiling_in_the_bake_only() -> void:
+	var scene: Node = (load(CORRIDOR) as PackedScene).instantiate()
+	add_child_autofree(scene)
+	var lights: Node = scene.find_child("Lights", false, false)
+	var fixtures: Array[Node] = lights.find_children("Fixture*", "SpotLight3D", false, false)
+	var glows: Array[Node] = lights.find_children("CeilingGlow*", "OmniLight3D", false, false)
+	assert_eq(glows.size(), fixtures.size(), "one ceiling glow per fixture")
+	for node: Node in glows:
+		var glow: OmniLight3D = node as OmniLight3D
+		assert_eq(glow.light_bake_mode, Light3D.BAKE_STATIC, "%s is baked, no run-time cost" % glow.name)
+		assert_false(glow.shadow_enabled, "%s casts no shadow" % glow.name)
+		assert_eq(glow.light_volumetric_fog_energy, 0.0, "%s adds no fog glow" % glow.name)
+	for i: int in mini(glows.size(), fixtures.size()):
+		var fixture: Vector3 = (fixtures[i] as Node3D).global_position
+		var offset: Vector3 = (glows[i] as Node3D).global_position - fixture
+		assert_lt(offset.length(), 0.3, "%s sits at its fixture" % glows[i].name)
