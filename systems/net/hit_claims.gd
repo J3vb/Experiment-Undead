@@ -11,7 +11,7 @@ var session: GameSession
 var _time: float = 0.0
 var _next_warning: float = 0.0
 var _claims: Dictionary[int, Dictionary] = {}
-var _recent_hits: Dictionary[Zombie, Dictionary] = {}
+var _recent_hits: Array[Dictionary] = []
 var _weapons: Dictionary[StringName, WeaponData] = {}
 
 
@@ -23,14 +23,16 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	_time += delta
-	for zombie: Zombie in _recent_hits.keys():
-		var hit: Dictionary = _recent_hits[zombie]
-		if not is_instance_valid(zombie) or _time - float(hit.time) > KILL_WINDOW:
-			_recent_hits.erase(zombie)
-		elif zombie.state == Zombie.State.DEAD:
+	var index: int = _recent_hits.size() - 1
+	while index >= 0:
+		var hit: Dictionary = _recent_hits[index]
+		if not is_instance_valid(hit.zombie) or _time - float(hit.time) > KILL_WINDOW:
+			_recent_hits.remove_at(index)
+		elif (hit.zombie as Zombie).state == Zombie.State.DEAD:
 			if is_instance_valid(hit.player):
 				Events.hit_confirmed.emit(hit.player as Player, true, hit.headshot)
-			_recent_hits.erase(zombie)
+			_recent_hits.remove_at(index)
+		index -= 1
 
 
 ## Called by the owning gun instead of mutating the client's health copy.
@@ -42,8 +44,18 @@ func submit_hit(weapon: Weapon, hit_zone: HitZone, info: DamageInfo) -> void:
 		return
 	info.hit_zone = hit_zone.zone
 	weapon.hit_landed.emit(false, info.is_headshot())
-	_recent_hits[zombie] = {"time": _time, "player": weapon.shooter, "headshot": info.is_headshot()}
+	_remember_hit(zombie, weapon.shooter, info.is_headshot())
 	claim_hit.rpc_id(1, zombie.name, hit_zone.zone, info.amount, info.weapon_id, info.position)
+
+
+func _remember_hit(zombie: Zombie, player: Player, headshot: bool) -> void:
+	for hit: Dictionary in _recent_hits:
+		if is_instance_valid(hit.zombie) and hit.zombie == zombie:
+			hit.time = _time
+			hit.player = player
+			hit.headshot = headshot
+			return
+	_recent_hits.append({"zombie": zombie, "time": _time, "player": player, "headshot": headshot})
 
 
 @rpc("any_peer", "call_remote", "reliable")
