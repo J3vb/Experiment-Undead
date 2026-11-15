@@ -14,12 +14,14 @@ var position: Vector3 = Vector3.ZERO
 var normal: Vector3 = Vector3.UP
 var impulse: Vector3 = Vector3.ZERO
 
+
 static func create(p_amount: float, p_attacker: Node, p_type: Type = Type.BULLET) -> DamageInfo:
 	var info: DamageInfo = DamageInfo.new()
 	info.amount = p_amount
 	info.attacker = p_attacker
 	info.damage_type = p_type
 	return info
+
 
 func is_headshot() -> bool:
 	return hit_zone == Zone.HEAD

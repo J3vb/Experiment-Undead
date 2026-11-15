@@ -6,10 +6,12 @@ signal points_changed(total: int, delta: int)
 
 var points: int = 0
 
+
 func set_points(value: int) -> void:
 	var delta: int = value - points
 	points = value
 	points_changed.emit(points, delta)
+
 
 func add(amount: int) -> void:
 	if amount == 0:

@@ -18,6 +18,8 @@ import bpy  # noqa: I001  bpy must load before bmesh
 import bmesh
 from mathutils import Vector
 
+import finish
+
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Cold Containment palette (see the visual style guide).
@@ -72,6 +74,9 @@ def material(name: str, color: tuple, metallic: float = 0.0, roughness: float = 
     return mat
 
 
+polish = True  # harden bevelled edges; off for models in UNFINISHED
+
+
 def box(name: str, size: tuple, at: tuple, mat, bevel: float = 0.0, parent=None):
     """A box of `size` (x, y, z) centred on `at`, with optional bevelled edges."""
     bpy.ops.mesh.primitive_cube_add(size=1.0, location=at)
@@ -84,6 +89,7 @@ def box(name: str, size: tuple, at: tuple, mat, bevel: float = 0.0, parent=None)
         mod.width = bevel
         mod.segments = 2
         mod.limit_method = "ANGLE"
+        mod.harden_normals = polish
         bpy.ops.object.modifier_apply(modifier=mod.name)
     obj.data.materials.append(mat)
     obj.parent = parent
@@ -301,7 +307,9 @@ def limb(name: str, start: tuple, end: tuple, radius: float, mat, parent=None):
     """A rounded cylinder from `start` to `end`, origin at `start` so it swings like a joint."""
     a, b = Vector(start), Vector(end)
     tilt = Vector((0, 0, 1)).rotation_difference(b - a).to_euler()
-    bpy.ops.mesh.primitive_cylinder_add(vertices=12, radius=radius, depth=(b - a).length, location=(a + b) / 2, rotation=tilt)
+    bpy.ops.mesh.primitive_cylinder_add(
+        vertices=12, radius=radius, depth=(b - a).length, location=(a + b) / 2, rotation=tilt
+    )
     obj = bpy.context.active_object
     obj.name = name
     bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
@@ -309,6 +317,7 @@ def limb(name: str, start: tuple, end: tuple, radius: float, mat, parent=None):
     mod.width = radius * 0.6
     mod.segments = 3
     mod.limit_method = "ANGLE"
+    mod.harden_normals = polish
     bpy.ops.object.modifier_apply(modifier=mod.name)
     drop_degenerate_faces(obj)
     bpy.ops.object.shade_auto_smooth()
@@ -356,7 +365,9 @@ def build_shambler() -> None:
         foot = (x * 1.2, foot_y - 0.06, 0.04)
         attach(box("Foot" + side, (0.11, 0.24, 0.08), foot, shoes, bevel=0.02), foot, leg)
     torso = tilted_box("Torso", (0.42, 0.25, 0.58), (0, 0, 1.3), 0.22, coat, (0, 0, 1.0), hips)
-    tilted_box("Shirt", (0.13, 0.03, 0.42), (0, -0.12, 1.3), 0.22, material("Shirt", SHIRT, roughness=0.9), (0, 0, 1.0), torso)
+    tilted_box(
+        "Shirt", (0.13, 0.03, 0.42), (0, -0.12, 1.3), 0.22, material("Shirt", SHIRT, roughness=0.9), (0, 0, 1.0), torso
+    )
     bpy.ops.mesh.primitive_cone_add(vertices=16, radius1=0.3, radius2=0.23, depth=0.6, location=(0, 0.02, 0.78))
     skirt = bpy.context.active_object
     skirt.name = "CoatSkirt"
@@ -367,7 +378,14 @@ def build_shambler() -> None:
     head((0.02, -0.2, 1.71), 0.125, torso)
     for side, x, hand in (("L", -0.25, (-0.4, -0.66, 1.4)), ("R", 0.25, (0.44, -0.56, 1.26))):
         arm = limb("Arm" + side, (x, -0.13, 1.5), hand, 0.05, skin, torso)
-        limb("Sleeve" + side, (x, -0.13, 1.5), [(p + q) / 2 for p, q in zip((x, -0.13, 1.5), hand)], 0.07, coat, arm)
+        limb(
+            "Sleeve" + side,
+            (x, -0.13, 1.5),
+            [(p + q) / 2 for p, q in zip((x, -0.13, 1.5), hand, strict=True)],
+            0.07,
+            coat,
+            arm,
+        )
 
 
 def build_crawler() -> None:
@@ -395,11 +413,17 @@ def build_bloater() -> None:
         foot = (x * 1.15, -0.05, 0.045)
         attach(box("Foot" + side, (0.15, 0.26, 0.09), foot, material("Shoes", SHOES), bevel=0.02), foot, leg)
     torso = ball("Torso", 0.4, (0, 0.04, 1.25), skin, (1.05, 0.85, 1.0), hips)
-    ball("Belly", 0.36, (0, -0.16, 1.13), material("Belly", BIO_GREEN, roughness=0.3, glow=1.6), (1.0, 0.85, 0.95), torso)
+    ball(
+        "Belly", 0.36, (0, -0.16, 1.13), material("Belly", BIO_GREEN, roughness=0.3, glow=1.6), (1.0, 0.85, 0.95), torso
+    )
     head((0, -0.06, 1.72), 0.12, torso, glow=3.0)
     for side, x in (("L", -1), ("R", 1)):
         limb("Arm" + side, (x * 0.38, 0, 1.45), (x * 0.56, -0.18, 0.98), 0.085, skin, torso)
 
+
+# Not finished yet: the Halcyon Labs lightmap was baked on this mesh, so changing it
+# needs a GPU re-bake. Remove it from this set together with that bake.
+UNFINISHED = {"wall_panel"}
 
 MODELS = {
     "wall_panel": ("kit/wall_panel.glb", build_wall_panel),
@@ -415,10 +439,11 @@ MODELS = {
 
 def export(path: str) -> None:
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    bpy.ops.export_scene.gltf(filepath=path, export_format="GLB", export_yup=True, export_apply=True)
+    bpy.ops.export_scene.gltf(filepath=path, export_format="GLB", export_yup=True, export_apply=True, export_vertex_color="ACTIVE")
 
 
 def main(argv: list) -> None:
+    global polish
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("names", nargs="*", help="models to build (default: all)")
     parser.add_argument("--out", default=os.path.join(REPO, "assets", "models"))
@@ -428,7 +453,10 @@ def main(argv: list) -> None:
             sys.exit(f"unknown model: {name} (known: {', '.join(MODELS)})")
         rel_path, build = MODELS[name]
         reset_scene()
+        polish = name not in UNFINISHED
         build()
+        if polish:
+            finish.finish()
         export(os.path.join(args.out, rel_path))
         print(f"built {name} -> {rel_path}")
 

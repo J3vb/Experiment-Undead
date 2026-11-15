@@ -10,16 +10,19 @@ var _time: float = 0.0
 var _color: Color = Color.WHITE
 var _scale: float = 1.0
 
+
 func show_hit(is_kill: bool, is_headshot: bool) -> void:
 	_time = duration * (1.6 if is_kill else 1.0)
 	_color = kill_color if is_kill else hit_color
 	_scale = 1.4 if is_kill and is_headshot else (1.15 if is_kill else 1.0)
 	queue_redraw()
 
+
 func _process(delta: float) -> void:
 	if _time > 0.0:
 		_time -= delta
 		queue_redraw()
+
 
 func _draw() -> void:
 	if _time <= 0.0:

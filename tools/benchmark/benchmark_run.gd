@@ -73,22 +73,32 @@ func _parse_args() -> bool:
 		_fail("expected pairs: --zombies N --seconds N --seed N")
 		return false
 	for index: int in range(0, args.size(), 2):
-		var value: String = args[index + 1]
-		match args[index]:
-			"--zombies":
-				if not value.is_valid_int() or int(value) < 1:
-					return _argument_error("--zombies must be a positive integer")
-				_zombies = int(value)
-			"--seconds":
-				if not value.is_valid_float() or not is_finite(float(value)) or float(value) <= 0.0:
-					return _argument_error("--seconds must be a positive finite number")
-				_seconds = float(value)
-			"--seed":
-				if not value.is_valid_int():
-					return _argument_error("--seed must be an integer")
-				_seed = int(value)
-			_:
-				return _argument_error("unknown argument: %s" % args[index])
+		if not _parse_argument(args[index], args[index + 1]):
+			return false
+	return true
+
+
+func _parse_argument(option: String, value: String) -> bool:
+	match option:
+		"--zombies":
+			if not value.is_valid_int() or int(value) < 1:
+				return _argument_error("--zombies must be a positive integer")
+			_zombies = int(value)
+		"--seconds":
+			return _set_seconds(value)
+		"--seed":
+			if not value.is_valid_int():
+				return _argument_error("--seed must be an integer")
+			_seed = int(value)
+		_:
+			return _argument_error("unknown argument: %s" % option)
+	return true
+
+
+func _set_seconds(value: String) -> bool:
+	if not value.is_valid_float() or not is_finite(float(value)) or float(value) <= 0.0:
+		return _argument_error("--seconds must be a positive finite number")
+	_seconds = float(value)
 	return true
 
 
