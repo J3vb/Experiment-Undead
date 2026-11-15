@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="AffixData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://systems/loot/affix_data.gd" id="1"]
+[ext_resource type="Script" path="res://systems/loot/affix_tier.gd" id="2"]
+
+[sub_resource type="Resource" id="tier_1"]
+script = ExtResource("2")
+min_ilvl = 1
+low = 10
+high = 14
+
+[sub_resource type="Resource" id="tier_2"]
+script = ExtResource("2")
+min_ilvl = 8
+low = 14
+high = 18
+
+[sub_resource type="Resource" id="tier_3"]
+script = ExtResource("2")
+min_ilvl = 15
+low = 18
+high = 22
+
+[sub_resource type="Resource" id="tier_4"]
+script = ExtResource("2")
+min_ilvl = 22
+low = 22
+high = 26
+
+[sub_resource type="Resource" id="tier_5"]
+script = ExtResource("2")
+min_ilvl = 30
+low = 26
+high = 30
+
+[resource]
+script = ExtResource("1")
+id = &"elite_hunter_pct"
+kind = "prefix"
+family = &"elite_dmg"
+exclusive_families = Array[StringName]([])
+allowed_tags = Array[StringName]([])
+blocked_tags = Array[StringName]([])
+min_rarity = &"common"
+stat = &"elite_hunter_pct"
+op = "increased"
+tiers = Array[ExtResource("2")]([SubResource("tier_1"), SubResource("tier_2"), SubResource("tier_3"), SubResource("tier_4"), SubResource("tier_5")])
+weight = 60.0
+step = 1.0
+text = "+{v}% damage to Brutes and specials"

@@ -1,10 +1,11 @@
-## The rifle and shotgun viewmodels are code-built models: muzzle flash sits on
-## the Muzzle, the bolt (or pump) kicks back on a shot, the magazine drops on
-## reload, and a shotgun shot fires every pellet.
+## Code-built gun parts share recoil and reload poses; scope lenses render only
+## while aiming and shotgun shots fire every pellet.
 extends GutTest
 
 const RIFLE: String = "res://content/weapons/rifle_ar.tres"
 const SHOTGUN: String = "res://content/weapons/brenner_trench.tres"
+const KESTREL: String = "res://content/weapons/kestrel_smg.tres"
+const TALON: String = "res://content/weapons/talon_dmr.tres"
 const WEAPON: String = "res://systems/weapons/weapon.tscn"
 
 
@@ -34,21 +35,46 @@ func test_flash_is_on_the_model_muzzle() -> void:
 
 
 func test_bolt_kicks_back_on_fire() -> void:
-	var weapon: Weapon = _gun()
+	for path: String in [RIFLE, KESTREL, TALON]:
+		_check_bolt_kick(path)
+
+
+func _check_bolt_kick(path: String) -> void:
+	var weapon: Weapon = _gun(path)
 	var bolt: Node3D = _part(weapon, "Bolt")
+	var receiver: Node3D = _part(weapon, "Receiver")
+	var receiver_rest: Transform3D = receiver.transform
+	var mag_rest: Vector3 = _part(weapon, "Magazine").position
+	var handle: Node3D = _part(weapon, "ChargingHandle")
+	var handle_rest: Vector3 = receiver.to_local(handle.global_position) if handle else Vector3.ZERO
 	var rest: float = bolt.position.z
 	weapon.fire()
 	weapon._process(0.001)
 	assert_gt(bolt.position.z, rest + 0.02, "bolt moves back (+Z) after a shot")
+	if handle:
+		var travel: Vector3 = receiver.to_local(handle.global_position) - handle_rest
+		assert_almost_eq(travel.z, bolt.position.z - rest, 0.001, path + " charging handle rides with the bolt")
 	for i: int in 30:
 		weapon._process(0.05)
 	assert_almost_eq(bolt.position.z, rest, 0.002, "bolt returns")
+	assert_eq(receiver.transform, receiver_rest, path + " receiver does not move with the bolt")
+	assert_eq(_part(weapon, "Magazine").position, mag_rest, path + " magazine stays seated on fire")
+	if handle:
+		var reset: Vector3 = receiver.to_local(handle.global_position)
+		assert_almost_eq(reset.distance_to(handle_rest), 0.0, 0.002, path + " charging handle returns")
 
 
 func test_magazine_drops_and_returns_on_reload() -> void:
-	var weapon: Weapon = _gun()
+	for path: String in [RIFLE, KESTREL, TALON]:
+		_check_magazine_reload(path)
+
+
+func _check_magazine_reload(path: String) -> void:
+	var weapon: Weapon = _gun(path)
 	var mag: Node3D = _part(weapon, "Magazine")
 	var rest: Vector3 = mag.position
+	var receiver: Node3D = _part(weapon, "Receiver")
+	var receiver_rest: Transform3D = receiver.transform
 	weapon.instance.ammo_in_mag = 5
 	assert_true(weapon.start_reload())
 	var half: float = weapon.data.reload_time * 0.5
@@ -59,6 +85,23 @@ func test_magazine_drops_and_returns_on_reload() -> void:
 	weapon._process(0.001)
 	assert_false(weapon.is_reloading())
 	assert_almost_eq(mag.position.distance_to(rest), 0.0, 0.001, "magazine back in after reload")
+	assert_eq(receiver.transform, receiver_rest, path + " receiver stays independent of the magazine")
+
+
+func test_empty_reload_holds_the_bolt_open_then_resets() -> void:
+	for path: String in [RIFLE, KESTREL, TALON]:
+		var weapon: Weapon = _gun(path)
+		var bolt: Node3D = _part(weapon, "Bolt")
+		var rest: Vector3 = bolt.position
+		weapon.instance.ammo_in_mag = 0
+		assert_true(weapon.start_reload(), path)
+		weapon.tick(weapon.data.empty_reload_time * 0.5)
+		weapon._process(0.001)
+		assert_almost_eq(bolt.position.z, rest.z + 0.035, 0.001, path + " bolt held open")
+		weapon.tick(weapon.data.empty_reload_time)
+		weapon._process(0.001)
+		assert_almost_eq(bolt.position.distance_to(rest), 0.0, 0.001, path + " bolt closes after reload")
+		assert_eq(weapon.instance.ammo_in_mag, weapon.data.magazine_size, path + " refilled")
 
 
 func test_scope_renders_zoomed_view_only_while_aiming() -> void:
@@ -139,11 +182,18 @@ func test_scope_camera_follows_main_camera_each_frame_without_interpolation() ->
 
 
 func test_talon_scope_has_three_times_zoom() -> void:
-	var weapon: Weapon = _gun("res://content/weapons/talon_dmr.tres")
+	var weapon: Weapon = _gun(TALON)
 	var lens: ScopeLens = _part(weapon, "ScopeLens") as ScopeLens
 	assert_eq(lens.zoom, 3.0)
+	lens._process(0.016)
+	assert_false(lens.is_rendering(), "Talon scope stays off at the hip")
+	assert_eq(lens.get_parent(), _part(weapon, "ScopeLensMount"), "lens follows the model's eyepiece")
+	assert_almost_eq(lens.position.length(), 0.0, 0.0001, "lens is centred on the eyepiece")
 	weapon.ads_progress = 1.0
 	lens._process(0.016)
 	assert_true(lens.is_rendering())
 	assert_almost_eq(lens.camera.fov, get_viewport().get_camera_3d().fov / 3.0, 0.01)
 	assert_eq(_part(weapon, "FlashLight").get_parent(), _part(weapon, "Muzzle"))
+	weapon.ads_progress = 0.0
+	lens._process(0.016)
+	assert_false(lens.is_rendering(), "Talon scope stops rendering after aiming")

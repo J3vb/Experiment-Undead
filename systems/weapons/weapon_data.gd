@@ -7,6 +7,7 @@ enum FireMode { SEMI, BURST, AUTO }
 
 @export_group("Identity")
 @export var id: StringName = &""
+@export var loot_tags: Array[StringName] = []
 @export var display_name: String = "Weapon"
 @export var cost: int = 0
 @export var crate_weight: float = 1.0

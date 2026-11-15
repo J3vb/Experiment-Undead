@@ -11,6 +11,7 @@ var hatch: ExfilHatch
 
 func before_each() -> void:
 	session = SESSION.instantiate() as GameSession
+	session.profile_id = &""
 	session.rng_seed = 7
 	session.restart_delay = 0.1
 	add_child_autofree(session)

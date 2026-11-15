@@ -37,6 +37,7 @@ func _run() -> void:
 	_warmup_ticks = ceili(WARMUP_SECONDS * Engine.physics_ticks_per_second)
 	_measurement_ticks = ceili(_seconds * Engine.physics_ticks_per_second)
 	_session = SESSION.instantiate() as GameSession
+	_session.profile_id = &""
 	_session.rng_seed = _seed
 	_session.get_node("WaveDirector").process_mode = Node.PROCESS_MODE_DISABLED
 	get_tree().root.add_child(_session)

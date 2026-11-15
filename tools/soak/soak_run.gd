@@ -28,6 +28,7 @@ func _run() -> void:
 	Engine.time_scale = _timescale
 	Engine.max_fps = Engine.physics_ticks_per_second
 	_session = SESSION.instantiate() as GameSession
+	_session.profile_id = &""
 	_session.rng_seed = _seed
 	get_tree().root.add_child(_session)
 	get_tree().current_scene = _session

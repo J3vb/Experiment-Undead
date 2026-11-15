@@ -310,7 +310,7 @@ func _setup_pause_menu() -> void:
 	resume_button.pressed.connect(func() -> void: (get_parent() as GameSession).resume())
 	settings_button.pressed.connect(_open_settings)
 	$Root/PausePanel/Menu/MainMenu.pressed.connect(_return_to_menu)
-	$Root/PausePanel/Menu/QuitGame.pressed.connect(func() -> void: get_tree().quit())
+	$Root/PausePanel/Menu/QuitGame.pressed.connect(func() -> void: (get_parent() as GameSession).quit_game())
 	$Root/GameOverPanel/Box/MainMenu.pressed.connect(_return_to_menu)
 	settings_screen.closed.connect(_close_settings)
 	_fps_label = Label.new()
@@ -343,5 +343,6 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _return_to_menu() -> void:
+	(get_parent() as GameSession).bank_run_xp()
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://systems/ui/main_menu.tscn")

@@ -13,6 +13,7 @@ var vault: SpecimenVault
 
 func before_each() -> void:
 	session = SESSION.instantiate() as GameSession
+	session.profile_id = &""
 	session.rng_seed = 5
 	add_child_autofree(session)
 	await wait_until(func() -> bool: return session.level.is_navigation_ready, 15.0, "navmesh baked")
