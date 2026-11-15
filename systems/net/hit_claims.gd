@@ -21,7 +21,6 @@ var _chain: Chain = Chain.new()
 
 func _ready() -> void:
 	add_child(_chain)
-	_chain.secondary_killed.connect(confirm_well_hit.bind(true), CONNECT_DEFERRED)
 	multiplayer.peer_disconnected.connect(_forget_peer)
 	for id: StringName in Content.ids(&"weapons"):
 		_weapons[id] = Content.weapon(id)
@@ -120,12 +119,20 @@ func apply_server_hit(hit_zone: HitZone, info: DamageInfo) -> void:
 		return
 	info.hit_zone = hit_zone.zone
 	var base: String = String(info.weapon_id).trim_suffix("_reforged")
+	var collateral_killed: bool = false
 	if base == "synapse":
-		_chain.apply(zombie, info)
+		collateral_killed = _chain.apply(zombie, info)
 	if zombie.frozen or base == "cryo_lance":
 		if Frost.apply(zombie, info):
 			return
 	hit_zone.receive_hit(info)
+	_confirm_secondary_kill(zombie, info, collateral_killed)
+
+
+## Defer past the normal hit marker; primary kills already confirm themselves.
+func _confirm_secondary_kill(zombie: Zombie, info: DamageInfo, killed: bool) -> void:
+	if killed and not zombie.health.is_dead and info.attacker is Player:
+		confirm_well_hit.call_deferred(info.attacker as Player, true)
 
 
 func _valid_hit(player: Player, weapon: WeaponData, amount: float, point: Vector3) -> bool:

@@ -2,8 +2,6 @@
 class_name Chain
 extends Node
 
-signal secondary_killed(player: Player)
-
 const MAX_TARGETS: int = 3
 const RANGE: float = 6.0
 const DAMAGE_FRACTION: float = 0.5
@@ -16,11 +14,12 @@ func _init() -> void:
 
 
 ## Runs before the primary hit, while a lethal shot's source is still alive.
-func apply(zombie: Zombie, info: DamageInfo) -> void:
+## Returns true when a secondary target died.
+func apply(zombie: Zombie, info: DamageInfo) -> bool:
 	if not multiplayer.is_server() or zombie.health.is_dead or zombie.state == Zombie.State.DEAD:
-		return
+		return false
 	if info.amount <= 0.0:
-		return
+		return false
 	var targets: Array[Zombie] = _targets(zombie)
 	var ends: PackedVector3Array = PackedVector3Array()
 	var killed: bool = false
@@ -31,20 +30,14 @@ func apply(zombie: Zombie, info: DamageInfo) -> void:
 		ends.append(hit.position)
 		target.health.take_damage(hit)
 		killed = killed or target.health.is_dead
-	if killed:
-		_confirm_kill(info.attacker)
 	if ends.is_empty():
-		return
+		return false
 	var start: Vector3 = zombie.global_position + Vector3.UP
 	if multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
 		show_arcs(start, ends)
 	else:
 		show_arcs.rpc(start, ends)
-
-
-func _confirm_kill(attacker: Node) -> void:
-	if attacker is Player:
-		secondary_killed.emit(attacker as Player)
+	return killed
 
 
 func _targets(source: Zombie) -> Array[Zombie]:

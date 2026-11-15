@@ -121,3 +121,24 @@ func test_solo_synapse_secondary_kill_confirms_after_the_surviving_primary_hit()
 		[player, true, false],
 		"the ordinary primary marker must not overwrite the chain kill marker"
 	)
+
+
+func test_solo_synapse_primary_headshot_kill_keeps_one_headshot_confirmation() -> void:
+	var weapon: Weapon = _take(&"synapse")
+	var source: Zombie = _walker()
+	var secondary: Zombie = _walker(Vector3(1, 0, 0))
+	source.health.reset(5.0)
+	secondary.health.reset(5.0)
+	await wait_physics_frames(2)
+	var origin: Vector3 = source.head_zone.global_position + Vector3.BACK * 3.0
+	watch_signals(Events)
+	weapon._trace(origin, Vector3.FORWARD)
+	assert_true(source.health.is_dead, "the primary headshot kills")
+	assert_true(secondary.health.is_dead, "the same shot also chains a secondary kill")
+	await wait_physics_frames(2)
+	assert_signal_emit_count(Events, "hit_confirmed", 1)
+	assert_eq(
+		get_signal_parameters(Events, "hit_confirmed"),
+		[player, true, true],
+		"a secondary kill must not overwrite the primary headshot marker or repeat its kill sound"
+	)
