@@ -1,0 +1,62 @@
+name: Soak
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  soak:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GODOT_VERSION: 4.7.2
+      XDG_DATA_HOME: ${{ github.workspace }}/soak-data
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: godot
+          key: godot-${{ env.GODOT_VERSION }}
+
+      - name: Download Godot
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          curl -fSL --retry 3 -o godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot
+          chmod +x godot
+
+      - name: Import project
+        run: ./godot --headless --path . --import
+
+      - name: Play rounds 1–10
+        run: |
+          set -o pipefail
+          timeout --signal=KILL 610s ./godot --headless --path . --script res://tools/soak/soak.gd -- --rounds 10 --seed 1 --timescale 4 2>&1 | tee soak.log
+          if grep -E 'SCRIPT ERROR|Parse Error' soak.log; then exit 1; fi
+          grep -q '^| PASS |' soak.log
+
+      - name: Write job summary
+        if: always()
+        run: |
+          echo '## Halcyon Labs soak: rounds 1–10, seed 1' >> "$GITHUB_STEP_SUMMARY"
+          if [ -f soak.log ] && grep -q '^|' soak.log; then
+            sed -n '/^|/p; /^$/p' soak.log >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Soak stopped before producing a table; see logs.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: soak-logs
+          path: |
+            soak-data/godot/app_userdata/Experiment Undead/logs/
+            soak.log
+          if-no-files-found: warn

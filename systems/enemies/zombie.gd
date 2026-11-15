@@ -1,51 +1,68 @@
-## Basic zombie: rises, chases the nearest living player over the navmesh,
-## swings when close, dies. State machine is a plain enum + match.
+## Basic zombie brain: rises, queues at and tears through its window barrier
+## (if it spawned behind one), vaults in, chases the nearest living player over
+## the navmesh, swings when close, dies. State machine is a plain enum + match. The body
+## (ZombieRig) and voice (ZombieVoice) are child nodes with their own scripts.
 class_name Zombie
 extends CharacterBody3D
 
-enum State { SPAWNING, CHASING, ATTACKING, DEAD }
+enum State { SPAWNING, ENTERING, CHASING, ATTACKING, DEAD }
 
 const SPAWN_TIME: float = 0.9
-const CORPSE_TIME: float = 5.0
 const SEPARATION_RADIUS: float = 0.9
 const SEPARATION_FORCE: float = 2.5
+const STRIKE_TIME: float = 0.35
+## A swing still lands this far past attack_range (also the reach through a window).
+const HIT_SLACK: float = 0.3
+## Seconds to climb through an open window (AI doc: 1.0 s vault).
+const VAULT_TIME: float = 1.0
 
 var data: EnemyData
 var net_id: int = 0
 var state: State = State.SPAWNING
+## Seconds since the current state began.
+var state_time: float = 0.0
 var target: Player
+## The window this zombie climbs through; set by the Spawner, cleared once inside.
+var barrier: Barrier
 
 var _max_health: float = 100.0
 var _speed: float = 1.8
 var _damage: float = 35.0
-var _state_time: float = 0.0
 var _attack_cooldown: float = 0.0
 var _attack_landed: bool = false
+var _tear_timer: float = 0.0
+var _vault_time: float = -1.0
+var _vault_from: Vector3 = Vector3.ZERO
 var _repath_timer: float = 0.0
 var _retarget_timer: float = 0.0
-var _anim_time: float = 0.0
-var _groan_timer: float = 0.0
+var _stuck_watch: ZombieStuckWatch = ZombieStuckWatch.new()
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _rng: RandomNumberGenerator
 
 @onready var health: HealthComponent = $HealthComponent
 @onready var agent: NavigationAgent3D = $NavigationAgent3D
-@onready var visual: Node3D = $Visual
-@onready var arm_l: Node3D = $Visual/ArmL
-@onready var arm_r: Node3D = $Visual/ArmR
-@onready var leg_l: Node3D = $Visual/LegL
-@onready var leg_r: Node3D = $Visual/LegR
-@onready var voice: AudioStreamPlayer3D = $Voice
+@onready var visual: ZombieRig = $Visual
+@onready var head_zone: HitZone = $HitZones/Head
+@onready var voice: ZombieVoice = $Voice
 @onready var hit_zones: Array[HitZone] = [$HitZones/Head, $HitZones/Body]
 
+
 ## Called by the Spawner before adding to the tree.
-func setup(p_data: EnemyData, p_net_id: int, health_mult: float, speed_mult: float, damage_mult: float, rng: RandomNumberGenerator) -> void:
+func setup(
+	p_data: EnemyData,
+	p_net_id: int,
+	health_mult: float,
+	speed_mult: float,
+	damage_mult: float,
+	rng: RandomNumberGenerator
+) -> void:
 	data = p_data
 	net_id = p_net_id
 	_max_health = data.max_health * health_mult
 	_speed = data.move_speed * speed_mult * rng.randf_range(0.9, 1.1)
 	_damage = data.attack_damage * damage_mult
 	_rng = rng
+
 
 func _ready() -> void:
 	add_to_group(&"enemies")
@@ -55,31 +72,20 @@ func _ready() -> void:
 		_rng = RandomNumberGenerator.new()
 	if data:
 		health.reset(_max_health)
-		_apply_look()
+		visual.scale = Vector3.ONE * data.body_scale
+		voice.groans = data.groan_sounds
+	# The head zone rides on the model's head so headshots follow the animation.
+	head_zone.reparent(visual.head, false)
+	head_zone.position = Vector3.ZERO
 	health.damaged.connect(_on_damaged)
 	health.died.connect(_on_died)
 	_repath_timer = _rng.randf() * 0.25
-	_groan_timer = _rng.randf_range(1.0, 5.0)
 	visual.position.y = -1.8
 	_enter(State.SPAWNING)
 
-func _apply_look() -> void:
-	var skin: StandardMaterial3D = StandardMaterial3D.new()
-	skin.albedo_color = data.skin_color
-	skin.roughness = 0.9
-	var cloth: StandardMaterial3D = StandardMaterial3D.new()
-	cloth.albedo_color = data.clothes_color
-	cloth.roughness = 1.0
-	for node: Node in visual.find_children("*", "MeshInstance3D"):
-		var mesh: MeshInstance3D = node as MeshInstance3D
-		if mesh.is_in_group(&"skin"):
-			mesh.material_override = skin
-		elif mesh.is_in_group(&"cloth"):
-			mesh.material_override = cloth
-	visual.scale = Vector3.ONE * data.body_scale
 
 func _physics_process(delta: float) -> void:
-	_state_time += delta
+	state_time += delta
 	_attack_cooldown = maxf(_attack_cooldown - delta, 0.0)
 	if not is_on_floor():
 		velocity.y -= _gravity * delta
@@ -88,6 +94,8 @@ func _physics_process(delta: float) -> void:
 	match state:
 		State.SPAWNING:
 			_tick_spawning()
+		State.ENTERING:
+			_tick_entering(delta)
 		State.CHASING:
 			_tick_chasing(delta)
 		State.ATTACKING:
@@ -96,18 +104,22 @@ func _physics_process(delta: float) -> void:
 			velocity.x = 0.0
 			velocity.z = 0.0
 	move_and_slide()
-	_tick_voice(delta)
+
 
 func _enter(new_state: State) -> void:
 	state = new_state
-	_state_time = 0.0
+	state_time = 0.0
 	_attack_landed = false
+
 
 func _tick_spawning() -> void:
 	velocity.x = 0.0
 	velocity.z = 0.0
-	if _state_time >= SPAWN_TIME:
-		_enter(State.CHASING)
+	if state_time >= SPAWN_TIME:
+		_stuck_watch.restart(global_position)
+		_tear_timer = data.plank_time
+		_enter(State.ENTERING if barrier else State.CHASING)
+
 
 func _tick_chasing(delta: float) -> void:
 	_update_target(delta)
@@ -117,9 +129,10 @@ func _tick_chasing(delta: float) -> void:
 	var to_target: Vector3 = target.global_position - global_position
 	to_target.y = 0.0
 	var distance: float = to_target.length()
+	_stuck_watch.tick(self, delta, distance)
 	if distance <= data.attack_range * 0.85 and _attack_cooldown <= 0.0 and _can_see(target):
 		_enter(State.ATTACKING)
-		_play(data.attack_sound)
+		voice.say(data.attack_sound)
 		return
 
 	_repath_timer -= delta
@@ -138,28 +151,98 @@ func _tick_chasing(delta: float) -> void:
 	_steer(direction * _speed + _separation(), delta)
 	_face(to_target, delta)
 
+
+## Take an attack slot at the window (or wait in the queue), tear planks or
+## swipe a player through the gap, then vault in once the window is open.
+func _tick_entering(delta: float) -> void:
+	if _vault_time >= 0.0:
+		_tick_vault(delta)
+		return
+	var slot: int = barrier.claim_slot(self)
+	var spot: Vector3 = barrier.slot_point(slot) if slot >= 0 else barrier.queue_point(net_id)
+	_update_target(delta)
+	var to_spot: Vector3 = spot - global_position
+	to_spot.y = 0.0
+	if to_spot.length() > 0.3:
+		_steer(to_spot.normalized() * _speed + _separation(), delta)
+		_face(to_spot, delta)
+		return
+	_steer(Vector3.ZERO, delta)
+	_face(barrier.global_position - global_position, delta)
+	if slot < 0:
+		return
+	if barrier.is_broken():
+		if barrier.try_start_vault(self):
+			_vault_from = global_position
+			_vault_time = 0.0
+		return
+	if (
+		target
+		and _attack_cooldown <= 0.0
+		and _flat_distance(target) <= data.attack_range + HIT_SLACK
+		and _can_see(target)
+	):
+		_enter(State.ATTACKING)
+		voice.say(data.attack_sound)
+		return
+	_tear_timer -= delta
+	if _tear_timer <= 0.0:
+		_tear_timer = data.plank_time
+		barrier.tear_plank()
+
+
+## Over the sill on a fixed path; the rig adds the hop (see vault_progress).
+func _tick_vault(delta: float) -> void:
+	_vault_time += delta
+	var t: float = clampf(_vault_time / VAULT_TIME, 0.0, 1.0)
+	var landing: Vector3 = barrier.inside_point()
+	landing.y = _vault_from.y
+	velocity = Vector3.ZERO
+	global_position = _vault_from.lerp(landing, t)
+	_face(landing - _vault_from, delta)
+	if t >= 1.0:
+		barrier.release(self)
+		barrier = null
+		_vault_time = -1.0
+		_stuck_watch.restart(global_position)
+		_enter(State.CHASING)
+
+
+## 0..1 while vaulting through a window, -1 otherwise.
+func vault_progress() -> float:
+	return clampf(_vault_time / VAULT_TIME, 0.0, 1.0) if _vault_time >= 0.0 else -1.0
+
+
+func _flat_distance(other: Node3D) -> float:
+	var flat: Vector3 = other.global_position - global_position
+	flat.y = 0.0
+	return flat.length()
+
+
 func _tick_attacking(delta: float) -> void:
 	velocity.x = move_toward(velocity.x, 0.0, data.acceleration * delta)
 	velocity.z = move_toward(velocity.z, 0.0, data.acceleration * delta)
 	if target:
 		_face(target.global_position - global_position, delta)
-	if not _attack_landed and _state_time >= data.attack_windup:
+	if not _attack_landed and state_time >= data.attack_windup:
 		_attack_landed = true
 		_try_hit_target()
-	if _state_time >= data.attack_windup + 0.35:
+	if state_time >= data.attack_windup + STRIKE_TIME:
 		_attack_cooldown = data.attack_cooldown
-		_enter(State.CHASING)
+		_enter(State.ENTERING if barrier else State.CHASING)
+
 
 func _try_hit_target() -> void:
 	if target == null or not target.is_alive() or not Net.is_authority():
 		return
 	var flat: Vector3 = target.global_position - global_position
 	flat.y = 0.0
-	if flat.length() <= data.attack_range + 0.3 and _can_see(target):
+	if flat.length() <= data.attack_range + HIT_SLACK and _can_see(target):
 		var info: DamageInfo = DamageInfo.create(_damage, self, DamageInfo.Type.MELEE)
 		info.position = target.global_position
 		info.impulse = flat.normalized()
 		target.take_damage(info)
+
 
 ## True when no world geometry sits between our chest and the target's.
 func _can_see(other: Node3D) -> bool:
@@ -167,6 +250,7 @@ func _can_see(other: Node3D) -> bool:
 	var to: Vector3 = other.global_position + Vector3.UP * 1.2
 	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(from, to, Layers.WORLD)
 	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
+
 
 func _update_target(delta: float) -> void:
 	_retarget_timer -= delta
@@ -184,12 +268,14 @@ func _update_target(delta: float) -> void:
 			best = d
 			target = player
 
+
 func _repath_interval(distance: float) -> float:
 	if distance < 10.0:
 		return 0.25
 	if distance < 30.0:
 		return 0.5
 	return 1.5
+
 
 func _separation() -> Vector3:
 	var push: Vector3 = Vector3.ZERO
@@ -206,11 +292,13 @@ func _separation() -> Vector3:
 			push += away / d * (SEPARATION_RADIUS - d) / SEPARATION_RADIUS
 	return push * SEPARATION_FORCE
 
+
 func _steer(wish: Vector3, delta: float) -> void:
 	var horizontal: Vector3 = Vector3(velocity.x, 0.0, velocity.z)
 	horizontal = horizontal.move_toward(wish, data.acceleration * delta)
 	velocity.x = horizontal.x
 	velocity.z = horizontal.z
+
 
 func _face(direction: Vector3, delta: float) -> void:
 	direction.y = 0.0
@@ -219,44 +307,6 @@ func _face(direction: Vector3, delta: float) -> void:
 	var target_yaw: float = atan2(-direction.x, -direction.z)
 	rotation.y = lerp_angle(rotation.y, target_yaw, clampf(data.turn_speed * delta, 0.0, 1.0))
 
-func _process(delta: float) -> void:
-	_animate(delta)
-
-## Procedural placeholder animation until real clips arrive.
-func _animate(delta: float) -> void:
-	if state == State.SPAWNING:
-		visual.position.y = lerpf(-1.8, 0.0, clampf(_state_time / SPAWN_TIME, 0.0, 1.0))
-		return
-	if state == State.DEAD:
-		return
-	visual.position = visual.position.lerp(Vector3.ZERO, clampf(delta * 10.0, 0.0, 1.0))
-	var speed: float = Vector2(velocity.x, velocity.z).length()
-	_anim_time += delta * (2.0 + speed * 2.5)
-	var swing: float = sin(_anim_time) * clampf(speed / 2.0, 0.2, 1.0)
-	leg_l.rotation.x = swing * 0.6
-	leg_r.rotation.x = -swing * 0.6
-	var reach: float = deg_to_rad(80.0)
-	if state == State.ATTACKING:
-		var t: float = clampf(_state_time / maxf(data.attack_windup, 0.01), 0.0, 1.0)
-		reach = lerpf(deg_to_rad(150.0), deg_to_rad(30.0), t * t)
-	arm_l.rotation.x = reach + sin(_anim_time * 0.7) * 0.15
-	arm_r.rotation.x = reach + cos(_anim_time * 0.8) * 0.15
-	visual.rotation.z = sin(_anim_time * 0.5) * 0.08
-
-func _tick_voice(delta: float) -> void:
-	if state == State.DEAD or data == null or data.groan_sounds.is_empty():
-		return
-	_groan_timer -= delta
-	if _groan_timer <= 0.0:
-		_groan_timer = randf_range(3.0, 8.0)
-		_play(data.groan_sounds[randi() % data.groan_sounds.size()])
-
-func _play(stream: AudioStream) -> void:
-	if stream == null:
-		return
-	voice.stream = stream
-	voice.pitch_scale = randf_range(0.85, 1.15)
-	voice.play()
 
 func _on_damaged(info: DamageInfo) -> void:
 	Events.enemy_damaged.emit(self, info)
@@ -264,18 +314,20 @@ func _on_damaged(info: DamageInfo) -> void:
 		return
 	# Flinch: small shove of the body mesh, reads as impact.
 	visual.position += global_basis.inverse() * info.impulse.normalized() * 0.06
+	visual.pulse_belly()
+
 
 func _on_died(info: DamageInfo) -> void:
 	_enter(State.DEAD)
+	if barrier:
+		barrier.release(self)
 	collision_layer = 0
 	for zone: HitZone in hit_zones:
 		zone.set_enabled(false)
-	voice.stop()
+	voice.silence()
 	Events.enemy_killed.emit(self, info)
-	var fall_dir: float = 1.0 if randf() < 0.5 else -1.0
-	var tween: Tween = create_tween()
-	tween.tween_property(visual, "rotation", Vector3(deg_to_rad(-85.0), 0.0, deg_to_rad(10.0) * fall_dir), 0.45) \
-		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	tween.tween_interval(CORPSE_TIME)
-	tween.tween_property(visual, "position:y", -1.0, 1.5)
-	tween.tween_callback(queue_free)
+	visual.fall_over().tween_callback(queue_free)
+
+
+func _process(delta: float) -> void:
+	visual.follow(self, delta)

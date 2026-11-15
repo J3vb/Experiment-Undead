@@ -8,6 +8,11 @@ Read `docs/PROCESS.md` (pillars, milestones, how work flows) and
 `docs/DECISIONS.md` before you start. DECISIONS.md lists what is built, what is
 simplified on purpose, and what is not started.
 
+**Design references:** read `docs/design/` before any UI, art, audio,
+weapon, enemy or map work. Start with `docs/design/README.md`; for anything
+visual, `docs/design/look-rules.md` is the style to match. Use its colours,
+names and numbers instead of inventing new ones.
+
 ## Folders
 
 | Folder | What goes there |
@@ -180,13 +185,27 @@ python tools/ci/check_pr.py origin/main
 - Every bug fix adds a test that fails without the fix.
 - Tests use `GameSession.rng` with a fixed seed, never real time or `randf()`.
 
+## Logs and diagnostics
+
+Each run writes a JSON-lines log and a summary to `user://logs/` (engine
+errors with file, line and stack included). To debug a bug report, a crash or
+a test run, read `docs/LOGGING.md` first: it says where the files are, how to
+read them and what each event means. When you build a system, add `Log.warn`
+lines for its early warning signs and list them in that doc's catalogue.
+
 ## Merging
 
-- When both checks are green you may mark your PR ready and merge it yourself
-  (squash merge). No human approval is needed.
-- Second-agent review first when the PR changes more than 300 lines, or touches
-  `core/`, `project.godot`, `.github/` or networking code: Codex reviews Claude
-  PRs and Claude reviews Codex PRs. Fix or answer every comment, then merge.
+- **Codex reviews every PR**, from Claude and from Codex. It runs when the PR
+  is opened as ready or marked ready. It does **not** run on later pushes:
+  after each push with changes, comment `@codex review` on the PR once.
+- You may merge your PR yourself (squash merge), no human approval needed,
+  when all of these hold for the current head commit:
+  1. `quality` and `test` checks are green.
+  2. The Codex review for that commit is finished: its "Codex Review
+     Summary" comment shows ✅ Completed for that commit (or a 👍 reaction).
+  3. Every review comment is fixed, or answered with a reason if it is a
+     "Suggestion" you decline, and its conversation is resolved. A comment
+     marked "Blocking" or a P0/P1 finding must be fixed, not declined.
 - Never merge with a red or pending check, and never merge someone else's PR.
 - Each PR gets exactly one label for release notes: `new`, `fix`, `balance`
   or `tech`.

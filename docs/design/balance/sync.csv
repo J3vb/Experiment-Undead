@@ -1,0 +1,33 @@
+Design vs game files
+Game values read from the repo's content/*.tres when this workbook was built. Red = they differ.
+
+Thing,Field,Design (GDD),Game file,Game value,Match?,Note
+Start pistol,name,Warden P9,content/weapons/pistol_service.tres,M-9 Service Pistol,NO,Design name vs prototype name
+Start pistol,damage,40,content/weapons/pistol_service.tres,45,NO
+Start pistol,rounds_per_minute,400,content/weapons/pistol_service.tres,450,NO
+Start pistol,magazine_size,12,content/weapons/pistol_service.tres,12,yes
+Start pistol,reserve (starting),60,content/weapons/pistol_service.tres,48,NO,Game also has max_reserve
+Start pistol,head_multiplier,2.5,content/weapons/pistol_service.tres,2.5,yes
+Vanguard AR,name,Vanguard AR,content/weapons/rifle_ar.tres,AR-7 Rifle,NO
+Vanguard AR,damage,60,content/weapons/rifle_ar.tres,34,NO,Biggest gap: game AR does about half the design damage
+Vanguard AR,rounds_per_minute,700,content/weapons/rifle_ar.tres,680,NO
+Vanguard AR,reserve (starting),210,content/weapons/rifle_ar.tres,150,NO
+Vanguard AR,head_multiplier,2.5,content/weapons/rifle_ar.tres,2.2,NO,Game overrides to 2.2
+Vanguard AR,cost,1200,content/weapons/rifle_ar.tres,1200,yes
+Shambler (walker),max_health (r1),120,content/enemies/zombie_walker.tres,100,NO
+Shambler (walker),attack_damage,40,content/enemies/zombie_walker.tres,35,NO
+Shambler (walker),move_speed,1.2,content/enemies/zombie_walker.tres,1.9,NO,"Design uses a per-round speed mix, game uses fixed types"
+Runner,exists in design?,no,content/enemies/zombie_runner.tres,Runner,NO,"Design has speed tiers on one Shambler type, not a Runner enemy"
+Rounds,zombies round 5,20,content/waves/default_waves.tres,23,NO,Game: base + 3(r-1) + 0.3(r-1)^2
+Rounds,zombies round 10,30,content/waves/default_waves.tres,57,NO
+Rounds,zombies round 20,63,content/waves/default_waves.tres,171,NO
+Rounds,Shambler health round 10,916,content/waves/default_waves.tres,235,NO,"Game: walker health x (1 + 0.15(r-1)), linear"
+Rounds,Shambler health round 20,2168,content/waves/default_waves.tres,385,NO
+Rounds,speed growth / round,0,content/waves/default_waves.tres,0.04,NO,Not in design (design shifts the speed mix instead)
+Rounds,max_alive,24,content/waves/default_waves.tres,24,yes
+Points,starting_points,500,content/economy/default_economy.tres,500,yes
+Points,points_per_hit,10,content/economy/default_economy.tres,10,yes
+Points,points_per_kill,60,content/economy/default_economy.tres,60,yes
+Points,headshot kill total,100,content/economy/default_economy.tres,100,yes,Game: kill + headshot bonus
+
+Source: repo checkout at build time. Prototype data is from the open first-playable pull request.

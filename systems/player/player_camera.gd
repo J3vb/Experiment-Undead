@@ -3,14 +3,12 @@
 class_name PlayerCamera
 extends Node3D
 
-@export var base_fov: float = 78.0
 @export var sprint_fov_bonus: float = 6.0
 @export var stand_height: float = 1.6
 @export var crouch_height: float = 1.05
 @export var bob_strength: float = 0.035
 
-@onready var recoil_pivot: Node3D = $RecoilPivot
-@onready var camera: Camera3D = $RecoilPivot/Camera3D
+var base_fov: float = 78.0
 
 var _recoil_target: Vector2 = Vector2.ZERO
 var _recoil_current: Vector2 = Vector2.ZERO
@@ -18,13 +16,20 @@ var _recovery: float = 9.0
 var _bob_time: float = 0.0
 var _body: CharacterBody3D
 
+@onready var recoil_pivot: Node3D = $RecoilPivot
+@onready var camera: Camera3D = $RecoilPivot/Camera3D
+
+
 func _ready() -> void:
 	_body = get_parent() as CharacterBody3D
-	camera.fov = base_fov
+	Settings.changed.connect(_on_setting_changed)
+	_on_setting_changed(&"video", &"fov", Settings.get_value(&"video", &"fov"))
+
 
 ## Pitch only; yaw turns the body.
 func add_pitch(radians: float) -> void:
 	rotation.x = clampf(rotation.x + radians, deg_to_rad(-89.0), deg_to_rad(89.0))
+
 
 ## kick in degrees: x = yaw right, y = pitch up.
 func add_recoil(kick: Vector2, recovery: float, permanent_ratio: float) -> void:
@@ -34,10 +39,14 @@ func add_recoil(kick: Vector2, recovery: float, permanent_ratio: float) -> void:
 	add_pitch(rad.x * permanent_ratio)
 	_body.rotate_y(rad.y * permanent_ratio)
 
+
 func add_flinch(strength_degrees: float) -> void:
 	_recoil_target += Vector2(deg_to_rad(strength_degrees), deg_to_rad(randf_range(-1.0, 1.0) * strength_degrees * 0.6))
 
-func update_feel(delta: float, crouching: bool, sprinting: bool, ads_progress: float, ads_fov: float, walk_speed: float) -> void:
+
+func update_feel(
+	delta: float, crouching: bool, sprinting: bool, ads_progress: float, ads_fov: float, walk_speed: float
+) -> void:
 	var step: float = _recovery * delta * maxf(_recoil_target.length(), 0.02)
 	_recoil_target = _recoil_target.move_toward(Vector2.ZERO, step)
 	_recoil_current = _recoil_current.lerp(_recoil_target, clampf(25.0 * delta, 0.0, 1.0))
@@ -55,3 +64,9 @@ func update_feel(delta: float, crouching: bool, sprinting: bool, ads_progress: f
 	var fov: float = base_fov + (sprint_fov_bonus if sprinting else 0.0)
 	fov = lerpf(fov, ads_fov, ads_progress)
 	camera.fov = lerpf(camera.fov, fov, clampf(12.0 * delta, 0.0, 1.0))
+
+
+func _on_setting_changed(section: StringName, key: StringName, value: Variant) -> void:
+	if section == &"video" and key == &"fov":
+		base_fov = rad_to_deg(2.0 * atan(tan(deg_to_rad(float(value)) / 2.0) * 9.0 / 16.0))
+		camera.fov = base_fov

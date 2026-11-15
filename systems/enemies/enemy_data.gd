@@ -20,10 +20,10 @@ extends Resource
 @export var attack_range: float = 1.5
 @export var attack_windup: float = 0.45
 @export var attack_cooldown: float = 1.2
+## Seconds to tear one plank off a window barrier.
+@export var plank_time: float = 1.5
 
 @export_group("Look")
-@export var skin_color: Color = Color(0.36, 0.45, 0.3)
-@export var clothes_color: Color = Color(0.22, 0.2, 0.18)
 @export var body_scale: float = 1.0
 @export var groan_sounds: Array[AudioStream] = []
 @export var attack_sound: AudioStream

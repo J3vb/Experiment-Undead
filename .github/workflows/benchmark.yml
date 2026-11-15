@@ -1,0 +1,68 @@
+name: Benchmark
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GODOT_VERSION: 4.7.2
+      XDG_DATA_HOME: ${{ github.workspace }}/benchmark-data
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: godot
+          key: godot-${{ env.GODOT_VERSION }}
+
+      - name: Download Godot
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          curl -fSL --retry 3 -o godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot
+          chmod +x godot
+
+      - name: Import project
+        run: ./godot --headless --path . --import
+
+      - name: Benchmark smoke tests
+        run: python -m unittest discover -s tools/benchmark -p 'test_*.py'
+        env:
+          GODOT: ./godot
+
+      - name: Measure 24 and 48 zombies
+        run: |
+          mkdir -p benchmark-results
+          for zombies in 24 48; do
+            ./godot --headless --path . --script res://tools/benchmark/benchmark.gd -- --zombies "$zombies" --seconds 20 --seed 1 | tee "benchmark-results/benchmark_${zombies}.log"
+            cp "$XDG_DATA_HOME/godot/app_userdata/Experiment Undead/benchmark_${zombies}.json" benchmark-results/
+          done
+
+      - name: Write job summary
+        if: always()
+        run: |
+          echo '## Headless CPU physics benchmark' >> "$GITHUB_STEP_SUMMARY"
+          echo 'CPU physics callbacks only; excludes rendering, idle callbacks and standalone physics-server integration. Physics: 60 Hz. Reference budgets: 120 fps = 8.333 ms; 90 fps = 11.111 ms. Measurements do not gate merging.' >> "$GITHUB_STEP_SUMMARY"
+          for zombies in 24 48; do
+            echo >> "$GITHUB_STEP_SUMMARY"
+            if [ -f "benchmark-results/benchmark_${zombies}.log" ]; then
+              grep '^|' "benchmark-results/benchmark_${zombies}.log" >> "$GITHUB_STEP_SUMMARY" || true
+            fi
+          done
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-results
+          path: benchmark-results/
+          if-no-files-found: warn

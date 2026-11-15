@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SerumData" format=3]
+
+[ext_resource type="Script" path="res://systems/serums/serum_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"mule"
+display_name = "Mule"
+cost = 3000
+description = "Carry a third gun."
+multipliers = Dictionary[StringName, float]({&"weapon_slots": 1.5})

@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://systems/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Script" path="res://systems/weapons/recoil_data.gd" id="2"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/pistol_viewmodel.tscn" id="3"]
+[ext_resource type="AudioStream" path="res://assets/audio/rifle_fire.wav" id="4"]
+[ext_resource type="AudioStream" path="res://assets/audio/dry_fire.wav" id="5"]
+[ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
+
+[sub_resource type="Resource" id="recoil"]
+script = ExtResource("2")
+pattern = Array[Vector2]([Vector2(0, 2.2)])
+random_spread = Vector2(0.4, 0.3)
+recovery_speed = 12.0
+ads_multiplier = 0.7
+permanent_ratio = 0.15
+reset_time = 0.25
+repeat_last = 1
+
+[resource]
+script = ExtResource("1")
+id = &"pistol_service_reforged"
+loot_tags = Array[StringName]([&"pistol"])
+display_name = "M-9 Reforged"
+cost = 0
+damage = 90.0
+min_damage = 50.0
+falloff_start = 15.0
+falloff_end = 40.0
+head_multiplier = 2.5
+fire_mode = 0
+rounds_per_minute = 450.0
+magazine_size = 18
+starting_reserve = 192
+max_reserve = 192
+reload_time = 1.5
+empty_reload_time = 1.8
+ads_time = 0.15
+ads_fov = 62.0
+move_speed_multiplier = 1.05
+hip_spread = 1.8
+ads_spread = 0.2
+spread_per_shot = 0.6
+max_spread = 5.0
+recoil = SubResource("recoil")
+viewmodel_kick = 0.06
+hip_position = Vector3(0.18, -0.17, -0.42)
+ads_position = Vector3(0, -0.046, -0.3)
+viewmodel_scene = ExtResource("3")
+fire_sound = ExtResource("4")
+dry_fire_sound = ExtResource("5")
+reload_sound = ExtResource("6")

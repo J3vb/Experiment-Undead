@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="AffixData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/loot/affix_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"reclaimer"
+kind = "implicit"
+family = &"ammo"
+stat = &"reclaimer"
+op = "proc"
+text = "Kills return {v}% of bullets that hit"
+rarity_ranges = Dictionary[StringName, Vector2]({
+&"common": Vector2(15, 20),
+&"uncommon": Vector2(20, 30),
+&"rare": Vector2(30, 40),
+&"epic": Vector2(40, 50),
+&"legendary": Vector2(50, 60)
+})
+rarity_weights = Dictionary[StringName, float]({
+&"common": 30.0,
+&"uncommon": 35.0,
+&"rare": 35.0,
+&"epic": 35.0,
+&"legendary": 35.0
+})

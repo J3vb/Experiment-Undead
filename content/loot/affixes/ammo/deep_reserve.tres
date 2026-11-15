@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="AffixData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/loot/affix_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"deep_reserve"
+kind = "implicit"
+family = &"ammo"
+stat = &"deep_reserve"
+op = "increased"
+text = "+{v}% reserve ammo"
+rarity_ranges = Dictionary[StringName, Vector2]({
+&"common": Vector2(30, 50),
+&"uncommon": Vector2(50, 75),
+&"rare": Vector2(75, 100),
+&"epic": Vector2(100, 150),
+&"legendary": Vector2(150, 200)
+})
+rarity_weights = Dictionary[StringName, float]({
+&"common": 60.0,
+&"uncommon": 50.0,
+&"rare": 40.0,
+&"epic": 30.0,
+&"legendary": 25.0
+})

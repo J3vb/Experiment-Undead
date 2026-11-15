@@ -1,0 +1,53 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://systems/interactables/reforger.gd" id="1"]
+[ext_resource type="Script" path="res://systems/level/block.gd" id="2"]
+[ext_resource type="Material" path="res://levels/materials/rust.tres" id="3"]
+
+[ext_resource type="AudioStream" path="res://assets/audio/buy.wav" id="sfx_buy"]
+
+[ext_resource type="AudioStream" path="res://assets/audio/denied.wav" id="sfx_denied"]
+
+[sub_resource type="BoxShape3D" id="area"]
+size = Vector3(1.3, 2, 1.8)
+
+[sub_resource type="StandardMaterial3D" id="glow"]
+albedo_color = Color(1, 0.45, 0.1, 1)
+emission_enabled = true
+emission = Color(1, 0.45, 0.1, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="BoxMesh" id="strip"]
+material = SubResource("glow")
+size = Vector3(1.02, 0.1, 1.2)
+
+[node name="Reforger" type="Area3D"]
+script = ExtResource("1")
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+shape = SubResource("area")
+
+[node name="Body" type="StaticBody3D" parent="."]
+script = ExtResource("2")
+size = Vector3(1, 2, 1.6)
+material = ExtResource("3")
+
+[node name="Glow" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+visible = false
+mesh = SubResource("strip")
+
+[node name="Label" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Reforger"
+
+[node name="BuySound" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("sfx_buy")
+bus = &"SFX"
+
+[node name="DeniedSound" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("sfx_denied")
+bus = &"SFX"

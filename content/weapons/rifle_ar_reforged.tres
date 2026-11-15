@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://systems/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Script" path="res://systems/weapons/recoil_data.gd" id="2"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/rifle_viewmodel.tscn" id="3"]
+[ext_resource type="AudioStream" path="res://assets/audio/rifle_fire.wav" id="4"]
+[ext_resource type="AudioStream" path="res://assets/audio/dry_fire.wav" id="5"]
+[ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
+
+[sub_resource type="Resource" id="recoil"]
+script = ExtResource("2")
+pattern = Array[Vector2]([Vector2(0, 1.1), Vector2(0.1, 1.0), Vector2(0.2, 0.95), Vector2(0.3, 0.9), Vector2(0.15, 0.85), Vector2(-0.1, 0.8), Vector2(-0.3, 0.75), Vector2(-0.35, 0.7), Vector2(-0.2, 0.65), Vector2(0.1, 0.6), Vector2(0.3, 0.6), Vector2(0.2, 0.55)])
+random_spread = Vector2(0.2, 0.12)
+recovery_speed = 9.0
+ads_multiplier = 0.6
+permanent_ratio = 0.35
+reset_time = 0.3
+repeat_last = 4
+
+[resource]
+script = ExtResource("1")
+id = &"rifle_ar_reforged"
+loot_tags = Array[StringName]([&"rifle"])
+display_name = "AR-7 Reforged"
+cost = 1200
+damage = 68.0
+min_damage = 44.0
+falloff_start = 30.0
+falloff_end = 70.0
+head_multiplier = 2.2
+fire_mode = 2
+rounds_per_minute = 680.0
+magazine_size = 45
+starting_reserve = 600
+max_reserve = 600
+reload_time = 2.1
+empty_reload_time = 2.7
+ads_time = 0.22
+ads_fov = 55.0
+move_speed_multiplier = 0.95
+hip_spread = 2.6
+ads_spread = 0.12
+spread_per_shot = 0.3
+max_spread = 6.0
+recoil = SubResource("recoil")
+viewmodel_kick = 0.045
+hip_position = Vector3(0.17, -0.18, -0.34)
+ads_position = Vector3(0, -0.09, -0.2)
+viewmodel_scene = ExtResource("3")
+fire_sound = ExtResource("4")
+dry_fire_sound = ExtResource("5")
+reload_sound = ExtResource("6")

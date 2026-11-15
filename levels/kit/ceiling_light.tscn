@@ -1,0 +1,33 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://systems/level/ceiling_light.gd" id="script"]
+[ext_resource type="Material" path="res://levels/materials/fluorescent.tres" id="tube"]
+[ext_resource type="Material" path="res://levels/materials/pipe.tres" id="pipe"]
+
+[sub_resource type="BoxMesh" id="tube_mesh"]
+material = ExtResource("tube")
+size = Vector3(0.16, 0.05, 1.4)
+
+[sub_resource type="BoxMesh" id="housing_mesh"]
+material = ExtResource("pipe")
+size = Vector3(0.3, 0.04, 1.6)
+
+[node name="CeilingLight" type="Node3D"]
+script = ExtResource("script")
+
+[node name="Housing" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.015, 0)
+mesh = SubResource("housing_mesh")
+
+[node name="Tube" type="MeshInstance3D" parent="."]
+mesh = SubResource("tube_mesh")
+
+[node name="Fixture" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, -0.07, 0)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 3.0
+light_bake_mode = 2
+light_volumetric_fog_energy = 1.5
+spot_range = 6.5
+spot_angle = 70.0
+spot_angle_attenuation = 0.6

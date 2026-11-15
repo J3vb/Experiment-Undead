@@ -1,0 +1,54 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://systems/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Script" path="res://systems/weapons/recoil_data.gd" id="2"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/kestrel_viewmodel.tscn" id="3"]
+[ext_resource type="AudioStream" path="res://assets/audio/kestrel_fire.wav" id="4"]
+[ext_resource type="AudioStream" path="res://assets/audio/dry_fire.wav" id="5"]
+[ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
+[ext_resource type="Resource" path="res://content/weapons/kestrel_smg_reforged.tres" id="7"]
+
+[sub_resource type="Resource" id="recoil"]
+script = ExtResource("2")
+pattern = Array[Vector2]([Vector2(0.12, 0.65), Vector2(-0.2, 0.6), Vector2(0.3, 0.55), Vector2(-0.35, 0.5), Vector2(0.4, 0.45), Vector2(-0.3, 0.45), Vector2(0.35, 0.4), Vector2(-0.4, 0.4)])
+random_spread = Vector2(0.3, 0.08)
+recovery_speed = 12.0
+ads_multiplier = 0.6
+permanent_ratio = 0.2
+reset_time = 0.3
+repeat_last = 4
+
+[resource]
+script = ExtResource("1")
+id = &"kestrel_smg"
+loot_tags = Array[StringName]([&"smg"])
+display_name = "Kestrel SMG"
+cost = 1000
+damage = 14.82
+min_damage = 9.69
+falloff_start = 12.0
+falloff_end = 35.0
+head_multiplier = 2.5
+fire_mode = 2
+rounds_per_minute = 850.0
+magazine_size = 30
+starting_reserve = 180
+max_reserve = 180
+reload_time = 2.0
+empty_reload_time = 2.6
+ads_time = 0.18
+ads_fov = 60.0
+move_speed_multiplier = 1.0
+hip_spread = 3.0
+ads_spread = 0.12
+spread_per_shot = 0.2
+max_spread = 6.0
+recoil = SubResource("recoil")
+viewmodel_kick = 0.025
+hip_position = Vector3(0.17, -0.18, -0.34)
+ads_position = Vector3(0, -0.06, -0.24)
+viewmodel_scene = ExtResource("3")
+fire_sound = ExtResource("4")
+dry_fire_sound = ExtResource("5")
+reload_sound = ExtResource("6")
+upgraded = ExtResource("7")

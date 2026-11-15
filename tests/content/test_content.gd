@@ -2,6 +2,7 @@
 ## everything it references exists. Bad data fails here, not in game.
 extends GutTest
 
+
 func _files(type: String) -> PackedStringArray:
 	var out: PackedStringArray = []
 	var dir: DirAccess = DirAccess.open("res://content/" + type)
@@ -13,9 +14,11 @@ func _files(type: String) -> PackedStringArray:
 			out.append("res://content/%s/%s" % [type, f.trim_suffix(".remap")])
 	return out
 
+
 func test_content_autoload_indexes_every_type() -> void:
-	for type: StringName in [&"weapons", &"enemies", &"waves", &"economy"]:
+	for type: StringName in [&"weapons", &"enemies", &"waves", &"economy", &"serums", &"power_ups"]:
 		assert_gt(Content.ids(type).size(), 0, "Content has %s" % type)
+
 
 func test_weapons_are_valid() -> void:
 	for path: String in _files("weapons"):
@@ -32,8 +35,21 @@ func test_weapons_are_valid() -> void:
 		assert_true(w.min_damage <= w.damage, path + " min_damage <= damage")
 		if w.viewmodel_scene:
 			var vm: Node = w.viewmodel_scene.instantiate()
-			assert_not_null(vm.get_node_or_null("Muzzle"), path + " viewmodel has Muzzle")
+			assert_not_null(vm.find_child("Muzzle", true, false), path + " viewmodel has Muzzle")
 			vm.free()
+
+
+func test_reforged_guns_follow_tier_one() -> void:
+	for path: String in _files("weapons"):
+		var w: WeaponData = load(path) as WeaponData
+		if w == null or w.upgraded == null:
+			continue
+		var up: WeaponData = w.upgraded
+		assert_ne(up.id, w.id, path + " upgrades into another gun")
+		assert_almost_eq(up.damage, w.damage * 2.0, 0.01, path + " Tier I: damage x2")
+		assert_eq(up.magazine_size, int(w.magazine_size * 1.5), path + " Tier I: magazine +50%")
+		assert_eq(up.max_reserve, w.max_reserve * 2, path + " Tier I: reserve x2")
+
 
 func test_enemies_are_valid() -> void:
 	for path: String in _files("enemies"):
@@ -49,6 +65,7 @@ func test_enemies_are_valid() -> void:
 			assert_true(z is Zombie, path + " scene root is Zombie")
 			z.free()
 
+
 func test_wave_rules_are_valid() -> void:
 	for path: String in _files("waves"):
 		var r: WaveRules = load(path) as WaveRules
@@ -59,3 +76,26 @@ func test_wave_rules_are_valid() -> void:
 		for entry: EnemySpawnEntry in r.enemy_mix:
 			assert_not_null(entry.enemy, path + " mix entry has an enemy")
 		assert_not_null(r.pick_enemy(1, RandomNumberGenerator.new()), path + " can spawn something in round 1")
+
+
+func test_serums_are_valid() -> void:
+	for path: String in _files("serums"):
+		var serum: SerumData = load(path) as SerumData
+		assert_not_null(serum, path + " is SerumData")
+		if serum == null:
+			continue
+		assert_eq(String(serum.id), path.get_file().get_basename(), path + " id matches file name")
+		assert_gt(serum.cost, 0, path + " cost")
+		if not SerumData.EFFECTS.has(serum.id):
+			assert_gt(serum.multipliers.size(), 0, path + " changes at least one stat")
+		for stat: StringName in serum.multipliers:
+			assert_has(SerumData.STATS, stat, "%s: '%s' is a stat code reads" % [path, stat])
+			assert_gt(serum.multipliers[stat], 0.0, path + " multiplier above 0")
+
+
+func test_power_ups_are_valid() -> void:
+	for path: String in _files("power_ups"):
+		var power_up: PowerUpData = load(path) as PowerUpData
+		assert_not_null(power_up, path + " is PowerUpData")
+		if power_up:
+			assert_eq(String(power_up.id), path.get_file().get_basename(), path + " id matches file name")
