@@ -38,6 +38,9 @@ jobs:
           if [ "$NO_TESTS_LABEL" = "true" ]; then args="$args --no-tests-label"; fi
           python tools/ci/check_pr.py $args
 
+      - name: Skills copies match (.agents/skills = .claude/skills)
+        run: python tools/ci/check_skills_mirror.py
+
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 20
