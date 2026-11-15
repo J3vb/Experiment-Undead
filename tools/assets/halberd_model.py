@@ -39,7 +39,6 @@ def receiver_parts(metal, black, olive):
             bevel=0.003,
         ),
         g.slab("Well", [(0.03, -0.008), (0.17, -0.008), (0.168, -0.034), (0.032, -0.034)], 0.07, black, bevel=0.003),
-        g.slab("EjectionPort", g.rounded(-0.04, 0.0, 0.08, 0.034, 0.005), 0.002, metal, x=0.032),
         g.lathe("Selector", [(0.009, -0.027), (0.009, -0.023)], (0, -0.12, -0.03), metal, 12, axis="x"),
     ]
     for x in (-1, 1):
@@ -84,7 +83,23 @@ def receiver_parts(metal, black, olive):
         g.slab("Grip", grip, 0.036, olive, bevel=0.005),
         g.slab("TriggerGuard", guard, 0.014, black, bevel=0.0015),
     ]
+    cut_port(parts[0], metal)
+    g.cut(parts[1], [g.slab("CoverChannel", g.rounded(-0.04, 0.074, 0.075, 0.084, 0.003), 0.024, black, bevel=0.001)])
     return parts
+
+
+def cut_port(part, metal):
+    """Cut the layered housing separately so the port exposes the inset moving bolt."""
+    g.cut(part, [g.slab("EjectionPocket", g.rounded(-0.09, 0.006, 0.085, 0.044, 0.005), 0.03, metal, x=0.039)])
+
+
+def flash_hider(black):
+    """A bored flash hider with transverse gas ports through its walls."""
+    hider = g.lathe("Hider", [(0.015, 0.76), (0.017, 0.765), (0.017, 0.81), (0.014, 0.816)], (0, 0, BORE_Z), black, 12)
+    cuts = [g.lathe("Bore", [(0.008, 0.73), (0.008, 0.818)], (0, 0, BORE_Z), black, 16)]
+    for y in (0.776, 0.793):
+        cuts.append(g.slab("HiderPort", g.rounded(y, 0.026, y + 0.008, 0.034, 0.003), 0.05, black))
+    return g.cut(hider, cuts)
 
 
 def front_parts(m, receiver, metal, black, olive):
@@ -97,21 +112,11 @@ def front_parts(m, receiver, metal, black, olive):
         10,
         turn=math.pi / 10,
     )
-    holes = []
-    side = 0.038 * math.cos(math.pi / 10) + 0.0004
-    for x in (-1, 1):
-        for i in range(7):
-            y = 0.225 + i * 0.034
-            holes.append(
-                g.slab(
-                    f"Hole{x}{i}",
-                    g.rounded(y, BORE_Z - 0.012, y + 0.022, BORE_Z + 0.012, 0.009),
-                    0.002,
-                    black,
-                    x=x * side,
-                )
-            )
-    m.join_into(shroud, holes)
+    holes = [g.lathe("ShroudCore", [(0.029, 0.198), (0.029, 0.482)], (0, 0, BORE_Z), metal, 20)]
+    for i in range(7):
+        y = 0.225 + i * 0.034
+        holes.append(g.slab(f"Vent{i}", g.rounded(y, 0.018, y + 0.022, 0.042, 0.009), 0.09, black))
+    g.cut(shroud, holes)
     m.attach(shroud, (0, 0.2, BORE_Z), receiver)
     barrel = g.lathe(
         "Barrel",
@@ -120,13 +125,13 @@ def front_parts(m, receiver, metal, black, olive):
         metal,
         16,
     )
-    pieces = []
+    g.cut(barrel, [g.lathe("Bore", [(0.008, 0.73), (0.008, 0.818)], (0, 0, BORE_Z), black, 16)])
+    pieces = [g.lathe("InnerBarrel", [(0.014, 0.19), (0.014, 0.48)], (0, 0, BORE_Z), metal, 16)]
     for i in range(6):
         y = 0.52 + i * 0.022
         pieces.append(g.lathe(f"Fin{i}", [(0.0195, y), (0.0195, y + 0.006)], (0, 0, BORE_Z), metal, 16))
     pieces += [
-        g.lathe("Hider", [(0.015, 0.76), (0.017, 0.765), (0.017, 0.81), (0.014, 0.815)], (0, 0, BORE_Z), black, 12),
-        g.lathe("Bore", [(0.008, 0.815), (0.008, 0.816)], (0, 0, BORE_Z), black, 12),
+        flash_hider(black),
         g.slab(
             "FrontBase",
             [(0.69, BORE_Z + 0.012), (0.72, BORE_Z + 0.012), (0.716, BORE_Z + 0.03), (0.694, BORE_Z + 0.03)],
@@ -201,8 +206,8 @@ def stock_parts(m, receiver, metal, black, olive):
         olive,
         bevel=0.004,
     )
+    g.cut(stock, [g.slab("StockWindow", g.rounded(-0.38, -0.04, -0.24, 0.01, 0.01), 0.06, black)])
     pieces = [
-        g.slab("StockWindow", g.rounded(-0.38, -0.04, -0.24, 0.01, 0.01), 0.05, black),
         g.slab(
             "ButtPlate",
             [(-0.432, 0.044), (-0.452, 0.044), (-0.455, -0.104), (-0.436, -0.11)],
@@ -229,7 +234,7 @@ def moving_parts(m, receiver, metal, black, olive):
         pieces.append(g.slab(f"MagCatch{x}", g.rounded(0.16, -0.1, 0.168, -0.06, 0.003), 0.01, metal, x=x * 0.03))
     m.join_into(magazine, pieces)
     m.attach(magazine, (0, 0.1, -0.034), receiver)
-    bolt = g.slab("Bolt", g.rounded(-0.08, 0.012, 0.04, 0.04, 0.003), 0.002, metal, x=0.0325)
+    bolt = g.slab("Bolt", g.rounded(-0.08, 0.012, 0.04, 0.04, 0.003), 0.002, metal, x=0.0265)
     m.attach(bolt, (0.0325, -0.02, 0.026), receiver)
     knob = [(0.005, 0.034), (0.005, 0.046), (0.009, 0.048), (0.009, 0.058), (0.007, 0.06)]
     handle = g.lathe("ChargingHandle", knob, (0, 0.02, 0.026), black, 12, axis="x")
@@ -249,8 +254,14 @@ def build(m) -> None:
     black = m.material("MatteBlack", m.MATTE_BLACK, roughness=0.75)
     olive = m.material("OlivePolymer", m.srgb("#5F6D68"), roughness=0.85)
     receiver = g.slab("Receiver", [(-0.19, 0.0), (0.19, 0.0), (0.19, 0.05), (-0.19, 0.05)], 0.056, metal, bevel=0.001)
+    cut_port(receiver, metal)
     m.join_into(receiver, receiver_parts(metal, black, olive))
     front_parts(m, receiver, metal, black, olive)
     handle_and_bipod(m, receiver, metal, black)
     stock_parts(m, receiver, metal, black, olive)
     moving_parts(m, receiver, metal, black, olive)
+    inlays = []
+    for side in (-1, 1):
+        strip = g.slab("Inlay", g.rounded(-0.09, 0.065, 0.09, 0.067, 0.0008), 0.0006, metal, x=side * 0.029)
+        inlays.append(g.mark_inlay(strip))
+    m.join_into(receiver, inlays)

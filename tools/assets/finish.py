@@ -164,8 +164,10 @@ def cavity(mesh) -> list:
     return out
 
 
-def _glows(obj) -> bool:
+def _unshaded(obj) -> bool:
     for mat in obj.data.materials:
+        if mat and mat.name == "OpticGlass":
+            continue
         bsdf = mat.node_tree.nodes.get("Principled BSDF") if mat and mat.node_tree else None
         if bsdf is None or bsdf.inputs["Emission Strength"].default_value <= 0.0:
             return False
@@ -173,13 +175,13 @@ def _glows(obj) -> bool:
 
 
 def apply_mask(obj) -> None:
-    """Softens the baked AO, multiplies in cavity, and keeps glowing parts unshaded."""
+    """Softens baked AO/cavity; light sources and optical glass keep their full colour."""
     mesh = obj.data
     attr = mesh.color_attributes[COLOR_NAME]
-    glow = _glows(obj)
+    unshaded = _unshaded(obj)
     cav = cavity(mesh)
     for loop in mesh.loops:
-        if glow:
+        if unshaded:
             value = 1.0
         else:
             ao = attr.data[loop.index].color[0]

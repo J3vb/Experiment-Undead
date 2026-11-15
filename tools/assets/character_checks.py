@@ -8,7 +8,17 @@ import gear_paint
 from mathutils import Vector
 
 BUDGETS = {"characters": (16_000, 4), "gear": (6_000, 4)}
-TRIANGLE_CAPS = {"player_arms": 10_000, "charm_*": 800, "implant_*": 1_500}
+# Close inspection: round links, hollow specimen glass and distinct implant shells.
+TRIANGLE_CAPS = {
+    "player_arms": 10_000,
+    "charm_*": 1_000,
+    "charm_vial": 1_200,
+    "charm_dog_tags": 1_300,
+    "charm_coin": 1_200,
+    "implant_*": 1_500,
+    "implant_spine": 1_600,
+    "implant_ocular": 1_800,
+}
 CHARMS = ("charm_dog_tags", "charm_vial", "charm_keycard", "charm_dosimeter", "charm_coin")
 IMPLANTS = ("implant_reflex", "implant_lung", "implant_spine", "implant_ocular", "implant_relay")
 CHARM_JOINTS = {"Hook": None, "Link1": "Hook", "Link2": "Link1", "Body": "Link2"}
@@ -251,7 +261,10 @@ def check(objects: list, folder: str, stem: str) -> list:
         return ["character/gear model needs a mesh"]
     errors = _check_skin(meshes, armatures, folder) + _check_materials(meshes)
     tris = sum(sum(len(face.vertices) - 2 for face in obj.data.polygons) for obj in meshes)
-    cap = min((cap for pattern, cap in TRIANGLE_CAPS.items() if fnmatchcase(stem, pattern)), default=BUDGETS[folder][0])
+    fallback = min(
+        (cap for pattern, cap in TRIANGLE_CAPS.items() if fnmatchcase(stem, pattern)), default=BUDGETS[folder][0]
+    )
+    cap = TRIANGLE_CAPS.get(stem, fallback)
     if tris > cap:
         errors.append(f"{tris} triangles, budget for '{stem}' is {cap}")
     errors += _check_rigid_gear(objects, stem, tris)

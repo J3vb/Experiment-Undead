@@ -80,6 +80,16 @@ class FinishTest(unittest.TestCase):
             self.assertAlmostEqual(c.color[0], 1.0, places=3)
         self.assertTrue(math.isclose(finish.SMOOTH_ANGLE, math.radians(35.0)))
 
+    def test_non_emissive_optic_keeps_clear_shading_and_opaque_alpha(self) -> None:
+        glass = bm.material("OpticGlass", bm.LENS, metallic=0.3, roughness=0.05)
+        lens = bm.cylinder("OpticGlass", 0.018, 0.001, (0, 0, 0), glass)
+        metal = bm.material("GunMetal", bm.GUN_METAL, metallic=0.8)
+        bm.box("Housing", (0.05, 0.03, 0.05), (0, 0.02, 0), metal)
+        finish.finish()
+        self.assertEqual(glass.node_tree.nodes["Principled BSDF"].inputs["Emission Strength"].default_value, 0.0)
+        for color in lens.data.color_attributes[finish.COLOR_NAME].data:
+            self.assertEqual(tuple(color.color), (1.0, 1.0, 1.0, 1.0))
+
 
 if __name__ == "__main__":
     unittest.main()

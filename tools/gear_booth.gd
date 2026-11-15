@@ -41,7 +41,7 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 	if _out.is_empty():
-		_apply_rarity(_rarity if _rarity != "all" else RARITIES[0])
+		_apply_rarity(_rarity_rows()[0])
 	else:
 		set_process(false)
 		_render.call_deferred()
@@ -237,12 +237,18 @@ func _render() -> void:
 	if _mode != "models":
 		await _render_display(directory)
 		return
-	var rarities: Array[String] = RARITIES if _rarity == "all" else [_rarity]
+	var rarities: Array[String] = _rarity_rows()
 	for path: String in MODELS:
 		if not _show_model(path) or not await _render_model(path.get_file().get_basename(), rarities, directory):
 			get_tree().quit(1)
 			return
 	get_tree().quit()
+
+
+func _rarity_rows() -> Array[String]:
+	if _rarity == "all":
+		return RARITIES
+	return [_rarity]
 
 
 func _render_model(model_name: String, rarities: Array[String], directory: String) -> bool:
@@ -273,7 +279,7 @@ func _render_model(model_name: String, rarities: Array[String], directory: Strin
 
 
 func _render_display(directory: String) -> void:
-	_apply_rarity(_rarity if _rarity != "all" else RARITIES[0])
+	_apply_rarity(_rarity_rows()[0])
 	_turntable.rotation.y = deg_to_rad(25.0) if _mode == "character" else 0.0
 	_label.text = (
 		"FIELD GEAR / ECONOMY + LUCK / ABILITIES" if _mode == "lineup" else "MEDIUM VEST / OCULAR / HALCYON KEYCARD"

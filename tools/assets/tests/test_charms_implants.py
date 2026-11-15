@@ -66,7 +66,14 @@ def _zone_points(obj, value):
 def test_gear_detail_rigid_nodes_materials_and_closed_shells(gear):
     name, objects = gear
     triangles = sum(len(face.vertices) - 2 for obj in _meshes(objects) for face in obj.data.polygons)
-    low, high = (600, 800) if name in character_checks.CHARMS else (1_000, 1_500)
+    low, high = (600, 1_000) if name in character_checks.CHARMS else (1_000, 1_500)
+    high = {
+        "charm_vial": 1_200,
+        "charm_dog_tags": 1_300,
+        "charm_coin": 1_200,
+        "implant_spine": 1_600,
+        "implant_ocular": 1_800,
+    }.get(name, high)
     assert low <= triangles <= high, (name, triangles)
     nodes = {obj.name: obj for obj in objects}
     assert character_checks.JOINTS[name].keys() <= nodes.keys()
@@ -75,7 +82,16 @@ def test_gear_detail_rigid_nodes_materials_and_closed_shells(gear):
     assert not any(obj.type == "ARMATURE" or obj.modifiers for obj in objects)
     materials = {material.name for obj in _meshes(objects) for material in obj.data.materials}
     assert "GearPlate" in materials
-    assert materials <= {"GearPlate", "GearPolymer", "GearRubber"}
+    expected_materials = {"GearPlate", "GearPolymer", "GearRubber"}
+    if name in {"charm_vial", "implant_ocular"}:
+        expected_materials.add("GearGlass")
+        assert "GearGlass" in materials, "specimen and optical hardware need the glass finish"
+    if name == "charm_vial":
+        expected_materials.remove("GearPolymer")
+        expected_materials.add("GearLiquid")
+        assert "GearLiquid" in materials, "the liquid needs a polished finish beneath the glass"
+    assert materials <= expected_materials
+    assert len(materials) <= 4
     assert check_models.check_geometry(objects, "gear") == []
     assert character_checks.check(objects, "gear", name) == []
     assert check_models.check_joints(nodes, name) == []

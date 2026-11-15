@@ -193,7 +193,7 @@ def _gloves(armature, mats):
         across, along = Vector((-sign, 0, -1)).normalized(), Vector((sign, 0, -1)).normalized()
         inward, centre = Vector((0, -1, 0)), Vector((sign * 0.649, 0, 1.011))
         palm = soft.ellipsoid(
-            "GlovePalm" + side, (sign * 0.649, 0, 1.011), (0.046, 0.027, 0.055), mats["rubber"], 20, 12
+            "GlovePalm" + side, (sign * 0.649, 0, 1.011), (0.046, 0.027, 0.055), mats["rubber"], (20, 12)
         )
         palm.rotation_euler.y = -sign * math.pi / 4
         _paint_bind(palm, armature, paint.ZONE_ACCENT)

@@ -7,8 +7,8 @@ func test_kestrel_uses_scaled_balance_sheet_damage() -> void:
 	assert_not_null(gun)
 	if gun == null:
 		return
-	assert_almost_eq(gun.damage, 26.0 * 0.57, 0.001)
-	assert_almost_eq(gun.min_damage, 17.0 * 0.57, 0.001)
+	assert_almost_eq(gun.damage, 45.0 * 0.57, 0.001, "sheet 45 x 0.57, scaled once")
+	assert_almost_eq(gun.min_damage, 17.0, 0.001)
 	assert_eq(gun.fire_mode, WeaponData.FireMode.AUTO)
 	assert_eq(gun.rounds_per_minute, 850.0)
 	assert_eq(gun.starting_reserve, 180)

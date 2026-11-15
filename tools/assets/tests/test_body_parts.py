@@ -197,8 +197,8 @@ def test_ellipsoid_extra_palm_resolution_retains_default_geometry_and_scale():
     mat = bpy.data.materials.new("BodyRubber")
     at, size = (0.649, 0, 1.011), (0.046, 0.027, 0.055)
     default = soft.ellipsoid("DefaultPalm", at, size, mat)
-    explicit = soft.ellipsoid("ExplicitPalm", at, size, mat, segments=12, rings=8)
-    detailed = soft.ellipsoid("DetailedPalm", at, size, mat, segments=20, rings=12)
+    explicit = soft.ellipsoid("ExplicitPalm", at, size, mat, resolution=(12, 8))
+    detailed = soft.ellipsoid("DetailedPalm", at, size, mat, resolution=(20, 12))
     bpy.context.view_layer.update()
     assert [tuple(vertex.co) for vertex in default.data.vertices] == [
         tuple(vertex.co) for vertex in explicit.data.vertices

@@ -246,7 +246,19 @@ def test_character_feet_need_floor(monkeypatch):
     assert any("feet must be at z = 0" in error for error in check(monkeypatch, "characters", "test_character"))
 
 
-@pytest.mark.parametrize(("stem", "cap"), [("charm_test", 800), ("implant_test", 1_500), ("player_arms", 10_000)])
+@pytest.mark.parametrize(
+    ("stem", "cap"),
+    [
+        ("charm_test", 1_000),
+        ("charm_vial", 1_200),
+        ("charm_dog_tags", 1_300),
+        ("charm_coin", 1_200),
+        ("implant_test", 1_500),
+        ("implant_spine", 1_600),
+        ("implant_ocular", 1_800),
+        ("player_arms", 10_000),
+    ],
+)
 def test_per_stem_triangle_caps(monkeypatch, stem, cap):
     obj = cube()
     bm = bmesh.new()

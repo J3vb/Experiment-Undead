@@ -3,13 +3,25 @@
 ## its Blender material asked for, and the shader multiplies in the baked shading.
 extends GutTest
 
-const GUNS: Array[String] = ["rifle_ar", "kestrel_smg", "talon_dmr", "shotgun_brenner"]
+const GUNS: Array[String] = [
+	"rifle_ar",
+	"kestrel_smg",
+	"talon_dmr",
+	"shotgun_brenner",
+	"hollis_44",
+	"mako_pdw",
+	"atlas_auto",
+	"halberd_lmg",
+	"corvid_338",
+	"siphon"
+]
 const SHADER: String = "res://assets/materials/gun_finish.gdshader"
 const IMPORTER: GDScript = preload("res://tools/assets/gun_finish_import.gd")
 const KNURLED: Dictionary[String, String] = {
 	"rifle_ar": "GunMetalKnurled",
 	"kestrel_smg": "MatteBlackKnurled",
 	"talon_dmr": "GunMetalKnurled",
+	"hollis_44": "WoodKnurled",
 }
 
 
@@ -72,6 +84,59 @@ func test_shader_multiplies_in_the_baked_shading() -> void:
 	var code: String = (load(SHADER) as Shader).code
 	assert_string_contains(code, "ALBEDO = color * ao")
 	assert_string_contains(code, "float ao = COLOR.r")
+
+
+func test_rarity_overrides_are_local_to_each_mesh() -> void:
+	var shared: ShaderMaterial = ShaderMaterial.new()
+	shared.shader = load(SHADER) as Shader
+	var common: MeshInstance3D = MeshInstance3D.new()
+	var legendary: MeshInstance3D = MeshInstance3D.new()
+	for part: MeshInstance3D in [common, legendary]:
+		part.mesh = BoxMesh.new()
+		part.material_override = shared
+		add_child_autofree(part)
+	common.set_instance_shader_parameter(&"rarity_color", Color("#D9D9D2"))
+	legendary.set_instance_shader_parameter(&"rarity_color", Color("#FF8A1C"))
+	assert_eq(common.get_instance_shader_parameter(&"rarity_color"), Color("#D9D9D2"))
+	assert_eq(legendary.get_instance_shader_parameter(&"rarity_color"), Color("#FF8A1C"))
+	assert_same(common.material_override, legendary.material_override, "rarity does not duplicate the finish")
+
+
+func test_imported_rarity_masks_cover_only_a_thin_inlay() -> void:
+	for id: String in GUNS:
+		var gun: Node3D = (load("res://assets/models/weapons/%s.glb" % id) as PackedScene).instantiate() as Node3D
+		var areas: Vector2 = Vector2.ZERO
+		for node: Node in gun.find_children("*", "MeshInstance3D", true, false):
+			var mesh: Mesh = (node as MeshInstance3D).mesh
+			for surface: int in mesh.get_surface_count():
+				areas += _inlay_area(mesh.surface_get_arrays(surface))
+		assert_gt(areas.x, 0.0, id + " exports a rarity inlay")
+		assert_lt(areas.x / areas.y, 0.02, id + " rarity stays below two percent of surface area")
+		gun.free()
+
+
+func test_optic_glass_stays_opaque_and_non_emissive() -> void:
+	for id: String in ["rifle_ar", "talon_dmr", "corvid_338"]:
+		var materials: Dictionary[String, Material] = _materials(id)
+		var glass: BaseMaterial3D = materials["OpticGlass"] as BaseMaterial3D
+		assert_false(glass.emission_enabled, id + " optic does not glow")
+		assert_eq(glass.transparency, BaseMaterial3D.TRANSPARENCY_DISABLED, id + " optic keeps depth writing")
+
+
+func _inlay_area(arrays: Array) -> Vector2:
+	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var colors: PackedColorArray = arrays[Mesh.ARRAY_COLOR]
+	var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+	var areas: Vector2 = Vector2.ZERO
+	for index: int in range(0, indices.size(), 3):
+		var a: int = indices[index]
+		var b: int = indices[index + 1]
+		var c: int = indices[index + 2]
+		var area: float = (vertices[b] - vertices[a]).cross(vertices[c] - vertices[a]).length() * 0.5
+		areas.y += area
+		if colors[a].a < 0.5 or colors[b].a < 0.5 or colors[c].a < 0.5:
+			areas.x += area
+	return areas
 
 
 func _param(material: Material, param: String) -> Variant:

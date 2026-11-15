@@ -34,6 +34,7 @@ var _offsets: Dictionary[StringName, Vector3] = {}
 var _hips_rest: Vector3 = Vector3.ZERO
 var _belly: Node3D
 var _phase: float = 0.0
+var _crawler: bool = false
 
 
 func _ready() -> void:
@@ -44,9 +45,9 @@ func _ready() -> void:
 	for mesh: Node in body.find_children("*", "GeometryInstance3D", true, false):
 		(mesh as GeometryInstance3D).gi_mode = GeometryInstance3D.GI_MODE_DISABLED
 	_skeleton = body.find_children("*", "Skeleton3D", true, false)[0] as Skeleton3D
-	var crawler: bool = body.find_child("Crawler", true, false) != null
+	_crawler = body.find_child("Crawler", true, false) != null
 	for part_name: StringName in PARTS:
-		if crawler and part_name in [&"LegL", &"LegR"]:
+		if _crawler and part_name in [&"LegL", &"LegR"]:
 			continue
 		_cache_bone(part_name, PARTS[part_name])
 	for bone_name: StringName in [&"forearm_L", &"forearm_R", &"shin_L", &"shin_R"]:
@@ -156,6 +157,9 @@ func get_offset(part_name: StringName) -> Vector3:
 
 ## Walk cycle scaled by ground speed; `reach` (0..1) lifts the arms toward a close target.
 func pose_walk(speed: float, reach: float, delta: float) -> void:
+	if _crawler:
+		_pose_crawl(speed, reach, delta)
+		return
 	_phase += delta * (1.5 + speed * 2.5)
 	var stride: float = clampf(speed / 2.0, 0.0, 1.0)
 	var swing: float = sin(_phase) * stride
@@ -177,6 +181,9 @@ func pose_walk(speed: float, reach: float, delta: float) -> void:
 ## Attack swing. `t` 0..1 is the wind-up (arms rise, body leans back),
 ## 1..2 is the strike (arms slam down, body lunges).
 func pose_attack(t: float) -> void:
+	if _crawler:
+		_pose_crawl_attack(t)
+		return
 	var arms: float
 	var lean: float
 	if t < 1.0:
@@ -196,6 +203,31 @@ func pose_attack(t: float) -> void:
 	_pose_part(&"forearm_R", Vector3(-0.35, 0.0, 0.0))
 	_pose_part(&"shin_L", Vector3(0.1, 0.0, 0.0))
 	_pose_part(&"shin_R", Vector3(0.15, 0.0, 0.0))
+
+
+func _pose_crawl(speed: float, reach: float, delta: float) -> void:
+	_phase += delta * (1.5 + speed * 2.5)
+	var swing: float = sin(_phase) * clampf(speed / 2.0, 0.0, 1.0)
+	var lift: float = -0.12 - 0.16 * reach
+	_pose_part(&"ArmL", Vector3(lift - swing * 0.12, 0.0, 0.0))
+	_pose_part(&"ArmR", Vector3(lift + swing * 0.12, 0.0, 0.0))
+	_pose_part(&"forearm_L", Vector3(-0.15 - maxf(swing, 0.0) * 0.18, 0.0, 0.0))
+	_pose_part(&"forearm_R", Vector3(-0.15 - maxf(-swing, 0.0) * 0.18, 0.0, 0.0))
+	_pose_part(&"Torso", Vector3(-0.025, 0.0, swing * 0.025))
+	_pose_part(&"Head", Vector3(0.0, 0.0, sin(_phase * 0.5) * 0.06))
+	_skeleton.set_bone_pose_position(_bones[&"Hips"], _hips_rest)
+
+
+func _pose_crawl_attack(t: float) -> void:
+	var raised: float = ease(clampf(t, 0.0, 1.0), 0.5)
+	var lowered: float = ease(clampf(t - 1.0, 0.0, 1.0), 0.3)
+	var lift: float = raised * (1.0 - lowered)
+	_pose_part(&"ArmL", Vector3(-0.75 * lift, 0.0, 0.0))
+	_pose_part(&"ArmR", Vector3(-0.75 * lift, 0.0, 0.0))
+	_pose_part(&"forearm_L", Vector3(-0.14 - 0.18 * lift, 0.0, 0.0))
+	_pose_part(&"forearm_R", Vector3(-0.14 - 0.18 * lift, 0.0, 0.0))
+	_pose_part(&"Torso", Vector3(-0.10 * lift, 0.0, 0.0))
+	_skeleton.set_bone_pose_position(_bones[&"Hips"], _hips_rest)
 
 
 ## Climb over a window sill. `t` 0..1: hands reach for the sill, the body
