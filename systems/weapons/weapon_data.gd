@@ -54,6 +54,7 @@ enum FireMode { SEMI, BURST, AUTO }
 @export var viewmodel_kick: float = 0.045
 
 @export_group("Presentation")
+@export var no_muzzle_flash: bool = false
 @export var hip_position: Vector3 = Vector3(0.22, -0.2, -0.45)
 @export var ads_position: Vector3 = Vector3(0.0, -0.118, -0.32)
 @export var viewmodel_scene: PackedScene

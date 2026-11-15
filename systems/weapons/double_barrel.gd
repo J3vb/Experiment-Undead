@@ -21,6 +21,12 @@ static func attach_to(owner_weapon: Weapon) -> DoubleBarrel:
 	return component
 
 
+static func consume_rounds(owner_weapon: Weapon, component: DoubleBarrel) -> int:
+	var rounds: int = component.rounds_for_shot() if component else 1
+	owner_weapon.instance.ammo_in_mag -= rounds
+	return rounds
+
+
 func buffer(remaining: float) -> float:
 	var held: bool = weapon.shooter != null and weapon.shooter.input_enabled and weapon.shooter.last_frame.has(ALT_FIRE)
 	var just_pressed: bool = held and not _held

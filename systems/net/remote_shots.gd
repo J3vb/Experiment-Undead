@@ -70,7 +70,14 @@ func shot(weapon_id: StringName, origin: Vector3, points: PackedVector3Array) ->
 	var sender: int = multiplayer.get_remote_sender_id()
 	var player: Player = session.players.find_player(sender)
 	var data: WeaponData = _weapons.get(weapon_id)
-	if player == null or not player.is_alive() or data == null:
+	if (
+		player == null
+		or player.is_dead
+		or not (player.is_alive() or player.is_downed)
+		or session.is_over
+		or (player.is_downed and weapon_id != PlayerStateSync.PISTOL)
+		or data == null
+	):
 		return
 	if not _valid_pellet_count(data, points.size()) or not origin.is_finite():
 		return

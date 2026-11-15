@@ -276,3 +276,52 @@ func _assert_shot(effects: RemoteShotEffects, data: WeaponData, pellet_count: in
 	assert_true(effects._light.visible)
 	assert_eq(effects._audio.stream, data.fire_sound)
 	assert_eq(effects._audio.bus, &"Weapons")
+
+
+func test_downed_client_sidearm_shot_reaches_host_and_other_client() -> void:
+	var peer_id: int = _roots[1].multiplayer.get_unique_id()
+	var shooter: Player = _sessions[1].players.find_player(peer_id)
+	var server_copy: Player = _sessions[0].players.find_player(peer_id)
+	server_copy.take_damage(DamageInfo.create(1000.0, null))
+	await wait_until(func() -> bool: return shooter.is_downed, 3.0, "owner sees downed state")
+	assert_eq(shooter.weapons.current.data.id, &"pistol_service")
+	var host_effects: RemoteShotEffects = _effects(0, peer_id)
+	var other_effects: RemoteShotEffects = _effects(2, peer_id)
+	shooter.weapons.current.fire()
+	await wait_until(
+		func() -> bool: return host_effects.has_node("Tracers") and other_effects.has_node("Tracers"),
+		3.0,
+		"downed sidearm cosmetics relayed"
+	)
+	_assert_shot(host_effects, shooter.weapons.current.data)
+	_assert_shot(other_effects, shooter.weapons.current.data)
+	assert_false(shooter.has_node("ShotEffects"), "owner receives no duplicate cosmetics")
+
+
+func test_downed_rifle_and_dead_sidearm_cosmetic_requests_are_refused() -> void:
+	var peer_id: int = _roots[1].multiplayer.get_unique_id()
+	var shooter: Player = _sessions[1].players.find_player(peer_id)
+	var server_copy: Player = _sessions[0].players.find_player(peer_id)
+	var shots: RemoteShots = _sessions[1].remote_shots
+	var points: PackedVector3Array = PackedVector3Array([Vector3.FORWARD * 100.0])
+	server_copy.take_damage(DamageInfo.create(1000.0, null))
+	await wait_until(func() -> bool: return shooter.is_downed, 3.0, "owner sees downed state")
+	shots.shot.rpc_id(1, &"rifle_ar", Vector3.ZERO, points)
+	await wait_physics_frames(8)
+	assert_null(_effects(0, peer_id)._audio.stream, "downed rifle shot is not relayed to host")
+	assert_null(_effects(2, peer_id)._audio.stream, "downed rifle shot is not relayed to observer")
+	server_copy.state_sync._physics_process(30.0)
+	assert_true(server_copy.is_dead)
+	shots.shot.rpc_id(1, &"pistol_service", Vector3.ZERO, points)
+	await wait_physics_frames(8)
+	assert_null(_effects(0, peer_id)._audio.stream, "dead sidearm shot is not relayed to host")
+	assert_null(_effects(2, peer_id)._audio.stream, "dead sidearm shot is not relayed to observer")
+
+
+func test_finished_match_refuses_cosmetic_requests() -> void:
+	var peer_id: int = _roots[1].multiplayer.get_unique_id()
+	_sessions[0].is_over = true
+	_sessions[1].remote_shots.shot.rpc_id(1, &"rifle_ar", Vector3.ZERO, PackedVector3Array([Vector3.FORWARD * 100.0]))
+	await wait_physics_frames(8)
+	assert_null(_effects(0, peer_id)._audio.stream)
+	assert_null(_effects(2, peer_id)._audio.stream)

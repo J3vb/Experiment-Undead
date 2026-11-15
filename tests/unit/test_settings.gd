@@ -40,6 +40,7 @@ func test_defaults_for_missing_file() -> void:
 		&"controls": {&"mouse_sensitivity": 0.0022, &"ads_sensitivity_multiplier": 0.8, &"invert_y": false},
 		&"video": {&"fov": 110, &"max_fps": 0, &"vsync": false, &"show_fps": false},
 		&"audio": {&"master_volume": 1.0, &"music_volume": 0.8, &"sfx_volume": 1.0},
+		&"network": {&"last_address": "", &"last_port": 7777},
 	}
 	for section: StringName in expected:
 		for key: StringName in expected[section]:
@@ -73,6 +74,40 @@ func test_clamps_values() -> void:
 	assert_eq(_settings.get_value(&"video", &"fov"), 120)
 	_settings.set_value(&"video", &"max_fps", -30)
 	assert_eq(_settings.get_value(&"video", &"max_fps"), 0)
+
+
+func test_network_address_and_port_survive_reload() -> void:
+	_settings.set_value(&"network", &"last_address", " 192.168.1.20:7788 ")
+	_settings.set_value(&"network", &"last_port", 7788)
+	var loaded: Node = SETTINGS_SCRIPT.new()
+	loaded.config_path = PATH
+	add_child_autofree(loaded)
+	assert_eq(loaded.get_value(&"network", &"last_address"), "192.168.1.20:7788")
+	assert_eq(loaded.get_value(&"network", &"last_port"), 7788)
+	assert_typeof(loaded.get_value(&"network", &"last_port"), TYPE_INT)
+
+
+func test_network_port_clamps_and_bad_types_use_defaults() -> void:
+	_settings.set_value(&"network", &"last_port", 0)
+	assert_eq(_settings.get_value(&"network", &"last_port"), 1)
+	_settings.set_value(&"network", &"last_port", 70000)
+	assert_eq(_settings.get_value(&"network", &"last_port"), 65535)
+	_settings.set_value(&"network", &"last_port", "7778")
+	assert_eq(_settings.get_value(&"network", &"last_port"), 7777)
+	_settings.set_value(&"network", &"last_address", 123)
+	assert_eq(_settings.get_value(&"network", &"last_address"), "")
+	_settings.set_value(&"network", &"last_port", NAN)
+	assert_eq(_settings.get_value(&"network", &"last_port"), 7777)
+
+
+func test_network_bad_saved_values_fall_back_to_defaults() -> void:
+	var config: ConfigFile = ConfigFile.new()
+	config.set_value("network", "last_address", ["bad"])
+	config.set_value("network", "last_port", false)
+	config.save(PATH)
+	_settings.load_settings()
+	assert_eq(_settings.get_value(&"network", &"last_address"), "")
+	assert_eq(_settings.get_value(&"network", &"last_port"), 7777)
 
 
 func test_broken_file_falls_back_to_defaults() -> void:

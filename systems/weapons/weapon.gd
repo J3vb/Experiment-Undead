@@ -207,8 +207,7 @@ func _handle_trigger() -> void:
 ## Fires one shot (all pellets) right now. Public for tests and AI.
 func fire() -> void:
 	RoundReload.cancel(self)
-	var rounds: int = _double_barrel.rounds_for_shot() if _double_barrel else 1
-	instance.ammo_in_mag -= rounds
+	var rounds: int = DoubleBarrel.consume_rounds(self, _double_barrel)
 	var spread: float = get_current_spread()
 	var origin: Vector3 = camera.global_position
 	var basis: Basis = camera.global_basis
@@ -331,6 +330,7 @@ func _pose_moving_parts() -> void:
 
 
 func _set_flash(on: bool) -> void:
+	on = on and not data.no_muzzle_flash
 	if _flash_light:
 		_flash_light.visible = on
 	if _flash_mesh:
