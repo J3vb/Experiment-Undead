@@ -60,7 +60,8 @@ func test_roll_offers_a_gun_the_player_does_not_hold() -> void:
 	assert_eq(vault.get_prompt(player), "", "nothing to press while rolling")
 	_finish_roll()
 	assert_eq(vault.state, SpecimenVault.State.OFFERING)
-	assert_has([&"brenner_trench", &"kestrel_smg", &"talon_dmr"], vault.offer.id, "offers an unowned gun")
+	assert_has(vault.pool, vault.offer, "offers a gun from the map pool")
+	assert_ne(vault.offer.id, &"rifle_ar", "never the gun the player holds")
 	var offered: WeaponData = vault.offer
 	assert_string_contains(vault.get_prompt(player), "Take " + offered.display_name)
 	vault.interact(player)
@@ -77,15 +78,19 @@ func test_offer_runs_out() -> void:
 	assert_eq(player.weapons.current.data.id, &"rifle_ar", "offer left in the Vault")
 
 
+## Gives the player the Reforged version of every pool gun except `skip` (the Vault counts those as held).
+func _hold_pool_except(skip: StringName) -> void:
+	player.weapons.max_slots = vault.pool.size() + 1
+	for gun: WeaponData in vault.pool:
+		if gun.id != skip and gun.id != &"rifle_ar":
+			player.weapons.give(gun.upgraded)
+	player.weapons.equip(0)
+
+
 func test_nothing_to_roll_when_the_player_holds_the_whole_pool() -> void:
 	level.turn_power_on()
-	player.weapons.max_slots = 4
-	player.weapons.give(Content.weapon(&"talon_dmr_reforged"))
-	player.weapons.give(load("res://content/weapons/brenner_trench.tres") as WeaponData)
-	player.weapons.equip(0)
-	player.weapons.give(load("res://content/weapons/kestrel_smg_reforged.tres") as WeaponData)
-	player.weapons.equip(1)
-	player.weapons.give(load("res://content/weapons/rifle_ar_reforged.tres") as WeaponData)
+	assert_eq(vault.pool.size(), 9, "Halcyon pool: 4 wall guns and the 5 Vault guns")
+	_hold_pool_except(&"")
 	assert_eq(vault.get_prompt(player), "")
 	vault.interact(player)
 	assert_eq(vault.state, SpecimenVault.State.IDLE)
@@ -110,11 +115,8 @@ func test_last_roll_refunds_and_moves_the_vault() -> void:
 
 
 func test_vault_can_offer_the_kestrel_from_the_map_pool() -> void:
-	player.weapons.max_slots = 3
-	player.weapons.give(Content.weapon(&"talon_dmr"))
+	_hold_pool_except(&"kestrel_smg")
 	level.turn_power_on()
-	player.weapons.equip(0)
-	player.weapons.give(Content.weapon(&"brenner_trench"))
 	vault.interact(player)
 	_finish_roll()
 	assert_eq(vault.state, SpecimenVault.State.OFFERING)

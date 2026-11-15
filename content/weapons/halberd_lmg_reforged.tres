@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://systems/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Script" path="res://systems/weapons/recoil_data.gd" id="2"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/halberd_viewmodel.tscn" id="3"]
+[ext_resource type="AudioStream" path="res://assets/audio/halberd_fire.wav" id="4"]
+[ext_resource type="AudioStream" path="res://assets/audio/dry_fire.wav" id="5"]
+[ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
+
+[sub_resource type="Resource" id="recoil"]
+script = ExtResource("2")
+pattern = Array[Vector2]([Vector2(0.2, 1.4), Vector2(-0.3, 1.5), Vector2(0.4, 1.3), Vector2(-0.2, 1.4)])
+random_spread = Vector2(0.35, 0.2)
+recovery_speed = 9.0
+ads_multiplier = 0.6
+permanent_ratio = 0.15
+reset_time = 0.25
+repeat_last = 1
+
+[resource]
+script = ExtResource("1")
+id = &"halberd_lmg_reforged"
+loot_tags = Array[StringName]([&"lmg"])
+display_name = "Halberd Reforged"
+cost = 0
+crate_weight = 0.6
+damage = 85.5
+min_damage = 59.85
+falloff_start = 30.0
+falloff_end = 70.0
+max_range = 200.0
+pellets = 1
+head_multiplier = 2.5
+fire_mode = 2
+rounds_per_minute = 600.0
+magazine_size = 150
+starting_reserve = 800
+max_reserve = 800
+reload_time = 5.5
+empty_reload_time = 6.2
+ads_time = 0.35
+ads_fov = 55.0
+move_speed_multiplier = 0.85
+hip_spread = 4.0
+ads_spread = 0.25
+move_spread = 3.0
+spread_per_shot = 0.25
+max_spread = 8.0
+recoil = SubResource("recoil")
+viewmodel_kick = 0.04
+hip_position = Vector3(0.17, -0.2, -0.34)
+ads_position = Vector3(0, -0.098, -0.26)
+viewmodel_scene = ExtResource("3")
+fire_sound = ExtResource("4")
+dry_fire_sound = ExtResource("5")
+reload_sound = ExtResource("6")

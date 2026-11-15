@@ -1,0 +1,58 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://systems/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Script" path="res://systems/weapons/recoil_data.gd" id="2"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/atlas_viewmodel.tscn" id="3"]
+[ext_resource type="AudioStream" path="res://assets/audio/atlas_fire.wav" id="4"]
+[ext_resource type="AudioStream" path="res://assets/audio/dry_fire.wav" id="5"]
+[ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
+[ext_resource type="Resource" path="res://content/weapons/atlas_auto_reforged.tres" id="7"]
+
+[sub_resource type="Resource" id="recoil"]
+script = ExtResource("2")
+pattern = Array[Vector2]([Vector2(0.4, 3.2), Vector2(-0.5, 3.4)])
+random_spread = Vector2(0.8, 0.5)
+recovery_speed = 8.0
+ads_multiplier = 0.8
+permanent_ratio = 0.12
+reset_time = 0.35
+repeat_last = 1
+
+[resource]
+script = ExtResource("1")
+id = &"atlas_auto"
+loot_tags = Array[StringName]([&"shotgun", &"auto"])
+display_name = "Atlas Auto"
+cost = 0
+crate_weight = 0.8
+damage = 17.1
+min_damage = 5.13
+falloff_start = 6.0
+falloff_end = 18.0
+max_range = 40.0
+pellets = 8
+head_multiplier = 2.5
+fire_mode = 2
+rounds_per_minute = 300.0
+magazine_size = 10
+starting_reserve = 60
+max_reserve = 60
+reload_time = 2.8
+empty_reload_time = 3.4
+ads_time = 0.25
+ads_fov = 62.0
+move_speed_multiplier = 0.95
+hip_spread = 5.0
+ads_spread = 3.3
+move_spread = 1.0
+spread_per_shot = 0.3
+max_spread = 6.5
+recoil = SubResource("recoil")
+viewmodel_kick = 0.07
+hip_position = Vector3(0.18, -0.17, -0.3)
+ads_position = Vector3(0, -0.078, -0.26)
+viewmodel_scene = ExtResource("3")
+fire_sound = ExtResource("4")
+dry_fire_sound = ExtResource("5")
+reload_sound = ExtResource("6")
+upgraded = ExtResource("7")

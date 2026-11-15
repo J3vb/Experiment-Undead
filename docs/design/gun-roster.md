@@ -163,7 +163,7 @@ Each gun needs: a model script using `tools/assets/gun_parts.py` (PR #65), a `We
 | Batch | When | Guns | New mechanic | Size |
 | --- | --- | --- | --- | --- |
 | A0 | Done or in PR #65 | Warden P9 (as M-9), Brenner Trench, Kestrel SMG, Vanguard AR (as AR-7), Talon DMR | - | - |
-| A1 | P3, Vault pool for v0.1 | Hollis .44, Mako PDW, Atlas Auto, Halberd LMG, Corvid .338 | None (burst and scope exist) | 5 x S |
+| A1 | Built (Vault pool, Halcyon Labs) | Hollis .44, Mako PDW, Atlas Auto, Halberd LMG, Corvid .338 | None (burst and scope exist) | 5 x S |
 | A2 | P3 | Cryo Lance, Siphon | Freeze/shatter, gravity well | 2 x M |
 | B | P6 loot, after A | Wren MP, Coachman, Fieldhand, Rampart BR, Grubber, Sentry, Nightjar SD | Shell-by-shell reload (also fixes the Brenner), both-barrels alt fire, innate pierce, no-flash flag | 4 x S, 3 x M |
 | C | P6 to P10 | Bastion, Ironwood .50, Synapse | Fire-rate ramp (shared with the Furnace trait), pierce 2 + plate break, on-hit chain to nearby zombies (shared with the Chain shock affix) | 3 x M |
