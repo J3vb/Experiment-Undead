@@ -2,6 +2,8 @@
 extends GutTest
 
 const PLAYER: String = "res://assets/models/characters/player.glb"
+const GEAR_SHADER: String = "res://assets/materials/gear.gdshader"
+const GEAR_IMPORTER: GDScript = preload("res://tools/assets/gear_import.gd")
 const BONES: Array[String] = [
 	"pelvis",
 	"spine_01",
@@ -99,8 +101,28 @@ func test_player_faces_positive_z_with_eyes_on_the_head() -> void:
 		assert_eq(attachment.bone_name, "head", "head poses carry the eye marker")
 
 
-func test_player_uses_dynamic_lighting_and_vertex_shading_import() -> void:
+func test_player_uses_dynamic_lighting_and_gear_import() -> void:
 	var settings: ConfigFile = ConfigFile.new()
 	assert_eq(settings.load(PLAYER + ".import"), OK, "player import settings are committed")
 	assert_eq(settings.get_value("params", "meshes/light_baking"), 3)
-	assert_eq(settings.get_value("params", "import_script/path"), "res://tools/assets/vertex_shading_import.gd")
+	assert_eq(settings.get_value("params", "import_script/path"), "res://tools/assets/gear_import.gd")
+
+
+func test_every_player_material_uses_the_gear_shader_and_a_known_finish() -> void:
+	var model: Node3D = _player()
+	if model == null:
+		return
+	var surfaces: int = 0
+	for node: Node in model.find_children("*", "MeshInstance3D", true, false):
+		var mesh: Mesh = (node as MeshInstance3D).mesh
+		for surface: int in mesh.get_surface_count():
+			var material: ShaderMaterial = mesh.surface_get_material(surface) as ShaderMaterial
+			assert_not_null(material, "%s surface %d uses a ShaderMaterial" % [node.name, surface])
+			if material == null:
+				continue
+			surfaces += 1
+			assert_eq(material.shader.resource_path, GEAR_SHADER)
+			assert_true(GEAR_IMPORTER.FINISHES.has(material.resource_name), material.resource_name + " is known")
+			assert_eq(material.get_shader_parameter(&"finish"), GEAR_IMPORTER.FINISHES.get(material.resource_name))
+	assert_gt(surfaces, 0, "player contains finished surfaces")
+	assert_push_error_count(0, "known player materials import without fallback errors")
