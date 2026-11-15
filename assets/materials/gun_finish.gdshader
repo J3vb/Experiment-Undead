@@ -1,7 +1,7 @@
 // One finish shader for every code-built gun. No textures: all detail comes from
 // object-space noise, so it never swims while the viewmodel moves.
 // Vertex RGB from tools/assets/finish.py is baked AO/cavity; alpha marks the
-// thin inlay (0) and ordinary surfaces (1), never transparency. Edge wear
+// thin inlay (0), Prototype glow (1/3) and ordinary surfaces (1), never transparency. Edge wear
 // follows convex curvature measured from how fast the normal bends on screen,
 // so it sits on bevels and rims, not on flat faces.
 // `finish` picks the surface: 0 bare metal, 1 black coating, 2 polymer, 3 wood.
@@ -126,11 +126,13 @@ void fragment() {
 		rough -= k * 0.12 * detail;
 	}
 
-	float inlay = 1.0 - step(0.5, COLOR.a);
+	float inlay = 1.0 - step(0.15, COLOR.a);
+	float glow = step(0.15, COLOR.a) * (1.0 - step(0.5, COLOR.a));
 	color = mix(color, rarity_color.rgb, inlay);
 	metal = mix(metal, 0.3, inlay);
 	rough = mix(rough, 0.42, inlay);
 	height *= 1.0 - inlay;
+	EMISSION = albedo * glow * 1.5;
 	ALBEDO = color * ao;
 	METALLIC = metal;
 	ROUGHNESS = clamp(rough + (1.0 - ao) * 0.15, 0.05, 1.0);

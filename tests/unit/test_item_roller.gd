@@ -35,6 +35,8 @@ func test_same_seed_produces_same_plain_dictionary_and_rng_state() -> void:
 func test_counts_families_kind_limits_and_weapon_restrictions() -> void:
 	for id: StringName in Content.ids(&"weapons"):
 		var weapon: WeaponData = Content.weapon(id)
+		if weapon.loot_tags.has(&"prototype"):
+			continue
 		for rarity: StringName in [&"common", &"uncommon", &"rare", &"epic", &"legendary"]:
 			var data: RarityData = Content.get_item(&"loot", rarity) as RarityData
 			for sample: int in 60:

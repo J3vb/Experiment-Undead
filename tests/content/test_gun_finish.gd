@@ -123,6 +123,21 @@ func test_optic_glass_stays_opaque_and_non_emissive() -> void:
 		assert_eq(glass.transparency, BaseMaterial3D.TRANSPARENCY_DISABLED, id + " optic keeps depth writing")
 
 
+func test_existing_guns_leave_the_prototype_glow_zone_unused() -> void:
+	for id: String in GUNS:
+		var gun: Node3D = (load("res://assets/models/weapons/%s.glb" % id) as PackedScene).instantiate() as Node3D
+		var glow_vertices: int = 0
+		for node: Node in gun.find_children("*", "MeshInstance3D", true, false):
+			var mesh: Mesh = (node as MeshInstance3D).mesh
+			for surface: int in mesh.get_surface_count():
+				var colors: PackedColorArray = mesh.surface_get_arrays(surface)[Mesh.ARRAY_COLOR]
+				for color: Color in colors:
+					if color.a > 0.15 and color.a < 0.5:
+						glow_vertices += 1
+		assert_eq(glow_vertices, 0, id + " keeps its existing inlay without emission")
+		gun.free()
+
+
 func _inlay_area(arrays: Array) -> Vector2:
 	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
 	var colors: PackedColorArray = arrays[Mesh.ARRAY_COLOR]

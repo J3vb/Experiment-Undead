@@ -1,0 +1,62 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://systems/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Script" path="res://systems/weapons/recoil_data.gd" id="2"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/synapse_viewmodel.tscn" id="3"]
+[ext_resource type="AudioStream" path="res://assets/audio/mako_fire.wav" id="4"]
+[ext_resource type="AudioStream" path="res://assets/audio/dry_fire.wav" id="5"]
+[ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
+
+[ext_resource type="Resource" path="res://content/weapons/synapse_reforged.tres" id="7"]
+
+[sub_resource type="Resource" id="recoil"]
+script = ExtResource("2")
+pattern = Array[Vector2]([Vector2(0.12, 0.7), Vector2(-0.2, 0.65), Vector2(0.25, 0.6)])
+random_spread = Vector2(0.25, 0.08)
+recovery_speed = 12.0
+ads_multiplier = 0.6
+permanent_ratio = 0.15
+reset_time = 0.3
+repeat_last = 1
+
+[resource]
+script = ExtResource("1")
+id = &"synapse"
+loot_tags = Array[StringName]([&"prototype"])
+display_name = "Synapse"
+cost = 0
+crate_weight = 0.02
+damage = 19.95
+min_damage = 12.9675
+falloff_start = 20.0
+falloff_end = 55.0
+max_range = 200.0
+pellets = 1
+head_multiplier = 2.5
+fire_mode = 2
+rounds_per_minute = 600.0
+magazine_size = 60
+starting_reserve = 180
+max_reserve = 180
+reload_time = 3.0
+empty_reload_time = 3.0
+ads_time = 0.25
+ads_fov = 55.0
+move_speed_multiplier = 1.0
+hip_spread = 2.8
+ads_spread = 0.12
+move_spread = 1.5
+spread_per_shot = 0.2
+max_spread = 6.0
+recoil = SubResource("recoil")
+viewmodel_kick = 0.03
+hip_position = Vector3(0.18, -0.18, -0.36)
+ads_position = Vector3(0, -0.084, -0.26)
+viewmodel_scene = ExtResource("3")
+fire_sound = ExtResource("4")
+dry_fire_sound = ExtResource("5")
+reload_sound = ExtResource("6")
+upgraded = ExtResource("7")
+metadata/rarity = &"prototype"
+metadata/fixed_signature = &"fenlight_chain"
+metadata/fabricator = 0.09
