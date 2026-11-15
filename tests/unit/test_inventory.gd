@@ -167,6 +167,11 @@ func test_slot_for_maps_primary_and_sidearm_bases() -> void:
 		"talon_dmr",
 		"halberd_lmg",
 		"corvid_338",
+		"fieldhand_lever",
+		"fieldhand_lever_reforged",
+		"ironwood_50",
+		"ironwood_50_reforged",
+		"siphon",
 	]:
 		assert_eq(Inventory.slot_for(_item(base, "primary")), &"primary", base)
 

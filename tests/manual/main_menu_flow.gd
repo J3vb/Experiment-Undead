@@ -14,6 +14,18 @@ func _run() -> void:
 	await process_frame
 	assert(current_scene.scene_file_path == "res://systems/ui/main_menu.tscn")
 	await _press_joypad_button(JOY_BUTTON_DPAD_DOWN)
+	assert((current_scene.get_node("Screens/Root/Menu/Host") as Button).has_focus())
+	await _press_action(&"ui_accept")
+	assert((current_scene.get_node("Screens/Root/HostPanel/Box/Port") as LineEdit).has_focus())
+	await _press_action(&"ui_cancel")
+	assert((current_scene.get_node("Screens/Root/Menu/Host") as Button).has_focus())
+	await _press_joypad_button(JOY_BUTTON_DPAD_DOWN)
+	assert((current_scene.get_node("Screens/Root/Menu/Join") as Button).has_focus())
+	await _press_action(&"ui_accept")
+	assert((current_scene.get_node("Screens/Root/JoinPanel/Box/Address") as LineEdit).has_focus())
+	await _press_action(&"ui_cancel")
+	assert((current_scene.get_node("Screens/Root/Menu/Join") as Button).has_focus())
+	await _press_joypad_button(JOY_BUTTON_DPAD_DOWN)
 	assert((current_scene.get_node("Screens/Root/Menu/Character") as Button).has_focus())
 	await _character_flow()
 	await _press_joypad_button(JOY_BUTTON_DPAD_DOWN)
@@ -34,34 +46,10 @@ func _run() -> void:
 	assert(not paused)
 	assert(current_scene.scene_file_path == "res://systems/ui/main_menu.tscn")
 	await _results_flow()
-	print("Main menu flow passed: controller Character/Settings/back, Play, pause/menu, results/restart/menu, Quit")
+	print(
+		"Main menu flow passed: controller co-op/Character/Settings/back, Play solo, pause/menu, results/restart/menu, Quit"
+	)
 	(current_scene.get_node("Screens/Root/Menu/Quit") as Button).pressed.emit()
-
-
-func _character_flow() -> void:
-	await _press_action(&"ui_accept")
-	var character: Control = current_scene.get("character_screen") as Control
-	assert(character != null)
-	assert(character.is_ancestor_of(root.gui_get_focus_owner()))
-	var profile: RefCounted = character.get("profile") as RefCounted
-	profile.set("id", &"test_main_menu_character")
-	await _press_joypad_button(JOY_BUTTON_B)
-	assert(current_scene.get("character_screen") == null)
-	assert((current_scene.get_node("Screens/Root/Menu/Character") as Button).has_focus())
-	var path: String = "user://characters/test_main_menu_character.json"
-	assert(FileAccess.file_exists(path))
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
-
-
-func _press_joypad_button(button: JoyButton) -> void:
-	var event: InputEventJoypadButton = InputEventJoypadButton.new()
-	event.button_index = button
-	event.pressed = true
-	Input.parse_input_event(event)
-	await process_frame
-	event.pressed = false
-	Input.parse_input_event(event)
-	await process_frame
 
 
 func _results_flow() -> void:
@@ -88,6 +76,32 @@ func _results_flow() -> void:
 func _press_action(action: StringName) -> void:
 	var event: InputEventAction = InputEventAction.new()
 	event.action = action
+	event.pressed = true
+	Input.parse_input_event(event)
+	await process_frame
+	event.pressed = false
+	Input.parse_input_event(event)
+	await process_frame
+
+
+func _character_flow() -> void:
+	await _press_action(&"ui_accept")
+	var character: Control = current_scene.get("character_screen") as Control
+	assert(character != null)
+	assert(character.is_ancestor_of(root.gui_get_focus_owner()))
+	var profile: RefCounted = character.get("profile") as RefCounted
+	profile.set("id", &"test_main_menu_character")
+	await _press_joypad_button(JOY_BUTTON_B)
+	assert(current_scene.get("character_screen") == null)
+	assert((current_scene.get_node("Screens/Root/Menu/Character") as Button).has_focus())
+	var path: String = "user://characters/test_main_menu_character.json"
+	assert(FileAccess.file_exists(path))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+func _press_joypad_button(button: JoyButton) -> void:
+	var event: InputEventJoypadButton = InputEventJoypadButton.new()
+	event.button_index = button
 	event.pressed = true
 	Input.parse_input_event(event)
 	await process_frame

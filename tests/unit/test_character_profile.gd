@@ -125,6 +125,25 @@ func test_legacy_empty_array_save_keeps_xp_items_unknown_fields_and_can_save() -
 	assert_eq(int(saved["save_version"]), 1)
 
 
+func test_legacy_v1_empty_loadout_array_keeps_xp_and_remains_saveable() -> void:
+	_write_raw('{"save_version": 1, "id": "test_character_profile", "total_xp": 400, "loadout": []}')
+	var profile: CharacterProfile = CharacterProfile.load_or_create(ID)
+	assert_eq(profile.total_xp, 400)
+	assert_eq(profile.stash.size(), 60)
+	for item: Dictionary in profile.stash:
+		assert_eq(item, {})
+	var empty_loadout: Dictionary = {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}}
+	assert_eq(profile.loadout, empty_loadout)
+	var parsed: CharacterProfile = CharacterProfile.from_dict({"loadout": []})
+	assert_eq(parsed.loadout, empty_loadout)
+	assert_eq(profile.save(), OK)
+	var saved: Dictionary = SaveFile.read(PATH)
+	assert_true(saved["loadout"] is Dictionary)
+	assert_eq(saved["loadout"], empty_loadout)
+	assert_eq(int(saved["total_xp"]), 400)
+	assert_eq(int(saved["save_version"]), 1)
+
+
 func test_unknown_fields_survive_load_and_save() -> void:
 	var data: Dictionary = {
 		"id": String(ID),
