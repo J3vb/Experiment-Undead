@@ -135,79 +135,11 @@ def build_wall_panel() -> None:
     box("Seam", (0.03, 0.21, 2.7), (0, 0, 1.65), trim)
 
 
-def rifle_upper(metal, black, tan, parts: list) -> None:
-    """Receiver, rail, handguard and barrel; all parts are added to `parts` for joining."""
-    parts += [
-        box("Upper", (0.05, 0.34, 0.052), (0, 0.0, 0.02), metal, bevel=0.005),
-        box("Lower", (0.046, 0.22, 0.048), (0, -0.02, -0.028), black, bevel=0.005),
-        box("Rail", (0.024, 0.52, 0.012), (0, 0.09, 0.052), black, bevel=0.002),
-        box("PortCover", (0.004, 0.07, 0.024), (0.026, 0.03, 0.02), metal),
-        box("Handguard", (0.058, 0.3, 0.06), (0, 0.32, 0.016), tan, bevel=0.01),
-        box("GasBlock", (0.03, 0.03, 0.03), (0, 0.5, 0.016), black, bevel=0.003),
-        box("MagWell", (0.044, 0.08, 0.03), (0, 0.06, -0.06), black, bevel=0.004),
-        box("TriggerGuard", (0.012, 0.08, 0.006), (0, -0.065, -0.088), black),
-        box("GuardPost", (0.012, 0.006, 0.04), (0, -0.028, -0.07), black),
-        box("Trigger", (0.006, 0.008, 0.028), (0, -0.06, -0.066), metal),
-    ]
-    for i in range(18):
-        parts.append(box(f"RailTooth{i}", (0.027, 0.012, 0.006), (0, -0.15 + i * 0.028, 0.06), black))
-    for side in (-1, 1):
-        for i in range(4):
-            parts.append(box(f"Vent{side}{i}", (0.002, 0.04, 0.012), (side * 0.0295, 0.23 + i * 0.055, 0.02), black))
-
-
-def rifle_stock(metal, black, tan, parts: list) -> None:
-    """Pistol grip, buffer tube and stock."""
-    grip = box("Grip", (0.034, 0.045, 0.11), (0, -0.115, -0.095), black, bevel=0.008)
-    grip.rotation_euler = (-0.3, 0, 0)
-    parts += [
-        grip,
-        cylinder("BufferTube", 0.016, 0.15, (0, -0.235, 0.015), metal),
-        box("Stock", (0.044, 0.15, 0.075), (0, -0.315, 0.0), tan, bevel=0.01),
-        box("CheekRest", (0.04, 0.12, 0.02), (0, -0.315, 0.045), black, bevel=0.006),
-        box("ButtPad", (0.046, 0.02, 0.11), (0, -0.39, -0.012), black, bevel=0.006),
-    ]
-
-
-def rifle_scope(metal, black, glass, parts: list) -> None:
-    """Low-power scope on two rings. The front lens stays its own node (rarity colour later)."""
-    parts += [
-        box("RingFront", (0.03, 0.022, 0.035), (0, 0.1, 0.07), black, bevel=0.003),
-        box("RingBack", (0.03, 0.022, 0.035), (0, -0.04, 0.07), black, bevel=0.003),
-        cylinder("ScopeTube", 0.015, 0.2, (0, 0.03, 0.09), black),
-        cylinder("ScopeBell", 0.022, 0.06, (0, 0.16, 0.09), black),
-        cylinder("ScopeCone", 0.019, 0.02, (0, 0.123, 0.09), black),
-        cylinder("Eyepiece", 0.019, 0.05, (0, -0.095, 0.09), black),
-        cylinder("EyeRing", 0.0195, 0.008, (0, -0.122, 0.09), metal),
-        cylinder("TurretTop", 0.01, 0.02, (0, 0.03, 0.11), metal, axis="z"),
-        cylinder("TurretSide", 0.009, 0.018, (0.02, 0.03, 0.09), metal, axis="x"),
-        cylinder("EyeLens", 0.016, 0.002, (0, -0.126, 0.09), glass),
-    ]
-
-
 def build_rifle_ar() -> None:
-    """Assault rifle from parts. Static parts are joined into Receiver; Magazine, Bolt,
-    Barrel and OpticGlass stay separate nodes so code can move or recolour them."""
-    metal = material("GunMetal", GUN_METAL, metallic=0.8, roughness=0.4)
-    black = material("MatteBlack", MATTE_BLACK, roughness=0.75)
-    tan = material("Tan", TAN, roughness=0.8)
-    glass = material("OpticGlass", LENS, metallic=0.3, roughness=0.05, glow=0.6)
+    """Assault rifle; shapes and parts live in rifle_model.py."""
+    from rifle_model import build
 
-    receiver = box("Receiver", (0.04, 0.12, 0.03), (0, 0.0, 0.0), metal, bevel=0.004)
-    parts: list = []
-    rifle_upper(metal, black, tan, parts)
-    rifle_stock(metal, black, tan, parts)
-    rifle_scope(metal, black, glass, parts)
-    join_into(receiver, parts)
-
-    barrel = cylinder("Barrel", 0.011, 0.17, (0, 0.555, 0.016), metal, parent=receiver)
-    cylinder("MuzzleBrake", 0.016, 0.04, (0, 0.06, 0), black, parent=barrel)
-    mag = box("Magazine", (0.034, 0.075, 0.15), (0, 0.065, -0.135), black, bevel=0.005, parent=receiver)
-    mag.rotation_euler = (0.18, 0, 0)
-    box("MagBase", (0.04, 0.085, 0.012), (0, 0, -0.08), black, bevel=0.003, parent=mag)
-    box("Bolt", (0.014, 0.05, 0.016), (0.034, -0.03, 0.03), metal, bevel=0.003, parent=receiver)
-    cylinder("OpticGlass", 0.02, 0.002, (0, 0.191, 0.09), glass, parent=receiver)
-    marker("Muzzle", (0, 0.635, 0.016), parent=receiver)
+    build(sys.modules[__name__])
 
 
 def build_talon_dmr() -> None:
@@ -217,51 +149,11 @@ def build_talon_dmr() -> None:
     build(sys.modules[__name__])
 
 
-def shotgun_body(metal, black, wood, parts: list) -> None:
-    """Receiver, barrel with a vented heat shield, magazine tube and wooden stock."""
-    stock = box("Stock", (0.044, 0.22, 0.1), (0, -0.27, -0.045), wood, bevel=0.012)
-    stock.rotation_euler = (0.08, 0, 0)
-    wrist = box("Wrist", (0.036, 0.12, 0.05), (0, -0.12, -0.012), wood, bevel=0.01)
-    wrist.rotation_euler = (-0.25, 0, 0)
-    parts += [
-        stock,
-        wrist,
-        box("ButtPad", (0.046, 0.02, 0.115), (0, -0.385, -0.05), black, bevel=0.006),
-        cylinder("Barrel", 0.013, 0.5, (0, 0.37, 0.03), metal),
-        cylinder("MagTube", 0.012, 0.4, (0, 0.32, -0.003), metal),
-        cylinder("TubeCap", 0.014, 0.02, (0, 0.53, -0.003), black),
-        box("BarrelBand", (0.03, 0.02, 0.05), (0, 0.5, 0.014), black, bevel=0.003),
-        box("Bead", (0.004, 0.006, 0.008), (0, 0.615, 0.046), metal),
-        box("PortCover", (0.004, 0.07, 0.03), (0.027, 0.03, 0.022), black),
-        box("TriggerGuard", (0.012, 0.075, 0.006), (0, -0.035, -0.06), black),
-        box("GuardPost", (0.012, 0.006, 0.035), (0, 0.0, -0.045), black),
-        box("Trigger", (0.006, 0.008, 0.026), (0, -0.03, -0.04), metal),
-        box("Loading", (0.03, 0.08, 0.006), (0, 0.04, -0.023), black),
-    ]
-    parts.append(box("Shield", (0.036, 0.3, 0.008), (0, 0.33, 0.052), black, bevel=0.002))
-    for side in (-1, 1):
-        parts.append(box(f"ShieldSide{side}", (0.004, 0.3, 0.024), (side * 0.017, 0.33, 0.04), black))
-        for i in range(6):
-            parts.append(box(f"Hole{side}{i}", (0.002, 0.026, 0.01), (side * 0.0195, 0.21 + i * 0.048, 0.04), metal))
-
-
 def build_shotgun_brenner() -> None:
-    """Brenner Trench pump shotgun. The wooden pump is the `Bolt` node so the
-    viewmodel racks it on every shot; there is no Magazine (shells load one by one)."""
-    metal = material("GunMetal", GUN_METAL, metallic=0.8, roughness=0.4)
-    black = material("MatteBlack", MATTE_BLACK, roughness=0.75)
-    wood = material("Wood", WOOD, roughness=0.7)
+    """Brenner Trench pump shotgun; shapes and parts live in shotgun_model.py."""
+    from shotgun_model import build
 
-    receiver = box("Receiver", (0.05, 0.2, 0.06), (0, 0.02, 0.012), metal, bevel=0.005)
-    parts: list = []
-    shotgun_body(metal, black, wood, parts)
-    join_into(receiver, parts)
-
-    # Children of Receiver are placed relative to it (it sits at y 0.02, z 0.012).
-    pump = cylinder("Bolt", 0.022, 0.14, (0, 0.24, -0.015), wood, parent=receiver)
-    grooves = [cylinder(f"Groove{i}", 0.0225, 0.006, (0, 0.21 + i * 0.025, -0.003), black) for i in range(5)]
-    join_into(pump, grooves)
-    marker("Muzzle", (0, 0.605, 0.018), parent=receiver)
+    build(sys.modules[__name__])
 
 
 def build_kestrel_smg() -> None:
