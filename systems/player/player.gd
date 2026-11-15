@@ -37,8 +37,11 @@ var input_enabled: bool = true
 var is_sprinting: bool = false
 var is_aiming: bool = false
 var is_crouching: bool = false
-## Down but not out: Second Wind brings the player back up soon.
+## Down but not out: solo Second Wind or a co-op teammate can revive us.
 var is_downed: bool = false
+var is_dead: bool = false
+var state_sync: PlayerStateSync
+var revive: Revive
 var move_input: Vector2 = Vector2.ZERO
 var sprint_left: float = 4.0
 var last_frame: InputFrame = InputFrame.new()
@@ -78,6 +81,10 @@ func _ready() -> void:
 	_focus_query.collision_mask = Layers.INTERACTABLE | Layers.WORLD
 	_focus_query.collide_with_areas = true
 	_set_local(is_multiplayer_authority())
+	state_sync = PlayerStateSync.new()
+	add_child(state_sync)
+	revive = Revive.new()
+	add_child(revive)
 
 
 ## The owning peer sees through this player's camera and drives it; everyone
@@ -106,7 +113,7 @@ func is_alive() -> bool:
 
 
 func take_damage(info: DamageInfo) -> void:
-	if Net.is_authority():
+	if multiplayer.is_server() and is_alive() and not (session and session.is_over):
 		health.take_damage(info)
 
 
@@ -126,7 +133,7 @@ func has_serum(id: StringName) -> bool:
 
 
 func add_serum(serum: SerumData) -> void:
-	if serums.has(serum):
+	if not multiplayer.is_server() or serums.has(serum):
 		return
 	serums.append(serum)
 	var new_max: float = _base_max_health * get_stat(&"max_health")
@@ -155,6 +162,8 @@ func _physics_process(delta: float) -> void:
 
 ## Runs one tick of player simulation from an InputFrame.
 func apply_frame(frame: InputFrame, delta: float) -> void:
+	if is_dead and state_sync.is_coop():
+		return
 	last_frame = frame
 	if input_enabled and frame.look != Vector2.ZERO:
 		look(frame.look)
@@ -162,7 +171,7 @@ func apply_frame(frame: InputFrame, delta: float) -> void:
 	_read_input(frame)
 	_tick_stamina(delta)
 	_update_focus()
-	if input_enabled and focus and frame.has(InputFrame.INTERACT) and Net.is_authority():
+	if input_enabled and not is_downed and focus and frame.has(InputFrame.INTERACT) and Net.is_authority():
 		focus.interact(self)
 	_move(delta, frame)
 	weapons.tick(delta)
@@ -191,13 +200,15 @@ func _read_input(frame: InputFrame) -> void:
 		weapons.set_trigger(false)
 		return
 	move_input = frame.move
-	is_crouching = frame.has(InputFrame.CROUCH) and is_on_floor()
+	is_crouching = is_downed or (frame.has(InputFrame.CROUCH) and is_on_floor())
 	var wants_sprint: bool = frame.has(InputFrame.SPRINT) and move_input.y < -0.4 and not is_crouching
 	is_aiming = frame.has(InputFrame.ADS) and not wants_sprint
 	is_sprinting = wants_sprint and is_on_floor() and can_sprint()
 	weapons.set_trigger(frame.has(InputFrame.FIRE))
 	if frame.has(InputFrame.RELOAD):
 		weapons.reload()
+	if is_downed:
+		return
 	if frame.has(InputFrame.NEXT_WEAPON):
 		weapons.cycle(1)
 	elif frame.has(InputFrame.PREV_WEAPON):
@@ -233,7 +244,7 @@ func _move(delta: float, frame: InputFrame) -> void:
 
 	var speed: float = sprint_speed if is_sprinting else walk_speed
 	if is_crouching:
-		speed *= crouch_speed_multiplier
+		speed *= 0.2 if is_downed else crouch_speed_multiplier
 	speed *= lerpf(1.0, ads_speed_multiplier, weapons.get_ads_progress())
 	speed *= weapons.get_move_speed_multiplier()
 
@@ -266,11 +277,17 @@ func _on_points_changed(total: int, delta: int) -> void:
 
 
 func _on_died(_info: DamageInfo) -> void:
+	if not multiplayer.is_server():
+		return
+	if state_sync.is_coop():
+		state_sync.down_player()
+		return
 	input_enabled = false
 	weapons.set_trigger(false)
 	if has_serum(&"second_wind"):
 		_go_down()
 		return
+	is_dead = true
 	weapons.visible = false
 	var tween: Tween = create_tween().set_parallel()
 	tween.tween_property(camera_rig, "position:y", 0.3, 0.8).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)

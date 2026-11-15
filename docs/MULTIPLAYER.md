@@ -57,8 +57,9 @@ already reads `InputFrame`s, so the server could replay them.
    players.
 2. **Zombies on clients** (done): `ZombieSync` replicates spawned zombies; clients run no AI.
 3. **Shooting:** hit claims to the server, damage, kills, points per player.
-4. **Player health and death:** zombie hits, down, revive (50 points), game
-   over when everyone is down, results on every client.
+4. **Player health and death — done:** server health snapshots, 30 s bleed-out,
+   sidearm crawl, 3 s revives within 1.5 m (50 points), teammate spectating,
+   next-round pistol respawns, and shared results when the connected squad is down.
 5. **Run end and saves:** XP and loot grants reach each client's own character
    file; version check on join (`Build.PROTOCOL_VERSION`).
 6. **Menu:** Host and play, direct connect field, plain-word errors (full,

@@ -133,3 +133,23 @@ func test_second_wind_dispenser_is_gone_after_3_sales() -> void:
 		player.serums.clear()
 	assert_true(machine.is_queued_for_deletion())
 	assert_eq(player.wallet.points, 20000 - 3 * 1500)
+
+
+func test_coop_dispenser_only_charges_and_buffs_the_buyer() -> void:
+	assert_eq(Net.host(24645), OK)
+	var teammate: Player = (load("res://systems/player/player.tscn") as PackedScene).instantiate() as Player
+	teammate.name = "2"
+	teammate.net_id = 2
+	teammate.set_multiplayer_authority(2)
+	level.add_child(teammate)
+	teammate.spawn(session, session.starting_loadout)
+	teammate.wallet.set_points(20000)
+	level.turn_power_on()
+	_dispenser("ironhide").interact(teammate)
+	assert_eq(teammate.wallet.points, 17500, "only the buyer pays Ironhide's cost")
+	assert_eq(teammate.health.max_health, 250.0)
+	assert_true(teammate.has_serum(&"ironhide"))
+	assert_eq(player.wallet.points, 20000)
+	assert_eq(player.health.max_health, 100.0)
+	assert_false(player.has_serum(&"ironhide"))
+	Net.leave()
