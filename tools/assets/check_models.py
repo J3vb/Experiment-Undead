@@ -17,7 +17,10 @@ import glob
 import os
 import sys
 
-import bpy  # noqa: I001  bpy must load before bmesh
+import bpy
+
+# isort: split
+# bpy must load before bmesh.
 import bmesh
 from mathutils import Vector
 
@@ -30,7 +33,15 @@ BUDGETS = {
     "zombies": (6_000, 8),
 }
 
-ZOMBIE_UPPER = {"Hips": None, "Torso": "Hips", "Head": "Torso", "ArmL": "Torso", "ArmR": "Torso", "EyeL": "Head", "EyeR": "Head"}
+ZOMBIE_UPPER = {
+    "Hips": None,
+    "Torso": "Hips",
+    "Head": "Torso",
+    "ArmL": "Torso",
+    "ArmR": "Torso",
+    "EyeL": "Head",
+    "EyeR": "Head",
+}
 ZOMBIE_LEGS = {"LegL": "Hips", "LegR": "Hips"}
 GUN = {"Receiver": None, "Muzzle": "Receiver", "Bolt": "Receiver"}
 GUN_WITH_MAG = {**GUN, "Magazine": "Receiver"}
@@ -145,7 +156,7 @@ def check_origin(objects: list, folder: str) -> list:
 
 def check_forward(nodes: dict, objects: list, folder: str) -> list:
     if folder == "weapons" and "Muzzle" in nodes:
-        lo, hi = bounds(objects)
+        _lo, hi = bounds(objects)
         tip = nodes["Muzzle"].matrix_world.translation.y
         if tip < hi.y - 0.05 or tip <= 0.0:
             return [f"Muzzle (y {tip:.3f}) must be at the front of the gun (y {hi.y:.3f}); forward is Godot -Z"]

@@ -1,5 +1,5 @@
 """Unit tests for the finishing pass (tools/assets/finish.py). Needs bpy:
-    python -m pytest tools/assets/tests -q
+python -m pytest tools/assets/tests -q
 """
 
 import math
@@ -10,8 +10,8 @@ import unittest
 import bpy
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import build_models as bm  # noqa: E402
-import finish  # noqa: E402
+import build_models as bm
+import finish
 
 
 def corner_normals(obj) -> list:
@@ -21,12 +21,11 @@ def corner_normals(obj) -> list:
 class FinishTest(unittest.TestCase):
     def setUp(self) -> None:
         bm.reset_scene()
-        bm.polish = True
 
     def test_bevels_harden_normals_only_when_polished(self) -> None:
         mat = bm.material("M", (0.5, 0.5, 0.5, 1.0))
         hard = bm.box("A", (0.1, 0.1, 0.1), (0, 0, 0), mat, bevel=0.01)
-        bm.polish = False
+        bpy.context.scene["unfinished"] = True
         soft = bm.box("B", (0.1, 0.1, 0.1), (1, 0, 0), mat, bevel=0.01)
         self.assertTrue(hard.data.has_custom_normals, "hardened bevel stores custom normals")
         self.assertFalse(soft.data.has_custom_normals, "unpolished mesh stays as before")
