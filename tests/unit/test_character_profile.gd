@@ -89,6 +89,42 @@ func test_old_v1_save_defaults_to_empty_inventory_without_migration() -> void:
 	assert_eq(int(SaveFile.read(PATH)["save_version"]), 1)
 
 
+func test_legacy_empty_array_loadout_deserializes_without_changing_input() -> void:
+	var data: Dictionary = {"id": String(ID), "total_xp": 400, "loadout": []}
+	var profile: CharacterProfile = CharacterProfile.from_dict(data)
+	assert_eq(profile.total_xp, 400)
+	assert_eq(profile.loadout, {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}})
+	assert_eq(data["loadout"], [])
+
+
+func test_legacy_empty_array_save_keeps_xp_items_unknown_fields_and_can_save() -> void:
+	var data: Dictionary = {
+		"id": String(ID),
+		"display_name": "Rook",
+		"total_xp": RULES.total_xp_for_level(14),
+		"loadout": [],
+		"stash": [{"uid": "kept", "future": {"retired": true}}],
+		"future_flag": true,
+	}
+	assert_eq(SaveFile.write(PATH, data), OK)
+	var before: Dictionary = SaveFile.read(PATH)
+	var warnings: int = Log.event_counts.get("progression.profile_unreadable", 0)
+	var profile: CharacterProfile = CharacterProfile.load_or_create(ID)
+	assert_eq(profile.total_xp, int(data["total_xp"]))
+	assert_eq(profile.level, 14)
+	assert_eq(profile.display_name, "Rook")
+	assert_eq(profile.stash[0], before["stash"][0])
+	assert_eq(Log.event_counts.get("progression.profile_unreadable", 0), warnings)
+	profile.total_xp += 75
+	assert_eq(profile.save(), OK)
+	var saved: Dictionary = SaveFile.read(PATH)
+	assert_eq(int(saved["total_xp"]), int(data["total_xp"]) + 75)
+	assert_true(saved["future_flag"])
+	assert_eq(saved["stash"][0], before["stash"][0])
+	assert_eq(saved["loadout"], {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}})
+	assert_eq(int(saved["save_version"]), 1)
+
+
 func test_unknown_fields_survive_load_and_save() -> void:
 	var data: Dictionary = {
 		"id": String(ID),
@@ -175,7 +211,7 @@ func test_malformed_fields_use_temporary_profile() -> void:
 		{"id": []},
 		{"stash": {}},
 		{"stash": ["bad"]},
-		{"loadout": []},
+		{"loadout": [{}]},
 		{"loadout": {"primary": "bad"}},
 	]:
 		assert_eq(SaveFile.write(PATH, fields), OK)

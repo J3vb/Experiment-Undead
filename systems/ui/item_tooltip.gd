@@ -212,7 +212,15 @@ func _weapon_stats(item: Dictionary) -> Array[float]:
 	var weapon: WeaponData = _base(item, &"weapons") as WeaponData
 	if weapon == null:
 		return []
-	return [weapon.damage, weapon.rounds_per_minute, float(weapon.magazine_size), weapon.ads_time]
+	var instance: ItemInstance = ItemInstance.new(item)
+	var rolled: WeaponData = instance.weapon_data(weapon)
+	var interval: float = instance.weapon_stat(&"fire_interval", weapon.get_fire_interval())
+	return [
+		rolled.damage,
+		60.0 / interval,
+		float(rolled.magazine_size),
+		instance.weapon_stat(&"ads_time", weapon.ads_time),
+	]
 
 
 func _display_name(item: Dictionary) -> String:

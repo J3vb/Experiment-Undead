@@ -61,7 +61,7 @@ func test_legacy_array_loadout_is_empty() -> void:
 	var before: String = FileAccess.get_file_as_string(PATH)
 	player.spawn(session, [])
 	_assert_empty_gear()
-	assert_eq(FileAccess.get_file_as_string(PATH), before, "L1 preserves malformed legacy inventory files")
+	assert_eq(FileAccess.get_file_as_string(PATH), before, "Rendering legacy gear does not rewrite the profile")
 
 
 func test_new_character_starts_with_empty_gear_and_creates_no_save() -> void:

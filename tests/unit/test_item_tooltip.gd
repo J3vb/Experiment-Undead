@@ -50,6 +50,58 @@ func test_compare_marks_better_and_worse_base_stats_and_lower_ads_is_better() ->
 	assert_eq(tooltip.comparison.text, "Hold Shift / X to compare")
 
 
+func test_same_base_rolled_stats_match_runtime_numbers_and_comparison_arrows() -> void:
+	var strong: Dictionary = _item(
+		"rifle_ar", [["dmg_pct", 5, 1.0], ["fire_rate_pct", 5, 1.0], ["mag_pct", 5, 1.0], ["ads_pct", 5, 1.0]]
+	)
+	var weak: Dictionary = _item(
+		"rifle_ar", [["dmg_pct", 1, 0.0], ["fire_rate_pct", 1, 0.0], ["mag_pct", 1, 0.0], ["ads_pct", 1, 0.0]]
+	)
+	strong.ilvl = 30
+	weak.ilvl = 30
+	strong.rar = "legendary"
+	weak.rar = "legendary"
+	var saved: Dictionary = strong.duplicate(true)
+	tooltip.show_item(strong, weak)
+	tooltip.set_comparing(true)
+	var expected: Array[String] = ["39.1 ↑", "748 ↑", "39 ↑", "0.18 s ↑"]
+	for index: int in expected.size():
+		assert_eq(_stat_value(index).text, expected[index])
+		assert_eq(_stat_value(index).get_theme_color("font_color"), ItemTooltip.BETTER)
+	assert_eq(strong, saved, "Runtime presentation leaves the saved item unchanged")
+	assert_eq(Content.weapon(&"rifle_ar").damage, 34.0, "Runtime presentation leaves shared content unchanged")
+	tooltip.show_item(weak, strong)
+	for index: int in expected.size():
+		assert_string_contains(_stat_value(index).text, "↓")
+		assert_eq(_stat_value(index).get_theme_color("font_color"), ItemTooltip.WORSE)
+
+
+func test_rolls_can_reverse_the_order_of_different_weapon_bases() -> void:
+	tooltip.set_comparing(true)
+	tooltip.show_item(_item("mako_pdw"), _item("rifle_ar"))
+	assert_string_contains(_stat_value(0).text, "↓")
+	tooltip.show_item(_item("mako_pdw", [["dmg_pct", 5, 1.0]]), _item("rifle_ar"))
+	assert_eq(_stat_value(0).text, "36.05 ↑")
+	tooltip.show_item(_item("pistol_service"), _item("talon_dmr"))
+	assert_string_contains(_stat_value(2).text, "↓")
+	tooltip.show_item(_item("pistol_service", [["mag_pct", 5, 1.0]]), _item("talon_dmr"))
+	assert_eq(_stat_value(2).text, "16 ↑")
+	tooltip.show_item(_item("talon_dmr"), _item("rifle_ar"))
+	assert_string_contains(_stat_value(3).text, "↓")
+	tooltip.show_item(_item("talon_dmr", [["ads_pct", 5, 1.0]]), _item("rifle_ar"))
+	assert_eq(_stat_value(3).text, "0.21 s ↑")
+
+
+func test_unknown_and_invalid_weapon_bonuses_leave_runtime_base_stats_unchanged() -> void:
+	tooltip.show_item(_item("rifle_ar", [["future_affix", 1, 0.5], ["dmg_pct", 99, 0.5]]))
+	assert_eq(_stat_value(0).text, "34")
+	assert_eq(_stat_value(1).text, "680")
+	assert_eq(_stat_value(2).text, "30")
+	assert_eq(_stat_value(3).text, "0.22 s")
+	for line: RichTextLabel in tooltip.affixes.get_children():
+		assert_eq(line.get_parsed_text(), "Inactive bonus")
+
+
 func test_compare_matches_affix_ids_and_leaves_the_range_grey() -> void:
 	var equipped: Dictionary = _item("rifle_ar", [["reload_pct", 2, 0.0]])
 	tooltip.show_item(_item("rifle_ar", [["reload_pct", 2, 1.0]]), equipped)
