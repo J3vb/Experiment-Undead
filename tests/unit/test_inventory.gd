@@ -183,6 +183,10 @@ func test_every_rolled_gear_base_adds_equips_swaps_and_unequips_losslessly() -> 
 		var profile: CharacterProfile = CharacterProfile.new()
 		profile.loadout[&"primary"] = _item("rifle_ar", "primary")
 		profile.loadout[&"sidearm"] = _item("pistol_service", "sidearm")
+		for other_id: StringName in [&"vest_heavy", &"charm_coin", &"implant_relay"]:
+			var other_base: GearBaseData = Content.get_item(&"loot", other_id) as GearBaseData
+			profile.loadout[other_base.slot] = ItemRoller.roll_gear(rng, other_base, &"epic", 30)
+		profile.loadout[base.slot] = {}
 		var expected_loadout: Dictionary = profile.loadout.duplicate(true)
 		var first: Dictionary = ItemRoller.roll_gear(rng, base, &"rare", 30)
 		first["future"] = {"nested": [null, {"retired_affix": true}]}
