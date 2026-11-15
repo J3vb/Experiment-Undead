@@ -42,10 +42,10 @@ class GunRosterTest(unittest.TestCase):
         self.assertEqual(len(ids), 22)
         self.assertEqual(len(set(ids)), 22)
 
-    def test_designed_guns_match_weapons_csv(self) -> None:
-        designed = [row for row in self.roster if row["Status"] in {"designed", "built"}]
-        self.assertEqual({row["id"] for row in designed}, set(self.weapons))
-        for row in designed:
+    def test_catalogued_guns_match_weapons_csv(self) -> None:
+        catalogued = [row for row in self.roster if row["Status"] in {"designed", "built"}]
+        self.assertEqual({row["id"] for row in catalogued}, set(self.weapons))
+        for row in catalogued:
             for column in SHARED:
                 self.assertEqual(num(row[column]), num(self.weapons[row["id"]][column]), f"{row['id']} {column}")
 

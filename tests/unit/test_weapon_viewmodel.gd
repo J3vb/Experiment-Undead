@@ -6,6 +6,7 @@ const RIFLE: String = "res://content/weapons/rifle_ar.tres"
 const SHOTGUN: String = "res://content/weapons/brenner_trench.tres"
 const KESTREL: String = "res://content/weapons/kestrel_smg.tres"
 const TALON: String = "res://content/weapons/talon_dmr.tres"
+const BASTION: String = "res://content/weapons/bastion_lmg.tres"
 const WEAPON: String = "res://systems/weapons/weapon.tscn"
 
 
@@ -35,7 +36,7 @@ func test_flash_is_on_the_model_muzzle() -> void:
 
 
 func test_bolt_kicks_back_on_fire() -> void:
-	for path: String in [RIFLE, KESTREL, TALON]:
+	for path: String in [RIFLE, KESTREL, TALON, BASTION]:
 		_check_bolt_kick(path)
 
 
@@ -65,7 +66,7 @@ func _check_bolt_kick(path: String) -> void:
 
 
 func test_magazine_drops_and_returns_on_reload() -> void:
-	for path: String in [RIFLE, KESTREL, TALON]:
+	for path: String in [RIFLE, KESTREL, TALON, BASTION]:
 		_check_magazine_reload(path)
 
 
@@ -89,7 +90,7 @@ func _check_magazine_reload(path: String) -> void:
 
 
 func test_empty_reload_holds_the_bolt_open_then_resets() -> void:
-	for path: String in [RIFLE, KESTREL, TALON]:
+	for path: String in [RIFLE, KESTREL, TALON, BASTION]:
 		var weapon: Weapon = _gun(path)
 		var bolt: Node3D = _part(weapon, "Bolt")
 		var rest: Vector3 = bolt.position

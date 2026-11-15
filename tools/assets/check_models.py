@@ -50,6 +50,13 @@ JOINTS = {
     "mako_pdw": GUN_WITH_MAG,
     "atlas_auto": GUN_WITH_MAG,
     "halberd_lmg": GUN_WITH_MAG,
+    "bastion_lmg": {
+        **GUN_WITH_MAG,
+        "Belt": "Receiver",
+        "FeedCover": "Receiver",
+        "Bipod": "Receiver",
+        "CarryHandle": "Receiver",
+    },
     "corvid_338": GUN_WITH_MAG,
     "cryo_lance": {**GUN_WITH_MAG, "Trigger": "Receiver", "CondenserCoils": "Receiver"},
     "synapse": {**GUN_WITH_MAG, "Trigger": "Receiver", "Cabling": "Receiver"},

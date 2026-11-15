@@ -11,7 +11,8 @@ const VAULT_GUNS: Array[StringName] = [
 	&"corvid_338",
 	&"sentry_br3",
 	&"nightjar_sd",
-	&"rampart_br"
+	&"rampart_br",
+	&"bastion_lmg"
 ]
 
 var session: GameSession
