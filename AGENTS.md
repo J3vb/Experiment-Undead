@@ -13,6 +13,21 @@ weapon, enemy or map work. Start with `docs/design/README.md`; for anything
 visual, `docs/design/look-rules.md` is the style to match. Use its colours,
 names and numbers instead of inventing new ones.
 
+## Skills
+
+Step-by-step guides in `.agents/skills/<name>/SKILL.md` (Codex) and the same
+files in `.claude/skills/` (Claude Code). Load the one that fits your task:
+
+| Skill | Use it for |
+|---|---|
+| `blender-model` | Building or changing a code-made model in `tools/assets/` |
+| `godot-asset-import` | Import settings, files to commit and tests for anything in `assets/` |
+| `look-check` | Rendering a visual change and comparing it with the style guide |
+| `design-change` | Changing a game number or adding content in line with the balance sheet |
+
+Edit skills in `.agents/skills/` only, then run
+`python tools/ci/check_skills_mirror.py --fix`. CI fails if the copies differ.
+
 ## Folders
 
 | Folder | What goes there |
@@ -58,14 +73,8 @@ names and numbers instead of inventing new ones.
    third-party file (code or asset) gets one line in `docs/CREDITS.md`: name,
    author, link, licence. CC0 first, CC-BY with credit, MIT for code. No
    "non-commercial" or "no AI" licences. No Git LFS for now.
-   Models: `pip install -r tools/assets/requirements.txt` (Python 3.13), then
-   `python tools/assets/build_models.py [name]`. Commit the `.glb` and its
-   `.import` file, and keep a test in `tests/content/test_generated_models.gd`
-   for any part code needs by name (like `Magazine` or `Muzzle`). Then run
-   `python tools/assets/check_models.py` (budgets, origin, facing, joints,
-   normals, materials; a new model needs a line in its `JOINTS`) and
-   `npm ci --prefix tools/assets && node tools/assets/validate_gltf.mjs`.
-   The Assets CI runs both.
+   How to build, import and check models (including `check_models.py` and the
+   glTF validator the Assets CI runs): the skills below.
 9. **Names.** Use the design doc's words in code and data:
    - Machines: `SpecimenVault` (random gun), `MedDispenser` (gives a serum),
      `Reforger` (upgrades a gun). Not "mystery box" or "perk machine".
