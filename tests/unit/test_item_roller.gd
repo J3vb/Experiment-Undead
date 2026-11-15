@@ -80,6 +80,8 @@ func _check_lines(item: Dictionary, weapon: WeaponData) -> void:
 		assert_false(ids.has("penetration"))
 	if weapon.loot_tags.has(&"pump"):
 		assert_false(ids.has("fire_rate_pct"))
+	if weapon.loot_tags.has(&"belt"):
+		assert_false(ids.has("mag_pct"))
 	if weapon.loot_tags.has(&"smg"):
 		assert_false(ids.has("long_shot_pct"))
 		assert_false(ids.has("penetration"))

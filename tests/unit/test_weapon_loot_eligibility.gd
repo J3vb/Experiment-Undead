@@ -92,3 +92,18 @@ func test_metadata_free_weapons_keep_four_argument_seeded_rolls() -> void:
 func test_unknown_rarity_is_rejected_before_rng_or_content_lookup() -> void:
 	_assert_rejected(Content.weapon(&"bastion_lmg"), &"unknown_rarity", 30, 50)
 	_assert_rejected(Content.weapon(&"rifle_ar"), &"unknown_rarity", 30, 1)
+
+
+func test_belt_rolls_keep_their_fixed_capacity() -> void:
+	for id: StringName in BASTIONS:
+		var weapon: WeaponData = Content.weapon(id)
+		for rarity: StringName in [&"rare", &"epic", &"legendary"]:
+			for sample: int in 20:
+				var rolled: Dictionary = ItemRoller.roll_weapon(rng, weapon, rarity, 30, 20)
+				assert_false(rolled.is_empty())
+				for line: Array in rolled.aff:
+					assert_ne(line[0], "mag_pct", "belt-fed guns cannot roll magazine-size affixes")
+				var item: ItemInstance = ItemInstance.new(rolled)
+				assert_eq(
+					item.weapon_data(weapon).magazine_size, weapon.magazine_size, "equipped belt capacity stays fixed"
+				)
