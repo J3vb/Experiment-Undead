@@ -21,6 +21,7 @@ repeat_last = 1
 [resource]
 script = ExtResource("1")
 id = &"talon_dmr"
+slot = 0
 loot_tags = Array[StringName]([&"rifle", &"dmr"])
 display_name = "Talon DMR"
 cost = 1500

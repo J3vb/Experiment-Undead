@@ -21,6 +21,7 @@ repeat_last = 1
 [resource]
 script = ExtResource("1")
 id = &"mako_pdw"
+slot = 0
 loot_tags = Array[StringName]([&"smg", &"burst"])
 display_name = "Mako PDW"
 cost = 0

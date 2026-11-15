@@ -4,9 +4,11 @@ class_name WeaponData
 extends Resource
 
 enum FireMode { SEMI, BURST, AUTO }
+enum Slot { PRIMARY, SIDEARM }
 
 @export_group("Identity")
 @export var id: StringName = &""
+@export var slot: Slot = Slot.PRIMARY
 @export var loot_tags: Array[StringName] = []
 @export var display_name: String = "Weapon"
 @export var cost: int = 0

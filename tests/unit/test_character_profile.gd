@@ -33,15 +33,68 @@ func test_dictionary_round_trip() -> void:
 	assert_eq(profile.display_name, "Survivor")
 	assert_eq(profile.total_xp, 1234)
 	assert_eq(profile.skill_ranks, {})
-	assert_eq(profile.to_dict(), data)
+	var saved: Dictionary = profile.to_dict()
+	saved.erase("stash")
+	saved.erase("loadout")
+	assert_eq(saved, data)
+
+
+func test_new_profile_has_60_empty_stash_slots_and_five_loadout_slots() -> void:
+	var profile: CharacterProfile = CharacterProfile.new()
+	assert_eq(profile.stash.size(), 60)
+	for item: Dictionary in profile.stash:
+		assert_eq(item, {})
+	assert_eq(profile.loadout, {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}})
+	profile.stash[0]["uid"] = "first"
+	profile.loadout["primary"]["uid"] = "equipped"
+	assert_eq(profile.stash[1], {})
+	assert_eq(profile.loadout["sidearm"], {})
+	var other: CharacterProfile = CharacterProfile.new()
+	assert_eq(other.stash[0], {})
+	assert_eq(other.loadout["primary"], {})
+
+
+func test_inventory_dictionary_round_trip_keeps_slot_positions() -> void:
+	var profile: CharacterProfile = CharacterProfile.new()
+	profile.stash[3] = {"uid": "stashed", "base": "rifle_ar", "aff": [["dmg_pct", 2, 0.25]]}
+	profile.stash[59] = {"uid": "last", "base": "hollis_44"}
+	profile.loadout["sidearm"] = {"uid": "equipped", "base": "hollis_44"}
+	var loaded: CharacterProfile = CharacterProfile.from_dict(profile.to_dict())
+	assert_eq(loaded.stash, profile.stash)
+	assert_eq(loaded.stash.size(), 60)
+	assert_eq(loaded.stash[0], {})
+	assert_eq(loaded.stash[3]["uid"], "stashed")
+	assert_eq(loaded.stash[59]["uid"], "last")
+	assert_eq(loaded.loadout, profile.loadout)
+
+
+func test_short_stash_with_nulls_loads_as_60_dictionary_slots() -> void:
+	var profile: CharacterProfile = CharacterProfile.from_dict({"stash": [null, {"uid": "kept"}, null]})
+	assert_eq(profile.stash.size(), 60)
+	assert_eq(profile.stash[0], {})
+	assert_eq(profile.stash[1], {"uid": "kept"})
+	assert_eq(profile.stash[2], {})
+	assert_eq(profile.stash[59], {})
+
+
+func test_old_v1_save_defaults_to_empty_inventory_without_migration() -> void:
+	_write_raw('{"save_version": 1, "id": "test_character_profile", "total_xp": 400}')
+	var profile: CharacterProfile = CharacterProfile.load_or_create(ID)
+	assert_eq(profile.total_xp, 400)
+	assert_eq(profile.stash.size(), 60)
+	for item: Dictionary in profile.stash:
+		assert_eq(item, {})
+	assert_eq(profile.loadout, {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}})
+	assert_eq(profile.save(), OK)
+	assert_eq(int(SaveFile.read(PATH)["save_version"]), 1)
 
 
 func test_unknown_fields_survive_load_and_save() -> void:
 	var data: Dictionary = {
 		"id": String(ID),
 		"total_xp": 400,
-		"stash": [{"uid": "item", "future": [1, null, {"a": true}]}],
-		"loadout": [],
+		"stash": [{"uid": "item", "aff": [["removed_affix", 3, 0.5]], "future": [1, null, {"a": true}]}],
+		"loadout": {"primary": {"uid": "equipped", "future": {"nested": [false, null, "kept"]}}},
 		"future_flag": false,
 	}
 	assert_eq(SaveFile.write(PATH, data), OK)
@@ -50,10 +103,31 @@ func test_unknown_fields_survive_load_and_save() -> void:
 	profile.total_xp += 75
 	assert_eq(profile.save(), OK)
 	var saved: Dictionary = SaveFile.read(PATH)
-	assert_eq(saved["stash"], original["stash"])
-	assert_eq(saved["loadout"], [])
+	assert_eq(saved["stash"][0], original["stash"][0])
+	assert_eq(saved["stash"].size(), 60)
+	assert_eq(saved["loadout"]["primary"], original["loadout"]["primary"])
 	assert_eq(saved["future_flag"], false)
 	assert_eq(int(saved["total_xp"]), 475)
+	var loaded: CharacterProfile = CharacterProfile.load_or_create(ID)
+	assert_eq(loaded.stash[0], saved["stash"][0])
+	assert_eq(loaded.loadout["primary"], saved["loadout"]["primary"])
+
+
+func test_inventory_dictionary_copies_do_not_share_nested_item_data() -> void:
+	var data: Dictionary = {
+		"stash": [{"uid": "stashed", "future": {"locked": true}}],
+		"loadout": {"primary": {"uid": "equipped", "future": {"locked": true}}},
+	}
+	var profile: CharacterProfile = CharacterProfile.from_dict(data)
+	data["stash"][0]["future"]["locked"] = false
+	data["loadout"]["primary"]["future"]["locked"] = false
+	assert_true(profile.stash[0]["future"]["locked"])
+	assert_true(profile.loadout["primary"]["future"]["locked"])
+	var saved: Dictionary = profile.to_dict()
+	saved["stash"][0]["future"]["locked"] = false
+	saved["loadout"]["primary"]["future"]["locked"] = false
+	assert_true(profile.stash[0]["future"]["locked"])
+	assert_true(profile.loadout["primary"]["future"]["locked"])
 
 
 func test_missing_file_gives_new_saveable_profile() -> void:
@@ -99,6 +173,10 @@ func test_malformed_fields_use_temporary_profile() -> void:
 		{"display_name": []},
 		{"skill_ranks": []},
 		{"id": []},
+		{"stash": {}},
+		{"stash": ["bad"]},
+		{"loadout": []},
+		{"loadout": {"primary": "bad"}},
 	]:
 		assert_eq(SaveFile.write(PATH, fields), OK)
 		var raw: String = FileAccess.get_file_as_string(PATH)
