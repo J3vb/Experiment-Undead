@@ -1,6 +1,7 @@
 """Contact reports distinguish separation, surface crossing and fully enclosed geometry."""
 
 import sys
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -32,6 +33,19 @@ def _snapshot(hand, weapons):
         "weapon_meshes": weapons,
         "morph_weights": {},
     }
+
+
+def _offset_cap(mesh, distance):
+    indices = {}
+    for triangle in (0, 6):
+        for corner, original in enumerate(mesh["triangles"][triangle]):
+            if original not in indices:
+                indices[original] = len(mesh["vertices"])
+                point = mesh["vertices"][original].copy()
+                point[2] -= distance
+                mesh["vertices"].append(point)
+            mesh["triangles"][triangle][corner] = indices[original]
+    return mesh
 
 
 def test_separated_godot_meshes_have_positive_surface_clearance():
@@ -89,8 +103,10 @@ def test_fully_embedded_weapon_part_fails_without_any_triangle_crossing(split_la
 def test_nonmanifold_welded_weapon_solids_cannot_report_clean_contacts(centers):
     weapons = [_box((center, 0, 0), 0.08) for center in centers]
     result = contacts.inspect_contacts(_snapshot(_box((centers[0], 0, 0), 0.02), weapons))
-    assert result["open_weapon_parts"] > 0
+    assert result["open_weapon_parts"] == 0
+    assert result["closed_weapon_parts"] == 2
     assert result["groups"]["hand_R"]["intersection_pairs"] == 0
+    assert result["groups"]["hand_R"]["enclosed_samples"] > 0
     assert contacts._report(result)
 
 
@@ -106,3 +122,37 @@ def test_open_arm_surface_cannot_report_clean_contacts():
 def test_missing_weapon_geometry_cannot_report_success():
     with pytest.raises(ValueError, match="no weapon triangles"):
         contacts.inspect_contacts(_snapshot(_box((0, 0, 0), 0.4), []))
+
+
+def test_compressed_material_seam_is_closed_without_changing_exported_triangles():
+    weapon = _offset_cap(_box((0, 0, 0), 0.08), 0.000005)
+    snapshot = _snapshot(_box((0.2, 0, 0), 0.02), [weapon])
+    original = deepcopy(snapshot)
+    result = contacts.inspect_contacts(snapshot)
+    assert result["open_weapon_parts"] == 0
+    assert result["closed_weapon_parts"] == 1
+    assert contacts._report(result) == []
+    assert snapshot == original
+
+
+def test_real_gap_is_not_closed_by_compression_seam_matching():
+    weapon = _offset_cap(_box((0, 0, 0), 0.08), 0.0005)
+    result = contacts.inspect_contacts(_snapshot(_box((0.2, 0, 0), 0.02), [weapon]))
+    assert result["open_weapon_parts"] > 0
+    assert contacts._report(result)
+
+
+@pytest.mark.parametrize("side", ["L", "R"])
+def test_clavicle_geometry_is_checked_for_weapon_containment(side):
+    snapshot = _snapshot(_box((0, 0, 0), 0.02), [_box((0, 0, 0), 0.08)])
+    snapshot["arms"][0]["labels"] = ["clavicle_" + side] * 12
+    result = contacts.inspect_contacts(snapshot)
+    assert result["groups"]["clavicle_" + side]["enclosed_samples"] > 0
+    assert contacts._report(result)
+
+
+def test_unexpected_arm_bone_cannot_silently_skip_its_geometry():
+    snapshot = _snapshot(_box((0, 0, 0), 0.02), [_box((0, 0, 0), 0.08)])
+    snapshot["arms"][0]["labels"] = ["pelvis"] * 12
+    with pytest.raises(ValueError, match="Unexpected arm triangle labels"):
+        contacts.inspect_contacts(snapshot)

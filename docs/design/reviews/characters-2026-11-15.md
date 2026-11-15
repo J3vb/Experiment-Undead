@@ -1,7 +1,7 @@
 # Characters — 2026-11-15
 
 Initial baseline: `109bb6d`, rebuilt before editing. Final comparisons use
-`bfbddd2` so intervening gun and vest changes appear on both sides. Scores are 1–5; compare with
+`5e5895f` so intervening gun and vest changes appear on both sides. Scores are 1–5; compare with
 `gear_sets.jpg`, `gear_fp.jpg`, `style_hub.jpg` and the rebuilt gun outlines.
 The guns set the bar for deliberate contours, edge treatment and material separation.
 
@@ -40,9 +40,12 @@ with regression tests against buried or floating detail.
 The new arms replace the local gameplay hand meshes through the shared weapon
 holder. One rig follows the active weapon through aiming, kick, reload and pump
 motion; camera-relative shoulders prevent the entire arm moving like a rigid prop.
-Fourteen authored grip profiles cover the twenty-seven weapon definitions.
-Thirteen glove morphs preserve the accepted rifle as the default shape. Common medium
+Authored grip profiles cover every current weapon family and its upgraded variants.
+Glove morphs preserve the accepted rifle as the default shape. Common medium
 cuffs are cosmetic; this adds no equipment or rarity gameplay.
+The fitted palms, fingers and glove reinforcement follow the hand bones rigidly;
+the sleeves and wrist fabric retain blended weights. This prevents wrist motion
+during reload from pulling a palm through the receiver.
 
 Results: body **11,892 → 15,380** triangles; arms **7,628 → 9,828**.
 The strongest gains are local cloth compression, shaped face covering, seated
@@ -55,12 +58,14 @@ actual cross-sections. The left hand supports the handguard; the right wraps the
 slanted pistol grip. Oblique finger curls let both palms continue the forearms:
 wrist bends are **3.19° left / 15.82° right**. Joint-angle tests check both wrists
 and elbows, and shoulder positions are bounded relative to the imported body.
-Minimum imported-vertex grip clearances are **1.724 mm left / 2.103 mm right**.
-The right index clears the guard by 1.183 mm; both hands clear the adjacent
-receiver, trigger and rail geometry. The camera and rifle stay at the runtime hip
-placement. The default rifle retains its 32/45 mm tip gaps and original clearance
+Contact checks export the actual imported morphs, full skin weights, cuffs and
+weapon triangles in hip, ADS and reload poses. They detect surface intersections
+and enclosed geometry; reported clearances are sampled, not exact minimum distances.
+The camera and rifle stay at the runtime hip placement. The default rifle retains
+its 32/45 mm tip gaps and original clearance
 checks. Other profiles place markers on their actual fingertips; stock grips use
-wider gaps so thumbs can stay a natural length. Regression tests
+wider gaps so thumbs can stay a natural length, and support gloves cup the firing
+hand on pistols. Regression tests
 also catch reversed anatomy, twisted sweep rings, buried reinforcement, grip
 penetration and discontinuous elbow movement. Fingers use fixed authored curls;
 individual trigger pulls and magazine-handling animation remain deferred.
@@ -81,6 +86,12 @@ Additional paired evidence: [first-person rifle](images/characters-2026-11-15/fp
 The same image directory contains Common/Legendary cuff views, arm silhouettes,
 and uncropped 10/30 m images at 110° horizontal FOV. These software OpenGL
 captures verify shape, colour and fit, not Forward+ performance.
+Actual lowered GearRig teammate poses at 30 m are also saved at native scale:
+[Common before](images/characters-2026-11-15/teammate_30m_before_common.png),
+[Common after](images/characters-2026-11-15/teammate_30m_after_common.png),
+[Legendary before](images/characters-2026-11-15/teammate_30m_before_legendary.png),
+[Legendary after](images/characters-2026-11-15/teammate_30m_after_legendary.png).
+At 110° horizontal FOV, the 1.80 m avatar is about 27 pixels tall in these captures.
 
 Gameplay comparisons use the original placeholder hands before and the imported
 rig after, with identical cameras and lighting. Each sheet includes Common and
@@ -98,7 +109,12 @@ Legendary at hip (110° horizontal FOV) and ADS (the weapon's vertical FOV):
 [Fieldhand](images/characters-2026-11-15/runtime_fieldhand_lever.png),
 [Ironwood](images/characters-2026-11-15/runtime_ironwood_50.png),
 [Wren](images/characters-2026-11-15/runtime_wren_mp.png),
-[Siphon](images/characters-2026-11-15/runtime_siphon.png).
+[Siphon](images/characters-2026-11-15/runtime_siphon.png),
+[Sentry](images/characters-2026-11-15/runtime_sentry_br3.png),
+[Nightjar](images/characters-2026-11-15/runtime_nightjar_sd.png),
+[Rampart](images/characters-2026-11-15/runtime_rampart_br.png),
+[Cryo Lance](images/characters-2026-11-15/runtime_cryo_lance.png),
+[Synapse](images/characters-2026-11-15/runtime_synapse.png).
 
 Reproduce after building/importing the project:
 
@@ -107,6 +123,8 @@ python tools/render_turnarounds.py player player_arms --out /tmp/characters-turn
 godot --path . --rendering-driver opengl3 tools/gear_booth.tscn -- --rarity all --out /tmp/characters-booth
 godot --path . --rendering-driver opengl3 tools/character_review.tscn -- /tmp/characters-inspection
 godot --path . --rendering-driver opengl3 tools/weapon_arm_review.tscn -- /tmp/characters-runtime
+CONTACT_OUT=/tmp/character-contacts godot --headless --path . -s addons/gut/gut_cmdln.gd -gconfig= -gtest=res://tools/character_contact_export.gd -gexit
+python tools/check_character_contacts.py /tmp/character-contacts
 ```
 
 Use `--rarity all` and compare Common/Legendary: the existing single-rarity booth

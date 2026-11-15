@@ -15,8 +15,12 @@ from pathlib import Path
 import bpy  # noqa: F401 -- initialise Blender before importing its BVH implementation.
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
+from mathutils.kdtree import KDTree
 
-GROUPS = ("hand_R", "hand_L", "forearm_R", "forearm_L", "upperarm_R", "upperarm_L", "cuffs")
+GROUPS = (
+    *(f"{bone}_{side}" for bone in ("clavicle", "upperarm", "forearm", "hand") for side in ("R", "L")),
+    "cuffs",
+)
 
 
 def _assemble(meshes, group=None):
@@ -43,41 +47,133 @@ def _root(parents, index):
     return index
 
 
-def _connected_parts(vertices, triangles):
-    """Weld material/UV splits, then connect faces through shared geometric edges."""
+def _mesh_edges(vertices, triangles):
     canonical = {}
     welded = []
     for point in vertices:
         key = tuple(round(axis * 1000000) for axis in point)
         welded.append(canonical.setdefault(key, len(canonical)))
-    parents, edges = list(range(len(triangles))), {}
+    edges = collections.defaultdict(list)
     for index, triangle in enumerate(triangles):
         for side in range(3):
-            edge = tuple(sorted((welded[triangle[side]], welded[triangle[(side + 1) % 3]])))
-            if edge in edges:
-                parents[_root(parents, index)] = _root(parents, edges[edge])
-            else:
-                edges[edge] = index
+            first, second = triangle[side], triangle[(side + 1) % 3]
+            edges[tuple(sorted((welded[first], welded[second])))].append((index, first, second))
+    return edges, welded
+
+
+def _pair_seams(points, edges):
+    """Match whole boundary edges across compressed material surfaces, without collapsing small edges."""
+    singles = [(key, entries[0]) for key, entries in edges.items() if len(entries) == 1]
+    tree = KDTree(len(singles))
+    for index, (_key, (_face, first, second)) in enumerate(singles):
+        tree.insert((points[first] + points[second]) / 2, index)
+    tree.balance()
+    matches = {}
+    for index, (_key, (_face, first, second)) in enumerate(singles):
+        candidates = []
+        for _point, other, _distance in tree.find_range((points[first] + points[second]) / 2, 0.00001):
+            if other == index:
+                continue
+            _other_key, (_other_face, left, right) = singles[other]
+            error = min(
+                max((points[first] - points[left]).length, (points[second] - points[right]).length),
+                max((points[first] - points[right]).length, (points[second] - points[left]).length),
+            )
+            if error < 0.00001:
+                candidates.append(other)
+        if len(candidates) == 1:
+            matches[index] = candidates[0]
+    for index, other in matches.items():
+        if index < other and matches.get(other) == index:
+            edges[singles[index][0]].extend(edges.pop(singles[other][0]))
+
+
+def _convex_pairs(entries, welded, planes):
+    """Separate touching solids at a shared rim using consistent clockwise inward face normals."""
+    matches = {}
+    for face, first, second in entries:
+        candidates = []
+        normal, center = planes[face]
+        for other, left, right in entries:
+            if face == other or welded[first] != welded[right] or welded[second] != welded[left]:
+                continue
+            other_normal, other_center = planes[other]
+            offset = other_center - center
+            if normal.dot(offset) > 1e-9 and other_normal.dot(-offset) > 1e-9:
+                candidates.append(other)
+        if len(candidates) == 1:
+            matches[face] = candidates[0]
+    return [(face, other) for face, other in matches.items() if matches.get(other) == face]
+
+
+def _stitched_vertices(points, edges, parents):
+    """Build a quantization-seam proxy for containment; exact collision geometry stays unchanged."""
+    joints = list(range(len(points)))
+    for entries in edges.values():
+        pieces = collections.defaultdict(list)
+        for face, first, second in entries:
+            pieces[_root(parents, face)].append((first, second))
+        for pair in pieces.values():
+            if len(pair) != 2:
+                continue
+            (first, second), (left, right) = pair
+            direct = (points[first] - points[left]).length + (points[second] - points[right]).length
+            reverse = (points[first] - points[right]).length + (points[second] - points[left]).length
+            if reverse < direct:
+                left, right = right, left
+            joints[_root(joints, first)] = _root(joints, left)
+            joints[_root(joints, second)] = _root(joints, right)
+    sums, counts = collections.defaultdict(Vector), collections.Counter()
+    for index, point in enumerate(points):
+        joint = _root(joints, index)
+        sums[joint] += point
+        counts[joint] += 1
+    return [sums[_root(joints, index)] / counts[_root(joints, index)] for index in range(len(points))]
+
+
+def _connected_parts(vertices, triangles):
+    points = [Vector(point) for point in vertices]
+    edges, welded = _mesh_edges(vertices, triangles)
+    _pair_seams(points, edges)
+    planes = []
+    for first, second, third in triangles:
+        normal = (points[second] - points[first]).cross(points[third] - points[first]).normalized()
+        planes.append((normal, (points[first] + points[second] + points[third]) / 3))
+    parents = list(range(len(triangles)))
+    for entries in edges.values():
+        if len(entries) == 2:
+            parents[_root(parents, entries[0][0])] = _root(parents, entries[1][0])
+            continue
+        source_edges = collections.defaultdict(list)
+        for face, first, second in entries:
+            source_edges[tuple(sorted((first, second)))].append(face)
+        pairs = [faces for faces in source_edges.values() if len(faces) == 2]
+        for first, second in pairs + _convex_pairs(entries, welded, planes):
+            parents[_root(parents, first)] = _root(parents, second)
     groups = collections.defaultdict(list)
     for index, triangle in enumerate(triangles):
         groups[_root(parents, index)].append(triangle)
-    return groups.values(), welded
+    counts = collections.defaultdict(list)
+    for entries in edges.values():
+        for group, count in collections.Counter(_root(parents, face) for face, _first, _second in entries).items():
+            counts[group].append(count)
+    return groups, counts, _stitched_vertices(points, edges, parents)
 
 
 def _closed_parts(vertices, triangles):
     """Only closed connected pieces enclose volume; every piece still participates in crossings."""
-    groups, welded = _connected_parts(vertices, triangles)
+    groups, counts, stitched = _connected_parts(vertices, triangles)
     closed, open_count = [], 0
-    for faces in groups:
-        edges = collections.Counter(
-            tuple(sorted((welded[face[i]], welded[face[(i + 1) % 3]]))) for face in faces for i in range(3)
-        )
-        if any(count != 2 for count in edges.values()):
+    for group, faces in groups.items():
+        if any(count != 2 for count in counts[group]):
             open_count += 1
             continue
         used = sorted({index for face in faces for index in face})
+        if any((Vector(vertices[index]) - stitched[index]).length > 0.00001 for index in used):
+            open_count += 1
+            continue
         indices = {index: local for local, index in enumerate(used)}
-        points = [vertices[index] for index in used]
+        points = [stitched[index] for index in used]
         local_faces = [[indices[index] for index in face] for face in faces]
         low = tuple(min(point[axis] for point in points) for axis in range(3))
         high = tuple(max(point[axis] for point in points) for axis in range(3))
@@ -175,6 +271,9 @@ def _embedded_weapon(snapshot, vertices, triangles, groups):
 
 def inspect_contacts(snapshot):
     """Return finite triangle intersections, containment and measured surface clearances."""
+    unexpected = {label for mesh in snapshot["arms"] for label in mesh["labels"]} - set(GROUPS)
+    if unexpected:
+        raise ValueError(f"Unexpected arm triangle labels: {sorted(unexpected)}")
     vertices, triangles, labels = _assemble(snapshot["weapon_meshes"])
     if not triangles:
         raise ValueError("Contact export contains no weapon triangles")

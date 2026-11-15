@@ -2,27 +2,28 @@
 
 import math
 
+import player_grip_frames as frames
 from mathutils import Vector
 
 ALONG = Vector((0.8 * math.sqrt(0.96), 0.6 * math.sqrt(0.96), 0.2))
 BASE_INWARD = Vector((-0.16, -0.12, math.sqrt(0.96)))
 INWARD = BASE_INWARD * math.cos(math.radians(40)) + ALONG.cross(BASE_INWARD) * math.sin(math.radians(40))
 ACROSS = ALONG.cross(INWARD)
-SOURCE_ACROSS = Vector((-1, 0, -1)).normalized()
-SOURCE_ALONG = Vector((1, 0, -1)).normalized()
-SOURCE_INWARD = Vector((0, -1, 0))
+SOURCE_ACROSS, SOURCE_ALONG, SOURCE_INWARD = frames.rest_frame(1)
 SOURCE_CENTRE = Vector((0.675, -0.057, 0.985))
 GUN_CENTRE = Vector((-0.030, 0.110, -0.020))
 
 
 def gun(point):
-    d = point - SOURCE_CENTRE
-    return GUN_CENTRE + ACROSS * d.dot(SOURCE_ACROSS) + ALONG * d.dot(SOURCE_ALONG) + INWARD * d.dot(SOURCE_INWARD)
+    return frames.transform(
+        point, SOURCE_CENTRE, GUN_CENTRE, (SOURCE_ACROSS, SOURCE_ALONG, SOURCE_INWARD), (ACROSS, ALONG, INWARD)
+    )
 
 
 def source(point):
-    d = point - GUN_CENTRE
-    return SOURCE_CENTRE + SOURCE_ACROSS * d.dot(ACROSS) + SOURCE_ALONG * d.dot(ALONG) + SOURCE_INWARD * d.dot(INWARD)
+    return frames.transform(
+        point, GUN_CENTRE, SOURCE_CENTRE, (ACROSS, ALONG, INWARD), (SOURCE_ACROSS, SOURCE_ALONG, SOURCE_INWARD)
+    )
 
 
 def finger_path(root, index):

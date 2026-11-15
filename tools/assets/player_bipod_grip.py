@@ -2,35 +2,26 @@
 
 import math
 
+import player_grip_frames as frames
 from mathutils import Vector
 
 ALONG = Vector((0.8 * math.sqrt(0.96), 0.6 * math.sqrt(0.96), 0.2))
 INWARD = Vector((0.509092349539438, -0.792796513827807, 0.335109933160583))
 ACROSS = ALONG.cross(INWARD)
-SOURCE_ACROSS = Vector((-1, 0, -1)).normalized()
-SOURCE_ALONG = Vector((1, 0, -1)).normalized()
-SOURCE_INWARD = Vector((0, -1, 0))
+SOURCE_ACROSS, SOURCE_ALONG, SOURCE_INWARD = frames.rest_frame(1)
 SOURCE_CENTRE = Vector((0.675, -0.062, 0.985))
 GUN_CENTRE = Vector((-0.021, 0.219, 0.030))
 
 
 def gun(point):
-    offset = point - SOURCE_CENTRE
-    return (
-        GUN_CENTRE
-        + ACROSS * offset.dot(SOURCE_ACROSS)
-        + ALONG * offset.dot(SOURCE_ALONG)
-        + INWARD * offset.dot(SOURCE_INWARD)
+    return frames.transform(
+        point, SOURCE_CENTRE, GUN_CENTRE, (SOURCE_ACROSS, SOURCE_ALONG, SOURCE_INWARD), (ACROSS, ALONG, INWARD)
     )
 
 
 def source(point):
-    offset = point - GUN_CENTRE
-    return (
-        SOURCE_CENTRE
-        + SOURCE_ACROSS * offset.dot(ACROSS)
-        + SOURCE_ALONG * offset.dot(ALONG)
-        + SOURCE_INWARD * offset.dot(INWARD)
+    return frames.transform(
+        point, GUN_CENTRE, SOURCE_CENTRE, (ACROSS, ALONG, INWARD), (SOURCE_ACROSS, SOURCE_ALONG, SOURCE_INWARD)
     )
 
 

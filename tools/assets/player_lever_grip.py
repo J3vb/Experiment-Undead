@@ -2,69 +2,28 @@
 
 import math
 
+import player_grip_frames as frames
 from mathutils import Vector
+from player_stock_grip import _curve as stock_curve
 
 SOURCE = Vector((-0.675, -0.055, 0.985))
 ANCHOR = Vector((0, -0.145, -0.050))
 ALONG = Vector((0, math.cos(math.radians(20)), math.sin(math.radians(20))))
 INWARD = Vector((-1, 0, 0))
 ACROSS = INWARD.cross(ALONG)
-REST_ACROSS = Vector((1, 0, -1)).normalized()
-REST_ALONG = Vector((-1, 0, -1)).normalized()
-REST_INWARD = Vector((0, -1, 0))
+REST_ACROSS, REST_ALONG, REST_INWARD = frames.rest_frame(-1)
 
 
 def _gun(point):
-    relative = point - SOURCE
-    return (
-        ANCHOR
-        + ACROSS * relative.dot(REST_ACROSS)
-        + ALONG * relative.dot(REST_ALONG)
-        + INWARD * relative.dot(REST_INWARD)
-    )
+    return frames.transform(point, SOURCE, ANCHOR, (REST_ACROSS, REST_ALONG, REST_INWARD), (ACROSS, ALONG, INWARD))
 
 
 def _source(point):
-    relative = point - ANCHOR
-    return (
-        SOURCE
-        + REST_ACROSS * relative.dot(ACROSS)
-        + REST_ALONG * relative.dot(ALONG)
-        + REST_INWARD * relative.dot(INWARD)
-    )
+    return frames.transform(point, ANCHOR, SOURCE, (ACROSS, ALONG, INWARD), (REST_ACROSS, REST_ALONG, REST_INWARD))
 
 
 def _curve(controls, count):
-    points = []
-    for row in range(count):
-        fractions = (
-            0,
-            0.10,
-            0.20,
-            0.30,
-            0.40,
-            0.50,
-            0.60,
-            0.70,
-            0.80,
-            0.88,
-            0.94,
-            0.975,
-            0.992,
-            1,
-        )
-        if count == 10:
-            fractions = (0, 0.14, 0.28, 0.42, 0.55, 0.68, 0.80, 0.90, 0.97, 1)
-        time = fractions[row] * (len(controls) - 1)
-        section = min(len(controls) - 2, int(time))
-        blend = time - section
-        p0, p1 = controls[max(0, section - 1)], controls[section]
-        p2, p3 = controls[section + 1], controls[min(len(controls) - 1, section + 2)]
-        point = 2 * p1 + (-p0 + p2) * blend
-        point += (2 * p0 - 5 * p1 + 4 * p2 - p3) * blend**2
-        point += (-p0 + 3 * p1 - 3 * p2 + p3) * blend**3
-        points.append(_source(point * 0.5))
-    return points
+    return stock_curve(controls, count, _source)
 
 
 def finger_radii(index):

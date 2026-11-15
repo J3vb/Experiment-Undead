@@ -20,23 +20,26 @@ func _capture() -> void:
 	for id: StringName in PlayerArmProfiles.weapon_ids():
 		if not selected.is_empty() and not String(id) in selected:
 			continue
-		await _weapon_views(id)
+		if not await _weapon_views(id):
+			get_tree().quit(1)
+			return
 	print("Runtime weapon arm inspection saved to ", _out)
 	get_tree().quit()
 
 
-func _weapon_views(id: StringName) -> void:
+func _weapon_views(id: StringName) -> bool:
 	var data: WeaponData = load("res://content/weapons/%s.tres" % id) as WeaponData
+	if data == null:
+		push_error("Cannot load weapon data for inspection: " + String(id))
+		return false
 	_weapon = _holder.give(data)
 	if _holder.arm_view == null or _holder.arm_view.profile == null:
 		push_error("Cannot inspect an unauthored weapon grip: " + String(id))
-		get_tree().quit(1)
-		return
+		return false
 	var morph: StringName = _holder.arm_view.profile.morph
 	if not morph.is_empty() and _holder.arm_view.mesh.find_blend_shape_by_name(morph) < 0:
 		push_error("Cannot inspect missing grip morph: " + String(morph))
-		get_tree().quit(1)
-		return
+		return false
 	_weapon.set_process(false)
 	_holder.arm_view.set_process(false)
 	for ads: bool in [false, true]:
@@ -57,6 +60,7 @@ func _weapon_views(id: StringName) -> void:
 	_camera.position = Vector3(-.45, -.62, -.20)
 	_camera.look_at(Vector3(.08, -.26, -.32))
 	await _shot(String(id) + "_under", String(id).to_upper() + " / BOTH GRIPS / UNDERSIDE")
+	return true
 
 
 func _set_stance(ads: bool) -> void:

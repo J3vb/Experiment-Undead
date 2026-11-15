@@ -144,6 +144,15 @@ def test_precision_thumb_does_not_make_an_oversized_loop_to_force_a_rifle_tip_ga
     assert length < 0.160, "the stock thumb must not stretch around the stock to meet a rifle-only tip chord"
 
 
+def test_angled_stop_support_uses_short_digits_instead_of_wrapping_the_entire_fore_end():
+    import player_angled_grip as angled
+
+    paths = [angled.finger_path(index) for index in range(4)] + [angled.thumb_path()]
+    for points, maximum in zip(paths, (0.120, 0.110, 0.095, 0.090, 0.100), strict=True):
+        length = sum((second - first).length for first, second in itertools.pairwise(points))
+        assert length < maximum, "support digits must seat on the stop without an oversized curl around the guard"
+
+
 def test_stock_trigger_finger_reaches_forward_without_dorsal_mcp_hyperextension():
     across, along, inward = arms._frame(-1)
     root = Vector((-0.675, -0.017, 0.985)) - across * 0.024

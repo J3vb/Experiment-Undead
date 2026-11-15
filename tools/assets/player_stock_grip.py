@@ -2,6 +2,7 @@
 
 import math
 
+import player_grip_frames as frames
 from mathutils import Vector
 
 SOURCE = Vector((-0.675, -0.057, 0.985))
@@ -9,32 +10,18 @@ ANCHOR = Vector((0, -0.134, -0.020))
 ACROSS = Vector((-0.845568597, -0.238752484, -0.477504969))
 ALONG = Vector((-0.45, 0.8, math.sqrt(0.1575)))
 INWARD = Vector((-0.287252039, -0.550451875, 0.783893526))
-REST_ACROSS = Vector((1, 0, -1)).normalized()
-REST_ALONG = Vector((-1, 0, -1)).normalized()
-REST_INWARD = Vector((0, -1, 0))
+REST_ACROSS, REST_ALONG, REST_INWARD = frames.rest_frame(-1)
 
 
 def _gun(point):
-    relative = point - SOURCE
-    return (
-        ANCHOR
-        + ACROSS * relative.dot(REST_ACROSS)
-        + ALONG * relative.dot(REST_ALONG)
-        + INWARD * relative.dot(REST_INWARD)
-    )
+    return frames.transform(point, SOURCE, ANCHOR, (REST_ACROSS, REST_ALONG, REST_INWARD), (ACROSS, ALONG, INWARD))
 
 
 def _source(point):
-    relative = point - ANCHOR
-    return (
-        SOURCE
-        + REST_ACROSS * relative.dot(ACROSS)
-        + REST_ALONG * relative.dot(ALONG)
-        + REST_INWARD * relative.dot(INWARD)
-    )
+    return frames.transform(point, ANCHOR, SOURCE, (ACROSS, ALONG, INWARD), (REST_ACROSS, REST_ALONG, REST_INWARD))
 
 
-def _curve(controls, count):
+def _curve(controls, count, converter=_source):
     points = []
     for row in range(count):
         fractions = (0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.88, 0.94, 0.975, 0.992, 1)
@@ -48,7 +35,7 @@ def _curve(controls, count):
         point = 2 * p1 + (-p0 + p2) * blend
         point += (2 * p0 - 5 * p1 + 4 * p2 - p3) * blend**2
         point += (-p0 + 3 * p1 - 3 * p2 + p3) * blend**3
-        points.append(_source(point * 0.5))
+        points.append(converter(point * 0.5))
     return points
 
 

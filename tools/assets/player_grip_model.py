@@ -4,8 +4,11 @@ import math
 
 # isort: split
 import body_parts as soft
+import player_angled_grip as angled
 import player_bipod_grip as bipod
+import player_cryo_grip as cryo
 import player_emitter_grip as emitter
+import player_grip_frames as frames
 import player_grip_profiles as profiles
 import player_handgun_grips as handgun
 import player_heavy_grip as heavy
@@ -25,10 +28,7 @@ FINGER_SCALES = (0.98, 1.0, 0.96, 0.86)
 
 def _frame(sign):
     """Index-to-little, wrist-to-fingers and palm inward; each hand keeps its chirality."""
-    across = Vector((-sign, 0, -1)).normalized()
-    along = Vector((sign, 0, -1)).normalized()
-    inward = Vector((0, -1, 0))
-    return across, along, inward
+    return frames.rest_frame(sign)
 
 
 def _grip_axes(sign, gap, profile="rifle_ar"):
@@ -88,9 +88,7 @@ def _finger_path(root, sign, diameter, index, profile="rifle_ar"):
         return custom
     points = _standard_finger_path(root, sign, diameter, index, profile)
     if diameter == 0.032 and index == 0:
-        if profile == "corvid_338":
-            return precision.finger_path(points[0])
-        if profile == "ironwood_50":
+        if profile in profiles.EXTENDED_INDEX_PROFILES:
             return precision.ironwood_finger(points[0])
     return points
 
@@ -130,6 +128,8 @@ def _custom_finger(root, sign, gap, index, profile):
         return _support_finger(root, sign, gap, index, profile)
     if profile in pistol.PATHS:
         return pistol.finger_path(profile, index)
+    if gap == 0.032 and profile == "corvid_338":
+        return precision.finger_path(_finger_path(root, sign, gap, index)[0], index)
     if gap == 0.032 and profile == "fieldhand_lever":
         return lever.finger_path(_finger_path(root, sign, gap, index)[0], index)
     if gap == 0.032 and profile == "brenner_trench":
@@ -138,6 +138,12 @@ def _custom_finger(root, sign, gap, index, profile):
 
 
 def _support_finger(root, sign, gap, index, profile):
+    if profile == "sentry_br3":
+        return angled.finger_path(index)
+    if profile == "cryo_lance":
+        return cryo.finger_path(
+            _standard_finger_path(root, sign, gap, index, profile), _finger_radii(gap, index, profile), index
+        )
     if profile == "mako_pdw":
         return support.mako_finger(_finger_path(root, sign, gap, index), index)
     if profile in handgun.PATHS:
@@ -146,9 +152,12 @@ def _support_finger(root, sign, gap, index, profile):
         return bipod.finger_path(root, index, _finger_radii(gap, index, profile))
     if profile == "siphon":
         return emitter.finger_path(root, index)
-    if profile == "ironwood_50":
+    if profile in ("ironwood_50", "rampart_br", "synapse"):
         return heavy.finger_path(
-            _standard_finger_path(root, sign, gap, index, profile), _finger_radii(gap, index, profile)
+            _standard_finger_path(root, sign, gap, index, "ironwood_50"),
+            _finger_radii(gap, index, profile),
+            profile,
+            index,
         )
     return None
 
@@ -168,6 +177,8 @@ def _firing_curl(points, sign, index, profile="rifle_ar"):
 def _finger_radii(gap, index, profile="rifle_ar"):
     if gap == 0.032 and profile == "fieldhand_lever":
         return lever.finger_radii(index)
+    if gap == 0.032 and profile == "corvid_338":
+        return precision.finger_radii(index)
     radii = FINGER_RADII
     if gap == 0.032:
         radii = (0.010, 0.010, 0.0105, 0.0105, 0.010, 0.0097, 0.0095, 0.009, 0.0085, 0.008, 0.007, 0.006, 0.004, 0.002)
@@ -275,16 +286,7 @@ def _standard_thumb_path(index_tip, centre, sign, gap, profile):
 
 def _custom_thumb(index_tip, gap, profile):
     if gap == 0.045:
-        fixed = {
-            "mako_pdw": support.mako_thumb,
-            "halberd_lmg": bipod.thumb_path,
-            "siphon": emitter.thumb_path,
-            "ironwood_50": heavy.thumb_path,
-        }
-        if profile in fixed:
-            return fixed[profile]()
-        if profile in handgun.PATHS:
-            return handgun.thumb_path(profile)
+        return _support_thumb(profile)
     if gap == 0.032:
         if profile in pistol.PATHS:
             return pistol.thumb_path(profile)
@@ -294,9 +296,32 @@ def _custom_thumb(index_tip, gap, profile):
             return stock.thumb_path(index_tip)
         if profile == "fieldhand_lever":
             return lever.thumb_path()
-        if profile == "ironwood_50":
-            across, _along, _inward = _frame(-1)
-            root = Vector((-0.675, -0.017, 0.985)) - across * 0.024
-            index = _standard_finger_path(root, -1, gap, 0, profile)[-1]
-            return _standard_thumb_path(index, _grip_centre(root, -1, gap, profile), -1, gap, profile)
+        if profile in profiles.EXTENDED_INDEX_PROFILES:
+            return _extended_thumb(profile)
     return None
+
+
+def _support_thumb(profile):
+    fixed = {
+        "sentry_br3": angled.thumb_path,
+        "cryo_lance": cryo.thumb_path,
+        "mako_pdw": support.mako_thumb,
+        "halberd_lmg": bipod.thumb_path,
+        "siphon": emitter.thumb_path,
+    }
+    if profile in fixed:
+        return fixed[profile]()
+    if profile in ("ironwood_50", "rampart_br", "synapse"):
+        return heavy.thumb_path(profile)
+    return handgun.thumb_path(profile) if profile in handgun.PATHS else None
+
+
+def _extended_thumb(profile):
+    """Keep the thumb wrapped around the grip when the index rests beside its guard."""
+    across, _along, _inward = _frame(-1)
+    root = Vector((-0.675, -0.017, 0.985)) - across * 0.024
+    index = _standard_finger_path(root, -1, 0.032, 0, profile)[-1]
+    points = _standard_thumb_path(index, _grip_centre(root, -1, 0.032, profile), -1, 0.032, profile)
+    if profile == "rampart_br":
+        points[-1] = points[-2].lerp(points[-1], 0.35)
+    return points

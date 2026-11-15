@@ -18,6 +18,11 @@ const IDS: Array[StringName] = [
 	&"ironwood_50",
 	&"wren_mp",
 	&"siphon",
+	&"sentry_br3",
+	&"nightjar_sd",
+	&"rampart_br",
+	&"cryo_lance",
+	&"synapse",
 ]
 const RIGHT: Dictionary[StringName, Vector3] = {
 	&"rifle_ar": Vector3(0, -.129, -.111),
@@ -34,6 +39,11 @@ const RIGHT: Dictionary[StringName, Vector3] = {
 	&"ironwood_50": Vector3(0, -.159, -.122),
 	&"wren_mp": Vector3(.002, -.067, -.073),
 	&"siphon": Vector3(0, -.108, -.127),
+	&"sentry_br3": Vector3(0, -.124, -.107),
+	&"nightjar_sd": Vector3(0, -.1165, -.102),
+	&"rampart_br": Vector3(0, -.1555, -.119),
+	&"cryo_lance": Vector3(0, -.126, -.100),
+	&"synapse": Vector3(0, -.1335, -.098),
 }
 const LEFT: Dictionary[StringName, Vector3] = {
 	&"rifle_ar": Vector3(0, .220, .016),
@@ -50,6 +60,11 @@ const LEFT: Dictionary[StringName, Vector3] = {
 	&"ironwood_50": Vector3(0, .220, .018),
 	&"wren_mp": Vector3(.006301256, -.057, -.084),
 	&"siphon": Vector3(-.030, .110, -.020),
+	&"sentry_br3": Vector3(0, .215, -.028),
+	&"nightjar_sd": Vector3(0, .190, .014),
+	&"rampart_br": Vector3(0, .210, .016),
+	&"cryo_lance": Vector3(-.030, .205, .035),
+	&"synapse": Vector3(0, .195, .024),
 }
 
 static var _geometry: Dictionary = {}
@@ -118,6 +133,8 @@ static func profile(weapon_id: StringName) -> Profile:
 		left_shoulder = Vector3(-.115, .032, -.234)
 	elif id == &"siphon":
 		left_dorsal = Vector3(-.26310545, .60615542, -.75056720)
+	elif id == &"rampart_br":
+		left_shoulder = Vector3(-.125, .030, -.234)
 	result.right = _hand("R", RIGHT[id], source["R"], right_forward, right_dorsal, right_shoulder)
 	result.left = _hand("L", LEFT[id], source["L"], left_forward, left_dorsal, left_shoulder)
 	if id == &"fieldhand_lever":

@@ -2,35 +2,26 @@
 
 import math
 
+import player_grip_frames as frames
 from mathutils import Vector
 
 ACROSS = Vector((0.6, -0.8, 0))
 ALONG = Vector((0.8 * math.sqrt(0.96), 0.6 * math.sqrt(0.96), 0.2))
 INWARD = Vector((-0.16, -0.12, math.sqrt(0.96)))
-SOURCE_ACROSS = Vector((-1, 0, -1)).normalized()
-SOURCE_ALONG = Vector((1, 0, -1)).normalized()
-SOURCE_INWARD = Vector((0, -1, 0))
+SOURCE_ACROSS, SOURCE_ALONG, SOURCE_INWARD = frames.rest_frame(1)
 SOURCE_CENTRE = Vector((0.675, -0.057, 0.985))
 GUN_CENTRE = Vector((0, 0.178, -0.040))
 
 
 def _mako_gun(point):
-    offset = point - SOURCE_CENTRE
-    return (
-        GUN_CENTRE
-        + ACROSS * offset.dot(SOURCE_ACROSS)
-        + ALONG * offset.dot(SOURCE_ALONG)
-        + INWARD * offset.dot(SOURCE_INWARD)
+    return frames.transform(
+        point, SOURCE_CENTRE, GUN_CENTRE, (SOURCE_ACROSS, SOURCE_ALONG, SOURCE_INWARD), (ACROSS, ALONG, INWARD)
     )
 
 
 def _mako_source(point):
-    offset = point - GUN_CENTRE
-    return (
-        SOURCE_CENTRE
-        + SOURCE_ACROSS * offset.dot(ACROSS)
-        + SOURCE_ALONG * offset.dot(ALONG)
-        + SOURCE_INWARD * offset.dot(INWARD)
+    return frames.transform(
+        point, GUN_CENTRE, SOURCE_CENTRE, (ACROSS, ALONG, INWARD), (SOURCE_ACROSS, SOURCE_ALONG, SOURCE_INWARD)
     )
 
 

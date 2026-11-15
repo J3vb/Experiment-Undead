@@ -248,7 +248,7 @@ def export(path: str) -> None:
     os.makedirs(os.path.dirname(path), exist_ok=True)
     metadata = bpy.context.scene.get("player_arm_grips")
     if metadata is not None:
-        metadata = json.dumps(json.loads(metadata), indent=2, sort_keys=True, allow_nan=False) + "\n"
+        metadata = json.dumps(json.loads(metadata), sort_keys=True, allow_nan=False) + "\n"
     bpy.ops.export_scene.gltf(
         filepath=path, export_format="GLB", export_yup=True, export_apply=True, export_vertex_color="ACTIVE"
     )

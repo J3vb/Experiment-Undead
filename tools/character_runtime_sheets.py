@@ -36,7 +36,9 @@ def compose(before: Path, after: Path, output: Path) -> list[Path]:
     for weapon in weapons:
         sheet = Image.new("RGB", (CELL[0] * 2, CELL[1] * len(VIEWS) + HEADER), "#10191c")
         draw = ImageDraw.Draw(sheet)
-        for column, (folder, label) in enumerate(((before, "BEFORE / LEGACY HANDS"), (after, "AFTER / RUNTIME ARMS"))):
+        for column, (folder, label) in enumerate(
+            ((before, "BEFORE / ORIGINAL VIEWMODEL"), (after, "AFTER / RUNTIME ARMS"))
+        ):
             draw.text((column * CELL[0] + 16, 10), label, fill="#D9D9D2", font=font)
             for row, view in enumerate(VIEWS):
                 source = folder / f"{weapon}_{view}.png"
