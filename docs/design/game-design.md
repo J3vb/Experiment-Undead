@@ -104,7 +104,7 @@ The player carries 2 guns (3 with a later serum), 2 frag grenades that refill ea
 
 ## Weapon list
 
-Version 1 ships 12 guns: 5 bought from walls (always the same price and place) and 7 only from the Specimen Vault (the mystery weapon machine). All names are original. Damage is per bullet before body part multipliers.
+The first 12 guns (version 1 grows to 22, see below): 5 bought from walls (always the same price and place) and 7 only from the Specimen Vault (the mystery weapon machine). All names are original. Damage is per bullet before body part multipliers.
 
 | Weapon | Class | Damage | Fire rate (rpm) | Mag / reserve | Where | Cost |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -125,7 +125,7 @@ Version 1 ships 12 guns: 5 bought from walls (always the same price and place) a
 
 **Balance rule of thumb.** A fresh wall gun should kill a Shambler in 3 body shots or 1 to 2 headshots at round 1, and still be usable to round 10 when upgraded once. Prototypes stay strong to round 30 and beyond but have small reserves, so you still need a normal gun.
 
-**Adding a gun later** is one weapon data file plus a model and sounds. Planned extras: crossbow with explosive bolts, a second pistol, and a melee upgrade (machete).
+**Full roster (2026-11-15):** version 1 grows to 22 base guns, all bullet-based (no crossbow or launchers). The 10 new guns, wall/loot sources, unlock levels and build order are in [gun-roster.md](gun-roster.md). Adding a gun is one weapon data file plus a model and sounds. A melee upgrade (machete) stays planned.
 
 ## Points economy and buyable areas
 
