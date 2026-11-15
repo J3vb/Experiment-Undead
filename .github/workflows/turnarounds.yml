@@ -1,0 +1,54 @@
+name: Turnarounds
+
+# Renders every model from four sides next to its style-guide reference and
+# diffs it against docs/design/turnarounds/. Fails when a model looks different
+# and the approved render was not updated in the same PR.
+on:
+  pull_request:
+    paths:
+      - "assets/models/**"
+      - "docs/design/turnarounds/**"
+      - "docs/design/images/**"
+      - "tools/turnarounds.py"
+      - "tools/render_turnarounds.py"
+      - "tools/test_turnarounds.py"
+      - "tools/render_weapon_comparison.py"
+      - "tools/assets/requirements.txt"
+      - ".github/workflows/turnarounds.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  turnarounds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: tools/assets/requirements.txt
+
+      - name: Install Blender as a Python module and Pillow
+        run: pip install -r tools/assets/requirements.txt "pillow==12.3.0"
+
+      - name: Unit tests
+        run: python -m unittest tools/test_turnarounds.py -v
+
+      - name: Render turnarounds and compare with approved
+        run: python tools/render_turnarounds.py --out turnarounds --fail-on-change
+
+      - name: Write job summary
+        if: always()
+        run: test -f turnarounds/summary.md && cat turnarounds/summary.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: turnarounds
+          path: turnarounds/
+          if-no-files-found: warn

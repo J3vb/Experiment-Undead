@@ -40,3 +40,11 @@ in your PR.
 `images/` holds compressed copies (1280 px JPEG): `style_*` are the
 style-guide renders, `ui_*` the UI mockups, `gear_*` the gear visuals. They
 are references, not game assets: never load them from game code.
+
+## Turnarounds
+
+`turnarounds/` holds the approved four-view render of every model
+(`tools/render_turnarounds.py`). The `Turnarounds` CI check fails when a model
+looks different from its approved render. After checking the sheet in the
+`turnarounds` artifact, run `python tools/render_turnarounds.py --approve` and
+commit the changed PNGs; GitHub then shows the old and new look in the PR.
