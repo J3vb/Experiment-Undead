@@ -273,10 +273,7 @@ func _hit(result: Dictionary, origin: Vector3, direction: Vector3) -> void:
 		if shooter and shooter.session:
 			shooter.session.hit_claims.submit_hit(self, hit_zone, info)
 		return
-	if shooter and shooter.session and shooter.session.hit_claims:
-		shooter.session.hit_claims.apply_server_hit(hit_zone, info)
-	else:
-		hit_zone.receive_hit(info)
+	HitClaims.apply_host_hit(shooter, hit_zone, info)
 	hit_landed.emit(hit_zone.health.is_dead, info.is_headshot())
 
 

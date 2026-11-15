@@ -96,6 +96,14 @@ func claim_hit(zombie_name: StringName, zone: int, amount: float, weapon_id: Str
 	apply_server_hit(hit_zone, info)
 
 
+## Standalone weapon tests retain the direct path without a live session.
+static func apply_host_hit(shooter: Player, hit_zone: HitZone, info: DamageInfo) -> void:
+	if shooter and shooter.session and shooter.session.hit_claims:
+		shooter.session.hit_claims.apply_server_hit(hit_zone, info)
+	else:
+		hit_zone.receive_hit(info)
+
+
 ## Shared effect hook for validated claims and the host's direct hits.
 func apply_server_hit(hit_zone: HitZone, info: DamageInfo) -> void:
 	if not multiplayer.is_server():
