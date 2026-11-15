@@ -20,6 +20,7 @@ repeat_last = 1
 [resource]
 script = ExtResource("1")
 id = &"brenner_trench_reforged"
+slot = 0
 loot_tags = Array[StringName]([&"shotgun", &"pump"])
 display_name = "Brenner Reforged"
 cost = 750

@@ -1,6 +1,5 @@
-## Hitscan gun node driven by a WeaponInstance. Owns firing, spread, recoil,
-## reload and the procedural viewmodel pose. Input arrives through the public
-## vars, so a player, bot or test can drive it the same way.
+## Hitscan gun driven by a WeaponInstance; owns firing, spread, recoil, reload and viewmodel pose.
+## Public input vars let a player, bot or test drive it the same way.
 class_name Weapon
 extends Node3D
 
@@ -331,6 +330,7 @@ func _pose_moving_parts() -> void:
 
 
 func _set_flash(on: bool) -> void:
+	on = on and not data.no_muzzle_flash
 	if _flash_light:
 		_flash_light.visible = on
 	if _flash_mesh:

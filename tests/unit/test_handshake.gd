@@ -126,6 +126,21 @@ func test_wrong_content_hash_is_refused_without_spawning() -> void:
 	assert_true(client_handshake.refusal_message.to_lower().contains("content"))
 
 
+func test_different_game_version_is_refused_without_spawning() -> void:
+	client_handshake.game_version = "different-version"
+	_join(client_root)
+	await _assert_refused(Net.RefusalReason.WRONG_VERSION)
+	assert_true(client_handshake.refusal_message.contains("different-version"))
+	assert_true(client_handshake.refusal_message.contains(server_handshake.game_version))
+
+
+func test_different_content_values_are_refused_even_with_matching_ids() -> void:
+	client_handshake.fingerprint = "different-resource-values"
+	_join(client_root)
+	await _assert_refused(Net.RefusalReason.CONTENT_MISMATCH)
+	assert_eq(client_handshake.content_hash, server_handshake.content_hash, "ids alone do not hide changed values")
+
+
 func test_ninth_player_gets_server_full_without_receiving_players() -> void:
 	for index: int in range(Net.MAX_PLAYERS - 1):
 		var root: Node = client_root if index == 0 else _make_side("AcceptedClient%d" % index)

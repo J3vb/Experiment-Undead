@@ -20,6 +20,7 @@ repeat_last = 1
 [resource]
 script = ExtResource("1")
 id = &"pistol_service_reforged"
+slot = 1
 loot_tags = Array[StringName]([&"pistol"])
 display_name = "M-9 Reforged"
 cost = 0
