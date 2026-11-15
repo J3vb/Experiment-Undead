@@ -126,6 +126,10 @@ func _on_player_added(player: Player) -> void:
 		progression.set_start_total(player, _start_total_xp)
 		_profile_player = player
 	player.spawn(self, starting_loadout)
+	if player == _profile_player and _profile:
+		var loadout: Variant = _profile.to_dict().get("loadout", {})
+		if loadout is Dictionary:
+			ItemLoadout.apply(player, loadout)
 	if is_over and multiplayer.is_server():
 		_receive_match_end.rpc_id(player.net_id, _match_stats)
 

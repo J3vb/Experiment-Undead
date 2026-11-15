@@ -25,7 +25,6 @@ func _ready() -> void:
 	_player = get_parent() as Player
 	_initial_spawn = _player.transform
 	_player.health.set_process(false)
-	_player.health.health_changed.connect(_health_changed)
 	_player.wallet.points_changed.connect(_points_changed)
 	Events.serum_gained.connect(_serum_gained)
 	Events.round_started.connect(_on_round_started)
@@ -63,10 +62,6 @@ func _physics_process(delta: float) -> void:
 				Events.player_died.emit(_player)
 	if _player.is_multiplayer_authority() and _player.is_dead and is_coop():
 		_spectate()
-
-
-func _health_changed(_current: float, _maximum: float) -> void:
-	queue_publish()
 
 
 func _points_changed(_total: int, _delta: int) -> void:
