@@ -1,6 +1,4 @@
-## Hitscan gun node driven by a WeaponInstance. Owns firing, spread, recoil,
-## reload and the procedural viewmodel pose. Input arrives through the public
-## vars, so a player, bot or test can drive it the same way.
+## Owner-ticked hitscan WeaponInstance gun: fire, spread, recoil, reload and viewmodel pose, driven by public input.
 class_name Weapon
 extends Node3D
 
@@ -47,7 +45,6 @@ var _empty_reload: bool = false
 var _kick: float = 0.0
 var _flash_timer: float = 0.0
 var _rng: RandomNumberGenerator
-var _double_barrel: DoubleBarrel
 
 var _flash_light: Light3D
 var _flash_mesh: Node3D
@@ -56,6 +53,7 @@ var _bolt: Node3D
 var _magazine_rest: Vector3
 var _bolt_rest: Vector3
 
+@onready var _double_barrel: DoubleBarrel = DoubleBarrel.attach_to(self)
 @onready var _viewmodel_root: Node3D = $Viewmodel
 @onready var _fire_audio: AudioStreamPlayer = $FireAudio
 @onready var _mech_audio: AudioStreamPlayer = $MechAudio
@@ -66,7 +64,6 @@ func setup(p_instance: WeaponInstance, p_shooter: Player, p_camera: Camera3D) ->
 	shooter = p_shooter
 	camera = p_camera
 	_rng = shooter.get_rng() if shooter else RandomNumberGenerator.new()
-	_double_barrel = DoubleBarrel.attach_to(self)
 
 
 func _ready() -> void:
