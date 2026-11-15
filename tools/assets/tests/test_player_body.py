@@ -41,7 +41,7 @@ def weights(obj, vertex):
 def test_player_triangle_detail_floor_and_budget(player):
     parts = meshes(player)
     triangles = sum(len(face.vertices) - 2 for obj in parts for face in obj.data.polygons)
-    assert 8_000 <= triangles <= 12_000
+    assert 8_000 <= triangles <= 16_000
 
 
 def test_player_adult_scale_and_material_contract(player):

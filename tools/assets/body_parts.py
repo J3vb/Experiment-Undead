@@ -52,6 +52,42 @@ def skin_body(nodes, mat):
     return obj
 
 
+def fabric_fold(obj, centre, axis, width, depth, reach):
+    """Compress a local cloth band inward without changing topology or its outer fit.
+
+    Width is the half-length along the axis; reach limits the affected radius.
+    A cosine falloff leaves the surrounding surface and painted zones intact.
+    """
+    if width <= 0 or depth < 0 or reach <= depth or Vector(axis).length < 1e-6:
+        raise ValueError("fold needs positive width/reach, a nonzero axis and depth below reach")
+    centre, axis = Vector(centre), Vector(axis).normalized()
+    for vertex in obj.data.vertices:
+        offset = vertex.co - centre
+        distance = offset.dot(axis)
+        radial = offset - axis * distance
+        radius = radial.length
+        if abs(distance) >= width or radius <= depth or radius >= reach:
+            continue
+        falloff = (0.5 + 0.5 * math.cos(math.pi * distance / width)) ** 2
+        vertex.co -= radial.normalized() * depth * falloff
+    obj.data.update()
+
+
+def refine_patch(obj, centre, radius):
+    """Add cloth support edges locally, retaining fitted bounds without smoothing."""
+    if radius <= 0:
+        raise ValueError("patch radius must be positive")
+    centre = Vector(centre)
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    edges = [edge for edge in bm.edges if all((vertex.co - centre).length < radius for vertex in edge.verts)]
+    bmesh.ops.subdivide_edges(bm, edges=edges, cuts=1, use_grid_fill=True)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+    bm.to_mesh(obj.data)
+    bm.free()
+    obj.data.update()
+
+
 def loft(name, rings, mat):
     """Closed soft shell through arbitrary equal-sized cross sections."""
     count = len(rings[0])

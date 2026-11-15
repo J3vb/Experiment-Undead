@@ -1,5 +1,6 @@
 """First-person thermal sleeves and reinforced grip gloves on the shared body rig."""
 
+import json
 import math
 
 import bpy
@@ -10,7 +11,49 @@ import body_parts as soft
 import character_rig as rig
 import gear_paint as paint
 import player_body_model as body
+import player_grip_profiles as profiles
 from mathutils import Matrix, Vector
+from player_arm_morphs import add_variant
+from player_grip_model import (
+    FINGER_RADII as FINGER_RADII,
+)
+from player_grip_model import (
+    FINGER_SCALES as FINGER_SCALES,
+)
+from player_grip_model import (
+    GRIP_HALVES as GRIP_HALVES,
+)
+from player_grip_model import (
+    _bore_point as _bore_point,
+)
+from player_grip_model import (
+    _finger_pad as _finger_pad,
+)
+from player_grip_model import (
+    _finger_path as _finger_path,
+)
+from player_grip_model import (
+    _finger_radii as _finger_radii,
+)
+from player_grip_model import (
+    _firing_curl as _firing_curl,
+)
+from player_grip_model import (
+    _frame as _frame,
+)
+from player_grip_model import (
+    _grip_axes as _grip_axes,
+)
+from player_grip_model import (
+    _grip_centre as _grip_centre,
+)
+from player_grip_model import (
+    _grip_tube as _grip_tube,
+)
+from player_grip_model import (
+    _thumb_path as _thumb_path,
+)
+from player_wrist_fit import add_wrist_variants
 
 
 def _materials():
@@ -25,7 +68,7 @@ def _materials():
 
 def _sleeves(mats):
     """Cut the body's actual sleeve surface halfway down each upper arm."""
-    source = soft.skin_body(body._body_nodes(), mats["suit"])
+    source = body.sleeve_surface(mats["suit"])
     for side, sign in (("L", 1), ("R", -1)):
         data = source.data.copy()
         obj = bpy.data.objects.new("Sleeve" + side, data)
@@ -48,25 +91,6 @@ def _sleeves(mats):
     bpy.data.objects.remove(source, do_unlink=True)
 
 
-def _frame(sign):
-    across = Vector((sign, 0, 1)).normalized()
-    along = Vector((sign, 0, -1)).normalized()
-    inward = Vector((0, -1, 0))
-    return across, along, inward
-
-
-def _finger_path(root, sign, diameter, index):
-    """Wrap the glove around the clear inner grip diameter, without finger bones."""
-    _across, along, inward = _frame(sign)
-    radius = diameter / 2 + 0.009
-    end_angle = math.pi / 2 + (0.10, 0.32, 0.27, 0.04)[index]
-    points = []
-    for step in range(10):
-        angle = -math.pi / 2 + (end_angle + math.pi / 2) * step / 9
-        points.append(root + along * (radius * math.cos(angle)) + inward * (radius * (1 + math.sin(angle))))
-    return points
-
-
 def _tip_marker(name, point, armature, side):
     obj = bpy.data.objects.new(name + "_" + side, None)
     bpy.context.collection.objects.link(obj)
@@ -75,43 +99,57 @@ def _tip_marker(name, point, armature, side):
     obj.matrix_world = Matrix.Translation(point)
 
 
-def _fingers(armature, mats, side, sign):
-    across, along, inward = _frame(sign)
+def _fingers(armature, mats, side, sign, profile="rifle_ar", markers=True):
+    across, _along, _inward = _frame(sign)
     diameter = 0.032 if side == "R" else 0.045
+    parts = []
     for index in range(4):
         offset = (index - 1.5) * 0.016
-        root = Vector((sign * (0.675 + offset * 0.707), -0.004, 0.985 + offset * 0.707))
-        points = _finger_path(root, sign, diameter, index)
-        finger = soft.tube(
-            "GripFinger" + side,
-            points,
-            [0.010, 0.010, 0.010, 0.010, 0.0095, 0.009, 0.008, 0.007, 0.005, 0.002],
-            mats["rubber"],
-            12,
-        )
+        root = Vector((sign * 0.675, -0.017 if side == "R" else -0.012, 0.985)) + across * offset
+        points = _finger_path(root, sign, diameter, index, profile)
+        radii = _finger_radii(diameter, index, profile)
+        finger = _grip_tube("GripFinger" + side, points, radii, mats["rubber"], sign)
+        parts.append(finger)
         paint.zone(finger, paint.ZONE_ACCENT)
-        for joint in (3, 6):
-            pad = soft.pad(
-                "FingerPad" + side, (0.018, 0.005, 0.020), points[joint] - inward * 0.008, mats["knit"], 0.002
-            )
-            pad.rotation_euler.y = -sign * math.pi / 4
+        joints = (4, 10) if side == "R" else (3, 6)
+        if profile == "coachman_2b" and side == "R":
+            joints = {2: (5, 10), 3: (4, 7)}.get(index, joints)
+        for joint in joints:
+            pad = _finger_pad(points, radii, joint, sign, mats["knit"])
+            parts.append(pad)
             paint.zone(pad, paint.ZONE_ACCENT)
         if index == 0:
             index_tip = points[-1]
-            _tip_marker("GripIndexTip", index_tip, armature, side)
-    thumb_tip = index_tip - inward * diameter
-    start = Vector((sign * 0.641, -0.01, 0.983))
-    points = [
-        start,
-        start - across * 0.012 + inward * 0.006,
-        start - across * 0.017 + inward * 0.019,
-        thumb_tip - across * 0.018 + along * 0.004,
-        thumb_tip - across * 0.009,
-        thumb_tip,
-    ]
-    thumb = soft.tube("GripThumb" + side, points, [0.014, 0.014, 0.013, 0.011, 0.008, 0.002], mats["rubber"], 12)
+            centre = _grip_centre(root, sign, diameter, profile)
+            if markers:
+                _tip_marker("GripIndexTip", index_tip, armature, side)
+    points = _thumb_path(index_tip, centre, sign, diameter, profile)
+    radii = [0.014, 0.014, 0.013, 0.011, 0.008, 0.002]
+    if side == "R":
+        radii = [0.014, 0.014, 0.013, 0.012, 0.011, 0.010, 0.008, 0.006, 0.004, 0.002]
+    thumb = _grip_tube("GripThumb" + side, points, radii, mats["rubber"], sign)
+    parts.append(thumb)
     paint.zone(thumb, paint.ZONE_ACCENT)
-    _tip_marker("GripThumbTip", thumb_tip, armature, side)
+    if markers:
+        _tip_marker("GripThumbTip", points[-1], armature, side)
+    return parts, {
+        "center": [sign * 0.675, -profiles.section(profile, diameter)[2], 0.985],
+        "index": list(index_tip),
+        "thumb": list(points[-1]),
+    }
+
+
+def _grip_variants(armature, mats, base, metadata):
+    for profile in profiles.PROFILES:
+        if profile == "rifle_ar":
+            continue
+        key = "grip_" + profile
+        info = {"morph": key}
+        for side, sign in (("L", 1), ("R", -1)):
+            parts, info[side] = _fingers(armature, mats, side, sign, profile, markers=False)
+            add_variant(base[side], parts, key)
+        metadata[profile] = info
+    bpy.context.scene["player_arm_grips"] = json.dumps({"version": 1, "profiles": metadata}, allow_nan=False)
 
 
 def _wrist_details(mats, side, sign):
@@ -138,7 +176,7 @@ def _stitching(mats, side, sign):
         for edge in (-1, 1)
         for index in range(9)
     ]
-    lines += [("BackSeam", (index - 1.5) * 0.016, [-0.020, 0.0025, 0.025], 0.0012) for index in range(4)]
+    lines += [("BackSeam", (index - 1.5) * 0.016, [-0.020, 0.0025, 0.025], 0.0007) for index in range(4)]
     for name, u, distances, radius in lines:
         points = []
         for v in distances:
@@ -148,8 +186,20 @@ def _stitching(mats, side, sign):
         paint.zone(seam, paint.ZONE_ACCENT)
 
 
+def _bind_parts(objects, armature):
+    """The fitted glove follows the hand; sleeve and cuff fabrics retain joint blending."""
+    rigid = ("GlovePalm", "KnucklePad", "GripFinger", "GripThumb", "FingerPad", "GloveStitch", "BackSeam")
+    bpy.context.view_layer.update()
+    for obj in objects:
+        if obj.name.startswith(rigid):
+            point = obj.matrix_world @ obj.data.vertices[0].co
+            rig.bind_rigid(obj, armature, "hand_L" if point.x > 0 else "hand_R")
+        else:
+            rig.bind(obj, armature, blend=0.08)
+
+
 def build_player_arms():
-    """Keep the body's A-pose rest rig; a later viewmodel task supplies the arm pose."""
+    """Keep the shared A-pose rig and author the weapon-specific grip shapes."""
     from build_models import join_into
 
     mats = _materials()
@@ -160,14 +210,17 @@ def build_player_arms():
     for obj in list(bpy.context.scene.objects):
         if obj.name.startswith(("GloveFinger", "GloveThumb")):
             bpy.data.objects.remove(obj, do_unlink=True)
+    base, metadata = {}, {"rifle_ar": {"morph": ""}}
     for side, sign in (("L", 1), ("R", -1)):
-        _fingers(armature, mats, side, sign)
+        base[side], metadata["rifle_ar"][side] = _fingers(armature, mats, side, sign)
         _wrist_details(mats, side, sign)
         _stitching(mats, side, sign)
+    _grip_variants(armature, mats, base, metadata)
     objects = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
+    add_wrist_variants(objects)
+    _bind_parts(objects, armature)
     target = objects[0]
     join_into(target, objects[1:])
     target.name = "PlayerArms"
     soft.clean(target)
-    rig.bind(target, armature, blend=0.08)
     bpy.context.view_layer.update()

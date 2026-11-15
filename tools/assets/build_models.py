@@ -12,6 +12,7 @@ into Godot's -Z forward, +Y up. Units are metres.
 
 import argparse
 import importlib
+import json
 import os
 import sys
 
@@ -248,9 +249,15 @@ MODELS.update(character_models.MODELS)
 
 def export(path: str) -> None:
     os.makedirs(os.path.dirname(path), exist_ok=True)
+    metadata = bpy.context.scene.get("player_arm_grips")
+    if metadata is not None:
+        metadata = json.dumps(json.loads(metadata), sort_keys=True, allow_nan=False) + "\n"
     bpy.ops.export_scene.gltf(
         filepath=path, export_format="GLB", export_yup=True, export_apply=True, export_vertex_color="ACTIVE"
     )
+    if metadata is not None:
+        with open(os.path.join(os.path.dirname(path), "player_arm_grips.json"), "w", encoding="utf-8") as output:
+            output.write(metadata)
 
 
 def main(argv: list) -> None:

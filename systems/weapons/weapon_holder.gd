@@ -13,6 +13,7 @@ const WEAPON_SCENE: PackedScene = preload("res://systems/weapons/weapon.tscn")
 
 var weapons: Array[Weapon] = []
 var current: Weapon
+var arm_view: PlayerArmView
 var _player: Player
 var _camera: Camera3D
 var _sway: Vector2 = Vector2.ZERO
@@ -68,7 +69,21 @@ func equip(index: int) -> void:
 		current.set_active(false)
 	current = weapons[index]
 	current.set_active(true)
+	if not Build.is_server() and (_player == null or _player.is_multiplayer_authority()):
+		_bind_arm_view()
 	Events.weapon_switched.emit(_player, current)
+
+
+func _bind_arm_view() -> void:
+	if current.data.viewmodel_scene == null:
+		if arm_view != null:
+			arm_view.bind_weapon(null)
+		return
+	if arm_view == null:
+		arm_view = PlayerArmView.new()
+		arm_view.name = "PlayerArmView"
+		add_child(arm_view)
+	arm_view.bind_weapon(current)
 
 
 func cycle(direction: int) -> void:

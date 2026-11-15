@@ -256,7 +256,7 @@ def test_character_feet_need_floor(monkeypatch):
         ("implant_test", 1_500),
         ("implant_spine", 1_600),
         ("implant_ocular", 1_800),
-        ("player_arms", 8_000),
+        ("player_arms", 10_000),
     ],
 )
 def test_per_stem_triangle_caps(monkeypatch, stem, cap):
@@ -268,6 +268,18 @@ def test_per_stem_triangle_caps(monkeypatch, stem, cap):
     bm.free()
     errors = check(monkeypatch, stem=stem)
     assert any(f"budget for '{stem}' is {cap}" in error for error in errors)
+
+
+def test_character_triangle_budget_still_rejects_dense_meshes(monkeypatch):
+    obj = cube("Body")
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    bmesh.ops.subdivide_edges(bm, edges=list(bm.edges), cuts=40, use_grid_fill=True)
+    bm.to_mesh(obj.data)
+    bm.free()
+    errors = check(monkeypatch, folder="characters", stem="test_character")
+    assert any("budget for characters is 16000" in error for error in errors)
+    assert any("budget for 'test_character' is 16000" in error for error in errors)
 
 
 def vest():

@@ -7,10 +7,10 @@ import character_rig
 import gear_paint
 from mathutils import Vector
 
-BUDGETS = {"characters": (12_000, 4), "gear": (6_000, 4)}
+BUDGETS = {"characters": (16_000, 4), "gear": (6_000, 4)}
 # Close inspection: round links, hollow specimen glass and distinct implant shells.
 TRIANGLE_CAPS = {
-    "player_arms": 8_000,
+    "player_arms": 10_000,
     "charm_*": 1_000,
     "charm_vial": 1_200,
     "charm_dog_tags": 1_300,
