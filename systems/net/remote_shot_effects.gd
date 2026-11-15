@@ -2,7 +2,7 @@
 class_name RemoteShotEffects
 extends Node3D
 
-const FLASH: QuadMesh = preload("res://systems/weapons/viewmodels/flash_quad.tres")
+const FLASH: Mesh = preload("res://systems/weapons/viewmodels/flash_quad.tres")
 
 var _audio: AudioStreamPlayer3D
 var _flash: MeshInstance3D
