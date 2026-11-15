@@ -11,6 +11,7 @@ into Godot's -Z forward, +Y up. Units are metres.
 """
 
 import argparse
+import importlib
 import os
 import sys
 
@@ -135,32 +136,13 @@ def build_wall_panel() -> None:
     box("Seam", (0.03, 0.21, 2.7), (0, 0, 1.65), trim)
 
 
-def build_rifle_ar() -> None:
-    """Assault rifle; shapes and parts live in rifle_model.py."""
-    from rifle_model import build
+def gun(module: str, func: str = "build"):
+    """Builder for a gun whose shapes and parts live in their own `<module>.py` file."""
 
-    build(sys.modules[__name__])
+    def build() -> None:
+        getattr(importlib.import_module(module), func)(sys.modules[__name__])
 
-
-def build_talon_dmr() -> None:
-    """Build the detailed DMR using the same primitives as the rifle and shotgun."""
-    from talon_model import build_talon_dmr as build
-
-    build(sys.modules[__name__])
-
-
-def build_shotgun_brenner() -> None:
-    """Brenner Trench pump shotgun; shapes and parts live in shotgun_model.py."""
-    from shotgun_model import build
-
-    build(sys.modules[__name__])
-
-
-def build_kestrel_smg() -> None:
-    """Build the detailed SMG using the same primitives as the rifle and shotgun."""
-    from kestrel_model import build_kestrel_smg as build
-
-    build(sys.modules[__name__])
+    return build
 
 
 def join_into(target, parts: list) -> None:
@@ -323,10 +305,15 @@ UNFINISHED = {"wall_panel"}
 
 MODELS = {
     "wall_panel": ("kit/wall_panel.glb", build_wall_panel),
-    "rifle_ar": ("weapons/rifle_ar.glb", build_rifle_ar),
-    "kestrel_smg": ("weapons/kestrel_smg.glb", build_kestrel_smg),
-    "talon_dmr": ("weapons/talon_dmr.glb", build_talon_dmr),
-    "shotgun_brenner": ("weapons/shotgun_brenner.glb", build_shotgun_brenner),
+    "rifle_ar": ("weapons/rifle_ar.glb", gun("rifle_model")),
+    "kestrel_smg": ("weapons/kestrel_smg.glb", gun("kestrel_model", "build_kestrel_smg")),
+    "talon_dmr": ("weapons/talon_dmr.glb", gun("talon_model", "build_talon_dmr")),
+    "shotgun_brenner": ("weapons/shotgun_brenner.glb", gun("shotgun_model")),
+    "hollis_44": ("weapons/hollis_44.glb", gun("hollis_model")),
+    "mako_pdw": ("weapons/mako_pdw.glb", gun("mako_model")),
+    "atlas_auto": ("weapons/atlas_auto.glb", gun("atlas_model")),
+    "halberd_lmg": ("weapons/halberd_lmg.glb", gun("halberd_model")),
+    "corvid_338": ("weapons/corvid_338.glb", gun("corvid_model")),
     "shambler": ("zombies/shambler.glb", build_shambler),
     "crawler": ("zombies/crawler.glb", build_crawler),
     "bloater": ("zombies/bloater.glb", build_bloater),
