@@ -145,6 +145,7 @@ static func _wall_run(root: Node3D, walls: Node3D, label: String, at: Transform3
 		upper.name = "Upper"
 		var mesh: BoxMesh = BoxMesh.new()
 		mesh.size = Vector3(length, h - PANEL_HEIGHT, WALL_THICKNESS)
+		mesh.add_uv2 = true
 		mesh.material = load(MATERIALS % "panel_paint")
 		upper.mesh = mesh
 		upper.position.y = PANEL_HEIGHT + (h - PANEL_HEIGHT) * 0.5

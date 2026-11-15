@@ -12,6 +12,9 @@ extends StaticBody3D
 	set(value):
 		material = value
 		_rebuild()
+## Off for anything that moves or disappears (doors, wall-buys, the vault),
+## so the lightmap keeps no shadow of it; it is lit by the probes instead.
+@export var baked: bool = true
 
 var _mesh: MeshInstance3D
 var _shape: CollisionShape3D
@@ -36,6 +39,7 @@ func _rebuild() -> void:
 	box.material = material
 	box.add_uv2 = true
 	_mesh.mesh = box
+	_mesh.gi_mode = GeometryInstance3D.GI_MODE_STATIC if baked else GeometryInstance3D.GI_MODE_DYNAMIC
 	var shape: BoxShape3D = BoxShape3D.new()
 	shape.size = size
 	_shape.shape = shape
@@ -44,7 +48,7 @@ func _rebuild() -> void:
 # LightmapGI skips internal (unowned) children, so the box is handed to it
 # through the same duck-typed hooks GridMap uses.
 func get_bake_meshes() -> Array:
-	if _mesh == null:
+	if _mesh == null or not baked:
 		return []
 	return [_mesh.mesh, Transform3D.IDENTITY]
 

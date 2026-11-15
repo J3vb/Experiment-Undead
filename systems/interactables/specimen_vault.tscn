@@ -32,10 +32,12 @@ shape = SubResource("area")
 script = ExtResource("2")
 size = Vector3(2, 1, 1)
 material = ExtResource("3")
+baked = false
 
 [node name="Glow" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
 visible = false
+gi_mode = 0
 mesh = SubResource("strip")
 
 [node name="Label" type="Label3D" parent="."]

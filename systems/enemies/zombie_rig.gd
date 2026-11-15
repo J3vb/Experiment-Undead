@@ -29,6 +29,10 @@ func _ready() -> void:
 	var body: Node3D = model.instantiate() as Node3D
 	body.rotation.y = PI
 	add_child(body)
+	# Limbs move every frame; Dynamic GI would re-sample the lightmap probes for
+	# each one each frame (about a quarter of the frame with 24 zombies).
+	for mesh: Node in body.find_children("*", "GeometryInstance3D", true, false):
+		(mesh as GeometryInstance3D).gi_mode = GeometryInstance3D.GI_MODE_DISABLED
 	for part_name: StringName in PARTS:
 		var part: Node3D = body.find_child(part_name, true, false) as Node3D
 		if part:

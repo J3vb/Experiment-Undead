@@ -1,4 +1,4 @@
-## Kit ceiling light: housing, glowing tube, a spot and a weak spill light.
+## Kit ceiling light: housing, glowing tube and a spot; LightmapGI bakes its bounce.
 ## The builder turns the shadow on for a few lights per room (light budget).
 ## Inside a Level whose power is off it runs as a dim red-orange emergency
 ## light, and switches to normal shortly after the power comes on.
@@ -18,11 +18,9 @@ var emergency: bool = false
 var _flicker: FlickerLight
 
 @onready var _spot: SpotLight3D = $Fixture
-@onready var _spill: OmniLight3D = $Spill
 @onready var _tube: MeshInstance3D = $Tube
 @onready var _normal_color: Color = _spot.light_color
 @onready var _spot_energy: float = _spot.light_energy
-@onready var _spill_energy: float = _spill.light_energy
 
 
 func _ready() -> void:
@@ -47,9 +45,7 @@ func _set_emergency(on: bool) -> void:
 	var dim: float = EMERGENCY_DIM if on else 1.0
 	var color: Color = EMERGENCY_COLOR if on else _normal_color
 	_spot.light_color = color
-	_spill.light_color = color
 	_spot.light_energy = _spot_energy * dim
-	_spill.light_energy = _spill_energy * dim
 	_tube.material_override = EMERGENCY_TUBE if on else null
 	if _flicker:
 		_flicker.base_energy = _spot.light_energy
