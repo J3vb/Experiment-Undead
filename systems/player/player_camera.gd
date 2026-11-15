@@ -40,8 +40,8 @@ func add_recoil(kick: Vector2, recovery: float, permanent_ratio: float) -> void:
 	_body.rotate_y(rad.y * permanent_ratio)
 
 
-func add_flinch(strength_degrees: float) -> void:
-	_recoil_target += Vector2(deg_to_rad(strength_degrees), deg_to_rad(randf_range(-1.0, 1.0) * strength_degrees * 0.6))
+func add_flinch(strength_degrees: float, sideways: float) -> void:
+	_recoil_target += Vector2(deg_to_rad(strength_degrees), deg_to_rad(sideways * strength_degrees * 0.6))
 
 
 func update_feel(

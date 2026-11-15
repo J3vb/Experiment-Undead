@@ -44,7 +44,7 @@ func alive_count() -> int:
 func _pick_marker(min_distance: float) -> Node3D:
 	var points: Array[Node] = get_tree().get_nodes_in_group(spawn_group)
 	if points.is_empty():
-		push_warning("Spawner: no nodes in group '%s'" % spawn_group)
+		Log.warn(&"waves", &"spawn_points_missing", {"spawn_group": spawn_group})
 		return null
 	var far_enough: Array[Node3D] = []
 	for node: Node in points:

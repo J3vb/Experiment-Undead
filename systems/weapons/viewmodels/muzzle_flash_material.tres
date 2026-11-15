@@ -1,0 +1,18 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[sub_resource type="Gradient" id="flash_grad"]
+colors = PackedColorArray(1, 1, 0.8, 1, 1, 0.5, 0.1, 0)
+
+[sub_resource type="GradientTexture2D" id="flash_tex"]
+gradient = SubResource("flash_grad")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+
+[resource]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+cull_mode = 2
+albedo_color = Color(1, 0.75, 0.35, 1)
+albedo_texture = SubResource("flash_tex")

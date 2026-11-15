@@ -2,50 +2,11 @@
 
 [ext_resource type="PackedScene" path="res://assets/models/weapons/shotgun_brenner.glb" id="1"]
 
-[sub_resource type="Gradient" id="flash_grad"]
-colors = PackedColorArray(1, 1, 0.8, 1, 1, 0.5, 0.1, 0)
-
-[sub_resource type="GradientTexture2D" id="flash_tex"]
-gradient = SubResource("flash_grad")
-fill = 1
-fill_from = Vector2(0.5, 0.5)
-fill_to = Vector2(0.5, 0)
-
-[sub_resource type="StandardMaterial3D" id="m_glove"]
-albedo_color = Color(0.09, 0.1, 0.08, 1)
-roughness = 0.95
-
-[sub_resource type="StandardMaterial3D" id="m_sleeve"]
-albedo_color = Color(0.2, 0.22, 0.16, 1)
-roughness = 1.0
-
-[sub_resource type="StandardMaterial3D" id="m_flash"]
-transparency = 1
-blend_mode = 1
-shading_mode = 0
-cull_mode = 2
-albedo_color = Color(1, 0.75, 0.35, 1)
-albedo_texture = SubResource("flash_tex")
-
-[sub_resource type="QuadMesh" id="flash_quad"]
-material = SubResource("m_flash")
-size = Vector2(0.34, 0.34)
-
-[sub_resource type="BoxMesh" id="b10"]
-material = SubResource("m_glove")
-size = Vector3(0.075, 0.09, 0.1)
-
-[sub_resource type="BoxMesh" id="b11"]
-material = SubResource("m_sleeve")
-size = Vector3(0.09, 0.09, 0.3)
-
-[sub_resource type="BoxMesh" id="b12"]
-material = SubResource("m_glove")
-size = Vector3(0.09, 0.06, 0.11)
-
-[sub_resource type="BoxMesh" id="b13"]
-material = SubResource("m_sleeve")
-size = Vector3(0.09, 0.09, 0.32)
+[ext_resource type="QuadMesh" path="res://systems/weapons/viewmodels/shotgun_flash_quad.tres" id="flash_quad"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/hand_right.tscn" id="hand_right"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/sleeve_right.tscn" id="sleeve_right"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/hand_left.tscn" id="hand_left"]
+[ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/sleeve_left.tscn" id="sleeve_left"]
 
 [node name="Viewmodel" type="Node3D"]
 
@@ -61,34 +22,26 @@ omni_range = 8.0
 [node name="A" type="MeshInstance3D" parent="Shotgun/Receiver/Muzzle/FlashMesh"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.07)
 cast_shadow = 0
-mesh = SubResource("flash_quad")
+mesh = ExtResource("flash_quad")
 
 [node name="B" type="MeshInstance3D" parent="Shotgun/Receiver/Muzzle/FlashMesh"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, -0.11)
 cast_shadow = 0
-mesh = SubResource("flash_quad")
+mesh = ExtResource("flash_quad")
 
 [node name="C" type="MeshInstance3D" parent="Shotgun/Receiver/Muzzle/FlashMesh"]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0, -0.11)
 cast_shadow = 0
-mesh = SubResource("flash_quad")
+mesh = ExtResource("flash_quad")
 
-[node name="HandLeft" type="MeshInstance3D" parent="Shotgun/Receiver/Bolt"]
+[node name="HandLeft" parent="Shotgun/Receiver/Bolt" instance=ExtResource("hand_left")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.01, -0.037, 0)
-cast_shadow = 0
-mesh = SubResource("b12")
 
-[node name="SleeveLeft" type="MeshInstance3D" parent="Shotgun/Receiver/Bolt"]
+[node name="SleeveLeft" parent="Shotgun/Receiver/Bolt" instance=ExtResource("sleeve_left")]
 transform = Transform3D(1, 0, 0, 0, 0.9063, 0.4226, 0, -0.4226, 0.9063, -0.11, -0.137, 0.17)
-cast_shadow = 0
-mesh = SubResource("b13")
 
-[node name="HandRight" type="MeshInstance3D" parent="."]
+[node name="HandRight" parent="." instance=ExtResource("hand_right")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.015, -0.04, 0.12)
-cast_shadow = 0
-mesh = SubResource("b10")
 
-[node name="SleeveRight" type="MeshInstance3D" parent="."]
+[node name="SleeveRight" parent="." instance=ExtResource("sleeve_right")]
 transform = Transform3D(1, 0, 0, 0, 0.9397, 0.3420, 0, -0.3420, 0.9397, 0.04, -0.08, 0.31)
-cast_shadow = 0
-mesh = SubResource("b11")

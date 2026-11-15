@@ -77,7 +77,7 @@ func follow(zombie: Zombie, delta: float) -> void:
 ## the returned tween to free the zombie at the end.
 func fall_over() -> Tween:
 	pose_dead()
-	var fall_dir: float = 1.0 if randf() < 0.5 else -1.0
+	var fall_dir: float = 1.0 if randf() < 0.5 else -1.0  # cosmetic
 	var tween: Tween = create_tween()
 	(
 		tween

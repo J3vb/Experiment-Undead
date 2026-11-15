@@ -35,7 +35,10 @@ var _profile_player: Player
 
 func _ready() -> void:
 	add_to_group(&"game_session")
-	rng.seed = rng_seed if rng_seed != 0 else randi()
+	if rng_seed == 0:
+		rng.randomize()
+	else:
+		rng.seed = rng_seed
 	Net.reset_ids()
 	economy.rules = economy_rules
 	director.rules = wave_rules
