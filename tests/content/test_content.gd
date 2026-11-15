@@ -47,7 +47,8 @@ func test_reforged_guns_follow_tier_one() -> void:
 		var up: WeaponData = w.upgraded
 		assert_ne(up.id, w.id, path + " upgrades into another gun")
 		assert_almost_eq(up.damage, w.damage * 2.0, 0.01, path + " Tier I: damage x2")
-		assert_eq(up.magazine_size, int(w.magazine_size * 1.5), path + " Tier I: magazine +50%")
+		var capacity: int = 2 if w.loot_tags.has(&"double") else int(w.magazine_size * 1.5)
+		assert_eq(up.magazine_size, capacity, path + " Tier I: magazine +50%, fixed two-barrel exception")
 		assert_eq(up.max_reserve, w.max_reserve * 2, path + " Tier I: reserve x2")
 
 

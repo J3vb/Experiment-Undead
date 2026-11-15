@@ -46,6 +46,7 @@ var _empty_reload: bool = false
 var _kick: float = 0.0
 var _flash_timer: float = 0.0
 var _rng: RandomNumberGenerator
+var _double_barrel: DoubleBarrel
 
 var _flash_light: Light3D
 var _flash_mesh: Node3D
@@ -64,6 +65,7 @@ func setup(p_instance: WeaponInstance, p_shooter: Player, p_camera: Camera3D) ->
 	shooter = p_shooter
 	camera = p_camera
 	_rng = shooter.get_rng() if shooter else RandomNumberGenerator.new()
+	_double_barrel = DoubleBarrel.attach_to(self)
 
 
 func _ready() -> void:
@@ -133,6 +135,8 @@ func can_fire() -> bool:
 ## Simulation step, run from the owner's physics tick.
 func tick(delta: float) -> void:
 	_tick_timers(delta)
+	if _double_barrel:
+		_double_barrel.tick_trigger()
 	if state == State.RELOADING:
 		_reload_timer -= delta
 		if _reload_timer <= 0.0:
@@ -201,11 +205,12 @@ func _handle_trigger() -> void:
 
 ## Fires one shot (all pellets) right now. Public for tests and AI.
 func fire() -> void:
-	instance.ammo_in_mag -= 1
+	var rounds: int = _double_barrel.rounds_for_shot() if _double_barrel else 1
+	instance.ammo_in_mag -= rounds
 	var spread: float = get_current_spread()
 	var origin: Vector3 = camera.global_position
 	var basis: Basis = camera.global_basis
-	for i: int in data.pellets:
+	for i: int in data.pellets * rounds:
 		_trace(origin, _spread_direction(basis, spread))
 
 	_bloom = minf(_bloom + data.spread_per_shot, data.max_spread)
@@ -259,7 +264,7 @@ func _trace(origin: Vector3, direction: Vector3) -> void:
 	info.weapon_id = data.id
 	info.position = point
 	info.normal = normal
-	info.impulse = direction * 2.0
+	info.impulse = _double_barrel.impulse(direction) if _double_barrel else direction * 2.0
 	info.amount *= data.get_zone_multiplier(hit_zone.zone)
 	if hit_zone.zone == DamageInfo.Zone.HEAD:
 		info.amount *= _stat(&"head_damage")
