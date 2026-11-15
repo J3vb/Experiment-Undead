@@ -16,5 +16,6 @@ cryo_lance,Cryo Lance,Prototype,Vault,Prototype,0,120,1,,120,1,8,48,3,0.25,1,Fre
 siphon,Siphon,Prototype,Vault,Prototype,0,40,1,,40,1,3,15,3.5,0.25,1,Gravity well not modelled (crowd weapon),2.5,40,40,26.667,38.667,21.75,1044,3,,0.057,no wall
 fieldhand_lever,Fieldhand,Lever-action rifle,Wall (map),Common,1300,150,1,3,140,1,8,64,3,0.25,1,Kessel Dam wall later; pierce 1; 0.375 s per round,3,140,150,350.0,560.0,298.667,17280.0,1,269.231,0.2,650
 ironwood_50,Ironwood .50,Anti-materiel rifle,Loot,Rare,0,450,1,3,80,1,6,36,3.6,0.4,0.85,Loot only; unlock 25; pierce 2,3,80,450,600.0,960.0,533.333,30240.0,1,,0.114,no wall
+wren_mp,Wren MP,Machine pistol,Vault,Common,0,30,1,,1000,1,20,120,1.6,0.18,1,Grauwald wall-buy 900 deferred until that map,2.5,1000,30,500,725,310.714,6090,4,,1.429,no wall
 
 Shotguns assume every pellet hits (close range). Points/hit vs AR shows how much faster a gun earns hit points than the AR at the same accuracy.
