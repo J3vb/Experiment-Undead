@@ -88,3 +88,10 @@ func test_command_line_join_and_host() -> void:
 	assert_eq(MainMenu.parse_launch(PackedStringArray(["--verbose", "--host=24605"])), {"host": 24605})
 	assert_eq(MainMenu.parse_launch(PackedStringArray(["--host=abc"])), {})
 	assert_eq(MainMenu.parse_launch(PackedStringArray()), {})
+
+
+func test_command_line_launch_runs_once_per_process() -> void:
+	await wait_process_frames(2)
+	assert_true(MainMenu.launch_consumed, "the first menu used up the launch arguments")
+	menu._launch_from_command_line(PackedStringArray(["--host=24634"]))
+	assert_false(Net.is_online(), "a later menu does not host or join again")

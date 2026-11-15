@@ -11,6 +11,8 @@ GUT (Godot Unit Test) 9.7.1, `addons/gut/`
 Butch Wesley and contributors
 https://github.com/bitwes/Gut · MIT"""
 
+static var launch_consumed: bool = false
+
 var _panel_tween: Tween
 var _drift_time: float = 0.0
 
@@ -37,7 +39,12 @@ func _ready() -> void:
 	_launch_from_command_line.call_deferred(OS.get_cmdline_user_args())
 
 
+## Command-line launches run once per process, so returning to the menu
+## after a failed join or a hosted match does not start them again.
 func _launch_from_command_line(args: PackedStringArray) -> void:
+	if launch_consumed:
+		return
+	launch_consumed = true
 	var launch: Dictionary = parse_launch(args)
 	if launch.has("join"):
 		Net.pending_join = launch["join"]
