@@ -21,15 +21,16 @@ static func attach_to(owner_weapon: Weapon) -> DoubleBarrel:
 	return component
 
 
-func tick_trigger() -> void:
+func buffer(remaining: float) -> float:
 	var held: bool = weapon.shooter != null and weapon.shooter.input_enabled and weapon.shooter.last_frame.has(ALT_FIRE)
 	var just_pressed: bool = held and not _held
 	_held = held
 	if just_pressed:
 		_requested = true
-		weapon._buffered = Weapon.BUFFER_TIME
-	elif weapon._buffered <= 0.0 or (weapon.trigger_held and not weapon._trigger_was_held):
+		remaining = Weapon.BUFFER_TIME
+	elif remaining <= 0.0 or (weapon.trigger_held and not weapon._trigger_was_held):
 		_requested = false
+	return remaining
 
 
 func rounds_for_shot() -> int:

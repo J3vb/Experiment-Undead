@@ -29,6 +29,7 @@ GUNS = (
     "atlas_auto",
     "halberd_lmg",
     "corvid_338",
+    "siphon",
 )
 DETAIL_FLOOR = 4_000  # the old box-built guns were 1,700-4,800 triangles
 

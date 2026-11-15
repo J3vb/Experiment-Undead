@@ -137,8 +137,6 @@ func can_fire() -> bool:
 ## Simulation step, run from the owner's physics tick.
 func tick(delta: float) -> void:
 	_tick_timers(delta)
-	if _double_barrel:
-		_double_barrel.tick_trigger()
 	if state == State.RELOADING and data.reload_per_round:
 		RoundReload.tick(self, delta)
 	elif state == State.RELOADING:
@@ -162,7 +160,7 @@ func _process(delta: float) -> void:
 func _tick_timers(delta: float) -> void:
 	_shot_timer -= delta
 	_since_last_shot += delta
-	_buffered = maxf(_buffered - delta, 0.0)
+	_buffered = _double_barrel.buffer(maxf(_buffered - delta, 0.0)) if _double_barrel else maxf(_buffered - delta, 0.0)
 	_bloom = move_toward(_bloom, 0.0, data.spread_recovery * delta)
 	_sprint_block = (
 		data.sprint_to_fire_time * _stat(&"sprint_out_time") if sprinting else maxf(_sprint_block - delta, 0.0)
@@ -202,8 +200,7 @@ func _handle_trigger() -> void:
 		_burst_left = maxi(_burst_left - 1, 0)
 		var extra: float = 0.12 if data.fire_mode == WeaponData.FireMode.BURST and _burst_left == 0 else 0.0
 		_shot_timer += data.get_fire_interval() * _stat(&"fire_interval") + extra
-	# Time spent blocked (reloading, sprinting, waiting for a press) is not
-	# banked as missed shots.
+	# Time spent blocked (reloading, sprinting, waiting for a press) is not banked as missed shots.
 	_shot_timer = maxf(_shot_timer, 0.0)
 
 
@@ -247,6 +244,9 @@ func _spread_direction(basis: Basis, spread_degrees: float) -> Vector3:
 
 
 func _trace(origin: Vector3, direction: Vector3) -> void:
+	if data.id == &"siphon":
+		GravityWell.launch(self)
+		return
 	var hits: Array[Dictionary] = Pierce.trace(self, origin, direction)
 	if shooter and shooter.session and shooter.session.remote_shots:
 		var end: Vector3 = hits[-1].position if not hits.is_empty() else origin + direction * data.max_range
