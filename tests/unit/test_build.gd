@@ -43,5 +43,25 @@ func test_protocol_check() -> void:
 	assert_false(Build.is_protocol_compatible(Build.PROTOCOL_VERSION + 1))
 
 
+func test_content_hash_sorts_ids_without_changing_the_source() -> void:
+	var ids: PackedStringArray = ["weapons/rifle_ar", "enemies/zombie_walker", "loot/dmg_pct"]
+	var reordered: PackedStringArray = ["loot/dmg_pct", "weapons/rifle_ar", "enemies/zombie_walker"]
+	assert_eq(Build.hash_content_ids(ids), Build.hash_content_ids(reordered))
+	assert_eq(ids[0], "weapons/rifle_ar")
+	reordered.append("loot/new_affix")
+	assert_ne(Build.hash_content_ids(ids), Build.hash_content_ids(reordered))
+
+
+func test_startup_hash_contains_every_content_category() -> void:
+	var ids: PackedStringArray = []
+	var root: DirAccess = DirAccess.open(Content.ROOT)
+	for category: String in root.get_directories():
+		for id: StringName in Content.ids(StringName(category)):
+			ids.append(category + "/" + String(id))
+	assert_gt(Content.ids(&"loot").size(), 0, "loot ids take part in compatibility")
+	assert_eq(Build.content_hash, Build.hash_content_ids(ids))
+	assert_eq(Build.content_hash.length(), 64, "compatibility uses SHA-256")
+
+
 func test_server_port_falls_back() -> void:
 	assert_eq(DedicatedServer.read_int_setting("no-such-arg", "EU_NO_SUCH_ENV", 7777), 7777)

@@ -38,9 +38,9 @@ func _process(delta: float) -> void:
 
 func play(data: WeaponData, origin: Vector3, points: PackedVector3Array) -> void:
 	global_position = origin
-	_flash_left = 0.045
-	_flash.visible = true
-	_light.visible = true
+	_flash_left = 0.0 if data.no_muzzle_flash else 0.045
+	_flash.visible = _flash_left > 0.0
+	_light.visible = _flash_left > 0.0
 	_audio.stream = data.fire_sound
 	if _audio.stream:
 		_audio.pitch_scale = randf_range(0.95, 1.05)  # cosmetic

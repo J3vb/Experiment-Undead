@@ -26,6 +26,7 @@ var _delta_time: float = 0.0
 var _delta_sum: int = 0
 var _exfil: ExfilHatch
 
+@onready var coop_hud: CoopHud = $Root/Coop
 @onready var crosshair: Crosshair = $Root/Crosshair
 @onready var hit_marker: HitMarker = $Root/HitMarker
 @onready var vignette: ColorRect = $Root/DamageVignette
@@ -62,7 +63,14 @@ var _exfil: ExfilHatch
 
 
 func _ready() -> void:
-	_setup_pause_menu()
+	pause_panel.theme = settings_screen.theme
+	resume_button.pressed.connect(func() -> void: (get_parent() as GameSession).resume())
+	settings_button.pressed.connect(_open_settings)
+	$Root/PausePanel/Menu/MainMenu.pressed.connect(_return_to_menu)
+	$Root/PausePanel/Menu/QuitGame.pressed.connect(func() -> void: (get_parent() as GameSession).quit_game())
+	results_screen.main_menu_requested.connect(_return_to_menu)
+	results_screen.restart_requested.connect(func() -> void: (get_parent() as GameSession).restart())
+	settings_screen.closed.connect(_close_settings)
 	pause_panel.visible = false
 	results_screen.hide()
 	level_toast.modulate.a = 0.0
@@ -84,7 +92,11 @@ func _ready() -> void:
 	Events.round_started.connect(_on_round_started)
 	Events.round_ended.connect(_on_round_ended)
 	Events.intermission_started.connect(_on_intermission)
-	Events.exfil_opened.connect(_on_exfil_opened)
+	Events.exfil_opened.connect(
+		func() -> void:
+			_exfil = get_tree().get_first_node_in_group(&"exfil") as ExfilHatch
+			_update_exfil()
+	)
 	Events.exfil_called.connect(func(hatch: ExfilHatch) -> void: _exfil = hatch)
 	Events.game_over.connect(_on_game_over)
 	Events.player_leveled_up.connect(_on_player_leveled_up)
@@ -96,6 +108,12 @@ func show_paused(paused: bool) -> void:
 	pause_menu.show()
 	if paused:
 		resume_button.grab_focus()
+
+
+func _physics_process(delta: float) -> void:
+	var frame: InputFrame = InputFrame.new()
+	frame.buttons = InputFrame.INTERACT if Input.is_action_pressed(&"interact") else 0
+	coop_hud.apply_frame(frame, delta)
 
 
 func _process(delta: float) -> void:
@@ -116,17 +134,12 @@ func _process(delta: float) -> void:
 			_delta_sum = 0
 
 	_update_exfil()
-	_update_prompt(_player.focus.get_prompt(_player) if is_instance_valid(_player) and _player.focus else "")
+	_update_prompt(coop_hud.get_prompt(_player, pause_panel.visible or results_screen.visible))
 	if is_instance_valid(_player) and _player.weapons.current:
 		var w: Weapon = _player.weapons.current
 		crosshair.spread_degrees = w.get_current_spread()
 		crosshair.fov_degrees = _player.camera.fov
 		crosshair.modulate.a = 0.0 if (w.ads_progress > 0.5 or _player.is_sprinting or not _player.is_alive()) else 1.0
-
-
-func _on_exfil_opened() -> void:
-	_exfil = get_tree().get_first_node_in_group(&"exfil") as ExfilHatch
-	_update_exfil()
 
 
 func _update_exfil() -> void:
@@ -256,7 +269,7 @@ func _on_power_up_collected(_collector: Player, power_up: PowerUpData) -> void:
 
 func _on_player_revived(player: Player) -> void:
 	if player == _player:
-		_flash_center("SECOND WIND", 2.0)
+		_flash_center("REVIVED" if Net.is_online() else "SECOND WIND", 2.0)
 		for badge: Node in serums.get_children():
 			if not player.has_serum(StringName(badge.name)):
 				serums.remove_child(badge)
@@ -318,17 +331,6 @@ func _on_player_leveled_up(player: Player, level: int) -> void:
 	_toast_tween.tween_property(level_toast, "modulate:a", 1.0, 0.12)
 	_toast_tween.tween_interval(1.68)
 	_toast_tween.tween_property(level_toast, "modulate:a", 0.0, 0.2)
-
-
-func _setup_pause_menu() -> void:
-	pause_panel.theme = settings_screen.theme
-	resume_button.pressed.connect(func() -> void: (get_parent() as GameSession).resume())
-	settings_button.pressed.connect(_open_settings)
-	$Root/PausePanel/Menu/MainMenu.pressed.connect(_return_to_menu)
-	$Root/PausePanel/Menu/QuitGame.pressed.connect(func() -> void: (get_parent() as GameSession).quit_game())
-	results_screen.main_menu_requested.connect(_return_to_menu)
-	results_screen.restart_requested.connect(func() -> void: (get_parent() as GameSession).restart())
-	settings_screen.closed.connect(_close_settings)
 
 
 func _open_settings() -> void:

@@ -62,12 +62,23 @@ already reads `InputFrame`s, so the server could replay them.
    the owner. Hit markers are immediate; kill markers follow synced DEAD
    within 0.5 s of the owner's last hit. One unreliable cosmetic packet per
    shot relays muzzle origin and pellet endpoints through the server.
-4. **Player health and death:** zombie hits, down, revive (50 points), game
-   over when everyone is down, results on every client.
-5. **Run end and saves:** XP and loot grants reach each client's own character
-   file; version check on join (`Build.PROTOCOL_VERSION`).
-6. **Menu:** Host and play, direct connect field, plain-word errors (full,
-   wrong version). Server browser and LAN discovery come with P8.
+4. **Player health and death — done:** server health snapshots, 30 s bleed-out,
+   sidearm crawl, 3 s revives within 1.5 m (50 points), teammate spectating,
+   next-round pistol respawns, and shared results when the connected squad is down.
+5. **Run end and saves** (XP and handshake done; loot waits for L3): owner-only
+   reliable final XP grants bank through `bank_run_xp` into the client's own
+   character file. Live owner XP snapshots survive a mid-run disconnect; the
+   dedicated server saves no character. Hello checks protocol and the cached
+   hash of sorted Content ids before spawning, with version/content/full reasons.
+   Pack-to-stash banking waits for L3's Pack and loot delivery; the stash is built.
+6. **Menu (done):** Play solo, Host and play with a port field (default 7777),
+   and Join with an address field (port optional). Settings remembers the last
+   address and port. Joining shows the target and Cancel, with a 6-second
+   timeout; one themed dialog explains invalid addresses, unreachable servers,
+   occupied ports, full servers, version/content mismatches and disconnections.
+   Clients distinguish a host ending the match from a lost connection.
+   Menu buttons and fields support keyboard and gamepad focus. Server browser
+   and LAN discovery come with P8.
 
 After step 6, P7 continues with machines, doors and power-ups in co-op, then
 a 4-player play-test to round 20 (the P7 exit test).

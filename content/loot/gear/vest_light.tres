@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GearBaseData" format=3]
+
+[ext_resource type="Script" path="res://systems/loot/gear_base_data.gd" id="1"]
+
+[resource]
+resource_name = "Lantern Rig (provisional)"
+script = ExtResource("1")
+id = &"vest_light"
+slot = "vest"
+display_name = "Lantern Rig"
+visual_id = &"vest_light"
+loot_tags = Array[StringName]([&"vest"])
+unlock_level = 1
+drop_weight = 100.0

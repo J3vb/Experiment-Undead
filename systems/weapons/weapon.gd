@@ -1,6 +1,5 @@
-## Hitscan gun node driven by a WeaponInstance. Owns firing, spread, recoil,
-## reload and the procedural viewmodel pose. Input arrives through the public
-## vars, so a player, bot or test can drive it the same way.
+## Hitscan gun driven by a WeaponInstance; owns firing, spread, recoil, reload and viewmodel pose.
+## Public input vars let a player, bot or test drive it the same way.
 class_name Weapon
 extends Node3D
 
@@ -275,7 +274,7 @@ func _hit(result: Dictionary, origin: Vector3, direction: Vector3) -> void:
 		if shooter and shooter.session:
 			shooter.session.hit_claims.submit_hit(self, hit_zone, info)
 		return
-	hit_zone.receive_hit(info)
+	HitClaims.apply_host_hit(shooter, hit_zone, info)
 	hit_landed.emit(hit_zone.health.is_dead, info.is_headshot())
 
 
@@ -331,6 +330,7 @@ func _pose_moving_parts() -> void:
 
 
 func _set_flash(on: bool) -> void:
+	on = on and not data.no_muzzle_flash
 	if _flash_light:
 		_flash_light.visible = on
 	if _flash_mesh:
