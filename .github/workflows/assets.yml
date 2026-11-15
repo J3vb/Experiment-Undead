@@ -39,6 +39,9 @@ jobs:
             zombies/crawler.glb zombies/bloater.glb characters/player.glb characters/player_arms.glb; do
             test -s "$RUNNER_TEMP/models/$f" || { echo "missing $f"; exit 1; }
           done
+          for f in gear/vest_light.glb gear/vest_medium.glb gear/vest_heavy.glb; do
+            test -s "$RUNNER_TEMP/models/$f" || { echo "missing $f"; exit 1; }
+          done
 
       - name: Khronos glTF validator (fresh build and committed models)
         run: |

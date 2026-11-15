@@ -193,6 +193,14 @@ def check_joints(nodes: dict, stem: str) -> list:
         if node.type == "MESH":
             lo, hi = bounds([node])
             at = node.matrix_world.translation
+            armature = node.find_armature()
+            if (
+                stem in character_checks.VEST_BUDGETS
+                and name == "Shell"
+                and armature is not None
+                and (at - armature.matrix_world.translation).length <= TOLERANCE
+            ):
+                continue  # glTF skins use their skeleton origin, while their vertices stay in the body rest pose.
             if not all(lo[i] - 0.03 <= at[i] <= hi[i] + 0.03 for i in range(3)):
                 errors.append(f"'{name}' pivot {fmt(at)} is off the part; put the origin on the joint")
     return errors

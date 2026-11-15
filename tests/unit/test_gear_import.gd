@@ -41,3 +41,22 @@ func test_missing_material_reports_an_error_and_uses_plain_fabric() -> void:
 	assert_eq(material.get_shader_parameter(&"finish"), 0)
 	assert_eq(material.get_shader_parameter(&"albedo"), Color.WHITE)
 	assert_push_error("gear material '' has no finish")
+
+
+func test_vest_imports_share_four_finishes_across_shell_and_first_person_cuffs() -> void:
+	for frame: String in ["light", "medium", "heavy"]:
+		var packed: PackedScene = load("res://assets/models/gear/vest_%s.glb" % frame) as PackedScene
+		assert_not_null(packed, frame + " vest imports")
+		if packed == null:
+			continue
+		var model: Node3D = packed.instantiate() as Node3D
+		autofree(model)
+		var materials: Array[Material] = []
+		for node: Node in model.find_children("*", "MeshInstance3D", true, false):
+			var mesh: Mesh = (node as MeshInstance3D).mesh
+			for surface: int in mesh.get_surface_count():
+				var material: Material = mesh.surface_get_material(surface)
+				assert_true(material is ShaderMaterial, "all imported finishes use the gear shader")
+				if not materials.has(material):
+					materials.append(material)
+		assert_eq(materials.size(), 4, frame + " Shell and both FP cuffs reuse four finish resources")
