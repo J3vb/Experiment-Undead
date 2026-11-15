@@ -21,6 +21,7 @@ var _chain: Chain = Chain.new()
 
 func _ready() -> void:
 	add_child(_chain)
+	_chain.secondary_killed.connect(confirm_well_hit.bind(true), CONNECT_DEFERRED)
 	multiplayer.peer_disconnected.connect(_forget_peer)
 	for id: StringName in Content.ids(&"weapons"):
 		_weapons[id] = Content.weapon(id)

@@ -102,3 +102,22 @@ func test_solo_synapse_trace_includes_six_metres_and_excludes_beyond() -> void:
 	assert_almost_eq(source.health.current, 1000.0 - weapon.data.damage, 0.001)
 	assert_almost_eq(boundary.health.current, 1000.0 - weapon.data.damage * 0.5, 0.001)
 	assert_eq(outside.health.current, 1000.0)
+
+
+func test_solo_synapse_secondary_kill_confirms_after_the_surviving_primary_hit() -> void:
+	var weapon: Weapon = _take(&"synapse")
+	var source: Zombie = _walker()
+	var secondary: Zombie = _walker(Vector3(1, 0, 0))
+	secondary.health.reset(5.0)
+	await wait_physics_frames(2)
+	watch_signals(Events)
+	weapon._trace(ORIGIN, Vector3.FORWARD)
+	assert_false(source.health.is_dead, "the ordinary primary hit does not kill")
+	assert_true(secondary.health.is_dead, "the chain kills a neighbouring zombie")
+	await wait_physics_frames(2)
+	assert_signal_emitted_with_parameters(Events, "hit_confirmed", [player, true, false])
+	assert_eq(
+		get_signal_parameters(Events, "hit_confirmed"),
+		[player, true, false],
+		"the ordinary primary marker must not overwrite the chain kill marker"
+	)

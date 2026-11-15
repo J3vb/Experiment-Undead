@@ -188,6 +188,15 @@ func _assert_single_kill_credit(zombie: Zombie, hits: int) -> void:
 	)
 
 
+func _received_kill(owner: Player) -> bool:
+	var count: int = get_signal_emit_count(Events, "hit_confirmed")
+	for index: int in maxi(count, 0):
+		var parameters: Array = get_signal_parameters(Events, "hit_confirmed", index)
+		if parameters == [owner, true, false]:
+			return true
+	return false
+
+
 func test_client_synapse_claim_chains_three_server_hits_and_sends_cosmetic_arcs() -> void:
 	var source: Array[Zombie] = await _pair(Vector3(0, 0, -4))
 	var pairs: Array[Array] = []
@@ -208,6 +217,9 @@ func test_client_synapse_claim_chains_three_server_hits_and_sends_cosmetic_arcs(
 	)
 	assert_signal_emit_count(client_chain, "child_entered_tree", 3)
 	_assert_single_kill_credit(pairs[0][0] as Zombie, 4)
+	await wait_until(func() -> bool: return _received_kill(_mine), 3.0, "chain kill confirmation reached the owner")
+	assert_true(_received_kill(_mine), "the owning client's Player receives a reliable secondary kill confirmation")
+	assert_false(source[0].health.is_dead, "the client kill marker belongs to a secondary kill")
 	for pair: Array in pairs:
 		var copy: Zombie = pair[1] as Zombie
 		assert_eq(copy.health.current, copy.health.max_health, "arc RPCs never change client health")

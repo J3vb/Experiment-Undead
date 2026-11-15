@@ -2,6 +2,8 @@
 class_name Chain
 extends Node
 
+signal secondary_killed(player: Player)
+
 const MAX_TARGETS: int = 3
 const RANGE: float = 6.0
 const DAMAGE_FRACTION: float = 0.5
@@ -21,12 +23,16 @@ func apply(zombie: Zombie, info: DamageInfo) -> void:
 		return
 	var targets: Array[Zombie] = _targets(zombie)
 	var ends: PackedVector3Array = PackedVector3Array()
+	var killed: bool = false
 	for target: Zombie in targets:
 		var hit: DamageInfo = DamageInfo.create(info.amount * DAMAGE_FRACTION, info.attacker, info.damage_type)
 		hit.weapon_id = info.weapon_id
 		hit.position = target.global_position + Vector3.UP
 		ends.append(hit.position)
 		target.health.take_damage(hit)
+		killed = killed or target.health.is_dead
+	if killed:
+		_confirm_kill(info.attacker)
 	if ends.is_empty():
 		return
 	var start: Vector3 = zombie.global_position + Vector3.UP
@@ -34,6 +40,11 @@ func apply(zombie: Zombie, info: DamageInfo) -> void:
 		show_arcs(start, ends)
 	else:
 		show_arcs.rpc(start, ends)
+
+
+func _confirm_kill(attacker: Node) -> void:
+	if attacker is Player:
+		secondary_killed.emit(attacker as Player)
 
 
 func _targets(source: Zombie) -> Array[Zombie]:
