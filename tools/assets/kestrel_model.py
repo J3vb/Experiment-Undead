@@ -109,7 +109,7 @@ def lower_controls(m, receiver, metal, black, olive):
             f"GripPanel{x}",
             [(-0.103, -0.055), (-0.138, -0.14), (-0.12, -0.148), (-0.096, -0.09), (-0.088, -0.062)],
             0.002,
-            black,
+            m.material("MatteBlackKnurled", m.MATTE_BLACK, roughness=0.75),
             x=x * 0.0165,
         )
         for x in (-1, 1)

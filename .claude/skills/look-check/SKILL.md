@@ -17,6 +17,7 @@ use OpenGL (works with software rendering); with a GPU use Vulkan.
 # Godot renders (lighting, materials, scenes)
 xvfb-run -s "-screen 0 1600x900x24" ./godot --path . --rendering-driver opengl3 -s res://tools/zombie_lineup.gd
 xvfb-run -s "-screen 0 1600x900x24" ./godot --path . --rendering-driver opengl3 -s res://tools/look_shot.gd
+xvfb-run -s "-screen 0 1600x900x24" ./godot --path . --rendering-driver opengl3 -s res://tools/gun_lineup.gd
 xvfb-run -s "-screen 0 1600x900x24" ./godot --path . --rendering-driver opengl3 res://tools/screenshot.tscn
 
 # Gun plates from the committed .glb files (CPU Blender, no Godot)
@@ -27,6 +28,7 @@ python tools/render_weapon_comparison.py --out screenshots/weapons
 |---|---|---|
 | `tools/zombie_lineup.gd` | `screenshots/zombie_lineup.png` | `docs/design/images/style_lineup.jpg` |
 | `tools/look_shot.gd` | `screenshots/look_reference.png` | `docs/design/images/style_corridor.jpg` |
+| `tools/gun_lineup.gd` | `screenshots/gun_*.png` (guns with their finish shader) | `weapon_comparison_*.png` |
 | `tools/screenshot.tscn` | `screenshots/*.png` in a real match | `style_corridor.jpg`, `ui_match_hud.jpg` |
 | `tools/render_weapon_comparison.py` | `side.png`, `first_person.png` | `docs/design/images/weapon_comparison_*.png` |
 
