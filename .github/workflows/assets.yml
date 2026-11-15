@@ -42,6 +42,9 @@ jobs:
           for name in charm_dog_tags charm_vial charm_keycard charm_dosimeter charm_coin implant_reflex implant_lung implant_spine implant_ocular implant_relay; do
             test -s "$RUNNER_TEMP/models/gear/$name.glb" || { echo "missing gear/$name.glb"; exit 1; }
           done
+          for f in gear/vest_light.glb gear/vest_medium.glb gear/vest_heavy.glb; do
+            test -s "$RUNNER_TEMP/models/$f" || { echo "missing $f"; exit 1; }
+          done
 
       - name: Khronos glTF validator (fresh build and committed models)
         run: |

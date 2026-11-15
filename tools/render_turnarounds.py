@@ -129,7 +129,7 @@ def import_model(path):
             obj.parent = offset
     bpy.context.view_layer.update()
     meshes = [obj for obj in imported if obj.type == "MESH"]
-    if path.parent.name == "gear":
+    if path.parent.name == "gear" and path.stem.startswith(("charm_", "implant_")):
         for material in {material for obj in meshes for material in obj.data.materials if material}:
             _gear_preview(material)
     corners = [obj.matrix_world @ Vector(corner) for obj in meshes for corner in obj.bound_box]

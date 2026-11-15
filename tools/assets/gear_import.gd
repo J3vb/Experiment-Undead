@@ -18,6 +18,7 @@ const FINISHES: Dictionary[String, int] = {
 
 
 func _post_import(scene: Node) -> Object:
+	var materials: Dictionary[BaseMaterial3D, ShaderMaterial] = {}
 	var meshes: Array[Node] = scene.find_children("*", "MeshInstance3D", true, false)
 	if scene is MeshInstance3D:
 		meshes.append(scene)
@@ -29,7 +30,10 @@ func _post_import(scene: Node) -> Object:
 			var current: Material = mesh.surface_get_material(surface)
 			if current is ShaderMaterial and (current as ShaderMaterial).shader == SHADER:
 				continue
-			mesh.surface_set_material(surface, finish_material(current as BaseMaterial3D))
+			var source: BaseMaterial3D = current as BaseMaterial3D
+			if not materials.has(source):
+				materials[source] = finish_material(source)
+			mesh.surface_set_material(surface, materials[source])
 	return scene
 
 

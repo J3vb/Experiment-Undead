@@ -251,11 +251,20 @@ func test_booth_gear_follows_bones_with_a_transformed_character() -> void:
 	_assert_attached_within(display, skeleton, "Port", "neck")
 	var clip: Node3D = display.find_child("CharmClip", true, false) as Node3D
 	var hook: Node3D = display.find_child("Hook", true, false) as Node3D
-	assert_not_null(display.find_child("MediumVestBoothFixture", true, false), "booth includes a medium vest preview")
+	var body: Node3D = display.find_child("Body", true, false) as Node3D
+	var vest: Node3D = display.find_child("MediumVest", true, false) as Node3D
+	assert_not_null(vest, "booth includes the imported medium vest")
+	var shell: MeshInstance3D = vest.find_child("Shell", true, false) as MeshInstance3D if vest != null else null
+	assert_not_null(shell, "medium vest keeps its skinned shell")
+	if shell != null:
+		assert_eq(shell.get_node_or_null(shell.skeleton), skeleton, "vest shell uses the displayed player's rig")
 	assert_not_null(clip, "vest provides its CharmClip")
 	assert_not_null(hook, "charm keeps the hook pivot")
+	assert_not_null(body, "charm keeps its hanging body")
 	if clip != null and hook != null:
 		assert_lt(hook.global_position.distance_to(clip.global_position), 0.001, "charm hangs from CharmClip")
+	if body != null and hook != null:
+		assert_lt(body.global_position.y, hook.global_position.y - 0.015, "charm hangs down below the clip")
 	var forearm: int = skeleton.find_bone("forearm_L")
 	var pose: Transform3D = skeleton.get_bone_pose(forearm)
 	pose.basis = pose.basis * Basis(Vector3.RIGHT, 0.3)

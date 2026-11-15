@@ -22,13 +22,12 @@ static func build_character() -> Node3D:
 	var player: Node3D = (load(PLAYER) as PackedScene).instantiate() as Node3D
 	display.add_child(player)
 	var skeleton: Skeleton3D = player.find_children("*", "Skeleton3D", true, false)[0] as Skeleton3D
-	var vest_attach: BoneAttachment3D = _attachment(skeleton, "spine_02", "VestAttachment")
-	var vest: Node3D = _medium_vest()
-	vest_attach.add_child(vest)
-	vest.transform = skeleton.get_bone_global_rest(skeleton.find_bone("spine_02")).affine_inverse()
+	var vest: Node3D = attach_vest(player, "medium")
 	var clip: Node3D = vest.find_child("CharmClip", true, false) as Node3D
 	var charm: Node3D = _gear("charm_keycard")
 	clip.add_child(charm)
+	var rest: Transform3D = skeleton.get_bone_global_rest(skeleton.find_bone("spine_03"))
+	charm.basis = (rest.basis * clip.basis).inverse()
 	var implant: Node3D = _gear("implant_ocular")
 	var module: Node3D = implant.find_child("Module", true, false) as Node3D
 	var port: Node3D = implant.find_child("Port", true, false) as Node3D
@@ -38,6 +37,22 @@ static func build_character() -> Node3D:
 	_attach_piece(skeleton, "forearm_L", module, Basis(Vector3.BACK, PI / 4.0))
 	_attach_piece(skeleton, "neck", port, Basis.IDENTITY)
 	return display
+
+
+static func attach_vest(player: Node3D, frame: String) -> Node3D:
+	var skeleton: Skeleton3D = player.find_children("*", "Skeleton3D", true, false)[0] as Skeleton3D
+	var vest: Node3D = _gear("vest_" + frame)
+	vest.name = frame.capitalize() + "Vest"
+	player.add_child(vest)
+	var shell: MeshInstance3D = vest.find_child("Shell", true, false) as MeshInstance3D
+	shell.skeleton = shell.get_path_to(skeleton)
+	for node: Node in vest.find_children("*", "BoneAttachment3D", true, false):
+		var attachment: BoneAttachment3D = node as BoneAttachment3D
+		attachment.use_external_skeleton = true
+		attachment.external_skeleton = attachment.get_path_to(skeleton)
+	for cuff: String in ["CuffFP_L", "CuffFP_R"]:
+		(vest.find_child(cuff, true, false) as MeshInstance3D).hide()
+	return vest
 
 
 static func _gear(id: String) -> Node3D:
@@ -94,26 +109,6 @@ static func _bounds(node: Node3D, transform: Transform3D) -> AABB:
 			if child_bounds.size != Vector3.ZERO:
 				bounds = child_bounds if bounds.size == Vector3.ZERO else bounds.merge(child_bounds)
 	return bounds
-
-
-static func _medium_vest() -> Node3D:
-	var vest: Node3D = Node3D.new()
-	vest.name = "MediumVestBoothFixture"
-	_plate(vest, Vector3(0.39, 0.35, 0.055), Vector3(0, 1.305, 0.133), "#2F393B", "ChestShell")
-	_plate(vest, Vector3(0.35, 0.33, 0.045), Vector3(0, 1.30, -0.116), "#2F393B", "BackShell")
-	_plate(vest, Vector3(0.35, 0.025, 0.016), Vector3(0, 1.405, 0.169), "#3FE0C8", "ChestTrim")
-	for side: float in [-1.0, 1.0]:
-		_plate(vest, Vector3(0.09, 0.055, 0.22), Vector3(side * 0.138, 1.47, 0), "#1C2122", "ShoulderStrap")
-		_plate(vest, Vector3(0.14, 0.067, 0.13), Vector3(side * 0.24, 1.465, 0), "#2F393B", "ShoulderPad")
-		_plate(vest, Vector3(0.025, 0.025, 0.14), Vector3(side * 0.22, 1.49, 0), "#3FE0C8", "PadTrim")
-		_plate(vest, Vector3(0.09, 0.14, 0.040), Vector3(side * 0.08, 1.23, 0.181), "#1C2122", "UtilityPouch")
-		_plate(vest, Vector3(0.05, 0.013, 0.008), Vector3(side * 0.08, 1.265, 0.206), "#D9D9D2", "PouchFastener")
-	var clip: Node3D = Node3D.new()
-	clip.name = "CharmClip"
-	clip.position = Vector3(0.147, 1.375, 0.183)
-	vest.add_child(clip)
-	_plate(clip, Vector3(0.025, 0.030, 0.012), Vector3(0, 0.007, 0), "#D9D9D2", "ClipPlate")
-	return vest
 
 
 static func _plate(parent: Node3D, size: Vector3, at: Vector3, color: String, label: String) -> void:

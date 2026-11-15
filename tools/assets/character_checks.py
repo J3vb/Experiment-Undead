@@ -13,11 +13,13 @@ CHARMS = ("charm_dog_tags", "charm_vial", "charm_keycard", "charm_dosimeter", "c
 IMPLANTS = ("implant_reflex", "implant_lung", "implant_spine", "implant_ocular", "implant_relay")
 CHARM_JOINTS = {"Hook": None, "Link1": "Hook", "Link2": "Link1", "Body": "Link2"}
 IMPLANT_JOINTS = {"Module": None, "Port": None}
+VEST_BUDGETS = {"vest_light": (3_000, 4_500), "vest_medium": (4_000, 5_500), "vest_heavy": (4_500, 6_000)}
 JOINTS = {
     "player": {"Eyes": None},
     "player_arms": {},
     **dict.fromkeys(CHARMS, CHARM_JOINTS),
     **dict.fromkeys(IMPLANTS, IMPLANT_JOINTS),
+    **{stem: dict.fromkeys(("Shell", "CuffFP_L", "CuffFP_R", "CharmClip")) for stem in VEST_BUDGETS},
 }
 ARM_BONES = {f"{part}_{side}" for part in ("clavicle", "upperarm", "forearm", "hand") for side in ("L", "R")}
 TOLERANCE = 0.01
@@ -111,8 +113,8 @@ def _surface_area(obj) -> float:
     return area
 
 
-def _check_zones(meshes: list) -> list:
-    errors, total_area, glow_area = [], 0.0, 0.0
+def _check_zones(meshes: list, min_trim=0.0) -> list:
+    errors, total_area, glow_area, trim_area = [], 0.0, 0.0, 0.0
     for obj in meshes:
         try:
             shares = gear_paint.zone_shares(obj)
@@ -122,8 +124,49 @@ def _check_zones(meshes: list) -> list:
         area = _surface_area(obj)
         total_area += area
         glow_area += shares[gear_paint.ZONE_GLOW] * area
+        trim_area += shares[gear_paint.ZONE_TRIM] * area
     if total_area > 0 and glow_area / total_area > 0.05 + 1e-6:
         errors.append(f"glow zone covers {glow_area / total_area:.1%} of surface area, maximum is 5%")
+    if total_area > 0 and trim_area / total_area + 1e-6 < min_trim:
+        errors.append(f"trim zone covers {trim_area / total_area:.1%} of surface area, minimum is {min_trim:.0%}")
+    return errors
+
+
+def _check_vest_attachments(nodes: dict) -> list:
+    errors = []
+    for name in ("CuffFP_L", "CuffFP_R"):
+        cuff = nodes.get(name)
+        if cuff is None:
+            continue
+        if cuff.type != "MESH" or cuff.find_armature() is not None or cuff.parent_type == "BONE":
+            errors.append(f"{name} must be a separate unskinned cuff mesh")
+        elif (_bounds([cuff])[0] + _bounds([cuff])[1] - 2 * cuff.matrix_world.translation).length > 0.02:
+            errors.append(f"{name} origin must sit at the cuff centre")
+    clip = nodes.get("CharmClip")
+    if clip is not None and clip.type != "EMPTY":
+        errors.append("CharmClip must be an empty")
+    return errors
+
+
+def _check_vest(objects: list, armatures: list, stem: str, tris: int) -> list:
+    nodes = {obj.name: obj for obj in objects}
+    errors = _check_vest_attachments(nodes)
+    for name in JOINTS[stem]:
+        if name not in nodes:
+            errors.append(f"missing node '{name}'")
+    if len(armatures) != 1:
+        errors.append("vests need exactly one armature with the 22 character bones")
+    elif armatures[0].matrix_world.translation.length > TOLERANCE:
+        errors.append("vest skeleton must use the player rig origin")
+    shell = nodes.get("Shell")
+    if shell is not None and (shell.type != "MESH" or shell.find_armature() not in armatures):
+        errors.append("Shell must be one mesh skinned to the vest skeleton")
+    low, high = VEST_BUDGETS[stem]
+    if not low <= tris <= high:
+        errors.append(f"{tris} triangles, '{stem}' must have {low}-{high}")
+    skinned = [obj for obj in objects if obj.type == "MESH" and obj.find_armature() is not None]
+    if shell is not None and skinned != [shell]:
+        errors.append("Shell must be the vest's only skinned mesh")
     return errors
 
 
@@ -214,9 +257,11 @@ def check(objects: list, folder: str, stem: str) -> list:
     errors += _check_rigid_gear(objects, stem, tris)
     lo, hi = _bounds(meshes)
     if folder == "gear":
-        if Vector(max(lo[i], -hi[i], 0.0) for i in range(3)).length > 0.05:
+        if stem in VEST_BUDGETS:
+            errors += _check_vest(objects, armatures, stem, tris)
+        elif Vector(max(lo[i], -hi[i], 0.0) for i in range(3)).length > 0.05:
             errors.append("gear origin must be inside the piece's bounds or within 0.05 m")
-        errors += _check_zones(meshes)
+        errors += _check_zones(meshes, min_trim=0.05 if stem in VEST_BUDGETS else 0.0)
     elif stem == "player_arms":
         errors += _check_arm_weights(meshes) + _check_zones(meshes)
     else:
