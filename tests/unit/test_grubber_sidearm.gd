@@ -71,11 +71,15 @@ func test_inventory_stashes_and_equips_both_grubbers_as_sidearms() -> void:
 		profile.loadout[&"primary"] = primary_item
 		profile.loadout[&"sidearm"] = starter
 		var item: Dictionary = _loadout("inventory_grubber", String(id))["sidearm"]
+		var original: Dictionary = item.duplicate(true)
 		var stash_slot: int = Inventory.add_to_stash(profile, item)
+		var stored: Dictionary = profile.stash[stash_slot].duplicate(true)
 		assert_eq(stash_slot, 0)
+		assert_eq(item, original, "Stashing leaves the caller's roll unchanged")
+		assert_has(stored, "acquired", "Stored loot receives its acquisition order")
 		assert_eq(Inventory.slot_for(item), &"sidearm", String(id) + " has the explicit Sidearm slot")
 		assert_true(Inventory.equip(profile, stash_slot))
-		assert_eq(profile.loadout[&"sidearm"], item)
+		assert_eq(profile.loadout[&"sidearm"], stored)
 		assert_eq(profile.loadout[&"primary"], primary_item, "equipping Grubber cannot replace the saved Primary")
 		assert_eq(profile.stash[stash_slot], starter, "the old Sidearm returns to the same stash slot")
 		ItemLoadout.apply(player, profile.loadout)
