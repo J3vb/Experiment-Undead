@@ -18,3 +18,31 @@ func test_solo_is_authority() -> void:
 	var net_node: Node = NetScript.new()
 	add_child_autofree(net_node)
 	assert_true(net_node.is_authority())
+
+
+func test_parse_address_reads_port_or_uses_default() -> void:
+	assert_eq(NetScript.parse_address("10.0.0.5:24600"), ["10.0.0.5", 24600])
+	assert_eq(NetScript.parse_address(" myserver.lan "), ["myserver.lan", NetScript.DEFAULT_PORT])
+	assert_eq(NetScript.parse_address("host:notaport"), ["host:notaport", NetScript.DEFAULT_PORT])
+	assert_eq(NetScript.parse_address(""), ["127.0.0.1", NetScript.DEFAULT_PORT])
+
+
+func test_host_goes_online_and_leave_returns_to_solo() -> void:
+	assert_false(Net.is_online())
+	assert_eq(Net.host(24631, 2), OK)
+	assert_true(Net.is_online())
+	assert_true(Net.is_authority())
+	Net.leave()
+	assert_false(Net.is_online())
+	assert_true(Net.is_authority())
+
+
+func test_pending_join_is_used_once() -> void:
+	Net.pending_join = "127.0.0.1:24632"
+	assert_eq(Net.start_pending_join(), OK)
+	assert_eq(Net.pending_join, "")
+	assert_true(Net.is_online())
+	assert_false(Net.is_authority(), "a client is not the authority")
+	Net.leave()
+	assert_eq(Net.start_pending_join(), OK, "nothing to join is fine")
+	assert_false(Net.is_online())

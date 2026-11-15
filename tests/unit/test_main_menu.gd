@@ -80,3 +80,11 @@ func test_focus_neighbors_form_a_loop_and_panel_motion_has_no_overshoot() -> voi
 	menu._panel_tween.custom_step(0.06)
 	assert_almost_eq(menu.credits_panel.position.x, 0.0, 0.01)
 	assert_almost_eq(menu.credits_panel.modulate.a, 1.0, 0.01)
+
+
+func test_command_line_join_and_host() -> void:
+	assert_eq(MainMenu.parse_launch(PackedStringArray(["--join=10.0.0.5:24600"])), {"join": "10.0.0.5:24600"})
+	assert_eq(MainMenu.parse_launch(PackedStringArray(["--host"])), {"host": Net.DEFAULT_PORT})
+	assert_eq(MainMenu.parse_launch(PackedStringArray(["--verbose", "--host=24605"])), {"host": 24605})
+	assert_eq(MainMenu.parse_launch(PackedStringArray(["--host=abc"])), {})
+	assert_eq(MainMenu.parse_launch(PackedStringArray()), {})
