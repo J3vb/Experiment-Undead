@@ -62,8 +62,9 @@ already reads `InputFrame`s, so the server could replay them.
    the owner. Hit markers are immediate; kill markers follow synced DEAD
    within 0.5 s of the owner's last hit. One unreliable cosmetic packet per
    shot relays muzzle origin and pellet endpoints through the server.
-4. **Player health and death:** zombie hits, down, revive (50 points), game
-   over when everyone is down, results on every client.
+4. **Player health and death — done:** server health snapshots, 30 s bleed-out,
+   sidearm crawl, 3 s revives within 1.5 m (50 points), teammate spectating,
+   next-round pistol respawns, and shared results when the connected squad is down.
 5. **Run end and saves** (XP and handshake done; loot waits for L3): owner-only
    reliable final XP grants bank through `bank_run_xp` into the client's own
    character file. Live owner XP snapshots survive a mid-run disconnect; the

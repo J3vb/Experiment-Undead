@@ -36,6 +36,7 @@ var _profile_player: Player
 var _quitting: bool = false
 var _auto_accept_quit: bool = true
 var _connection_lost: bool = false
+var _match_stats: Dictionary = {}
 
 @onready var director: WaveDirector = $WaveDirector
 @onready var economy: Economy = $Economy
@@ -63,14 +64,8 @@ func _ready() -> void:
 	Events.enemy_killed.connect(_on_enemy_killed)
 	_setup_handshake()
 
-	var join_error: Error = Net.start_pending_join()
-	if join_error != OK:
-		Log.warn(&"net", &"join_failed", {"error": error_string(join_error)})
-		_on_connection_lost()
+	if not _setup_network():
 		return
-	multiplayer.server_disconnected.connect(_on_connection_lost, CONNECT_DEFERRED)
-	multiplayer.connection_failed.connect(_on_connection_lost, CONNECT_DEFERRED)
-	multiplayer.peer_authentication_failed.connect(_on_authentication_failed, CONNECT_DEFERRED)
 	_auto_accept_quit = get_tree().auto_accept_quit
 	if Net.is_online():
 		get_tree().auto_accept_quit = false
@@ -109,6 +104,19 @@ func _setup_level() -> void:
 	players.setup(level, level.get_player_spawn())
 
 
+func _setup_network() -> bool:
+	var join_error: Error = Net.start_pending_join()
+	if join_error != OK:
+		Log.warn(&"net", &"join_failed", {"error": error_string(join_error)})
+		_on_connection_lost()
+		return false
+	multiplayer.server_disconnected.connect(_on_connection_lost, CONNECT_DEFERRED)
+	multiplayer.connection_failed.connect(_on_connection_lost, CONNECT_DEFERRED)
+	multiplayer.peer_authentication_failed.connect(_on_authentication_failed, CONNECT_DEFERRED)
+	multiplayer.peer_disconnected.connect(_on_peer_left)
+	return true
+
+
 func _setup_shooting() -> void:
 	hit_claims = HitClaims.new()
 	hit_claims.name = "HitClaims"
@@ -121,7 +129,7 @@ func _setup_shooting() -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	if not get_tree().paused:
+	if not get_tree().paused and not is_over:
 		tick += 1
 
 
@@ -147,13 +155,16 @@ func _on_player_added(player: Player) -> void:
 		var loadout: Variant = _profile.to_dict().get("loadout", {})
 		if loadout is Dictionary:
 			ItemLoadout.apply(player, loadout)
+	if is_over and multiplayer.is_server():
+		_receive_match_end.rpc_id(player.net_id, _match_stats)
+
 	remote_shots.watch_player(player)
 	_try_start()
 
 
 ## Waves start once the navmesh is baked and someone is playing.
 func _try_start() -> void:
-	if is_over:
+	if is_over or not multiplayer.is_server():
 		return
 	if director.phase == WaveDirector.Phase.IDLE and level.is_navigation_ready and not get_players().is_empty():
 		director.start()
@@ -179,7 +190,12 @@ func _on_authentication_failed(peer_id: int) -> void:
 func get_players() -> Array[Player]:
 	var out: Array[Player] = []
 	for node: Node in get_tree().get_nodes_in_group(&"players"):
-		out.append(node as Player)
+		var player: Player = node as Player
+		if player.session != self or player.is_queued_for_deletion():
+			continue
+		if multiplayer.is_server() and player.net_id != 1 and not multiplayer.get_peers().has(player.net_id):
+			continue
+		out.append(player)
 	return out
 
 
@@ -242,7 +258,7 @@ func bank_run_xp() -> void:
 
 ## Ends the match as a successful exfil: +50% XP for the whole run.
 func finish_exfil() -> void:
-	if is_over or not Net.is_authority():
+	if is_over or not multiplayer.is_server():
 		return
 	for player: Player in get_players():
 		progression.add_xp(player, progression.get_xp(player) / 2)
@@ -256,32 +272,66 @@ func _on_enemy_killed(_enemy: Node3D, info: DamageInfo) -> void:
 		_headshots += 1
 
 
-func _on_player_died(_player: Player) -> void:
-	for p: Player in get_players():
-		if p.is_alive():
+func _on_player_died(player: Player) -> void:
+	if player.session == self:
+		check_squad()
+
+
+func _on_peer_left(_peer_id: int) -> void:
+	check_squad.call_deferred()
+
+
+## Only connected squad members count; an empty dedicated server waits for players.
+func check_squad() -> void:
+	if is_over or not multiplayer.is_server():
+		return
+	var squad: Array[Player] = get_players()
+	if squad.is_empty():
+		return
+	for player: Player in squad:
+		if player.is_alive():
 			return
 	_end_match(false)
 
 
 func _end_match(exfiled: bool) -> void:
-	if is_over:
+	if is_over or not multiplayer.is_server():
 		return
-	is_over = true
-	director.stop()
 	bank_run_xp()
+	var squad: Array[Player] = get_players()
+	var player: Player = squad[0] if not squad.is_empty() else null
 	var stats: Dictionary = {
 		"round": director.round_number,
 		"kills": _kills,
 		"headshots": _headshots,
-		"points": get_players()[0].wallet.points if not get_players().is_empty() else 0,
-		"xp": progression.get_xp(get_players()[0]) if not get_players().is_empty() else 0,
+		"points": player.wallet.points if player else 0,
+		"xp": progression.get_xp(player),
 		"exfil": exfiled,
 		"start_total_xp": _start_total_xp,
 		"total_xp": progression.get_total_xp(_profile_player),
 	}
+	if not multiplayer.get_peers().is_empty():
+		_receive_match_end.rpc(stats)
+	else:
+		_receive_match_end(stats)
+
+
+@rpc("authority", "call_local", "reliable")
+func _receive_match_end(stats: Dictionary) -> void:
+	if is_over:
+		return
+	is_over = true
+	_match_stats = stats.duplicate()
+	if is_instance_valid(_profile_player):
+		_match_stats["xp"] = progression.get_xp(_profile_player)
+		_match_stats["start_total_xp"] = _start_total_xp
+		_match_stats["total_xp"] = progression.get_total_xp(_profile_player)
+	director.stop()
+	if not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
+		level.process_mode = Node.PROCESS_MODE_DISABLED
 	await get_tree().create_timer(restart_delay).timeout
 	_capture_mouse(false)
-	Events.game_over.emit(stats)
+	Events.game_over.emit(_match_stats)
 
 
 func _capture_mouse(captured: bool) -> void:
