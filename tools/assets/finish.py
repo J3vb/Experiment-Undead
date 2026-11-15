@@ -11,8 +11,11 @@
 
 import math
 
-import bmesh
 import bpy
+
+# isort: split
+# bpy must load before bmesh.
+import bmesh
 from mathutils import Vector
 
 SMOOTH_ANGLE = math.radians(35.0)
@@ -59,7 +62,7 @@ def _model_size(objs: list) -> float:
             for i in range(3):
                 lo[i] = min(lo[i], world[i])
                 hi[i] = max(hi[i], world[i])
-    return max(h - l for h, l in zip(hi, lo))
+    return max(h - low for h, low in zip(hi, lo, strict=True))
 
 
 def bake_ao(objs: list) -> None:
