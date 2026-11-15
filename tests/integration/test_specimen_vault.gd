@@ -89,7 +89,7 @@ func _hold_pool_except(skip: StringName) -> void:
 
 func test_nothing_to_roll_when_the_player_holds_the_whole_pool() -> void:
 	level.turn_power_on()
-	assert_eq(vault.pool.size(), 14, "Halcyon pool: 4 wall guns, 5 Vault guns, Fieldhand, Wren MP and 3 Prototypes")
+	assert_eq(vault.pool.size(), 17, "Halcyon pool: 4 wall guns, 8 Vault guns, Fieldhand, Wren MP and 3 Prototypes")
 	_hold_pool_except(&"")
 	assert_eq(vault.get_prompt(player), "")
 	vault.interact(player)

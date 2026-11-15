@@ -78,8 +78,13 @@ func test_each_peer_gets_a_player_it_owns() -> void:
 	assert_false(host.is_multiplayer_authority())
 	assert_eq(mine.net_id, client_id)
 	assert_true(mine.camera.current)
-	assert_false(mine.remote_body.visible)
-	assert_true(host.remote_body.visible, "other players show a body")
+	var geometry: GeometryInstance3D = mine.body.find_children("*", "GeometryInstance3D", true, false)[0]
+	assert_eq(geometry.cast_shadow, GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY)
+	assert_eq(geometry.layers, 1, "owner stays on the world layer so its shadow is rendered")
+	var remote_geometry: GeometryInstance3D = host.body.find_children("*", "GeometryInstance3D", true, false)[0]
+	assert_eq(remote_geometry.layers, 1)
+	assert_eq(remote_geometry.cast_shadow, GeometryInstance3D.SHADOW_CASTING_SETTING_ON)
+	assert_true(host.body.visible, "other players show a body")
 	assert_false(host.weapons.visible, "other players hide their first-person gun")
 	assert_false(host.is_physics_processing(), "only the owner simulates its player")
 	assert_ne(mine.position, host.position, "players spawn side by side")

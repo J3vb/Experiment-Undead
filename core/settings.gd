@@ -7,6 +7,7 @@ const DEFAULTS: Dictionary = {
 	&"controls": {&"mouse_sensitivity": 0.0022, &"ads_sensitivity_multiplier": 0.8, &"invert_y": false},
 	&"video": {&"fov": 110, &"max_fps": 0, &"vsync": false, &"show_fps": false},
 	&"audio": {&"master_volume": 1.0, &"music_volume": 0.8, &"sfx_volume": 1.0},
+	&"network": {&"last_address": "", &"last_port": 7777},
 }
 const AUDIO_BUSES: Dictionary = {&"master_volume": &"Master", &"music_volume": &"Music", &"sfx_volume": &"SFX"}
 
@@ -65,15 +66,20 @@ func _normalize(section: StringName, key: StringName, value: Variant) -> Variant
 	var fallback: Variant = DEFAULTS[section][key]
 	if fallback is bool:
 		return value if value is bool else fallback
+	if fallback is String:
+		return value.strip_edges() if value is String else fallback
 	if not (value is float or value is int) or not is_finite(float(value)):
 		return fallback
-	if section == &"audio":
-		return clampf(float(value), 0.0, 1.0)
-	if key == &"fov":
-		return clampi(int(value), 70, 120)
-	if key == &"max_fps":
-		return maxi(int(value), 0)
-	return maxf(float(value), 0.0)
+	var normalized: Variant = maxf(float(value), 0.0)
+	if key == &"last_port":
+		normalized = clampi(int(value), 1, 65535)
+	elif section == &"audio":
+		normalized = clampf(float(value), 0.0, 1.0)
+	elif key == &"fov":
+		normalized = clampi(int(value), 70, 120)
+	elif key == &"max_fps":
+		normalized = maxi(int(value), 0)
+	return normalized
 
 
 func _apply_all() -> void:
