@@ -46,11 +46,13 @@ var last_frame: InputFrame = InputFrame.new()
 var focus: Interactable
 ## Serums bought this run. Their multipliers are read through get_stat().
 var serums: Array[SerumData] = []
+var stats: StatBlock = StatBlock.new()
 
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _fallback_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _focus_query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.new()
 var _base_max_health: float = 100.0
+var _base_regen_delay: float = 0.0
 var _base_slots: int = 2
 var _sprint_cooldown_left: float = 0.0
 
@@ -75,6 +77,7 @@ func _ready() -> void:
 	wallet.points_changed.connect(_on_points_changed)
 	weapons.setup(self, camera)
 	_base_max_health = health.max_health
+	_base_regen_delay = health.regen_delay
 	_base_slots = weapons.max_slots
 	_focus_query.collision_mask = Layers.INTERACTABLE | Layers.WORLD
 	_focus_query.collide_with_areas = true
@@ -115,12 +118,21 @@ func take_damage(info: DamageInfo) -> void:
 		health.take_damage(info)
 
 
-## Product of every active Serum's multiplier for this stat (1.0 when none).
-func get_stat(stat: StringName) -> float:
+## Gear modifiers and the product of active Serum multipliers.
+func get_stat(stat: StringName, base: float = 1.0, other: StatBlock = null) -> float:
 	var value: float = 1.0
 	for serum: SerumData in serums:
 		value *= serum.multipliers.get(stat, 1.0)
-	return value
+	return ItemInstance.stat_value(stats, stat, base, other, value)
+
+
+func equip_gear(items: Array[Dictionary]) -> void:
+	stats = StatBlock.new()
+	for equipped: Dictionary in items:
+		var item: ItemInstance = ItemInstance.new(equipped)
+		for modifier: Modifier in item.stats.modifiers:
+			stats.add_modifier(modifier.stat, modifier.op, modifier.value, modifier.source)
+	_refresh_stats()
 
 
 func has_serum(id: StringName) -> bool:
@@ -134,12 +146,19 @@ func add_serum(serum: SerumData) -> void:
 	if serums.has(serum):
 		return
 	serums.append(serum)
-	var new_max: float = _base_max_health * get_stat(&"max_health")
+	_refresh_stats()
+	Events.serum_gained.emit(self, serum)
+
+
+func _refresh_stats() -> void:
+	var new_max: float = get_stat(&"max_health", _base_max_health)
 	var gained: float = new_max - health.max_health
 	health.max_health = new_max
+	health.current = minf(health.current, new_max)
 	health.heal(gained)
+	health.regen_delay = maxf(get_stat(&"regen_delay", _base_regen_delay), 0.001 if _base_regen_delay > 0.0 else 0.0)
 	weapons.max_slots = roundi(_base_slots * get_stat(&"weapon_slots"))
-	Events.serum_gained.emit(self, serum)
+	_on_health_changed(health.current, health.max_health)
 
 
 func get_rng() -> RandomNumberGenerator:
@@ -241,6 +260,7 @@ func _move(delta: float, frame: InputFrame) -> void:
 		speed *= crouch_speed_multiplier
 	speed *= lerpf(1.0, ads_speed_multiplier, weapons.get_ads_progress())
 	speed *= weapons.get_move_speed_multiplier()
+	speed *= get_stat(&"move_speed")
 
 	var wish: Vector3 = (transform.basis * Vector3(move_input.x, 0.0, move_input.y)).normalized() * speed
 	var horizontal: Vector3 = Vector3(velocity.x, 0.0, velocity.z)

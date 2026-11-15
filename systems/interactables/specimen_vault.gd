@@ -111,7 +111,7 @@ func _has_choice(player: Player) -> bool:
 
 func _holds(player: Player, gun: WeaponData) -> bool:
 	for held: Weapon in player.weapons.weapons:
-		if held.data == gun or held.data == gun.upgraded:
+		if held.data.id == gun.id or (gun.upgraded != null and held.data.id == gun.upgraded.id):
 			return true
 	return false
 
