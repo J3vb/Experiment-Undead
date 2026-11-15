@@ -13,12 +13,7 @@ INWARD = Vector((-0.287252039, -0.550451875, 0.783893526))
 REST_ACROSS, REST_ALONG, REST_INWARD = frames.rest_frame(-1)
 
 
-def _gun(point):
-    return frames.transform(point, SOURCE, ANCHOR, (REST_ACROSS, REST_ALONG, REST_INWARD), (ACROSS, ALONG, INWARD))
-
-
-def _source(point):
-    return frames.transform(point, ANCHOR, SOURCE, (ACROSS, ALONG, INWARD), (REST_ACROSS, REST_ALONG, REST_INWARD))
+_gun, _source = frames.converters(SOURCE, ANCHOR, (ACROSS, ALONG, INWARD), -1)
 
 
 def _curve(controls, count, converter=_source):

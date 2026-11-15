@@ -23,6 +23,35 @@ from player_arms_model import (
 )
 
 
+def test_mako_ring_finger_triangles_clear_the_actual_beveled_stop():
+    import build_models
+    import mako_model
+    import player_support_grips as support
+    from mathutils.bvhtree import BVHTree
+
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    mako_model.build(build_models)
+    bpy.context.view_layer.update()
+    stop = bpy.data.objects["Foregrip"]
+    stop.data.calc_loop_triangles()
+    obstacle = BVHTree.FromPolygons(
+        [stop.matrix_world @ vertex.co for vertex in stop.data.vertices],
+        [tuple(face.vertices) for face in stop.data.loop_triangles],
+        all_triangles=True,
+    )
+    across, _along, _inward = _frame(1)
+    root = Vector((0.675, -0.012, 0.985)) + across * 0.008
+    points = _finger_path(root, 1, 0.045, 2, "mako_pdw")
+    finger = _grip_tube("RingContact", points, _finger_radii(0.045, 2), stop.data.materials[0], 1)
+    finger.data.calc_loop_triangles()
+    surface = BVHTree.FromPolygons(
+        [support._mako_gun(finger.matrix_world @ vertex.co) for vertex in finger.data.vertices],
+        [tuple(face.vertices) for face in finger.data.loop_triangles],
+        all_triangles=True,
+    )
+    assert not surface.overlap(obstacle), "positive sampled distances must not hide a crossing triangle"
+
+
 @pytest.fixture
 def material():
     bpy.ops.wm.read_factory_settings(use_empty=True)

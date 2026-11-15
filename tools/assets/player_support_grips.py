@@ -13,16 +13,7 @@ SOURCE_CENTRE = Vector((0.675, -0.057, 0.985))
 GUN_CENTRE = Vector((0, 0.178, -0.040))
 
 
-def _mako_gun(point):
-    return frames.transform(
-        point, SOURCE_CENTRE, GUN_CENTRE, (SOURCE_ACROSS, SOURCE_ALONG, SOURCE_INWARD), (ACROSS, ALONG, INWARD)
-    )
-
-
-def _mako_source(point):
-    return frames.transform(
-        point, GUN_CENTRE, SOURCE_CENTRE, (ACROSS, ALONG, INWARD), (SOURCE_ACROSS, SOURCE_ALONG, SOURCE_INWARD)
-    )
+_mako_gun, _mako_source = frames.converters(SOURCE_CENTRE, GUN_CENTRE, (ACROSS, ALONG, INWARD), 1)
 
 
 def mako_finger(rifle_points, index):
@@ -30,6 +21,8 @@ def mako_finger(rifle_points, index):
     y = GUN_CENTRE.y + 0.032 - index * 0.018
     near = Vector((0.020 + 0.003 * index, y + 0.010, -0.060))
     points = [first, first.lerp(near, 0.5), near]
+    if index == 2:
+        points[1] += Vector((0.002, 0, -0.002))
     for x, dy, z in (
         (0.032 + 0.001 * index, 0.012, -0.048),
         (0.036, 0.011, -0.036),

@@ -14,8 +14,7 @@ ACROSS = INWARD.cross(ALONG)
 REST_ACROSS, REST_ALONG, REST_INWARD = frames.rest_frame(-1)
 
 
-def _gun(point):
-    return frames.transform(point, SOURCE, ANCHOR, (REST_ACROSS, REST_ALONG, REST_INWARD), (ACROSS, ALONG, INWARD))
+_gun = frames.converters(SOURCE, ANCHOR, (ACROSS, ALONG, INWARD), -1)[0]
 
 
 def _source(point, source=SOURCE, anchor=ANCHOR):
@@ -127,7 +126,7 @@ def thumb_path():
     )
 
 
-def ironwood_finger(start):
+def ironwood_finger(start, side_offsets=()):
     """Rest the long trigger finger along the lower frame, outside the guard."""
     controls = [
         (0.0356461, -0.16049998, -0.08828231),
@@ -145,4 +144,7 @@ def ironwood_finger(start):
         (0.0324461, -0.09329998, -0.05768231),
     ]
     source, anchor = Vector((-0.675, -0.048, 0.985)), Vector((0, -0.159, -0.122))
-    return [start, *[_source(Vector(point), source, anchor) for point in controls]]
+    points = [start, *[_source(Vector(point), source, anchor) for point in controls]]
+    for row, offset in enumerate(side_offsets):
+        points[row] -= REST_INWARD * (offset * min(1, row / 3))
+    return points

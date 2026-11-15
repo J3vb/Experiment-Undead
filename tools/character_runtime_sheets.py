@@ -24,6 +24,17 @@ CONTACTS = (
     "mako_pdw_l",
 )
 
+CONTACTS_NEW = (
+    "sentry_br3_l",
+    "cryo_lance_l",
+    "synapse_l",
+    "bastion_lmg_l",
+    "coachman_2b_r",
+    "coachman_2b_l",
+    "grubber_sawnoff_r",
+    "grubber_sawnoff_l",
+)
+
 
 def compose(before: Path, after: Path, output: Path) -> list[Path]:
     """Require all eight source images; preserve identical framing within each row."""
@@ -63,20 +74,21 @@ def main() -> None:
     for path in compose(args.before, args.after, args.output):
         print(path)
     if args.contacts:
-        print(compose_contacts(args.after, args.output))
+        print(compose_contacts(args.after, args.output, CONTACTS, "runtime_contacts.png"))
+        print(compose_contacts(args.after, args.output, CONTACTS_NEW, "runtime_contacts_new.png"))
 
 
-def compose_contacts(after: Path, output: Path) -> Path:
+def compose_contacts(after: Path, output: Path, views: tuple[str, ...], filename: str) -> Path:
     """Keep the source captions and framing in a compact supplemental contact sheet."""
-    rows = (len(CONTACTS) + 1) // 2
+    rows = (len(views) + 1) // 2
     sheet = Image.new("RGB", (CELL[0] * 2, CELL[1] * rows), "#10191c")
-    for index, name in enumerate(CONTACTS):
+    for index, name in enumerate(views):
         with Image.open(after / f"{name}.png") as image:
             if image.size != (1280, 720):
                 raise ValueError(f"Unexpected contact capture size {image.size}: {name}")
             cell = image.convert("RGB").resize(CELL, Image.Resampling.LANCZOS)
         sheet.paste(cell, ((index % 2) * CELL[0], (index // 2) * CELL[1]))
-    path = output / "runtime_contacts.png"
+    path = output / filename
     sheet.save(path, optimize=True)
     return path
 

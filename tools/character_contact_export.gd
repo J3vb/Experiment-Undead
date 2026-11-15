@@ -205,11 +205,19 @@ func test_export_actual_imported_contacts() -> void:
 		weapon._process(.05)
 		await _export(holder, "hip", directory)
 		weapon.aiming = true
-		weapon.tick(weapon.data.ads_time)
+		weapon.tick(weapon.data.ads_time * .5)
+		weapon._process(.05)
+		await _export(holder, "ads_mid", directory)
+		weapon.tick(weapon.data.ads_time * .5)
 		weapon._process(.05)
 		await _export(holder, "ads", directory)
 		_hip(weapon)
-		if id in [&"brenner_trench", &"fieldhand_lever"]:
+		weapon.sprinting = true
+		weapon.tick(1.0)
+		weapon._process(1.0)
+		await _export(holder, "sprint_peak", directory)
+		_hip(weapon)
+		if id in [&"brenner_trench", &"fieldhand_lever", &"coachman_2b", &"grubber_sawnoff", &"bastion_lmg"]:
 			weapon.fire()
 			weapon._process(.001)
 			await _export(holder, "shot_peak", directory)

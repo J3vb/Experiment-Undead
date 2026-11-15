@@ -13,16 +13,7 @@ SOURCE_CENTRE = Vector((0.675, -0.062, 0.985))
 GUN_CENTRE = Vector((-0.021, 0.219, 0.030))
 
 
-def gun(point):
-    return frames.transform(
-        point, SOURCE_CENTRE, GUN_CENTRE, (SOURCE_ACROSS, SOURCE_ALONG, SOURCE_INWARD), (ACROSS, ALONG, INWARD)
-    )
-
-
-def source(point):
-    return frames.transform(
-        point, GUN_CENTRE, SOURCE_CENTRE, (ACROSS, ALONG, INWARD), (SOURCE_ACROSS, SOURCE_ALONG, SOURCE_INWARD)
-    )
+gun, source = frames.converters(SOURCE_CENTRE, GUN_CENTRE, (ACROSS, ALONG, INWARD), 1)
 
 
 def finger_path(root, index, radii):

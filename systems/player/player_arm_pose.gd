@@ -31,11 +31,16 @@ func _init(skeleton: Skeleton3D) -> void:
 
 
 func pose(
-	profile: PlayerArmProfiles.Profile, weapon_transform: Transform3D, pump_delta: Vector3 = Vector3.ZERO
+	profile: PlayerArmProfiles.Profile,
+	weapon_transform: Transform3D,
+	pump_delta: Vector3 = Vector3.ZERO,
+	sprint: float = 0.0
 ) -> void:
 	var travel: Vector3 = weapon_transform.origin - profile.hip_position
-	_arm(0, profile.right, weapon_transform, Vector3.ZERO, _shoulder_offset(profile.right, travel))
-	_arm(1, profile.left, weapon_transform, pump_delta, _shoulder_offset(profile.left, travel))
+	var right_lift: Vector3 = _shoulder_offset(profile.right, travel) + profile.right.shoulder_sprint_offset * sprint
+	var left_lift: Vector3 = _shoulder_offset(profile.left, travel) + profile.left.shoulder_sprint_offset * sprint
+	_arm(0, profile.right, weapon_transform, Vector3.ZERO, right_lift)
+	_arm(1, profile.left, weapon_transform, pump_delta, left_lift)
 
 
 func _shoulder_offset(grip: PlayerArmProfiles.Hand, travel: Vector3) -> Vector3:

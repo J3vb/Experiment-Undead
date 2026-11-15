@@ -1,7 +1,7 @@
 # Characters — 2026-11-15
 
 Initial baseline: `109bb6d`, rebuilt before editing. Final comparisons use
-`5e5895f` so intervening gun and vest changes appear on both sides. Scores are 1–5; compare with
+`2865d38` so intervening gun and vest changes appear on both sides. Scores are 1–5; compare with
 `gear_sets.jpg`, `gear_fp.jpg`, `style_hub.jpg` and the rebuilt gun outlines.
 The guns set the bar for deliberate contours, edge treatment and material separation.
 
@@ -70,6 +70,14 @@ also catch reversed anatomy, twisted sweep rings, buried reinforcement, grip
 penetration and discontinuous elbow movement. Fingers use fixed authored curls;
 individual trigger pulls and magazine-handling animation remain deferred.
 
+Two stock contacts keep this review in draft: Coachman's right upper sleeve
+overlaps the stock by about 10 mm during sprint, and Bastion's right upper sleeve
+by about 12 mm at hip, mid-ADS and shot peak. Hand, wrist and cuff corrections
+remain in place; joint limits and collision checks have not been relaxed.
+Bastion uses an overhand brace at the receiver/barrel-base collar to route the
+support arm clear of its side ammunition box. Resolving the two remaining sleeve
+contacts is required before marking the character pass ready.
+
 | Model | Before: strip + Common/Legendary booth | After: strip + Common/Legendary booth |
 | --- | --- | --- |
 | Body | [Before](images/characters-2026-11-15/player_before.png) | [After](images/characters-2026-11-15/player_after.png) |
@@ -93,7 +101,7 @@ Actual lowered GearRig teammate poses at 30 m are also saved at native scale:
 [Legendary after](images/characters-2026-11-15/teammate_30m_after_legendary.png).
 At 110° horizontal FOV, the 1.80 m avatar is about 27 pixels tall in these captures.
 
-Gameplay comparisons use the original placeholder hands before and the imported
+Gameplay comparisons use the original viewmodels before and the imported
 rig after, with identical cameras and lighting. Each sheet includes Common and
 Legendary at hip (110° horizontal FOV) and ADS (the weapon's vertical FOV):
 [rifle](images/characters-2026-11-15/runtime_rifle_ar.png),
@@ -114,7 +122,13 @@ Legendary at hip (110° horizontal FOV) and ADS (the weapon's vertical FOV):
 [Nightjar](images/characters-2026-11-15/runtime_nightjar_sd.png),
 [Rampart](images/characters-2026-11-15/runtime_rampart_br.png),
 [Cryo Lance](images/characters-2026-11-15/runtime_cryo_lance.png),
-[Synapse](images/characters-2026-11-15/runtime_synapse.png).
+[Synapse](images/characters-2026-11-15/runtime_synapse.png),
+[Coachman](images/characters-2026-11-15/runtime_coachman_2b.png),
+[Grubber](images/characters-2026-11-15/runtime_grubber_sawnoff.png),
+[Bastion](images/characters-2026-11-15/runtime_bastion_lmg.png).
+Close-up contact sheets show the
+[stock, pistol and support grips](images/characters-2026-11-15/runtime_contacts.png) and
+[cage, angled-stop and double-barrel grips](images/characters-2026-11-15/runtime_contacts_new.png).
 
 Reproduce after building/importing the project:
 

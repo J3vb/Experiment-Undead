@@ -22,6 +22,9 @@ PROFILES = (
     "rampart_br",
     "cryo_lance",
     "synapse",
+    "bastion_lmg",
+    "coachman_2b",
+    "grubber_sawnoff",
 )
 SUPPORT_RADII = {
     "rifle_ar": 0.033,
@@ -43,15 +46,23 @@ SUPPORT_RADII = {
     "rampart_br": 0.042,
     "cryo_lance": 0.039,
     "synapse": 0.041,
+    "bastion_lmg": 0.038,
+}
+FLAT_SUPPORT_SECTIONS = {
+    "corvid_338": (0.030, 0.024, 0.048, 0.0),
+    "fieldhand_lever": (0.030, 0.024, 0.048, 0.0),
+    "coachman_2b": (0.030, 0.024, 0.048, 0.0),
+    "grubber_sawnoff": (0.0325, 0.024, 0.048, 0.0),
 }
 FIRING_SECTIONS = {
+    "bastion_lmg": (0.024, 0.021, 0.048, math.radians(49)),
     "sentry_br3": (0.0215, 0.0169, 0.046, math.radians(48)),
     "nightjar_sd": (0.024, 0.0175, 0.045, math.radians(45.5)),
     "rampart_br": (0.0265, 0.01925, 0.048, math.radians(50.9)),
     "cryo_lance": (0.0245, 0.0195, 0.048, math.radians(48.5)),
     "synapse": (0.0255, 0.017, 0.047, math.radians(47.9)),
 }
-EXTENDED_INDEX_PROFILES = ("ironwood_50", *FIRING_SECTIONS)
+EXTENDED_INDEX_PROFILES = ("ironwood_50", "siphon", *FIRING_SECTIONS)
 FIRING_SECTIONS.update(
     {
         "fieldhand_lever": (0.026, 0.0185, 0.055, math.atan2(0.34, 0.94) + math.pi / 6),
@@ -60,6 +71,8 @@ FIRING_SECTIONS.update(
         "siphon": (0.028, 0.022, 0.048, math.atan2(0.25, 0.968) + math.pi / 6),
         "corvid_338": (0.024, 0.031, 0.054, math.atan2(0.15, 0.9887) + math.pi / 6),
         "pistol_service": (0.029, 0.0185, 0.045, -math.asin(0.2079) + math.pi / 6),
+        "coachman_2b": (0.026, 0.0185, 0.046, math.atan2(0.34, 0.94) + math.pi / 6),
+        "grubber_sawnoff": (0.026, 0.0195, 0.048, math.pi / 3),
     }
 )
 
@@ -73,8 +86,8 @@ def section(profile, gap):
             return 0.041, 0.041, 0.074, 0.0
         if profile in ("ironwood_50", "rampart_br"):
             return 0.0435, 0.0435, 0.066, 0.0
-        if profile in ("corvid_338", "fieldhand_lever"):
-            return 0.030, 0.024, 0.048, 0.0
+        if profile in FLAT_SUPPORT_SECTIONS:
+            return FLAT_SUPPORT_SECTIONS[profile]
         radius = SUPPORT_RADII[profile]
         return radius, radius, 0.057 + radius - 0.033, 0.0
     return FIRING_SECTIONS.get(profile, (0.026, 0.0185, 0.045, math.atan2(0.34, 0.94) + math.pi / 6))
@@ -86,7 +99,7 @@ def end_angle(profile, gap):
         return 1.05
     if gap == 0.045 and profile == "ironwood_50":
         return -0.30
-    return 0.15 if gap == 0.045 and profile in ("corvid_338", "brenner_trench", "fieldhand_lever") else 0.65
+    return 0.15 if gap == 0.045 and (profile in FLAT_SUPPORT_SECTIONS or profile == "brenner_trench") else 0.65
 
 
 def finger_angle(profile, gap, index):

@@ -18,7 +18,10 @@ var _out: String
 func _ready() -> void:
 	var args: PackedStringArray = OS.get_cmdline_user_args()
 	_out = args[0] if not args.is_empty() else "res://screenshots/character_review"
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_out))
+	if DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_out)) != OK:
+		push_error("Cannot create character inspection directory: " + _out)
+		get_tree().quit(1)
+		return
 	get_window().size = Vector2i(1280, 720)
 	get_window().content_scale_size = Vector2i(1280, 720)
 	get_window().content_scale_mode = Window.CONTENT_SCALE_MODE_VIEWPORT
@@ -55,6 +58,8 @@ func _shot(name: String, caption: String) -> void:
 	if error != OK:
 		push_error("Cannot save character inspection: " + path)
 		get_tree().quit(1)
+		# Stop the coroutine before a caller can replace the failure exit code.
+		await get_tree().process_frame
 
 
 func _capture() -> void:

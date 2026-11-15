@@ -23,6 +23,9 @@ const IDS: Array[StringName] = [
 	&"rampart_br",
 	&"cryo_lance",
 	&"synapse",
+	&"coachman_2b",
+	&"grubber_sawnoff",
+	&"bastion_lmg",
 ]
 const RIGHT: Dictionary[StringName, Vector3] = {
 	&"rifle_ar": Vector3(0, -.129, -.111),
@@ -35,7 +38,7 @@ const RIGHT: Dictionary[StringName, Vector3] = {
 	&"pistol_service": Vector3(0, -.046, -.064),
 	&"corvid_338": Vector3(0, -.110, -.095),
 	&"brenner_trench": Vector3(0, -.134, -.020),
-	&"fieldhand_lever": Vector3(0, -.145, -.050),
+	&"fieldhand_lever": Vector3(-.008, -.145, -.050),
 	&"ironwood_50": Vector3(0, -.159, -.122),
 	&"wren_mp": Vector3(.002, -.067, -.073),
 	&"siphon": Vector3(0, -.108, -.127),
@@ -44,6 +47,9 @@ const RIGHT: Dictionary[StringName, Vector3] = {
 	&"rampart_br": Vector3(0, -.1555, -.119),
 	&"cryo_lance": Vector3(0, -.126, -.100),
 	&"synapse": Vector3(0, -.1335, -.098),
+	&"coachman_2b": Vector3(0, -.140, -.015),
+	&"grubber_sawnoff": Vector3(0, -.121, -.067),
+	&"bastion_lmg": Vector3(0, -.1445, -.123),
 }
 const LEFT: Dictionary[StringName, Vector3] = {
 	&"rifle_ar": Vector3(0, .220, .016),
@@ -65,6 +71,9 @@ const LEFT: Dictionary[StringName, Vector3] = {
 	&"rampart_br": Vector3(0, .210, .016),
 	&"cryo_lance": Vector3(-.030, .205, .035),
 	&"synapse": Vector3(0, .195, .024),
+	&"coachman_2b": Vector3(0, .155, .005),
+	&"grubber_sawnoff": Vector3(0, .115, -.009),
+	&"bastion_lmg": Vector3(-.045, .210, .045),
 }
 
 static var _geometry: Dictionary = {}
@@ -80,6 +89,8 @@ class Hand:
 	## Maximum vertical and fore/aft accommodation while the weapon rises.
 	var shoulder_lift: Vector2 = Vector2(.07, .112)
 	var shoulder_drop: float = 0.0
+	## Camera-space shoulder offset blended by the weapon’s existing sprint progress.
+	var shoulder_sprint_offset: Vector3 = Vector3.ZERO
 	var source_index: Vector3
 	var source_thumb: Vector3
 
@@ -108,16 +119,18 @@ static func profile(weapon_id: StringName) -> Profile:
 	result.id = id
 	result.morph = StringName(source["morph"])
 	result.hip_position = (load("res://content/weapons/%s.tres" % id) as WeaponData).hip_position
-	var stock: bool = id in [&"brenner_trench", &"fieldhand_lever"]
+	var stock: bool = id in [&"brenner_trench", &"coachman_2b"]
 	var handgun: bool = id in [&"hollis_44", &"pistol_service", &"wren_mp"]
 	var right_forward: Vector3 = Vector3(-.45, .8, sqrt(.1575)) if stock else Vector3(0, sqrt(.75), .5)
 	var right_dorsal: Vector3 = Vector3(.287252039, .550451875, -.783893526) if stock else Vector3.RIGHT
 	var right_shoulder: Vector3 = Vector3(.25, -.225, -.234) if stock else Vector3(.19, -.115, -.234)
 	if handgun:
 		right_shoulder = Vector3(.19, -.155, -.234)
+	if id == &"grubber_sawnoff":
+		right_shoulder = Vector3(.19, -.225, -.234)
 	if id == &"fieldhand_lever":
-		right_shoulder = Vector3(.24, -.26, -.155)
-		right_forward = Vector3(0, cos(deg_to_rad(20.0)), sin(deg_to_rad(20.0)))
+		right_shoulder = Vector3(.19, -.10, -.234)
+		right_forward = Vector3(-.1, .76220458746, .63956558704)
 		right_dorsal = Vector3.RIGHT
 	var left_forward: Vector3 = (
 		Vector3(.7, .49, sqrt(.2699)) if handgun else Vector3(.8 * sqrt(.96), .6 * sqrt(.96), .2)
@@ -133,16 +146,29 @@ static func profile(weapon_id: StringName) -> Profile:
 		left_shoulder = Vector3(-.115, .032, -.234)
 	elif id == &"siphon":
 		left_dorsal = Vector3(-.26310545, .60615542, -.75056720)
+	elif id == &"bastion_lmg":
+		left_forward = Vector3(.85, .487339705, .2)
+		left_dorsal = Vector3(-.173505515, -.099477805, .979795873)
+		left_shoulder = Vector3(-.155, .030, -.220)
 	elif id == &"rampart_br":
 		left_shoulder = Vector3(-.125, .030, -.234)
 	result.right = _hand("R", RIGHT[id], source["R"], right_forward, right_dorsal, right_shoulder)
 	result.left = _hand("L", LEFT[id], source["L"], left_forward, left_dorsal, left_shoulder)
-	if id == &"fieldhand_lever":
-		result.right.shoulder_sway = Vector2(1.0, .25)
-		result.right.shoulder_lift = Vector2(0, .004)
-		result.right.shoulder_drop = .35
+	_shoulder_motion(result)
 	result.support_part = ^"Shotgun/Receiver/Bolt" if id == &"brenner_trench" else NodePath()
 	return result
+
+
+static func _shoulder_motion(result: Profile) -> void:
+	if result.id == &"coachman_2b":
+		result.right.shoulder_lift = Vector2(.07, .038)
+	elif result.id == &"grubber_sawnoff":
+		result.right.shoulder_lift = Vector2(.07, .035)
+	elif result.id == &"bastion_lmg":
+		result.left.shoulder_sway = Vector2(.5, -.9)
+		result.left.shoulder_lift = Vector2(.055, .112)
+	if result.id in [&"brenner_trench", &"coachman_2b"]:
+		result.right.shoulder_sprint_offset = Vector3(0, -.04, -.10)
 
 
 static func _source(id: StringName) -> Dictionary:

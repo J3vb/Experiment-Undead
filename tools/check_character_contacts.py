@@ -326,7 +326,9 @@ def main() -> int:
     parser.add_argument("directory", type=Path, help="Directory written by character_contact_export.gd")
     args = parser.parse_args()
     paths = sorted(
-        path for phase in ("hip", "ads", "shot_peak", "reload_mid") for path in args.directory.glob(f"*-{phase}.json")
+        path
+        for phase in ("hip", "ads_mid", "ads", "sprint_peak", "shot_peak", "reload_mid")
+        for path in args.directory.glob(f"*-{phase}.json")
     )
     if not paths:
         parser.error("No exported contact snapshots found")

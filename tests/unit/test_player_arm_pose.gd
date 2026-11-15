@@ -26,3 +26,34 @@ func test_parallel_palm_and_reach_axes_keep_both_arm_segments_and_hand_targets()
 			var pose: Transform3D = skeleton.get_bone_global_pose(bone)
 			assert_almost_eq(start.distance_to(pose.origin), skeleton.get_bone_rest(bone).origin.length(), .00001)
 			assert_almost_eq(pose.basis.determinant(), 1.0, .0001)
+
+
+func test_stock_sprint_shoulders_advance_and_lower_without_losing_hand_contact() -> void:
+	for id: StringName in [&"brenner_trench", &"coachman_2b"]:
+		var camera: Camera3D = Camera3D.new()
+		add_child_autofree(camera)
+		var holder: WeaponHolder = WeaponHolder.new()
+		camera.add_child(holder)
+		holder.setup(null, camera)
+		holder.give(Content.weapon(id))
+		holder.set_process(false)
+		holder.current.set_process(false)
+		holder.arm_view.set_process(false)
+		var weapon: Weapon = holder.current
+		var skeleton: Skeleton3D = holder.arm_view.skeleton
+		var shoulder_bone: int = skeleton.find_bone("upperarm_R")
+		var hand_bone: int = skeleton.find_bone("hand_R")
+		var initial: Vector3 = skeleton.get_bone_global_pose(shoulder_bone).origin
+		for active: bool in [true, false]:
+			weapon.sprinting = active
+			weapon.tick(1.0)
+			weapon._process(1.0)
+			holder.arm_view.update_pose()
+			var shoulder: Vector3 = skeleton.get_bone_global_pose(shoulder_bone).origin
+			if active:
+				assert_lt(shoulder.z, initial.z - .07, String(id) + " shoulder advances beside the turned stock")
+				assert_lt(shoulder.y, initial.y - .02, String(id) + " shoulder lowers beneath the turned stock")
+			else:
+				assert_almost_eq(shoulder, initial, Vector3.ONE * .00001, String(id) + " hip shoulder returns exactly")
+			var target: Vector3 = weapon.transform * holder.arm_view.profile.right.wrist
+			assert_almost_eq(skeleton.get_bone_global_pose(hand_bone).origin, target, Vector3.ONE * .00001)

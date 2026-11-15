@@ -53,6 +53,7 @@ from player_grip_model import (
 from player_grip_model import (
     _thumb_path as _thumb_path,
 )
+from player_wrist_fit import add_wrist_variants
 
 
 def _materials():
@@ -110,7 +111,10 @@ def _fingers(armature, mats, side, sign, profile="rifle_ar", markers=True):
         finger = _grip_tube("GripFinger" + side, points, radii, mats["rubber"], sign)
         parts.append(finger)
         paint.zone(finger, paint.ZONE_ACCENT)
-        for joint in (4, 10) if side == "R" else (3, 6):
+        joints = (4, 10) if side == "R" else (3, 6)
+        if profile == "coachman_2b" and side == "R":
+            joints = {2: (5, 10), 3: (4, 7)}.get(index, joints)
+        for joint in joints:
             pad = _finger_pad(points, radii, joint, sign, mats["knit"])
             parts.append(pad)
             paint.zone(pad, paint.ZONE_ACCENT)
@@ -213,6 +217,7 @@ def build_player_arms():
         _stitching(mats, side, sign)
     _grip_variants(armature, mats, base, metadata)
     objects = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
+    add_wrist_variants(objects)
     _bind_parts(objects, armature)
     target = objects[0]
     join_into(target, objects[1:])

@@ -5,8 +5,10 @@ import math
 # isort: split
 import body_parts as soft
 import player_angled_grip as angled
+import player_belt_grip as belt
 import player_bipod_grip as bipod
 import player_cryo_grip as cryo
+import player_double_grips as double
 import player_emitter_grip as emitter
 import player_grip_frames as frames
 import player_grip_profiles as profiles
@@ -53,7 +55,7 @@ def _bore_point(centre, sign, gap, angle, radius, profile="rifle_ar"):
     axis, depth = _grip_axes(sign, gap, profile)
     half_length, half_depth, _offset, _angle = profiles.section(profile, gap)
     direction = along * math.cos(angle) + inward * math.sin(angle)
-    if gap == 0.045 and profile in ("corvid_338", "fieldhand_lever"):
+    if gap == 0.045 and profile in profiles.FLAT_SUPPORT_SECTIONS:
         horizontal = across * 0.6 + along * (0.8 * math.sqrt(0.96)) - inward * 0.16
         vertical = along * 0.2 + inward * math.sqrt(0.96)
         surface, normal = _shaped_section(direction, horizontal, vertical, (half_length, half_depth), 4)
@@ -89,7 +91,9 @@ def _finger_path(root, sign, diameter, index, profile="rifle_ar"):
     points = _standard_finger_path(root, sign, diameter, index, profile)
     if diameter == 0.032 and index == 0:
         if profile in profiles.EXTENDED_INDEX_PROFILES:
-            return precision.ironwood_finger(points[0])
+            wide = profile in ("bastion_lmg", "siphon")
+            offsets = [0.0025 + 0.6 * r for r in _finger_radii(diameter, index)] if wide else ()
+            return precision.ironwood_finger(points[0], offsets)
     return points
 
 
@@ -128,6 +132,8 @@ def _custom_finger(root, sign, gap, index, profile):
         return _support_finger(root, sign, gap, index, profile)
     if profile in pistol.PATHS:
         return pistol.finger_path(profile, index)
+    if profile in double.FRAMES:
+        return double.finger_path(_finger_path(root, sign, gap, index)[0], index, profile)
     if gap == 0.032 and profile == "corvid_338":
         return precision.finger_path(_finger_path(root, sign, gap, index)[0], index)
     if gap == 0.032 and profile == "fieldhand_lever":
@@ -140,6 +146,8 @@ def _custom_finger(root, sign, gap, index, profile):
 def _support_finger(root, sign, gap, index, profile):
     if profile == "sentry_br3":
         return angled.finger_path(index)
+    if profile == "bastion_lmg":
+        return belt.finger_path(index)
     if profile == "cryo_lance":
         return cryo.finger_path(
             _standard_finger_path(root, sign, gap, index, profile), _finger_radii(gap, index, profile), index
@@ -175,7 +183,7 @@ def _firing_curl(points, sign, index, profile="rifle_ar"):
 
 
 def _finger_radii(gap, index, profile="rifle_ar"):
-    if gap == 0.032 and profile == "fieldhand_lever":
+    if gap == 0.032 and (profile == "fieldhand_lever" or profile in double.FRAMES):
         return lever.finger_radii(index)
     if gap == 0.032 and profile == "corvid_338":
         return precision.finger_radii(index)
@@ -288,6 +296,8 @@ def _custom_thumb(index_tip, gap, profile):
     if gap == 0.045:
         return _support_thumb(profile)
     if gap == 0.032:
+        if profile in double.FRAMES:
+            return double.thumb_path(profile)
         if profile in pistol.PATHS:
             return pistol.thumb_path(profile)
         if profile == "corvid_338":
@@ -304,6 +314,7 @@ def _custom_thumb(index_tip, gap, profile):
 def _support_thumb(profile):
     fixed = {
         "sentry_br3": angled.thumb_path,
+        "bastion_lmg": belt.thumb_path,
         "cryo_lance": cryo.thumb_path,
         "mako_pdw": support.mako_thumb,
         "halberd_lmg": bipod.thumb_path,
@@ -322,6 +333,6 @@ def _extended_thumb(profile):
     root = Vector((-0.675, -0.017, 0.985)) - across * 0.024
     index = _standard_finger_path(root, -1, 0.032, 0, profile)[-1]
     points = _standard_thumb_path(index, _grip_centre(root, -1, 0.032, profile), -1, 0.032, profile)
-    if profile == "rampart_br":
+    if profile in ("rampart_br", "bastion_lmg"):
         points[-1] = points[-2].lerp(points[-1], 0.35)
     return points

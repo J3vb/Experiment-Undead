@@ -23,8 +23,9 @@ def test_frame_conversion_rotates_both_hands_without_reflecting_or_scaling(sign,
     axes = frames.rest_frame(sign)
     rotation = Quaternion((0, 0, 1), math.pi / 2)
     target_axes = tuple(rotation @ axis for axis in axes)
+    to_weapon, to_rest = frames.converters(origin, target, target_axes, sign)
     point = origin + Vector(offset)
-    placed = frames.transform(point, origin, target, axes, target_axes)
+    placed = to_weapon(point)
     reference = bpy.data.objects.new("ExpectedRotation", None)
     bpy.context.collection.objects.link(reference)
     reference.location = target
@@ -32,5 +33,5 @@ def test_frame_conversion_rotates_both_hands_without_reflecting_or_scaling(sign,
     bpy.context.view_layer.update()
     expected = reference.matrix_world @ Vector(offset)
     assert (placed - expected).length < 1e-7
-    restored = frames.transform(placed, target, origin, target_axes, axes)
+    restored = to_rest(placed)
     assert (restored - point).length < 1e-7

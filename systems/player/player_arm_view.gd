@@ -92,7 +92,7 @@ func update_pose() -> void:
 	if not visible or not is_visible_in_tree():
 		return
 	var pump_delta: Vector3 = weapon.to_local(_support.global_position) - _support_rest if _support else Vector3.ZERO
-	_solver.pose(profile, weapon.transform, pump_delta)
+	_solver.pose(profile, weapon.transform, pump_delta, weapon._sprint_progress)
 
 
 func _attach_cuffs() -> void:
