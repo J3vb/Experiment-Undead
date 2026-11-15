@@ -12,6 +12,8 @@ const GUNS: Dictionary[String, String] = {
 	"atlas_auto": "atlas_auto",
 	"halberd_lmg": "halberd_lmg",
 	"corvid_338": "corvid_338",
+	"fieldhand_lever": "fieldhand_lever",
+	"ironwood_50": "ironwood_50",
 	"coachman_2b": "coachman_2b",
 	"grubber_sawnoff": "grubber_sawnoff",
 }

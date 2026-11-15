@@ -226,6 +226,8 @@ MODELS = {
     "atlas_auto": ("weapons/atlas_auto.glb", gun("atlas_model")),
     "halberd_lmg": ("weapons/halberd_lmg.glb", gun("halberd_model")),
     "corvid_338": ("weapons/corvid_338.glb", gun("corvid_model")),
+    "fieldhand_lever": ("weapons/fieldhand_lever.glb", gun("fieldhand_model")),
+    "ironwood_50": ("weapons/ironwood_50.glb", gun("ironwood_model")),
     "coachman_2b": ("weapons/coachman_2b.glb", gun("coachman_model")),
     "grubber_sawnoff": ("weapons/grubber_sawnoff.glb", gun("grubber_model")),
     "shambler": ("zombies/shambler.glb", zombie_model.build_shambler),
