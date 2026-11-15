@@ -24,6 +24,8 @@ var level: Level
 var spawner: Spawner
 var players: PlayerSpawner
 var handshake: Handshake
+var hit_claims: HitClaims
+var remote_shots: RemoteShots
 var is_over: bool = false
 var _kills: int = 0
 var _headshots: int = 0
@@ -94,6 +96,7 @@ func _setup_level() -> void:
 	spawner.session = self
 	level.add_child(spawner)
 	director.spawner = spawner
+	_setup_shooting()
 
 	players = PlayerSpawner.new()
 	players.name = "PlayerSpawner"
@@ -104,6 +107,17 @@ func _setup_level() -> void:
 	if not level.is_navigation_ready:
 		level.navigation_ready.connect(_try_start, CONNECT_ONE_SHOT)
 	players.setup(level, level.get_player_spawn())
+
+
+func _setup_shooting() -> void:
+	hit_claims = HitClaims.new()
+	hit_claims.name = "HitClaims"
+	hit_claims.session = self
+	add_child(hit_claims)
+	remote_shots = RemoteShots.new()
+	remote_shots.name = "RemoteShots"
+	remote_shots.session = self
+	add_child(remote_shots)
 
 
 func _physics_process(_delta: float) -> void:
@@ -129,6 +143,11 @@ func _on_player_added(player: Player) -> void:
 		progression.set_start_total(player, _start_total_xp)
 		_profile_player = player
 	player.spawn(self, starting_loadout)
+	if player == _profile_player and _profile:
+		var loadout: Variant = _profile.to_dict().get("loadout", {})
+		if loadout is Dictionary:
+			ItemLoadout.apply(player, loadout)
+	remote_shots.watch_player(player)
 	_try_start()
 
 

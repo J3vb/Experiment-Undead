@@ -56,7 +56,12 @@ already reads `InputFrame`s, so the server could replay them.
    on the command line. Test: a real headless server plus two clients see two
    players.
 2. **Zombies on clients** (done): `ZombieSync` replicates spawned zombies; clients run no AI.
-3. **Shooting:** hit claims to the server, damage, kills, points per player.
+3. **Shooting** (done): owners trace locally and claim hits; `HitClaims` checks
+   living sender/target, weapon range, damage and per-player/weapon claim rate
+   before applying normal server damage, kills, points and XP. Points sync to
+   the owner. Hit markers are immediate; kill markers follow synced DEAD
+   within 0.5 s of the owner's last hit. One unreliable cosmetic packet per
+   shot relays muzzle origin and pellet endpoints through the server.
 4. **Player health and death:** zombie hits, down, revive (50 points), game
    over when everyone is down, results on every client.
 5. **Run end and saves** (XP and handshake done; loot waits for L3): owner-only

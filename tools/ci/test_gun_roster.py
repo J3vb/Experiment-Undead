@@ -43,7 +43,7 @@ class GunRosterTest(unittest.TestCase):
         self.assertEqual(len(set(ids)), 22)
 
     def test_designed_guns_match_weapons_csv(self) -> None:
-        designed = [row for row in self.roster if row["Status"] == "designed"]
+        designed = [row for row in self.roster if row["Status"] in {"designed", "built"}]
         self.assertEqual({row["id"] for row in designed}, set(self.weapons))
         for row in designed:
             for column in SHARED:
