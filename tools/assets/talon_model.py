@@ -27,7 +27,6 @@ def upper(metal, black, grey):
             turn=flat,
         ),
         g.lathe("HandguardNose", [(0.024, 0.495), (0.024, 0.505)], (0, 0, BORE_Z), black, 16),
-        g.slab("EjectionPort", g.rounded(-0.03, 0.006, 0.06, 0.038, 0.004), 0.002, black, x=0.029),
         g.slab(
             "Deflector",
             [(-0.075, 0.004), (-0.04, 0.004), (-0.04, 0.034), (-0.055, 0.046), (-0.075, 0.046)],
@@ -37,11 +36,12 @@ def upper(metal, black, grey):
             bevel=0.002,
         ),
     ]
-    side = 0.035 * math.cos(flat) + 0.0004
+    cuts = [g.lathe("GuardCore", [(0.027, 0.17), (0.027, 0.51)], (0, 0, BORE_Z), grey, 8, turn=flat)]
     for i in range(5):
         y = 0.205 + i * 0.056
-        for x in (-1, 1):
-            parts.append(g.slab(f"Slot{x}{i}", g.rounded(y, 0.008, y + 0.03, 0.024, 0.006), 0.002, black, x=x * side))
+        cuts.append(g.slab(f"SlotCut{i}", g.rounded(y, 0.008, y + 0.03, 0.024, 0.006), 0.09, grey))
+    g.cut(parts[2], cuts)
+    parts.append(g.lathe("InnerBarrel", [(0.012, 0.175), (0.012, 0.497)], (0, 0, BORE_Z), black, 12))
     return parts
 
 
@@ -203,20 +203,11 @@ def barrel_parts(m, receiver, metal, black):
     brake = g.lathe(
         "MuzzleBrake", [(0.016, 0.796), (0.018, 0.8), (0.018, 0.862), (0.016, 0.866)], (0, 0, BORE_Z), metal, 12
     )
-    ports = [g.lathe("Bore", [(0.007, 0.866), (0.007, 0.867)], (0, 0, BORE_Z), black, 12)]
-    for x in (-1, 1):
-        for i in range(3):
-            y = 0.806 + i * 0.019
-            ports.append(
-                g.slab(
-                    f"Port{x}{i}",
-                    g.rounded(y, BORE_Z - 0.009, y + 0.012, BORE_Z + 0.009, 0.004),
-                    0.002,
-                    black,
-                    x=x * 0.0175,
-                )
-            )
-    m.join_into(brake, ports)
+    cuts = [g.lathe("BoreCut", [(0.006, 0.79), (0.006, 0.875)], (0, 0, BORE_Z), metal, 12)]
+    for i in range(3):
+        y = 0.806 + i * 0.019
+        cuts.append(g.slab(f"PortCut{i}", g.rounded(y, BORE_Z - 0.007, y + 0.012, BORE_Z + 0.007, 0.003), 0.05, metal))
+    g.cut(brake, cuts)
     m.attach(brake, (0, 0.831, BORE_Z), barrel)
     bipod = g.slab("Bipod", g.rounded(0.39, -0.03, 0.425, -0.015, 0.004), 0.05, metal, bevel=0.002)
     legs = []
@@ -252,7 +243,7 @@ def moving_parts(m, receiver, metal, black, grey):
     m.join_into(magazine, pieces)
     m.attach(magazine, (0, 0.065, -0.065), receiver)
     magazine.rotation_euler.x = 0.08
-    bolt = g.slab("Bolt", g.rounded(-0.025, 0.01, 0.055, 0.034, 0.003), 0.002, metal, x=0.0305)
+    bolt = g.slab("Bolt", g.rounded(-0.025, 0.01, 0.055, 0.034, 0.003), 0.002, metal, x=0.025)
     m.attach(bolt, (0.0305, 0.015, 0.022), receiver)
     knob = [(0.004, 0.03), (0.004, 0.048), (0.008, 0.05), (0.008, 0.062), (0.006, 0.064)]
     handle = g.lathe("ChargingHandle", knob, (0, -0.035, 0.025), black, 12, axis="x")
@@ -279,8 +270,12 @@ def build_talon_dmr(m) -> None:
         metal,
         bevel=0.002,
     )
+    g.cut(receiver, [g.slab("PortCut", g.rounded(-0.03, 0.006, 0.06, 0.038, 0.004), 0.02, metal, x=0.032)])
     m.join_into(receiver, upper(metal, black, grey) + lower(metal, black, grey))
     precision_stock(m, receiver, metal, black, grey)
     scope_parts(m, receiver, metal, black, glass)
     barrel_parts(m, receiver, metal, black)
     moving_parts(m, receiver, metal, black, grey)
+    for side in (-1, 1):
+        inlay = g.slab("Inlay", g.rounded(-0.15, 0.041, 0.145, 0.043, 0.001), 0.001, metal, x=side * 0.0282)
+        m.join_into(receiver, [g.mark_inlay(inlay)])

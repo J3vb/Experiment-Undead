@@ -1,6 +1,7 @@
 // One finish shader for every code-built gun. No textures: all detail comes from
 // object-space noise, so it never swims while the viewmodel moves.
-// Vertex colour from tools/assets/finish.py is the baked AO/cavity. Edge wear
+// Vertex RGB from tools/assets/finish.py is baked AO/cavity; alpha marks the
+// thin inlay (0) and ordinary surfaces (1), never transparency. Edge wear
 // follows convex curvature measured from how fast the normal bends on screen,
 // so it sits on bevels and rims, not on flat faces.
 // `finish` picks the surface: 0 bare metal, 1 black coating, 2 polymer, 3 wood.
@@ -17,9 +18,10 @@ uniform float roughness : hint_range(0.0, 1.0) = 0.7;
 uniform int finish : hint_range(0, 3) = 0;
 uniform bool knurled = false;
 uniform float wear : hint_range(0.0, 1.0) = 1.0;
-uniform vec3 bare_metal : source_color = vec3(0.42, 0.43, 0.44);
+uniform vec3 bare_metal : source_color = vec3(0.541176, 0.568627, 0.549020); // #8A918C
 uniform float knurl_pitch = 0.0012;
 uniform float edge_curvature = 160.0; // 1/m: bends sharper than this count as worn edges
+instance uniform vec4 rarity_color : source_color = vec4(0.850980, 0.850980, 0.823529, 1.0); // #D9D9D2
 
 varying vec3 obj_pos;
 varying vec3 obj_normal;
@@ -85,17 +87,17 @@ void fragment() {
 	// Fade sub-millimetre detail out with distance so it never shimmers.
 	float detail = clamp(1.0 - length(fwidth(p)) / 0.0015, 0.0, 1.0);
 
-	float edge = clamp(curvature(NORMAL, VERTEX) / edge_curvature, 0.0, 1.5) * wear;
-	float worn = smoothstep(0.55, 0.62, edge * 0.8 + (chips - 0.5) * 0.7);
-	vec3 color = albedo * mix(0.9, 1.08, blotch);
-	float rough = roughness + (blotch - 0.5) * 0.18;
+	float edge = clamp(curvature(NORMAL, VERTEX) / edge_curvature, 0.0, 1.0) * wear;
+	float worn = smoothstep(0.4, 0.9, edge) * smoothstep(0.35, 0.7, chips) * ao;
+	vec3 color = albedo * mix(0.96, 1.04, blotch);
+	float rough = roughness + (blotch - 0.5) * 0.1;
 	float metal = metallic;
 	float height = 0.0;
 
 	if (finish == METAL) {
 		float brushed = noise(vec3(p.x * 900.0, p.y * 900.0, p.z * 12.0));
-		rough += (brushed - 0.5) * 0.12;
-		color = mix(color, bare_metal, worn);
+		rough += (brushed - 0.5) * 0.065 * detail;
+		color = mix(color, bare_metal, worn * 0.6);
 		rough = mix(rough, 0.28, worn);
 	} else if (finish == COATED) {
 		color = mix(color, bare_metal * 0.8, worn);
@@ -109,7 +111,7 @@ void fragment() {
 	} else {
 		float rings = length(p.xy + vec2(0.0, 0.35)) * 180.0 + fbm(p * vec3(40.0, 40.0, 3.0)) * 8.0;
 		float grain = smoothstep(0.6, 1.0, abs(fract(rings) - 0.5) * 2.0) * mix(0.4, 1.0, blotch);
-		float pores = noise(vec3(p.x * 1400.0, p.y * 1400.0, p.z * 60.0));
+		float pores = mix(0.5, noise(vec3(p.x * 1400.0, p.y * 1400.0, p.z * 60.0)), detail);
 		color *= mix(1.1, 0.72, grain) * mix(0.94, 1.04, pores);
 		rough += grain * 0.12;
 		color = mix(color, color * 1.6, worn * 0.6);
@@ -120,10 +122,15 @@ void fragment() {
 	if (knurled) {
 		float k = knurl(p, obj_normal);
 		height += k * 0.00025 * detail;
-		color *= mix(0.7, 1.15, k);
-		rough = mix(rough, rough - 0.12, k);
+		color *= mix(1.0, mix(0.7, 1.15, k), detail);
+		rough -= k * 0.12 * detail;
 	}
 
+	float inlay = 1.0 - step(0.5, COLOR.a);
+	color = mix(color, rarity_color.rgb, inlay);
+	metal = mix(metal, 0.3, inlay);
+	rough = mix(rough, 0.42, inlay);
+	height *= 1.0 - inlay;
 	ALBEDO = color * ao;
 	METALLIC = metal;
 	ROUGHNESS = clamp(rough + (1.0 - ao) * 0.15, 0.05, 1.0);
