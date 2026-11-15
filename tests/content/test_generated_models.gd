@@ -266,3 +266,29 @@ func test_scope_display_sits_behind_the_rebuilt_eyepiece() -> void:
 		var rear: float = _rearmost_scope_z(gun, Transform3D.IDENTITY)
 		assert_lt(rear, SCOPE_LENS_Z, path + " eyepiece stays in front of the picture-in-picture lens")
 		gun.free()
+
+
+func _blocks_ray(node: Node, xform: Transform3D, from: Vector3, rear_only: bool) -> bool:
+	var here: Transform3D = xform
+	if node is Node3D:
+		here = xform * (node as Node3D).transform
+	if node is MeshInstance3D:
+		var faces: PackedVector3Array = (node as MeshInstance3D).mesh.get_faces()
+		for i: int in range(0, faces.size(), 3):
+			var hit: Variant = Geometry3D.ray_intersects_triangle(
+				from, Vector3.FORWARD, here * faces[i], here * faces[i + 1], here * faces[i + 2]
+			)
+			if hit != null and (not rear_only or (hit as Vector3).z > 0.0):
+				return true
+	for child: Node in node.get_children():
+		if _blocks_ray(child, here, from, rear_only):
+			return true
+	return false
+
+
+func test_kestrel_rear_sight_leaves_the_aiming_line_open() -> void:
+	var gun: Node3D = _load(KESTREL)
+	var ads: WeaponData = load("res://content/weapons/kestrel_smg.tres") as WeaponData
+	var eye: Vector3 = Vector3(0, -ads.ads_position.y, 0.5)
+	assert_false(_blocks_ray(gun, Transform3D.IDENTITY, eye, true), "nothing behind the receiver centre blocks the aim")
+	gun.free()
