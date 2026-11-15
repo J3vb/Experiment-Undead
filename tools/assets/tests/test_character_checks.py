@@ -125,6 +125,46 @@ def test_valid_character_passes(monkeypatch):
     assert check(monkeypatch, "characters", "test_character") == []
 
 
+@pytest.mark.parametrize("binding", ["none", "object_parent", "empty_modifier"])
+def test_unbound_character_mesh_fails(monkeypatch, binding):
+    obj, armature, _eyes = character()
+    obj.modifiers.clear()
+    if binding == "object_parent":
+        obj.parent = armature
+    elif binding == "empty_modifier":
+        obj.modifiers.new("Armature", "ARMATURE")
+    errors = check(monkeypatch, "characters", "test_character")
+    assert any("must be skinned or attached to a character rig bone" in error for error in errors)
+
+
+def test_rigid_character_mesh_attached_to_bone_needs_no_weights(monkeypatch):
+    obj, armature, _eyes = character()
+    world = obj.matrix_world.copy()
+    obj.modifiers.clear()
+    obj.vertex_groups.clear()
+    obj.parent = armature
+    obj.parent_type = "BONE"
+    obj.parent_bone = "pelvis"
+    obj.matrix_world = world
+    bpy.context.view_layer.update()
+    assert check(monkeypatch, "characters", "test_character") == []
+
+
+def test_bone_attachment_does_not_skip_skin_weight_checks(monkeypatch):
+    obj, armature, _eyes = character()
+    obj.parent = armature
+    obj.parent_type = "BONE"
+    obj.parent_bone = "pelvis"
+    obj.vertex_groups["pelvis"].add([0], 0.8, "REPLACE")
+    assert any("weights sum to 0.800" in error for error in check(monkeypatch, "characters", "test_character"))
+
+
+def test_standalone_rigid_gear_needs_no_armature(monkeypatch):
+    obj = cube()
+    assert obj.find_armature() is None
+    assert check(monkeypatch) == []
+
+
 def test_exported_character_passes_without_importer_bone_mesh(tmp_path):
     character()
     path = tmp_path / "characters" / "test_character.glb"

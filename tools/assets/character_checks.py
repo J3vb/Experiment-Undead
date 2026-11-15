@@ -48,6 +48,24 @@ def _check_vertex(obj, vertex, armature) -> list:
     return errors
 
 
+def _check_mesh_skin(obj, armatures: list, folder: str) -> list:
+    armature = next(
+        (modifier.object for modifier in obj.modifiers if modifier.type == "ARMATURE" and modifier.object is not None),
+        None,
+    )
+    if armature is None:
+        attached = obj.parent in armatures and obj.parent_type == "BONE" and obj.parent_bone in obj.parent.data.bones
+        if folder == "characters" and not attached:
+            return [f"{obj.name}: character mesh must be skinned or attached to a character rig bone"]
+        return []
+    errors = []
+    if armature not in armatures:
+        errors.append(f"{obj.name}: skin armature is missing from the model")
+    for vertex in obj.data.vertices:
+        errors += _check_vertex(obj, vertex, armature)
+    return errors
+
+
 def _check_skin(meshes: list, armatures: list, folder: str) -> list:
     errors = []
     if folder == "characters" and len(armatures) != 1:
@@ -55,12 +73,7 @@ def _check_skin(meshes: list, armatures: list, folder: str) -> list:
     for armature in armatures:
         errors += _check_armature(armature)
     for obj in meshes:
-        armature = obj.find_armature()
-        if armature is not None:
-            if armature not in armatures:
-                errors.append(f"{obj.name}: skin armature is missing from the model")
-            for vertex in obj.data.vertices:
-                errors += _check_vertex(obj, vertex, armature)
+        errors += _check_mesh_skin(obj, armatures, folder)
     return errors
 
 
