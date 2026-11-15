@@ -1,5 +1,5 @@
 ## Loot and saved item modifiers cannot add barrels to the Coachman or Grubber.
-## New rolls exclude magazine affixes; old saves retain their original data.
+## New rolls exclude magazine and fire-rate affixes; old saves retain their original data.
 extends GutTest
 
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
@@ -52,23 +52,25 @@ func test_extra_equipment_magazine_stats_cannot_expand_double_barrels() -> void:
 	assert_eq(extra.modifiers.size(), 2, "snapshotting does not consume equipment modifiers")
 
 
-func test_seeded_loot_rolls_exclude_magazine_affixes_for_double_barrels() -> void:
+func test_seeded_loot_excludes_magazine_and_fire_rate_on_double_barrels() -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.seed = 73021
-	var affix: AffixData = Content.get_item(&"loot", &"mag_pct") as AffixData
-	assert_has(affix.blocked_tags, &"double", "new loot must not advertise an unusable affix")
+	for affix_id: StringName in [&"mag_pct", &"fire_rate_pct"]:
+		var affix: AffixData = Content.get_item(&"loot", affix_id) as AffixData
+		assert_has(affix.blocked_tags, &"double", String(affix_id) + " is excluded by the roster")
 	for id: StringName in DOUBLES:
-		var magazine_rolls: int = 0
+		var blocked_rolls: Dictionary[String, int] = {"mag_pct": 0, "fire_rate_pct": 0}
 		var other_lines: int = 0
 		for rarity: StringName in [&"uncommon", &"rare", &"epic", &"legendary"]:
 			for sample: int in 32:
 				var rolled: Dictionary = ItemRoller.roll_weapon(rng, Content.weapon(id), rarity, 30)
 				for line: Array in rolled.aff:
-					if line[0] == "mag_pct":
-						magazine_rolls += 1
+					if blocked_rolls.has(line[0]):
+						blocked_rolls[line[0]] += 1
 					else:
 						other_lines += 1
-		assert_eq(magazine_rolls, 0, String(id) + " never rolls magazine capacity")
+		assert_eq(blocked_rolls["mag_pct"], 0, String(id) + " never rolls magazine capacity")
+		assert_eq(blocked_rolls["fire_rate_pct"], 0, String(id) + " never rolls fire rate")
 		assert_gt(other_lines, 0, "eligible loot affixes still roll")
 
 
@@ -101,3 +103,16 @@ func test_saved_grubber_magazine_roll_equips_as_a_two_shell_sidearm() -> void:
 	assert_eq(player.weapons.weapons[1], primary)
 	assert_eq(saved, before)
 	assert_eq(grubber.item.data, before)
+
+
+func test_automatic_rifles_can_still_roll_fire_rate_affixes() -> void:
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.seed = 73021
+	var rifle: WeaponData = Content.weapon(&"rifle_ar")
+	assert_eq(rifle.fire_mode, WeaponData.FireMode.AUTO)
+	var seen: Array[String] = []
+	for sample: int in 128:
+		var rolled: Dictionary = ItemRoller.roll_weapon(rng, rifle, &"legendary", 30)
+		for line: Array in rolled.aff:
+			seen.append(line[0])
+	assert_has(seen, "fire_rate_pct", "the exclusion applies only to the intended weapon tags")
