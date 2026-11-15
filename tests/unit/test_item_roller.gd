@@ -36,9 +36,12 @@ func test_counts_families_kind_limits_and_weapon_restrictions() -> void:
 	for id: StringName in Content.ids(&"weapons"):
 		var weapon: WeaponData = Content.weapon(id)
 		for rarity: StringName in [&"common", &"uncommon", &"rare", &"epic", &"legendary"]:
+			if ItemRoller.RARITIES.find(rarity) < ItemRoller.RARITIES.find(weapon.get_meta(&"min_rarity", &"common")):
+				assert_eq(ItemRoller.roll_weapon(rng, weapon, rarity, 30, 30), {})
+				continue
 			var data: RarityData = Content.get_item(&"loot", rarity) as RarityData
 			for sample: int in 60:
-				var item: Dictionary = ItemRoller.roll_weapon(rng, weapon, rarity, 30)
+				var item: Dictionary = ItemRoller.roll_weapon(rng, weapon, rarity, 30, 30)
 				assert_has(data.affix_count_weights, item.aff.size())
 				_check_lines(item, weapon)
 				var ammo: AffixData = Content.get_item(&"loot", item.imp[0]) as AffixData
