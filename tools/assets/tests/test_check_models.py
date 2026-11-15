@@ -9,11 +9,14 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import bpy  # noqa: E402,I001  bpy must load before bmesh
-import bmesh  # noqa: E402
-import build_models  # noqa: E402
-import check_models  # noqa: E402
-import pytest  # noqa: E402
+import bpy
+
+# isort: split
+# bpy must load before bmesh.
+import bmesh
+import build_models
+import check_models
+import pytest
 
 
 def broken(tmp_path, name: str, change=None, folder: str = "") -> list:
@@ -55,7 +58,11 @@ def test_fresh_build_passes(tmp_path, name):
 
 
 def test_flipped_normals(tmp_path):
-    errors = broken(tmp_path, "wall_panel", lambda o: edit_mesh(o["Stripe"], lambda bm: bmesh.ops.reverse_faces(bm, faces=bm.faces[:])))
+    errors = broken(
+        tmp_path,
+        "wall_panel",
+        lambda o: edit_mesh(o["Stripe"], lambda bm: bmesh.ops.reverse_faces(bm, faces=bm.faces[:])),
+    )
     assert has(errors, "Stripe: a closed part has inward normals")
 
 
@@ -80,14 +87,18 @@ def test_material_budget(tmp_path):
     def many_materials(objects):
         for i, obj in enumerate(o for o in objects if o.type == "MESH"):
             obj.data.materials[0] = build_models.material(f"Extra{i}", (0.1, 0.1, 0.1, 1.0))
-        extra = build_models.box("Extra", (0.1, 0.1, 0.1), (0, 0, 1), build_models.material("Extra9", (0.2, 0.2, 0.2, 1.0)))
+        extra = build_models.box(
+            "Extra", (0.1, 0.1, 0.1), (0, 0, 1), build_models.material("Extra9", (0.2, 0.2, 0.2, 1.0))
+        )
         extra.data.materials.append(build_models.material("Extra8", (0.3, 0.3, 0.3, 1.0)))
 
     assert has(broken(tmp_path, "wall_panel", many_materials), "materials, budget for kit is 4")
 
 
 def test_missing_material(tmp_path):
-    assert has(broken(tmp_path, "wall_panel", lambda o: o["Seam"].data.materials.clear()), "Seam: every mesh needs a material")
+    assert has(
+        broken(tmp_path, "wall_panel", lambda o: o["Seam"].data.materials.clear()), "Seam: every mesh needs a material"
+    )
 
 
 def test_unnamed_material(tmp_path):
@@ -114,7 +125,10 @@ def test_off_centre_kit_piece(tmp_path):
 
 
 def test_gun_origin_outside(tmp_path):
-    assert has(broken(tmp_path, "rifle_ar", lambda o: setattr(o["Receiver"], "location", (0, 2, 0))), "origin must sit inside the gun")
+    assert has(
+        broken(tmp_path, "rifle_ar", lambda o: setattr(o["Receiver"], "location", (0, 2, 0))),
+        "origin must sit inside the gun",
+    )
 
 
 def test_gun_facing_backwards(tmp_path):
