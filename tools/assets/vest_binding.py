@@ -23,8 +23,8 @@ def bind_torso(obj, armature):
                     amount = max(0.0, min(1.0, (point.z - lower) / (upper - lower)))
                     weights = {name: 1.0 - amount, following: amount}
                     break
-        for influence in list(vertex.groups):
-            obj.vertex_groups[influence.group].remove([vertex.index])
+        for group_index in [influence.group for influence in vertex.groups]:
+            obj.vertex_groups[group_index].remove([vertex.index])
         for name, weight in weights.items():
             if weight > 0:
                 obj.vertex_groups[name].add([vertex.index], weight, "REPLACE")

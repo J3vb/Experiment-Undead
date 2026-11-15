@@ -2,6 +2,7 @@
 
 import os
 import sys
+from types import SimpleNamespace
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -9,6 +10,7 @@ import bpy
 import character_rig
 import pytest
 import vest_binding
+from mathutils import Matrix, Vector
 
 
 def weights(obj, vertex):
@@ -65,3 +67,34 @@ def test_upper_shoulder_webbing_follows_its_clavicle_but_lower_straps_bend():
     assert values[0] == {"clavicle_L": 1.0}
     assert values[1] == {"clavicle_R": 1.0}
     assert values[2] == {"spine_03": 1.0}
+
+
+def test_group_indices_are_copied_before_removal_invalidates_borrowed_weights(monkeypatch):
+    borrowed = [SimpleNamespace(group=0), SimpleNamespace(group=1)]
+    removed, assigned = [], {}
+
+    def remove(indices):
+        removed.append(indices)
+        for influence in borrowed:
+            influence.group = 32
+
+    names = ("pelvis", "spine_01", "spine_02", "spine_03")
+    groups = {}
+    for index, name in enumerate(names):
+        group = SimpleNamespace(
+            remove=remove,
+            add=lambda _indices, weight, _mode, name=name: assigned.__setitem__(name, weight),
+        )
+        groups[index] = groups[name] = group
+    vertex = SimpleNamespace(index=0, co=Vector((0, -0.15, 1.225)), groups=borrowed)
+    obj = SimpleNamespace(
+        name="CarrierSamples",
+        matrix_world=Matrix.Identity(4),
+        vertex_groups=groups,
+        data=SimpleNamespace(vertices=[vertex]),
+    )
+    monkeypatch.setattr(character_rig, "bind", lambda *_args, **_kwargs: None)
+    vest_binding.bind_torso(obj, None)
+    assert removed == [[0], [0]], "both original influences are removed despite borrowed data invalidation"
+    assert set(assigned) == {"spine_01", "spine_02"}
+    assert sum(assigned.values()) == pytest.approx(1)
