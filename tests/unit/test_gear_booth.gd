@@ -39,3 +39,13 @@ func test_booth_accepts_lineup_and_dressed_character_modes() -> void:
 		var arguments: PackedStringArray = PackedStringArray(["--mode", mode, "--out", "screenshots/gear"])
 		assert_true(booth.call("_read_arguments", arguments), mode + " is a booth display mode")
 		assert_eq(booth.get("_mode"), mode)
+
+
+func test_single_rarity_capture_returns_a_typed_row() -> void:
+	var booth: Node3D = BOOTH.instantiate() as Node3D
+	autofree(booth)
+	for rarity: String in ["common", "legendary", "all"]:
+		booth.set("_rarity", rarity)
+		var rows: Array[String] = booth.call("_rarity_rows")
+		assert_eq(rows.size(), 6 if rarity == "all" else 1)
+		assert_eq(rows[0], "common" if rarity == "all" else rarity)
