@@ -226,6 +226,8 @@ MODELS = {
     "atlas_auto": ("weapons/atlas_auto.glb", gun("atlas_model")),
     "halberd_lmg": ("weapons/halberd_lmg.glb", gun("halberd_model")),
     "corvid_338": ("weapons/corvid_338.glb", gun("corvid_model")),
+    "cryo_lance": ("weapons/cryo_lance.glb", gun("cryo_lance_model")),
+    "synapse": ("weapons/synapse.glb", gun("synapse_model")),
     "sentry_br3": ("weapons/sentry_br3.glb", gun("sentry_model")),
     "nightjar_sd": ("weapons/nightjar_sd.glb", gun("nightjar_model")),
     "rampart_br": ("weapons/rampart_br.glb", gun("rampart_model")),

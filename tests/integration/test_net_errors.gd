@@ -5,11 +5,19 @@ const PORT: int = 24674
 const READY: String = "user://net_error_peer.ready"
 
 var _pid: int = -1
+var _handshake: Handshake
+
+
+func before_each() -> void:
+	_handshake = Handshake.new()
+	add_child(_handshake)
+	_handshake.setup()
 
 
 func after_each() -> void:
 	get_tree().multiplayer_poll = true
 	Net.leave()
+	_handshake.free()
 	Net.last_error.clear()
 	if _pid > 0 and OS.is_process_running(_pid):
 		OS.kill(_pid)
@@ -40,6 +48,7 @@ func _start_server(scenario: String) -> void:
 func _join_and_wait_for_error() -> void:
 	assert_eq(Net.join("127.0.0.1:%d" % PORT), OK)
 	await wait_until(func() -> bool: return not Net.last_error.is_empty(), 7.0, "a reason reached the client")
+	await wait_until(func() -> bool: return not Net.is_online(), 2.0, "the refused peer disconnected")
 
 
 func test_server_full_is_rejected_before_player_admission() -> void:

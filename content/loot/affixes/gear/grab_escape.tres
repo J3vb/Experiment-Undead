@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="AffixData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://systems/loot/affix_data.gd" id="1"]
+[ext_resource type="Script" path="res://systems/loot/affix_tier.gd" id="2"]
+
+[sub_resource type="Resource" id="tier_1"]
+script = ExtResource("2")
+min_ilvl = 1
+low = 15
+high = 20
+
+[sub_resource type="Resource" id="tier_2"]
+script = ExtResource("2")
+min_ilvl = 8
+low = 20
+high = 25
+
+[sub_resource type="Resource" id="tier_3"]
+script = ExtResource("2")
+min_ilvl = 15
+low = 25
+high = 30
+
+[sub_resource type="Resource" id="tier_4"]
+script = ExtResource("2")
+min_ilvl = 22
+low = 30
+high = 35
+
+[sub_resource type="Resource" id="tier_5"]
+script = ExtResource("2")
+min_ilvl = 30
+low = 35
+high = 40
+
+[resource]
+script = ExtResource("1")
+id = &"grab_escape"
+kind = "suffix"
+family = &"grab_escape"
+slots = Array[StringName]([&"vest"])
+min_ilvl = 1
+min_rarity = &"common"
+stat = &"grab_escape"
+op = "increased"
+tiers = Array[ExtResource("2")]([SubResource("tier_1"), SubResource("tier_2"), SubResource("tier_3"), SubResource("tier_4"), SubResource("tier_5")])
+weight = 60.0
+step = 1.0
+text = "Break free from grabs {v}% faster"

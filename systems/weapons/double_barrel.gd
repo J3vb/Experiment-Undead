@@ -27,6 +27,12 @@ static func consume_rounds(owner_weapon: Weapon, component: DoubleBarrel) -> int
 	return rounds
 
 
+## Normal bullet impulses only flinch; a stronger hit replaces the server body's velocity.
+static func apply_impulse(body: CharacterBody3D, info: DamageInfo) -> void:
+	if Net.is_authority() and info.impulse.length_squared() > 9.0:
+		body.velocity = info.impulse
+
+
 func buffer(remaining: float) -> float:
 	var held: bool = weapon.shooter != null and weapon.shooter.input_enabled and weapon.shooter.last_frame.has(ALT_FIRE)
 	var just_pressed: bool = held and not _held

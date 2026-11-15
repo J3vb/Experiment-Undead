@@ -23,6 +23,7 @@ var tick: int = 0
 var level: Level
 var spawner: Spawner
 var players: PlayerSpawner
+var handshake: Handshake
 var hit_claims: HitClaims
 var remote_shots: RemoteShots
 var is_over: bool = false
@@ -32,6 +33,9 @@ var _profile: CharacterProfile
 var _start_total_xp: int = 0
 var _xp_banked: bool = false
 var _profile_player: Player
+var _quitting: bool = false
+var _auto_accept_quit: bool = true
+var _connection_lost: bool = false
 var _match_stats: Dictionary = {}
 
 @onready var director: WaveDirector = $WaveDirector
@@ -52,15 +56,33 @@ func _ready() -> void:
 	director.rules = wave_rules
 	director.session = self
 	power_up_drops.session = self
-	if not profile_id.is_empty():
+	if has_local_player and not profile_id.is_empty():
 		_profile = CharacterProfile.load_or_create(profile_id)
 		_start_total_xp = _profile.total_xp
+	progression.run_xp_finalized.connect(bank_run_xp)
 	Events.player_died.connect(_on_player_died)
 	Events.enemy_killed.connect(_on_enemy_killed)
+	_setup_handshake()
 
 	if not _setup_network():
 		return
+	_auto_accept_quit = get_tree().auto_accept_quit
+	if Net.is_online():
+		get_tree().auto_accept_quit = false
+	_setup_level()
+	_capture_mouse(true)
 
+
+func _setup_handshake() -> void:
+	handshake = Handshake.new()
+	handshake.name = "Handshake"
+	handshake.has_local_player = has_local_player
+	handshake.max_players = Net.player_limit
+	add_child(handshake)
+	handshake.setup(_profile.display_name if _profile else "Survivor", _profile.level if _profile else 1)
+
+
+func _setup_level() -> void:
 	level = level_scene.instantiate() as Level
 	level.process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_child(level)
@@ -80,7 +102,6 @@ func _ready() -> void:
 	if not level.is_navigation_ready:
 		level.navigation_ready.connect(_try_start, CONNECT_ONE_SHOT)
 	players.setup(level, level.get_player_spawn())
-	_capture_mouse(true)
 
 
 func _setup_network() -> bool:
@@ -89,8 +110,9 @@ func _setup_network() -> bool:
 		Log.warn(&"net", &"join_failed", {"error": error_string(join_error)})
 		_on_connection_lost()
 		return false
-	multiplayer.server_disconnected.connect(_on_connection_lost)
-	multiplayer.connection_failed.connect(_on_connection_lost)
+	multiplayer.server_disconnected.connect(_on_connection_lost, CONNECT_DEFERRED)
+	multiplayer.connection_failed.connect(_on_connection_lost, CONNECT_DEFERRED)
+	multiplayer.peer_authentication_failed.connect(_on_authentication_failed, CONNECT_DEFERRED)
 	multiplayer.peer_disconnected.connect(_on_peer_left)
 	return true
 
@@ -112,6 +134,7 @@ func _physics_process(_delta: float) -> void:
 
 
 func _exit_tree() -> void:
+	get_tree().auto_accept_quit = _auto_accept_quit
 	if has_local_player:
 		Net.leave()
 
@@ -119,6 +142,8 @@ func _exit_tree() -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		bank_run_xp()
+		if Net.is_online():
+			quit_game()
 
 
 func _on_player_added(player: Player) -> void:
@@ -146,11 +171,20 @@ func _try_start() -> void:
 
 
 func _on_connection_lost() -> void:
+	if _connection_lost or not is_inside_tree():
+		return
+	_connection_lost = true
 	Log.warn(&"net", &"connection_lost", {})
+	bank_run_xp()
 	Net.leave()
 	if get_tree().current_scene == self:
 		get_tree().paused = false
 		get_tree().change_scene_to_file(MENU_SCENE)
+
+
+func _on_authentication_failed(peer_id: int) -> void:
+	if peer_id == 1:
+		_on_connection_lost()
 
 
 func get_players() -> Array[Player]:
@@ -192,16 +226,31 @@ func restart() -> void:
 
 
 func quit_game() -> void:
+	if _quitting:
+		return
+	_quitting = true
 	bank_run_xp()
+	await progression.wait_for_run_grants()
 	get_tree().quit()
 
 
 ## All match exits share this guard, including a restart after game over.
 func bank_run_xp() -> void:
-	if _xp_banked or not multiplayer.is_server():
+	if _xp_banked:
 		return
 	_xp_banked = true
-	if _profile == null or not is_instance_valid(_profile_player):
+	if (
+		is_inside_tree()
+		and progression.multiplayer.multiplayer_peer != null
+		and progression.multiplayer.multiplayer_peer.get_connection_status() != MultiplayerPeer.CONNECTION_DISCONNECTED
+		and progression.multiplayer.is_server()
+	):
+		for player: Player in get_players():
+			progression.finish_run(player)
+		var peer: ENetMultiplayerPeer = progression.multiplayer.multiplayer_peer as ENetMultiplayerPeer
+		if peer:
+			peer.host.flush()
+	if not has_local_player or _profile == null or not is_instance_valid(_profile_player):
 		return
 	_profile.total_xp += progression.get_xp(_profile_player)
 	_profile.save()
@@ -272,13 +321,17 @@ func _receive_match_end(stats: Dictionary) -> void:
 	if is_over:
 		return
 	is_over = true
-	_match_stats = stats
+	_match_stats = stats.duplicate()
+	if is_instance_valid(_profile_player):
+		_match_stats["xp"] = progression.get_xp(_profile_player)
+		_match_stats["start_total_xp"] = _start_total_xp
+		_match_stats["total_xp"] = progression.get_total_xp(_profile_player)
 	director.stop()
 	if not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
 		level.process_mode = Node.PROCESS_MODE_DISABLED
 	await get_tree().create_timer(restart_delay).timeout
 	_capture_mouse(false)
-	Events.game_over.emit(stats)
+	Events.game_over.emit(_match_stats)
 
 
 func _capture_mouse(captured: bool) -> void:

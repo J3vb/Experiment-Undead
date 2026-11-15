@@ -1,4 +1,4 @@
-## Seeded weapon loot as save/network dictionaries. Only the caller's RNG advances.
+## Seeded weapon and gear loot as save/network dictionaries. Only the caller's RNG advances.
 class_name ItemRoller
 extends RefCounted
 
@@ -18,7 +18,7 @@ static func roll_rarity(rng: RandomNumberGenerator, vault: bool, luck: float) ->
 static func roll_weapon(
 	rng: RandomNumberGenerator, weapon: WeaponData, rarity_id: StringName, item_level: int
 ) -> Dictionary:
-	if rarity_id == &"prototype":
+	if rarity_id == &"prototype" or weapon.loot_tags.has(&"prototype"):
 		push_error("ItemRoller: Prototypes are fixed items, not random weapon rolls")
 		return {}
 	var rarity: RarityData = Content.get_item(&"loot", rarity_id) as RarityData
@@ -33,6 +33,8 @@ static func roll_weapon(
 		var affix: AffixData = Content.get_item(&"loot", id) as AffixData
 		if affix == null:
 			continue
+		if not (affix.slots.has(&"primary") or affix.slots.has(&"sidearm")) or affix.min_ilvl > level:
+			continue
 		if affix.kind == "implicit":
 			ammo.append(affix)
 		else:
@@ -45,6 +47,39 @@ static func roll_weapon(
 		"ilvl": level,
 		"aff": _roll_affixes(rng, affixes, weapon.loot_tags, rarity, level),
 		"imp": _roll_ammo(rng, ammo, rarity_id),
+		"trait": null,
+		"set": null,
+		"craft": {},
+	}
+
+
+static func roll_gear(
+	rng: RandomNumberGenerator, base: GearBaseData, rarity_id: StringName, item_level: int
+) -> Dictionary:
+	if rarity_id == &"prototype":
+		push_error("ItemRoller: Prototypes are fixed items, not random gear rolls")
+		return {}
+	var rarity: RarityData = Content.get_item(&"loot", rarity_id) as RarityData
+	if rarity == null:
+		return {}
+	var level: int = clampi(item_level, 1, 50)
+	var ids: Array = Content.ids(&"loot")
+	ids.sort()
+	var affixes: Array[AffixData] = []
+	for id: StringName in ids:
+		var affix: AffixData = Content.get_item(&"loot", id) as AffixData
+		if affix == null or affix.kind == "implicit":
+			continue
+		if affix.slots.has(StringName(base.slot)) and affix.min_ilvl <= level:
+			affixes.append(affix)
+	return {
+		"v": 1,
+		"uid": "%08x-%08x-%08x-%08x" % [rng.randi(), rng.randi(), rng.randi(), rng.randi()],
+		"base": String(base.id),
+		"rar": String(rarity_id),
+		"ilvl": level,
+		"aff": _roll_affixes(rng, affixes, base.loot_tags, rarity, level),
+		"imp": null,
 		"trait": null,
 		"set": null,
 		"craft": {},

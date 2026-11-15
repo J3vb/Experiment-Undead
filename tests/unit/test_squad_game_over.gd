@@ -99,6 +99,34 @@ func test_squad_wipe_freezes_both_peers_and_shows_identical_results() -> void:
 	assert_true(server.hud.results_screen.visible)
 
 
+func test_squad_results_show_each_players_own_xp_and_totals() -> void:
+	var host: Player = server.players.find_player(1)
+	var client_id: int = client.multiplayer.get_unique_id()
+	var owner: Player = client.players.find_player(client_id)
+	server._start_total_xp = 100
+	client._start_total_xp = 200
+	server.progression.set_start_total(host, 100)
+	client.progression.set_start_total(owner, 200)
+	server.director.round_number = 4
+	server._kills = 7
+	server.progression.add_xp(host, 75)
+	server.progression.add_xp(server.players.find_player(client_id), 25)
+	_down(host)
+	_down(server.players.find_player(client_id))
+	await wait_until(func() -> bool: return client.is_over, 3.0, "client received its final results")
+	assert_eq(server._match_stats["xp"], 75)
+	assert_eq(server._match_stats["start_total_xp"], 100)
+	assert_eq(server._match_stats["total_xp"], 175)
+	assert_eq(client._match_stats["xp"], 25)
+	assert_eq(client._match_stats["start_total_xp"], 200)
+	assert_eq(client._match_stats["total_xp"], 225)
+	assert_eq(client._match_stats["round"], 4)
+	assert_eq(client._match_stats["kills"], 7)
+	assert_false(client._match_stats["exfil"])
+	for key: String in ["round", "kills", "exfil"]:
+		assert_eq(client._match_stats[key], server._match_stats[key], "shared results stay identical")
+
+
 func test_leaving_standing_teammate_does_not_prevent_game_over() -> void:
 	_down(server.players.find_player(1))
 	assert_false(server.is_over)

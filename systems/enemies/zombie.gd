@@ -19,6 +19,13 @@ const VAULT_TIME: float = 1.0
 var data: EnemyData
 var net_id: int = 0
 var state: State = State.SPAWNING
+var frozen: bool = false:
+	set(value):
+		if frozen == value:
+			return
+		frozen = value
+		if is_node_ready():
+			Frost.show_frozen(self, value)
 ## Seconds since the current state began.
 var state_time: float = 0.0
 var target: Player
@@ -82,9 +89,14 @@ func _ready() -> void:
 	_repath_timer = _rng.randf() * 0.25
 	visual.position.y = -1.8
 	_enter(State.SPAWNING)
+	if frozen:
+		Frost.show_frozen(self, true)
 
 
 func _physics_process(delta: float) -> void:
+	if frozen and state != State.DEAD:
+		velocity = Vector3.ZERO
+		return
 	state_time += delta
 	_attack_cooldown = maxf(_attack_cooldown - delta, 0.0)
 	if not is_on_floor():
@@ -312,9 +324,7 @@ func _on_damaged(info: DamageInfo) -> void:
 	Events.enemy_damaged.emit(self, info)
 	if state == State.DEAD:
 		return
-	# Ordinary bullet impulses only flinch; stronger hits push the server-owned body.
-	if Net.is_authority() and info.impulse.length_squared() > 9.0:
-		velocity = info.impulse
+	DoubleBarrel.apply_impulse(self, info)
 	# Flinch: small shove of the body mesh, reads as impact.
 	visual.position += global_basis.inverse() * info.impulse.normalized() * 0.06
 	visual.pulse_belly()
@@ -333,4 +343,7 @@ func _on_died(info: DamageInfo) -> void:
 
 
 func _process(delta: float) -> void:
-	visual.follow(self, delta)
+	if frozen and state != State.DEAD:
+		Frost.initialize_pose(self)
+	else:
+		visual.follow(self, delta)
