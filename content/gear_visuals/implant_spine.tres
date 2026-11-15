@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 id = &"implant_spine"
-slot = "implant"
+slot = &"implant"
 scene = ExtResource("2")
 attach = &"forearm_L"
 set_id = &""

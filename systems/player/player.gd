@@ -66,7 +66,8 @@ var _sprint_cooldown_left: float = 0.0
 @onready var wallet: Wallet = $Wallet
 @onready var hurt_sound: AudioStreamPlayer = $HurtSound
 @onready var local_input: LocalInput = $LocalInput
-@onready var remote_body: MeshInstance3D = $RemoteBody
+@onready var body: Node3D = $Body
+@onready var gear_rig: GearRig = $Body/GearRig
 
 
 func _ready() -> void:
@@ -91,19 +92,23 @@ func _ready() -> void:
 
 
 ## The owning peer sees through this player's camera and drives it; everyone
-## else sees a stand-in body moved by the synchronizer.
+## else sees the equipped body moved by the synchronizer.
 func _set_local(local: bool) -> void:
 	camera.current = local
 	if not local:
 		camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	weapons.visible = local
 	local_input.enabled = local
-	remote_body.visible = not local
+	gear_rig.set_owner_view(local)
 	set_physics_process(local)
 
 
 func spawn(p_session: GameSession, loadout: Array[WeaponData]) -> void:
 	session = p_session
+	if multiplayer.multiplayer_peer is OfflineMultiplayerPeer and not session.profile_id.is_empty():
+		var profile: CharacterProfile = CharacterProfile.load_or_create(session.profile_id)
+		var equipped: Variant = profile.to_dict().get("loadout", {})
+		gear_rig.apply(LookBuilder.from_equipped(equipped if equipped is Dictionary else {}))
 	Events.player_spawned.emit(self)
 	for data: WeaponData in loadout:
 		weapons.give(data)
