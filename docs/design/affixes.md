@@ -167,6 +167,8 @@ A Legendary is a named item with one fixed trait that changes how it plays, not 
 | Overclock | Implant | X headshot kills within 3 s reset your field ability | 6-4 |
 | Twin Pin | Implant | Frags split into 2 smaller frags at X% damage each | 55-70% |
 
+Proposed traits for the 10 new bases are in [gun-roster.md](gun-roster.md) until they are built.
+
 Ranges written high-to-low ("15th-10th", "10-6 s") are "lower is better". Each Legendary drops only on its base, so the base list in the balance sheet also sets which Legendaries exist in v0.2. Prototypes keep their fixed signature traits and no random lines.
 
 ## Sets

@@ -19,6 +19,7 @@ in your PR.
 | [ui-hud.md](ui-hud.md) | Every screen and the match HUD, with mockups in `images/ui_*.jpg` |
 | [controls.md](controls.md) | Default bindings, controller, accessibility and comfort settings |
 | [zombie-ai.md](zombie-ai.md) | Zombie states, pathing, attacks, special types, performance limits |
+| [gun-roster.md](gun-roster.md) | All 22 base guns: niches, wall/loot sources, unlock levels, Legendary traits, build order (numbers in `balance/roster.csv`) |
 | [affixes.md](affixes.md) | Loot affixes, rarity rules, sets, Legendaries |
 | [gear-visuals.md](gear-visuals.md) | How equipped gear shows on characters (vertex-colour zones, dyes) |
 | [lore.md](lore.md) | Story, factions, map stories, names. Use these names in text and data |
