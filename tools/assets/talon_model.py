@@ -159,11 +159,12 @@ def scope_parts(m, receiver, metal, black, glass):
     ]
     optic = g.lathe("Optic", tube, (0, 0, 0.09), black, 24)
     knob = [(0.007, 0.0), (0.007, 0.022), (0.011, 0.023), (0.011, 0.035), (0.0095, 0.037)]
+    knurled = m.material("GunMetalKnurled", m.GUN_METAL, metallic=0.8, roughness=0.45)
     pieces = [
         g.lathe("Saddle", [(0.016, 0.02), (0.016, 0.058)], (0, 0, 0.09), black, 16),
-        g.lathe("Elevation", knob, (0, 0.039, 0.09), metal, 16, axis="z"),
-        g.lathe("Windage", knob, (0, 0.039, 0.09), metal, 16, axis="x"),
-        g.lathe("Parallax", [(r, -a) for r, a in knob], (0, 0.039, 0.09), metal, 16, axis="x"),
+        g.lathe("Elevation", knob, (0, 0.039, 0.09), knurled, 16, axis="z"),
+        g.lathe("Windage", knob, (0, 0.039, 0.09), knurled, 16, axis="x"),
+        g.lathe("Parallax", [(r, -a) for r, a in knob], (0, 0.039, 0.09), knurled, 16, axis="x"),
     ]
     for y in (-0.048, 0.158):
         pieces += [
