@@ -2,7 +2,7 @@
 
     python tools/ci/check_pr.py <base-ref> [--no-tests-label]
 
-Checks all tracked GDScript and Python outside addons/. Only the tests-required
+Checks all tracked GDScript and Python outside vendored third-party folders. Only the tests-required
 rule uses the files the PR changed.
 """
 
@@ -15,6 +15,8 @@ MAX_FUNCTION_LINES = 50
 MAX_COMPLEXITY = 10
 LINE_LENGTH = "120"
 LOGIC_DIRS = ("core/", "systems/")
+# Third-party code kept as published: Godot addons and the vendored agent skills.
+VENDORED = ("addons/", ".agents/skills/", ".claude/skills/")
 FUNC_RE = re.compile(r"^(\s*)(static\s+)?func\s+(\w+)")
 COMPLEXITY_RE = re.compile(r"^\s*F\s+(\d+):\d+\s+(\S+)\s+-\s+[A-F]\s+\((\d+)\)\s*$")
 
@@ -35,7 +37,7 @@ def indent_of(line: str) -> int:
 
 def tracked_files(suffix: str) -> list[str]:
     out = subprocess.run(["git", "ls-files", "-z"], check=True, capture_output=True, text=True).stdout
-    return [path for path in out.split("\0") if path.endswith(suffix) and not path.startswith("addons/")]
+    return [path for path in out.split("\0") if path.endswith(suffix) and not path.startswith(VENDORED)]
 
 
 def function_lines(lines: list[str], start: int) -> int:

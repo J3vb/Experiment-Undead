@@ -25,6 +25,40 @@ files in `.claude/skills/` (Claude Code). Load the one that fits your task:
 | `look-check` | Rendering a visual change and comparing it with the style guide |
 | `design-change` | Changing a game number or adding content in line with the balance sheet |
 
+Third-party skills (Apache-2.0, from gamedev-skills/awesome-gamedev-agent-skills, see
+`docs/CREDITS.md`). They are general Godot 4.7.2 and game-design guides:
+
+| Skill | Use it for |
+|---|---|
+| `godot-3d-essentials` | Cameras, lights, `WorldEnvironment`, materials |
+| `godot-shaders` | `.gdshader` syntax, errors, wiring |
+| `godot-physics` | Bodies, areas, collision layers, raycasts, Jolt |
+| `godot-resources` | Custom `Resource` data, `.tres`, shared vs duplicated |
+| `godot-gdscript` | Typing, `await`, parse errors |
+| `godot-signals-groups` | Signals, groups, deferred connections |
+| `godot-nodes-scenes` | Scene structure, instancing, broken `res://` paths |
+| `godot-animation` | `AnimationPlayer`, `AnimationTree`, tweens |
+| `godot-audio` | Players, buses, volume |
+| `godot-ui-control` | Control layout, themes, focus |
+| `godot-multiplayer` | ENet, `@rpc`, spawner and synchronizer (P7) |
+| `fps-shooter` | Shot model, TTK, recoil, spread, ADS sensitivity |
+| `rpg` | Stats, XP curves, items, rarity, affixes |
+| `game-feel` | Screen shake, hit-stop, knockback |
+| `level-design` | Layout, player metrics, pacing |
+| `game-ai` | Enemy FSM, perception, pathfinding |
+| `camera-systems` | First-person look and camera feel |
+| `input-systems` | Input actions, buffering, rebinding |
+| `game-ui-ux` | HUD and menu rules, accessibility |
+| `audio-design` | Mixing, ducking, adaptive music |
+| `performance-optimization` | Profiling, draw calls, frame budget |
+
+**Our rules win.** When a third-party skill disagrees with this file, `docs/KEEP_IT_SIMPLE.md`,
+`docs/design/` or one of our own skills above, follow ours. For example: no new autoloads
+or event buses without the Keep it simple check, GUT is our test runner, no multiplayer
+code before P7, and numbers come from the balance sheet, not the skill's examples.
+Their links to skills we did not copy (Unity, Roblox, `save-systems`, ...) can be ignored.
+Do not edit these folders; update them by copying a newer upstream release.
+
 Edit skills in `.agents/skills/` only, then run
 `python tools/ci/check_skills_mirror.py --fix`. CI fails if the copies differ.
 

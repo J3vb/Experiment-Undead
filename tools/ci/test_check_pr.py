@@ -93,6 +93,14 @@ class RepositoryScopeTests(unittest.TestCase):
         self.assertEqual(check_pr.tracked_files(".py"), ["tools/ci/check_pr.py"])
         self.assertEqual(run.call_args.args[0], ["git", "ls-files", "-z"])
 
+    @patch("tools.ci.check_pr.subprocess.run")
+    def test_tracked_files_exclude_vendored_agent_skills(self, run):
+        run.return_value = subprocess.CompletedProcess(
+            [], 0, stdout=".agents/skills/a/x.gd\0.claude/skills/a/x.py\0tools/ci/check_skills_mirror.py\0"
+        )
+        self.assertEqual(check_pr.tracked_files(".gd"), [])
+        self.assertEqual(check_pr.tracked_files(".py"), ["tools/ci/check_skills_mirror.py"])
+
     def test_main_checks_tracked_files_but_applies_tests_rule_to_changed_files(self):
         with (
             patch.object(check_pr.sys, "argv", ["check_pr.py", "origin/main"]),
