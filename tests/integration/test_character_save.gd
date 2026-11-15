@@ -1,4 +1,4 @@
-## Real match XP persists across death, exfil and a scene restart without double banking.
+## Real match saves preserve character XP and inventory across banking and scene restarts.
 extends GutTest
 
 const SESSION: PackedScene = preload("res://tests/integration/character_save_session.tscn")
@@ -70,6 +70,59 @@ func test_exfil_banks_after_bonus_once() -> void:
 	assert_eq(session.progression.get_xp(player), 151)
 	assert_eq(int(SaveFile.read(PATH)["total_xp"]), START_XP + 151)
 	await wait_seconds(0.05)
+
+
+func test_inventory_and_unknown_item_keys_survive_match_save_and_load() -> void:
+	session.free()
+	var profile: CharacterProfile = CharacterProfile.load_or_create(ID)
+	var item: Dictionary = {
+		"v": 1,
+		"uid": "stashed",
+		"base": "rifle_ar",
+		"rar": "rare",
+		"ilvl": 12,
+		"aff": [["removed_affix", 2, 0.25]],
+		"imp": ["reclaimer", 0.5],
+		"trait": null,
+		"set": null,
+		"craft": {"future_lock": true},
+		"future": [1, null, {"kept": true}],
+	}
+	profile.stash[17] = item
+	profile.loadout["primary"] = item.duplicate(true)
+	profile.loadout["primary"]["uid"] = "equipped"
+	assert_eq(profile.save(), OK)
+	var expected: Dictionary = SaveFile.read(PATH)
+	session = SESSION.instantiate() as GameSession
+	add_child_autofree(session)
+	player = session.get_players()[0]
+	session.progression.add_xp(player, 75)
+	session.bank_run_xp()
+	var loaded: CharacterProfile = CharacterProfile.load_or_create(ID)
+	assert_eq(loaded.total_xp, START_XP + 75)
+	assert_eq(loaded.stash, expected["stash"])
+	assert_eq(loaded.loadout, expected["loadout"])
+	assert_eq(loaded.stash.size(), 60)
+	assert_eq(loaded.stash[17]["future"], expected["stash"][17]["future"])
+	assert_eq(loaded.loadout["primary"]["uid"], "equipped")
+	assert_eq(loaded.loadout["primary"]["craft"], expected["loadout"]["primary"]["craft"])
+
+
+func test_old_v1_save_banks_xp_with_empty_inventory() -> void:
+	session.free()
+	assert_eq(SaveFile.write(PATH, {"id": String(ID), "total_xp": START_XP}), OK)
+	session = SESSION.instantiate() as GameSession
+	add_child_autofree(session)
+	player = session.get_players()[0]
+	session.progression.add_xp(player, 75)
+	session.bank_run_xp()
+	var loaded: CharacterProfile = CharacterProfile.load_or_create(ID)
+	assert_eq(loaded.total_xp, START_XP + 75)
+	assert_eq(loaded.stash.size(), 60)
+	for item: Dictionary in loaded.stash:
+		assert_eq(item, {})
+	assert_eq(loaded.loadout, {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}})
+	assert_eq(int(SaveFile.read(PATH)["save_version"]), 1)
 
 
 func test_restart_mid_run_banks_once() -> void:
