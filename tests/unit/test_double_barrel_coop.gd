@@ -5,7 +5,7 @@ extends GutTest
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
 const WALKER: EnemyData = preload("res://content/enemies/zombie_walker.tres")
 const WAVES: WaveRules = preload("res://content/waves/default_waves.tres")
-const PORT: int = 24681
+const PORT: int = 24683
 
 var server: HitClaims
 var client: HitClaims

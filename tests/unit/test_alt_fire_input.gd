@@ -6,10 +6,10 @@ var _was_pressed: bool = false
 
 
 func before_each() -> void:
-	_was_pressed = Input.is_action_pressed(&"alt_fire")
-	Input.action_release(&"alt_fire")
 	local_input = LocalInput.new()
 	add_child_autofree(local_input)
+	_was_pressed = local_input.sample(0).has(InputFrame.ALT_FIRE)
+	Input.action_release(&"alt_fire")
 
 
 func after_each() -> void:
