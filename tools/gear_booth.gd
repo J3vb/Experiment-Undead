@@ -1,7 +1,8 @@
-## Renders models in the warm Lantern Post booth; add future gear to MODELS.
+## Renders individual models, rigid gear lineup, or a dressed player in the Lantern Post booth.
 ## godot --path . --rendering-driver opengl3 tools/gear_booth.tscn -- --out screenshots/gear --rarity all
 extends Node3D
 
+const ASSEMBLY: Script = preload("res://tools/gear_booth_assembly.gd")
 const MODELS: Array[String] = [
 	"res://assets/models/characters/player.glb",
 ]
@@ -12,6 +13,7 @@ const WARMUP_FRAMES: int = 12
 
 var _out: String = ""
 var _rarity: String = "common"
+var _mode: String = "models"
 var _model: Node3D
 
 @onready var _turntable: Node3D = $Turntable
@@ -28,7 +30,7 @@ func _ready() -> void:
 	get_window().content_scale_size = SIZE
 	get_window().size = SIZE
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
-	if not _show_model(MODELS[0]):
+	if not _show_mode():
 		get_tree().quit(1)
 		return
 	if _out.is_empty():
@@ -46,10 +48,8 @@ func _read_arguments(args: PackedStringArray) -> bool:
 	var index: int = 0
 	while index < args.size():
 		var option: String = args[index]
-		if option not in ["--out", "--rarity"] or index + 1 >= args.size():
-			push_error(
-				"Gear booth expects --out <directory> [--rarity common|uncommon|rare|epic|legendary|prototype|all]"
-			)
+		if option not in ["--out", "--rarity", "--mode"] or index + 1 >= args.size():
+			push_error("Gear booth expects --out <directory> [--rarity <name>|all] [--mode models|lineup|character]")
 			return false
 		var value: String = args[index + 1]
 		if value.is_empty() or value.begins_with("--"):
@@ -57,12 +57,26 @@ func _read_arguments(args: PackedStringArray) -> bool:
 			return false
 		if option == "--out":
 			_out = value
-		else:
+		elif option == "--rarity":
 			_rarity = value
+		else:
+			_mode = value
 		index += 2
+	if _mode not in ["models", "lineup", "character"]:
+		push_error("Unknown gear booth mode: " + _mode)
+		return false
 	if _rarity != "all" and _rarity not in RARITIES:
 		push_error("Unknown gear booth rarity: " + _rarity)
 		return false
+	return true
+
+
+func _show_mode() -> bool:
+	if _mode == "models":
+		return _show_model(MODELS[0])
+	_model = ASSEMBLY.build_lineup() if _mode == "lineup" else ASSEMBLY.build_character()
+	add_child(_model)
+	_frame_model()
 	return true
 
 
@@ -122,6 +136,9 @@ func _render() -> void:
 		push_error("Gear booth cannot create output directory: " + directory)
 		get_tree().quit(1)
 		return
+	if _mode != "models":
+		await _render_display(directory)
+		return
 	var rarities: Array[String] = RARITIES if _rarity == "all" else [_rarity]
 	for path: String in MODELS:
 		if not _show_model(path) or not await _render_model(path.get_file().get_basename(), rarities, directory):
@@ -155,3 +172,20 @@ func _render_model(model_name: String, rarities: Array[String], directory: Strin
 		return false
 	print("Gear booth saved %d views and %s" % [rarities.size() * VIEWS.size(), sheet_path])
 	return true
+
+
+func _render_display(directory: String) -> void:
+	_apply_rarity(_rarity if _rarity != "all" else RARITIES[0])
+	_turntable.rotation.y = deg_to_rad(25.0) if _mode == "character" else 0.0
+	_label.text = (
+		"FIELD GEAR / ECONOMY + LUCK / ABILITIES" if _mode == "lineup" else "MEDIUM VEST / OCULAR / HALCYON KEYCARD"
+	)
+	for _frame: int in WARMUP_FRAMES:
+		await RenderingServer.frame_post_draw
+	var filename: String = directory.path_join("gear_%s.png" % _mode)
+	var error: Error = get_viewport().get_texture().get_image().save_png(filename)
+	if error != OK:
+		push_error("Gear booth cannot save " + filename)
+	else:
+		print("Gear booth saved ", filename)
+	get_tree().quit(error)

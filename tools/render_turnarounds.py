@@ -79,6 +79,51 @@ def add_light(name, at, energy):
     light.rotation_euler = (-light.location).to_track_quat("-Z", "Y").to_euler()
 
 
+def _gear_zone(nodes, links, alpha, previous, selection):
+    threshold, color = selection
+    mask = nodes.new("ShaderNodeMath")
+    mask.operation = "LESS_THAN"
+    mask.inputs[1].default_value = threshold
+    links.new(alpha, mask.inputs[0])
+    mix = nodes.new("ShaderNodeMixRGB")
+    mix.inputs[2].default_value = (*color, 1)
+    if isinstance(previous, tuple):
+        mix.inputs[1].default_value = (*previous, 1)
+    else:
+        links.new(previous, mix.inputs[1])
+    links.new(mask.outputs[0], mix.inputs[0])
+    return mix.outputs["Color"]
+
+
+def _gear_preview(material):
+    """Preview gear.gdshader's Common palette and finish means with baked AO."""
+    nodes, links = material.node_tree.nodes, material.node_tree.links
+    original = nodes.get("Principled BSDF")
+    base = original.inputs["Base Color"]
+    if base.is_linked:
+        multiply = base.links[0].from_node
+        base = next(socket for socket in multiply.inputs if socket.name == "B" and socket.type == "RGBA")
+    albedo = tuple(base.default_value[:3])
+    metallic, roughness = {"GearPlate": (0.05, 0.64), "GearPolymer": (0, 0.72), "GearRubber": (0, 0.95)}[material.name]
+    nodes.clear()
+    output = nodes.new("ShaderNodeOutputMaterial")
+    surface = nodes.new("ShaderNodeBsdfPrincipled")
+    surface.inputs["Metallic"].default_value = metallic
+    surface.inputs["Roughness"].default_value = roughness
+    colors = nodes.new("ShaderNodeVertexColor")
+    colors.layer_name = "Color"
+    painted = _gear_zone(nodes, links, colors.outputs["Alpha"], albedo, (0.5, linear("#D9D9D2")))
+    separate = nodes.new("ShaderNodeSeparateColor")
+    links.new(colors.outputs["Color"], separate.inputs["Color"])
+    ao = nodes.new("ShaderNodeMixRGB")
+    ao.blend_type = "MULTIPLY"
+    ao.inputs[0].default_value = 1
+    links.new(painted, ao.inputs[1])
+    links.new(separate.outputs["Red"], ao.inputs[2])
+    links.new(ao.outputs["Color"], surface.inputs["Base Color"])
+    links.new(surface.outputs["BSDF"], output.inputs["Surface"])
+
+
 def import_model(path):
     """Import a .glb, centred on a turntable pivot and scaled so every view fits a 1 m frame."""
     bpy.ops.import_scene.gltf(filepath=str(path), disable_bone_shape=True)
@@ -93,6 +138,9 @@ def import_model(path):
             obj.parent = offset
     bpy.context.view_layer.update()
     meshes = [obj for obj in imported if obj.type == "MESH"]
+    if path.parent.name == "gear":
+        for material in {material for obj in meshes for material in obj.data.materials if material}:
+            _gear_preview(material)
     corners = [obj.matrix_world @ Vector(corner) for obj in meshes for corner in obj.bound_box]
     low = Vector(tuple(min(c[i] for c in corners) for i in range(3)))
     high = Vector(tuple(max(c[i] for c in corners) for i in range(3)))

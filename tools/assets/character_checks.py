@@ -9,8 +9,16 @@ from mathutils import Vector
 
 BUDGETS = {"characters": (12_000, 4), "gear": (6_000, 4)}
 TRIANGLE_CAPS = {"player_arms": 8_000, "charm_*": 800, "implant_*": 1_500}
-# Add each new model stem here alongside its character_models.MODELS entry.
-JOINTS = {"player": {"Eyes": None}, "player_arms": {}}
+CHARMS = ("charm_dog_tags", "charm_vial", "charm_keycard", "charm_dosimeter", "charm_coin")
+IMPLANTS = ("implant_reflex", "implant_lung", "implant_spine", "implant_ocular", "implant_relay")
+CHARM_JOINTS = {"Hook": None, "Link1": "Hook", "Link2": "Link1", "Body": "Link2"}
+IMPLANT_JOINTS = {"Module": None, "Port": None}
+JOINTS = {
+    "player": {"Eyes": None},
+    "player_arms": {},
+    **dict.fromkeys(CHARMS, CHARM_JOINTS),
+    **dict.fromkeys(IMPLANTS, IMPLANT_JOINTS),
+}
 ARM_BONES = {f"{part}_{side}" for part in ("clavicle", "upperarm", "forearm", "hand") for side in ("L", "R")}
 TOLERANCE = 0.01
 
@@ -145,6 +153,49 @@ def _check_arm_weights(meshes: list) -> list:
     return errors
 
 
+def _check_hanging(nodes: dict) -> list:
+    errors = []
+    hook = nodes.get("Hook")
+    if hook is None or hook.type != "EMPTY":
+        return ["charms need an empty named 'Hook'"]
+    if hook.matrix_world.translation.length > 1e-5:
+        errors.append("Hook must be at the model origin")
+    for name, parent in CHARM_JOINTS.items():
+        if name == "Hook" or name not in nodes:
+            continue
+        obj = nodes[name]
+        if obj.type != "MESH":
+            errors.append(f"{name} must be a rigid mesh")
+            continue
+        if obj.parent != nodes.get(parent):
+            errors.append(f"{name} must be directly parented to {parent}")
+        low, high = _bounds([obj])
+        pivot = obj.matrix_world.translation
+        if abs(pivot.z - high.z) > 0.003:
+            errors.append(f"{name} pivot must be at its top end")
+        if high.z > hook.matrix_world.translation.z + 0.003 or low.z >= high.z:
+            errors.append(f"{name} must hang down Blender -Z below Hook")
+    return errors
+
+
+def _check_rigid_gear(objects: list, stem: str, triangles: int) -> list:
+    if stem not in CHARMS + IMPLANTS:
+        return []
+    nodes = {obj.name: obj for obj in objects}
+    errors = [f"missing node '{name}'" for name in JOINTS[stem] if name not in nodes]
+    minimum = 600 if stem in CHARMS else 1_000
+    if triangles < minimum:
+        errors.append(f"{triangles} triangles, detail floor for '{stem}' is {minimum}")
+    if any(obj.type == "ARMATURE" for obj in objects):
+        errors.append("charms and implants must be rigid attachments without an armature")
+    if stem in CHARMS:
+        return errors + _check_hanging(nodes)
+    for name in IMPLANT_JOINTS:
+        if name in nodes and nodes[name].type != "MESH":
+            errors.append(f"{name} must be a rigid mesh")
+    return errors
+
+
 def check(objects: list, folder: str, stem: str) -> list:
     """Extra checks for character/gear folders; existing model folders are untouched."""
     if folder not in BUDGETS:
@@ -160,6 +211,7 @@ def check(objects: list, folder: str, stem: str) -> list:
     cap = min((cap for pattern, cap in TRIANGLE_CAPS.items() if fnmatchcase(stem, pattern)), default=BUDGETS[folder][0])
     if tris > cap:
         errors.append(f"{tris} triangles, budget for '{stem}' is {cap}")
+    errors += _check_rigid_gear(objects, stem, tris)
     lo, hi = _bounds(meshes)
     if folder == "gear":
         if Vector(max(lo[i], -hi[i], 0.0) for i in range(3)).length > 0.05:

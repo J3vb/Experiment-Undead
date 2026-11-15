@@ -1,6 +1,7 @@
 ## Character imports preserve the shared rig, skin, scale and matching forearm envelopes.
 extends GutTest
 
+const ASSEMBLY: Script = preload("res://tools/gear_booth_assembly.gd")
 const PLAYER: String = "res://assets/models/characters/player.glb"
 const GEAR_SHADER: String = "res://assets/materials/gear.gdshader"
 const GEAR_IMPORTER: GDScript = preload("res://tools/assets/gear_import.gd")
@@ -210,3 +211,68 @@ func test_first_person_arms_are_skinned_and_use_dynamic_lighting() -> void:
 	assert_eq(settings.load(ARMS + ".import"), OK, "first-person arm import settings are committed")
 	assert_eq(settings.get_value("params", "meshes/light_baking"), 3)
 	assert_eq(settings.get_value("params", "import_script/path"), "res://tools/assets/gear_import.gd")
+
+
+func test_all_ten_rigid_gear_models_import_with_required_parts_and_budgets() -> void:
+	for id: String in ASSEMBLY.GEAR:
+		var packed: PackedScene = load("res://assets/models/gear/%s.glb" % id) as PackedScene
+		assert_not_null(packed, id + " imports")
+		if packed == null:
+			continue
+		var model: Node3D = packed.instantiate() as Node3D
+		add_child_autofree(model)
+		var required: Array[String] = ["Module", "Port"]
+		var lower: int = 1000
+		var upper: int = 1500
+		if id.begins_with("charm_"):
+			required = ["Hook", "Link1", "Link2", "Body"]
+			lower = 600
+			upper = 800
+		for part: String in required:
+			assert_not_null(model.find_child(part, true, false), id + " keeps " + part)
+		var triangles: int = 0
+		for node: Node in model.find_children("*", "MeshInstance3D", true, false):
+			triangles += (node as MeshInstance3D).mesh.get_faces().size() / 3
+		assert_between(triangles, lower, upper, id + " keeps the close-up triangle budget")
+		var settings: ConfigFile = ConfigFile.new()
+		assert_eq(settings.load("res://assets/models/gear/%s.glb.import" % id), OK)
+		assert_eq(settings.get_value("params", "meshes/light_baking"), 3, id + " uses dynamic lighting")
+		assert_eq(settings.get_value("params", "import_script/path"), "res://tools/assets/gear_import.gd")
+
+
+func test_booth_gear_follows_bones_with_a_transformed_character() -> void:
+	var display: Node3D = ASSEMBLY.build_character()
+	display.transform = Transform3D(Basis(Vector3.UP, 0.63), Vector3(2.0, 0.5, -3.0))
+	add_child_autofree(display)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var skeleton: Skeleton3D = display.find_children("*", "Skeleton3D", true, false)[0] as Skeleton3D
+	_assert_attached_within(display, skeleton, "Module", "forearm_L")
+	_assert_attached_within(display, skeleton, "Port", "neck")
+	var clip: Node3D = display.find_child("CharmClip", true, false) as Node3D
+	var hook: Node3D = display.find_child("Hook", true, false) as Node3D
+	assert_not_null(display.find_child("MediumVestBoothFixture", true, false), "booth includes a medium vest preview")
+	assert_not_null(clip, "vest provides its CharmClip")
+	assert_not_null(hook, "charm keeps the hook pivot")
+	if clip != null and hook != null:
+		assert_lt(hook.global_position.distance_to(clip.global_position), 0.001, "charm hangs from CharmClip")
+	var forearm: int = skeleton.find_bone("forearm_L")
+	var pose: Transform3D = skeleton.get_bone_pose(forearm)
+	pose.basis = pose.basis * Basis(Vector3.RIGHT, 0.3)
+	skeleton.set_bone_pose(forearm, pose)
+	await get_tree().process_frame
+	_assert_attached_within(display, skeleton, "Module", "forearm_L")
+
+
+func _assert_attached_within(display: Node3D, skeleton: Skeleton3D, part: String, bone: String) -> void:
+	var mesh: Node3D = display.find_child(part, true, false) as Node3D
+	assert_not_null(mesh, "booth includes " + part)
+	if mesh == null:
+		return
+	var attachment: BoneAttachment3D = mesh.get_parent() as BoneAttachment3D
+	assert_not_null(attachment, part + " uses BoneAttachment3D")
+	if attachment == null:
+		return
+	assert_eq(attachment.bone_name, bone)
+	var target: Vector3 = skeleton.global_transform * skeleton.get_bone_global_pose(skeleton.find_bone(bone)).origin
+	assert_lt(mesh.global_position.distance_to(target), 0.03, part + " origin sits within 3 cm of " + bone)
