@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Script" path="res://systems/ui/hud.gd" id="1"]
 [ext_resource type="Theme" path="res://systems/ui/theme.tres" id="2"]
@@ -10,6 +10,18 @@
 
 [ext_resource type="AudioStream" path="res://assets/audio/round_end.wav" id="sfx_round_end"]
 [ext_resource type="PackedScene" path="res://systems/ui/settings_screen.tscn" id="8"]
+
+[ext_resource type="PackedScene" path="res://systems/ui/results_screen.tscn" id="results"]
+[ext_resource type="Theme" path="res://systems/ui/results_screen.tres" id="xp_theme"]
+
+[ext_resource type="FontFile" path="res://assets/fonts/AtkinsonHyperlegibleMono.ttf" id="round_font"]
+
+[sub_resource type="FontVariation" id="round_bold"]
+base_font = ExtResource("round_font")
+variation_opentype = {
+2003265652: 500
+}
+variation_embolden = 1.2
 
 [sub_resource type="ShaderMaterial" id="vignette_mat"]
 shader = ExtResource("5")
@@ -109,6 +121,7 @@ theme_override_constants/separation = -10
 layout_mode = 2
 theme_type_variation = &"LabelMono"
 theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = SubResource("round_bold")
 theme_override_font_sizes/font_size = 110
 theme_override_constants/outline_size = 8
 modulate = Color(0.784314, 0.12549, 0.164706, 1)
@@ -353,40 +366,50 @@ text = "Enter: select   Esc: resume"
 [node name="SettingsScreen" parent="Root/PausePanel" instance=ExtResource("8")]
 visible = false
 
-[node name="GameOverPanel" type="ColorRect" parent="Root"]
+[node name="Fps" type="Label" parent="Root"]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 12.0
+mouse_filter = 2
+
+[node name="XpBar" type="ProgressBar" parent="Root"]
 layout_mode = 1
-anchors_preset = 15
+anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.08, 0, 0, 0.78)
+offset_top = -3.0
+mouse_filter = 2
+theme = ExtResource("xp_theme")
+max_value = 500.0
+step = 0.001
+show_percentage = false
 
-[node name="Box" type="VBoxContainer" parent="Root/GameOverPanel"]
+[node name="Level" type="Label" parent="Root"]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
+anchor_top = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-alignment = 1
+offset_left = 16.0
+offset_top = -36.0
+offset_bottom = -3.0
+mouse_filter = 2
+theme = ExtResource("xp_theme")
+theme_type_variation = &"LabelXpMono"
+text = "LV 1"
 
-[node name="Title" type="Label" parent="Root/GameOverPanel/Box"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.08, 0.05, 1)
-theme_override_font_sizes/font_size = 96
-text = "YOU DIED"
+[node name="LevelToast" type="Label" parent="Root"]
+layout_mode = 1
+anchor_left = 0.3
+anchor_right = 0.7
+anchor_top = 0.16
+anchor_bottom = 0.16
+mouse_filter = 2
+theme = ExtResource("xp_theme")
+theme_type_variation = &"LabelXpMono"
+theme_override_font_sizes/font_size = 36
 horizontal_alignment = 1
 
-[node name="Stats" type="Label" parent="Root/GameOverPanel/Box"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 30
-horizontal_alignment = 1
-
-[node name="MainMenu" type="Button" parent="Root/GameOverPanel/Box"]
-layout_mode = 2
-size_flags_horizontal = 4
-text = "Main menu"
+[node name="ResultsScreen" parent="Root" instance=ExtResource("results")]
+visible = false
 
 [node name="HitSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("6")

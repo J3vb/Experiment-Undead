@@ -15,6 +15,7 @@ const SERUM_STYLES: Dictionary = {
 	&"scavenger": ["SC", Color("596b80")],
 }
 
+var _toast_tween: Tween
 var _round_tween: Tween
 var _prompt_text: String = ""
 var _player: Player
@@ -24,7 +25,6 @@ var _center_time: float = 0.0
 var _delta_time: float = 0.0
 var _delta_sum: int = 0
 var _exfil: ExfilHatch
-var _fps_label: Label
 
 @onready var crosshair: Crosshair = $Root/Crosshair
 @onready var hit_marker: HitMarker = $Root/HitMarker
@@ -52,20 +52,20 @@ var _fps_label: Label
 @onready var pause_menu: Control = $Root/PausePanel/Menu
 @onready var resume_button: Button = $Root/PausePanel/Menu/Resume
 @onready var settings_button: Button = $Root/PausePanel/Menu/Settings
-@onready var game_over_panel: Control = $Root/GameOverPanel
-@onready var game_over_stats: Label = $Root/GameOverPanel/Box/Stats
+@onready var results_screen: ResultsScreen = $Root/ResultsScreen
+@onready var xp_bar: ProgressBar = $Root/XpBar
+@onready var level_label: Label = $Root/Level
+@onready var level_toast: Label = $Root/LevelToast
 @onready var hit_sound: AudioStreamPlayer = $HitSound
 @onready var round_sound: AudioStreamPlayer = $RoundSound
+@onready var _fps_label: Label = $Root/Fps
 
 
 func _ready() -> void:
 	_setup_pause_menu()
-	var bold: FontVariation = FontVariation.new()
-	bold.base_font = round_label.get_theme_font("font")
-	bold.variation_embolden = 1.2
-	round_label.add_theme_font_override("font", bold)
 	pause_panel.visible = false
-	game_over_panel.visible = false
+	results_screen.hide()
+	level_toast.modulate.a = 0.0
 	center_label.modulate.a = 0.0
 	points_delta.modulate.a = 0.0
 	hint_label.text = ""
@@ -87,6 +87,7 @@ func _ready() -> void:
 	Events.exfil_opened.connect(_on_exfil_opened)
 	Events.exfil_called.connect(func(hatch: ExfilHatch) -> void: _exfil = hatch)
 	Events.game_over.connect(_on_game_over)
+	Events.player_leveled_up.connect(_on_player_leveled_up)
 
 
 func show_paused(paused: bool) -> void:
@@ -172,6 +173,9 @@ func _flash_center(text: String, seconds: float) -> void:
 func _on_player_spawned(player: Player) -> void:
 	if _player == null:
 		_player = player
+		if player.session:
+			player.session.progression.xp_gained.connect(_on_xp_gained)
+			_on_xp_gained(player, 0, 0)
 
 
 func _on_health_changed(player: Player, current: float, maximum: float) -> void:
@@ -286,23 +290,34 @@ func _on_intermission(next_round: int, duration: float) -> void:
 
 
 func _on_game_over(stats: Dictionary) -> void:
-	game_over_panel.visible = true
 	_exfil = null
 	exfil_box.hide()
-	($Root/GameOverPanel/Box/MainMenu as Button).grab_focus()
-	game_over_stats.text = (
-		("Exfil successful: +50% XP\n" if stats.get("exfil", false) else "")
-		+ (
-			"You survived %d round%s\n%d kills    %d points    %d XP\n\nR: restart    Esc: main menu"
-			% [
-				stats.get("round", 0),
-				"" if stats.get("round", 0) == 1 else "s",
-				stats.get("kills", 0),
-				stats.get("points", 0),
-				stats.get("xp", 0)
-			]
-		)
-	)
+	var session: GameSession = get_parent() as GameSession
+	results_screen.show_results(stats, session.tick / Engine.physics_ticks_per_second, session.progression.rules)
+
+
+func _on_xp_gained(player: Player, _amount: int, _total: int) -> void:
+	if player != _player:
+		return
+	var progression: ProgressionService = player.session.progression
+	var level: int = progression.get_level(player)
+	var needed: int = progression.rules.xp_to_next(level)
+	level_label.text = "LV %d" % level
+	xp_bar.max_value = maxf(needed, 1.0)
+	xp_bar.value = progression.get_total_xp(player) - progression.rules.total_xp_for_level(level) if needed > 0 else 1
+
+
+func _on_player_leveled_up(player: Player, level: int) -> void:
+	if player != _player:
+		return
+	if _toast_tween:
+		_toast_tween.kill()
+	level_toast.text = "LEVEL %d" % level
+	level_toast.modulate.a = 0.0
+	_toast_tween = create_tween()
+	_toast_tween.tween_property(level_toast, "modulate:a", 1.0, 0.12)
+	_toast_tween.tween_interval(1.68)
+	_toast_tween.tween_property(level_toast, "modulate:a", 0.0, 0.2)
 
 
 func _setup_pause_menu() -> void:
@@ -311,13 +326,9 @@ func _setup_pause_menu() -> void:
 	settings_button.pressed.connect(_open_settings)
 	$Root/PausePanel/Menu/MainMenu.pressed.connect(_return_to_menu)
 	$Root/PausePanel/Menu/QuitGame.pressed.connect(func() -> void: (get_parent() as GameSession).quit_game())
-	$Root/GameOverPanel/Box/MainMenu.pressed.connect(_return_to_menu)
+	results_screen.main_menu_requested.connect(_return_to_menu)
+	results_screen.restart_requested.connect(func() -> void: (get_parent() as GameSession).restart())
 	settings_screen.closed.connect(_close_settings)
-	_fps_label = Label.new()
-	_fps_label.position = Vector2(12, 12)
-	_fps_label.add_theme_font_size_override("font_size", 24)
-	_fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	$Root.add_child(_fps_label)
 
 
 func _open_settings() -> void:
@@ -329,17 +340,6 @@ func _open_settings() -> void:
 func _close_settings() -> void:
 	pause_menu.show()
 	settings_button.grab_focus()
-
-
-func _unhandled_input(event: InputEvent) -> void:
-	if not game_over_panel.visible:
-		return
-	if event.is_action_pressed(&"ui_cancel"):
-		get_viewport().set_input_as_handled()
-		_return_to_menu()
-	elif event.is_action_pressed(&"reload") and not event.is_echo():
-		get_viewport().set_input_as_handled()
-		(get_parent() as GameSession).restart()
 
 
 func _return_to_menu() -> void:

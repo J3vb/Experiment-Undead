@@ -20,6 +20,7 @@ var level: Level
 var spawner: Spawner
 var is_over: bool = false
 var _kills: int = 0
+var _headshots: int = 0
 var _profile: CharacterProfile
 var _start_total_xp: int = 0
 var _xp_banked: bool = false
@@ -44,7 +45,7 @@ func _ready() -> void:
 		_profile = CharacterProfile.load_or_create(profile_id)
 		_start_total_xp = _profile.total_xp
 	Events.player_died.connect(_on_player_died)
-	Events.enemy_killed.connect(func(_e: Node3D, _i: DamageInfo) -> void: _kills += 1)
+	Events.enemy_killed.connect(_on_enemy_killed)
 
 	level = level_scene.instantiate() as Level
 	level.process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -143,6 +144,12 @@ func finish_exfil() -> void:
 	_end_match(true)
 
 
+func _on_enemy_killed(_enemy: Node3D, info: DamageInfo) -> void:
+	_kills += 1
+	if info.is_headshot():
+		_headshots += 1
+
+
 func _on_player_died(_player: Player) -> void:
 	for p: Player in get_players():
 		if p.is_alive():
@@ -159,6 +166,7 @@ func _end_match(exfiled: bool) -> void:
 	var stats: Dictionary = {
 		"round": director.round_number,
 		"kills": _kills,
+		"headshots": _headshots,
 		"points": get_players()[0].wallet.points if not get_players().is_empty() else 0,
 		"xp": progression.get_xp(get_players()[0]) if not get_players().is_empty() else 0,
 		"exfil": exfiled,

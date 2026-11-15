@@ -6,6 +6,8 @@ const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
 
 var hud: Hud
 var player: Player
+var progression: ProgressionService
+var session: GameSession
 
 
 func before_each() -> void:
@@ -16,6 +18,12 @@ func before_each() -> void:
 	add_child_autofree(player)
 	player.set_physics_process(false)
 	player.weapons.give(Content.weapon(&"rifle_ar"))
+	session = GameSession.new()
+	autofree(session)
+	progression = ProgressionService.new()
+	add_child_autofree(progression)
+	session.progression = progression
+	player.session = session
 	Events.player_spawned.emit(player)
 
 
@@ -167,11 +175,51 @@ func test_pause_buttons_offer_main_menu_and_quit_game() -> void:
 	assert_true(hud.resume_button.has_focus())
 
 
-func test_results_offer_menu_and_keep_restart_hint() -> void:
-	Events.game_over.emit({"round": 3, "kills": 12, "points": 500, "xp": 25})
-	var main_menu: Button = hud.get_node("Root/GameOverPanel/Box/MainMenu") as Button
-	assert_true(hud.game_over_panel.visible)
-	assert_true(main_menu.has_focus())
-	assert_true(main_menu.pressed.is_connected(hud._return_to_menu))
-	assert_string_contains(hud.game_over_stats.text, "R: restart")
-	assert_string_contains(hud.game_over_stats.text, "Esc: main menu")
+func test_xp_bar_follows_grants_and_saved_total() -> void:
+	assert_eq(hud.level_label.text, "LV 1")
+	progression.add_xp(player, 250)
+	assert_almost_eq(hud.xp_bar.value, 250.0, 0.001)
+	assert_almost_eq(hud.xp_bar.max_value, 500.0, 0.001)
+	progression.add_xp(player, 350)
+	assert_eq(hud.level_label.text, "LV 2")
+	assert_almost_eq(hud.xp_bar.value, 100.0, 0.001)
+	progression.set_start_total(player, progression.rules.total_xp_for_level(7))
+	progression.add_xp(player, 10)
+	assert_eq(hud.level_label.text, "LV 7")
+	assert_almost_eq(hud.xp_bar.value, 610.0, 0.001)
+	assert_almost_eq(hud.xp_bar.max_value, float(progression.rules.xp_to_next(7)), 0.001)
+
+
+func test_level_toast_fades_for_two_seconds_and_ignores_other_players() -> void:
+	Events.player_leveled_up.emit(player, 8)
+	assert_eq(hud.level_toast.text, "LEVEL 8")
+	hud._toast_tween.pause()
+	hud._toast_tween.custom_step(0.12)
+	assert_almost_eq(hud.level_toast.modulate.a, 1.0, 0.001)
+	hud._toast_tween.custom_step(1.68)
+	assert_almost_eq(hud.level_toast.modulate.a, 1.0, 0.001)
+	hud._toast_tween.custom_step(0.21)
+	assert_almost_eq(hud.level_toast.modulate.a, 0.0, 0.001)
+	var other: Player = Player.new()
+	autofree(other)
+	Events.player_leveled_up.emit(other, 9)
+	progression.add_xp(other, 250)
+	assert_eq(hud.level_toast.text, "LEVEL 8")
+	assert_eq(hud.level_label.text, "LV 1")
+	assert_almost_eq(hud.xp_bar.value, 0.0, 0.001)
+
+
+func test_xp_bar_is_full_at_level_cap() -> void:
+	progression.add_xp(player, progression.rules.total_xp_for_level(50) + 100)
+	assert_eq(hud.level_label.text, "LV 50")
+	assert_almost_eq(hud.xp_bar.value / hud.xp_bar.max_value, 1.0, 0.001)
+
+
+func test_hud_initializes_from_saved_total_at_spawn() -> void:
+	progression.set_start_total(player, progression.rules.total_xp_for_level(7) + 200)
+	var fresh: Hud = HUD.instantiate() as Hud
+	add_child_autofree(fresh)
+	fresh.set_process(false)
+	Events.player_spawned.emit(player)
+	assert_eq(fresh.level_label.text, "LV 7")
+	assert_almost_eq(fresh.xp_bar.value, 200.0, 0.001)
