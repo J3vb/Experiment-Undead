@@ -68,7 +68,9 @@ static func spawn_orb(
 	return orb
 
 
-static func open(parent: Node, player: Player, point: Vector3, damage: float, cosmetic: bool = false) -> GravityWell:
+static func open(
+	parent: Node, player: Player, point: Vector3, damage: float, cosmetic: bool = false, claims: Node = null
+) -> GravityWell:
 	var count: int = 0
 	var oldest: GravityWell
 	for node: Node in parent.get_tree().get_nodes_in_group(&"gravity_wells"):
@@ -83,6 +85,7 @@ static func open(parent: Node, player: Player, point: Vector3, damage: float, co
 		oldest.collapse()
 	var well: GravityWell = load(SCENE).instantiate() as GravityWell
 	well.gameplay = not cosmetic
+	well._claims = claims
 	well.setup(player, point, damage)
 	parent.add_child(well)
 	well.global_position = point
@@ -160,13 +163,24 @@ func _pull(delta: float) -> void:
 
 
 func _damage() -> void:
+	var damaged: bool = false
+	var killed: bool = false
 	for zombie: Zombie in _targets:
 		if not is_instance_valid(zombie) or zombie.health.is_dead:
 			continue
 		var info: DamageInfo = DamageInfo.create(_total_damage * DAMAGE_INTERVAL / DURATION, attacker)
 		info.weapon_id = &"siphon"
 		info.position = zombie.global_position
+		var before: float = zombie.health.current
 		zombie.health.take_damage(info)
+		damaged = damaged or zombie.health.current < before
+		killed = killed or zombie.health.is_dead
+	if not damaged or not is_instance_valid(attacker):
+		return
+	if is_instance_valid(_claims):
+		_claims.call("confirm_well_hit", attacker, killed)
+	else:
+		Events.hit_confirmed.emit(attacker, killed, false)
 
 
 func _tick_orb(delta: float) -> void:

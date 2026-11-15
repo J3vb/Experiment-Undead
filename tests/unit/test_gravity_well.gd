@@ -230,3 +230,33 @@ func test_delayed_cosmetic_well_replaces_the_oldest_display() -> void:
 	assert_false(second.collapsed)
 	assert_false(newest.collapsed)
 	newest.set_physics_process(false)
+
+
+func test_each_damage_pulse_confirms_one_hit_and_reports_any_kill() -> void:
+	var zombie: Zombie = _zombie(Vector3(1.0, 0.0, 0.0))
+	_zombie(Vector3(-1.0, 0.0, 0.0))
+	var well: GravityWell = _well()
+	watch_signals(Events)
+	well.tick(0.5)
+	assert_signal_emit_count(Events, "hit_confirmed", 1)
+	assert_signal_emitted_with_parameters(Events, "hit_confirmed", [_attacker, false, false])
+	zombie.health.reset(1.0)
+	well.tick(0.5)
+	assert_signal_emit_count(Events, "hit_confirmed", 2)
+	assert_signal_emitted_with_parameters(Events, "hit_confirmed", [_attacker, true, false])
+
+
+func test_empty_well_does_not_show_a_hit_marker() -> void:
+	var well: GravityWell = _well()
+	watch_signals(Events)
+	well.tick(0.5)
+	assert_signal_emit_count(Events, "hit_confirmed", 0)
+
+
+func test_a_pulse_with_zero_damage_does_not_show_a_hit_marker() -> void:
+	_zombie(Vector3(1.0, 0.0, 0.0))
+	var well: GravityWell = _well()
+	well.setup(_attacker, Vector3.ZERO, 0.0)
+	watch_signals(Events)
+	well.tick(0.5)
+	assert_signal_emit_count(Events, "hit_confirmed", 0)

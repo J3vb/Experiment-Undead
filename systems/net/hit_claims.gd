@@ -5,6 +5,7 @@ extends Node
 
 const KILL_WINDOW: float = 0.5
 const SLACK: float = 1.5
+const WELL_FLIGHT_TIME: float = GravityWell.ORB_RANGE / GravityWell.ORB_SPEED + 1.0
 
 var session: GameSession
 
@@ -12,6 +13,7 @@ var _time: float = 0.0
 var _next_warning: float = 0.0
 var _claims: Dictionary[int, Dictionary] = {}
 var _orb_claims: Dictionary[int, Array] = {}
+var _well_launches: Dictionary[int, Array] = {}
 var _recent_hits: Array[Dictionary] = []
 var _weapons: Dictionary[StringName, WeaponData] = {}
 
@@ -137,6 +139,7 @@ func _reject(sender: int, reason: StringName) -> void:
 func _forget_peer(peer_id: int) -> void:
 	_claims.erase(peer_id)
 	_orb_claims.erase(peer_id)
+	_well_launches.erase(peer_id)
 
 
 func request_well(point: Vector3) -> void:
@@ -160,13 +163,13 @@ func _accept_well(peer_id: int, point: Vector3) -> void:
 	if player == null or not player.is_alive() or data == null or not point.is_finite():
 		_reject(peer_id, &"well_out_of_bounds")
 		return
-	if player.camera.global_position.distance_to(point) > data.max_range + 2.0:
+	if not _well_in_range(peer_id, player, data, point):
 		_reject(peer_id, &"well_out_of_bounds")
 		return
 	if not _take_claim(peer_id, data):
 		_reject(peer_id, &"well_out_of_bounds")
 		return
-	var well: GravityWell = GravityWell.open(session, player, point, data.damage)
+	var well: GravityWell = GravityWell.open(session, player, point, data.damage, false, self)
 	if well == null:
 		_reject(peer_id, &"well_out_of_bounds")
 		return
@@ -182,15 +185,15 @@ func show_well(peer_id: int, point: Vector3) -> void:
 
 
 func send_well_orb(origin: Vector3, direction: Vector3) -> void:
-	if multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
-		return
 	if multiplayer.is_server():
-		_relay_well_orb(multiplayer.get_unique_id(), origin, direction)
-	else:
+		_remember_well_launch(multiplayer.get_unique_id(), origin)
+		if not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
+			_relay_well_orb(multiplayer.get_unique_id(), origin, direction)
+	elif not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
 		well_orb.rpc_id(1, origin, direction)
 
 
-@rpc("any_peer", "call_remote", "unreliable")
+@rpc("any_peer", "call_remote", "reliable")
 func well_orb(origin: Vector3, direction: Vector3) -> void:
 	if not multiplayer.is_server() or not origin.is_finite() or not direction.is_finite():
 		return
@@ -201,7 +204,42 @@ func well_orb(origin: Vector3, direction: Vector3) -> void:
 		return
 	if player.camera.global_position.distance_to(origin) > 2.0 or not _take_orb_claim(sender, data):
 		return
+	_remember_well_launch(sender, origin)
 	_relay_well_orb(sender, origin, direction)
+
+
+func _remember_well_launch(peer_id: int, origin: Vector3) -> void:
+	var launches: Array = _well_launches.get(peer_id, [])
+	while not launches.is_empty() and float(launches[0].time) < _time - WELL_FLIGHT_TIME:
+		launches.pop_front()
+	launches.append({"origin": origin, "time": _time})
+	_well_launches[peer_id] = launches
+
+
+func _well_in_range(peer_id: int, player: Player, data: WeaponData, point: Vector3) -> bool:
+	if player.camera.global_position.distance_to(point) <= data.max_range + 2.0:
+		return true
+	for launch: Dictionary in _well_launches.get(peer_id, []):
+		if _time - float(launch.time) <= WELL_FLIGHT_TIME:
+			var origin: Vector3 = launch.origin
+			if origin.distance_to(point) <= data.max_range + 2.0:
+				return true
+	return false
+
+
+func confirm_well_hit(player: Player, killed: bool) -> void:
+	if not multiplayer.is_server() or not is_instance_valid(player):
+		return
+	Events.hit_confirmed.emit(player, killed, false)
+	if player.net_id != multiplayer.get_unique_id() and multiplayer.get_peers().has(player.net_id):
+		well_hit.rpc_id(player.net_id, killed)
+
+
+@rpc("authority", "call_remote", "reliable")
+func well_hit(killed: bool) -> void:
+	var player: Player = session.players.find_player(multiplayer.get_unique_id())
+	if player:
+		Events.hit_confirmed.emit(player, killed, false)
 
 
 func _relay_well_orb(peer_id: int, origin: Vector3, direction: Vector3) -> void:
