@@ -1,7 +1,7 @@
 ## Standalone input check: --headless --script res://tests/manual/results_navigation.gd.
 extends SceneTree
 
-var screen: ResultsScreen
+var screen: Control
 var menus: int = 0
 var restarts: int = 0
 
@@ -12,7 +12,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	create_timer(10.0).timeout.connect(func() -> void: quit(1))
-	screen = preload("res://systems/ui/results_screen.tscn").instantiate() as ResultsScreen
+	screen = load("res://systems/ui/results_screen.tscn").instantiate() as Control
 	root.add_child(screen)
 	screen.main_menu_requested.connect(func() -> void: menus += 1)
 	screen.restart_requested.connect(func() -> void: restarts += 1)

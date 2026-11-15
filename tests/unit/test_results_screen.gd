@@ -106,3 +106,57 @@ func test_panels_fade_and_slide_twelve_pixels() -> void:
 	screen._panel_tween.custom_step(0.13)
 	assert_almost_eq(panel.modulate.a, 1.0, 0.001)
 	assert_almost_eq(panel.position.y, screen.size.y * 0.25, 0.001)
+
+
+func test_loot_column_lists_items_best_first_with_rarity_colours() -> void:
+	var items: Array[Dictionary] = [
+		{"base": "pistol", "rar": "common", "ilvl": 4},
+		{"base": "talon_dmr", "rar": "rare", "ilvl": 17},
+		{"base": "rifle_ar", "rar": "legendary", "ilvl": 27},
+		{"base": "lucky_charm", "rar": "epic", "ilvl": 15},
+		{"base": "kestrel_smg", "rar": "rare", "ilvl": 20},
+		{"base": "ward_vest", "rar": "uncommon", "ilvl": 12},
+	]
+	var original: Array[Dictionary] = items.duplicate(true)
+	screen.show_results({"loot": items})
+	assert_eq(screen.loot_items.get_child_count(), 6)
+	assert_eq(_loot_name(0).text, Content.weapon(&"rifle_ar").display_name)
+	assert_eq(_loot_name(1).text, "Lucky Charm")
+	assert_eq(_loot_name(2).text, Content.weapon(&"kestrel_smg").display_name)
+	assert_eq(_loot_name(3).text, Content.weapon(&"talon_dmr").display_name)
+	assert_eq(screen.loot_title.text, "Loot kept")
+	assert_eq(screen.loot_status.text, "Sent to your stash")
+	assert_false(screen.loot_empty.visible)
+	var rarity: RarityData = Content.get_item(&"loot", &"legendary") as RarityData
+	assert_eq(_loot_name(0).get_theme_color("font_color"), rarity.colour)
+	var card: PanelContainer = screen.loot_items.get_child(0) as PanelContainer
+	assert_eq((card.get_theme_stylebox("panel") as StyleBoxFlat).border_color, rarity.colour)
+	assert_gt(_loot_name(0).get_theme_font_size("font_size"), _loot_name(1).get_theme_font_size("font_size"))
+	var detail: Label = card.get_child(0).get_child(1) as Label
+	assert_eq(detail.text, "●●●●● Legendary · iLvl 27")
+	assert_eq(items, original, "Display sorting leaves the Pack order unchanged")
+
+
+func test_stash_overflow_message_and_reopening_clear_old_loot() -> void:
+	(
+		screen
+		. show_results(
+			{
+				"loot": [{"base": "talon_dmr", "rar": "rare", "ilvl": 17}],
+				"loot_lost": 1,
+			}
+		)
+	)
+	assert_eq(screen.loot_items.get_child_count(), 1)
+	assert_eq(screen.loot_title.text, "Loot taken")
+	assert_eq(screen.loot_status.text, "Stash full · 0 kept, 1 item lost")
+	assert_eq(screen.loot_status.get_theme_color("font_color"), Color("ff9f1c"))
+	screen.show_results({})
+	assert_eq(screen.loot_items.get_child_count(), 0)
+	assert_true(screen.loot_empty.visible)
+	assert_eq(screen.loot_status.text, "")
+	assert_eq(screen.loot_title.text, "Loot kept")
+
+
+func _loot_name(index: int) -> Label:
+	return screen.loot_items.get_child(index).get_child(0).get_child(0) as Label
