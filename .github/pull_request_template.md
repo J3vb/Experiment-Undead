@@ -23,6 +23,8 @@
 - [ ] Behaviour change has a test (or the `no-tests-needed` label and a reason above)
 - [ ] Bug fix has a test that failed before the fix
 - [ ] Follows the Keep it simple rules in AGENTS.md
+- [ ] Followed docs/HOW_TO_ADD.md for new content/systems (or n.a.)
+- [ ] Structure rules pass (tools/ci/check_rules.py)
 - [ ] Only touched files this task needed
 - [ ] One label: `new`, `fix`, `balance` or `tech`
 - [ ] Automatic review arrived for the latest commit, every comment fixed or answered and resolved
