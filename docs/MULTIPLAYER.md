@@ -51,11 +51,11 @@ already reads `InputFrame`s, so the server could replay them.
 
 ## Build order (one small PR each, tests in every PR)
 
-1. **Players in one match** (this PR): `Net.host/join/leave`, `PlayerSpawner`,
+1. **Players in one match** (done, PR #73): `Net.host/join/leave`, `PlayerSpawner`,
    player sync, dedicated server runs a match, `--host` and `--join=addr:port`
    on the command line. Test: a real headless server plus two clients see two
    players.
-2. **Zombies on clients:** replicate spawned zombies; clients run no AI.
+2. **Zombies on clients** (done): `ZombieSync` replicates spawned zombies; clients run no AI.
 3. **Shooting:** hit claims to the server, damage, kills, points per player.
 4. **Player health and death:** zombie hits, down, revive (50 points), game
    over when everyone is down, results on every client.
