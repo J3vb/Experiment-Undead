@@ -29,8 +29,10 @@ for _ in $(seq 1 60); do
 done
 
 joined=0
+join_code=0
 if grep -q "Server ready" server.log; then
   timeout 60 linux/ExperimentUndead.x86_64 --headless --quit-after 900 -- --join=127.0.0.1:7777 > join.log 2>&1
+  join_code=$?
   grep -q "Player connected" server.log && joined=1
 fi
 alive_after_join=0
@@ -56,6 +58,10 @@ if ! grep -q "Server ready" server.log; then
 fi
 if [ "$joined" -ne 1 ]; then
   echo "::error::Exported client could not join the exported server"
+  fail=1
+fi
+if [ "$join_code" -ne 0 ]; then
+  echo "::error::Joining client did not exit cleanly (exit $join_code)"
   fail=1
 fi
 if [ "$alive_after_join" -ne 1 ]; then
