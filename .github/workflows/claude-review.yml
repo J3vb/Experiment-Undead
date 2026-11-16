@@ -1,0 +1,89 @@
+name: Claude code review
+
+# Reads the repo with Claude and opens a GitHub issue (label claude-review) per problem found.
+# Needs the repo secret ANTHROPIC_API_KEY. --budget is a hard cap: each call reserves its
+# worst-case cost first, so a run never spends more than the budget input.
+on:
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: "Hard spend cap in USD"
+        default: "125"
+      since:
+        description: "Only review files changed since this git ref (empty = whole repo)"
+        default: ""
+      model:
+        description: "Claude model"
+        default: "claude-fable-5-2"
+      effort:
+        description: "Effort: low, medium, high, xhigh, max"
+        default: "high"
+      lenses:
+        description: "Review passes per chunk"
+        default: "correctness,multiplayer,performance,maintainability"
+      min_severity:
+        description: "Lowest severity that becomes an issue: critical, high, medium, low"
+        default: "medium"
+      max_issues:
+        description: "Most issues to open in one run"
+        default: "60"
+      dry_run:
+        description: "Review only, open no issues (findings go to the run artifact)"
+        type: boolean
+        default: false
+  # Cheaper weekly pass over recent changes. Off until the owner agrees to a recurring spend.
+  # schedule:
+  #   - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: claude-review
+  cancel-in-progress: false
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Anthropic SDK
+        run: pip install "anthropic==2.8.0"
+
+      - name: Review and open issues
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IN_BUDGET: ${{ inputs.budget || '5' }}
+          IN_SINCE: ${{ inputs.since || 'HEAD~20' }}
+          IN_MODEL: ${{ inputs.model || 'claude-fable-5-2' }}
+          IN_EFFORT: ${{ inputs.effort || 'high' }}
+          IN_LENSES: ${{ inputs.lenses || 'correctness,multiplayer' }}
+          IN_MIN_SEVERITY: ${{ inputs.min_severity || 'medium' }}
+          IN_MAX_ISSUES: ${{ inputs.max_issues || '15' }}
+          IN_DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          args=(--budget "$IN_BUDGET" --model "$IN_MODEL" --effort "$IN_EFFORT" --lenses "$IN_LENSES"
+                --min-severity "$IN_MIN_SEVERITY" --max-issues "$IN_MAX_ISSUES")
+          if [ "${{ github.event_name }}" = "schedule" ] || [ -n "${{ inputs.since }}" ]; then
+            args+=(--since "$IN_SINCE")
+          fi
+          if [ "$IN_DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          python tools/ci/claude_review.py "${args[@]}"
+
+      - name: Upload findings
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-review-${{ github.run_id }}
+          path: claude-review-out/
+          if-no-files-found: ignore
