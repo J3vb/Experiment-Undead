@@ -227,7 +227,11 @@ unzip -q godot.zip && mv Godot_v4.7.2-stable_linux.x86_64 godot && chmod +x godo
 ./godot --headless --path . --import                       # import assets
 ./godot --headless --path . --quit-after 300               # boot test: no SCRIPT ERROR / Parse Error
 ./godot --headless --path . -s addons/gut/gut_cmdln.gd     # all GUT tests
+./godot --headless --path . -s addons/gut/gut_cmdln.gd -gconfig= -gtest=res://tests/unit/<file>.gd -gexit  # one file
 ```
+
+Claude Code cloud sessions install Godot (as `godot` on PATH), gdtoolkit and ruff
+automatically (`.claude/hooks/session-start.sh`). Run the import once before tests.
 
 All three must pass before you open a pull request. CI runs the same steps.
 If you cannot download Godot, say so in the PR and let CI run the checks.
