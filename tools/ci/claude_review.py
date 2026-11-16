@@ -126,6 +126,7 @@ class Budget:
     limit: float
     spent: float = 0.0
     reserved: float = 0.0
+    pending: int = 0
     calls: int = 0
     stopped: bool = False
     log: list[str] = field(default_factory=list)
@@ -135,16 +136,19 @@ class Budget:
         """Waits while other calls hold reservations that might settle lower; gives up only when the
         settled spend alone leaves too little."""
         with self.lock:
-            while self.spent + self.reserved + worst_case > self.limit and self.reserved > 0 and not self.stopped:
+            while self.spent + self.reserved + worst_case > self.limit and self.pending > 0 and not self.stopped:
                 self.lock.wait()
             if self.stopped or self.spent + self.reserved + worst_case > self.limit:
                 return False
             self.reserved += worst_case
+            self.pending += 1
             return True
 
     def settle(self, reserved: float, cost: float) -> None:
         with self.lock:
-            self.reserved -= reserved
+            self.pending -= 1
+            # Reset when idle so float rounding can't leave a phantom reservation behind.
+            self.reserved = self.reserved - reserved if self.pending else 0.0
             self.spent += cost
             self.calls += 1
             self.lock.notify_all()

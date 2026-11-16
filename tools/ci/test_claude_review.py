@@ -111,6 +111,15 @@ class BudgetTests(unittest.TestCase):
         self.assertEqual(reviewer.calls, 10)
         self.assertLessEqual(budget.spent, budget.limit)
 
+    def test_rounding_residue_cannot_block_forever(self):
+        budget = cr.Budget(limit=4.0)
+        self.assertTrue(budget.reserve(1.6375))
+        self.assertTrue(budget.reserve(1.63755))
+        budget.settle(1.6375, 1.0)
+        budget.settle(1.63755, 1.0)
+        self.assertEqual(budget.reserved, 0)
+        self.assertFalse(budget.reserve(2.5))
+
     def test_zero_budget_makes_no_calls(self):
         reviewer = FakeReviewer([])
         cr.run_review(reviewer, {"core/a.gd": "x"}, [["core/a.gd"]], ["correctness"], cr.Budget(limit=0.0))
