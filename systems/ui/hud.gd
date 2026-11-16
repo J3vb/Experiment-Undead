@@ -118,12 +118,12 @@ func _physics_process(delta: float) -> void:
 
 func _process(delta: float) -> void:
 	_fps_label.visible = bool(Settings.get_value(&"video", &"show_fps"))
-	if _fps_label.visible:
-		_fps_label.text = "FPS: %d" % Engine.get_frames_per_second()
+	_fps_label.text = "FPS: %d" % Engine.get_frames_per_second()
 	_hurt = maxf(_hurt - delta * 1.5, 0.0)
 	var low: float = clampf((0.6 - _health_ratio) / 0.6, 0.0, 1.0)
-	(vignette.material as ShaderMaterial).set_shader_parameter("intensity", clampf(maxf(_hurt, low * 0.85), 0.0, 1.0))
-
+	var shade: ShaderMaterial = vignette.material as ShaderMaterial
+	if shade:  # null in the dedicated server export, which strips visual resources
+		shade.set_shader_parameter("intensity", clampf(maxf(_hurt, low * 0.85), 0.0, 1.0))
 	if _center_time > 0.0:
 		_center_time -= delta
 		center_label.modulate.a = clampf(_center_time, 0.0, 1.0)

@@ -45,11 +45,9 @@ func test_full_pack_refuses_and_keeps_drop() -> void:
 func test_sixty_second_timer_frees_the_drop() -> void:
 	assert_eq(drop.lifetime.wait_time, 60.0)
 	assert_true(drop.lifetime.one_shot)
-	# Advance the real physics Timer quickly; no minute-long unit test.
-	var previous_scale: float = Engine.time_scale
-	Engine.time_scale = 1000.0
-	await wait_process_frames(10)
-	Engine.time_scale = previous_scale
+	assert_false(drop.lifetime.is_stopped(), "the expiry timer runs from spawn")
+	drop.lifetime.timeout.emit()
+	await wait_process_frames(2)
 	assert_false(is_instance_valid(drop))
 	assert_true(pack.items.is_empty())
 

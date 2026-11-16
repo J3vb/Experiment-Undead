@@ -172,6 +172,7 @@ def check_no_absolute_paths(root: Path) -> list[str]:
         for number, line in enumerate(lines, 1):
             references = re.finditer(r"\bget_node(?:_or_null)?\s*\(|\$", code(line))
             bad_path = any(re.match(r"""\s*\^?["'](?:/root/|[^"']*\.\./\.\.)""", line[m.end() :]) for m in references)
+            bad_path = bad_path or re.search(r"\$\s*(?:/root/|\.\./\.\.)", code(line)) is not None
             parents = re.search(r"\bget_parent\s*\(\s*\)\s*\.\s*get_parent\s*\(", code(line))
             if bad_path or parents:
                 errors.append(

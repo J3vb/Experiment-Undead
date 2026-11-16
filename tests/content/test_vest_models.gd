@@ -99,8 +99,7 @@ func test_vests_import_dynamic_lighting_and_four_gear_finishes() -> void:
 					assert_true(material.resource_name in ["GearFabric", "GearWebbing", "GearPlate", "GearPolymer"])
 
 
-func _skin_vertex(shell: MeshInstance3D, skeleton: Skeleton3D, surface: int, vertex: int) -> Vector3:
-	var arrays: Array = shell.mesh.surface_get_arrays(surface)
+func _skin_vertex(shell: MeshInstance3D, skeleton: Skeleton3D, arrays: Array, vertex: int) -> Vector3:
 	var positions: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
 	var bones: PackedInt32Array = arrays[Mesh.ARRAY_BONES]
 	var weights: PackedFloat32Array = arrays[Mesh.ARRAY_WEIGHTS]
@@ -117,19 +116,21 @@ func _skin_vertex(shell: MeshInstance3D, skeleton: Skeleton3D, surface: int, ver
 
 
 func _posed_displacement(shell: MeshInstance3D, skeleton: Skeleton3D, bone: int) -> float:
+	var surfaces: Array[Array] = []
 	var before: Array[PackedVector3Array] = []
 	for surface: int in shell.mesh.get_surface_count():
-		var positions: PackedVector3Array = shell.mesh.surface_get_arrays(surface)[Mesh.ARRAY_VERTEX]
+		var arrays: Array = shell.mesh.surface_get_arrays(surface)
+		surfaces.append(arrays)
 		var points: PackedVector3Array = []
-		for vertex: int in positions.size():
-			points.append(_skin_vertex(shell, skeleton, surface, vertex))
+		for vertex: int in (arrays[Mesh.ARRAY_VERTEX] as PackedVector3Array).size():
+			points.append(_skin_vertex(shell, skeleton, arrays, vertex))
 		before.append(points)
 	skeleton.set_bone_pose_rotation(bone, Quaternion(Vector3.RIGHT, 0.35))
 	skeleton.force_update_all_bone_transforms()
 	var displacement: float = 0.0
 	for surface: int in shell.mesh.get_surface_count():
 		for vertex: int in before[surface].size():
-			var point: Vector3 = _skin_vertex(shell, skeleton, surface, vertex)
+			var point: Vector3 = _skin_vertex(shell, skeleton, surfaces[surface], vertex)
 			assert_true(point.is_finite(), "retargeted skin produces finite vertex positions")
 			displacement = maxf(displacement, point.distance_to(before[surface][vertex]))
 	skeleton.reset_bone_pose(bone)

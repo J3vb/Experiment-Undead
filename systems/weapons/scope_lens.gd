@@ -26,6 +26,9 @@ func _ready() -> void:
 	viewport.add_child(camera)
 	add_child(viewport)
 	_material = material_override as ShaderMaterial
+	if _material == null:  # the dedicated server export strips visual resources
+		set_process(false)
+		return
 	_material.set_shader_parameter(&"view", viewport.get_texture())
 	_material.set_shader_parameter(&"live", false)
 	var node: Node = get_parent()
