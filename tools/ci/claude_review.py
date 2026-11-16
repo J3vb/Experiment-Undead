@@ -456,9 +456,13 @@ def build_system(root: Path) -> str:
     return SYSTEM_PROMPT.format(rules=rules, file_map=file_map)
 
 
-def write_summary(args, budget: Budget, findings: list[Finding], created: list[str], out_dir: Path) -> None:
+def write_findings(findings: list[Finding], out_dir: Path) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "findings.json").write_text(json.dumps([asdict(f) for f in findings], indent=2))
+
+
+def write_summary(args, budget: Budget, findings: list[Finding], created: list[str], out_dir: Path) -> None:
+    out_dir.mkdir(parents=True, exist_ok=True)
     lines = [
         "## Claude code review",
         f"- Mode: {'changed since ' + args.since if args.since else 'full repo'}, model {args.model}, "
@@ -505,13 +509,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return args
 
 
-def create_issues(github: GitHub | None, chosen: list[Finding], sha: str) -> list[str]:
+def create_issues(github: GitHub | None, chosen: list[Finding], sha: str, budget: Budget) -> list[str]:
     created = []
     for finding in chosen:
         if github is None:
             created.append(f"(dry run) [{finding.severity}] {finding.file}:{finding.line} {finding.title}")
             continue
-        created.append(github.create_issue(finding, sha))
+        try:
+            created.append(github.create_issue(finding, sha))
+        except (urllib.error.URLError, TimeoutError, OSError) as error:
+            budget.note(f"could not open issue for {finding.file}:{finding.line}: {error}")
         time.sleep(2)  # stay under GitHub's content-creation rate limit
     return created
 
@@ -536,8 +543,9 @@ def main(argv: list[str] | None = None) -> int:
     system = build_system(root)
     reviewer = ClaudeReviewer(anthropic.Anthropic(max_retries=8), args.model, args.effort, args.max_tokens, system)
     findings = run_review(reviewer, files, chunks, args.lenses, budget, args.workers)
+    write_findings(findings, root / args.out)  # saved first so paid results survive a GitHub failure
     chosen = select_findings(findings, deduper, args.min_severity, args.max_issues)
-    created = create_issues(github, chosen, os.environ.get("GITHUB_SHA", ""))
+    created = create_issues(github, chosen, os.environ.get("GITHUB_SHA", ""), budget)
     write_summary(args, budget, findings, created, root / args.out)
     return 0
 

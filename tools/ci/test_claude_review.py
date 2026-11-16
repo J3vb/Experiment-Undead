@@ -2,6 +2,7 @@ import contextlib
 import io
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -221,8 +222,35 @@ class CliTests(unittest.TestCase):
                 cr.parse_args(["--lenses", "correctness,vibes"])
 
     def test_dry_run_creates_no_issues(self):
-        created = cr.create_issues(None, [finding()], "sha")
+        created = cr.create_issues(None, [finding()], "sha", cr.Budget(0))
         self.assertTrue(created[0].startswith("(dry run)"))
+
+    def test_github_failure_keeps_other_issues_and_logs(self):
+        class FlakyGitHub:
+            def __init__(self):
+                self.calls = 0
+
+            def create_issue(self, item, sha):
+                self.calls += 1
+                if self.calls == 1:
+                    raise cr.urllib.error.URLError("timed out")
+                return f"https://example/issues/{self.calls}"
+
+        budget = cr.Budget(0)
+        original_sleep = cr.time.sleep
+        cr.time.sleep = lambda _seconds: None
+        try:
+            created = cr.create_issues(FlakyGitHub(), [finding(line=1), finding(line=50)], "sha", budget)
+        finally:
+            cr.time.sleep = original_sleep
+        self.assertEqual(created, ["https://example/issues/2"])
+        self.assertIn("could not open issue", budget.log[0])
+
+    def test_findings_file_is_written(self):
+        with tempfile.TemporaryDirectory() as folder:
+            cr.write_findings([finding()], Path(folder))
+            data = json.loads((Path(folder) / "findings.json").read_text())
+        self.assertEqual(data[0]["file"], "core/a.gd")
 
 
 class ReviewerTests(unittest.TestCase):
