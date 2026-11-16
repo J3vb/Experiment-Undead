@@ -91,8 +91,8 @@ def test_only_arm_bones_have_normalized_weights(arms):
 def test_character_checks_reject_normalized_pelvis_weights_on_arms(arms):
     obj = meshes(arms)[0]
     vertex = obj.data.vertices[0]
-    for influence in list(vertex.groups):
-        obj.vertex_groups[influence.group].remove([vertex.index])
+    for index in [influence.group for influence in vertex.groups]:
+        obj.vertex_groups[index].remove([vertex.index])
     pelvis = obj.vertex_groups.get("pelvis") or obj.vertex_groups.new(name="pelvis")
     pelvis.add([vertex.index], 1.0, "REPLACE")
     errors = character_checks.check(arms, "characters", "player_arms")
