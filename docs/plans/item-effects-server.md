@@ -114,6 +114,11 @@ state), `LootService` (Pack and run state), `ItemLoadout` (item wiring).
   - `HitClaims.claim_hit(..., item_uid: String = "")`: one new last
     argument.
   - `LootService._receive_luck` RPC: deleted.
+  - Protocol: steps 1 and 2 each change the RPC contract, so each bumps
+    `Build.PROTOCOL_VERSION` in `core/build.gd` by one. The handshake then
+    refuses an older build before any player spawns (existing
+    `tests/unit/test_handshake.gd` and `tests/integration/test_net_match.gd`
+    cover the refusal; each step adds an assert on the new number).
 - Save format change: none.
 - Content checks to add in `tests/content/`: none.
 
@@ -152,8 +157,8 @@ No per-frame work. Budget: no measurable cost.
   from the gun dicts. `GameSession._on_player_added()` sends the loadout after
   `ItemLoadout.apply()`. `LootService` reads luck from the server's copy with
   `player_luck()`; delete `_sync_luck`, `_receive_luck`, `_peer_luck`,
-  `_last_luck`.
-- Files: systems/net/player_state_sync.gd, systems/player/player.gd,
+  `_last_luck`. Bump `Build.PROTOCOL_VERSION`.
+- Files: core/build.gd, systems/net/player_state_sync.gd, systems/player/player.gd,
   systems/game/game_session.gd, systems/loot/loot_service.gd,
   tests/unit/test_gear_health_sync.gd, tests/unit/test_loot_service.gd.
 - Tests: two peers (pattern: `test_gear_health_sync.gd`): a client's
@@ -173,10 +178,14 @@ No per-frame work. Budget: no measurable cost.
   `_valid_hit()` uses `item.weapon_data(base, player.stats)` for that uid
   instead of the plain content gun. `PlayerStateSync` on the server connects
   `Events.enemy_damaged` and calls `ItemLoadout.apply_hit(player, item)` when
-  `info.attacker` is its player and the uid is known. Delete the
+  `info.attacker` is its player and the uid is known. Pack guns must keep
+  working in this step: `PackOverlay._equip()` adds the gun to
+  `player.item_guns` and calls `send_loadout()` right where it binds the hook
+  today (step 3 moves that call into the tick), and `ItemLoadout.apply()`
+  adds the sidearm to `player.item_guns`. Only then delete the
   `hit_landed` binding and `_on_hit` from `ItemLoadout.apply()` and
-  `PackOverlay._equip()`.
-- Files: systems/damage/damage_info.gd, systems/weapons/weapon.gd,
+  `PackOverlay._equip()`. Bump `Build.PROTOCOL_VERSION`.
+- Files: core/build.gd, systems/damage/damage_info.gd, systems/weapons/weapon.gd,
   systems/net/hit_claims.gd, systems/net/player_state_sync.gd,
   systems/loot/item_loadout.gd, systems/loot/pack_overlay.gd,
   tests/unit/test_hit_claims.gd, tests/unit/test_item_effects_coop.gd (new).
@@ -184,7 +193,9 @@ No per-frame work. Budget: no measurable cost.
   copy and the owner sees it; a points-per-hit gun pays the client on the
   server; a hit with an unknown uid pays only the normal hit points; a claim
   that fits the item gun's damage but not the plain gun is accepted; solo and
-  host still get leech and points (`test_item_loadout.gd` or a new solo case).
+  host still get leech and points (`test_item_loadout.gd` or a new solo case);
+  a leech gun equipped from the Pack heals in solo and for a client (so the
+  step does not break Pack guns before step 3).
 - Done when: leech and points-per-hit work for host, solo and clients
   through one server path.
 
