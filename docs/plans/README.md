@@ -1,5 +1,8 @@
 # Plans: think first, then build
 
+Skills for this workflow (Codex and Claude): `write-plan`, `review-plan`,
+`finish-feature` in `.agents/skills/`.
+
 A feature is planned on paper before any code is written, so nobody builds
 on a guess and redoes it later. Example of the cost of skipping this: co-op
 doors, wall-buys and machines were built for solo only and must now be

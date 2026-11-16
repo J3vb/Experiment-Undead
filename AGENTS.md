@@ -31,6 +31,9 @@ files in `.claude/skills/` (Claude Code). Load the one that fits your task:
 | `godot-asset-import` | Import settings, files to commit and tests for anything in `assets/` |
 | `look-check` | Rendering a visual change and comparing it with the style guide |
 | `design-change` | Changing a game number or adding content in line with the balance sheet |
+| `write-plan` | Writing a feature plan in `docs/plans/` before building |
+| `review-plan` | Reviewing a plan PR before it is approved |
+| `finish-feature` | Checking a feature against the Definition of done and closing it |
 
 Third-party skills (Apache-2.0, from gamedev-skills/awesome-gamedev-agent-skills, see
 `docs/CREDITS.md`). They are general Godot 4.7.2 and game-design guides:
