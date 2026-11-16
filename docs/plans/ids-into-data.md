@@ -1,10 +1,10 @@
 # Plan: Ids into data (foundation fix 4)
 
-Status: Review
+Status: Approved
 Roadmap: F-00 foundation fix 4 / issues #140, #143, #148, #149, #154, #163
 Phase: P7
 Size: M
-Approved by:
+Approved by: Codex plan review on PR #177 (2026-11-16), size M with no open decisions
 
 ## Goal
 
