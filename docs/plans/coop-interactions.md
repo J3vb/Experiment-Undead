@@ -149,6 +149,11 @@ Network messages (all on `InteractionSync`, all reliable):
 - `_request_snapshot()` client -> server once after join, answered with one
   `_receive_snapshot(states: Dictionary)` (path -> state) to that client.
 
+Protocol: steps 1, 2 and 3 each add or change these RPCs, so each bumps
+`Build.PROTOCOL_VERSION` in `core/build.gd` by one, and the handshake refuses
+an older build before any player spawns (existing `test_handshake.gd` and
+`test_net_match.gd` cover the refusal; each step asserts its new number).
+
 `net_state()` per type (empty = not synced):
 
 - Level: `{"power": bool, "areas": Array[StringName], "removed":
@@ -231,8 +236,8 @@ the server with 4 players).
   opens areas and retires every node in `removed`. `Interactable.retire()`
   and the `retired` signal; `Door.open()` calls it, and its navmesh rebake
   runs only where `Net.is_authority()`. `_pay()` sends the result to a
-  remote buyer.
-- Files: systems/net/interaction_sync.gd (new), systems/game/game_session.gd,
+  remote buyer. Bump `Build.PROTOCOL_VERSION`.
+- Files: core/build.gd, systems/net/interaction_sync.gd (new), systems/game/game_session.gd,
   systems/player/player.gd, systems/interactables/interactable.gd,
   door.gd, power_switch.gd, systems/level/level.gd,
   systems/loot/loot_drop.gd, systems/loot/loot_service.gd,
@@ -255,6 +260,7 @@ the server with 4 players).
 - Build: `_receive_grant` and `InteractionSync.grant(player, kind, data,
   from_id)` (direct call for the server's own player, `rpc_id` otherwise);
   `WeaponHolder.replace(old, data)` with `replace_current()` calling it.
+  Bump `Build.PROTOCOL_VERSION` (core/build.gd).
   `WallBuy.owner_facts()` and `Reforger.owner_facts()`; their `interact()`
   reads `facts` (built from the local player when empty, so solo and old
   tests keep working) and grants instead of touching `player.weapons`.
@@ -297,6 +303,7 @@ the server with 4 players).
   emits `Events.exfil_opened` / `Events.exfil_called` on the change, and a
   client-side countdown runs only while `counting` (visual, so in
   `_process()`; the server's hold stays in `_physics_process()`).
+  Bump `Build.PROTOCOL_VERSION` (core/build.gd).
 - Files: systems/interactables/barrier.gd, specimen_vault.gd,
   exfil_hatch.gd, systems/net/interaction_sync.gd (only if needed),
   tests/unit/test_coop_world_state.gd (new).
