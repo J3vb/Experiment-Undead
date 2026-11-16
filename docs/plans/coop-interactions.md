@@ -124,9 +124,11 @@ Network messages (all on `InteractionSync`, all reliable):
   - WallBuy: `{"owned": StringName (held id of this gun or its Reforged
     tier, or &""), "slot": int, "full": bool}`
   - Reforger: `{"current": StringName, "slot": int, "full": bool}`
-  `slot` is the gun's index in the owner's `weapons.weapons`, so two guns
-  with the same base id (possible with Pack guns) are told apart.
-  - SpecimenVault: `{"held": Array[StringName]}`
+  - SpecimenVault: `{"held": Array[StringName], "slot": int}`
+  `slot` is an index in the owner's `weapons.weapons`: the owned gun for an
+  ammo buy or Reforge, so two guns with the same base id (possible with Pack
+  guns) are told apart; for a new gun (wall-buy or Vault take) it is the gun
+  in hand at the moment of the press, the one a full holder gives up.
   The server only accepts ids that exist in `Content` weapons and that match
   the interactable (WallBuy: `weapon.id` or `weapon.upgraded.id`). Prices and
   the next tier always come from the server's own data.
@@ -137,7 +139,10 @@ Network messages (all on `InteractionSync`, all reliable):
   `REFILL`. `from_id` names the gun the purchase was for (the one in the
   owner's facts), never "the gun in hand", so switching guns while the reply
   is on its way cannot hit the wrong gun:
-  - `GIVE`: `weapons.give(weapon_id)`.
+  - `GIVE`: if the holder has a free slot, `weapons.give(weapon_id)`;
+    if it is full, replace the gun at `from_slot` (the gun in hand at the
+    press) with `WeaponHolder.replace(old, data)`, never whatever is in hand
+    when the grant arrives.
   - `UPGRADE`: replace the gun at `from_slot` if its `data.id == from_id`
     (otherwise the first held gun with that id), in its own slot, with
     `weapon_id` (new `WeaponHolder.replace(old: Weapon, data)`;
@@ -301,7 +306,9 @@ the server with 4 players).
   nothing; a client presses Reforge twice with the first grant still
   delayed, is charged 5000 once and gets one upgrade; a client holding two
   guns with the same base id Reforges the second and only the second is
-  upgraded.
+  upgraded; a client with a full holder buys a wall gun, switches guns
+  before the delayed grant arrives, and the gun that was in hand at the
+  press is the one replaced.
   Existing `test_reforger.gd`, `test_med_dispenser.gd`,
   `test_kestrel_smg.gd`, `test_talon_dmr.gd` pass in solo.
 - Done when: a co-op client can buy guns, ammo, Reforges and Serums, pays
