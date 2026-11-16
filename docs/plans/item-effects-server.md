@@ -1,10 +1,10 @@
 # Plan: Item effects run on the server
 
-Status: Review
+Status: Approved
 Roadmap: F-00 foundation fix 3 / issues #145, #147
 Phase: P7
 Size: M
-Approved by:
+Approved by: Codex plan review on PR #176 (2026-11-16), size M, no open decisions
 
 ## Goal
 
