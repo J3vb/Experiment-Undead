@@ -144,6 +144,12 @@ Network messages (all on `InteractionSync`, all reliable):
     `data.id == from_id`; nothing if it is gone.
   On the server's own player (solo, host) the same function runs directly,
   no RPC.
+- `_grant_applied()` owner -> server, sent right after the owner applies a
+  grant. While a peer has a grant outstanding, the server rejects that
+  peer's purchases that use owner facts (WallBuy, Reforger, Vault take) with
+  reason `grant_pending` and charges nothing, so a second press cannot be
+  paid with facts that are already out of date. Cleared on ack and on
+  disconnect. Doors, power, barriers and Serums do not wait.
 - `_receive_state(path: NodePath, state: Dictionary)` server -> all clients,
   on every `state_changed`. Path `.` means the `Level` itself.
 - `_request_snapshot()` client -> server once after join, answered with one
@@ -228,7 +234,11 @@ the server with 4 players).
   (false; `LootDrop` returns true), `owner_facts()` (returns `{}`),
   `state_changed`, `net_state()` / `apply_net_state()`, and an optional
   `facts: Dictionary = {}` argument on `interact()` in the base and every
-  subclass. `Player.apply_frame()`: if `Net.is_authority()` or
+  subclass. `Interactable.accepts_requests()` returns false by default; the
+  server rejects requests for any type that returns false (reason
+  `not_networked_yet`, nothing charged), so a type is only reachable from a
+  client once its own step has moved it to grants and state. Door and
+  PowerSwitch return true in this step. `Player.apply_frame()`: if `Net.is_authority()` or
   `focus.is_local()` call `interact()` as today, otherwise
   `session.interactions.request(focus)`. Delete the client LootDrop branch
   in `LootService._physics_process()`. `Level` emits `area_opened` and
@@ -248,7 +258,8 @@ the server with 4 players).
   cost, the door is gone on both peers and the area's spawn points join on the
   server; a client turns the power on and a power door opens on both; rejects
   for out of range, downed player, not enough points (denied result reaches
-  the client), unknown path, and a second request inside 0.1 s; a client that
+  the client), unknown path, a second request inside 0.1 s, and a wall-buy
+  request (not migrated yet) that charges nothing and gives nothing; a client that
   connects after a door opened does not see that door (removed list in the
   snapshot). Existing
   `test_halcyon_doors.gd` and loot drop tests still pass in solo.
@@ -260,6 +271,8 @@ the server with 4 players).
 - Build: `_receive_grant` and `InteractionSync.grant(player, kind, data,
   from_id)` (direct call for the server's own player, `rpc_id` otherwise);
   `WeaponHolder.replace(old, data)` with `replace_current()` calling it.
+  `_grant_applied()` and the outstanding-grant check. WallBuy, Reforger and
+  MedDispenser return true from `accepts_requests()`.
   Bump `Build.PROTOCOL_VERSION` (core/build.gd).
   `WallBuy.owner_facts()` and `Reforger.owner_facts()`; their `interact()`
   reads `facts` (built from the local player when empty, so solo and old
@@ -282,7 +295,8 @@ the server with 4 players).
   to Reforge gun A, switches to gun B before the grant arrives (delay the
   server reply in the test), and A is upgraded in its own slot while B is
   untouched; a refill grant for a gun the client no longer holds changes
-  nothing.
+  nothing; a client presses Reforge twice with the first grant still
+  delayed, is charged 5000 once and gets one upgrade.
   Existing `test_reforger.gd`, `test_med_dispenser.gd`,
   `test_kestrel_smg.gd`, `test_talon_dmr.gd` pass in solo.
 - Done when: a co-op client can buy guns, ammo, Reforges and Serums, pays
@@ -303,7 +317,8 @@ the server with 4 players).
   emits `Events.exfil_opened` / `Events.exfil_called` on the change, and a
   client-side countdown runs only while `counting` (visual, so in
   `_process()`; the server's hold stays in `_physics_process()`).
-  Bump `Build.PROTOCOL_VERSION` (core/build.gd).
+  All interactables are now networked, so delete `accepts_requests()` and
+  its check (dead code). Bump `Build.PROTOCOL_VERSION` (core/build.gd).
 - Files: systems/interactables/barrier.gd, specimen_vault.gd,
   exfil_hatch.gd, systems/net/interaction_sync.gd (only if needed),
   tests/unit/test_coop_world_state.gd (new).
@@ -364,6 +379,9 @@ the server with 4 players).
 - **Grants racing the player's own actions.** Grants name the gun they are
   for (`from_id`), never the gun in hand. Tested by the switch-before-reply
   case in step 2.
+- **Half-migrated builds.** Each step merges alone, so a type a client
+  cannot use correctly yet is refused by `accepts_requests()` instead of
+  taking points for nothing. Removed in step 3.
 - **Big step sizes.** If step 1 passes 400 lines, split the snapshot and late
   join into its own PR before doors; the order of the rest does not change.
 
