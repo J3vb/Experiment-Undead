@@ -79,9 +79,7 @@ written into the plan. Everything else is approved by the review above.
 
 ## Building from a plan
 
-- Every build PR names its plan and step: `Plan: docs/plans/<file>.md, step N`,
-  or `Plan: none: <why>` when no plan is needed. CI fails a PR labelled `new`
-  without this line.
+- Every build PR names its plan and step: `Plan: docs/plans/<file>.md, step N`.
 - Every Codex prompt starts with the plan link and the step number, and pastes
   that step's Build, Files, Tests and Done when lines.
 - Build only what the step says. If the step turns out wrong, stop, fix the

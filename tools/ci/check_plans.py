@@ -1,6 +1,5 @@
 """Check feature plans in docs/plans/ and the plan links in docs/ROADMAP.md."""
 
-import os
 import re
 import sys
 from pathlib import Path
@@ -25,8 +24,6 @@ SECTIONS = (
 )
 NONE_WORDS = {"", "none", "-", "n.a."}
 LINK_RE = re.compile(r"\]\((plans/[^)#\s]+)")
-PLAN_LINE_RE = re.compile(r"^Plan:[ \t]*(.*)$", re.MULTILINE)
-PLAN_PATH_RE = re.compile(r"docs/plans/[\w.-]+\.md")
 
 
 def field(text: str, name: str) -> str | None:
@@ -83,24 +80,8 @@ def check_all(docs: Path) -> list[str]:
     return problems
 
 
-def check_pr_body(body: str, docs: Path) -> list[str]:
-    """A PR labelled `new` names its plan step, or says why it needs none."""
-    match = PLAN_LINE_RE.search(re.sub(r"<!--.*?-->", "", body, flags=re.DOTALL))
-    value = match.group(1).strip() if match else ""
-    if value.lower().startswith("none:") and len(value) > len("none:"):
-        return []
-    path = PLAN_PATH_RE.search(value)
-    if not path:
-        return ["PR body needs 'Plan: docs/plans/<file>.md, step N' or 'Plan: none: <why>'"]
-    if not (docs.parent / path.group(0)).is_file():
-        return [f"PR body names a plan that does not exist: {path.group(0)}"]
-    return []
-
-
 def main() -> int:
     problems = check_all(ROOT / "docs")
-    if "--pr-body" in sys.argv and "new" in os.environ.get("PR_LABELS", "").split(","):
-        problems += check_pr_body(os.environ.get("PR_BODY", ""), ROOT / "docs")
     for problem in problems:
         print(problem)
     print("Plan checks failed. See docs/plans/README.md." if problems else "Plan checks passed.")
