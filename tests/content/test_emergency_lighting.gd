@@ -20,13 +20,13 @@ func test_map_starts_on_emergency_light_and_power_restores_it() -> void:
 	add_child_autofree(level)
 	var lights: Array[CeilingLight] = _lights(level)
 	assert_gt(lights.size(), 20, "the map has its ceiling lights")
-	var normal_energy: float = 0.0
+	var normal_energy: Dictionary[CeilingLight, float] = {}
 	for light: CeilingLight in lights:
 		var spot: SpotLight3D = light.get_node("Fixture") as SpotLight3D
 		assert_true(light.emergency, "%s on emergency power" % light.name)
 		assert_eq(spot.light_color, CeilingLight.EMERGENCY_COLOR)
 		assert_eq((light.get_node("Tube") as MeshInstance3D).material_override, CeilingLight.EMERGENCY_TUBE)
-		normal_energy = spot.light_energy / CeilingLight.EMERGENCY_DIM
+		normal_energy[light] = spot.light_energy / CeilingLight.EMERGENCY_DIM
 	level.turn_power_on()
 	await wait_seconds(CeilingLight.POWER_ON_SPREAD + 0.2)
 	for light: CeilingLight in lights:
@@ -35,7 +35,7 @@ func test_map_starts_on_emergency_light_and_power_restores_it() -> void:
 		assert_ne(spot.light_color, CeilingLight.EMERGENCY_COLOR)
 		assert_null((light.get_node("Tube") as MeshInstance3D).material_override)
 		if not light.flickers:
-			assert_almost_eq(spot.light_energy, normal_energy, 0.001, "full brightness")
+			assert_almost_eq(spot.light_energy, normal_energy[light], 0.001, "%s full brightness" % light.name)
 
 
 func test_flickering_lights_flicker_around_the_new_level() -> void:

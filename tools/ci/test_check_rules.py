@@ -153,11 +153,15 @@ class CheckRulesTests(unittest.TestCase):
             '$"/root/Game"',
             'get_node("../..")',
             '$"../../Camera"',
+            "$/root/Game",
+            "$../../Camera",
+            "var cam = $ ../../Camera",
             "get_parent().get_parent()",
         ):
             with self.subTest(call=call):
                 self.check("no-absolute-paths", {"systems/game.gd": call + "\n"}, 1)
         self.check("no-absolute-paths", {"tools/example.gd": 'get_node("/root/Game")\n'})
+        self.check("no-absolute-paths", {"systems/game.gd": "$Camera\n$Arm/Hand\n$../Sibling\n"})
 
     def test_path_examples_in_strings_and_comments_are_not_calls(self):
         self.check(

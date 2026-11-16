@@ -223,3 +223,13 @@ func test_hud_initializes_from_saved_total_at_spawn() -> void:
 	Events.player_spawned.emit(player)
 	assert_eq(fresh.level_label.text, "LV 7")
 	assert_almost_eq(fresh.xp_bar.value, 200.0, 0.001)
+
+
+## The dedicated server export strips visual resources, so the vignette has no
+## material there; the frame must still update everything after it.
+func test_process_without_vignette_material_keeps_updating() -> void:
+	hud.vignette.material = null
+	hud._center_time = 0.5
+	hud.center_label.modulate.a = 1.0
+	hud._process(0.1)
+	assert_almost_eq(hud.center_label.modulate.a, 0.4, 0.001)
