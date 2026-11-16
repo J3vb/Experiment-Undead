@@ -246,8 +246,12 @@ use). Budget: no new per-frame work.
 
 ### Step 3: Weapon effects as data
 
-- Build after the item-effects plan's step 2 has merged (both edit
-  `hit_claims.gd` and `weapon.gd`). Add `WeaponData.effect`; set it on the 5
+- Build after step 2 of `docs/plans/item-effects-server.md` (foundation
+  fix 3, plan in PR #176) has merged, because both edit `hit_claims.gd`,
+  `weapon.gd` and `PROTOCOL_VERSION`. Check on main: `HitClaims.claim_hit`
+  takes an `item_uid` argument. If that plan is Dropped instead, build on
+  main as it is; nothing in this step needs its changes, the wait only
+  avoids merge clashes. Add `WeaponData.effect`; set it on the 5
   guns. `HitClaims.apply_server_hit` picks chain and frost from
   `_weapons[info.weapon_id].effect` (no `_reforged` trimming).
   `Weapon._trace` launches a well when `data.effect == WELL`.
@@ -345,8 +349,9 @@ use). Budget: no new per-frame work.
   The snapshot test is written against today's code before the rewrite and
   must pass unchanged, and the character contact check must not need a new
   approved snapshot.
-- **Merge clashes with the item-effects plan.** Both edit `hit_claims.gd` and
-  `weapon.gd`, and both bump the protocol. Step 3 waits for that plan's step 2.
+- **Merge clashes with the item-effects plan** (`docs/plans/item-effects-server.md`,
+  PR #176). Both edit `hit_claims.gd` and `weapon.gd`, and both bump the
+  protocol. Step 3 waits for that plan's step 2 (or for it to be Dropped).
 - **Cache keeps a stale resource in tests** that edit content on disk. Tests
   that need fresh data call `Content.reload()`, which clears the cache.
 - **The CI rule is too noisy.** Short ids such as `common` could match normal
