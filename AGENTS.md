@@ -2,6 +2,11 @@
 
 Adding something? Follow docs/HOW_TO_ADD.md.
 
+**Plan first.** Before building a feature, find it in `docs/ROADMAP.md`. If it
+needs a plan, build only from an approved plan in `docs/plans/` and only the
+step your task names. No approved plan: write one first
+(`docs/plans/README.md`). Your PR says `Plan: docs/plans/<file>.md, step N`.
+
 Experiment Undead is an original wave-based zombie FPS in **Godot 4.7.2**,
 written in **typed GDScript**. It will get RPG progression and self-hosted
 8-player servers later, so code must stay multiplayer-ready from day one.
@@ -31,6 +36,9 @@ files in `.claude/skills/` (Claude Code). Load the one that fits your task:
 | `godot-asset-import` | Import settings, files to commit and tests for anything in `assets/` |
 | `look-check` | Rendering a visual change and comparing it with the style guide |
 | `design-change` | Changing a game number or adding content in line with the balance sheet |
+| `write-plan` | Writing a feature plan in `docs/plans/` before building |
+| `review-plan` | Reviewing a plan PR before it is approved |
+| `finish-feature` | Checking a feature against the Definition of done and closing it |
 
 Third-party skills (Apache-2.0, from gamedev-skills/awesome-gamedev-agent-skills, see
 `docs/CREDITS.md`). They are general Godot 4.7.2 and game-design guides:
@@ -219,7 +227,11 @@ unzip -q godot.zip && mv Godot_v4.7.2-stable_linux.x86_64 godot && chmod +x godo
 ./godot --headless --path . --import                       # import assets
 ./godot --headless --path . --quit-after 300               # boot test: no SCRIPT ERROR / Parse Error
 ./godot --headless --path . -s addons/gut/gut_cmdln.gd     # all GUT tests
+./godot --headless --path . -s addons/gut/gut_cmdln.gd -gconfig= -gtest=res://tests/unit/<file>.gd -gexit  # one file
 ```
+
+Claude Code cloud sessions install Godot (as `godot` on PATH), gdtoolkit and ruff
+automatically (`.claude/hooks/session-start.sh`). Run the import once before tests.
 
 All three must pass before you open a pull request. CI runs the same steps.
 If you cannot download Godot, say so in the PR and let CI run the checks.
