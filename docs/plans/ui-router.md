@@ -135,12 +135,21 @@ emit `closed`.
 - `UI` API (core/ui.gd):
   - `replace(id)`: frees every pushed screen, changes the scene to that
     root's scene, applies the mouse rule.
-  - `push(id) -> Node`: instances the scene on a CanvasLayer at its layer,
-    remembers the focused control, connects the screen's `closed` signal to
-    `pop()`, applies the mouse rule, returns the screen so the caller can
-    pass it data (`character.open(profile)`).
-  - `pop()`: frees the top screen, gives focus back to the control that had
-    it before the push, applies the mouse rule.
+  - `push(id) -> Node`: instances the scene on a CanvasLayer at
+    `max(its layer, the covered screen's layer)`, so a screen opened from an
+    overlay (settings from pause) draws above it. The covered screen is
+    hidden and set to `PROCESS_MODE_DISABLED` until it is on top again, so it
+    neither shows nor reads keys. Remembers the focused control, connects
+    the screen's `closed` signal to `pop()`, applies the mouse rule, returns
+    the screen so the caller can pass it data (`character.open(profile)`).
+    Router layers use `PROCESS_MODE_ALWAYS`, so screens work while the tree
+    is paused.
+  - `pop()`: frees the top screen, shows and re-enables the one below,
+    gives focus back to the control that had it before the push, applies the
+    mouse rule.
+  - `reload()`: frees every pushed screen, then `reload_current_scene()`
+    (used by `GameSession.restart()`, so a restart from results never keeps
+    a stale stack).
   - `top() -> StringName`: id of the top screen, `&""` when none.
   - `hold_mouse(node, held)`: for panels that are not pushed screens (Pack
     overlay, debug console). A freed node lets go automatically.
@@ -187,7 +196,11 @@ focus change only, never per frame. Budget: no per-frame cost.
   roots get it from `captures_mouse`; the pause panel, Pack overlay, debug
   console and net error dialog call `UI.hold_mouse(self, open)`.
   `GameSession._capture_mouse` and the click-to-recapture branch move into
-  the router. `restart()` keeps `reload_current_scene()`.
+  the router. `GameSession.restart()` calls `UI.reload()` instead of
+  `reload_current_scene()`. Until step 3 moves results onto the stack, the
+  HUD's results panel calls `UI.hold_mouse(results_screen, true)` when it
+  shows, so the cursor is free over the results buttons after game over, as
+  `GameSession._capture_mouse(false)` does today.
 - Files: core/ui.gd (new), systems/ui/screen_data.gd (new),
   content/screens/main_menu.tres, content/screens/match.tres (new),
   project.godot, tools/ci/check_rules.py, systems/ui/main_menu.gd,
@@ -201,7 +214,9 @@ focus change only, never per frame. Budget: no per-frame cost.
   screens; `mouse_should_be_free()` is false on a captures-mouse root with
   nothing open, true while a node holds the mouse, false again after that
   node is freed (fails today: there is no single rule, the overlay and the
-  pause menu each set the mouse); unknown id warns and returns null.
+  pause menu each set the mouse); unknown id warns and returns null;
+  `reload()` empties the stack. In a headless `GameSession`, game over makes
+  `mouse_should_be_free()` true (results panel holds the mouse).
   `test_screens.gd` content checks for the two roots. Updated tests: opening
   the Pack overlay and the debug console makes `mouse_should_be_free()` true.
 - Done when: no `change_scene_to_` and no `Input.mouse_mode =` left outside
@@ -241,7 +256,10 @@ focus change only, never per frame. Budget: no per-frame cost.
   nothing is pushed, `GameSession` handles `pause` by pausing the tree and
   pushing the pause screen, and connects the screen's `tree_exiting` to
   unpause; while a screen is open the screen handles Esc. The pause
-  screen's Settings button calls `UI.push(&"settings")`. On game over,
+  screen's Settings button calls `UI.push(&"settings")`; the router draws
+  it above the pause screen and hides pause until settings pops (the push
+  rules above), replacing `Hud._open_settings()`. Delete step 1's temporary
+  results `hold_mouse`. On game over,
   `GameSession` pushes `results` and passes the stats (what `Hud._on_game_over`
   does today); results' `main_menu_requested` goes to `UI.replace(&"main_menu")`,
   `restart_requested` to `GameSession.restart()`. Delete the HUD's pause,
@@ -255,8 +273,11 @@ focus change only, never per frame. Budget: no per-frame cost.
   tests/unit/test_pause_screen.gd (new), tests/content/test_screens.gd.
 - Tests: in a headless `GameSession`, the pause action pushes `pause`
   (`UI.top() == &"pause"`, tree paused); Esc pops it and unpauses; Settings
-  from pause stacks `settings` on top and Back returns to `pause`; game over
-  pushes `results` and its Main menu button replaces to `main_menu`. These
+  from pause stacks `settings` on a layer above pause, pause is hidden and
+  disabled (an Esc goes to settings only), and Back returns to a visible
+  `pause`; game over pushes `results`, its Main menu button replaces to
+  `main_menu`, and its Restart button leaves an empty stack in the new match
+  (pause opens again there). These
   fail today because the HUD shows and hides its own panels. The existing
   results and HUD tests keep their checks, aimed at the new screens.
 - Done when: `hud.gd` has no pause, settings or results code; tests green;
