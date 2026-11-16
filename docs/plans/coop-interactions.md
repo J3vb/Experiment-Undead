@@ -1,10 +1,10 @@
 # Plan: Co-op interactions (doors, wall-buys, machines)
 
-Status: Review
+Status: Approved
 Roadmap: F-02 / issue #138 (also foundation fix 2 in docs/FOUNDATIONS.md, part of #126)
 Phase: P7
 Size: M
-Approved by:
+Approved by: Codex plan review on PR #175 (2026-11-16), size M, no open decisions
 
 ## Goal
 
