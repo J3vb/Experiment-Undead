@@ -15,6 +15,11 @@ Read `docs/PROCESS.md` (pillars, milestones, how work flows) and
 `docs/DECISIONS.md` before you start. DECISIONS.md lists what is built, what is
 simplified on purpose, and what is not started.
 
+**Before you build a feature:** check `docs/FOUNDATIONS.md` (which core systems
+are solid, shaky or missing) and fill in its **Ready to build** checklist in
+your plan, Codex prompt or PR. Big technical choices are decision records in
+`docs/adr/`; do not go against one without writing a new record first.
+
 **Design references:** read `docs/design/` before any UI, art, audio,
 weapon, enemy or map work. Start with `docs/design/README.md`; for anything
 visual, `docs/design/look-rules.md` is the style to match. Use its colours,
@@ -64,8 +69,8 @@ Third-party skills (Apache-2.0, from gamedev-skills/awesome-gamedev-agent-skills
 
 **Our rules win.** When a third-party skill disagrees with this file, `docs/KEEP_IT_SIMPLE.md`,
 `docs/design/` or one of our own skills above, follow ours. For example: no new autoloads
-or event buses without the Keep it simple check, GUT is our test runner, no multiplayer
-code before P7, and numbers come from the balance sheet, not the skill's examples.
+or event buses without the Keep it simple check, GUT is our test runner, co-op follows
+`docs/MULTIPLAYER.md`, and numbers come from the balance sheet, not the skill's examples.
 Their links to skills we did not copy (Unity, Roblox, `save-systems`, ...) can be ignored.
 Do not edit these folders; update them by copying a newer upstream release.
 
@@ -186,9 +191,10 @@ things to build only when needed: `docs/KEEP_IT_SIMPLE.md`.
 9. **Multiplayer: only the seams the architecture already reserves.** They are
    listed in code rule 5 above (InputFrame, `Net.is_authority()`,
    physics ticks, one Spawner with net ids, `GameSession.rng`,
-   ProgressionService, items as dicts, no global player). Before P7 do **not**
-   add RPCs, MultiplayerSpawner/Synchronizer, peer handling, serialization,
-   prediction, interpolation or lag compensation code.
+   ProgressionService, items as dicts, no global player). P7 co-op is being
+   built now: follow `docs/MULTIPLAYER.md` and `docs/adr/0003-trusted-client-co-op.md`
+   (client asks, server decides shared state). Do **not** add prediction,
+   interpolation buffers or lag compensation without a new decision record.
 10. **No config for things nobody tunes.** Export a value to data only if a
     designer will change it for balance or feel. Fixed rules stay as constants.
 11. **Delete, don't disable.** Remove dead code, unused functions and
