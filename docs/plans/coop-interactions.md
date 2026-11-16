@@ -122,26 +122,29 @@ Network messages (all on `InteractionSync`, all reliable):
   is what only the owner knows about its own guns, from
   `Interactable.owner_facts(player)`, default `{}`:
   - WallBuy: `{"owned": StringName (held id of this gun or its Reforged
-    tier, or &""), "full": bool}`
-  - Reforger: `{"current": StringName, "full": bool}`
+    tier, or &""), "slot": int, "full": bool}`
+  - Reforger: `{"current": StringName, "slot": int, "full": bool}`
+  `slot` is the gun's index in the owner's `weapons.weapons`, so two guns
+  with the same base id (possible with Pack guns) are told apart.
   - SpecimenVault: `{"held": Array[StringName]}`
   The server only accepts ids that exist in `Content` weapons and that match
   the interactable (WallBuy: `weapon.id` or `weapon.upgraded.id`). Prices and
   the next tier always come from the server's own data.
 - `_receive_result(path: NodePath, paid: bool)` server -> requester: plays
   `BuySound` or `DeniedSound` on the requester's copy.
-- `_receive_grant(kind: int, weapon_id: StringName, from_id: StringName)`
-  server -> owner. `kind` is an enum on `InteractionSync`: `GIVE`, `UPGRADE`,
+- `_receive_grant(kind: int, weapon_id: StringName, from_id: StringName,
+  from_slot: int)` server -> owner. `kind` is an enum on `InteractionSync`: `GIVE`, `UPGRADE`,
   `REFILL`. `from_id` names the gun the purchase was for (the one in the
   owner's facts), never "the gun in hand", so switching guns while the reply
   is on its way cannot hit the wrong gun:
   - `GIVE`: `weapons.give(weapon_id)`.
-  - `UPGRADE`: replace the held gun whose `data.id == from_id`, in its own
-    slot, with `weapon_id` (new `WeaponHolder.replace(old: Weapon, data)`;
+  - `UPGRADE`: replace the gun at `from_slot` if its `data.id == from_id`
+    (otherwise the first held gun with that id), in its own slot, with
+    `weapon_id` (new `WeaponHolder.replace(old: Weapon, data)`;
     `replace_current()` becomes a call to it). If that gun is no longer held,
     `give()` the upgraded gun instead, so the points are never lost.
-  - `REFILL`: `refill_all()` plus `ammo_changed` on the held gun with
-    `data.id == from_id`; nothing if it is gone.
+  - `REFILL`: `refill_all()` plus `ammo_changed` on the gun found the same
+    way (`from_slot`, then `from_id`); nothing if it is gone.
   On the server's own player (solo, host) the same function runs directly,
   no RPC.
 - `_grant_applied()` owner -> server, sent right after the owner applies a
@@ -296,7 +299,9 @@ the server with 4 players).
   server reply in the test), and A is upgraded in its own slot while B is
   untouched; a refill grant for a gun the client no longer holds changes
   nothing; a client presses Reforge twice with the first grant still
-  delayed, is charged 5000 once and gets one upgrade.
+  delayed, is charged 5000 once and gets one upgrade; a client holding two
+  guns with the same base id Reforges the second and only the second is
+  upgraded.
   Existing `test_reforger.gd`, `test_med_dispenser.gd`,
   `test_kestrel_smg.gd`, `test_talon_dmr.gd` pass in solo.
 - Done when: a co-op client can buy guns, ammo, Reforges and Serums, pays
