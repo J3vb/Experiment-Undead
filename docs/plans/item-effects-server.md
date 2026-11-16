@@ -184,8 +184,14 @@ No per-frame work. Budget: no measurable cost.
   today (step 3 moves that call into the tick), and `ItemLoadout.apply()`
   adds the sidearm to `player.item_guns`. Only then delete the
   `hit_landed` binding and `_on_hit` from `ItemLoadout.apply()` and
-  `PackOverlay._equip()`. Bump `Build.PROTOCOL_VERSION`.
+  `PackOverlay._equip()`. Effects that replace the primary hit keep the
+  uid: `Frost._shatter()` builds the primary damage through
+  `Frost._damage()`, which copies `weapon_id` today and must copy
+  `item_uid` too, but only for the primary hit, never for collateral
+  shatter or `Chain` damage, so one shot pays and heals once, as it does
+  today through `hit_landed`. Bump `Build.PROTOCOL_VERSION`.
 - Files: core/build.gd, systems/damage/damage_info.gd, systems/weapons/weapon.gd,
+  systems/weapons/effects/frost.gd,
   systems/net/hit_claims.gd, systems/net/player_state_sync.gd,
   systems/loot/item_loadout.gd, systems/loot/pack_overlay.gd,
   tests/unit/test_hit_claims.gd, tests/unit/test_item_effects_coop.gd (new).
@@ -195,7 +201,9 @@ No per-frame work. Budget: no measurable cost.
   that fits the item gun's damage but not the plain gun is accepted; solo and
   host still get leech and points (`test_item_loadout.gd` or a new solo case);
   a leech gun equipped from the Pack heals in solo and for a client (so the
-  step does not break Pack guns before step 3).
+  step does not break Pack guns before step 3); a leech item gun that
+  shatters a frozen zombie heals once, and the collateral targets add
+  nothing.
 - Done when: leech and points-per-hit work for host, solo and clients
   through one server path.
 
