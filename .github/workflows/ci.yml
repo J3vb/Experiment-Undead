@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+    types: [opened, edited, synchronize, reopened, ready_for_review, labeled, unlabeled]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -47,6 +47,12 @@ jobs:
 
       - name: Skills copies match (.agents/skills = .claude/skills)
         run: python tools/ci/check_skills_mirror.py
+
+      - name: New-feature PRs name their plan step
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: python tools/ci/check_plans.py --pr-body
 
   test:
     runs-on: ubuntu-latest

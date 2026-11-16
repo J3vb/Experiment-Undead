@@ -65,5 +65,35 @@ class CheckAllTests(unittest.TestCase):
         self.assertEqual(check_plans.check_all(check_plans.ROOT / "docs"), [])
 
 
+class PrBodyTests(unittest.TestCase):
+    def check(self, body: str) -> list[str]:
+        with tempfile.TemporaryDirectory() as directory:
+            docs = Path(directory) / "docs"
+            (docs / "plans").mkdir(parents=True)
+            (docs / "plans" / "doors.md").write_text(plan(), encoding="utf-8")
+            return check_plans.check_pr_body(body, docs)
+
+    def test_existing_plan_passes(self):
+        self.assertEqual(self.check("## Why\n\nPlan: docs/plans/doors.md, step 2\n"), [])
+
+    def test_none_with_reason_passes(self):
+        self.assertEqual(self.check("Plan: none: one-line bug fix"), [])
+
+    def test_missing_line_fails(self):
+        self.assertEqual(len(self.check("## Why\n\nBecause.")), 1)
+
+    def test_template_placeholder_only_fails(self):
+        self.assertEqual(len(self.check("Plan: <!-- docs/plans/<file>.md, step N -->")), 1)
+
+    def test_bare_none_fails(self):
+        self.assertEqual(len(self.check("Plan: none:")), 1)
+
+    def test_missing_plan_file_fails(self):
+        self.assertEqual(
+            self.check("Plan: docs/plans/gone.md, step 1"),
+            ["PR body names a plan that does not exist: docs/plans/gone.md"],
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
