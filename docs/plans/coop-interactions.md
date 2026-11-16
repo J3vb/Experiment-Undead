@@ -91,14 +91,15 @@ Not in (non-goals, and where each one goes instead):
 | systems/net/interaction_sync.gd | new | Request RPC and checks, world state relay, late-join snapshot, owner grants and buy/denied result |
 | systems/game/game_session.gd | changed | Creates `InteractionSync` next to `HitClaims` in `_setup_shooting()` (keep under 350 lines) |
 | systems/player/player.gd | changed | `apply_frame()`: client sends a request instead of skipping; local interactables (loot) still run locally |
-| systems/interactables/interactable.gd | changed | `state_changed` signal, `net_state()` / `apply_net_state()`, `is_local()`, `owner_facts()`; `_pay()` reports the result to the buyer |
+| systems/interactables/interactable.gd | changed | `state_changed` and `retired` signals, `net_state()` / `apply_net_state()`, `retire()`, `is_local()`, `owner_facts()`; `_pay()` reports the result to the buyer |
+| systems/weapons/weapon_holder.gd | changed | `replace(old, data)` keeps the slot of the gun a grant names; `replace_current()` calls it |
 | systems/interactables/door.gd | changed | Navmesh rebake only on the authority; clients open doors from the level state |
 | systems/level/level.gd | changed | New `area_opened` signal; `net_state()` / `apply_net_state()` for power and open areas |
 | systems/interactables/power_switch.gd | changed | Power sound on every peer via level state |
 | systems/interactables/barrier.gd | changed | Planks in `net_state()`; tear/repair sound by plank change on clients |
 | systems/interactables/wall_buy.gd | changed | Decides from owner facts; gives gun / refill through grants |
 | systems/interactables/reforger.gd | changed | Decides from owner facts; Reforge / refill through grants |
-| systems/interactables/med_dispenser.gd | changed | `sales` in `net_state()`; frees itself on clients at `max_sales` |
+| systems/interactables/med_dispenser.gd | changed | `sales` in `net_state()`; sells out through `retire()` |
 | systems/interactables/specimen_vault.gd | changed | State, offer, buyer and spot in `net_state()`; held guns from owner facts; take = grant |
 | systems/interactables/exfil_hatch.gd | changed | Open and holding in `net_state()`; emits its Events on clients when the state changes |
 | systems/loot/loot_service.gd | changed | Delete the client-only LootDrop hack in `_physics_process()` (now `is_local()`) |
@@ -129,11 +130,20 @@ Network messages (all on `InteractionSync`, all reliable):
   the next tier always come from the server's own data.
 - `_receive_result(path: NodePath, paid: bool)` server -> requester: plays
   `BuySound` or `DeniedSound` on the requester's copy.
-- `_receive_grant(kind: int, weapon_id: StringName)` server -> owner. `kind`
-  is an enum on `InteractionSync`: `GIVE`, `REPLACE_CURRENT`, `REFILL`.
-  The owner runs `weapons.give()`, `weapons.replace_current()` or
-  `refill_all()` plus `ammo_changed` on the matching gun. On the server's own
-  player (solo, host) the same function runs directly, no RPC.
+- `_receive_grant(kind: int, weapon_id: StringName, from_id: StringName)`
+  server -> owner. `kind` is an enum on `InteractionSync`: `GIVE`, `UPGRADE`,
+  `REFILL`. `from_id` names the gun the purchase was for (the one in the
+  owner's facts), never "the gun in hand", so switching guns while the reply
+  is on its way cannot hit the wrong gun:
+  - `GIVE`: `weapons.give(weapon_id)`.
+  - `UPGRADE`: replace the held gun whose `data.id == from_id`, in its own
+    slot, with `weapon_id` (new `WeaponHolder.replace(old: Weapon, data)`;
+    `replace_current()` becomes a call to it). If that gun is no longer held,
+    `give()` the upgraded gun instead, so the points are never lost.
+  - `REFILL`: `refill_all()` plus `ammo_changed` on the held gun with
+    `data.id == from_id`; nothing if it is gone.
+  On the server's own player (solo, host) the same function runs directly,
+  no RPC.
 - `_receive_state(path: NodePath, state: Dictionary)` server -> all clients,
   on every `state_changed`. Path `.` means the `Level` itself.
 - `_request_snapshot()` client -> server once after join, answered with one
@@ -141,14 +151,29 @@ Network messages (all on `InteractionSync`, all reliable):
 
 `net_state()` per type (empty = not synced):
 
-- Level: `{"power": bool, "areas": Array[StringName]}`. Doors are freed when
-  opened, so they carry no state; clients open every door whose
-  `opens_area` is in `areas`.
+- Level: `{"power": bool, "areas": Array[StringName], "removed":
+  Array[NodePath]}`. Interactables that leave the map on the server (an
+  opened door, a sold-out Med Dispenser) are freed there, so they cannot
+  carry their own state. Before freeing itself an interactable calls the new
+  `Interactable.retire()`, which emits `retired`; `InteractionSync` adds its
+  path to the level's `removed` list and broadcasts the level state. Clients
+  call `retire()` on each listed node they still have, which runs the type's
+  leaving effect (door: open sound, free; dispenser: free) without paying or
+  rebaking. Late joiners get the full list, so nothing that is gone on the
+  server comes back.
 - Barrier: `{"planks": int}`.
-- MedDispenser: `{"sales": int}`.
+- MedDispenser: `{"sales": int}` (only while it still exists; selling out
+  goes through `removed`).
 - SpecimenVault: `{"state": int, "offer": StringName, "buyer": int (net id),
   "spot": NodePath}`.
-- ExfilHatch: `{"open": bool, "holding": bool}`.
+- ExfilHatch: `{"open": bool, "holding": bool, "hold_left": float,
+  "counting": bool}`. `counting` is true while a living player is in the zone
+  (the server already pauses the hold otherwise). The server emits
+  `state_changed` when open, holding or counting changes, not every tick;
+  clients count `hold_left` down locally while `counting` is true, so the
+  HUD countdown (`Hud._update_exfil()` reads `hold_left`) moves and pauses
+  like the server's. Each state message resets the client's `hold_left` to
+  the server's value, so drift is at most one zone change.
 
 - Save format change: none.
 - Content checks to add in `tests/content/`: none (no new content type).
@@ -202,9 +227,11 @@ the server with 4 players).
   `focus.is_local()` call `interact()` as today, otherwise
   `session.interactions.request(focus)`. Delete the client LootDrop branch
   in `LootService._physics_process()`. `Level` emits `area_opened` and
-  `power_turned_on` (exists); on clients `apply_net_state()` turns power on
-  and opens doors and areas. `Door.open()` rebakes only where
-  `Net.is_authority()`. `_pay()` sends the result to a remote buyer.
+  `power_turned_on` (exists); on clients `apply_net_state()` turns power on,
+  opens areas and retires every node in `removed`. `Interactable.retire()`
+  and the `retired` signal; `Door.open()` calls it, and its navmesh rebake
+  runs only where `Net.is_authority()`. `_pay()` sends the result to a
+  remote buyer.
 - Files: systems/net/interaction_sync.gd (new), systems/game/game_session.gd,
   systems/player/player.gd, systems/interactables/interactable.gd,
   door.gd, power_switch.gd, systems/level/level.gd,
@@ -217,22 +244,24 @@ the server with 4 players).
   server; a client turns the power on and a power door opens on both; rejects
   for out of range, downed player, not enough points (denied result reaches
   the client), unknown path, and a second request inside 0.1 s; a client that
-  connects after a door opened gets it removed from the snapshot. Existing
+  connects after a door opened does not see that door (removed list in the
+  snapshot). Existing
   `test_halcyon_doors.gd` and loot drop tests still pass in solo.
 - Done when: a co-op client can open doors and turn on power on a listen
   server and on a dedicated server, everyone sees it, and solo is unchanged.
 
 ### Step 2: Wall-buys, Reforger and Med Dispenser
 
-- Build: `_receive_grant` and `InteractionSync.grant(player, kind, data)`
-  (direct call for the server's own player, `rpc_id` otherwise).
+- Build: `_receive_grant` and `InteractionSync.grant(player, kind, data,
+  from_id)` (direct call for the server's own player, `rpc_id` otherwise);
+  `WeaponHolder.replace(old, data)` with `replace_current()` calling it.
   `WallBuy.owner_facts()` and `Reforger.owner_facts()`; their `interact()`
   reads `facts` (built from the local player when empty, so solo and old
   tests keep working) and grants instead of touching `player.weapons`.
   Server checks that fact ids exist and match. `MedDispenser`: `sales` in
-  `net_state()`, `state_changed` after a sale, frees itself on clients when
-  `sales == max_sales`. The Serum itself already reaches the owner through
-  the `PlayerStateSync` snapshot.
+  `net_state()`, `state_changed` after a sale, `retire()` instead of a bare
+  `queue_free()` when `sales == max_sales`. The Serum itself already
+  reaches the owner through the `PlayerStateSync` snapshot.
 - Files: systems/net/interaction_sync.gd, systems/interactables/wall_buy.gd,
   reforger.gd, med_dispenser.gd, tests/unit/test_interaction_sync.gd
   (or tests/unit/test_coop_machines.gd if the first file nears 350 lines).
@@ -242,7 +271,12 @@ the server with 4 players).
   client Reforges the gun in hand (5000, upgraded data in hand) and refills a
   top-tier gun (2500); a client with forged facts (an id it does not match, or
   an unknown id) is rejected and not charged; a client buys a Serum from a
-  powered dispenser, and a `max_sales = 1` dispenser vanishes on both peers.
+  powered dispenser, and a `max_sales = 1` dispenser vanishes on both peers
+  and stays gone for a client that joins after the last sale; a client asks
+  to Reforge gun A, switches to gun B before the grant arrives (delay the
+  server reply in the test), and A is upgraded in its own slot while B is
+  untouched; a refill grant for a gun the client no longer holds changes
+  nothing.
   Existing `test_reforger.gd`, `test_med_dispenser.gd`,
   `test_kestrel_smg.gd`, `test_talon_dmr.gd` pass in solo.
 - Done when: a co-op client can buy guns, ammo, Reforges and Serums, pays
@@ -257,9 +291,12 @@ the server with 4 players).
   the timer branches and `_close()`; clients set `global_transform` from the
   spot and run only the label `_process()`; taking the offer is a `GIVE`
   grant to the buyer; the refund when the Vault moves stays on the server.
-  `ExfilHatch.net_state()` with open and holding; on clients
-  `apply_net_state()` sets the glow and emits `Events.exfil_opened` /
-  `Events.exfil_called` on the change, so the HUD shows it.
+  `ExfilHatch.net_state()` with open, holding, hold_left and counting;
+  the server emits `state_changed` when any of open, holding or counting
+  changes; on clients `apply_net_state()` sets the glow, resets `hold_left`,
+  emits `Events.exfil_opened` / `Events.exfil_called` on the change, and a
+  client-side countdown runs only while `counting` (visual, so in
+  `_process()`; the server's hold stays in `_physics_process()`).
 - Files: systems/interactables/barrier.gd, specimen_vault.gd,
   exfil_hatch.gd, systems/net/interaction_sync.gd (only if needed),
   tests/unit/test_coop_world_state.gd (new).
@@ -269,8 +306,10 @@ the server with 4 players).
   copy, takes it and gets the gun; another client cannot take it; the move
   refund goes to the buyer; the Vault moves on both peers; exfil opens on
   round 10 on the server and the client sees open and gets `exfil_opened`; a
-  client calls exfil and the hold runs on the server; a late joiner gets
-  planks, Vault state and exfil state. Solo tests `test_barriers.gd`,
+  client calls exfil and the hold runs on the server; the client's
+  `hold_left` counts down while a player stands in the zone and stops when
+  they step out (within 0.5 s of the server's value); a late joiner gets
+  planks, Vault state and exfil state including the remaining hold time. Solo tests `test_barriers.gd`,
   `test_specimen_vault.gd`, `test_vault_guns.gd`, `test_exfil.gd` pass.
 - Done when: every interactable works from a client and late joiners see the
   same map as everyone else.
@@ -312,8 +351,12 @@ the server with 4 players).
   server from guessing what a client holds; the server still picks the price
   and next tier from its own data, so a forged fact can at worst buy ammo for
   a gun the client really holds. Fine for friends-only servers (ADR 0003).
-- **Freed doors.** A door node is gone after it opens, so clients rely on the
-  level's open areas, not door state. Tested by the late-join case.
+- **Freed interactables.** Doors and sold-out dispensers are freed on the
+  server, so they live on as paths in the level's `removed` list. Tested by
+  the late-join cases in steps 1 and 2.
+- **Grants racing the player's own actions.** Grants name the gun they are
+  for (`from_id`), never the gun in hand. Tested by the switch-before-reply
+  case in step 2.
 - **Big step sizes.** If step 1 passes 400 lines, split the snapshot and late
   join into its own PR before doors; the order of the rest does not change.
 
