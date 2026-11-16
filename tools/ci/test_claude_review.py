@@ -51,10 +51,18 @@ class BudgetTests(unittest.TestCase):
         usage = {"output_tokens": 1_000_000}
         self.assertGreaterEqual(cr.usage_cost("some-new-model", usage), cr.usage_cost("claude-opus-5-5", usage))
 
-    def test_worst_case_is_above_any_real_call(self):
-        chars = 30_000
-        real = cr.usage_cost("claude-opus-5-5", {"cache_creation_input_tokens": chars, "output_tokens": 32_000})
-        self.assertGreater(cr.worst_case_cost(chars, 32_000), real)
+    def test_worst_case_covers_one_token_per_byte_at_any_price(self):
+        size = 30_000
+        for model in (*cr.PRICES, "unknown"):
+            real = cr.usage_cost(model, {"cache_creation_input_tokens": size, "output_tokens": 32_000})
+            self.assertGreaterEqual(cr.worst_case_cost(size, 32_000), real)
+
+    def test_non_ascii_text_is_reserved_by_bytes(self):
+        reviewer = FakeReviewer([])
+        size = 40_000
+        budget = cr.Budget(limit=cr.worst_case_cost(int(size * 1.5), reviewer.max_tokens))
+        cr.run_review(reviewer, {"core/a.gd": "\u00e9" * size}, [["core/a.gd"]], ["correctness"], budget)
+        self.assertEqual(reviewer.calls, 0)
 
     def test_run_stops_before_overspending(self):
         files = {f"core/f{i}.gd": "var x := 1\n" * 50 for i in range(5)}
@@ -93,6 +101,15 @@ class BudgetTests(unittest.TestCase):
         )
         self.assertGreater(budget.spent, 0)
         self.assertEqual(budget.reserved, 0)
+
+    def test_pending_reservations_do_not_skip_chunks(self):
+        files = {f"core/f{i}.gd": "x" for i in range(10)}
+        one_call = cr.worst_case_cost(10_000, 32_000)
+        budget = cr.Budget(limit=one_call * 1.5)
+        reviewer = FakeReviewer([], usage={"output_tokens": 100})
+        cr.run_review(reviewer, files, [[p] for p in files], ["correctness"], budget, workers=3)
+        self.assertEqual(reviewer.calls, 10)
+        self.assertLessEqual(budget.spent, budget.limit)
 
     def test_zero_budget_makes_no_calls(self):
         reviewer = FakeReviewer([])

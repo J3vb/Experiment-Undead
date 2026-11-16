@@ -46,7 +46,8 @@ PRICES = {
     "claude-sonnet-5-5": (2.0, 10.0, 2.5, 0.10),
 }
 UNKNOWN_MODEL_PRICE = (10.0, 50.0, 12.5, 1.0)
-CHARS_PER_TOKEN = 3.0
+# The tokenizer is byte-level, so a token covers at least one UTF-8 byte: bytes are a true upper bound.
+REQUEST_OVERHEAD_TOKENS = 2_000
 FATAL_STATUS = (400, 401, 403, 404)
 LENSES = {
     "correctness": "Logic bugs, wrong maths, null/freed-instance access, off-by-one, broken state machines, "
@@ -128,11 +129,15 @@ class Budget:
     calls: int = 0
     stopped: bool = False
     log: list[str] = field(default_factory=list)
-    lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
+    lock: threading.Condition = field(default_factory=threading.Condition, repr=False)
 
     def reserve(self, worst_case: float) -> bool:
+        """Waits while other calls hold reservations that might settle lower; gives up only when the
+        settled spend alone leaves too little."""
         with self.lock:
-            if self.spent + self.reserved + worst_case > self.limit:
+            while self.spent + self.reserved + worst_case > self.limit and self.reserved > 0 and not self.stopped:
+                self.lock.wait()
+            if self.stopped or self.spent + self.reserved + worst_case > self.limit:
                 return False
             self.reserved += worst_case
             return True
@@ -142,6 +147,7 @@ class Budget:
             self.reserved -= reserved
             self.spent += cost
             self.calls += 1
+            self.lock.notify_all()
 
     def note(self, line: str) -> None:
         with self.lock:
@@ -168,11 +174,12 @@ def usage_cost(model: str, usage: dict) -> float:
     return total / 1_000_000
 
 
-def worst_case_cost(prompt_chars: int, max_tokens: int) -> float:
-    """Upper bound for one call: every input token as a cache write and every output token at the
-    dearest price a fallback model could charge, so a refusal fallback can't break the cap."""
+def worst_case_cost(prompt_bytes: int, max_tokens: int) -> float:
+    """Upper bound for one call: one input token per UTF-8 byte, all priced as cache writes, and every
+    output token at the dearest price a fallback model could charge, so a refusal fallback can't break the cap."""
     _, price_out, price_write, _ = UNKNOWN_MODEL_PRICE
-    return (prompt_chars / CHARS_PER_TOKEN * price_write + max_tokens * price_out) / 1_000_000
+    input_tokens = prompt_bytes + REQUEST_OVERHEAD_TOKENS
+    return (input_tokens * price_write + max_tokens * price_out) / 1_000_000
 
 
 def area_of(path: str) -> str:
@@ -335,8 +342,8 @@ def review_chunk(reviewer, files, paths: list[str], lenses: list[str], budget: B
     findings: list[Finding] = []
     for lens in lenses:
         content = build_user_content(paths, files, lens)
-        chars = len(reviewer.system) + sum(len(c["text"]) for c in content)
-        reserved = worst_case_cost(chars, reviewer.max_tokens)
+        size = len(reviewer.system.encode()) + sum(len(c["text"].encode()) for c in content)
+        reserved = worst_case_cost(size, reviewer.max_tokens)
         if budget.stopped:
             return findings
         if not budget.reserve(reserved):
@@ -351,12 +358,12 @@ def review_one(reviewer, content, allowed: set[str], lens: str, budget: Budget, 
         text, model, usage, stop = reviewer.review(content)
     except Exception as error:  # one bad call must not lose the findings so far
         rejected = getattr(error, "status_code", None) in FATAL_STATUS
-        # A rejected request is not billed; any other failure may have been, so it keeps its reservation.
-        budget.settle(reserved, 0.0 if rejected else reserved)
-        budget.note(f"chunk {index} ({lens}): API error {type(error).__name__}: {error}")
         if rejected:
             budget.stopped = True
             budget.note("stopping: the API rejected the request (check the key, model name or parameters)")
+        # A rejected request is not billed; any other failure may have been, so it keeps its reservation.
+        budget.settle(reserved, 0.0 if rejected else reserved)
+        budget.note(f"chunk {index} ({lens}): API error {type(error).__name__}: {error}")
         return []
     cost = usage_cost(model, usage)
     budget.settle(reserved, cost)
