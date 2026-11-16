@@ -38,3 +38,9 @@ body:
     attributes:
       label: Roadmap phase
       placeholder: P2
+  - type: input
+    id: plan
+    attributes:
+      label: Plan
+      description: Roadmap id and plan file, or "issue" if docs/ROADMAP.md says no plan is needed
+      placeholder: F-05, docs/plans/rebind-controls.md, step 1

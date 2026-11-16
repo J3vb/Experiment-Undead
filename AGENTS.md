@@ -2,6 +2,11 @@
 
 Adding something? Follow docs/HOW_TO_ADD.md.
 
+**Plan first.** Before building a feature, find it in `docs/ROADMAP.md`. If it
+needs a plan, build only from an approved plan in `docs/plans/` and only the
+step your task names. No approved plan: write one first
+(`docs/plans/README.md`). Your PR says `Plan: docs/plans/<file>.md, step N`.
+
 Experiment Undead is an original wave-based zombie FPS in **Godot 4.7.2**,
 written in **typed GDScript**. It will get RPG progression and self-hosted
 8-player servers later, so code must stay multiplayer-ready from day one.

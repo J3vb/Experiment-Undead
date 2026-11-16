@@ -150,6 +150,7 @@ def main() -> int:
     ok &= check_python(tracked_files(".py"))
     ok &= tests_required(files, "--no-tests-label" in sys.argv)
     ok &= run([sys.executable, str(Path(__file__).with_name("check_rules.py"))])
+    ok &= run([sys.executable, str(Path(__file__).with_name("check_plans.py"))])
 
     print("Quality checks passed." if ok else "Quality checks failed. Fix the problems above.")
     return 0 if ok else 1

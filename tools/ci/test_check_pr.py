@@ -6,7 +6,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 from tools.ci import check_pr
 
@@ -124,8 +124,13 @@ class RepositoryScopeTests(unittest.TestCase):
             self.assertEqual(check_pr.main(), 0)
         gdscript.assert_called_once_with(["core/net.gd"])
         python.assert_called_once_with(["tools/ci/check_pr.py"])
-        structure.assert_called_once_with(
-            [check_pr.sys.executable, str(Path(check_pr.__file__).with_name("check_rules.py"))]
+        here = Path(check_pr.__file__)
+        self.assertEqual(
+            structure.call_args_list,
+            [
+                call([check_pr.sys.executable, str(here.with_name("check_rules.py"))]),
+                call([check_pr.sys.executable, str(here.with_name("check_plans.py"))]),
+            ],
         )
 
     def test_structure_failure_fails_local_quality_check(self):

@@ -26,6 +26,40 @@ Every feature must serve at least one. If it serves none, it waits.
 3. One issue = one branch = one PR. CI green = merge (see AGENTS.md).
 4. `blocker` bugs go before everything else.
 5. A milestone ends with a tag and a release (see docs/RELEASING.md).
+6. The order of features and what each waits on: [docs/ROADMAP.md](ROADMAP.md).
+
+## Plan first
+
+Big work is planned before it is built, so nothing is built twice.
+
+1. Pick the next feature from [docs/ROADMAP.md](ROADMAP.md) whose needs are Done.
+2. If its Plan column says **needed**, write a plan from
+   [docs/plans/TEMPLATE.md](plans/TEMPLATE.md) and get it reviewed
+   ([docs/plans/README.md](plans/README.md)). The plan must pass the
+   [ready-to-build checklist](FOUNDATIONS.md#ready-to-build).
+3. Build the plan one step per PR. Every PR and Codex prompt names the plan
+   and step.
+4. If building shows the plan is wrong, fix the plan first, then the code.
+
+## Definition of done
+
+A **PR** is done when the AGENTS.md merge rules hold (CI green, tests for the
+change, review answered).
+
+A **feature** is done when all of these hold:
+
+- [ ] Every plan step is merged, and the plan's Acceptance list is ticked.
+- [ ] Acceptance is checked by tests, or by a play-test recorded in a
+      Play-test notes issue for feel and look.
+- [ ] It works in co-op as the plan's co-op section says (host, client,
+      dedicated server), with a test for the networked parts.
+- [ ] It holds the frame budget (60 fps minimum with 24 zombies; no new
+      per-frame allocations in hot paths).
+- [ ] New early warnings are in the `docs/LOGGING.md` catalogue.
+- [ ] New content types or recipes are in `docs/HOW_TO_ADD.md`.
+- [ ] `docs/DECISIONS.md` says what was built and what was simplified.
+- [ ] The plan says `Status: Done`, the roadmap row says Done, the issue is
+      closed.
 
 ## Play-test loop
 

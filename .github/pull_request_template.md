@@ -6,6 +6,8 @@
 
 <!-- The issue, design doc section or bug this is for. -->
 
+Plan: <!-- docs/plans/<file>.md, step N, or "none: <why no plan is needed>" -->
+
 ## How it was tested
 
 <!-- Which tests you added or changed. For feel/visual changes, what you checked in-game. -->
@@ -23,6 +25,7 @@
 - [ ] Behaviour change has a test (or the `no-tests-needed` label and a reason above)
 - [ ] Bug fix has a test that failed before the fix
 - [ ] Follows the Keep it simple rules in AGENTS.md
+- [ ] Built only the plan step named above (or no plan needed, see docs/plans/README.md)
 - [ ] Followed docs/HOW_TO_ADD.md for new content/systems (or n.a.)
 - [ ] Structure rules pass (tools/ci/check_rules.py)
 - [ ] Only touched files this task needed
