@@ -52,6 +52,7 @@ jobs:
         run: |
           tools/ci/stamp_version.sh
           version="$(sed -n 's/.*"version": "\(.*\)".*/\1/p' version.json)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "safe=${version//+/-}" >> "$GITHUB_OUTPUT"
 
       - name: Import project

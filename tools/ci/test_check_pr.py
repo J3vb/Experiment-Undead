@@ -26,6 +26,16 @@ class LongFunctionTests(unittest.TestCase):
         self.assertEqual(len(problems), 1)
         self.assertTrue(problems[0].endswith(":2: function 'too_long' has 51 lines (max 50)"))
 
+    def test_wrapped_signature_body_is_counted(self):
+        source = "func wrapped(\n\ta: int,\n\tb: int\n) -> void:\n" + "\tpass\n" * 51 + "func next():\n\tpass\n"
+        problems = self.check_source(source)
+        self.assertEqual(len(problems), 1)
+        self.assertTrue(problems[0].endswith(":1: function 'wrapped' has 51 lines (max 50)"))
+
+    def test_wrapped_signature_at_limit_passes(self):
+        source = "func wrapped(\n\ta: int,\n\tb: Array[int] = []\n) -> void:\n" + "\tpass\n" * 50
+        self.assertEqual(self.check_source(source), [])
+
     def test_blank_lines_and_next_function_do_not_count(self):
         source = "func first():\n" + "\tpass\n\n" * 50 + "func second():\n\tpass\n"
         self.assertEqual(self.check_source(source), [])

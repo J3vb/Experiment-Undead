@@ -40,10 +40,20 @@ def tracked_files(suffix: str) -> list[str]:
     return [path for path in out.split("\0") if path.endswith(suffix) and not path.startswith(VENDORED)]
 
 
+def signature_end(lines: list[str], start: int) -> int:
+    depth = 0
+    for index in range(start, len(lines)):
+        code = lines[index].split("#", 1)[0]
+        depth += code.count("(") + code.count("[") - code.count(")") - code.count("]")
+        if depth <= 0:
+            return index
+    return start
+
+
 def function_lines(lines: list[str], start: int) -> int:
     depth = indent_of(lines[start])
     body = 0
-    for later in lines[start + 1 :]:
+    for later in lines[signature_end(lines, start) + 1 :]:
         stripped = later.strip()
         if not stripped:
             continue
