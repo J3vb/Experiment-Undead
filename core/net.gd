@@ -201,6 +201,7 @@ func _go_to_place(next: StringName) -> void:
 
 
 func _exit_tree() -> void:
+	world.quit()
 	if _signals_bound:
 		leave()
 

@@ -31,7 +31,14 @@ theme_override_font_sizes/font_size = 20
 
 [node name="World" type="Label" parent="Menu"]
 visible = false
+autowrap_mode = 3
 theme_type_variation = &"LabelDim"
+theme_override_font_sizes/font_size = 20
+
+[node name="CopyAddress" type="Button" parent="Menu"]
+visible = false
+text = "Copy address"
+alignment = 0
 theme_override_font_sizes/font_size = 20
 
 [node name="Resume" type="Button" parent="Menu"]
