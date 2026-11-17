@@ -67,7 +67,7 @@ Not in (non-goals, and where each one goes instead):
   when the existing listen-server path is used, and step 1 pins the solo/co-op
   switch with tests before any port opens.
 - Decision records that apply (docs/adr/): 0003 trusted client (kept), 0004 one code path
-  (changed: solo now has an open port) -> new ADR 0013 in step 1, 0006 self-hosted (kept,
+  (changed: solo now has an open port) -> ADR 0013 (proposed) added with this plan, 0006 self-hosted (kept,
   port 7777, no central service), 0011 UI router (pause screen and settings go through it).
 - Co-op:
   - Who decides: the game's owner is the server, same as Host and play today.
