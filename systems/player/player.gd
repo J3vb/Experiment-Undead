@@ -19,7 +19,6 @@ extends CharacterBody3D
 @export var sprint_cooldown: float = 3.0
 @export var jump_velocity: float = 4.8
 @export var gravity_multiplier: float = 1.3
-
 ## Seconds spent down before Second Wind gets the player back up.
 @export var second_wind_time: float = 3.0
 
@@ -192,8 +191,7 @@ func get_rng() -> RandomNumberGenerator:
 	return session.rng if session else _fallback_rng
 
 
-## A respawn arrives by RPC, outside the physics tick. The owner moves on its next tick
-## so its interpolated camera never moves outside physics.
+## RPC moves land outside the physics tick; the owner waits for its next tick (interpolated camera).
 func teleport(to: Transform3D) -> void:
 	_teleport_to = to
 	_teleport_pending = is_physics_processing() and not Engine.is_in_physics_frame()
