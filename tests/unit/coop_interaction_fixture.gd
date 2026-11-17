@@ -13,6 +13,7 @@ const DISPENSER: PackedScene = preload("res://systems/interactables/med_dispense
 const BARRIER: PackedScene = preload("res://systems/interactables/barrier.tscn")
 const VAULT: PackedScene = preload("res://systems/interactables/specimen_vault.tscn")
 const HATCH: PackedScene = preload("res://systems/interactables/exfil_hatch.tscn")
+const RADIO: PackedScene = preload("res://systems/interactables/wall_radio.tscn")
 const ECONOMY: String = "res://content/economy/default_economy.tres"
 
 var server: GameSession
@@ -125,12 +126,29 @@ func build_level() -> Level:
 		marker.add_to_group(&"vault_spot")
 	var vault: SpecimenVault = _add(level, VAULT.instantiate(), "Vault", Vector3(0, 1, 3))
 	vault.pool = [Content.weapon(&"hollis_44"), Content.weapon(&"coachman_2b")]
+	_add_secret(level)
 	var point: ZombieSpawnPoint = ZombieSpawnPoint.new()
 	point.name = "EastSpawn"
 	point.area = &"east"
 	level.add_child(point)
 	point.owner = level
 	return level
+
+
+## The Signal in the Static secret: three radios, the freezer door they open, the free rack.
+func _add_secret(level: Level) -> void:
+	var puzzle: RadioPuzzle = RadioPuzzle.new()
+	puzzle.name = "Puzzle"
+	for i: int in 3:
+		var radio: Node3D = RADIO.instantiate() as Node3D
+		radio.name = "Radio%d" % i
+		radio.position = Vector3(2.5 - 2.5 * i, 1, -2.5)
+		puzzle.add_child(radio)
+	puzzle.door = _add_door(level, "FreezerDoor", &"cold_room", 0, Vector3(0, 1, -2))
+	level.add_child(puzzle)
+	var rack: WallBuy = _add(level, WALL_BUY.instantiate(), "Rack", Vector3(-2.5, 1, 2.5))
+	rack.weapon = Content.weapon(&"cryo_lance")
+	rack.once_per_player = true
 
 
 func _add(level: Level, node: Node3D, node_name: String, at: Vector3) -> Node3D:
