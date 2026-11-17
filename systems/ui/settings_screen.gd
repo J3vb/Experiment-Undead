@@ -12,7 +12,7 @@ const SLIDERS: Dictionary = {
 	&"music_volume": [&"audio", 100.0],
 	&"sfx_volume": [&"audio", 100.0],
 }
-const CHECKS: Dictionary = {&"invert_y": &"controls", &"vsync": &"video", &"show_fps": &"video"}
+const CHECKS: Dictionary = {&"invert_y": &"controls", &"vsync": &"graphics", &"show_fps": &"graphics"}
 const CHECK_LABELS: Dictionary = {&"invert_y": "Invert Y", &"vsync": "VSync", &"show_fps": "Show FPS"}
 const FPS: Array[int] = [60, 120, 144, 165, 240, 0]
 
@@ -31,6 +31,7 @@ func _ready() -> void:
 		var check: CheckBox = get_node("%" + key) as CheckBox
 		check.toggled.connect(func(value: bool) -> void: Settings.set_value(CHECKS[key], key, value))
 	%max_fps.item_selected.connect(_on_fps_selected)
+	%preset.item_selected.connect(func(index: int) -> void: Settings.set_value(&"graphics", &"preset", index))
 	%Reset.pressed.connect(Settings.reset_to_defaults)
 	%Back.pressed.connect(_close)
 	Settings.changed.connect(_on_setting_changed)
@@ -66,7 +67,7 @@ func _on_slider_changed(value: float, key: StringName) -> void:
 
 
 func _on_fps_selected(index: int) -> void:
-	Settings.set_value(&"video", &"max_fps", FPS[index])
+	Settings.set_value(&"graphics", &"max_fps", FPS[index])
 
 
 func _on_setting_changed(_section: StringName, _key: StringName, _value: Variant) -> void:
@@ -84,4 +85,5 @@ func _refresh() -> void:
 		var check: CheckBox = get_node("%" + key) as CheckBox
 		check.set_pressed_no_signal(bool(Settings.get_value(CHECKS[key], key)))
 		check.text = "%s   [%s]" % [CHECK_LABELS[key], "On" if check.button_pressed else "Off"]
-	%max_fps.select(FPS.find(int(Settings.get_value(&"video", &"max_fps"))))
+	%max_fps.select(FPS.find(int(Settings.get_value(&"graphics", &"max_fps"))))
+	%preset.select(int(Settings.get_value(&"graphics", &"preset")))

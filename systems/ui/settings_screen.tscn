@@ -83,6 +83,31 @@ script = ExtResource("key_bindings")
 theme_override_constants/separation = 12
 [node name="Video" type="VBoxContainer" parent="Margin/Box/Tabs"]
 theme_override_constants/separation = 16
+[node name="presetRow" type="HBoxContainer" parent="Margin/Box/Tabs/Video"]
+theme_override_constants/separation = 16
+[node name="Label" type="Label" parent="Margin/Box/Tabs/Video/presetRow"]
+text = "Graphics quality"
+custom_minimum_size = Vector2(450, 40)
+theme_override_font_sizes/font_size = 24
+[node name="preset" type="OptionButton" parent="Margin/Box/Tabs/Video/presetRow"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+item_count = 5
+popup/item_0/text = "Low"
+popup/item_0/id = 0
+popup/item_1/text = "Medium"
+popup/item_1/id = 1
+popup/item_2/text = "High"
+popup/item_2/id = 2
+popup/item_3/text = "Ultra"
+popup/item_3/id = 3
+popup/item_4/text = "Custom"
+popup/item_4/id = 4
+popup/item_4/disabled = true
+[node name="presetHint" type="Label" parent="Margin/Box/Tabs/Video"]
+theme_type_variation = &"LabelDim"
+text = "Sets shadows, anti-aliasing, ambient occlusion, reflections and fog together. High is the intended look."
 [node name="fovRow" type="HBoxContainer" parent="Margin/Box/Tabs/Video"]
 theme_override_constants/separation = 16
 [node name="Label" type="Label" parent="Margin/Box/Tabs/Video/fovRow"]
