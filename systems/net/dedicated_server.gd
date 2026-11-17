@@ -5,8 +5,14 @@
 class_name DedicatedServer
 extends Node
 
+## Clients see their results before the order to leave arrives.
+const RESULTS_GRACE: float = 1.0
+## A squad changing place leaves and rejoins within this; only then is the server really empty.
+const EMPTY_GRACE: float = 12.0
+
 ## Screens id of the first place. Tools and tests that need a match set it before super().
-var start_place: StringName = &"hub"
+## After a match, or when the last player leaves one, the server goes back here.
+var start_place: StringName = DeployVote.HUB
 var port: int = Net.DEFAULT_PORT
 var max_players: int = Net.MAX_PLAYERS
 var session: GameSession
@@ -27,6 +33,8 @@ func _ready() -> void:
 	multiplayer.peer_disconnected.connect(func(id: int) -> void: print("Player left: %d" % id))
 	Net.place = start_place
 	Net.place_changed.connect(_swap_session, CONNECT_DEFERRED)
+	Events.game_over.connect(_on_game_over)
+	multiplayer.peer_disconnected.connect(_on_peer_left)
 	session = _make_session(start_place)
 	get_tree().root.add_child.call_deferred(session)
 	stop_file = OS.get_environment("EU_STOP_FILE")
@@ -54,10 +62,10 @@ func _exit_tree() -> void:
 
 func _make_session(place: StringName) -> GameSession:
 	var data: ScreenData = Content.get_item(UI.TYPE, place) as ScreenData
-	var next: GameSession = (load(data.scene) as PackedScene).instantiate() as GameSession
-	next.has_local_player = false
-	next.profile_id = &""
-	return next
+	var fresh: GameSession = (load(data.scene) as PackedScene).instantiate() as GameSession
+	fresh.has_local_player = false
+	fresh.profile_id = &""
+	return fresh
 
 
 ## Clients were already sent away, so the new session starts empty. Old and new
@@ -69,6 +77,28 @@ func _swap_session(place: StringName) -> void:
 		get_tree().root.remove_child(old)
 		old.queue_free()
 	get_tree().root.add_child(session)
+
+
+func _on_game_over(_stats: Dictionary) -> void:
+	_return_later(&"game_over", RESULTS_GRACE)
+
+
+func _on_peer_left(_peer_id: int) -> void:
+	if multiplayer.get_peers().is_empty():
+		_return_later(&"empty", EMPTY_GRACE)
+
+
+## Back to the start place with a fresh session, unless the place changed meanwhile or
+## (for an empty server) someone came back. A server that starts in the match stays.
+func _return_later(reason: StringName, delay: float) -> void:
+	var old_id: int = session.get_instance_id()
+	await get_tree().create_timer(delay).timeout
+	if session.get_instance_id() != old_id or Net.place == start_place:
+		return
+	if reason == &"empty" and not multiplayer.get_peers().is_empty():
+		return
+	Log.info(&"net", &"match_reset", {"reason": reason, "place": String(start_place)})
+	Net.change_place(start_place)
 
 
 ## Command line (--port=7777, after "--") wins over the environment variable.

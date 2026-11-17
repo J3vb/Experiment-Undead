@@ -98,3 +98,43 @@ func _log_header() -> void:
 		var gpu: String = RenderingServer.get_video_adapter_name()
 		var vendor: String = RenderingServer.get_video_adapter_vendor()
 		print("GPU: %s (%s) | driver: %s" % [gpu, vendor, RenderingServer.get_video_adapter_api_version()])
+
+
+## Compare gameplay resource values, so editor and exported resource formats agree.
+func content_fingerprint() -> String:
+	var rows: Array[String] = []
+	var categories: PackedStringArray = DirAccess.get_directories_at(Content.ROOT)
+	categories.sort()
+	for category: String in categories:
+		var ids: PackedStringArray = PackedStringArray(Content.ids(StringName(category)))
+		ids.sort()
+		for id: String in ids:
+			rows.append(
+				"%s/%s:%s" % [category, id, _content_value(Content.get_item(StringName(category), StringName(id)))]
+			)
+	return "\n".join(rows).sha256_text()
+
+
+func _content_value(value: Variant) -> String:
+	if value is Resource:
+		var resource: Resource = value
+		if resource.get_script() == null:
+			return resource.resource_path
+		var fields: Array[String] = []
+		for property: Dictionary in resource.get_property_list():
+			if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE and property.usage & PROPERTY_USAGE_STORAGE:
+				fields.append("%s=%s" % [property.name, _content_value(resource.get(property.name))])
+		return ";".join(fields)
+	if value is Array:
+		var entries: Array[String] = []
+		for entry: Variant in value:
+			entries.append(_content_value(entry))
+		return "[%s]" % ",".join(entries)
+	if value is Dictionary:
+		var fields: Array[String] = []
+		var keys: Array = value.keys()
+		keys.sort_custom(func(a: Variant, b: Variant) -> bool: return str(a) < str(b))
+		for key: Variant in keys:
+			fields.append("%s=%s" % [key, _content_value(value[key])])
+		return "{%s}" % ",".join(fields)
+	return var_to_str(value)
