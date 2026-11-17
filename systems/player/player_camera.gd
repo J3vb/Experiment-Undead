@@ -123,6 +123,11 @@ func tilt(degrees: float, time: float) -> Tween:
 	return _tilt
 
 
+## Downed or dead roll (design: 6°); the 0.9 m drop comes from update_feel().
+func tilt_down(down: bool) -> Tween:
+	return tilt(rules.downed_roll_deg if down else 0.0, rules.downed_drop_s)
+
+
 func add_flinch(strength_degrees: float, sideways: float) -> void:
 	_recoil_target += Vector2(deg_to_rad(strength_degrees), deg_to_rad(sideways * strength_degrees * 0.6))
 
@@ -136,6 +141,8 @@ func update_feel(
 	recoil_pivot.rotation = Vector3(_recoil_current.x, _recoil_current.y, 0.0)
 
 	var target_height: float = crouch_height if crouching else stand_height
+	if _is_down():
+		target_height = stand_height - rules.downed_drop_m
 	position.y = lerpf(position.y, target_height, clampf(10.0 * delta, 0.0, 1.0))
 
 	var speed: float = Vector2(_body.velocity.x, _body.velocity.z).length()
@@ -198,6 +205,11 @@ func _step_fov_punch(delta: float) -> float:
 		_punch_length = 0.0
 		return 0.0
 	return _punch_peak * (1.0 - smoothstep(0.0, 1.0, t))
+
+
+func _is_down() -> bool:
+	var player: Player = _body as Player
+	return player != null and (player.is_downed or player.is_dead)
 
 
 func _is_local() -> bool:

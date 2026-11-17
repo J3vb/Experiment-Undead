@@ -1,0 +1,24 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://systems/feel/down_screen.gd" id="1_script"]
+[ext_resource type="Shader" path="res://systems/feel/down_screen.gdshader" id="2_shader"]
+[ext_resource type="Resource" path="res://content/feel/feedback_rules.tres" id="3_rules"]
+
+[sub_resource type="ShaderMaterial" id="down_mat"]
+shader = ExtResource("2_shader")
+shader_parameter/saturation = 1.0
+shader_parameter/vignette = 0.0
+shader_parameter/flash = 0.0
+shader_parameter/black = 0.0
+
+[node name="DownScreen" type="ColorRect"]
+visible = false
+material = SubResource("down_mat")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+rules = ExtResource("3_rules")

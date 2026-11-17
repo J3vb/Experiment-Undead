@@ -24,6 +24,7 @@ func test_stats_exfil_and_default_focus() -> void:
 	assert_eq(screen.map_time.text, "Halcyon Labs · 41:08")
 	assert_true(screen.exfil_banner.visible)
 	assert_eq(screen.exfil_banner.text, "Exfiltrated")
+	assert_false(screen.gear_kept_banner.visible, "exfil shows Exfiltrated, not Gear kept")
 	assert_true(screen.main_menu_button.has_focus())
 
 
@@ -36,6 +37,8 @@ func test_bar_replays_partial_levels_and_one_reward_per_crossing() -> void:
 	assert_almost_eq(screen.xp_bar.value, 100.0, 0.001)
 	assert_eq(screen.level_ups.get_child_count(), 0)
 	assert_false(screen.exfil_banner.visible)
+	assert_true(screen.gear_kept_banner.visible, "a death says loot and gear are kept")
+	assert_eq(screen.gear_kept_banner.text, "Gear kept")
 	var fraction: float = float(RULES.total_xp_for_level(10) - start) / (finish - start)
 	screen._xp_tween.custom_step(1.5 * fraction + 0.001)
 	assert_eq(screen.level_label.text, "LV 10")

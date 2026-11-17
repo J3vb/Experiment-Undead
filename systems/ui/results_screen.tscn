@@ -62,6 +62,18 @@ theme_type_variation = &"LabelExfil"
 theme_override_font_sizes/font_size = 28
 text = "Exfiltrated"
 
+[node name="GearKept" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchor_left = 0.71
+anchor_right = 0.97
+anchor_top = 0.13
+horizontal_alignment = 1
+theme_type_variation = &"LabelExfil"
+theme_override_font_sizes/font_size = 28
+text = "Gear kept"
+
 [node name="StatsPanel" type="PanelContainer" parent="."]
 layout_mode = 1
 anchor_left = 0.03

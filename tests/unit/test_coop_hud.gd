@@ -62,7 +62,7 @@ func test_down_and_dead_messages_follow_synced_flags() -> void:
 	player.is_downed = false
 	player.is_dead = true
 	hud._process(0.0)
-	assert_eq(hud.prompt_label.text, "Spectating · Respawn next round")
+	assert_eq(hud.prompt_label.text, "Spectating · Gear kept · Respawn next round")
 
 
 func test_held_input_uses_frames_and_pause_cancels() -> void:
