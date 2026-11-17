@@ -2,7 +2,9 @@
 class_name CharacterProfile
 extends RefCounted
 
-const DIRECTORY: String = "user://characters/"
+const STABLE_DIRECTORY: String = "user://characters/"
+## Test tags, main builds, the editor and tests save here so they never touch stable saves.
+const TEST_DIRECTORY: String = "user://characters-test/"
 const STASH_SIZE: int = 60
 const XP_RULES: XpRules = preload("res://content/progression/xp_rules.tres")
 
@@ -17,6 +19,9 @@ var best_runs: Dictionary = {}
 var level: int:
 	get:
 		return XP_RULES.level_for_total_xp(total_xp)
+
+## True when the file was written by a newer game version; it stays untouched.
+var saved_by_newer_version: bool = false
 
 var _unknown: Dictionary = {}
 var _can_save: bool = true
@@ -63,11 +68,39 @@ static func from_dict(data: Dictionary) -> CharacterProfile:
 	return profile
 
 
+## Where characters are saved for this build. Stable releases use the stable
+## folder; every other build uses the test folder, copied once from stable.
+static func directory() -> String:
+	if Build.is_stable():
+		return STABLE_DIRECTORY
+	prepare_test_directory(STABLE_DIRECTORY, TEST_DIRECTORY)
+	return TEST_DIRECTORY
+
+
+## Creates test_dir as a copy of stable_dir's files, only when test_dir is missing.
+static func prepare_test_directory(stable_dir: String, test_dir: String) -> void:
+	var test_path: String = ProjectSettings.globalize_path(test_dir)
+	if DirAccess.dir_exists_absolute(test_path):
+		return
+	DirAccess.make_dir_recursive_absolute(test_path)
+	var stable_path: String = ProjectSettings.globalize_path(stable_dir)
+	if not DirAccess.dir_exists_absolute(stable_path):
+		return
+	for file: String in DirAccess.get_files_at(stable_path):
+		DirAccess.copy_absolute(stable_path.path_join(file), test_path.path_join(file))
+
+
 static func load_or_create(profile_id: StringName) -> CharacterProfile:
 	var profile: CharacterProfile = CharacterProfile.new()
 	profile.id = profile_id
-	var path: String = DIRECTORY + String(profile_id) + ".json"
+	var path: String = directory() + String(profile_id) + ".json"
 	if not FileAccess.file_exists(path):
+		return profile
+	var saved_version: int = SaveFile.saved_version(path)
+	if saved_version > SaveFile.CURRENT_VERSION:
+		profile._can_save = false
+		profile.saved_by_newer_version = true
+		Log.warn(&"save", &"profile_newer", {"id": String(profile_id), "path": path, "version": saved_version})
 		return profile
 	var data: Dictionary = SaveFile.read(path)
 	var xp: Variant = data.get("total_xp", 0)
@@ -127,8 +160,9 @@ func record_run(map: String, stats: Dictionary) -> bool:
 func save() -> Error:
 	if not _can_save:
 		return ERR_UNAVAILABLE
-	var path: String = DIRECTORY + String(id) + ".json"
-	var error: Error = DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(DIRECTORY))
+	var folder: String = directory()
+	var path: String = folder + String(id) + ".json"
+	var error: Error = DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(folder))
 	if error == OK:
 		error = SaveFile.write(path, to_dict())
 	if error != OK:

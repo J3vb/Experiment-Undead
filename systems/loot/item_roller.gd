@@ -94,8 +94,13 @@ static func roll_gear(
 	}
 
 
+## 0 for an affix id or tier this build does not know (a save from a newer build).
 static func affix_value(affix_id: StringName, tier: int, q: float) -> float:
+	if not Content.has(&"loot", affix_id):
+		return 0.0
 	var affix: AffixData = Content.get_item(&"loot", affix_id) as AffixData
+	if affix == null or tier < 1 or tier > affix.tiers.size():
+		return 0.0
 	var data: AffixTier = affix.tiers[tier - 1]
 	return snappedf(lerpf(data.low, data.high, q), affix.step)
 

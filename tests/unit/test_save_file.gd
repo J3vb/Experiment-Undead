@@ -76,3 +76,17 @@ func test_version_1_save_gains_empty_best_runs_and_keeps_its_fields() -> void:
 	assert_eq(data["best_runs"], {})
 	assert_eq(int(data["total_xp"]), 400)
 	assert_true(FileAccess.file_exists(PATH + ".v1.bak"))
+
+
+func test_saved_version_tells_newer_from_broken() -> void:
+	assert_eq(SaveFile.saved_version(PATH), -1, "missing")
+	_write_raw("{broken")
+	assert_eq(SaveFile.saved_version(PATH), -1, "broken")
+	_write_raw('{"total_xp": 5}')
+	assert_eq(SaveFile.saved_version(PATH), 0, "unversioned")
+	_write_raw('{"save_version": "x"}')
+	assert_eq(SaveFile.saved_version(PATH), -1, "version is not a number")
+	var newer: String = '{"save_version": %d}' % (SaveFile.CURRENT_VERSION + 1)
+	_write_raw(newer)
+	assert_eq(SaveFile.saved_version(PATH), SaveFile.CURRENT_VERSION + 1)
+	assert_eq(FileAccess.get_file_as_string(PATH), newer, "reading the version changes nothing")

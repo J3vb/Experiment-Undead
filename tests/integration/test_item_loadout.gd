@@ -4,7 +4,7 @@ extends GutTest
 const SESSION: PackedScene = preload("res://systems/game/game_session.tscn")
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
 const PROFILE_ID: StringName = &"test_item_loadout"
-const PROFILE_PATH: String = "user://characters/test_item_loadout.json"
+var _profile_path: String = CharacterProfile.directory() + "test_item_loadout.json"
 
 var _loot_before: Dictionary
 
@@ -21,7 +21,7 @@ func after_each() -> void:
 
 
 func _remove_profile() -> void:
-	for path: String in [PROFILE_PATH, PROFILE_PATH + ".tmp"]:
+	for path: String in [_profile_path, _profile_path + ".tmp"]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
@@ -40,7 +40,7 @@ func test_character_sidearm_and_gear_are_applied_at_run_start() -> void:
 		)
 	)
 	assert_eq(profile.save(), OK)
-	var saved_before: String = FileAccess.get_file_as_string(PROFILE_PATH)
+	var saved_before: String = FileAccess.get_file_as_string(_profile_path)
 	var session: GameSession = SESSION.instantiate() as GameSession
 	session.profile_id = PROFILE_ID
 	session.rng_seed = 1234
@@ -58,7 +58,7 @@ func test_character_sidearm_and_gear_are_applied_at_run_start() -> void:
 		assert_not_null(item_gun.item)
 		assert_almost_eq(item_gun._stat(&"reload_time"), 1.0 / 1.2, 0.0001)
 	assert_eq(player.health.max_health, 140.0)
-	assert_eq(FileAccess.get_file_as_string(PROFILE_PATH), saved_before)
+	assert_eq(FileAccess.get_file_as_string(_profile_path), saved_before)
 
 
 func test_real_vest_regen_roll_reduces_four_second_delay_without_changing_content() -> void:

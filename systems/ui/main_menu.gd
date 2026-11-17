@@ -10,10 +10,17 @@ GUT (Godot Unit Test) 9.7.1, `addons/gut/`
 Butch Wesley and contributors
 https://github.com/bitwes/Gut · MIT"""
 
+const NEWER_SAVE: String = (
+	"This character was saved by a newer version of the game. "
+	+ "Update the game to play it. Your save was not changed."
+)
+
 static var launch_consumed: bool = false
 
 var _panel_tween: Tween
 var _drift_time: float = 0.0
+## Character waiting for the newer-save message to close before its screen opens.
+var _pending_profile: CharacterProfile
 
 @onready var menu: VBoxContainer = $Screens/Root/Menu
 @onready var play_button: Button = $Screens/Root/Menu/Play
@@ -235,7 +242,11 @@ func _show_error(reason: StringName, details: Dictionary = {}) -> void:
 func _close_error() -> void:
 	$Screens/Root.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_INHERITED
 	$Screens/Root.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_INHERITED
-	if host_panel.visible:
+	if _pending_profile:
+		var profile: CharacterProfile = _pending_profile
+		_pending_profile = null
+		(UI.push(&"character") as CharacterScreen).open(profile)
+	elif host_panel.visible:
 		port_field.grab_focus()
 	elif join_panel.visible:
 		address_field.grab_focus()
@@ -269,8 +280,15 @@ func _close_credits() -> void:
 
 
 func _open_character() -> void:
-	if UI.top().is_empty():
-		(UI.push(&"character") as CharacterScreen).open(CharacterProfile.load_or_create(&"solo"))
+	if not UI.top().is_empty():
+		return
+	var profile: CharacterProfile = CharacterProfile.load_or_create(&"solo")
+	if not profile.saved_by_newer_version:
+		(UI.push(&"character") as CharacterScreen).open(profile)
+		return
+	_pending_profile = profile
+	_show_error(&"newer_save")
+	error_dialog.message_label.text = NEWER_SAVE
 
 
 func _bind_gamepad() -> void:
