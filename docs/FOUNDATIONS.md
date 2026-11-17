@@ -104,9 +104,9 @@ in the past tense; requests are direct calls.
 
 **Which peers hear it:** every signal in `core/events.gd` has a `## Peers:`
 line (server only, owner, every peer); `tests/unit/test_events.gd` fails if one
-is missing. Read it before co-op code listens to an event. Known gap: round
-events (`round_started`, `round_ended`, `intermission_started`) fire on the
-server only, so client HUD and music do not see rounds yet (#216).
+is missing. Read it before co-op code listens to an event. Round events
+(`round_started`, `round_ended`, `intermission_started`) fire on every peer:
+`WaveDirector` relays them and sends late joiners a snapshot (F-40).
 
 ### 5. UI screens and routing
 

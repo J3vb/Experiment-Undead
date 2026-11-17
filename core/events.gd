@@ -7,13 +7,13 @@
 extends Node
 
 ## A round began spawning. count = total enemies this round.
-## Peers: server only. Clients do not get round state yet (#216).
+## Peers: every peer. The server emits it; WaveDirector relays it to clients and late joiners.
 signal round_started(round_number: int, count: int)
 ## The last enemy of a round died.
-## Peers: server only. Clients do not get round state yet (#216).
+## Peers: every peer. The server emits it; WaveDirector relays it to clients and late joiners.
 signal round_ended(round_number: int)
 ## Countdown to the next round started.
-## Peers: server only. Clients do not get round state yet (#216).
+## Peers: every peer. The server emits it; WaveDirector relays it to clients and late joiners.
 signal intermission_started(next_round: int, duration: float)
 
 ## An enemy entered the world.
