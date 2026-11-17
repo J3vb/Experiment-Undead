@@ -1,6 +1,6 @@
 # Plan: Core loop gaps
 
-Status: Done (built 2026-11-17; feel check by the person still open)
+Status: Done
 Roadmap: F-12 / no issue (audit of the v0.1 slice against the design docs)
 Phase: P2-P4
 Size: M
@@ -379,4 +379,4 @@ measurable change at 24 zombies.
 
 - none
 
-Feel checks (slide, jump, speeds, swap, melee) go to the person's playtest after steps 3-5.
+Feel checks (slide, jump, speeds, swap, melee) are still open: they go to the person's playtest. Built 2026-11-17.
