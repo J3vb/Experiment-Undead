@@ -8,6 +8,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
 [ext_resource type="Resource" path="res://content/grips/halberd_lmg.tres" id="grip"]
 [ext_resource type="PackedScene" path="res://assets/models/weapons/halberd_lmg.glb" id="world"]
+[ext_resource type="Resource" path="res://content/feel/class_lmg.tres" id="feel"]
 
 [sub_resource type="Resource" id="recoil"]
 script = ExtResource("2")
@@ -50,6 +51,7 @@ move_spread = 3.0
 spread_per_shot = 0.25
 max_spread = 8.0
 recoil = SubResource("recoil")
+feel = ExtResource("feel")
 viewmodel_kick = 0.04
 hip_position = Vector3(0.17, -0.2, -0.34)
 ads_position = Vector3(0, -0.098, -0.26)

@@ -1,6 +1,6 @@
 # Plan: Game feel and death screen
 
-Status: Approved
+Status: Building
 Roadmap: F-16 / no issue (audit of the v0.1 slice against docs/design/game-feel.md)
 Phase: P1 + P4 (feel layer the slice still misses)
 Size: M

@@ -16,6 +16,8 @@ live state belongs in objects such as `WeaponInstance`.
     (`WeaponData`), with `id` matching the filename. Follow `kestrel_smg.tres`.
 3. Embed `RecoilData` (`systems/weapons/recoil_data.gd`) as its `recoil`
     sub-resource, as existing guns do; fill handling, sounds and presentation.
+    Set `feel` to the class file in `content/feel/` that matches the roster class
+    (pistol, smg, rifle, lmg, shotgun, marksman, heavy); Reforged copies use the same file.
 4. For Tier I, create `<id>_reforged.tres` and link `upgraded`: damage ×2,
     magazine `int(base * 1.5)`, `max_reserve` ×2.
 5. Build a model under `tools/assets/`, register it in `build_models.py`'s

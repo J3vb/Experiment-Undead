@@ -10,6 +10,7 @@
 [ext_resource type="Resource" path="res://content/weapons/synapse_reforged.tres" id="7"]
 [ext_resource type="Resource" path="res://content/grips/synapse.tres" id="grip"]
 [ext_resource type="PackedScene" path="res://assets/models/weapons/synapse.glb" id="world"]
+[ext_resource type="Resource" path="res://content/feel/class_heavy.tres" id="feel"]
 
 [sub_resource type="Resource" id="recoil"]
 script = ExtResource("2")
@@ -52,6 +53,7 @@ move_spread = 1.5
 spread_per_shot = 0.2
 max_spread = 6.0
 recoil = SubResource("recoil")
+feel = ExtResource("feel")
 viewmodel_kick = 0.03
 hip_position = Vector3(0.18, -0.18, -0.36)
 ads_position = Vector3(0, -0.084, -0.26)

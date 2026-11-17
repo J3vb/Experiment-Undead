@@ -9,6 +9,7 @@
 [ext_resource type="Resource" path="res://content/weapons/brenner_trench_reforged.tres" id="7"]
 [ext_resource type="Resource" path="res://content/grips/brenner_trench.tres" id="grip"]
 [ext_resource type="PackedScene" path="res://assets/models/weapons/shotgun_brenner.glb" id="world"]
+[ext_resource type="Resource" path="res://content/feel/class_shotgun.tres" id="feel"]
 
 [sub_resource type="Resource" id="recoil"]
 script = ExtResource("2")
@@ -50,6 +51,7 @@ move_spread = 1.0
 spread_per_shot = 0.0
 max_spread = 5.5
 recoil = SubResource("recoil")
+feel = ExtResource("feel")
 viewmodel_kick = 0.09
 hip_position = Vector3(0.18, -0.17, -0.3)
 ads_position = Vector3(0, -0.05, -0.24)
