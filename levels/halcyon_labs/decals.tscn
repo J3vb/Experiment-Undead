@@ -1,0 +1,406 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/halcyon/decal_hazard.png" id="hazard"]
+[ext_resource type="Texture2D" path="res://assets/textures/halcyon/decal_water_stain.png" id="water_stain"]
+[ext_resource type="Texture2D" path="res://assets/textures/halcyon/decal_scuffs.png" id="scuffs"]
+
+[node name="Decals" type="Node3D"]
+
+[node name="GuardPostDoorStripesA" type="Decal" parent="."]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 21.45, 0, 48)
+size = Vector3(0.5, 0.6, 2)
+texture_albedo = ExtResource("hazard")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="GuardPostDoorStripesB" type="Decal" parent="."]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 22.55, 0, 48)
+size = Vector3(0.5, 0.6, 2)
+texture_albedo = ExtResource("hazard")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="MessHallDebrisStripesA" type="Decal" parent="."]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 42, 0, 45.45)
+size = Vector3(4, 0.6, 0.5)
+texture_albedo = ExtResource("hazard")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="MessHallDebrisStripesB" type="Decal" parent="."]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 42, 0, 46.55)
+size = Vector3(4, 0.6, 0.5)
+texture_albedo = ExtResource("hazard")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="CorridorDoorGuardPostStripesA" type="Decal" parent="."]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 20, 0, 29.45)
+size = Vector3(2, 0.6, 0.5)
+texture_albedo = ExtResource("hazard")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="CorridorDoorGuardPostStripesB" type="Decal" parent="."]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 20, 0, 30.55)
+size = Vector3(2, 0.6, 0.5)
+texture_albedo = ExtResource("hazard")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="CorridorDoorMessHallStripesA" type="Decal" parent="."]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 44, 0, 29.45)
+size = Vector3(2, 0.6, 0.5)
+texture_albedo = ExtResource("hazard")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="CorridorDoorMessHallStripesB" type="Decal" parent="."]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 44, 0, 30.55)
+size = Vector3(2, 0.6, 0.5)
+texture_albedo = ExtResource("hazard")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="GeneratorHallDoorStripesA" type="Decal" parent="."]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 24, 0, 25.45)
+size = Vector3(2, 0.6, 0.5)
+texture_albedo = ExtResource("hazard")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="GeneratorHallDoorStripesB" type="Decal" parent="."]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 24, 0, 26.55)
+size = Vector3(2, 0.6, 0.5)
+texture_albedo = ExtResource("hazard")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="LabsDebrisStripesA" type="Decal" parent="."]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 42, 0, 25.45)
+size = Vector3(4, 0.6, 0.5)
+texture_albedo = ExtResource("hazard")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="LabsDebrisStripesB" type="Decal" parent="."]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 42, 0, 26.55)
+size = Vector3(4, 0.6, 0.5)
+texture_albedo = ExtResource("hazard")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="TunnelWestShutterStripesA" type="Decal" parent="."]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 27.45, 0, 12.5)
+size = Vector3(0.5, 0.6, 3)
+texture_albedo = ExtResource("hazard")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="TunnelWestShutterStripesB" type="Decal" parent="."]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 28.55, 0, 12.5)
+size = Vector3(0.5, 0.6, 3)
+texture_albedo = ExtResource("hazard")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="TunnelEastShutterStripesA" type="Decal" parent="."]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 35.45, 0, 12.5)
+size = Vector3(0.5, 0.6, 3)
+texture_albedo = ExtResource("hazard")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="TunnelEastShutterStripesB" type="Decal" parent="."]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 36.55, 0, 12.5)
+size = Vector3(0.5, 0.6, 3)
+texture_albedo = ExtResource("hazard")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="ContainmentDoorStripesA" type="Decal" parent="."]
+transform = Transform3D(1, 0, -0, 0, 1, 0, 0, 0, 1, 51.45, 0, 18)
+size = Vector3(0.5, 0.6, 4)
+texture_albedo = ExtResource("hazard")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="LoadingDockStain0" type="Decal" parent="."]
+transform = Transform3D(-0.4284, 0, -0.9036, 0, 1, 0, 0.9036, 0, -0.4284, 35.19, 0, 56.41)
+size = Vector3(1.79338, 0.6, 1.79338)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="LoadingDockStain1" type="Decal" parent="."]
+transform = Transform3D(-0.6334, 0, -0.7739, 0, 1, 0, 0.7739, 0, -0.6334, 38.06, 0, 52.85)
+size = Vector3(1.58516, 0.6, 1.58516)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="LoadingDockStain2" type="Decal" parent="."]
+transform = Transform3D(-0.6778, 0, 0.7353, 0, 1, 0, -0.7353, 0, -0.6778, 30.43, 0, 49.34)
+size = Vector3(1.6866, 0.6, 1.6866)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="LoadingDockScuffs0" type="Decal" parent="."]
+transform = Transform3D(-0.6639, 0, 0.7479, 0, 1, 0, -0.7479, 0, -0.6639, 41.88, 0, 54.89)
+size = Vector3(3, 0.6, 1.5)
+texture_albedo = ExtResource("scuffs")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="LoadingDockScuffs1" type="Decal" parent="."]
+transform = Transform3D(0.6174, 0, -0.7867, 0, 1, 0, 0.7867, 0, 0.6174, 30.75, 0, 52.34)
+size = Vector3(3, 0.6, 1.5)
+texture_albedo = ExtResource("scuffs")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="GuardPostStain0" type="Decal" parent="."]
+transform = Transform3D(0.9923, 0, 0.1237, 0, 1, 0, -0.1237, 0, 0.9923, 14.17, 0, 36.46)
+size = Vector3(2.07447, 0.6, 2.07447)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="GuardPostStain1" type="Decal" parent="."]
+transform = Transform3D(0.06762, 0, 0.9977, 0, 1, 0, -0.9977, 0, 0.06762, 20.31, 0, 42.01)
+size = Vector3(1.60841, 0.6, 1.60841)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="GuardPostStain2" type="Decal" parent="."]
+transform = Transform3D(-0.05425, 0, -0.9985, 0, 1, 0, 0.9985, 0, -0.05425, 13.11, 0, 43.62)
+size = Vector3(1.95358, 0.6, 1.95358)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="GuardPostScuffs0" type="Decal" parent="."]
+transform = Transform3D(0.9334, 0, -0.3588, 0, 1, 0, 0.3588, 0, 0.9334, 15.26, 0, 34.09)
+size = Vector3(3, 0.6, 1.5)
+texture_albedo = ExtResource("scuffs")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="GuardPostScuffs1" type="Decal" parent="."]
+transform = Transform3D(-0.7502, 0, -0.6612, 0, 1, 0, 0.6612, 0, -0.7502, 14.94, 0, 32.23)
+size = Vector3(3, 0.6, 1.5)
+texture_albedo = ExtResource("scuffs")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="MessHallStain0" type="Decal" parent="."]
+transform = Transform3D(0.7791, 0, -0.6269, 0, 1, 0, 0.6269, 0, 0.7791, 56.47, 0, 37)
+size = Vector3(2.22017, 0.6, 2.22017)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="MessHallStain1" type="Decal" parent="."]
+transform = Transform3D(-0.7245, 0, 0.6892, 0, 1, 0, -0.6892, 0, -0.7245, 40.58, 0, 34.33)
+size = Vector3(1.6154, 0.6, 1.6154)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="MessHallStain2" type="Decal" parent="."]
+transform = Transform3D(-0.8832, 0, -0.4689, 0, 1, 0, 0.4689, 0, -0.8832, 40.03, 0, 37.84)
+size = Vector3(1.94021, 0.6, 1.94021)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="MessHallScuffs0" type="Decal" parent="."]
+transform = Transform3D(-0.783, 0, -0.622, 0, 1, 0, 0.622, 0, -0.783, 46.37, 0, 33.62)
+size = Vector3(3, 0.6, 1.5)
+texture_albedo = ExtResource("scuffs")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="MessHallScuffs1" type="Decal" parent="."]
+transform = Transform3D(-0.5923, 0, 0.8057, 0, 1, 0, -0.8057, 0, -0.5923, 41.64, 0, 40.23)
+size = Vector3(3, 0.6, 1.5)
+texture_albedo = ExtResource("scuffs")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="MainCorridorStain0" type="Decal" parent="."]
+transform = Transform3D(-0.6779, 0, -0.7352, 0, 1, 0, 0.7352, 0, -0.6779, 30.5, 0, 28.46)
+size = Vector3(1.95451, 0.6, 1.95451)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="MainCorridorStain1" type="Decal" parent="."]
+transform = Transform3D(0.5477, 0, -0.8367, 0, 1, 0, 0.8367, 0, 0.5477, 29.58, 0, 28.41)
+size = Vector3(1.44459, 0.6, 1.44459)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="MainCorridorStain2" type="Decal" parent="."]
+transform = Transform3D(-0.9764, 0, -0.2158, 0, 1, 0, 0.2158, 0, -0.9764, 44.83, 0, 28.35)
+size = Vector3(2.1164, 0.6, 2.1164)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="MainCorridorScuffs0" type="Decal" parent="."]
+transform = Transform3D(-0.249, 0, 0.9685, 0, 1, 0, -0.9685, 0, -0.249, 31.7, 0, 28)
+size = Vector3(3, 0.6, 1.5)
+texture_albedo = ExtResource("scuffs")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="MainCorridorScuffs1" type="Decal" parent="."]
+transform = Transform3D(-0.7789, 0, 0.6272, 0, 1, 0, -0.6272, 0, -0.7789, 40.98, 0, 28)
+size = Vector3(3, 0.6, 1.5)
+texture_albedo = ExtResource("scuffs")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="GeneratorHallStain0" type="Decal" parent="."]
+transform = Transform3D(0.54, 0, 0.8417, 0, 1, 0, -0.8417, 0, 0.54, 13.55, 0, 11.02)
+size = Vector3(2.08586, 0.6, 2.08586)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="GeneratorHallStain1" type="Decal" parent="."]
+transform = Transform3D(-0.04485, 0, -0.999, 0, 1, 0, 0.999, 0, -0.04485, 16.47, 0, 15.76)
+size = Vector3(1.88177, 0.6, 1.88177)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="GeneratorHallStain2" type="Decal" parent="."]
+transform = Transform3D(0.6047, 0, -0.7964, 0, 1, 0, 0.7964, 0, 0.6047, 11.31, 0, 14.33)
+size = Vector3(1.49746, 0.6, 1.49746)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="GeneratorHallScuffs0" type="Decal" parent="."]
+transform = Transform3D(-0.8413, 0, 0.5406, 0, 1, 0, -0.5406, 0, -0.8413, 24.35, 0, 23.29)
+size = Vector3(3, 0.6, 1.5)
+texture_albedo = ExtResource("scuffs")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="GeneratorHallScuffs1" type="Decal" parent="."]
+transform = Transform3D(0.5601, 0, -0.8284, 0, 1, 0, 0.8284, 0, 0.5601, 11.44, 0, 17.58)
+size = Vector3(3, 0.6, 1.5)
+texture_albedo = ExtResource("scuffs")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="LabsStain0" type="Decal" parent="."]
+transform = Transform3D(0.8905, 0, -0.455, 0, 1, 0, 0.455, 0, 0.8905, 39.16, 0, 17.97)
+size = Vector3(1.64584, 0.6, 1.64584)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="LabsStain1" type="Decal" parent="."]
+transform = Transform3D(0.9049, 0, 0.4257, 0, 1, 0, -0.4257, 0, 0.9049, 40.54, 0, 17.56)
+size = Vector3(1.53573, 0.6, 1.53573)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="LabsStain2" type="Decal" parent="."]
+transform = Transform3D(-0.9814, 0, 0.1921, 0, 1, 0, -0.1921, 0, -0.9814, 47.67, 0, 20.93)
+size = Vector3(1.89449, 0.6, 1.89449)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="LabsScuffs0" type="Decal" parent="."]
+transform = Transform3D(0.6641, 0, -0.7477, 0, 1, 0, 0.7477, 0, 0.6641, 38.81, 0, 12.7)
+size = Vector3(3, 0.6, 1.5)
+texture_albedo = ExtResource("scuffs")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="LabsScuffs1" type="Decal" parent="."]
+transform = Transform3D(0.9051, 0, 0.4252, 0, 1, 0, -0.4252, 0, 0.9051, 44.2, 0, 16.08)
+size = Vector3(3, 0.6, 1.5)
+texture_albedo = ExtResource("scuffs")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="CoolantTunnelStain0" type="Decal" parent="."]
+transform = Transform3D(-0.7844, 0, 0.6202, 0, 1, 0, -0.6202, 0, -0.7844, 30.16, 0, 12.5)
+size = Vector3(1.43946, 0.6, 1.43946)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="CoolantTunnelStain1" type="Decal" parent="."]
+transform = Transform3D(0.4393, 0, 0.8984, 0, 1, 0, -0.8984, 0, 0.4393, 31.22, 0, 12.5)
+size = Vector3(1.26366, 0.6, 1.26366)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="CoolantTunnelStain2" type="Decal" parent="."]
+transform = Transform3D(0.9239, 0, 0.3826, 0, 1, 0, -0.3826, 0, 0.9239, 33.87, 0, 12.5)
+size = Vector3(2.13487, 0.6, 2.13487)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="CoolantTunnelScuffs0" type="Decal" parent="."]
+transform = Transform3D(0.638, 0, -0.77, 0, 1, 0, 0.77, 0, 0.638, 31.88, 0, 12.71)
+size = Vector3(3, 0.6, 1.5)
+texture_albedo = ExtResource("scuffs")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="CoolantTunnelScuffs1" type="Decal" parent="."]
+transform = Transform3D(-0.7448, 0, 0.6673, 0, 1, 0, -0.6673, 0, -0.7448, 33.33, 0, 12.35)
+size = Vector3(3, 0.6, 1.5)
+texture_albedo = ExtResource("scuffs")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="ContainmentWingStain0" type="Decal" parent="."]
+transform = Transform3D(-0.3413, 0, 0.94, 0, 1, 0, -0.94, 0, -0.3413, 69.72, -3, 13.25)
+size = Vector3(2.37383, 0.6, 2.37383)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="ContainmentWingStain1" type="Decal" parent="."]
+transform = Transform3D(-0.8639, 0, -0.5036, 0, 1, 0, 0.5036, 0, -0.8639, 63.82, -3, 29.09)
+size = Vector3(2.31119, 0.6, 2.31119)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="ContainmentWingStain2" type="Decal" parent="."]
+transform = Transform3D(-0.9984, 0, -0.05618, 0, 1, 0, 0.05618, 0, -0.9984, 68.11, -3, 25.02)
+size = Vector3(1.336, 0.6, 1.336)
+texture_albedo = ExtResource("water_stain")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="ContainmentWingScuffs0" type="Decal" parent="."]
+transform = Transform3D(0.8023, 0, -0.597, 0, 1, 0, 0.597, 0, 0.8023, 65.23, -3, 24.42)
+size = Vector3(3, 0.6, 1.5)
+texture_albedo = ExtResource("scuffs")
+upper_fade = 0.2
+lower_fade = 0.2
+
+[node name="ContainmentWingScuffs1" type="Decal" parent="."]
+transform = Transform3D(-0.7607, 0, 0.6491, 0, 1, 0, -0.6491, 0, -0.7607, 70.05, -3, 14.68)
+size = Vector3(3, 0.6, 1.5)
+texture_albedo = ExtResource("scuffs")
+upper_fade = 0.2
+lower_fade = 0.2

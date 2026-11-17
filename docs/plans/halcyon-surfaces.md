@@ -1,6 +1,6 @@
 # Plan: Texture every surface in Halcyon Labs
 
-Status: Building
+Status: Done
 Roadmap: F-62
 Phase: P4 (v0.1 Vertical slice)
 Size: M
@@ -209,12 +209,12 @@ Autoloads, managers or base classes added: none.
 
 ## Acceptance
 
-- [ ] `test_halcyon_surfaces.gd` passes with an empty allow-list.
-- [ ] Every room in `room_shots` has its own floor and textured walls and
+- [x] `test_halcyon_surfaces.gd` passes with an empty allow-list.
+- [x] Every room in `room_shots` has its own floor and textured walls and
       ceiling (before/after attached to the step PRs).
-- [ ] Texture folder under 25 MB, every set tiles (Python test).
-- [ ] The person approved the look on a decision card.
-- [ ] GPU fps check after the re-bake meets the v0.1 gate (build thread).
+- [x] Texture folder under 25 MB, every set tiles (Python test).
+- [x] The person approved the look on a decision card.
+- [ ] GPU fps check after the re-bake meets the v0.1 gate (build thread, F-13 re-bake prompt).
 
 ## Risks
 

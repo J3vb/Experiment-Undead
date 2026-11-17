@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/blockout.tscn" id="blockout"]
 [ext_resource type="PackedScene" path="res://systems/effects/film_post.tscn" id="film"]
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/ambience.tscn" id="ambience"]
+[ext_resource type="PackedScene" path="res://levels/halcyon_labs/decals.tscn" id="decals"]
 [ext_resource type="Material" path="res://levels/materials/rust.tres" id="rust"]
 [ext_resource type="Material" path="res://levels/materials/wood.tres" id="wood"]
 [ext_resource type="PackedScene" path="res://systems/interactables/door.tscn" id="door"]
@@ -740,6 +741,8 @@ script = ExtResource("spawn")
 area = &"coolant_tunnel"
 
 [node name="Ambience" parent="." instance=ExtResource("ambience")]
+
+[node name="Decals" parent="." instance=ExtResource("decals")]
 
 [node name="CoopTruckGap1" type="Marker3D" parent="ZombieSpawns"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.5, 0.1, 62)
