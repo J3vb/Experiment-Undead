@@ -223,7 +223,7 @@ func test_remote_shot_uses_one_final_endpoint_for_the_piercing_pellet() -> void:
 	var effects: RemoteShotEffects = claimant.get_node("ShotEffects") as RemoteShotEffects
 	_fire_as_client()
 	assert_eq(points.size(), 3, "local impacts still report all pierced zombies")
-	await wait_until(func() -> bool: return effects.has_node("Tracers"), 3.0, "server renders the shot")
+	await wait_until(func() -> bool: return _drawn(effects), 3.0, "server renders the shot")
 	var tracers: Array[Node] = effects.find_children("Tracers*", "MeshInstance3D", false, false)
 	assert_eq(tracers.size(), 1, "one cosmetic packet renders one shot")
 	if tracers.size() != 1:
@@ -233,3 +233,8 @@ func test_remote_shot_uses_one_final_endpoint_for_the_piercing_pellet() -> void:
 	assert_eq(vertices.size(), IRONWOOD.pellets * 2, "piercing keeps one endpoint per pellet")
 	assert_almost_eq(vertices[-1].distance_to(points[-1]), 0.0, 0.001, "tracer ends at the final pierced hit")
 	assert_true(client.session.remote_shots._points.is_empty(), "firing flushes the cosmetic endpoints")
+
+
+func _drawn(effects: RemoteShotEffects) -> bool:
+	var tracers: Node3D = effects.get_node_or_null("Tracers") as Node3D
+	return tracers != null and tracers.visible

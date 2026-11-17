@@ -149,3 +149,16 @@ func _close_side(root: Node) -> void:
 	root.multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
 	root.free()
 	get_tree().set_multiplayer(null, path)
+
+
+func test_arc_segments_share_one_mesh_scaled_to_length() -> void:
+	_chain.show_arcs(Vector3.ZERO, PackedVector3Array([Vector3(3, 0, 0), Vector3(0, 0, 4)]))
+	var segments: Array[Node] = _chain.find_children("*", "MeshInstance3D", true, false)
+	assert_eq(segments.size(), 6, "two arcs of three segments")
+	var first: MeshInstance3D = segments[0] as MeshInstance3D
+	for node: Node in segments:
+		assert_same((node as MeshInstance3D).mesh, first.mesh)
+	var side: Vector3 = Vector3(3, 0, 0).cross(Vector3.UP).normalized() * 0.12
+	var expected: float = (Vector3(3, 0, 0) * 0.33 + side).length()
+	assert_almost_eq(first.scale.y, expected, 0.001)
+	assert_almost_eq((first.mesh as CylinderMesh).height, 1.0, 0.001)
