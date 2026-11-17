@@ -15,7 +15,7 @@ func get_prompt(player: Player, blocked: bool) -> String:
 	if not is_instance_valid(player) or not player.is_inside_tree() or _blocked:
 		return ""
 	if player.is_dead:
-		return "Spectating · Respawn next round"
+		return "Spectating · Gear kept · Respawn next round"
 	if player.is_downed and player.state_sync.is_coop():
 		return "You are down · Waiting for a revive"
 	var target: Player = player.revive.nearest_target()

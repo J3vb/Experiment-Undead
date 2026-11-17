@@ -287,7 +287,7 @@ func _present() -> void:
 	_player.collision_mask = 0 if _player.is_dead else Layers.WORLD | Layers.ENEMY | Layers.BARRIER
 	_player.input_enabled = not _player.is_dead
 	_player.weapons.visible = local and not _player.is_dead
-	_player.camera_rig.tilt(25.0 if _player.is_downed else 0.0, 0.2)
+	_player.camera_rig.tilt_down(_player.is_downed)
 	_icon.visible = _player.is_downed and not local
 	if _player.is_downed:
 		_equip_sidearm()
