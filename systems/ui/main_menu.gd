@@ -2,7 +2,6 @@
 class_name MainMenu
 extends Control
 
-const PLAY_SCENE: String = "res://systems/game/game_session.tscn"
 const CHARACTER_SCENE: String = "res://systems/ui/character_screen.tscn"
 const CREDITS: String = """Atkinson Hyperlegible Next and Mono, `assets/fonts/`
 Braille Institute of America, Applied Design Works
@@ -38,8 +37,7 @@ var _drift_time: float = 0.0
 
 func _ready() -> void:
 	_bind_gamepad()
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	play_button.pressed.connect(func() -> void: get_tree().change_scene_to_file(PLAY_SCENE))
+	play_button.pressed.connect(func() -> void: UI.replace(&"match"))
 	host_button.pressed.connect(_open_host)
 	join_button.pressed.connect(_open_join)
 	$Screens/Root/HostPanel/Box/Start.pressed.connect(_host)
@@ -153,7 +151,7 @@ func _start_host(port: int) -> void:
 		_show_error(&"port_in_use", {"port": port})
 		Net.last_error.clear()
 		return
-	get_tree().change_scene_to_file(PLAY_SCENE)
+	UI.replace(&"match")
 
 
 func _join() -> void:
@@ -169,7 +167,7 @@ func _start_join(address: String) -> void:
 	Net.pending_join = target
 	error_dialog.reparent(get_tree().root)
 	error_dialog.show_connecting(target)
-	get_tree().change_scene_to_file(PLAY_SCENE)
+	UI.replace(&"match")
 
 
 ## Validate before Net.join so malformed input never opens a connection.

@@ -111,3 +111,14 @@ func test_replaced_pack_guns_restore_ammo_including_an_empty_gun() -> void:
 	assert_eq(player.weapons.current.instance.ammo_reserve, 0)
 	assert_eq(player.weapons.weapons.size(), 2)
 	assert_signal_emitted_with_parameters(Events, "ammo_changed", [player, 0, 0])
+
+
+func test_open_pack_frees_the_mouse_and_closing_gives_it_back() -> void:
+	var root: ScreenData = UI._root
+	UI._root = Content.get_item(&"screens", &"match") as ScreenData
+	assert_false(UI.mouse_should_be_free())
+	overlay.set_open(true)
+	assert_true(UI.mouse_should_be_free(), "mouse look pauses while the Pack is open")
+	overlay.set_open(false)
+	assert_false(UI.mouse_should_be_free())
+	UI._root = root

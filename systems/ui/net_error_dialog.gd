@@ -4,7 +4,6 @@ extends CanvasLayer
 
 signal closed
 
-const MENU_SCENE: String = "res://systems/ui/main_menu.tscn"
 const MESSAGES: Dictionary = {
 	&"bad_address": "That address doesn't look right. Use something like 192.168.1.20:7777.",
 	&"invalid_port": "Use a port number from 1 to 65535.",
@@ -21,6 +20,7 @@ var connecting: bool = false
 
 func _ready() -> void:
 	hide()
+	visibility_changed.connect(func() -> void: UI.hold_mouse(self, visible))
 	action_button.pressed.connect(_dismiss)
 	Net.join_started.connect(_on_join_started)
 	Net.join_succeeded.connect(_on_join_succeeded)
@@ -73,8 +73,7 @@ func _dismiss() -> void:
 		return
 	Net.pending_join = ""
 	Net.leave()
-	get_tree().paused = false
-	get_tree().change_scene_to_file(MENU_SCENE)
+	UI.replace(&"main_menu")
 	queue_free()
 
 
@@ -84,11 +83,8 @@ func _on_join_started(address: String) -> void:
 
 
 func _on_join_succeeded() -> void:
-	if not connecting:
-		return
-	if DisplayServer.get_name() != "headless":
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	queue_free()
+	if connecting:
+		queue_free()
 
 
 func _on_connection_error(_reason: StringName, _details: Dictionary) -> void:
@@ -98,5 +94,4 @@ func _on_connection_error(_reason: StringName, _details: Dictionary) -> void:
 
 func _on_scene_changed() -> void:
 	if visible and not is_queued_for_deletion():
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		action_button.grab_focus()

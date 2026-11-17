@@ -85,6 +85,8 @@ The server also prints every warning and error to stdout as
 | `progression.profile_unreadable` | warn | Existing character is unreadable, malformed or newer; file stays untouched, this match uses a temporary character. `id`, `path`; inspect nearby engine errors |
 | `game.game_over` | info | Final stats |
 | `net.peer_connected` / `peer_disconnected` | info | Server side, peer id |
+| `ui.unknown_screen` | warn | `UI.push` or `UI.replace` got an id with no `content/screens/<id>.tres`; `id`. Nothing opens |
+| `ui.pop_empty` | warn | `UI.pop()` with no screen open: a screen emitted `closed` twice or something popped a screen it did not push |
 
 ## Adding log lines (rules for agents)
 

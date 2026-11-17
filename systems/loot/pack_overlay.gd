@@ -153,8 +153,7 @@ func set_open(open: bool) -> void:
 	panel.visible = open
 	tooltip.visible = open
 	mouse_filter = Control.MOUSE_FILTER_STOP if open else Control.MOUSE_FILTER_IGNORE
-	if DisplayServer.get_name() != "headless":
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if open else Input.MOUSE_MODE_CAPTURED
+	UI.hold_mouse(self, open)
 	if open:
 		Input.action_release(&"fire")
 		Input.action_release(&"ads")

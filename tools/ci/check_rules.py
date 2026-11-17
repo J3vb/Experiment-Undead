@@ -7,7 +7,7 @@ from collections import defaultdict
 from pathlib import Path
 
 GAME_DIRS = ("core/", "systems/", "levels/")
-ALLOWED_AUTOLOADS = ["Events", "Content", "Net", "Build", "Log", "Settings", "Audio", "Pool", "Game"]
+ALLOWED_AUTOLOADS = ["Events", "Content", "Net", "Build", "Log", "Settings", "UI", "Audio", "Pool", "Game"]
 LINT_LIMITS = {"max-line-length": 120, "max-file-lines": 350, "function-arguments-number": 6}
 WARNING_LEVELS = {
     "untyped_declaration": 2,

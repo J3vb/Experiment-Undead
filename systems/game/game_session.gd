@@ -2,8 +2,6 @@
 class_name GameSession
 extends Node
 
-const MENU_SCENE: String = "res://systems/ui/main_menu.tscn"
-
 @export var level_scene: PackedScene
 @export var player_scene: PackedScene
 @export var starting_loadout: Array[WeaponData] = []
@@ -71,7 +69,6 @@ func _ready() -> void:
 	if Net.is_online():
 		get_tree().auto_accept_quit = false
 	_setup_level()
-	_capture_mouse(true)
 
 
 func _setup_handshake() -> void:
@@ -187,8 +184,7 @@ func _on_connection_lost() -> void:
 	bank_run_xp()
 	Net.leave()
 	if get_tree().current_scene == self:
-		get_tree().paused = false
-		get_tree().change_scene_to_file(MENU_SCENE)
+		UI.replace(&"main_menu")
 
 
 func _on_authentication_failed(peer_id: int) -> void:
@@ -213,13 +209,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		_set_paused(not get_tree().paused)
 	elif event.is_action_pressed(&"restart") and is_over:
 		restart()
-	elif event is InputEventMouseButton and event.is_pressed() and not get_tree().paused and not is_over:
-		_capture_mouse(true)
 
 
 func _set_paused(value: bool) -> void:
 	get_tree().paused = value
-	_capture_mouse(not value)
+	UI.hold_mouse(hud.pause_panel, value)
 	hud.show_paused(value)
 
 
@@ -231,7 +225,7 @@ func resume() -> void:
 func restart() -> void:
 	bank_run_xp()
 	get_tree().paused = false
-	get_tree().reload_current_scene()
+	UI.reload()
 
 
 func quit_game() -> void:
@@ -340,11 +334,4 @@ func _receive_match_end(stats: Dictionary) -> void:
 	if not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
 		level.process_mode = Node.PROCESS_MODE_DISABLED
 	await get_tree().create_timer(restart_delay).timeout
-	_capture_mouse(false)
 	Events.game_over.emit(_match_stats)
-
-
-func _capture_mouse(captured: bool) -> void:
-	if DisplayServer.get_name() == "headless":
-		return
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if captured else Input.MOUSE_MODE_VISIBLE
