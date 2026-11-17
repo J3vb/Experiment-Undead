@@ -1,7 +1,7 @@
 # Plan: Texture every surface in Halcyon Labs
 
 Status: Approved
-Roadmap: F-61
+Roadmap: F-62
 Phase: P4 (v0.1 Vertical slice)
 Size: M
 Approved by: the person on a decision card (2026-11-17, look approved as rendered), plan PR #253
