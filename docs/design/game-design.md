@@ -42,6 +42,7 @@ _(Diagram not copied: computed from the formulas below · rounds 1 to 30, solo.)
 
 | Rounds | Shamble (1.2 m/s) | Jog (2.6 m/s) | Run (4.2 m/s) | Sprint (5.6 m/s) |
 | --- | --- | --- | --- | --- |
+| 2026-11-17 | Co-op | Every game is joinable: Enter world opens your own Lantern Post to friends (router port opened automatically), alone it plays like solo; Play solo and Host and play are gone. Joining is only through the Servers screen: saved, recent and LAN servers, add by address, no master server. | [MULTIPLAYER.md](../MULTIPLAYER.md) Worlds and the browser, [ADR 0013](../adr/0013-every-game-joinable.md), PRs #306 #311 #312 #315 #319 |
 | 1 to 3 | 100% | 0% | 0% | 0% |
 | 4 to 6 | 60% | 40% | 0% | 0% |
 | 7 to 9 | 30% | 50% | 20% | 0% |

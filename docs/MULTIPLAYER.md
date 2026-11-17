@@ -84,8 +84,9 @@ already reads `InputFrame`s, so the server could replay them.
    timeout; one themed dialog explains invalid addresses, unreachable servers,
    occupied ports, full servers, version/content mismatches and disconnections.
    Clients distinguish a host ending the match from a lost connection.
-   Menu buttons and fields support keyboard and gamepad focus. Server browser
-   and LAN discovery come with P8.
+   Menu buttons and fields support keyboard and gamepad focus. F-66 replaced
+   Play solo, Host and Join with **Enter world** and the **Servers** browser
+   (below).
 
 7. **Interactions (done, plan `docs/plans/coop-interactions.md`, PRs #182,
    #183, #185):** one request path (`InteractionSync.request()` →
@@ -108,6 +109,29 @@ already reads `InputFrame`s, so the server could replay them.
 After step 8, P7 finishes with `docs/plans/coop-full-match.md` (F-47): co-op
 soak, pause, squad cards, the hub and deploy flow, then a 4-player play-test to
 round 20 (the P7 exit test).
+
+## Worlds and the browser
+
+F-66, ADR 0013, plan `docs/plans/join-any-game.md`. One code path: every game
+is a server.
+
+- **Enter world** starts your own Lantern Post as a listen server on Settings >
+  Network's port (default 7777), open to friends unless "Let friends join my
+  world" is off or the port is busy (then offline, and the pause screen says
+  why). Alone, it plays exactly like solo (`Net.is_coop()` is false); the first
+  friend switches it to co-op and the last one leaving switches it back.
+- **Router port:** `PortOpener` maps the game port and the info port with UPnP
+  once per game run (thread, 1-hour lease, renewed, removed on quit). The pause
+  screen shows the address friends add, or no router / refused / provider NAT.
+- **Info port** = game port + 1000 (8777 for 7777). `ServerInfo` answers a
+  64-byte `EUQ1` query with `EUR1` + nonce + JSON (`name`, `players`, `max`,
+  `playing`, `version`, `protocol`, at most 512 bytes), also while paused. A
+  dedicated server answers with `EU_SERVER_NAME`. Forward both ports for
+  internet players.
+- **Servers** screen: saved and recent servers (`user://servers.cfg`) plus LAN
+  worlds found by broadcast on info ports 8777 to 8784, each asked once on open
+  and on Refresh. Joining uses the same `Net.pending_join` path as `--join`.
+  Nothing joins you into someone else's game except this screen (and `--join`).
 
 ## Running it locally
 
