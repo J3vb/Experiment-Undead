@@ -41,7 +41,7 @@ Five groups, but players only ever fight the infected. The rest exist in notes, 
 | **Lantern Post** | Survivors on the cold ridge. The players are its salvagers. | Survive the winter and find a cure. | The town hub and its NPCs. |
 | **The Wick** | A small group led by Dr. Maren Aust, ex-Oriel lead scientist. They think Fenlight is the next step for humans, not a disease. | To let it spread. | Never seen. Graffiti, stolen radio frequencies, Aust's recordings. |
 
-**Dr. Maren Aust** is the thread that runs through all four maps. Her notes suggest she cut the power on Day 0, but the last ones hint she was trying to stop something worse. Each map's secret gives one more piece. Leaving her fate open keeps room for later maps.
+**Dr. Maren Aust** is the thread that runs through all four maps. Her notes suggest she cut the power on Day 0, but the last ones hint she was trying to stop something worse. Each map's secret gives one more piece. Leaving her fate open keeps room for later maps. The long campaign answers it in Act III.
 
 ## Why the machines exist
 
@@ -86,6 +86,123 @@ A 1920s tuberculosis sanatorium on the fen edge, built for cold-air cures. In 19
 
 **Secret: Ward Zero.** The five green numbers make up the patient number of the first host, still sealed on the lowest floor. Aust's last recording is found here: she came back to the source to find out why the first host never rotted. The Grauwald Lantern is a night nurse's lantern, and it is where Lantern Post got its name, since the town's founders were nurses who fled here in 1954.
 
+## The long campaign
+
+The story is built to run for many maps, like the acts of a classic loot game. Players gather in Lantern Post, squad up, and deploy into maps full of the Lit and bosses. Each act answers one big question and ends with a boss. Adding story means adding an act or a chapter, never rewriting the ones before.
+
+Decided by the person (2026-11-17): acts of 4 maps with a boss on every map, bosses reached by a mid-run descent, and bosses that are named Lit with a human story. Act II and III map and boss names are outlines and can change.
+
+### How it is shaped
+
+- **Act** = one region of the zone, 4 maps, one big question. The 4th map's boss is the **act boss** and the story payoff.
+- **Chapter** = one map. It keeps the full wave loop, its secret and its signature event. It also gets one **map boss**.
+- **Act I goes back in time** (the four maps we have). **Later acts go outward in space**, ring by ring, from the valley to the Cordon wall and then into the deep fen.
+- Every map stays fully playable as a normal wave map. The boss and the story are extras on top, never a gate to having fun.
+
+### How a boss fight happens
+
+The pattern is the Halcyon Labs Sublevel that is already planned.
+
+1. From round 20, with power on, a **descent** point opens on the map (a freight elevator, a turbine shaft, a service pit). It costs points to open.
+2. The squad rides down to the map's **Sublevel**, a small arena below the map. The waves stop for the descent.
+3. The boss fight has 2 phases (act bosses: 3). Each phase has one clear tell and one counter, like the Brute.
+4. Win: a guaranteed boss drop, a lore entry, and an exfil ride straight from the Sublevel. Or ride back up and keep surviving for a bigger score.
+5. Lose: the run ends as a normal death. You keep your loot (tether tag rule).
+
+Only the squad that rides down fights. In co-op, players who stay up keep fighting waves until the boss is dead.
+
+### Boss rules
+
+- **Every boss was a person.** Someone from the notes, the secrets or the town's stories, grown huge by Fenlight. Finding their notes before the fight tells you their weak spot.
+- **Only the infected.** Players never fight humans. The Wick and the Cordon stay in notes, radio and town.
+- **Cold is the weapon.** Every boss gets slower or exposed in the cold (vents, frozen water, cryo tanks) and faster near heat. This keeps the core rule: cold means safe.
+- **Readable.** One sound and one shape per attack, telegraphed for at least 1 second. No instant kills.
+- **One chase item each.** Each boss has one Legendary that only it drops (ties into F-31 Legendaries and traits).
+
+### Act I: The Thaw (the four maps we have)
+
+**Question:** who cut the power, and where did Fenlight come from? Region: the valley around Halcyon, the dam and the sanatorium. The maps and their secrets stay exactly as written above.
+
+| Chapter | Map | Map boss | Who they were | Fight idea |
+| --- | --- | --- | --- | --- |
+| 1 | Halcyon Labs | **The Night Supervisor** | HALCYON's night-shift lead, who stayed to keep the cold tanks running on Day 0. | Fused to the tank array. Burst the coolant lines to freeze him, then shoot the glowing seams. |
+| 2 | Kessel Dam | **The Turbine Keeper** | The dam's chief engineer, on shift with Teun Maes the night of the shutdown. | In the turbine pit. Open the floodgates to slow him in cold water; dodge spinning turbine debris. |
+| 3 | Marrow Junction | **The Courier** | The Oriel courier who smuggled the Siphon prototype onto the train (Lost Property secret). | Swollen around the Siphon, he drains health from nearby hosts. Kill his feeders first. |
+| 4 | Grauwald Sanatorium | **The Sleeper** (act boss) | The first host of 1951, sealed in Ward Zero. The body that never rotted. | In the cold baths under Ward Zero. Three phases; the fire doors and the old cold-air vents are the tools. |
+
+**Act ending.** The Sleeper's death does not stop the pulses. Aust's last recording (found in Ward Zero) and a new signal on her old frequency point outward to the Cordon wall. Her fate stays open.
+
+### Act II: The Line (outline)
+
+**Question:** what does the Cordon really want? Region: the zone's edge, where the Cordon holds the wall. Lieutenant Raes's hints pay off here. The Wick's traces get thicker (graffiti, broadcasts), but they stay off-screen.
+
+| Chapter | Map idea | Map boss idea |
+| --- | --- | --- |
+| 5 | **Gate Nine**: an overrun Cordon checkpoint on the wall, floodlights and watchtowers. | **The Sentry**: a Cordon guard fused to a floodlight tower. Light pulls the Lit to him. |
+| 6 | **Vaudrecourt**: a snowed-in market town with a church square, where the Wick held meetings. | **The Choir**: Wick believers who took Fenlight on purpose, grown together into one mass. |
+| 7 | **Brakkenveld Airfield**: the Cordon airbase that flew Oriel samples out. | **The Cargo**: what broke out of a crashed transport's sample hold. |
+| 8 | **Site Ember**: the Cordon's own lab, where they ran Fenlight warm to make it a weapon. | **The Colonel** (act boss): the officer who tested the weapon dose on herself. |
+
+**Act ending.** Site Ember's records show the Cordon and Oriel both chased a "source strain" deep in the fen. Aust got there first.
+
+### Act III: The Deep Fen (outline)
+
+**Question:** what is Fenlight, and what did Aust want? Region: the Grauwald Fen itself, the peat bogs where the mould first grew.
+
+| Chapter | Map idea | Map boss idea |
+| --- | --- | --- |
+| 9 | **Turfmolen**: an old peat-cutting works on rails across the bog. | **The Cutter**: the works foreman who dug too deep. |
+| 10 | **The Drowned Village**: the village flooded when Kessel's reservoir was made, now drained and frozen. | **The Bell Ringer**: the village's last keeper, still ringing the pulse. |
+| 11 | **Sanctuary of the Wick**: the old abbey where Aust's group hid. | Decided when Act III is written (Aust's fate lives here). |
+| 12 | **The Heart of the Fen**: the oldest colony, under the bog. | **The Bog Saint** (act boss): a bog body thousands of years old, the first host ever. |
+
+Act III is where the Aust thread is finally answered. Write that answer only when Act III is planned, and close the Aust open question below at the same time.
+
+### Act IV and on
+
+After the fen, the pulse is heard beyond the Cordon: other Oriel sites, other cold places that held samples. Each new act is a new region with its own question. Nothing in Acts I to III should close that door.
+
+### How the hub grows with the story
+
+Lantern Post is one town for the whole game. It grows as the story moves, so returning players see their progress.
+
+- **Each player sees their own town.** The town's look and its unlocked services follow your own character's story progress, like a classic loot game. Nothing about it is shared server state, so 8 players at different acts can stand in the same town.
+- **One new lamp line per act.** Clearing an act lights a new row of sodium lamps up the ridge and opens one new part of town.
+- **One new person per act.** Act I: Dr. Corvelyn's doubts about Aust pay off. Act II: a Cordon deserter arrives and runs the endgame board. Act III: a former Wick believer arrives and explains the fen.
+- **Barks and the Wall of Finds** grow with every chapter: 3 to 5 lines per NPC per milestone, one card per secret and per boss.
+- **Pell's deploy board** shows acts as columns and chapters as rows, so a new map is one more row.
+
+### Endgame and repeatable play
+
+Once Act I is beaten, there is always another reason for one more run. None of these need a new kind of system: they reuse waves, bosses, contracts and loot.
+
+| Hook | What it is | Lore reason |
+| --- | --- | --- |
+| **Endless waves** | Every map stays an endless wave map with best-round records. | The pulses never stop. |
+| **Heat levels** | Difficulty steps (Heat 1 to 10) unlocked by beating an act. More health and speed, higher item level and rarity floor. | Warmer means stronger Fenlight. |
+| **Boss hunts** | Contracts to kill a beaten boss again, starting the run at round 15 with power on. Each boss keeps its own chase Legendary. | The Lit keep rebuilding the host. |
+| **Echoes** | A weekly version of one map with 2 or 3 rule changes, with its own Hall of Records board. | Pell picks up a strange pulse pattern. |
+| **Contracts** | The daily and weekly board from the town design. | Lieutenant Raes, later the Cordon deserter. |
+| **Codex and Wall of Finds** | Find every note, secret and boss card per act. | The full story is the reward. |
+
+### How a new chapter or act slots in
+
+A new map is a chapter. Adding one is a checklist, not a rewrite:
+
+1. Which act and which question it helps answer.
+2. A setting in the act's region, and what the Lit wear there.
+3. One signature event and one secret (one piece of the act's story).
+4. One map boss: who they were, their 2 phases, their cold weakness, their chase item.
+5. About 12 notes and 8 radio lines as lore files.
+6. Town barks for the chapter's milestones, a Wall of Finds card for the secret and the boss.
+7. A row on Pell's deploy board.
+
+A new act is 4 chapters plus: an act boss with 3 phases, one new lamp line and one new person in town, and one more Heat step.
+
+**Unlock rule.** Act I keeps the decided rule (round 15 on the previous map, or level 8, 18, 28). From Act II on, an act opens when you beat the previous act boss; inside an act, the next map opens at round 15 on the previous one. Squads can still play any map the host has unlocked. Provisional.
+
+**For the build.** This section is story and design only. The code for acts, descents and bosses waits for the roadmap row "Campaign: acts, descents and bosses" and its plan. Keep the data simple when that plan is written: an act and chapter number on the map's data, and bosses as enemy data with phases, not a new framework.
+
 ## Lantern Post and its people
 
 Lantern Post is an old border-post village on the highest, coldest ridge in the zone. It survives because the Lit slow down in the cold, and because the villagers keep sodium lamps burning on every roof so salvagers can find their way home at night. Orange sodium light means safe; that is the town's look against the green of the maps.
@@ -129,5 +246,6 @@ No cutscenes and nothing that stops play. Story is optional: a player who ignore
 ### Open questions
 
 - [ ] Provisional: Maren Aust is both. She cut the power to stop Oriel selling Fenlight to the Cordon, and knew it would cost lives. Revisit before writing Grauwald's last recording.
-- [ ] Do the Wick ever show up as human enemies in a later map, or stay off-screen?
+- [ ] Provisional (2026-11-17): the Wick stay off-screen. Players only fight the infected; Wick believers can appear as Lit (The Choir).
+- [ ] Who are the Act II and Act III newcomers in town, and which town jobs do they take? Decide when those acts are planned.
 - [ ] Should the town NPC jobs match the hub design 1:1? Check when the town hub (P9) is planned.
