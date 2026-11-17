@@ -3,6 +3,16 @@
 class_name LocalInput
 extends Node
 
+## Actions read as one-tick presses from input events.
+const PRESS_BITS: Dictionary[StringName, int] = {
+	&"weapon_next": InputFrame.NEXT_WEAPON,
+	&"weapon_prev": InputFrame.PREV_WEAPON,
+	&"weapon_slot_1": InputFrame.SLOT_1,
+	&"weapon_slot_2": InputFrame.SLOT_2,
+	&"weapon_slot_3": InputFrame.SLOT_3,
+	&"melee": InputFrame.MELEE,
+}
+
 var mouse_sensitivity: float = 0.0022
 var invert_y: bool = false
 
@@ -12,6 +22,7 @@ var sensitivity_scale: float = 1.0
 
 var _look_accum: Vector2 = Vector2.ZERO
 var _pressed: int = 0
+var _crouch_on: bool = false
 
 
 func _ready() -> void:
@@ -35,18 +46,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	var motion: InputEventMouseMotion = event as InputEventMouseMotion
 	if motion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		_look_accum += motion.relative
-	elif event.is_action_pressed(&"weapon_next"):
-		_pressed |= InputFrame.NEXT_WEAPON
-	elif event.is_action_pressed(&"weapon_prev"):
-		_pressed |= InputFrame.PREV_WEAPON
-	elif event.is_action_pressed(&"weapon_slot_1"):
-		_pressed |= InputFrame.SLOT_1
-	elif event.is_action_pressed(&"weapon_slot_2"):
-		_pressed |= InputFrame.SLOT_2
-	elif event.is_action_pressed(&"weapon_slot_3"):
-		_pressed |= InputFrame.SLOT_3
-	elif event.is_action_pressed(&"melee"):
-		_pressed |= InputFrame.MELEE
+		return
+	for action: StringName in PRESS_BITS:
+		if event.is_action_pressed(action):
+			_pressed |= PRESS_BITS[action]
+	if event.is_action_pressed(&"crouch"):
+		_crouch_on = not _crouch_on
+	elif event.is_action_pressed(&"sprint") or event.is_action_pressed(&"jump"):
+		_crouch_on = false
 
 
 ## Builds the frame for this tick and clears the accumulators.
@@ -56,6 +63,7 @@ func sample(tick: int) -> InputFrame:
 	if not enabled:
 		_look_accum = Vector2.ZERO
 		_pressed = 0
+		_crouch_on = false
 		return f
 	f.move = Input.get_vector(&"move_left", &"move_right", &"move_forward", &"move_back")
 	f.look = _look_accum * mouse_sensitivity * sensitivity_scale
@@ -84,6 +92,6 @@ func _held_buttons() -> int:
 		b |= InputFrame.ADS
 	if Input.is_action_pressed(&"sprint"):
 		b |= InputFrame.SPRINT
-	if Input.is_action_pressed(&"crouch"):
+	if _crouch_on:  # Crouch is a toggle: a press flips it, a sprint or jump press stands up.
 		b |= InputFrame.CROUCH
 	return b

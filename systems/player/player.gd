@@ -6,9 +6,9 @@ class_name Player
 extends CharacterBody3D
 
 @export_group("Movement")
-@export var walk_speed: float = 5.0
-@export var sprint_speed: float = 7.6
-@export var crouch_speed_multiplier: float = 0.55
+@export var walk_speed: float = 4.5
+@export var sprint_speed: float = 6.8
+@export var crouch_speed_multiplier: float = 0.49
 @export var ads_speed_multiplier: float = 0.6
 @export var ground_accel: float = 14.0
 @export var ground_decel: float = 18.0
@@ -50,6 +50,7 @@ var focus: Interactable
 ## Serums bought this run. Their multipliers are read through get_stat().
 var serums: Array[SerumData] = []
 var stats: StatBlock = StatBlock.new()
+var moves: PlayerMoves = PlayerMoves.new()
 ## Equipped item guns by uid. The server fills its copy from the owner's loadout.
 var item_guns: Dictionary[String, ItemInstance] = {}
 
@@ -245,7 +246,8 @@ func _read_input(frame: InputFrame) -> void:
 		weapons.set_trigger(false)
 		return
 	move_input = frame.move
-	is_crouching = is_downed or (frame.has(InputFrame.CROUCH) and is_on_floor())
+	var sliding: bool = moves.update_slide(self, frame)
+	is_crouching = is_downed or sliding or (frame.has(InputFrame.CROUCH) and is_on_floor())
 	var wants_sprint: bool = frame.has(InputFrame.SPRINT) and move_input.y < -0.4 and not is_crouching
 	is_aiming = frame.has(InputFrame.ADS) and not wants_sprint
 	is_sprinting = wants_sprint and is_on_floor() and can_sprint()
@@ -279,11 +281,8 @@ func _tick_stamina(delta: float) -> void:
 
 
 func _move(delta: float, frame: InputFrame) -> void:
-	if not is_on_floor():
-		velocity.y -= _gravity * gravity_multiplier * delta
-	elif input_enabled and frame.has(InputFrame.JUMP) and not is_crouching:
-		velocity.y = jump_velocity
-
+	var jump: bool = input_enabled and frame.has(InputFrame.JUMP) and not is_crouching
+	velocity.y = moves.vertical(self, delta, jump, _gravity * gravity_multiplier)
 	var speed: float = sprint_speed if is_sprinting else walk_speed
 	if is_crouching:
 		speed *= 0.2 if is_downed else crouch_speed_multiplier
@@ -297,6 +296,8 @@ func _move(delta: float, frame: InputFrame) -> void:
 	if is_on_floor():
 		rate = ground_accel if wish.length_squared() > 0.0 else ground_decel
 	horizontal = horizontal.lerp(wish, clampf(rate * delta, 0.0, 1.0))
+	if moves.is_sliding():
+		horizontal = moves.slide_step(delta, speed)
 	velocity.x = horizontal.x
 	velocity.z = horizontal.z
 	move_and_slide()
