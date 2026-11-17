@@ -10,6 +10,9 @@ var _client: PacketPeerUDP
 func before_each() -> void:
 	_client = PacketPeerUDP.new()
 	assert_eq(_client.bind(0, "127.0.0.1"), OK)
+	# Earlier tests in the run may have used this second's answers from 127.0.0.1.
+	Net.info._counts.clear()
+	Net.info._total = 0
 
 
 func after_each() -> void:
@@ -156,7 +159,8 @@ func test_lan_discovery_reaches_a_world_by_broadcast() -> void:
 
 
 func _reply(socket: PacketPeerUDP = _client) -> Dictionary:
-	for i: int in 30:
+	var deadline: int = Time.get_ticks_msec() + 2000
+	while Time.get_ticks_msec() < deadline:
 		await wait_physics_frames(1)
 		while socket.get_available_packet_count() > 0:
 			var info: Dictionary = ServerInfo.parse_reply(socket.get_packet(), NONCE)
