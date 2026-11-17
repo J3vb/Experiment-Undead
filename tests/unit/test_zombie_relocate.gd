@@ -115,6 +115,37 @@ func test_spawn_a_player_can_see_is_not_used() -> void:
 	player.global_position = Vector3(0, 0, 0)
 	var open: ZombieSpawnPoint = _point(Vector3(20, 0, 0))
 	var behind_wall: ZombieSpawnPoint = _point(Vector3(-20, 0, 0))
+	_wall()
+	await wait_physics_frames(3)
+	assert_true(spawner._seen(open.global_position), "open spawn is in sight")
+	assert_false(spawner._seen(behind_wall.global_position), "spawn behind the wall is hidden")
+	for i: int in 10:
+		var spot: Dictionary = spawner._pick_hidden_spot(10.0)
+		assert_eq(spot.get("marker", &""), behind_wall.name)
+
+
+func test_placed_point_is_checked_not_just_the_marker() -> void:
+	var player: Player = PLAYER.instantiate() as Player
+	add_child_autofree(player)
+	player.set_physics_process(false)
+	player.global_position = Vector3(0, 0, 0)
+	var edge: ZombieSpawnPoint = _point(Vector3(-20, 0, 9.6))
+	_wall()
+	await wait_physics_frames(3)
+	assert_false(spawner._seen(edge.global_position), "the marker itself is just hidden")
+	spawner.session.rng.seed = 1
+	var rejected: int = 0
+	for i: int in 40:
+		var spot: Dictionary = spawner._pick_hidden_spot(10.0)
+		if spot.is_empty():
+			rejected += 1
+			continue
+		assert_false(spawner._seen(spot["point"]), "the final point is hidden too")
+		assert_gte(spawner._distance_to_nearest_player(spot["point"]), 10.0)
+	assert_gt(rejected, 0, "jitter that lands in sight is rejected")
+
+
+func _wall() -> void:
 	var wall: StaticBody3D = StaticBody3D.new()
 	wall.collision_layer = Layers.WORLD
 	var shape: CollisionShape3D = CollisionShape3D.new()
@@ -124,11 +155,6 @@ func test_spawn_a_player_can_see_is_not_used() -> void:
 	wall.add_child(shape)
 	add_child_autofree(wall)
 	wall.global_position = Vector3(-10, 0, 0)
-	await wait_physics_frames(3)
-	assert_true(spawner._seen(open), "open spawn is in sight")
-	assert_false(spawner._seen(behind_wall), "spawn behind the wall is hidden")
-	for i: int in 10:
-		assert_eq(spawner._pick_hidden_marker(10.0), behind_wall)
 
 
 func test_no_hidden_spawn_means_retry() -> void:
