@@ -160,8 +160,8 @@ Settings is at its size limit and applying render options is its own job.
 - New Settings keys (section / key / default):
   - graphics / display_mode / 1 (Borderless) ; window_size / 0 (index into a
     resolution list built from the screen, 0 = screen size) ; render_scale /
-    1.0 ; upscaler / 0 (Off) ; preset / 2 (High) ; shadows / 2 ; aa / 2
-    (MSAA 2x + FXAA, today's project setting) ; ssao / 2 ; ssil / 0 ; ssr /
+    1.0 ; upscaler / 0 (Off) ; preset / 2 (High) ; shadows / 2 ; aa / 3
+    (MSAA 4x + FXAA, today's project setting: `msaa_3d=2` is 4x) ; ssao / 2 ; ssil / 0 ; ssr /
     true ; glow / true ; fog / 2 ; lightmap_bicubic / true ;
     anisotropic / 2 (4x) ; brightness / 1.0.
   - The existing video keys (vsync, max_fps, show_fps) move to graphics in
@@ -174,10 +174,10 @@ Settings is at its size limit and applying render options is its own job.
   - aim / fov (moved from video), mouse_sensitivity, ads_sensitivity_multiplier,
     invert_y (moved from controls in step 3).
 - High preset = today's look exactly: shadows High (directional atlas 4096,
-  soft shadow quality Medium), MSAA 2x + FXAA, SSAO Medium, SSIL off, SSR on,
+  soft shadow quality Medium), MSAA 4x + FXAA, SSAO Medium, SSIL off, SSR on,
   glow on, fog Medium, bicubic lightmaps on. Ultra raises shadows (8192, soft
-  High), MSAA 4x + FXAA, SSAO High, SSIL Medium, fog High. Medium and Low step
-  down (Low: shadows 1024 hard, FXAA only, SSAO off, SSR off, fog off, glow
+  High), MSAA 4x + FXAA (same as High), SSAO High, SSIL Medium, fog High. Medium and Low step
+  down (Medium: MSAA 2x + FXAA; Low: shadows 1024 hard, FXAA only, SSAO off, SSR off, fog off, glow
   on). These are render costs, not look-defining picks: High, the default,
   keeps the approved look.
 - Save format change: new sections only; old files load. Moved keys read
@@ -222,15 +222,19 @@ prompt (after step 2) measures all four presets at the four test spots.
   FSR 2 forces TAA on (Godot rule) and the AA value shows that.
   `EnvironmentQuality` on each WorldEnvironment duplicates its look once and
   turns effects on or off live. The current Video tab gets one Preset
-  dropdown so the step is playable; step 2 replaces the tab.
+  dropdown so the step is playable, and its existing VSync, max FPS and
+  show FPS controls (`CHECKS`, `_on_fps_selected()`, `_refresh()`) move to
+  the `graphics` keys in the same step; step 2 replaces the tab.
 - Files: core/settings.gd, core/graphics.gd (new),
   systems/effects/environment_quality.gd (new), levels/halcyon_labs/map.tscn,
   levels/look_reference/halcyon_corridor.tscn, systems/ui/character_screen.tscn,
-  systems/ui/settings_screen.gd/.tscn (preset row), systems/ui/hud.gd (show_fps
+  systems/ui/settings_screen.gd/.tscn (preset row, moved keys),
+  tests/unit/test_settings_screen.gd, systems/ui/hud.gd (show_fps
   key), tests/unit/test_graphics.gd (new), tests/unit/test_environment_quality.gd
   (new), tests/unit/test_settings.gd, docs/LOGGING.md.
 - Tests: presets write the expected keys and a single change flips to Custom;
-  old `video/vsync` in a config loads into `graphics/vsync`; FSR 2 reports
+  old `video/vsync` in a config loads into `graphics/vsync`; the screen's
+  VSync, max FPS and show FPS controls read and write the `graphics` keys; FSR 2 reports
   TAA; EnvironmentQuality never changes the shared `halcyon_interior.tres`
   and toggles its duplicate; Graphics.apply on headless does nothing and
   does not error. Each fails without the step.
