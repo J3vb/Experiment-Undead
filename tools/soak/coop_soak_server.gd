@@ -18,6 +18,7 @@ func _ready() -> void:
 	Engine.max_fps = Engine.physics_ticks_per_second
 	_rounds = int(RUN.arg("rounds"))
 	_result_path = RUN.arg("result")
+	start_place = &"match"
 	super()
 	if session == null:
 		return

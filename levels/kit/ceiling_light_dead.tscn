@@ -1,0 +1,21 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Material" path="res://levels/materials/pipe.tres" id="pipe"]
+[ext_resource type="Material" path="res://levels/materials/concrete.tres" id="dead_tube"]
+
+[sub_resource type="BoxMesh" id="tube_mesh"]
+material = ExtResource("dead_tube")
+size = Vector3(0.16, 0.05, 1.4)
+
+[sub_resource type="BoxMesh" id="housing_mesh"]
+material = ExtResource("pipe")
+size = Vector3(0.3, 0.04, 1.6)
+
+[node name="CeilingLightDead" type="Node3D"]
+
+[node name="Housing" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.015, 0)
+mesh = SubResource("housing_mesh")
+
+[node name="Tube" type="MeshInstance3D" parent="."]
+mesh = SubResource("tube_mesh")

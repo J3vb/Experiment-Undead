@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"graphics"
+section = &"graphics"
+key = &"display_mode"
+label = "Display mode"
+hint = "Borderless fills the screen and switches apps quickly. Fullscreen can lower input delay."
+kind = &"choice"
+options = PackedStringArray("Windowed", "Borderless", "Fullscreen")
+order = 20
+needs_confirm = true

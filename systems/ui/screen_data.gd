@@ -8,7 +8,7 @@ extends Resource
 @export var layer: int = 20
 ## True for a place the game goes to with UI.replace(); false for a pushed screen.
 @export var root: bool = false
-## Only the match captures the mouse.
+## Only the places you walk around in (hub, match) capture the mouse.
 @export var captures_mouse: bool = false
 ## Id of the screen shown while this root loads (content/screens). Empty: plain scene change.
 @export var loading_screen: StringName = &""

@@ -89,10 +89,17 @@ The server also prints every warning and error to stdout as
 | `progression.profile_unreadable` | warn | Existing character is unreadable, malformed or newer; file stays untouched, this match uses a temporary character. `id`, `path`; inspect nearby engine errors |
 | `settings.binding_unknown_action` | warn | `user://settings.cfg` has a key binding for an action the game no longer has (`action`); it is ignored. Normal after an action is renamed or removed |
 | `settings.binding_malformed` | warn | A saved key binding is not a list of up to 2 `{"type": "key", "physical": n}` / `{"type": "mouse", "button": n}` entries, or names Esc (`action`); that action uses its default keys |
+| `settings.display_mode_failed` | warn | The window refused the chosen display mode (`mode`: 0 Windowed, 1 Borderless, 2 Fullscreen). Usually the OS or driver does not allow exclusive fullscreen; pick Borderless |
+| `settings.row_unknown_key` | warn | A `content/settings/*.tres` row names a `section`/`key` that `Settings.DEFAULTS` does not have; the row is left off the settings screen. Fix the row or add the key |
 | `game.game_over` | info | Final stats |
 | `net.peer_connected` / `peer_disconnected` | info | Server side, peer id |
 | `net.round_state_ignored` | warn | A round message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
 | `net.interaction_rejected` | warn | Server refused a client's interact request (`peer`, `reason`, `path`): `player_not_alive`, `match_over`, `unknown_path`, `out_of_range`, `grant_pending` (last gun grant not applied yet), `bad_facts` (gun facts with wrong fields or ids). At most one per second. Many `out_of_range` = `InteractionSync.REACH_SLACK` too tight |
+| `net.deploy_refused` | warn | The hub's deploy vote or `deploy()` was refused (`place`, `reason` or `hub`): an unknown place id on a deploy board, or a deploy outside the hub. A board with a typo in `place` |
+| `net.place_change_kicked` | warn | A client was sent to another place but had not left after `Net.CONNECT_TIMEOUT`, so the server dropped it (`peer`). It never got the order: check the network |
+| `net.place_changed` | info | The server changed place (`place`, `players` sent along) |
+| `net.go_to_place` | info | This peer loads another place (`place`, `online`) |
+| `net.join_switches_place` | info | A joining client loaded another place than the server's and switches before spawning (`from`, `to`) |
 | `net.hit_claim_rejected` | warn | Server refused a client's hit or gravity well claim (`peer`, `reason`): `player_not_alive`, `zombie_not_alive`, `hit_out_of_bounds`, `zone_missing`, `claims_too_fast`, `well_out_of_bounds`, `well_wrong_weapon` (well or orb request named a gun whose `effect` is not WELL: a mismatched build or a cheat). At most one per second |
 | `net.loadout_rejected` | warn | Server refused a client's equipped loadout (`peer`, `reason`): `not_a_dictionary`, `too_much_gear` (over 3 gear items), `too_many_guns` (more than the player's weapon slots), `unknown_gun` (gun base not in content). The server keeps the last good loadout; check that both builds have the same content |
 | `net.interaction_rate_limited` | warn | A client sent interact requests less than 0.1 s apart; extra ones are refused. At most one per second |

@@ -5,6 +5,8 @@ extends Node
 signal connection_error(reason: StringName, details: Dictionary)
 signal join_started(address: String)
 signal join_succeeded
+## Server only: the session must change to this place (the dedicated server swaps its session).
+signal place_changed(place: StringName)
 
 enum RefusalReason { WRONG_VERSION, CONTENT_MISMATCH, SERVER_FULL }
 
@@ -20,9 +22,19 @@ var joining: bool = false
 var refusal_reason: int = -1
 var refusal_message: String = ""
 var player_limit: int = MAX_PLAYERS
+## The screens id of the place this peer runs (hub, match). Empty when started outside the menu.
+var place: StringName = &""
+## True from a place change order until the next host() or join(): the old session's
+## disconnect is planned, so nobody shows the lost-connection error.
+var changing_place: bool = false
 
 var _next_net_id: int = 1
 var _target: String = ""
+## Server: peers sent to another place that have not disconnected yet. They get no player.
+var _leaving: Array[int] = []
+## multiplayer.is_server() is also true for a client still in its hello, so hosting is tracked here.
+var _hosting: bool = false
+var _leave_deadline: Timer
 var _deadline: Timer
 var _signals_bound: bool = false
 var _connected: bool = false
@@ -42,6 +54,7 @@ func is_online() -> bool:
 
 func host(port: int, max_players: int = MAX_PLAYERS) -> Error:
 	_configure()
+	changing_place = false
 	last_error.clear()
 	player_limit = clampi(max_players, 1, MAX_PLAYERS)
 	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
@@ -51,12 +64,14 @@ func host(port: int, max_players: int = MAX_PLAYERS) -> Error:
 		_record_error(&"port_in_use", {"port": port})
 		return err
 	multiplayer.multiplayer_peer = peer
+	_hosting = true
 	Log.info(&"net", &"hosting", {"port": port, "max_players": player_limit})
 	return OK
 
 
 func join(address: String) -> Error:
 	_configure()
+	changing_place = false
 	last_error.clear()
 	refusal_reason = -1
 	refusal_message = ""
@@ -76,7 +91,11 @@ func join(address: String) -> Error:
 
 
 ## Joins pending_join if the menu set one. OK when there is nothing to join.
+## A listen host that changed place kept its port open and just carries on.
 func start_pending_join() -> Error:
+	if changing_place and _hosting:
+		changing_place = false
+		return OK
 	if pending_join.is_empty():
 		return OK
 	var address: String = pending_join
@@ -85,9 +104,15 @@ func start_pending_join() -> Error:
 
 
 func leave() -> void:
+	if changing_place and _hosting and is_online():
+		return
+	_hosting = false
 	joining = false
 	_connected = false
-	pending_join = ""
+	_leaving.clear()
+	if not changing_place:
+		pending_join = ""
+		player_limit = MAX_PLAYERS
 	if _deadline:
 		_deadline.stop()
 	if is_online():
@@ -95,7 +120,51 @@ func leave() -> void:
 			_notify_host_ended()
 		multiplayer.multiplayer_peer.close()
 	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
-	player_limit = MAX_PLAYERS
+
+
+## Server: sends every client to next. They leave and rejoin into the new session
+## themselves (closing their connection here would drop the order); until then they
+## get no player. Clients that never leave are dropped after CONNECT_TIMEOUT.
+func change_place(next: StringName) -> void:
+	place = next
+	Log.info(&"net", &"place_changed", {"place": String(next), "players": multiplayer.get_peers().size()})
+	if is_online() and multiplayer.is_server() and not multiplayer.get_peers().is_empty():
+		_leaving.assign(multiplayer.get_peers())
+		_go_to_place.rpc(next)
+		(multiplayer.multiplayer_peer as ENetMultiplayerPeer).host.flush()
+		_leave_deadline.start(CONNECT_TIMEOUT)
+	place_changed.emit(next)
+
+
+func is_leaving(peer_id: int) -> bool:
+	return _leaving.has(peer_id)
+
+
+func _drop_leaving() -> void:
+	if not is_online() or not multiplayer.is_server():
+		return
+	for peer_id: int in _leaving.duplicate():
+		if multiplayer.get_peers().has(peer_id):
+			Log.warn(&"net", &"place_change_kicked", {"peer": peer_id})
+			multiplayer.multiplayer_peer.disconnect_peer(peer_id)
+	_leaving.clear()
+
+
+## Loads next on this peer. Online, the next session joins the same server again
+## (a listen host keeps its port open) when it starts.
+func go_to(next: StringName) -> void:
+	place = next
+	Log.info(&"net", &"go_to_place", {"place": String(next), "online": is_online()})
+	if is_online():
+		changing_place = true
+		if not _hosting:
+			pending_join = _target
+	UI.replace(next)
+
+
+@rpc("authority", "reliable")
+func _go_to_place(next: StringName) -> void:
+	go_to(next)
 
 
 func _exit_tree() -> void:
@@ -135,6 +204,12 @@ func _configure() -> void:
 	_deadline.process_mode = Node.PROCESS_MODE_ALWAYS
 	_deadline.timeout.connect(func() -> void: _fail_join(&"timeout", {"address": _target}))
 	add_child(_deadline)
+	_leave_deadline = Timer.new()
+	_leave_deadline.one_shot = true
+	_leave_deadline.process_mode = Node.PROCESS_MODE_ALWAYS
+	_leave_deadline.timeout.connect(_drop_leaving)
+	add_child(_leave_deadline)
+	api.peer_disconnected.connect(func(peer_id: int) -> void: _leaving.erase(peer_id))
 	api.peer_authentication_failed.connect(_on_authentication_failed, CONNECT_DEFERRED)
 	api.connected_to_server.connect(_on_connected)
 	api.connection_failed.connect(_on_connection_failed)
@@ -177,6 +252,8 @@ func _on_connection_failed() -> void:
 
 
 func _on_server_disconnected() -> void:
+	if changing_place:
+		return
 	if joining and refusal_reason >= 0:
 		leave()
 		return

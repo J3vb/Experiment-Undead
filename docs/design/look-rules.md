@@ -85,6 +85,12 @@ purpose; keep the repo values.
   black.
 - Muzzle flash light colour `#FFD9A0`, tracers `#FFE6B0` (Prototype guns
   `#8DFF3A`).
+- Atmosphere effect lights (alarm beacons `#C3201B`, sparks, swinging lamp):
+  no shadow, bake mode 0, distance fade 20 m. Particles: GI off, visibility
+  range 30 m, at most 400 per room and 1,500 per map. Spark gap 3 to 9 s,
+  klaxon every 30 s, sound spots 14 m max. Story decals fade out between 25
+  and 30 m.
+  Amounts are provisional until the screenshot check on a GPU.
 
 ### Materials
 

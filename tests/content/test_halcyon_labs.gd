@@ -71,8 +71,9 @@ func _node_paths(root: Node) -> Array[String]:
 func test_map_uses_the_shared_look() -> void:
 	var level: Node = (load(MAP) as PackedScene).instantiate()
 	add_child_autofree(level)
-	var world: WorldEnvironment = level.get_node("WorldEnvironment") as WorldEnvironment
-	assert_eq(world.environment.resource_path, LOOK, "shared interior look, not a copy")
+	var world: EnvironmentQuality = level.get_node("WorldEnvironment") as EnvironmentQuality
+	assert_not_null(world, "graphics settings can turn its effects off")
+	assert_eq(world.look.resource_path, LOOK, "the scene points at the shared look; only the run-time copy changes")
 	assert_not_null(level.get_node_or_null("FilmPost"), "film grain and vignette")
 
 

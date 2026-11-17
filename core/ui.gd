@@ -20,6 +20,14 @@ func _ready() -> void:
 	set_process(false)
 	get_tree().scene_changed.connect(_on_scene_changed)
 	_on_scene_changed.call_deferred()
+	Settings.changed.connect(_on_setting_changed)
+	_on_setting_changed(&"accessibility", &"text_scale", Settings.get_value(&"accessibility", &"text_scale"))
+
+
+## Text size scales every Control (stretch mode canvas_items); the 3D view keeps its resolution.
+func _on_setting_changed(section: StringName, key: StringName, value: Variant) -> void:
+	if section == &"accessibility" and key == &"text_scale":
+		get_tree().root.content_scale_factor = float(value)
 
 
 ## Goes to a root place (main menu, match): frees every pushed screen and unpauses.

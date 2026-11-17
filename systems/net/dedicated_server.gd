@@ -1,11 +1,12 @@
 ## Entry point of the dedicated server build (main scene for the
-## dedicated_server feature). Opens the ENet port and runs one match that
-## players join. The match sits at /root/GameSession like on clients.
+## dedicated_server feature). Opens the ENet port and runs one place at a time
+## (the hub, then the match the squad deploys to). The session sits at
+## /root/GameSession like on clients and is swapped when the place changes.
 class_name DedicatedServer
 extends Node
 
-const MATCH_SCENE: PackedScene = preload("res://systems/game/game_session.tscn")
-
+## Screens id of the first place. Tools and tests that need a match set it before super().
+var start_place: StringName = &"hub"
 var port: int = Net.DEFAULT_PORT
 var max_players: int = Net.MAX_PLAYERS
 var session: GameSession
@@ -24,9 +25,9 @@ func _ready() -> void:
 		return
 	multiplayer.peer_connected.connect(func(id: int) -> void: print("Player connected: %d" % id))
 	multiplayer.peer_disconnected.connect(func(id: int) -> void: print("Player left: %d" % id))
-	session = MATCH_SCENE.instantiate() as GameSession
-	session.has_local_player = false
-	session.profile_id = &""
+	Net.place = start_place
+	Net.place_changed.connect(_swap_session, CONNECT_DEFERRED)
+	session = _make_session(start_place)
 	get_tree().root.add_child.call_deferred(session)
 	stop_file = OS.get_environment("EU_STOP_FILE")
 	if stop_file != "":
@@ -49,6 +50,25 @@ func _exit_tree() -> void:
 		session.queue_free()
 	Net.leave()
 	print("Server stopped")
+
+
+func _make_session(place: StringName) -> GameSession:
+	var data: ScreenData = Content.get_item(UI.TYPE, place) as ScreenData
+	var next: GameSession = (load(data.scene) as PackedScene).instantiate() as GameSession
+	next.has_local_player = false
+	next.profile_id = &""
+	return next
+
+
+## Clients were already sent away, so the new session starts empty. Old and new
+## swap in one call: no client can join between them.
+func _swap_session(place: StringName) -> void:
+	var old: GameSession = session
+	session = _make_session(place)
+	if is_instance_valid(old):
+		get_tree().root.remove_child(old)
+		old.queue_free()
+	get_tree().root.add_child(session)
 
 
 ## Command line (--port=7777, after "--") wins over the environment variable.

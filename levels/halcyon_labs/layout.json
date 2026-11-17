@@ -72,19 +72,14 @@
 		{"id": "mess_table_north", "room": "mess_hall", "box": [48, 0, 35.5, 9, 0.8, 1.2], "material": "wood"},
 		{"id": "mess_table_south", "room": "mess_hall", "box": [48, 0, 40.5, 9, 0.8, 1.2], "material": "wood"},
 		{"id": "mess_counter", "room": "mess_hall", "box": [55.75, 0, 30.7, 3.5, 1.0, 0.8], "material": "panel_trim"},
-		{"id": "labs_bench", "room": "labs", "box": [43.5, 0, 19.5, 7, 0.9, 1], "material": "panel_paint"},
-		{"id": "labs_tank1_base", "room": "labs", "box": [37, 0, 16.6, 1.2, 0.4, 1.2], "material": "pipe"},
-		{"id": "labs_tank1_core", "room": "labs", "box": [37, 0.4, 16.6, 0.8, 2.0, 0.8], "material": "specimen_tank"},
-		{"id": "labs_tank1_cap", "room": "labs", "box": [37, 2.4, 16.6, 1.2, 0.3, 1.2], "material": "pipe"},
-		{"id": "labs_tank2_base", "room": "labs", "box": [37, 0, 18.8, 1.2, 0.4, 1.2], "material": "pipe"},
-		{"id": "labs_tank2_core", "room": "labs", "box": [37, 0.4, 18.8, 0.8, 2.0, 0.8], "material": "specimen_tank"},
-		{"id": "labs_tank2_cap", "room": "labs", "box": [37, 2.4, 18.8, 1.2, 0.3, 1.2], "material": "pipe"},
-		{"id": "labs_tank3_base", "room": "labs", "box": [49, 0, 14, 1.2, 0.4, 1.2], "material": "pipe"},
-		{"id": "labs_tank3_core", "room": "labs", "box": [49, 0.4, 14, 0.8, 2.0, 0.8], "material": "specimen_tank"},
-		{"id": "labs_tank3_cap", "room": "labs", "box": [49, 2.4, 14, 1.2, 0.3, 1.2], "material": "pipe"},
-		{"id": "labs_tank4_base", "room": "labs", "box": [49.5, 0, 22.5, 1.2, 0.4, 1.2], "material": "pipe"},
-		{"id": "labs_tank4_core", "room": "labs", "box": [49.5, 0.4, 22.5, 0.8, 2.0, 0.8], "material": "specimen_tank"},
-		{"id": "labs_tank4_cap", "room": "labs", "box": [49.5, 2.4, 22.5, 1.2, 0.3, 1.2], "material": "pipe"},
+		{"id": "labs_bench", "room": "labs", "box": [43.5, 0, 19.5, 7, 1.5, 1], "model": "lab_bench"},
+		{"id": "labs_jar_shelf_west", "room": "labs", "box": [36.5, 0, 24.6, 0.5, 2, 2], "model": "jar_shelf", "turn": 90},
+		{"id": "labs_jar_shelf_north", "room": "labs", "box": [47.5, 0, 10.5, 2, 2, 0.5], "model": "jar_shelf"},
+		{"id": "labs_filing_cabinets", "room": "labs", "box": [37.7, 0, 25.37, 1.0, 1.3, 0.85], "model": "filing_cabinets", "turn": 180},
+		{"id": "labs_tank1", "room": "labs", "box": [37, 0, 16.6, 1.2, 2.7, 1.2], "model": "specimen_tank"},
+		{"id": "labs_tank2", "room": "labs", "box": [37, 0, 18.8, 1.2, 2.7, 1.2], "model": "specimen_tank"},
+		{"id": "labs_tank3", "room": "labs", "box": [49, 0, 14, 1.2, 2.7, 1.2], "model": "specimen_tank"},
+		{"id": "labs_tank4", "room": "labs", "box": [49.5, 0, 22.5, 1.2, 2.7, 1.2], "model": "specimen_tank"},
 		{"id": "generator_1", "room": "generator_hall", "box": [15, 0, 13, 4, 2.4, 2.5], "material": "rust"},
 		{"id": "generator_2", "room": "generator_hall", "box": [21, 0, 19, 4, 2.4, 2.5], "material": "rust"},
 		{"id": "guard_desk", "room": "guard_post", "box": [17, 0, 40, 2.4, 0.9, 1], "material": "panel_trim"},
@@ -93,6 +88,17 @@
 		{"id": "containment_cage_2", "room": "containment_wing", "box": [63.5, 0, 26, 2.5, 3, 2.5], "material": "rust"},
 		{"id": "containment_cage_3", "room": "containment_wing", "box": [72.5, 0, 11, 2.5, 3, 2.5], "material": "rust"}
 	],
+	"dressing": [
+		{"id": "labs_papers", "room": "labs", "at": [44.5, 0, 21.4], "model": "lab_papers", "turn": 20}
+	],
+	"light_states": {
+		"guard_post": {"flicker": [1, 4], "dead": [5]},
+		"mess_hall": {"flicker": [8], "dead": [6]},
+		"main_corridor": {"flicker": [0], "dead": [4]},
+		"generator_hall": {"dead": [2]},
+		"coolant_tunnel": {"flicker": [0]},
+		"containment_wing": {"flicker": [7], "dead": [0, 10, 14]}
+	},
 	"wall_buys": [
 		{"id": "coachman_2b", "node": "WallBuyCoachman", "area": "mess_hall", "position": [38.25, 1.4, 38], "cost": 900}
 	]

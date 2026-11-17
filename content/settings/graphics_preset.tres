@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"graphics"
+section = &"graphics"
+key = &"preset"
+label = "Graphics quality"
+hint = "Sets shadows, anti-aliasing, ambient occlusion, reflections, fog and filtering together. High is the intended look."
+kind = &"choice"
+options = PackedStringArray("Low", "Medium", "High", "Ultra", "Custom")
+locked_options = PackedInt32Array(4)
+order = 10

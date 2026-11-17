@@ -217,21 +217,23 @@ live state belongs in objects such as `WeaponInstance`.
 
 ## A new player setting
 
-1. Add its default under the right section in `core/settings.gd`'s `DEFAULTS`;
-    extend `_normalize()` for its type/range. Settings saves `user://settings.cfg`.
-2. Keep engine video/audio application in `Settings._apply()` (and
-    `AUDIO_BUSES` for a new bus); feature-specific application belongs in the consumer.
-3. Read initially with `Settings.get_value(section, key)` and listen to
+1. Add its default under the right section in `core/settings.gd`'s `DEFAULTS`
+    (graphics keys go in `core/graphics.gd`'s `DEFAULTS`); extend `_normalize()`
+    (or `Graphics.normalize()`) for its range. Settings saves `user://settings.cfg`.
+2. Engine application: graphics in `Graphics.apply()`, audio buses in `Settings._apply()`;
+    feature-specific application belongs in the consumer.
+3. Read initially with `Settings.get_value(section, key)`, cache it, and listen to
     `Settings.changed(section, key, value)`, as `LocalInput`/`PlayerCamera` do.
-4. Add a control with `unique_name_in_owner = true` to `systems/ui/settings_screen.tscn`;
-    sliders need a sibling `Number` Label. Update `settings_screen.gd`'s `SLIDERS`
-    or `CHECKS`/`CHECK_LABELS`, or wire its own handler.
+4. Add its row as `content/settings/<section>_<key>.tres` (`SettingData`): page,
+    section, key, label, a one-line hint, kind (toggle, slider, choice), range or
+    options, order. The settings screen builds it; no scene or screen code changes.
+    A new page also needs a tab (ScrollContainer + `SettingsPage`) in `settings_screen.tscn`.
 5. Write through `Settings.set_value()`; it normalizes, applies, emits and saves.
-    Refresh controls without emitting another UI change; keep reset working.
-6. Extend `tests/unit/test_settings.gd` for defaults, invalid input, save/load,
-    changed payload and reset; extend `test_settings_screen.gd` for controls and live application.
-7. Done when it survives reopening, applies immediately, resets correctly and
-    works while paused; tests use isolated `config_path`s and restore Settings afterwards.
+6. Tests: defaults, clamping and save/load in `tests/unit/test_settings*.gd`;
+    the consumer's live change in its own test. `tests/content/test_setting_data.gd`
+    checks every row automatically.
+7. Done when it survives reopening, applies immediately, Defaults and Revert work and
+    it works while paused; tests use isolated `config_path`s and restore Settings afterwards.
 
 ## A Log.warn early-warning line
 

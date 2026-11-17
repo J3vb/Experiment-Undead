@@ -9,6 +9,9 @@ extends Node3D
 @export var bob_strength: float = 0.035
 
 var base_fov: float = 78.0
+## Comfort settings: head bob scale and whether sprinting widens the view.
+var head_bob: float = 0.6
+var sprint_fov: bool = true
 
 var _recoil_target: Vector2 = Vector2.ZERO
 var _recoil_current: Vector2 = Vector2.ZERO
@@ -25,7 +28,9 @@ var _tilt_degrees: float = 0.0
 func _ready() -> void:
 	_body = get_parent() as CharacterBody3D
 	Settings.changed.connect(_on_setting_changed)
-	_on_setting_changed(&"video", &"fov", Settings.get_value(&"video", &"fov"))
+	_on_setting_changed(&"aim", &"fov", Settings.get_value(&"aim", &"fov"))
+	head_bob = Settings.get_value(&"comfort", &"head_bob")
+	sprint_fov = Settings.get_value(&"comfort", &"sprint_fov")
 
 
 ## Pitch only; yaw turns the body.
@@ -73,15 +78,19 @@ func update_feel(
 	var speed: float = Vector2(_body.velocity.x, _body.velocity.z).length()
 	if _body.is_on_floor() and speed > 0.5:
 		_bob_time += delta * speed * 1.6
-	var amount: float = bob_strength * (1.0 - ads_progress) * clampf(speed / walk_speed, 0.0, 1.5)
+	var amount: float = bob_strength * head_bob * (1.0 - ads_progress) * clampf(speed / walk_speed, 0.0, 1.5)
 	camera.position = Vector3(cos(_bob_time * 0.5) * amount * 0.5, sin(_bob_time) * amount, 0.0)
 
-	var fov: float = base_fov + (sprint_fov_bonus if sprinting else 0.0)
+	var fov: float = base_fov + (sprint_fov_bonus if sprinting and sprint_fov else 0.0)
 	fov = lerpf(fov, ads_fov, ads_progress)
 	camera.fov = lerpf(camera.fov, fov, clampf(12.0 * delta, 0.0, 1.0))
 
 
 func _on_setting_changed(section: StringName, key: StringName, value: Variant) -> void:
-	if section == &"video" and key == &"fov":
+	if section == &"aim" and key == &"fov":
 		base_fov = rad_to_deg(2.0 * atan(tan(deg_to_rad(float(value)) / 2.0) * 9.0 / 16.0))
 		camera.fov = base_fov
+	elif section == &"comfort" and key == &"head_bob":
+		head_bob = value
+	elif section == &"comfort" and key == &"sprint_fov":
+		sprint_fov = value

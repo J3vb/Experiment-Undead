@@ -122,7 +122,7 @@ func _input(event: InputEvent) -> void:
 		_stop()
 		return
 	_pending = event
-	conflict_label.text = "%s is used by %s." % [Settings.event_label(event), action_name(taken_by)]
+	conflict_label.text = "%s is used by %s." % [InputEvents.label(event), action_name(taken_by)]
 	conflict.show()
 	swap_button.grab_focus()
 
@@ -155,4 +155,4 @@ func _refresh() -> void:
 		var events: Array[InputEvent] = Settings.get_binding(action)
 		var buttons: Array[Button] = slots[action]
 		for slot: int in buttons.size():
-			buttons[slot].text = Settings.event_label(events[slot]) if slot < events.size() else "Not set"
+			buttons[slot].text = InputEvents.label(events[slot]) if slot < events.size() else "Not set"

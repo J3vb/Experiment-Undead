@@ -30,6 +30,14 @@ func _ready() -> void:
 		return
 	_zombie.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	_zombie.ready.connect(_zombie.set_physics_process.bind(false), CONNECT_ONE_SHOT)
+	_zombie.ready.connect(_wait_for_first_sync, CONNECT_ONE_SHOT)
+
+
+## The copy's voice ignores state changes until the first sync, so a late
+## joiner hears no death for a corpse that was already down.
+func _wait_for_first_sync() -> void:
+	_zombie.voice.waiting_for_sync = true
+	synchronized.connect(func() -> void: _zombie.voice.start_state(_zombie.state), CONNECT_ONE_SHOT)
 
 
 func _physics_process(_delta: float) -> void:
@@ -44,5 +52,4 @@ static func show_death(zombie: Zombie) -> void:
 	zombie.collision_layer = 0
 	for zone: HitZone in zombie.hit_zones:
 		zone.set_enabled(false)
-	zombie.voice.silence()
 	zombie.visual.fall_over()

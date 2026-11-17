@@ -159,7 +159,7 @@ func test_shotgun_fires_every_pellet() -> void:
 	add_child_autofree(wall)
 	await wait_physics_frames(2)
 	var hits: Array[Vector3] = []
-	weapon.traced.connect(func(point: Vector3, _normal: Vector3, _zone: bool) -> void: hits.append(point))
+	weapon.traced.connect(func(point: Vector3, _normal: Vector3, _kind: Impact.Kind) -> void: hits.append(point))
 	weapon.fire()
 	assert_eq(hits.size(), weapon.data.pellets, "one trace per pellet")
 	assert_eq(weapon.data.pellets, 8, "Brenner Trench fires 8 pellets")

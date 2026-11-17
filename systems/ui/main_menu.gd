@@ -33,7 +33,7 @@ var _drift_time: float = 0.0
 
 func _ready() -> void:
 	_bind_gamepad()
-	play_button.pressed.connect(func() -> void: UI.replace(&"match"))
+	play_button.pressed.connect(_play_solo)
 	host_button.pressed.connect(_open_host)
 	join_button.pressed.connect(_open_join)
 	$Screens/Root/HostPanel/Box/Start.pressed.connect(_host)
@@ -102,6 +102,12 @@ func _input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 
+## Play solo skips the hub and goes straight into the match.
+func _play_solo() -> void:
+	Net.place = &"match"
+	UI.replace(&"match")
+
+
 func _open_host() -> void:
 	menu.hide()
 	port_field.text = str(Settings.get_value(&"network", &"last_port"))
@@ -144,7 +150,8 @@ func _start_host(port: int) -> void:
 		_show_error(&"port_in_use", {"port": port})
 		Net.last_error.clear()
 		return
-	UI.replace(&"match")
+	Net.place = &"hub"
+	UI.replace(&"hub")
 
 
 func _join() -> void:
@@ -160,7 +167,8 @@ func _start_join(address: String) -> void:
 	Net.pending_join = target
 	error_dialog.reparent(get_tree().root)
 	error_dialog.show_connecting(target)
-	UI.replace(&"match")
+	Net.place = &"hub"
+	UI.replace(&"hub")
 
 
 ## Validate before Net.join so malformed input never opens a connection.
@@ -245,10 +253,11 @@ func _open_credits() -> void:
 		_panel_tween.kill()
 	credits_panel.show()
 	credits_panel.modulate.a = 0.0
-	credits_panel.position.x = 12.0
 	_panel_tween = create_tween().set_parallel(true)
 	_panel_tween.tween_property(credits_panel, "modulate:a", 1.0, 0.12)
-	_panel_tween.tween_property(credits_panel, "position:x", 0.0, 0.12)
+	if not Settings.get_value(&"accessibility", &"reduce_motion"):
+		credits_panel.position.x = 12.0
+		_panel_tween.tween_property(credits_panel, "position:x", 0.0, 0.12)
 	($Screens/Root/CreditsPanel/Box/Back as Button).grab_focus()
 
 

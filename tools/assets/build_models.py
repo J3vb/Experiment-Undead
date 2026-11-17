@@ -23,6 +23,8 @@ import bpy
 import bmesh
 import character_models
 import finish
+import prop_models
+import town_props
 import zombie_model
 from mathutils import Vector
 
@@ -245,6 +247,8 @@ MODELS = {
     "bloater": ("zombies/bloater.glb", zombie_model.build_bloater),
 }
 MODELS.update(character_models.MODELS)
+MODELS.update(prop_models.MODELS)
+MODELS.update(town_props.MODELS)
 
 
 def export(path: str) -> None:
