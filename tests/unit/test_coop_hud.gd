@@ -8,10 +8,12 @@ const COOP_HUD: GDScript = preload("res://systems/net/coop_hud.gd")
 var hud: Hud
 var player: Player
 var teammate: Player
+var friend: Node
 
 
 func before_each() -> void:
 	assert_eq(Net.host(24645, 2), OK)
+	friend = await TwoPeers.add_friend(self, 24645)
 	hud = HUD.instantiate() as Hud
 	add_child_autofree(hud)
 	hud.set_process(false)
@@ -27,6 +29,7 @@ func after_each() -> void:
 	while UI.top() != &"":
 		UI.pop()
 	Input.action_release(&"interact")
+	TwoPeers.remove_friend(friend)
 	Net.leave()
 
 

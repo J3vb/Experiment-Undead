@@ -289,8 +289,9 @@ func _join_again() -> void:
 
 
 func test_late_join_gets_existing_downed_state_and_health() -> void:
-	await _remove_client()
 	_server().take_damage(DamageInfo.create(1000.0, null))
+	assert_true(_server().is_downed, "downed under the co-op rule while the friend is here")
+	await _remove_client()
 	await _join_again()
 	await wait_until(func() -> bool: return _client().is_downed, 3.0, "late join receives current state")
 	assert_eq(_client().health.current, 0.0)

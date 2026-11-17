@@ -12,7 +12,8 @@ bugs would hide in whichever path is tested least.
 ## Decision
 
 Solo runs as a server with one player and no open port (Godot's offline peer
-counts as the server). Host-and-play is the same scene with an open port. A
+counts as the server). *ADR 0013 (proposed) would replace "no open port": every
+game opens its port, and solo means nobody else is connected.* Host-and-play is the same scene with an open port. A
 dedicated server runs the same `GameSession` with no local player. The match
 is always `/root/GameSession`.
 

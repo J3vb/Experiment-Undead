@@ -3,7 +3,16 @@ class_name Handshake
 extends Node
 
 signal accepted(peer_id: int)
-signal refused(reason: Net.RefusalReason, client_protocol: int, server_protocol: int)
+## reason may be a code this build does not know (from a newer server).
+signal refused(reason: int, client_protocol: int, server_protocol: int)
+
+## Shown by clients that do not know the reason code. Keys of hello and replies listed
+## in docs/MULTIPLAYER.md are frozen: later versions add keys, never rename or remove them.
+const SERVER_TEXT: Dictionary = {
+	Net.RefusalReason.WRONG_VERSION: "This server runs another version of the game.",
+	Net.RefusalReason.CONTENT_MISMATCH: "Your game content differs from the server's.",
+	Net.RefusalReason.SERVER_FULL: "The server is full.",
+}
 
 var protocol_version: int = Build.PROTOCOL_VERSION
 var content_hash: String = Build.content_hash
@@ -60,83 +69,96 @@ static func _ignore_auth(_peer_id: int, _packet: PackedByteArray) -> void:
 
 func _on_peer_authenticating(peer_id: int) -> void:
 	if not multiplayer.is_server() and peer_id == 1:
-		_send(peer_id, ["hello", protocol_version, content_hash, _display_name, _level, game_version, fingerprint])
+		_send(peer_id, hello())
+
+
+## The client's hello. Frozen keys (docs/MULTIPLAYER.md) never change; later versions only add keys.
+func hello() -> Dictionary:
+	return {
+		"t": "hello",
+		"protocol": protocol_version,
+		"version": game_version,
+		"content": content_hash,
+		"fingerprint": fingerprint,
+		"name": _display_name,
+		"level": _level,
+	}
 
 
 func _receive_auth(peer_id: int, bytes: PackedByteArray) -> void:
-	var data: Variant = JSON.parse_string(bytes.get_string_from_utf8())
-	if not data is Array or data.is_empty():
+	var json: JSON = JSON.new()
+	if json.parse(bytes.get_string_from_utf8()) != OK or not json.data is Dictionary:
 		return
+	var message: Dictionary = json.data
+	var kind: String = str(message.get("t", ""))
 	if multiplayer.is_server():
-		if _rejected.has(peer_id) and data == ["refused"]:
-			_scene.disconnect_peer(peer_id)
-		elif not _accepted.has(peer_id) and not _rejected.has(peer_id):
-			_receive_hello(peer_id, data)
+		_receive_as_server(peer_id, kind, message)
 	elif peer_id == 1:
-		_receive_reply(data)
+		_receive_as_client(kind, message)
 
 
-func _receive_hello(peer_id: int, data: Array) -> void:
-	if data.size() != 7 or data[0] != "hello" or not data[1] is float or not data[2] is String:
-		return
-	var remote_protocol: int = int(data[1])
-	if remote_protocol != protocol_version or data[5] != game_version:
-		_reject(
-			peer_id,
-			Net.RefusalReason.WRONG_VERSION,
-			remote_protocol,
-			{
-				"server_version": game_version,
-				"client_version": str(data[5]),
-			}
-		)
-	elif data[2] != content_hash or data[6] != fingerprint:
-		_reject(peer_id, Net.RefusalReason.CONTENT_MISMATCH, remote_protocol)
-	elif _accepted.size() + int(has_local_player) >= max_players:
-		_reject(
-			peer_id,
-			Net.RefusalReason.SERVER_FULL,
-			remote_protocol,
-			{
-				"players": _accepted.size() + int(has_local_player),
-				"max_players": max_players,
-			}
-		)
+func _receive_as_server(peer_id: int, kind: String, message: Dictionary) -> void:
+	if _rejected.has(peer_id):
+		if kind == "refused_ack":
+			_scene.disconnect_peer(peer_id)
+	elif not _accepted.has(peer_id) and kind == "hello":
+		_receive_hello(peer_id, message)
+
+
+func _receive_as_client(kind: String, message: Dictionary) -> void:
+	if kind == "accepted":
+		_accept_place(StringName(str(message.get("place", ""))))
+	elif kind == "refused":
+		_receive_refusal(message)
+
+
+## Protocol and version are read first, so any older or newer hello gets WRONG_VERSION.
+func _receive_hello(peer_id: int, hello_data: Dictionary) -> void:
+	var remote_protocol: int = _int_field(hello_data, "protocol", -1)
+	var remote_version: String = str(hello_data.get("version", ""))
+	var players: int = _accepted.size() + int(has_local_player)
+	if remote_protocol != protocol_version or remote_version != game_version:
+		_reject(peer_id, Net.RefusalReason.WRONG_VERSION)
+	elif str(hello_data.get("content", "")) != content_hash or str(hello_data.get("fingerprint", "")) != fingerprint:
+		_reject(peer_id, Net.RefusalReason.CONTENT_MISMATCH)
+	elif players >= max_players:
+		_reject(peer_id, Net.RefusalReason.SERVER_FULL, {"players": players, "max_players": max_players})
 	else:
-		if not data[4] is float or not is_finite(data[4]):
-			return
-		_levels[peer_id] = clampi(int(data[4]), 1, 50)
-		_names[peer_id] = (
-			str(data[3]).strip_edges().left(24) if not str(data[3]).strip_edges().is_empty() else "Survivor"
-		)
-		_accepted[peer_id] = true
-		_send(peer_id, ["accepted", String(Net.place)])
-		_scene.complete_auth(peer_id)
-		accepted.emit(peer_id)
+		_admit(peer_id, hello_data)
 
 
-func _reject(peer_id: int, reason: Net.RefusalReason, remote_protocol: int, details: Dictionary = {}) -> void:
+func _admit(peer_id: int, hello_data: Dictionary) -> void:
+	var level: Variant = hello_data.get("level")
+	if not (level is float or level is int) or not is_finite(float(level)):
+		return
+	_levels[peer_id] = clampi(int(level), 1, 50)
+	var display_name: String = str(hello_data.get("name", "")).strip_edges()
+	_names[peer_id] = display_name.left(24) if not display_name.is_empty() else "Survivor"
+	_accepted[peer_id] = true
+	_send(peer_id, {"t": "accepted", "place": String(Net.place)})
+	_scene.complete_auth(peer_id)
+	accepted.emit(peer_id)
+
+
+func _reject(peer_id: int, reason: Net.RefusalReason, extra: Dictionary = {}) -> void:
 	_rejected[peer_id] = true
-	_send(peer_id, ["refused", reason, remote_protocol, protocol_version, details])
+	var reply: Dictionary = {
+		"t": "refused",
+		"reason": reason,
+		"server_version": game_version,
+		"server_protocol": protocol_version,
+		"text": SERVER_TEXT.get(reason, "Cannot join this server."),
+	}
+	reply.merge(extra)
+	_send(peer_id, reply)
 
 
-func _receive_reply(data: Array) -> void:
-	if data.size() == 2 and data[0] == "accepted":
-		_accept_place(StringName(str(data[1])))
-		return
-	if data.size() != 5 or data[0] != "refused":
-		return
-	refusal_reason = int(data[1])
-	var client_protocol: int = int(data[2])
-	var server_protocol: int = int(data[3])
-	var details: Dictionary = data[4]
-	refusal_message = _refusal_text(client_protocol, server_protocol, details)
-	if refusal_reason == Net.RefusalReason.WRONG_VERSION and client_protocol != server_protocol:
-		details["client_version"] = "%s (protocol %d)" % [details.get("client_version", "unknown"), client_protocol]
-		details["server_version"] = "%s (protocol %d)" % [details.get("server_version", "unknown"), server_protocol]
-	elif refusal_reason == Net.RefusalReason.SERVER_FULL:
-		details["players"] = int(details.get("players", 0))
-		details["max_players"] = int(details.get("max_players", max_players))
+func _receive_refusal(reply: Dictionary) -> void:
+	var code: int = _int_field(reply, "reason", -1)
+	refusal_reason = code if code >= 0 else Net.RefusalReason.size()
+	var server_protocol: int = _int_field(reply, "server_protocol", -1)
+	var details: Dictionary = _refusal_details(reply)
+	refusal_message = _refusal_text(server_protocol, details)
 	Net.refusal_reason = refusal_reason
 	Net.refusal_message = refusal_message
 	(
@@ -145,40 +167,74 @@ func _receive_reply(data: Array) -> void:
 			&"net",
 			&"join_refused",
 			{
-				"reason": Net.RefusalReason.keys()[refusal_reason],
+				"reason": Net.refusal_key(refusal_reason),
+				"older": details.get("older", ""),
 				"message": refusal_message,
-				"client_protocol": client_protocol,
+				"client_protocol": protocol_version,
 				"server_protocol": server_protocol,
 			}
 		)
 	)
 	# Acknowledge before the server disconnects, so the explanation reaches the client first.
-	_send(1, ["refused"])
+	_send(1, {"t": "refused_ack"})
 	if multiplayer == Net.multiplayer:
-		Net.report_refusal(refusal_reason as Net.RefusalReason, details)
-	refused.emit(refusal_reason as Net.RefusalReason, client_protocol, server_protocol)
+		Net.report_refusal(refusal_reason, details)
+	refused.emit(refusal_reason, protocol_version, server_protocol)
 
 
-func _refusal_text(client_protocol: int, server_protocol: int, details: Dictionary) -> String:
+func _refusal_details(reply: Dictionary) -> Dictionary:
+	match refusal_reason:
+		Net.RefusalReason.WRONG_VERSION:
+			var server_version: String = str(reply.get("server_version", "unknown"))
+			return {
+				"server_version": server_version,
+				"client_version": game_version,
+				"older": older_side(game_version, server_version),
+			}
+		Net.RefusalReason.CONTENT_MISMATCH:
+			return {}
+		Net.RefusalReason.SERVER_FULL:
+			return {
+				"players": _int_field(reply, "players", 0),
+				"max_players": _int_field(reply, "max_players", max_players),
+			}
+	return {"text": str(reply.get("text", ""))}
+
+
+func _refusal_text(server_protocol: int, details: Dictionary) -> String:
 	match refusal_reason:
 		Net.RefusalReason.WRONG_VERSION:
 			return (
-				(
-					"Cannot join: your game is %s (protocol %d), but the server uses %s (protocol %d). "
-					+ "Update both games to the same version."
-				)
-				% [
-					details.get("client_version", "unknown"),
-					client_protocol,
-					details.get("server_version", "unknown"),
-					server_protocol
-				]
+				"Cannot join: your game is %s (protocol %d), but the server uses %s (protocol %d)."
+				% [game_version, protocol_version, details.get("server_version", "unknown"), server_protocol]
 			)
 		Net.RefusalReason.CONTENT_MISMATCH:
 			return "Cannot join: your game content differs from the server's. Use the same content on both PCs."
 		Net.RefusalReason.SERVER_FULL:
 			return "Cannot join: the server is full."
-	return "Cannot join this server."
+	var text: String = str(details.get("text", ""))
+	return "Cannot join: %s" % text if not text.is_empty() else "Cannot join this server."
+
+
+## "client" or "server" when both are releases (X.Y.Z or X.Y.Z-test.N) and one is older.
+## Empty for dev and editor builds, which have no order.
+static func older_side(client_version: String, server_version: String) -> String:
+	var release: RegEx = RegEx.create_from_string("^\\d+\\.\\d+\\.\\d+(-test\\.\\d+)?$")
+	if release.search(client_version) == null or release.search(server_version) == null:
+		return ""
+	match Build.compare_versions(client_version, server_version):
+		-1:
+			return "client"
+		1:
+			return "server"
+	return ""
+
+
+static func _int_field(message: Dictionary, key: String, fallback: int) -> int:
+	var value: Variant = message.get(key)
+	if (value is float or value is int) and is_finite(float(value)):
+		return int(value)
+	return fallback
 
 
 ## A client that loaded another place than the server's switches before its player spawns.
@@ -192,7 +248,7 @@ func _accept_place(server_place: StringName) -> void:
 	_scene.complete_auth(1)
 
 
-func _send(peer_id: int, data: Array) -> void:
+func _send(peer_id: int, data: Dictionary) -> void:
 	_scene.send_auth(peer_id, JSON.stringify(data).to_utf8_buffer())
 
 

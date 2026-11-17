@@ -161,7 +161,8 @@ func _on_player_added(player: Player) -> void:
 		progression.set_start_total(player, _start_total_xp)
 		_profile_player = player
 		loot.player = player
-	player.display_name = handshake.player_name(player.net_id) if player.state_sync.is_coop() else ""
+	var named: bool = not multiplayer.multiplayer_peer is OfflineMultiplayerPeer
+	player.display_name = handshake.player_name(player.net_id) if named else ""
 	player.spawn(self, starting_loadout)
 	if player == _profile_player and _profile:
 		var loadout: Variant = _profile.to_dict().get("loadout", {})
@@ -232,7 +233,7 @@ func return_to_menu() -> void:
 func restart() -> void:
 	bank_run_xp()
 	get_tree().paused = false
-	(deploy_vote.back_to_hub if Net.is_online() or Net.changing_place else UI.reload).call()
+	(deploy_vote.back_to_hub if Net.is_coop(multiplayer) or Net.changing_place else Net.world.reload).call()
 
 
 func quit_game() -> void:
@@ -338,7 +339,7 @@ func _receive_match_end(stats: Dictionary) -> void:
 		if _profile:
 			_match_stats["new_best"] = _profile.record_run(level_scene.resource_path.get_base_dir().get_file(), stats)
 	director.stop()
-	if not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
+	if Net.is_coop(multiplayer):
 		level.process_mode = Node.PROCESS_MODE_DISABLED
 	await get_tree().create_timer(restart_delay).timeout
 	Events.game_over.emit(_match_stats)

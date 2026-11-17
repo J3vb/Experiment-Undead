@@ -38,9 +38,10 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-15 | Halcyon Labs detail props: Blender models for every room prop, story clutter, barricades | - | - | [ready](plans/halcyon-labs-props.md) | M | Done |
 | F-63 | Halcyon Labs door models: bulkheads, debris, shutters, vent grates, freezer door | - | - | [done](plans/halcyon-doors.md) | S | Done |
 | F-64 | Halcyon Labs wall-buy racks (gun on the wall) and Specimen Vault model | - | - | [done](plans/halcyon-wall-buys-vault.md) | S | Done |
+| F-68 | Halcyon Labs concept pass after the breakout: signage, Fenlight vines, wrecked rooms, ceilings, #297 look lines (stays dark) | #297 | - | [ready](plans/halcyon-concept-pass.md) | L | Ready |
 | F-61 | Halcyon Labs atmosphere: dead and flickering lights, particles, fog, beacons, screens, sound spots, story decals | - | - | [ready](plans/halcyon-labs-atmosphere.md) | M | Done |
 | F-16 | Game feel: camera punch, hitstop, downed and death screen | - | - | [ready](plans/game-feel-slice.md) | M | Done |
-| F-65 | Client and server updates: clear version refusals, saves safe across channels, a launcher that installs and updates the game and a server, self-updating Docker servers (steps 1-5 before F-11) | - | - | [ready](plans/client-server-updates.md) | L | Ready |
+| F-65 | Client and server updates: clear version refusals, saves safe across channels, a launcher that installs and updates the game and a server, self-updating Docker servers (steps 1-5 before F-11) | - | - | [ready](plans/client-server-updates.md) | L | Building |
 | F-09 | v0.1 performance check | #108 | F-01..F-07, F-12, F-13, F-16 | issue | S | Todo |
 | F-10 | First play-test (the person plays) | #109 | F-09 | issue | S | Todo |
 | F-11 | Release v0.1.0 | #111 | F-10, F-65 steps 1-5 | issue | S | Todo |
@@ -49,6 +50,14 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-48 | Full settings screen: Graphics page with presets, then Accessibility and Comfort | - | F-05 | [ready](plans/full-settings.md) | L | Done |
 | F-49 | HUD feedback and loading: loading screen, damage numbers, level-up burst, drop feed | - | - | [done](plans/hud-feedback-loading.md) | M | Done |
 | F-50 | First Lantern Post hub: town blockout, Deploy board and ready-up vote (first slice of F-45, pulled forward for the co-op week goal) | #131 | F-02, F-47 step 4 (#255), co-op #256 | [done](plans/lantern-post-hub.md) | M | Done |
+| F-66 | Your own world, open to friends: Enter world into your own Lantern Post (listen server, UPnP), server browser with add by address and LAN discovery, no master server | - | F-02, F-50 | [ready](plans/join-any-game.md) | L | Done |
+| F-67 | Character select before Enter world: pick a preset survivor with a bio and 3 traits (ui-hud screen 3, concept art 2026-11-17) | - | F-66 step 2 | needed | M | Todo |
+| F-74 | Lantern Post to the concept art: ridge sky, timber lodges, market stalls, concrete Deploy gate, props | - | F-50 | [ready](plans/lantern-post-concept.md) | L | Building |
+| F-70 | Player and gear to the concept art: bearded survivor body, headgear, gloves, backpack and boots models in three tiers (field, plated, Oriel), plate carrier vests, eye implant and vest vial | - | - | [ready](plans/player-gear-concept.md) | L | Ready |
+| F-71 | Four new loot slots: headgear, gloves, backpack, boots (item bases, affix pools, drops, sets, save, inventory and character screen) | - | F-70 step 2 | [ready](plans/four-gear-slots.md) | M | Ready |
+| F-72 | The four starter guns to the concept art: worn black with tan and brass, Oriel marks, red dots, taped mags (rifle, Brenner, Kestrel, Talon) | - | - | [done](plans/guns-concept.md) | M | Done |
+| F-73 | Weapon stats panel: five bars (damage, fire rate, accuracy, range, control) computed from WeaponData, on wall-buys, the Vault and the inventory (look: [guns_concept.jpg](design/images/guns_concept.jpg)) | - | F-72 | needed | M | Todo |
+| F-75 | Baked texture maps for the four concept guns: high-detail bake (bevels, stipple, engraved marks, wear), 30,000-triangle gun budget, Forward+ lit previews, intake for handed-over .glb guns | - | F-72 step 2 (per gun: its F-72 step) | [ready](plans/baked-gun-textures.md) | L | Building (steps 1-2; 3-6 after the AR-17 look) |
 
 ## Next: v0.2 Progression and loot
 

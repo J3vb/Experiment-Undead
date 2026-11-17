@@ -28,6 +28,18 @@ func _run() -> void:
 		root.add_child(player)
 		player.add_to_group(&"players")
 	assert(_net.host(_port, 1 if _scenario == "full" else _net.MAX_PLAYERS) == OK)
+	if _scenario == "unknown":
+		(root.multiplayer as SceneMultiplayer).auth_callback = _refuse_with_unknown_code
+	else:
+		_add_handshake()
+	root.multiplayer.peer_connected.connect(_on_connected)
+	var marker: FileAccess = FileAccess.open(_ready_file, FileAccess.WRITE)
+	marker.store_string("ready")
+	marker.close()
+	create_timer(15.0).timeout.connect(func() -> void: quit())
+
+
+func _add_handshake() -> void:
 	_handshake = (load("res://systems/net/handshake.gd") as GDScript).new() as Node
 	_handshake.has_local_player = _scenario == "full"
 	_handshake.max_players = _net.player_limit
@@ -35,11 +47,23 @@ func _run() -> void:
 	if _scenario == "content":
 		_handshake.fingerprint = "different-game-content"
 	_handshake.setup()
-	root.multiplayer.peer_connected.connect(_on_connected)
-	var marker: FileAccess = FileAccess.open(_ready_file, FileAccess.WRITE)
-	marker.store_string("ready")
-	marker.close()
-	create_timer(15.0).timeout.connect(func() -> void: quit())
+
+
+## Plays a newer server: a reason code this build has never heard of, with its own text.
+func _refuse_with_unknown_code(peer_id: int, bytes: PackedByteArray) -> void:
+	var scene: SceneMultiplayer = root.multiplayer as SceneMultiplayer
+	if bytes.get_string_from_utf8().contains("refused_ack"):
+		scene.disconnect_peer(peer_id)
+		return
+	var reply: Dictionary = {
+		"t": "refused",
+		"reason": 99,
+		"server_version": "9.0.0",
+		"server_protocol": 99,
+		"text": "This server is closed for maintenance.",
+		"maintenance_until": "tomorrow",
+	}
+	scene.send_auth(peer_id, JSON.stringify(reply).to_utf8_buffer())
 
 
 func _on_connected(peer_id: int) -> void:

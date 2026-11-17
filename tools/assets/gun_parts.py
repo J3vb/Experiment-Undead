@@ -14,6 +14,9 @@ import bpy
 # isort: split
 # bpy must load before bmesh.
 import bmesh
+import gun_markings
+
+MARKINGS_UV = "Markings"
 
 
 def _object(name: str, bm, mat, parent):
@@ -60,10 +63,19 @@ def slab(name: str, outline: list, width: float, mat, x: float = 0.0, bevel: flo
 
 
 def lathe(
-    name: str, profile: list, at: tuple, mat, segments: int = 24, parent=None, axis: str = "y", turn: float = 0.0
+    name: str,
+    profile: list,
+    at: tuple,
+    mat,
+    segments: int = 24,
+    parent=None,
+    axis: str = "y",
+    turn: float = 0.0,
+    closed: bool = False,
 ):
     """Turns `profile` [(radius, along), ...] around `axis` through `at`. Ends are capped.
-    `turn` rotates the ring start (radians), so an 8-sided part can sit flat side up."""
+    `turn` rotates the ring start (radians), so an 8-sided part can sit flat side up.
+    `closed` joins the last ring back to the first instead of capping, for open tubes and hoods."""
     bm = bmesh.new()
     rings = []
     for radius, along in profile:
@@ -74,12 +86,14 @@ def lathe(
             local = {"y": (u, along, v), "x": (along, u, v), "z": (u, v, along)}[axis]
             ring.append(bm.verts.new(tuple(p + q for p, q in zip(local, at, strict=True))))
         rings.append(ring)
-    for a, b in itertools.pairwise(rings):
+    pairs = list(itertools.pairwise(rings)) + ([(rings[-1], rings[0])] if closed else [])
+    for a, b in pairs:
         for i in range(segments):
             j = (i + 1) % segments
             bm.faces.new((a[i], a[j], b[j], b[i]))
-    bm.faces.new(rings[0])
-    bm.faces.new(rings[-1])
+    if not closed:
+        bm.faces.new(rings[0])
+        bm.faces.new(rings[-1])
     return _object(name, bm, mat, parent)
 
 
@@ -145,3 +159,73 @@ def mark_inlay(obj):
     for color in obj.data.color_attributes["Color"].data:
         color.color[3] = 0.0
     return obj
+
+
+def marking(name: str, rect: tuple, x: float, side: int, region: str, mat, thick: float = 0.0004):
+    """A thin printed plate on a gun side: `rect` (y0, z0, y1, z1), outer face at `x + side * thick`.
+    Its `Markings` UV map shows atlas `region` on the outer face, read left to right from that side."""
+    y0, z0, y1, z1 = rect
+    xs = (x, x + side * thick)
+    bm = bmesh.new()
+    v = {(i, j, k): bm.verts.new((xs[i], (y0, y1)[j], (z0, z1)[k])) for i in (0, 1) for j in (0, 1) for k in (0, 1)}
+    quads = [
+        ((1, 0, 0), (1, 1, 0), (1, 1, 1), (1, 0, 1)),
+        ((0, 0, 0), (0, 0, 1), (0, 1, 1), (0, 1, 0)),
+        ((0, 0, 0), (0, 1, 0), (1, 1, 0), (1, 0, 0)),
+        ((0, 0, 1), (1, 0, 1), (1, 1, 1), (0, 1, 1)),
+        ((0, 0, 0), (1, 0, 0), (1, 0, 1), (0, 0, 1)),
+        ((0, 1, 0), (0, 1, 1), (1, 1, 1), (1, 1, 0)),
+    ]
+    faces = [bm.faces.new([v[c] for c in quad]) for quad in quads]
+    bm.loops.layers.uv.new("UVMap")
+    uv = bm.loops.layers.uv.new(MARKINGS_UV)
+    u0, v0, u1, v1 = gun_markings.uv_rect(region)
+    bu, bv, _, _ = gun_markings.uv_rect("black")
+    for face in faces:
+        for loop in face.loops:
+            loop[uv].uv = (bu + 0.01, bv + 0.01)
+    for loop in faces[0].loops:
+        t = (loop.vert.co.y - y0) / (y1 - y0)
+        t = t if side > 0 else 1.0 - t
+        loop[uv].uv = (u0 + (u1 - u0) * t, v0 + (v1 - v0) * (loop.vert.co.z - z0) / (z1 - z0))
+    return _object(name, bm, mat, None)
+
+
+def red_dot(m, y: float, rail_top: float, eye: float, black, glass, markings, receiver) -> list:
+    """Small Oriel holographic sight on the rail at `y`, its window centred on the eye line `eye`.
+    Returns the parts to join into `receiver`; `SightGlass` and the `ReticleMount` marker stay separate."""
+    base_top = rail_top + 0.008
+    hood = [(0.0152, y - 0.014), (0.0192, y - 0.014), (0.0192, y + 0.016), (0.0152, y + 0.016)]
+    parts = [
+        slab(
+            "RedDotBase",
+            [(y - 0.03, rail_top), (y + 0.03, rail_top), (y + 0.027, base_top), (y - 0.027, base_top)],
+            0.026,
+            black,
+            bevel=0.0015,
+        ),
+        slab("RedDotRiser", rounded(y - 0.012, base_top - 0.001, y + 0.014, eye - 0.016, 0.002), 0.014, black),
+        lathe("RedDotHood", hood, (0, 0, eye), black, 8, turn=math.pi / 8, closed=True),
+        lathe(
+            "RedDotKnob",
+            [(0.004, 0.0), (0.004, 0.006), (0.003, 0.007)],
+            (0.013, y + 0.018, base_top - 0.004),
+            black,
+            10,
+            axis="x",
+        ),
+    ]
+    for side in (-1, 1):
+        parts.append(
+            marking(
+                f"RedDotMark{side}",
+                (y - 0.024, rail_top + 0.0005, y + 0.012, base_top - 0.0015),
+                side * 0.013,
+                side,
+                "logo",
+                markings,
+            )
+        )
+    lathe("SightGlass", [(0.0156, y + 0.0035), (0.0156, y + 0.0045)], (0, 0, eye), glass, 16, parent=receiver)
+    m.marker("ReticleMount", (0, y + 0.0025, eye), parent=receiver)
+    return parts

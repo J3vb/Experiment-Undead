@@ -2,14 +2,14 @@
 class_name SettingData
 extends Resource
 
-## Settings page id: controls, aim, graphics, audio, accessibility or comfort.
+## Settings page id: controls, aim, graphics, audio, accessibility, comfort or network.
 @export var page: StringName = &""
 @export var section: StringName = &""
 @export var key: StringName = &""
 @export var label: String = ""
 ## One line under the row that says what the option does.
 @export var hint: String = ""
-## toggle, slider or choice.
+## toggle, slider, choice, number (a whole number typed or stepped, like a port) or text.
 @export var kind: StringName = &"toggle"
 @export var min_value: float = 0.0
 @export var max_value: float = 1.0

@@ -1,5 +1,5 @@
 ## Network role, admission failures and connection deadline. Solo has no open port.
-## Shared gameplay changes check Net.is_authority(). See docs/MULTIPLAYER.md.
+## Shared gameplay changes check Net.is_authority(); solo or co-op rules check is_coop(). See docs/MULTIPLAYER.md.
 extends Node
 
 signal connection_error(reason: StringName, details: Dictionary)
@@ -7,7 +7,10 @@ signal join_started(address: String)
 signal join_succeeded
 ## Server only: the session must change to this place (the dedicated server swaps its session).
 signal place_changed(place: StringName)
+## The first friend joined (true) or the last one left (false). A world alone plays solo.
+signal coop_changed(on: bool)
 
+## Sent on the wire as ints: append only, never reorder.
 enum RefusalReason { WRONG_VERSION, CONTENT_MISMATCH, SERVER_FULL }
 
 const DEFAULT_PORT: int = 7777
@@ -29,6 +32,10 @@ var place: StringName = &""
 var changing_place: bool = false
 ## True while the results screen is up: a place change order then waits for the player.
 var holds_place: bool = false
+## Enter world opens it; the pause screen reads world.state.
+var world: OwnWorld = OwnWorld.new()
+## Answers server browser queries while this PC runs a world or a dedicated server.
+var info: ServerInfo
 
 var _next_net_id: int = 1
 var _target: String = ""
@@ -40,6 +47,12 @@ var _leave_deadline: Timer
 var _deadline: Timer
 var _signals_bound: bool = false
 var _connected: bool = false
+var _coop: bool = false
+
+
+func _ready() -> void:
+	info = ServerInfo.new()
+	add_child(info)
 
 
 func is_authority() -> bool:
@@ -47,10 +60,21 @@ func is_authority() -> bool:
 
 
 func is_online() -> bool:
+	return _live(multiplayer.multiplayer_peer)
+
+
+## Co-op rules apply: a client, or a server with a friend connected. Read it when a rule is used
+## (friends come and go). Pass the caller's multiplayer when it differs (tests use subtrees).
+func is_coop(api: MultiplayerAPI = null) -> bool:
+	var on: MultiplayerAPI = api if api else multiplayer
+	return _live(on.multiplayer_peer) and (not on.is_server() or not on.get_peers().is_empty())
+
+
+static func _live(peer: MultiplayerPeer) -> bool:
 	return (
-		multiplayer.multiplayer_peer != null
-		and not multiplayer.multiplayer_peer is OfflineMultiplayerPeer
-		and multiplayer.multiplayer_peer.get_connection_status() != MultiplayerPeer.CONNECTION_DISCONNECTED
+		peer != null
+		and not peer is OfflineMultiplayerPeer
+		and peer.get_connection_status() != MultiplayerPeer.CONNECTION_DISCONNECTED
 	)
 
 
@@ -77,7 +101,7 @@ func join(address: String) -> Error:
 	last_error.clear()
 	refusal_reason = -1
 	refusal_message = ""
-	var target: Array = parse_address(address)
+	var target: Array = ServerAddress.parse(address)
 	_target = "%s:%d" % target
 	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
 	var err: Error = peer.create_client(target[0], target[1])
@@ -122,6 +146,7 @@ func leave() -> void:
 			_notify_host_ended()
 		multiplayer.multiplayer_peer.close()
 	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
+	_update_coop()
 
 
 ## Server: sends every client to next. They leave and rejoin into the new session
@@ -184,6 +209,7 @@ func _go_to_place(next: StringName) -> void:
 
 
 func _exit_tree() -> void:
+	world.quit()
 	if _signals_bound:
 		leave()
 
@@ -226,6 +252,8 @@ func _configure() -> void:
 	_leave_deadline.timeout.connect(_drop_leaving)
 	add_child(_leave_deadline)
 	api.peer_disconnected.connect(func(peer_id: int) -> void: _leaving.erase(peer_id))
+	api.peer_connected.connect(func(_peer_id: int) -> void: _update_coop())
+	api.peer_disconnected.connect(func(_peer_id: int) -> void: _update_coop.call_deferred())
 	api.peer_authentication_failed.connect(_on_authentication_failed, CONNECT_DEFERRED)
 	api.connected_to_server.connect(_on_connected)
 	api.connection_failed.connect(_on_connection_failed)
@@ -233,12 +261,20 @@ func _configure() -> void:
 
 
 ## Handshake owns admission. Keep its reason while the refusal ACK reaches the server.
-func report_refusal(reason: RefusalReason, details: Dictionary) -> void:
+## A code from a newer server that this build does not know is reported as &"refused".
+func report_refusal(reason: int, details: Dictionary) -> void:
 	if not joining:
 		return
 	refusal_reason = reason
 	_deadline.stop()
-	_record_error(StringName(RefusalReason.keys()[reason].to_lower()), details)
+	_record_error(StringName(refusal_key(reason).to_lower()), details)
+
+
+## The RefusalReason name for a wire code, or "REFUSED" for a code this build does not know.
+static func refusal_key(code: int) -> String:
+	if code < 0 or code >= RefusalReason.size():
+		return "REFUSED"
+	return RefusalReason.keys()[code]
 
 
 func _on_authentication_failed(_peer_id: int) -> void:
@@ -249,6 +285,13 @@ func _on_authentication_failed(_peer_id: int) -> void:
 		multiplayer.connection_failed.emit()
 	else:
 		_fail_join(&"timeout", {"address": _target})
+
+
+func _update_coop() -> void:
+	if is_coop() != _coop:
+		_coop = not _coop
+		Log.info(&"net", &"coop_started" if _coop else &"coop_ended", {"peers": multiplayer.get_peers().size()})
+		coop_changed.emit(_coop)
 
 
 func _on_connected() -> void:
@@ -300,19 +343,6 @@ func _host_ended_match() -> void:
 	_record_error(&"host_ended", {})
 	leave()
 	multiplayer.server_disconnected.emit()
-
-
-## "1.2.3.4:7777" -> ["1.2.3.4", 7777]. Missing or bad port uses DEFAULT_PORT.
-static func parse_address(text: String) -> Array:
-	var address: String = text.strip_edges()
-	var port: int = DEFAULT_PORT
-	var colon: int = address.rfind(":")
-	if colon > 0 and address.substr(colon + 1).is_valid_int():
-		port = address.substr(colon + 1).to_int()
-		address = address.substr(0, colon)
-	if address.is_empty():
-		address = "127.0.0.1"
-	return [address, port]
 
 
 ## Unique id for anything spawned during a session. Authority only.

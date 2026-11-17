@@ -5,6 +5,8 @@
 // follows convex curvature measured from how fast the normal bends on screen,
 // so it sits on bevels and rims, not on flat faces.
 // `finish` picks the surface: 0 bare metal, 1 black coating, 2 polymer, 3 wood.
+// Worn guns (docs/plans/guns-concept.md) raise `wear` past 1 for chipped paint on flat
+// faces too, add `grime` in creases, and print `markings_map` through UV2 when `marked`.
 shader_type spatial;
 
 const int METAL = 0;
@@ -17,7 +19,11 @@ uniform float metallic : hint_range(0.0, 1.0) = 0.0;
 uniform float roughness : hint_range(0.0, 1.0) = 0.7;
 uniform int finish : hint_range(0, 3) = 0;
 uniform bool knurled = false;
-uniform float wear : hint_range(0.0, 1.0) = 1.0;
+uniform float wear : hint_range(0.0, 2.0) = 1.0;
+uniform float grime : hint_range(0.0, 1.0) = 0.0;
+uniform vec3 grime_color : source_color = vec3(0.352941, 0.274510, 0.188235); // #5A4630
+uniform bool marked = false;
+uniform sampler2D markings_map : source_color, filter_linear_mipmap, repeat_disable;
 uniform vec3 bare_metal : source_color = vec3(0.541176, 0.568627, 0.549020); // #8A918C
 uniform float knurl_pitch = 0.0012;
 uniform float edge_curvature = 160.0; // 1/m: bends sharper than this count as worn edges
@@ -88,8 +94,11 @@ void fragment() {
 	float detail = clamp(1.0 - length(fwidth(p)) / 0.0015, 0.0, 1.0);
 
 	float edge = clamp(curvature(NORMAL, VERTEX) / edge_curvature, 0.0, 1.0) * wear;
-	float worn = smoothstep(0.4, 0.9, edge) * smoothstep(0.35, 0.7, chips) * ao;
-	vec3 color = albedo * mix(0.96, 1.04, blotch);
+	float heavy = max(wear - 1.0, 0.0);
+	float worn = smoothstep(0.4, 0.9, edge) * smoothstep(0.35 - heavy * 0.15, 0.7 - heavy * 0.15, chips) * ao;
+	worn = max(worn, smoothstep(0.7, 0.76, fbm(p * 90.0 + 7.0)) * heavy * detail);
+	vec3 color = marked ? texture(markings_map, UV2).rgb : albedo;
+	color *= mix(0.96, 1.04, blotch);
 	float rough = roughness + (blotch - 0.5) * 0.1;
 	float metal = metallic;
 	float height = 0.0;
@@ -125,6 +134,10 @@ void fragment() {
 		color *= mix(1.0, mix(0.7, 1.15, k), detail);
 		rough -= k * 0.12 * detail;
 	}
+
+	float dirt = grime * clamp((1.0 - ao) * 2.0 + smoothstep(0.55, 0.8, blotch) * 0.5, 0.0, 1.0);
+	color = mix(color, grime_color * 0.5, dirt * 0.6);
+	rough += dirt * 0.15;
 
 	float inlay = 1.0 - step(0.15, COLOR.a);
 	float glow = step(0.15, COLOR.a) * (1.0 - step(0.5, COLOR.a));

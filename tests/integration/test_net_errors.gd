@@ -63,7 +63,26 @@ func test_wrong_version_reports_both_versions() -> void:
 	await _start_server("version")
 	await _join_and_wait_for_error()
 	assert_eq(Net.last_error.get("reason"), &"wrong_version")
-	assert_eq(Net.last_error.get("details"), {"server_version": "0.4.1", "client_version": Build.version})
+	assert_eq(
+		Net.last_error.get("details"),
+		{
+			"server_version": "0.4.1",
+			"client_version": Build.version,
+			"older": Handshake.older_side(Build.version, "0.4.1")
+		}
+	)
+	assert_false(Net.is_online())
+
+
+func test_unknown_reason_from_a_newer_server_shows_its_text() -> void:
+	await _start_server("unknown")
+	await _join_and_wait_for_error()
+	assert_eq(Net.last_error.get("reason"), &"refused")
+	assert_eq(Net.last_error.get("details"), {"text": "This server is closed for maintenance."})
+	assert_eq(
+		NetErrorDialog.message_for(Net.last_error.get("reason"), Net.last_error.get("details")),
+		"This server is closed for maintenance."
+	)
 	assert_false(Net.is_online())
 
 

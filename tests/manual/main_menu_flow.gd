@@ -14,19 +14,13 @@ func _run() -> void:
 	await process_frame
 	assert(current_scene.scene_file_path == "res://systems/ui/main_menu.tscn")
 	await _press_joypad_button(JOY_BUTTON_DPAD_DOWN)
-	assert((current_scene.get_node("Screens/Root/Menu/Host") as Button).has_focus())
-	await _press_action(&"ui_accept")
-	assert((current_scene.get_node("Screens/Root/HostPanel/Box/Port") as LineEdit).has_focus())
-	await _press_action(&"ui_cancel")
-	assert((current_scene.get_node("Screens/Root/Menu/Host") as Button).has_focus())
-	await _press_joypad_button(JOY_BUTTON_DPAD_DOWN)
-	assert((current_scene.get_node("Screens/Root/Menu/Join") as Button).has_focus())
+	assert((current_scene.get_node("Screens/Root/Menu/Servers") as Button).has_focus())
 	await _press_action(&"ui_accept")
 	assert((current_scene.get_node("Screens/Root/JoinPanel/Box/Address") as LineEdit).has_focus())
 	await _press_action(&"ui_cancel")
-	assert((current_scene.get_node("Screens/Root/Menu/Join") as Button).has_focus())
+	assert((current_scene.get_node("Screens/Root/Menu/Servers") as Button).has_focus())
 	await _press_joypad_button(JOY_BUTTON_DPAD_DOWN)
-	assert((current_scene.get_node("Screens/Root/Menu/Character") as Button).has_focus())
+	assert((current_scene.get_node("Screens/Root/Menu/Loadout") as Button).has_focus())
 	await _character_flow()
 	await _press_joypad_button(JOY_BUTTON_DPAD_DOWN)
 	assert((current_scene.get_node("Screens/Root/Menu/Settings") as Button).has_focus())
@@ -34,10 +28,10 @@ func _run() -> void:
 	assert((current_scene.get_node("Screens/Root/SettingsScreen") as Control).visible)
 	await _press_action(&"ui_cancel")
 	assert((current_scene.get_node("Screens/Root/Menu/Settings") as Button).has_focus())
-	(current_scene.get_node("Screens/Root/Menu/Play") as Button).pressed.emit()
+	(current_scene.get_node("Screens/Root/Menu/EnterWorld") as Button).pressed.emit()
 	await process_frame
 	await process_frame
-	assert(current_scene.scene_file_path == "res://systems/game/game_session.tscn")
+	assert(current_scene.scene_file_path == "res://systems/game/hub_session.tscn")
 	var pause: InputEventAction = InputEventAction.new()
 	pause.action = &"pause"
 	pause.pressed = true
@@ -52,13 +46,13 @@ func _run() -> void:
 	assert(current_scene.scene_file_path == "res://systems/ui/main_menu.tscn")
 	await _results_flow()
 	print(
-		"Main menu flow passed: controller co-op/Character/Settings/back, Play solo, pause/menu, results/restart/menu, Quit"
+		"Main menu flow passed: controller Servers/Loadout/Settings/back, Enter World, pause/menu, results/restart/menu, Exit"
 	)
 	(current_scene.get_node("Screens/Root/Menu/Quit") as Button).pressed.emit()
 
 
 func _results_flow() -> void:
-	(current_scene.get_node("Screens/Root/Menu/Play") as Button).pressed.emit()
+	(current_scene.get_node("Screens/Root/Menu/EnterWorld") as Button).pressed.emit()
 	await process_frame
 	await process_frame
 	current_scene.set("restart_delay", 0.0)
