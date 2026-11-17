@@ -56,8 +56,8 @@ Not in (non-goals, and where each one goes instead):
   Any of them shaky or missing? 5 is what this fixes. 6: no new raw key reads outside UI. 10: UI does
   nothing headless (no mouse, no screens pushed by the server).
 - Decision records: 0011 one UI router (proposed; this makes it accepted), 0004 one code path,
-  0007 signals and events. Goes against one: no. New autoload `UI`: needs the person's OK (AGENTS.md
-  Keep it simple rule 5), asked as a decision card; see Open decisions.
+  0007 signals and events. Goes against one: no. New autoload `UI`: approved by the person on 2026-11-17 (AGENTS.md
+  Keep it simple rule 5); see Open decisions.
 - Co-op:
   - Who decides: each client, for its own screens. Nothing is networked.
   - How a client triggers it: n.a. (local UI only).
