@@ -61,7 +61,8 @@ var aim: AimPitch
 var local_velocity: Vector3 = Vector3.ZERO
 ## Set by the owner each tick and sent to everyone by PoseSync.
 var held_weapon: StringName = &""
-var is_reloading: bool = false
+## Seconds the current reload takes (empty mag and Serums included); 0 when not reloading.
+var reload_time: float = 0.0
 var gun: Node3D
 
 var _last_position: Vector3 = Vector3.ZERO
@@ -70,11 +71,13 @@ var _measured: Vector3 = Vector3.ZERO
 var _state: StringName = GROUND
 var _hand: BoneAttachment3D
 var _shown_weapon: StringName = &""
-var _was_reloading: bool = false
+var _shown_reload: float = 0.0
 var _reload_length: float = 1.0
+var _started_reload: float = 0.0
 
 
 func _ready() -> void:
+	Events.reload_started.connect(_on_reload_started)
 	if headless:
 		return
 	var players: Array[Node] = model.find_children("*", "AnimationPlayer", true, false)
@@ -113,7 +116,7 @@ func _physics_process(delta: float) -> void:
 	_apply(pick_state(player.is_downed, player.is_crouching))
 	if held_weapon != _shown_weapon:
 		_show_weapon()
-	if is_reloading != _was_reloading:
+	if reload_time != _shown_reload:
 		_play_reload()
 
 
@@ -126,7 +129,12 @@ func fire() -> void:
 func _publish() -> void:
 	var weapon: Weapon = player.weapons.current
 	held_weapon = weapon.data.id if weapon else &""
-	is_reloading = weapon != null and weapon.is_reloading()
+	reload_time = _started_reload if weapon and weapon.is_reloading() else 0.0
+
+
+func _on_reload_started(reloader: Player, duration: float) -> void:
+	if reloader == player:
+		_started_reload = duration
 
 
 ## Velocity over the time since the position last changed, so pose updates that skip ticks still read as steady.
@@ -201,16 +209,13 @@ static func hold_transform(grip: GripData) -> Transform3D:
 	return Transform3D(turn, PALM - turn * anchor)
 
 
-## The reload clip is stretched to the gun's reload time and fades out when the reload ends early.
+## The reload clip is stretched to the owner's real reload time and fades out when the reload ends early.
 func _play_reload() -> void:
-	_was_reloading = is_reloading
-	if not is_reloading:
+	_shown_reload = reload_time
+	if reload_time <= 0.0:
 		tree.set(RELOAD_REQUEST, AnimationNodeOneShot.ONE_SHOT_REQUEST_FADE_OUT)
 		return
-	var time: float = _reload_length
-	if Content.has(&"weapons", held_weapon):
-		time = Content.weapon(held_weapon).reload_time
-	tree.set(RELOAD_SCALE, _reload_length / maxf(time, 0.1))
+	tree.set(RELOAD_SCALE, _reload_length / maxf(reload_time, 0.1))
 	tree.set(RELOAD_REQUEST, AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE)
 
 

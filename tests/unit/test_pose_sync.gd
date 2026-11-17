@@ -68,4 +68,4 @@ func test_owner_held_gun_and_reload_reach_other_peers() -> void:
 	await wait_until(func() -> bool: return copy.held_weapon == &"rifle_ar", 3.0, "held gun reached the server")
 	weapon.instance.ammo_in_mag = 0
 	assert_true(weapon.start_reload())
-	await wait_until(func() -> bool: return copy.is_reloading, 3.0, "reload reached the server")
+	await wait_until(func() -> bool: return copy.reload_time > 0.0, 3.0, "reload reached the server")

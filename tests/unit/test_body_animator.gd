@@ -134,7 +134,7 @@ func test_owner_publishes_its_current_gun_and_holds_it_as_a_shadow() -> void:
 	var weapon: Weapon = player.weapons.give(Content.weapon(&"rifle_ar"))
 	await wait_physics_frames(2)
 	assert_eq(animator.held_weapon, &"rifle_ar")
-	assert_false(animator.is_reloading)
+	assert_eq(animator.reload_time, 0.0)
 	assert_eq((animator.gun.get_parent() as BoneAttachment3D).bone_name, "hand_R")
 	assert_not_null(animator.gun.find_child("Muzzle"), "the world model is the bare gun")
 	var mesh: GeometryInstance3D = animator.gun.find_children("*", "GeometryInstance3D", true, false)[0]
@@ -142,7 +142,8 @@ func test_owner_publishes_its_current_gun_and_holds_it_as_a_shadow() -> void:
 	weapon.instance.ammo_in_mag = 0
 	assert_true(weapon.start_reload())
 	await wait_physics_frames(2)
-	assert_true(animator.is_reloading, "the owner's reload is published for PoseSync")
+	var empty_reload: float = Content.weapon(&"rifle_ar").empty_reload_time
+	assert_almost_eq(animator.reload_time, empty_reload, 0.001, "the owner publishes the real (empty) reload time")
 
 
 func test_teammate_swaps_the_held_gun_when_the_synced_id_changes() -> void:
@@ -180,16 +181,16 @@ func test_fire_kicks_only_the_upper_body() -> void:
 	assert_false(shot.is_path_filtered(leg), "legs keep walking")
 
 
-func test_reload_stretches_to_the_gun_and_fades_out_when_it_ends() -> void:
+func test_reload_stretches_to_the_synced_reload_time_and_fades_out_when_it_ends() -> void:
 	player.set_multiplayer_authority(2)
 	animator.held_weapon = &"rifle_ar"
-	animator.is_reloading = true
+	animator.reload_time = 2.8
 	await wait_physics_frames(2)
 	var length: float = animator.tree.get_animation(&"reload").length
-	var expected: float = length / Content.weapon(&"rifle_ar").reload_time
+	var expected: float = length / 2.8
 	assert_almost_eq(animator.tree.get(BodyAnimator.RELOAD_SCALE) as float, expected, 0.001)
 	assert_true(animator.tree.get(&"parameters/reload/active"))
-	animator.is_reloading = false
+	animator.reload_time = 0.0
 	await wait_seconds(0.4)
 	assert_false(animator.tree.get(&"parameters/reload/active"), "a finished reload fades out")
 
