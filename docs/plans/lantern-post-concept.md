@@ -256,5 +256,5 @@ target), and the Low preset must stay playable.
       Trainer and Contract Board. Decision card.
 - [ ] Aurora colour: green as in the concept breaks "the only green in town is
       the Deploy Gate". Decision card.
-- [ ] Plan as a whole, including restyling the houses as timber lodges and
-      the mountain ridge setting. Decision card.
+- [x] Plan as a whole, including restyling the houses as timber lodges and
+      the mountain ridge setting: approved, all 5 steps (the person, 2026-11-17).
