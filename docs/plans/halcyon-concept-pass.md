@@ -172,10 +172,12 @@ Autoloads, managers or base classes added: none.
   enough for counts). Budget per step: each room at most baseline + 30 %,
   Mess Hall and Main Corridor at most + 15 %. A step over budget merges meshes
   before it merges.
-- Baseline (step 1, `room_shots.gd`, OpenGL, power on): Loading Dock 1788,
-  Guard Post 1830, Mess Hall 1163, Main Corridor 1709, Generator Hall 1206,
-  Labs 764, Coolant Tunnel 1226, Containment Wing 400 draw calls. Signs are
-  decals and add none.
+- Baseline (step 1, `room_shots.gd`, Forward+ on software Vulkan, power on):
+  Loading Dock 356, Guard Post 346, Mess Hall 227, Main Corridor 348,
+  Generator Hall 213, Labs 146, Coolant Tunnel 239, Containment Wing 79 draw
+  calls. Signs are decals and add none. Software Vulkan works in the cloud
+  (`apt-get install mesa-vulkan-drivers`, `--rendering-driver vulkan`), so
+  decals can be checked there; OpenGL has no decals.
 - Vines, ceiling and wreck dressing: merged per model, visibility range 30 m
   on small dressing, `light_baking` 2 (Static Lightmaps), shadows from the bake.
 - Fenlight glow lights: Static bake mode (1), zero run-time cost.

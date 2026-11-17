@@ -15,12 +15,14 @@ const SHOTS: Array = [
 	["labs", Vector3(37, 1.7, 25), Vector3(51, 1.0, 11)],
 	["coolant_tunnel", Vector3(28.5, 1.7, 12.5), Vector3(36, 1.4, 12.5)],
 	["containment_wing", Vector3(62, -1.3, 30), Vector3(74, -2.0, 6)],
-	["signs_mess_hall", Vector3(50, 1.7, 42), Vector3(48, 3.6, 30)],
+	["signs_mess_hall", Vector3(44, 1.7, 40), Vector3(40, 1.6, 30)],
 	["signs_vent_ledge", Vector3(50, 1.7, 44), Vector3(58, 2.2, 45)],
 	["signs_main_corridor", Vector3(31, 1.7, 29.5), Vector3(31, 1.6, 26)],
-	["signs_generator_hall", Vector3(15, 1.7, 20), Vector3(15, 3.6, 6)],
-	["signs_labs", Vector3(46, 1.7, 15), Vector3(48, 2.4, 26)],
-	["signs_containment_wing", Vector3(68, -1.3, 22), Vector3(68, 0.8, 4)],
+	["signs_generator_hall", Vector3(20, 1.7, 14), Vector3(20.3, 1.8, 6)],
+	["signs_labs", Vector3(46, 1.7, 17), Vector3(46.5, 1.9, 26)],
+	["signs_containment_wing", Vector3(64, -1.3, 14), Vector3(64, -1.0, 4)],
+	["signs_loading_dock", Vector3(27, 1.7, 52), Vector3(30, 2.2, 46)],
+	["signs_guard_post", Vector3(15, 1.7, 40), Vector3(14, 1.8, 30)],
 ]
 
 
