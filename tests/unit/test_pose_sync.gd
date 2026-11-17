@@ -1,4 +1,4 @@
-## Real ENet peers: the owner's crouch rides PoseSync to every peer and survives server snapshots.
+## Real ENet peers: the owner's crouch, held gun and reload ride PoseSync to every peer.
 extends GutTest
 
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
@@ -59,3 +59,13 @@ func test_owner_crouch_reaches_other_peers_and_survives_health_snapshots() -> vo
 	await wait_physics_frames(2)
 	assert_true(host_copy.is_crouching, "a health snapshot does not stand a crouching teammate up")
 	assert_false(host_copy.is_downed)
+
+
+func test_owner_held_gun_and_reload_reach_other_peers() -> void:
+	var owner: Player = client_spawner.find_player(client_id)
+	var weapon: Weapon = owner.weapons.give(Content.weapon(&"rifle_ar"))
+	var copy: BodyAnimator = server_spawner.find_player(client_id).get_node("Body/BodyAnimator") as BodyAnimator
+	await wait_until(func() -> bool: return copy.held_weapon == &"rifle_ar", 3.0, "held gun reached the server")
+	weapon.instance.ammo_in_mag = 0
+	assert_true(weapon.start_reload())
+	await wait_until(func() -> bool: return copy.reload_time > 0.0, 3.0, "reload reached the server")

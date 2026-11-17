@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://b5i4qthcc7y2"]
 
+[ext_resource type="Script" path="res://systems/effects/environment_quality.gd" id="env_quality"]
 [ext_resource type="LightmapGIData" uid="uid://dox0hwayftgf0" path="res://levels/look_reference/halcyon_corridor.lmbake" id="16_q3c63"]
 [ext_resource type="Material" path="res://levels/materials/bio_leak.tres" id="bio"]
 [ext_resource type="PackedScene" uid="uid://gw3momyouw8p" path="res://assets/models/zombies/bloater.glb" id="bloater"]
@@ -76,6 +77,7 @@ size = Vector2(0.006, 0.006)
 [node name="HalcyonCorridor" type="Node3D" unique_id=224817868]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=953559611]
+script = ExtResource("env_quality")
 environment = ExtResource("look")
 
 [node name="Geometry" type="Node3D" parent="." unique_id=1403587323]

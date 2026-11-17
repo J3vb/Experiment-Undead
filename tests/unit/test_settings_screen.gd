@@ -50,19 +50,27 @@ func test_sliders_save_every_preference() -> void:
 
 
 func test_checkboxes_and_all_fps_options() -> void:
-	for entry: Array in [[&"invert_y", &"controls"], [&"vsync", &"video"], [&"show_fps", &"video"]]:
-		var check: CheckBox = _screen.get_node("%" + entry[0]) as CheckBox
-		check.button_pressed = true
-		assert_eq(Settings.get_value(entry[1], entry[0]), true)
-		assert_true(check.text.ends_with("[On]"), "toggle state has a text cue")
-		check.button_pressed = false
-		assert_eq(Settings.get_value(entry[1], entry[0]), false)
-		assert_true(check.text.ends_with("[Off]"), "toggle state has a text cue")
-	var option: OptionButton = _screen.get_node("%max_fps") as OptionButton
+	var check: CheckBox = _screen.get_node("%invert_y") as CheckBox
+	check.button_pressed = true
+	assert_eq(Settings.get_value(&"controls", &"invert_y"), true)
+	assert_true(check.text.ends_with("[On]"), "toggle state has a text cue")
+	check.button_pressed = false
+	assert_eq(Settings.get_value(&"controls", &"invert_y"), false)
+	assert_true(check.text.ends_with("[Off]"), "toggle state has a text cue")
+	var page: SettingsPage = _screen.get_node("%Page") as SettingsPage
+	for key: StringName in [&"vsync", &"show_fps"]:
+		var toggle: CheckBox = page.control_for(key) as CheckBox
+		toggle.button_pressed = true
+		assert_eq(Settings.get_value(&"graphics", key), true)
+		assert_eq(toggle.text, "On", "toggle state has a text cue")
+		toggle.button_pressed = false
+		assert_eq(Settings.get_value(&"graphics", key), false)
+		assert_eq(toggle.text, "Off")
+	var option: OptionButton = page.control_for(&"max_fps") as OptionButton
 	var expected: Array[int] = [60, 120, 144, 165, 240, 0]
 	for index: int in range(expected.size()):
 		option.item_selected.emit(index)
-		assert_eq(Settings.get_value(&"video", &"max_fps"), expected[index])
+		assert_eq(Settings.get_value(&"graphics", &"max_fps"), expected[index])
 		assert_eq(option.selected, index)
 
 
@@ -70,16 +78,18 @@ func test_start_values_external_changes_and_reset() -> void:
 	Settings.set_value(&"controls", &"mouse_sensitivity", 0.006)
 	Settings.set_value(&"controls", &"invert_y", true)
 	Settings.set_value(&"video", &"fov", 75)
-	Settings.set_value(&"video", &"max_fps", 144)
-	Settings.set_value(&"video", &"vsync", true)
-	Settings.set_value(&"video", &"show_fps", true)
+	Settings.set_value(&"graphics", &"max_fps", 144)
+	Settings.set_value(&"graphics", &"vsync", true)
+	Settings.set_value(&"graphics", &"show_fps", true)
 	Settings.set_value(&"audio", &"music_volume", 0.2)
 	var reopened: SettingsScreen = SCREEN.instantiate() as SettingsScreen
 	add_child_autofree(reopened)
 	assert_almost_eq((reopened.get_node("%mouse_sensitivity") as HSlider).value, 0.006, 0.000001)
 	assert_true((reopened.get_node("%invert_y") as CheckBox).button_pressed)
 	assert_eq((reopened.get_node("%fov") as HSlider).value, 75.0)
-	assert_eq((reopened.get_node("%max_fps") as OptionButton).selected, 2)
+	var page: SettingsPage = reopened.get_node("%Page") as SettingsPage
+	assert_eq((page.control_for(&"max_fps") as OptionButton).selected, 2)
+	assert_true((page.control_for(&"vsync") as CheckBox).button_pressed)
 	assert_eq((reopened.get_node("%music_volume") as HSlider).value, 20.0)
 	(reopened.get_node("%Reset") as Button).pressed.emit()
 	for key: StringName in SettingsScreen.SLIDERS:
@@ -91,7 +101,8 @@ func test_start_values_external_changes_and_reset() -> void:
 		)
 	for key: StringName in SettingsScreen.CHECKS:
 		assert_false((reopened.get_node("%" + key) as CheckBox).button_pressed)
-	assert_eq((reopened.get_node("%max_fps") as OptionButton).selected, 5)
+	assert_eq((page.control_for(&"max_fps") as OptionButton).selected, 5)
+	assert_false((page.control_for(&"show_fps") as CheckBox).button_pressed)
 
 
 func test_horizontal_fov_converts_and_updates_live_camera() -> void:
@@ -137,7 +148,7 @@ func test_pause_settings_back_escape_and_resume() -> void:
 	assert_true(settings.can_process())
 	assert_false(menu.is_visible_in_tree())
 	var tabs: TabContainer = settings.get_node("Margin/Box/Tabs") as TabContainer
-	tabs.current_tab = 1
+	tabs.current_tab = 0
 	var slider: HSlider = settings.get_node("%fov") as HSlider
 	slider.grab_focus()
 	var right: InputEventKey = InputEventKey.new()
@@ -170,7 +181,7 @@ func test_show_fps_is_only_a_hud_line() -> void:
 	add_child_autofree(hud)
 	hud._process(0.0)
 	assert_false(hud._fps_label.visible)
-	Settings.set_value(&"video", &"show_fps", true)
+	Settings.set_value(&"graphics", &"show_fps", true)
 	hud._process(0.0)
 	assert_true(hud._fps_label.visible)
 	assert_true(hud._fps_label.text.begins_with("FPS: "))
@@ -182,7 +193,8 @@ func test_standalone_screen_has_keyboard_focus_and_readable_hints() -> void:
 	assert_true(tabs.get_tab_bar().has_focus(), "a standalone settings screen starts with keyboard focus")
 	for tab: Control in tabs.get_children():
 		var hints: int = 0
-		for child: Node in tab.get_children():
+		var rows: Node = tab.get_child(0) if tab is ScrollContainer else tab
+		for child: Node in rows.get_children():
 			var label: Label = child as Label
 			if label:
 				hints += 1
@@ -204,3 +216,78 @@ func test_controller_back_closes_the_screen_and_emits_closed() -> void:
 	_screen._input(cancel)
 	assert_signal_emitted(_screen, "closed")
 	assert_false(_screen.visible)
+
+
+func test_preset_dropdown_sets_and_follows_quality() -> void:
+	var option: OptionButton = (_screen.get_node("%Page") as SettingsPage).control_for(&"preset") as OptionButton
+	assert_eq(option.selected, Graphics.Preset.HIGH)
+	option.item_selected.emit(Graphics.Preset.LOW)
+	assert_eq(Settings.get_value(&"graphics", &"preset"), Graphics.Preset.LOW)
+	assert_eq(Settings.get_value(&"graphics", &"shadows"), 0)
+	Settings.set_value(&"graphics", &"shadows", 3)
+	assert_eq(option.selected, Graphics.Preset.CUSTOM, "a hand change shows Custom")
+
+
+func test_display_change_reverts_after_the_countdown() -> void:
+	var page: SettingsPage = _screen.get_node("%Page") as SettingsPage
+	var dialog: ConfirmationDialog = _screen.get_node("%KeepDialog") as ConfirmationDialog
+	(page.control_for(&"display_mode") as OptionButton).item_selected.emit(2)
+	assert_eq(Settings.get_value(&"graphics", &"display_mode"), 2)
+	await wait_process_frames(1)
+	assert_true(dialog.visible, "a display mode change asks to keep it")
+	assert_true(dialog.dialog_text.contains("15 s"))
+	for second: int in range(SettingsScreen.KEEP_SECONDS - 1):
+		_screen._tick_keep()
+	assert_eq(Settings.get_value(&"graphics", &"display_mode"), 2, "still waiting at 1 s left")
+	assert_true(dialog.dialog_text.contains("1 s"))
+	_screen._tick_keep()
+	assert_eq(Settings.get_value(&"graphics", &"display_mode"), 0, "timeout goes back")
+	assert_false(dialog.visible)
+	assert_eq((page.control_for(&"display_mode") as OptionButton).selected, 0)
+
+
+func test_display_change_kept_on_confirm_and_reverted_on_escape() -> void:
+	var page: SettingsPage = _screen.get_node("%Page") as SettingsPage
+	var dialog: ConfirmationDialog = _screen.get_node("%KeepDialog") as ConfirmationDialog
+	(page.control_for(&"window_size") as OptionButton).item_selected.emit(3)
+	dialog.confirmed.emit()
+	for second: int in range(SettingsScreen.KEEP_SECONDS + 1):
+		_screen._tick_keep()
+	assert_eq(Settings.get_value(&"graphics", &"window_size"), 3, "kept after confirm")
+	assert_false(dialog.visible)
+	(page.control_for(&"window_size") as OptionButton).item_selected.emit(0)
+	var cancel: InputEventAction = InputEventAction.new()
+	cancel.action = &"ui_cancel"
+	cancel.pressed = true
+	watch_signals(_screen)
+	_screen._input(cancel)
+	assert_eq(Settings.get_value(&"graphics", &"window_size"), 3, "Esc goes back")
+	assert_signal_not_emitted(_screen, "closed", "the first Esc only closes the prompt")
+	assert_true(_screen.visible)
+
+
+func test_unconfirmed_display_change_reverts_when_the_screen_is_freed() -> void:
+	var page: SettingsPage = _screen.get_node("%Page") as SettingsPage
+	(page.control_for(&"display_mode") as OptionButton).item_selected.emit(1)
+	remove_child(_screen)
+	assert_eq(Settings.get_value(&"graphics", &"display_mode"), 0)
+	add_child(_screen)
+
+
+func test_custom_preset_shows_but_cannot_be_picked() -> void:
+	var option: OptionButton = (_screen.get_node("%Page") as SettingsPage).control_for(&"preset") as OptionButton
+	assert_true(option.is_item_disabled(Graphics.Preset.CUSTOM))
+	assert_false(option.is_item_disabled(Graphics.Preset.HIGH))
+
+
+func test_non_display_rows_apply_without_asking() -> void:
+	var page: SettingsPage = _screen.get_node("%Page") as SettingsPage
+	(page.control_for(&"shadows") as OptionButton).item_selected.emit(0)
+	assert_eq(Settings.get_value(&"graphics", &"shadows"), 0)
+	assert_false((_screen.get_node("%KeepDialog") as ConfirmationDialog).visible)
+
+
+func test_every_graphics_key_has_a_row() -> void:
+	var page: SettingsPage = _screen.get_node("%Page") as SettingsPage
+	for key: StringName in Graphics.DEFAULTS:
+		assert_not_null(page.control_for(key), "%s is on the Graphics page" % key)
