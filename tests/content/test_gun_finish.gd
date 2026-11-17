@@ -18,7 +18,7 @@ const GUNS: Array[String] = [
 const SHADER: String = "res://assets/materials/gun_finish.gdshader"
 const IMPORTER: GDScript = preload("res://tools/assets/gun_finish_import.gd")
 const KNURLED: Dictionary[String, String] = {
-	"rifle_ar": "GunMetalKnurledWorn",
+	"rifle_ar": "TanKnurledWorn",
 	"kestrel_smg": "MatteBlackKnurled",
 	"talon_dmr": "GunMetalKnurled",
 	"hollis_44": "WoodKnurled",
@@ -79,7 +79,7 @@ func test_worn_suffix_adds_heavy_wear_and_grime_only_to_concept_guns() -> void:
 	assert_eq(_param(rifle["MatteBlackWorn"], "finish"), 1, "worn black is still a coating")
 	assert_gt(_param(rifle["MatteBlackWorn"], "wear"), 1.0, "worn paint chips past the edges")
 	assert_gt(_param(rifle["MatteBlackWorn"], "grime"), 0.0, "worn guns collect grime")
-	assert_true(_param(rifle["GunMetalKnurledWorn"], "knurled"), "Knurled still works before Worn")
+	assert_true(_param(rifle["TanKnurledWorn"], "knurled"), "Knurled still works before Worn")
 	var hollis: Dictionary[String, Material] = _materials("hollis_44")
 	for mat_name: String in hollis:
 		if hollis[mat_name] is ShaderMaterial:

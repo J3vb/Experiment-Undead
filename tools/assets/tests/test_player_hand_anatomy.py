@@ -158,7 +158,7 @@ def test_firing_curls_clear_the_actual_rifle_grip_guard_trigger_and_receiver(mon
 
     monkeypatch.setattr(rifle_model.g, "slab", capture)
     mat = arms._materials()["rubber"]
-    rifle_model.lower(build_models, mat, mat)
+    rifle_model.lower(build_models, mat, mat, mat)
     bpy.context.view_layer.update()
     across, along, inward = arms._frame(-1)
     minimum = {name: float("inf") for name in profiles}
