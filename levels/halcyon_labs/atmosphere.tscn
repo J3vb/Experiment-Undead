@@ -3,7 +3,6 @@
 [ext_resource type="Material" path="res://levels/materials/pipe.tres" id="pipe"]
 [ext_resource type="Script" path="res://systems/level/atmosphere.gd" id="atmosphere"]
 [ext_resource type="PackedScene" path="res://systems/effects/spark_spot.tscn" id="spark"]
-[ext_resource type="Material" path="res://systems/effects/monitor_screen.tres" id="screen"]
 [ext_resource type="Material" path="res://levels/materials/fluorescent.tres" id="tube"]
 [ext_resource type="AudioStream" path="res://assets/audio/ambience/steam_hiss.ogg" id="hiss"]
 [ext_resource type="AudioStream" path="res://assets/audio/ambience/machine_hum.ogg" id="hum"]
@@ -219,13 +218,6 @@ density = 0.08
 albedo = Color(0.6, 0.7, 0.7, 1)
 height_falloff = 1.5
 edge_fade = 0.3
-
-[sub_resource type="BoxMesh" id="monitor_body"]
-material = ExtResource("pipe")
-size = Vector3(0.5, 0.36, 0.12)
-
-[sub_resource type="QuadMesh" id="monitor_screen_mesh"]
-size = Vector2(0.44, 0.3)
 
 [sub_resource type="BoxMesh" id="cable_mesh"]
 material = ExtResource("pipe")
@@ -533,34 +525,6 @@ material = SubResource("floor_fog")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0.6, 12.5)
 size = Vector3(8, 1.2, 3)
 material = SubResource("floor_fog")
-
-[node name="Monitors" type="Node3D" parent="."]
-
-[node name="GuardDeskLeft" type="MeshInstance3D" parent="Monitors"]
-cast_shadow = 0
-transform = Transform3D(0.966, 0, 0.259, 0, 1, 0, -0.259, 0, 0.966, 16.4, 1.08, 40.1)
-gi_mode = 0
-mesh = SubResource("monitor_body")
-
-[node name="Screen" type="MeshInstance3D" parent="Monitors/GuardDeskLeft"]
-cast_shadow = 0
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.061)
-gi_mode = 0
-mesh = SubResource("monitor_screen_mesh")
-surface_material_override/0 = ExtResource("screen")
-
-[node name="GuardDeskRight" type="MeshInstance3D" parent="Monitors"]
-cast_shadow = 0
-transform = Transform3D(0.966, 0, -0.259, 0, 1, 0, 0.259, 0, 0.966, 17.6, 1.08, 40.1)
-gi_mode = 0
-mesh = SubResource("monitor_body")
-
-[node name="Screen" type="MeshInstance3D" parent="Monitors/GuardDeskRight"]
-cast_shadow = 0
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.061)
-gi_mode = 0
-mesh = SubResource("monitor_screen_mesh")
-surface_material_override/0 = ExtResource("screen")
 
 [node name="SwingingLamp" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.5, 3.5, 28)
