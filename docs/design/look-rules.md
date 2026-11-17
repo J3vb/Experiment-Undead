@@ -177,3 +177,8 @@ The one warm, safe place: fortified Ardennes village at night, lanterns, fire
 barrels, lit windows, cold blue fog and pines outside the walls. The only
 green in town is the Deploy Gate. Fully baked lighting except fire barrels and
 one sweeping watchtower spotlight.
+
+Look target (2026-11-17): [lantern_post_concept.jpg](images/lantern_post_concept.jpg),
+a snowy timber outpost on a mountain ridge with a market row, a Common Room
+lodge and a concrete Deploy gate with a green-lit tunnel. Build plan and the
+picks where it differs from these rules: [lantern-post-concept.md](../plans/lantern-post-concept.md).
