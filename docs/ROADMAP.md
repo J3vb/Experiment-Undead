@@ -52,7 +52,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-66 | Your own world, open to friends: Enter world into your own Lantern Post (listen server, UPnP), server browser with add by address and LAN discovery, no master server | - | F-02, F-50 | [ready](plans/join-any-game.md) | L | Ready |
 | F-67 | Character select and create before Enter world (ui-hud screen 3: slots, create, delete) | - | F-66 step 2 | needed | M | Todo |
 | F-68 | Lantern Post to the concept art: ridge sky, timber lodges, market stalls, concrete Deploy gate, props | - | F-50 | [ready](plans/lantern-post-concept.md) | L | Ready |
-| F-72 | The four starter guns to the concept art: worn black with tan and brass, Oriel marks, red dots, taped mags (rifle, Brenner, Kestrel, Talon) | - | - | [review](plans/guns-concept.md) | M | Planning |
+| F-72 | The four starter guns to the concept art: worn black with tan and brass, Oriel marks, red dots, taped mags (rifle, Brenner, Kestrel, Talon) | - | - | [ready](plans/guns-concept.md) | M | Ready |
 | F-73 | Weapon stats panel: five bars (damage, fire rate, accuracy, range, control) computed from WeaponData, on wall-buys, the Vault and the inventory (look: [guns_concept.jpg](design/images/guns_concept.jpg)) | - | F-72 | needed | M | Todo |
 
 ## Next: v0.2 Progression and loot

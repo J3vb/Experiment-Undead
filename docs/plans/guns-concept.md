@@ -1,10 +1,10 @@
 # Plan: The four starter guns to the concept art
 
-Status: Review
+Status: Approved
 Roadmap: F-72
 Phase: P4 (v0.1 Vertical slice, look pass on built guns)
 Size: M
-Approved by:
+Approved by: the person by decision cards on 2026-11-17 (plan in 5 steps, names, rifle optic), plan PR #308
 
 ## Goal
 
@@ -25,7 +25,7 @@ approved turnarounds in `docs/design/turnarounds/weapons/`.
 |---|---|---|---|
 | All four | Worn black, heavy chipped edges, grime in corners, tan and brass accents | `gun_finish.gdshader`, light wear (PR #68), no grime | Heavier chipping, grime from the baked AO, a wear amount the import can set |
 | All four | Oriel hex logo on the receiver side, small Oriel text on optics | No markings at all | A markings atlas (logo, tape, shell colours) on small UV quads |
-| AR-17 (`rifle_ar`, "AR-7") | AR-style carbine: tan adjustable skeleton stock, tan grip, black quad-rail handguard, flat-top with Oriel red dot, flip front sight, birdcage flash hider, magazine with yellow tape | Angular receiver, solid tan stock, tan M-slot handguard, 1-4x scope with a `ScopeLens` | New stock, grip and handguard shapes; scope swapped for a red dot (open decision 2); tape on the mag |
+| AR-17 (`rifle_ar`, "AR-7") | AR-style carbine: tan adjustable skeleton stock, tan grip, black quad-rail handguard, flat-top with Oriel red dot, flip front sight, birdcage flash hider, magazine with yellow tape | Angular receiver, solid tan stock, tan M-slot handguard, 1-4x scope with a `ScopeLens` | New stock, grip and handguard shapes; scope swapped for a red dot (decision 2); tape on the mag |
 | BR-12 (`brenner_trench`) | Black polymer pump gun: pistol-grip stock with a 4-shell side holder (red hulls, brass heads), tan stripe on the pump, top rail with red dot, magazine tube, no heat shield | Wood stock and wood pump, bare-metal receiver, perforated heat shield, bayonet lug, bead sight | Biggest change: polymer stock and pump, shell holder, red dot, black receiver; heat shield and bayonet lug go |
 | VX-9 (`kestrel_smg`) | Compact SMG: skeleton folding stock with tan butt pad, red dot, vertical foregrip, flash hider, curved mag with tan and yellow tape | Olive fore-end, folding stock, flip-up aperture iron sights, straight mag | Red dot replaces the irons, vertical grip (left hand moves to it), curved mag, olive becomes black and tan |
 | MR-28 (`talon_dmr`) | Precision AR-10: tan and black adjustable stock with yellow stripes, tan grip, long tan M-LOK handguard, large scope with big turrets, muzzle brake | Grey-green stock and handguard, scope, bipod | Closest already: tan instead of grey-green, new stock shape, bigger turrets; the folded `Bipod` stays (small, and tests name it) |
@@ -62,7 +62,7 @@ Not in (and where each goes):
   shader), but no markings, tape or reshaping: later, one batch per gun class
   if the person wants them matched too.
 - Balance numbers: no change. `ads_fov`, recoil and damage stay as they are,
-  except what open decision 2 needs for the rifle (F-07 owns balance).
+  (F-07 owns balance).
 - Third-person teammate clips: they hold the same `world_model`, so the new
   look reaches them for free; the clips are not re-posed.
 - Real brand marks: never (look-rules rule 6). Oriel is our own company.
@@ -118,7 +118,7 @@ Not in (and where each goes):
 | `tools/assets/gun_parts.py` | changed | `red_dot()` builder and `marking()` UV quad helper |
 | `tools/assets/rifle_model.py`, `shotgun_model.py`, `kestrel_model.py`, `talon_model.py` | changed | New shapes per the gaps table |
 | `assets/models/weapons/*.glb` (the four) | changed | Rebuilt output |
-| `systems/weapons/viewmodels/{rifle,shotgun,kestrel,talon}_viewmodel.tscn` | changed | Reticle quad on red-dot guns, aim offsets, `ScopeLens` removed from the rifle if decision 2 picks the red dot |
+| `systems/weapons/viewmodels/{rifle,shotgun,kestrel,talon}_viewmodel.tscn` | changed | Reticle quad on red-dot guns, aim offsets, `ScopeLens` removed from the rifle (decision 2) |
 | `systems/weapons/viewmodels/reticle.tres` | new | Unshaded red dot material, shared |
 | `content/grips/{kestrel_smg,rifle_ar,brenner_trench}.tres` | changed | Support-hand anchors |
 | `docs/design/turnarounds/weapons/` | changed | Re-approved strips |
@@ -157,7 +157,7 @@ Autoloads, managers or base classes added: none.
 - One shared 256 x 256 atlas for all four guns (one texture, about 256 KB of
   VRAM with mipmaps).
 - Shader: two extra noise reads per pixel on viewmodel and held guns only.
-- If decision 2 swaps the rifle scope for a red dot, the rifle no longer
+- With the red dot (decision 2) the rifle no longer
   renders a second scope camera while aiming: cheaper.
 - Budget: no measurable change at 24 zombies and 4 players; the next GPU
   agent run (F-09) covers it.
@@ -175,8 +175,7 @@ turnarounds, post the before/after in the thread.
   a higher value through the import); `gun_markings.py` and its atlas;
   `Markings` in `FINISHES`; `gun_parts.red_dot()` (Oriel housing, OpticGlass
   window, `RedDot` node with a `ReticleMount` marker) and `gun_parts.marking()`;
-  the shared `reticle.tres`. Put the red dot on the rifle first only if
-  decision 2 says red dot, else on the Kestrel, so the risky part (ADS line
+  the shared `reticle.tres`. Put the first red dot on the rifle (decision 2), so the risky part (ADS line
   through a red dot) is proven in this step. Update look-rules rule 6.
   Apply decision 1: the four display names and their Reforged names.
 - Files: as listed above, plus one viewmodel.
@@ -190,12 +189,11 @@ turnarounds, post the before/after in the thread.
 ### Step 2: AR-17 (rifle_ar)
 
 - Build: new stock, tan grip, quad-rail handguard, flip front sight, flash
-  hider, tape on the mag, Oriel logo; the optic per decision 2. Keep
+  hider, tape on the mag, Oriel logo; the red dot replaces the scope and `ScopeLens` (decision 2). Keep
   `Receiver`, `Magazine`, `Bolt`, `ChargingHandle`, `Muzzle` and pivots.
 - Files: `rifle_model.py`, `rifle_ar.glb`, `rifle_viewmodel.tscn`,
   `content/grips/rifle_ar.tres`, turnaround.
-- Tests: existing rifle tests stay green; new: red-dot ADS ray (or the scope
-  test if the scope stays), triangle and material budget.
+- Tests: existing rifle tests stay green; new: red-dot ADS ray, triangle and material budget.
 - Done when: turnaround approved, render next to the concept posted.
 
 ### Step 3: VX-9 (kestrel_smg)
@@ -266,6 +264,6 @@ turnarounds, post the before/after in the thread.
   "AR-17 Reforged" and so on; ids stay. Step 1 changes the four
   `content/weapons/*.tres` pairs and the names in gun-roster.md and
   DECISIONS.md, and settles the roster's "AR-7 vs Vanguard AR" line.
-- [ ] Rifle optic: the concept rifle has a red dot, the game rifle has a 1-4x
-  scope with a zoomed lens. Recommended: red dot, as in the concept; the
-  Talon stays the scoped gun, so each wall gun aims differently.
+- [x] Rifle optic: red dot, as in the concept (the person, 2026-11-17,
+  decision card). The rifle's `ScopeLens` goes; `ads_fov` stays 55. The Talon
+  stays the only scoped wall gun.
