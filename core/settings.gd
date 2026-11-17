@@ -217,6 +217,12 @@ func reset_binding(action: StringName) -> void:
 	_binding_changed(action)
 
 
+## The main key or mouse button of an action, for prompts; "?" when it has none.
+func key_name(action: StringName) -> String:
+	var events: Array[InputEvent] = get_binding(action)
+	return event_label(events[0]) if not events.is_empty() else "?"
+
+
 ## What to show for a key or button: the letter on the player's own keyboard layout.
 func event_label(event: InputEvent) -> String:
 	var key: InputEventKey = event as InputEventKey

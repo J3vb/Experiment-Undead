@@ -102,9 +102,9 @@ func _build_panel() -> void:
 
 
 func _update_key_labels() -> void:
-	equip_button.text = "%s · Into hands" % key_name(&"pack_equip")
-	drop_button.text = "%s · Drop" % key_name(&"pack_drop")
-	close_button.text = "%s · Close" % key_name(&"pack_toggle")
+	equip_button.text = "%s · Into hands" % Settings.key_name(&"pack_equip")
+	drop_button.text = "%s · Drop" % Settings.key_name(&"pack_drop")
+	close_button.text = "%s · Close" % Settings.key_name(&"pack_toggle")
 
 
 func _on_setting_changed(section: StringName, _key_name: StringName, _value: Variant) -> void:
@@ -126,7 +126,7 @@ func _layout() -> void:
 
 func _refresh() -> void:
 	var items: Array[Dictionary] = service.pack.items
-	count.text = "Pack %d / 6 [%s]" % [items.size(), key_name(&"pack_toggle")]
+	count.text = "Pack %d / 6 [%s]" % [items.size(), Settings.key_name(&"pack_toggle")]
 	if items.size() > _previous_items:
 		var item: Dictionary = items.back()
 		feed.text = "%s %s" % [String(item.get("rar", "common")).capitalize(), LootDrop.item_name(item)]
@@ -152,12 +152,6 @@ func _refresh() -> void:
 		slots[index].add_theme_stylebox_override("normal", style)
 		slots[index].add_theme_color_override("font_color", _colour(item))
 	_select(mini(_selected, maxi(items.size() - 1, 0)))
-
-
-## The main key or mouse button of an action, as printed on the player's keyboard; follows rebinding.
-static func key_name(action: StringName) -> String:
-	var events: Array[InputEvent] = Settings.get_binding(action)
-	return Settings.event_label(events[0]) if not events.is_empty() else "?"
 
 
 static func _colour(item: Dictionary) -> Color:

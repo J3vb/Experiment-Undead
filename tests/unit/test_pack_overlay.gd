@@ -157,11 +157,11 @@ func test_pack_keys_are_input_actions_so_rebinding_moves_them() -> void:
 	assert_false(overlay.panel.visible, "the old key no longer opens the Pack")
 	overlay._input(_key(KEY_I))
 	assert_true(overlay.panel.visible, "the rebound key opens it")
-	assert_eq(PackOverlay.key_name(&"pack_toggle"), "I", "labels follow the binding")
+	assert_eq(Settings.key_name(&"pack_toggle"), "I", "labels follow the binding")
 	InputMap.action_erase_events(&"pack_toggle")
 	for event: InputEvent in saved:
 		InputMap.action_add_event(&"pack_toggle", event)
-	assert_eq(PackOverlay.key_name(&"pack_toggle"), "Tab")
+	assert_eq(Settings.key_name(&"pack_toggle"), "Tab")
 
 
 func test_drop_and_equip_keys_go_through_their_actions() -> void:
