@@ -1,10 +1,10 @@
 # Plan: Client and server updates
 
-Status: Review
+Status: Approved
 Roadmap: F-65
 Phase: P8 (steps 1-5 land before Release v0.1.0, F-11)
 Size: L
-Approved by:
+Approved by: the person in the project thread, 2026-11-17 ("no thats good you can start"), after picking the open decisions on cards; plan review by an independent Claude on PR #299 (Codex was at its usage limit)
 
 ## Goal
 

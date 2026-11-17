@@ -40,7 +40,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-64 | Halcyon Labs wall-buy racks (gun on the wall) and Specimen Vault model | - | - | [done](plans/halcyon-wall-buys-vault.md) | S | Done |
 | F-61 | Halcyon Labs atmosphere: dead and flickering lights, particles, fog, beacons, screens, sound spots, story decals | - | - | [ready](plans/halcyon-labs-atmosphere.md) | M | Done |
 | F-16 | Game feel: camera punch, hitstop, downed and death screen | - | - | [ready](plans/game-feel-slice.md) | M | Done |
-| F-65 | Client and server updates: clear version refusals, saves safe across channels, a launcher that installs and updates the game and a server, self-updating Docker servers (steps 1-5 before F-11) | - | - | [needed](plans/client-server-updates.md) | L | Planning |
+| F-65 | Client and server updates: clear version refusals, saves safe across channels, a launcher that installs and updates the game and a server, self-updating Docker servers (steps 1-5 before F-11) | - | - | [ready](plans/client-server-updates.md) | L | Ready |
 | F-09 | v0.1 performance check | #108 | F-01..F-07, F-12, F-13, F-16 | issue | S | Todo |
 | F-10 | First play-test (the person plays) | #109 | F-09 | issue | S | Todo |
 | F-11 | Release v0.1.0 | #111 | F-10, F-65 steps 1-5 | issue | S | Todo |
