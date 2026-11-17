@@ -53,11 +53,11 @@ static func unequip(profile: CharacterProfile, slot: StringName) -> bool:
 
 static func slot_for(item: Dictionary) -> StringName:
 	var base: StringName = StringName(item.get("base", ""))
-	if Content.ids(&"loot").has(base):
+	if Content.has(&"loot", base):
 		var gear: GearBaseData = Content.get_item(&"loot", base) as GearBaseData
 		if gear != null:
 			return StringName(gear.slot)
-	if not Content.ids(&"weapons").has(base):
+	if not Content.has(&"weapons", base):
 		return &""
 	var weapon: WeaponData = Content.weapon(base)
 	match weapon.slot:

@@ -62,7 +62,7 @@ func _refresh() -> void:
 func _fill_header() -> void:
 	var rarity: StringName = StringName(_item.get("rar", "common"))
 	var colour: Color = TEXT
-	if Content.ids(&"loot").has(rarity):
+	if Content.has(&"loot", rarity):
 		var data: RarityData = Content.get_item(&"loot", rarity) as RarityData
 		if data:
 			colour = data.colour
@@ -156,7 +156,7 @@ func _add_affix(line: Array, implicit: bool) -> void:
 
 func _rolled_affix(line: Array, implicit: bool, item: Dictionary) -> Dictionary:
 	var required: int = 2 if implicit else 3
-	if line.size() != required or not Content.ids(&"loot").has(StringName(line[0])):
+	if line.size() != required or not Content.has(&"loot", StringName(line[0])):
 		return {}
 	var data: AffixData = Content.get_item(&"loot", StringName(line[0])) as AffixData
 	if data == null:
@@ -236,7 +236,7 @@ func _display_name(item: Dictionary) -> String:
 
 func _base(item: Dictionary, type: StringName) -> Resource:
 	var id: StringName = StringName(item.get("base", ""))
-	return Content.get_item(type, id) if Content.ids(type).has(id) else null
+	return Content.get_item(type, id) if Content.has(type, id) else null
 
 
 func _number(value: float) -> String:
