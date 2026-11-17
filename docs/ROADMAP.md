@@ -66,6 +66,12 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-45 | Town hub Lantern Post (split into features when it starts) | #131 | F-44 | needed | L | Todo |
 | F-46 | Dyes | #132 | F-42 | needed | M | Todo |
 
+## After v1.0: Growth (P10)
+
+| Id | Feature | Issue | Needs | Plan | Size | Status |
+|---|---|---|---|---|---|---|
+| F-60 | Campaign: acts, descents and bosses (story in [lore.md](design/lore.md#the-long-campaign); split per act when it starts, first the Halcyon Labs Sublevel boss) | - | F-45, F-31 | needed | L | Todo |
+
 ## Notes
 
 - v0.2 features after F-11 may run in parallel when their Needs are Done and

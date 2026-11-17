@@ -145,3 +145,6 @@ built, what was simplified on purpose, and what is still to do.
 Reforger Tiers II and III, grenades (and Scavenger's +1 grenade), the other power-ups (Payday, Overkill, Purge, Scrap Kit, Stasis, Supply Crate),
 skills/loot,
 server browser, town hub.
+
+Campaign (story only, 2026-11-17): acts of 4 maps, a boss per map reached by a mid-run descent, endgame Heat levels,
+boss hunts and Echoes are written up in `docs/design/lore.md` (The long campaign). No code yet; roadmap row F-60.
