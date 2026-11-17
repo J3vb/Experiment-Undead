@@ -257,6 +257,8 @@ func _on_round_ended(round_number: int) -> void:
 
 
 func _on_intermission(next_round: int, duration: float) -> void:
+	if next_round > 1:
+		round_label.text = str(next_round - 1)
 	if _round_tween:
 		_round_tween.kill()
 	_round_tween = create_tween().set_loops()
