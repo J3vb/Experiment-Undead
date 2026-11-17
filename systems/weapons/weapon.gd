@@ -243,7 +243,7 @@ func _spread_direction(basis: Basis, spread_degrees: float) -> Vector3:
 
 
 func _trace(origin: Vector3, direction: Vector3) -> void:
-	if data.id == &"siphon":
+	if data.effect == WeaponData.Effect.WELL:
 		GravityWell.launch(self)
 		return
 	var hits: Array[Dictionary] = Pierce.trace(self, origin, direction)

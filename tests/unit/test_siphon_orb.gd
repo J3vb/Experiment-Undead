@@ -14,9 +14,11 @@ class Claims:
 	extends Node
 
 	var points: Array[Vector3] = []
+	var weapon_ids: Array[StringName] = []
 
-	func request_well(point: Vector3) -> void:
+	func request_well(point: Vector3, weapon_id: StringName) -> void:
 		points.append(point)
+		weapon_ids.append(weapon_id)
 
 
 func before_each() -> void:
@@ -34,6 +36,7 @@ func _orb(use_claims: bool = true) -> GravityWell:
 	var orb: GravityWell = GravityWell.spawn_orb(
 		_root, _attacker, Vector3(0.0, 1.0, 0.0), Vector3.FORWARD, _claims if use_claims else null
 	)
+	orb.weapon_data = Content.weapon(&"siphon")
 	orb.set_physics_process(false)
 	return orb
 
@@ -97,6 +100,7 @@ func test_orb_stops_at_twenty_five_metres_and_claims_once() -> void:
 	assert_true(orb.collapsed)
 	assert_eq(_claims.points.size(), 1)
 	assert_eq(_claims.points[0], Vector3(0.0, 1.0, -25.0))
+	assert_eq(_claims.weapon_ids, Array([&"siphon"], TYPE_STRING_NAME, &"", null))
 
 
 func test_long_frame_sweeps_to_first_surface() -> void:
@@ -158,3 +162,26 @@ func _active_well() -> GravityWell:
 		if well and well.is_in_group(&"gravity_wells") and not well.collapsed:
 			return well
 	return null
+
+
+func test_any_well_gun_launches_an_orb_that_keeps_the_gun() -> void:
+	var gun: WeaponData = Content.weapon(&"siphon").duplicate() as WeaponData
+	gun.id = &"test_well"
+	var weapon: Weapon = _attacker.weapons.give(gun)
+	weapon.fire()
+	var orb: GravityWell
+	for child: Node in _root.get_children():
+		if child is GravityWell:
+			orb = child as GravityWell
+	assert_not_null(orb, "a WELL gun with an unknown id launches an orb")
+	if orb:
+		assert_same(orb.weapon_data, weapon.data)
+		orb.set_physics_process(false)
+
+
+func test_a_gun_without_the_well_effect_does_not_launch_an_orb() -> void:
+	var gun: WeaponData = Content.weapon(&"siphon").duplicate() as WeaponData
+	gun.effect = WeaponData.Effect.NONE
+	_attacker.weapons.give(gun).fire()
+	for child: Node in _root.get_children():
+		assert_false(child is GravityWell, "only the effect decides, not the id")

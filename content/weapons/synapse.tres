@@ -22,6 +22,7 @@ repeat_last = 1
 
 [resource]
 script = ExtResource("1")
+effect = 1
 id = &"synapse"
 loot_tags = Array[StringName]([&"prototype"])
 display_name = "Synapse"

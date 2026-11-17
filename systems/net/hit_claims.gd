@@ -141,11 +141,12 @@ func apply_server_hit(hit_zone: HitZone, info: DamageInfo) -> void:
 	if zombie.health.is_dead or zombie.state == Zombie.State.DEAD:
 		return
 	info.hit_zone = hit_zone.zone
-	var base: String = String(info.weapon_id).trim_suffix("_reforged")
+	var weapon: WeaponData = _weapons.get(info.weapon_id)
+	var effect: WeaponData.Effect = weapon.effect if weapon else WeaponData.Effect.NONE
 	var collateral_killed: bool = false
-	if base == "synapse":
+	if effect == WeaponData.Effect.CHAIN:
 		collateral_killed = _chain.apply(zombie, info)
-	if zombie.frozen or base == "cryo_lance":
+	if zombie.frozen or effect == WeaponData.Effect.FROST:
 		if Frost.apply(zombie, info):
 			return
 	hit_zone.receive_hit(info)
@@ -206,25 +207,34 @@ func _forget_peer(peer_id: int) -> void:
 	_well_launches.erase(peer_id)
 
 
-func request_well(point: Vector3) -> void:
+func request_well(point: Vector3, weapon_id: StringName) -> void:
 	if multiplayer.is_server():
-		_accept_well(multiplayer.get_unique_id(), point)
+		_accept_well(multiplayer.get_unique_id(), point, weapon_id)
 	else:
-		well_at.rpc_id(1, point)
+		well_at.rpc_id(1, point, weapon_id)
 
 
 @rpc("any_peer", "call_remote", "reliable")
-func well_at(point: Vector3) -> void:
+func well_at(point: Vector3, weapon_id: StringName) -> void:
 	if multiplayer.is_server():
-		_accept_well(multiplayer.get_remote_sender_id(), point)
+		_accept_well(multiplayer.get_remote_sender_id(), point, weapon_id)
 
 
-func _accept_well(peer_id: int, point: Vector3) -> void:
+## The server's own copy of a WELL gun, or null when the id names any other gun.
+func _well_weapon(weapon_id: StringName) -> WeaponData:
+	var data: WeaponData = _weapons.get(weapon_id)
+	return data if data and data.effect == WeaponData.Effect.WELL else null
+
+
+func _accept_well(peer_id: int, point: Vector3, weapon_id: StringName) -> void:
 	if not Net.is_authority() or not multiplayer.is_server():
 		return
+	var data: WeaponData = _well_weapon(weapon_id)
+	if data == null:
+		_reject(peer_id, &"well_wrong_weapon")
+		return
 	var player: Player = session.players.find_player(peer_id)
-	var data: WeaponData = _weapons.get(&"siphon")
-	if player == null or not player.is_alive() or data == null or not point.is_finite():
+	if player == null or not player.is_alive() or not point.is_finite():
 		_reject(peer_id, &"well_out_of_bounds")
 		return
 	if not _well_in_range(peer_id, player, data, point):
@@ -233,7 +243,7 @@ func _accept_well(peer_id: int, point: Vector3) -> void:
 	if not _take_claim(peer_id, data):
 		_reject(peer_id, &"well_out_of_bounds")
 		return
-	var well: GravityWell = GravityWell.open(session, player, point, data.damage, false, self)
+	var well: GravityWell = GravityWell.open(session, player, point, data, false, self)
 	if well == null:
 		_reject(peer_id, &"well_out_of_bounds")
 		return
@@ -245,25 +255,28 @@ func _accept_well(peer_id: int, point: Vector3) -> void:
 func show_well(peer_id: int, point: Vector3) -> void:
 	var player: Player = session.players.find_player(peer_id)
 	if player:
-		GravityWell.open(session, player, point, 0.0, true)
+		GravityWell.open(session, player, point, null, true)
 
 
-func send_well_orb(origin: Vector3, direction: Vector3) -> void:
+func send_well_orb(origin: Vector3, direction: Vector3, weapon_id: StringName) -> void:
 	if multiplayer.is_server():
 		_remember_well_launch(multiplayer.get_unique_id(), origin)
 		if not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
 			_relay_well_orb(multiplayer.get_unique_id(), origin, direction)
 	elif not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
-		well_orb.rpc_id(1, origin, direction)
+		well_orb.rpc_id(1, origin, direction, weapon_id)
 
 
 @rpc("any_peer", "call_remote", "reliable")
-func well_orb(origin: Vector3, direction: Vector3) -> void:
+func well_orb(origin: Vector3, direction: Vector3, weapon_id: StringName) -> void:
 	if not multiplayer.is_server() or not origin.is_finite() or not direction.is_finite():
 		return
 	var sender: int = multiplayer.get_remote_sender_id()
 	var player: Player = session.players.find_player(sender)
-	var data: WeaponData = _weapons.get(&"siphon")
+	var data: WeaponData = _well_weapon(weapon_id)
+	if data == null:
+		_reject(sender, &"well_wrong_weapon")
+		return
 	if player == null or not player.is_alive() or data == null or direction.is_zero_approx():
 		return
 	if player.camera.global_position.distance_to(origin) > 2.0 or not _take_orb_claim(sender, data):

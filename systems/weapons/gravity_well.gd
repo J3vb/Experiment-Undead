@@ -1,4 +1,4 @@
-## Siphon's slow orb is local presentation; its accepted well pulls and damages
+## A WELL gun's slow orb is local presentation; its accepted well pulls and damages
 ## only the server's zombies. Damage is the gun's total, spread over three seconds.
 class_name GravityWell
 extends Node3D
@@ -14,6 +14,8 @@ const DAMAGE_INTERVAL: float = 0.5
 const SCENE: String = "res://systems/weapons/gravity_well.tscn"
 
 var attacker: Player
+## The gun that fired this orb or well; null on cosmetic copies.
+var weapon_data: WeaponData
 var gameplay: bool = true
 var collapsed: bool = false
 var elapsed: float = 0.0
@@ -39,9 +41,10 @@ static func launch(weapon: Weapon) -> void:
 	var origin: Vector3 = weapon.camera.global_position
 	var direction: Vector3 = -weapon.camera.global_basis.z
 	var parent: Node = player.session if player.session else player.get_parent()
-	spawn_orb(parent, player, origin, direction, claims)
+	var orb: GravityWell = spawn_orb(parent, player, origin, direction, claims)
+	orb.weapon_data = weapon.data
 	if claims:
-		claims.call("send_well_orb", origin, direction)
+		claims.call("send_well_orb", origin, direction, weapon.data.id)
 	var shots: Node = player.session.get_node_or_null("RemoteShots") if player.session else null
 	if shots:
 		var muzzle: Node3D = weapon.find_child("Muzzle", true, false) as Node3D
@@ -69,7 +72,7 @@ static func spawn_orb(
 
 
 static func open(
-	parent: Node, player: Player, point: Vector3, damage: float, cosmetic: bool = false, claims: Node = null
+	parent: Node, player: Player, point: Vector3, data: WeaponData, cosmetic: bool = false, claims: Node = null
 ) -> GravityWell:
 	var count: int = 0
 	var oldest: GravityWell
@@ -86,16 +89,17 @@ static func open(
 	var well: GravityWell = load(SCENE).instantiate() as GravityWell
 	well.gameplay = not cosmetic
 	well._claims = claims
-	well.setup(player, point, damage)
+	well.setup(player, point, data)
 	parent.add_child(well)
 	well.global_position = point
 	return well
 
 
-func setup(player: Player, point: Vector3, total_damage: float) -> void:
+func setup(player: Player, point: Vector3, data: WeaponData) -> void:
 	attacker = player
 	position = point
-	_total_damage = total_damage
+	weapon_data = data
+	_total_damage = data.damage if data else 0.0
 
 
 func _ready() -> void:
@@ -169,7 +173,7 @@ func _damage() -> void:
 		if not is_instance_valid(zombie) or zombie.health.is_dead:
 			continue
 		var info: DamageInfo = DamageInfo.create(_total_damage * DAMAGE_INTERVAL / DURATION, attacker)
-		info.weapon_id = &"siphon"
+		info.weapon_id = weapon_data.id
 		info.position = zombie.global_position
 		var before: float = zombie.health.current
 		zombie.health.take_damage(info)
@@ -199,13 +203,11 @@ func _tick_orb(delta: float) -> void:
 
 
 func _land() -> void:
-	if _claim:
+	if _claim and weapon_data:
 		if is_instance_valid(_claims):
-			_claims.call("request_well", global_position)
+			_claims.call("request_well", global_position, weapon_data.id)
 		elif Net.is_authority() and multiplayer.is_server():
-			var data: WeaponData = Content.weapon(&"siphon")
-			if data:
-				open(get_parent(), attacker, global_position, data.damage)
+			open(get_parent(), attacker, global_position, weapon_data)
 	collapse()
 
 
