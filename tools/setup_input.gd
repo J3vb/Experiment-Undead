@@ -16,6 +16,9 @@ const KEYS: Dictionary = {
 	"pause": [KEY_ESCAPE],
 	"weapon_next": [KEY_Q],
 	"restart": [KEY_ENTER],
+	"pack_toggle": [KEY_TAB],
+	"pack_drop": [KEY_G],
+	"pack_equip": [KEY_E],
 }
 const MOUSE: Dictionary = {
 	"fire": [MOUSE_BUTTON_LEFT],
