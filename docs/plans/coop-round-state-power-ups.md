@@ -159,7 +159,9 @@ frame is allocated. No measurable cost at 24 zombies and 4 players.
   and emits the same Event locally. A client asks `_request_round_state` on
   `connected_to_server` and when it enters a running match; the reply sets
   the fields and emits `intermission_started` (with time left) or
-  `round_started` (count 0) so the HUD and music catch up.
+  `round_started` (count 0) so the HUD and music catch up. `Hud._on_intermission`
+  sets the round label to the round just survived (next round - 1, from round 2
+  on), so a client joining in a break sees the number at once.
   `WaveDirector._physics_process` gets an authority guard
   (`if not multiplayer.is_server(): return`), so a client never advances a
   replicated phase, spawns, counts down `to_spawn` or emits round events of
@@ -169,6 +171,7 @@ frame is allocated. No measurable cost at 24 zombies and 4 players.
   `HealthWatch.check_stall` gets an authority guard so clients do not report
   a false `waves.round_stalled`. PROTOCOL_VERSION +1.
 - Files: systems/waves/wave_director.gd, systems/diagnostics/health_watch.gd,
+  systems/ui/hud.gd, tests/unit/test_hud.gd,
   core/build.gd, tests/unit/test_coop_round_state.gd (new),
   tests/unit/test_health_watch.gd.
 - Tests: two-peer test: the server starts a round, the client's
@@ -180,7 +183,8 @@ frame is allocated. No measurable cost at 24 zombies and 4 players.
   no `waves.round_stalled`; a client that got an intermission snapshot with
   0.1 s left and one that got a spawning snapshot emit no `round_started`
   and keep the same `round_number` and `to_spawn` over 1 s with no server
-  message. Solo wave tests and the soak stay green.
+  message; the HUD shows "7" after `intermission_started(8, ...)` with no
+  earlier round event. Solo wave tests and the soak stay green.
 - Done when: a joined client's HUD shows the server's round number and
   flashes; tests above pass.
 
