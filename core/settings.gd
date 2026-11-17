@@ -1,11 +1,12 @@
-## Persists player options and key bindings, and applies local video and audio preferences.
+## Persists player options and key bindings, and applies audio; graphics apply through Graphics.
 extends Node
 
 signal changed(section: StringName, key: StringName, value: Variant)
 
 const DEFAULTS: Dictionary = {
 	&"controls": {&"mouse_sensitivity": 0.0022, &"ads_sensitivity_multiplier": 0.8, &"invert_y": false},
-	&"video": {&"fov": 110, &"max_fps": 0, &"vsync": false, &"show_fps": false},
+	&"video": {&"fov": 110},
+	&"graphics": Graphics.DEFAULTS,
 	&"audio": {&"master_volume": 1.0, &"music_volume": 0.8, &"sfx_volume": 1.0},
 	&"network": {&"last_address": "", &"last_port": 7777},
 }
@@ -47,6 +48,10 @@ func set_value(section: StringName, key: StringName, value: Variant) -> void:
 	_apply(section, key)
 	changed.emit(section, key, normalized)
 	_save()
+	if section == &"graphics":
+		var linked: Dictionary = Graphics.linked_changes(key, normalized, _values[section])
+		for other: StringName in linked:
+			set_value(section, other, linked[other])
 
 
 func load_settings() -> void:
@@ -56,7 +61,8 @@ func load_settings() -> void:
 	if _load_config(config) == OK:
 		for section: StringName in DEFAULTS:
 			for key: StringName in DEFAULTS[section]:
-				_values[section][key] = _normalize(section, key, config.get_value(section, key, DEFAULTS[section][key]))
+				var old: Variant = config.get_value(&"video", key, DEFAULTS[section][key])  # moved to graphics
+				_values[section][key] = _normalize(section, key, config.get_value(section, key, old))
 		_load_bindings(config)
 	_apply_all()
 
@@ -94,8 +100,8 @@ func _normalize(section: StringName, key: StringName, value: Variant) -> Variant
 		normalized = clampf(float(value), 0.0, 1.0)
 	elif key == &"fov":
 		normalized = clampi(int(value), 70, 120)
-	elif key == &"max_fps":
-		normalized = maxi(int(value), 0)
+	elif section == &"graphics":
+		normalized = Graphics.normalize(key, value)
 	return normalized
 
 
@@ -109,11 +115,8 @@ func _apply_all() -> void:
 
 func _apply(section: StringName, key: StringName) -> void:
 	var value: Variant = _values[section][key]
-	if section == &"video" and DisplayServer.get_name() != "headless":
-		if key == &"max_fps":
-			Engine.max_fps = int(value)
-		elif key == &"vsync":
-			DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if value else DisplayServer.VSYNC_DISABLED)
+	if section == &"graphics":
+		Graphics.apply(key, _values[section], get_tree().root)
 	elif section == &"audio":
 		var bus: int = AudioServer.get_bus_index(AUDIO_BUSES[key])
 		if bus >= 0:

@@ -89,6 +89,7 @@ The server also prints every warning and error to stdout as
 | `progression.profile_unreadable` | warn | Existing character is unreadable, malformed or newer; file stays untouched, this match uses a temporary character. `id`, `path`; inspect nearby engine errors |
 | `settings.binding_unknown_action` | warn | `user://settings.cfg` has a key binding for an action the game no longer has (`action`); it is ignored. Normal after an action is renamed or removed |
 | `settings.binding_malformed` | warn | A saved key binding is not a list of up to 2 `{"type": "key", "physical": n}` / `{"type": "mouse", "button": n}` entries, or names Esc (`action`); that action uses its default keys |
+| `settings.display_mode_failed` | warn | The window refused the chosen display mode (`mode`: 0 Windowed, 1 Borderless, 2 Fullscreen). Usually the OS or driver does not allow exclusive fullscreen; pick Borderless |
 | `game.game_over` | info | Final stats |
 | `net.peer_connected` / `peer_disconnected` | info | Server side, peer id |
 | `net.round_state_ignored` | warn | A round message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
