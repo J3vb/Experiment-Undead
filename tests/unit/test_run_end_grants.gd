@@ -4,20 +4,17 @@ extends GutTest
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
 const SESSION: PackedScene = preload("res://systems/game/game_session.tscn")
 const BANK_SESSION: Script = preload("res://tests/unit/run_end_session.gd")
-const PORT: int = 24671
 const IDS: Array[StringName] = [&"test_run_owner_a", &"test_run_owner_b", &"test_run_dedicated"]
 
 var server_root: Node
 var clients: Array[Node] = []
 var sessions: Array[GameSession] = []
 var peer_ids: Array[int] = []
+var _port: int
 
 
 func _make_side(side_name: String) -> Node:
-	var root: Node = Node.new()
-	root.name = side_name
-	add_child(root)
-	get_tree().set_multiplayer(SceneMultiplayer.new(), root.get_path())
+	var root: Node = TwoPeers.make_side(self, side_name)
 	var session: GameSession = SESSION.instantiate() as GameSession
 	session.set_script(BANK_SESSION)
 	session.profile_id = &""
@@ -27,16 +24,13 @@ func _make_side(side_name: String) -> Node:
 
 
 func before_each() -> void:
+	_port = TwoPeers.next_port()
 	_remove_profiles()
 	server_root = _make_side("GrantServer")
-	var server_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(server_peer.create_server(PORT, 2), OK)
-	server_root.multiplayer.multiplayer_peer = server_peer
+	assert_eq(TwoPeers.host(server_root, _port, 2), OK)
 	for index: int in range(2):
 		var root: Node = _make_side("GrantClient%d" % index)
-		var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-		assert_eq(peer.create_client("127.0.0.1", PORT), OK)
-		root.multiplayer.multiplayer_peer = peer
+		assert_eq(TwoPeers.join(root, _port), OK)
 		clients.append(root)
 	await wait_until(func() -> bool: return server_root.multiplayer.get_peers().size() == 2, 5.0, "two clients")
 	for client: Node in clients:
@@ -59,11 +53,7 @@ func before_each() -> void:
 
 func after_each() -> void:
 	for root: Node in [clients[1], clients[0], server_root]:
-		var path: NodePath = root.get_path()
-		root.multiplayer.multiplayer_peer.close()
-		root.multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
-		root.free()
-		get_tree().set_multiplayer(null, path)
+		TwoPeers.close_side(root)
 	clients.clear()
 	sessions.clear()
 	peer_ids.clear()

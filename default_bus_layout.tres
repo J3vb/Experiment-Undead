@@ -1,4 +1,12 @@
-[gd_resource type="AudioBusLayout" format=3]
+[gd_resource type="AudioBusLayout" load_steps=2 format=3]
+
+[sub_resource type="AudioEffectCompressor" id="duck_under_music"]
+resource_name = "DuckUnderMusic"
+threshold = -36.0
+ratio = 4.0
+attack_us = 20000.0
+release_ms = 400.0
+sidechain = &"Music"
 
 [resource]
 bus/1/name = &"Music"
@@ -42,4 +50,6 @@ bus/7/solo = false
 bus/7/mute = false
 bus/7/bypass_fx = false
 bus/7/volume_db = 0.0
-bus/7/send = &"Master"
+bus/7/send = &"SFX"
+bus/7/effect/0/effect = SubResource("duck_under_music")
+bus/7/effect/0/enabled = true

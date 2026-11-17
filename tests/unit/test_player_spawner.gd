@@ -4,38 +4,26 @@
 extends GutTest
 
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
-const PORT: int = 24641
 
 var server_root: Node
 var client_root: Node
 var server_spawner: PlayerSpawner
 var client_spawner: PlayerSpawner
+var _port: int
 
 
 func _make_side(side_name: String) -> Node:
-	var root: Node = Node.new()
-	root.name = side_name
-	add_child(root)
-	get_tree().set_multiplayer(SceneMultiplayer.new(), root.get_path())
-	var world: Node3D = Node3D.new()
-	world.name = "World"
-	root.add_child(world)
-	var spawner: PlayerSpawner = PlayerSpawner.new()
-	spawner.name = "PlayerSpawner"
-	spawner.player_scene = PLAYER
-	root.add_child(spawner)
+	var root: Node = TwoPeers.make_side(self, side_name)
+	TwoPeers.add_player_spawner(root, PLAYER)
 	return root
 
 
 func before_each() -> void:
+	_port = TwoPeers.next_port()
 	server_root = _make_side("Server")
 	client_root = _make_side("Client")
-	var server_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(server_peer.create_server(PORT, 2), OK)
-	server_root.multiplayer.multiplayer_peer = server_peer
-	var client_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(client_peer.create_client("127.0.0.1", PORT), OK)
-	client_root.multiplayer.multiplayer_peer = client_peer
+	assert_eq(TwoPeers.host(server_root, _port, 2), OK)
+	assert_eq(TwoPeers.join(client_root, _port), OK)
 	server_spawner = server_root.get_node("PlayerSpawner") as PlayerSpawner
 	client_spawner = client_root.get_node("PlayerSpawner") as PlayerSpawner
 	var spawn_point: Transform3D = Transform3D(Basis(), Vector3(5, 0, 5))
@@ -45,25 +33,14 @@ func before_each() -> void:
 
 func after_each() -> void:
 	for root: Node in [client_root, server_root]:
-		var path: NodePath = root.get_path()
-		root.multiplayer.multiplayer_peer.close()
-		root.multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
-		for player: Player in _players(root):
+		for player: Player in TwoPeers.players(root):
 			player.free()
-		root.free()
-		get_tree().set_multiplayer(null, path)
-
-
-func _players(root: Node) -> Array[Player]:
-	var out: Array[Player] = []
-	for child: Node in root.get_node("World").get_children():
-		if child is Player:
-			out.append(child as Player)
-	return out
+		TwoPeers.close_side(root)
 
 
 func _wait_for_two_players() -> void:
-	var ready: Callable = func() -> bool: return _players(server_root).size() == 2 and _players(client_root).size() == 2
+	var ready: Callable = func() -> bool:
+		return TwoPeers.players(server_root).size() == 2 and TwoPeers.players(client_root).size() == 2
 	await wait_until(ready, 5.0, "both peers see two players")
 
 
@@ -117,4 +94,4 @@ func test_leaving_peer_loses_its_player() -> void:
 	client_root.multiplayer.multiplayer_peer.close()
 	await wait_until(func() -> bool: return server_spawner.find_player(client_id) == null, 5.0, "player removed")
 	assert_null(server_spawner.find_player(client_id))
-	assert_eq(_players(server_root).size(), 1, "the host keeps its own player")
+	assert_eq(TwoPeers.players(server_root).size(), 1, "the host keeps its own player")

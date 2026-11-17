@@ -5,20 +5,17 @@ extends GutTest
 
 const WALKER: String = "res://content/enemies/zombie_walker.tres"
 const RULES: String = "res://content/waves/default_waves.tres"
-const PORT: int = 24661
 
 var server_root: Node
 var client_root: Node
 var server_spawner: Spawner
 var client_spawner: Spawner
+var _port: int
 var _session: GameSession
 
 
 func _make_side(side_name: String) -> Spawner:
-	var root: Node = Node.new()
-	root.name = side_name
-	add_child(root)
-	get_tree().set_multiplayer(SceneMultiplayer.new(), root.get_path())
+	var root: Node = TwoPeers.make_side(self, side_name)
 	var spawner: Spawner = Spawner.new()
 	spawner.name = "Enemies"
 	spawner.spawn_group = &"test_zombie_sync_points"
@@ -28,6 +25,7 @@ func _make_side(side_name: String) -> Spawner:
 
 
 func before_each() -> void:
+	_port = TwoPeers.next_port()
 	_session = GameSession.new()
 	_session.rng.seed = 7
 	server_spawner = _make_side("Server")
@@ -38,12 +36,8 @@ func before_each() -> void:
 	marker.add_to_group(&"test_zombie_sync_points")
 	marker.position = Vector3(4, 0, -3)
 	server_root.add_child(marker)
-	var server_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(server_peer.create_server(PORT, 2), OK)
-	server_root.multiplayer.multiplayer_peer = server_peer
-	var client_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(client_peer.create_client("127.0.0.1", PORT), OK)
-	client_root.multiplayer.multiplayer_peer = client_peer
+	assert_eq(TwoPeers.host(server_root, _port, 2), OK)
+	assert_eq(TwoPeers.join(client_root, _port), OK)
 	await wait_until(
 		func() -> bool:
 			return client_root.multiplayer.get_unique_id() > 1 and server_root.multiplayer.get_peers().size() == 1,
@@ -54,14 +48,10 @@ func before_each() -> void:
 
 func after_each() -> void:
 	for root: Node in [client_root, server_root]:
-		var path: NodePath = root.get_path()
-		root.multiplayer.multiplayer_peer.close()
-		root.multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
 		for child: Node in (root.get_node("Enemies") as Node).get_children():
 			if child is Zombie:
 				child.free()
-		root.free()
-		get_tree().set_multiplayer(null, path)
+		TwoPeers.close_side(root)
 	_session.free()
 
 
