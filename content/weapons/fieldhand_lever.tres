@@ -8,6 +8,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
 [ext_resource type="Resource" path="res://content/weapons/fieldhand_lever_reforged.tres" id="7"]
 [ext_resource type="Resource" path="res://content/grips/fieldhand_lever.tres" id="grip"]
+[ext_resource type="PackedScene" path="res://assets/models/weapons/fieldhand_lever.glb" id="world"]
 
 [sub_resource type="Resource" id="recoil"]
 script = ExtResource("2")
@@ -57,6 +58,7 @@ viewmodel_kick = 0.075
 hip_position = Vector3(0.19, -0.17, -0.36)
 ads_position = Vector3(0, -0.068, -0.2)
 viewmodel_scene = ExtResource("3")
+world_model = ExtResource("world")
 grip = ExtResource("grip")
 fire_sound = ExtResource("4")
 dry_fire_sound = ExtResource("5")

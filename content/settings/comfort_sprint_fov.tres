@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"comfort"
+section = &"comfort"
+key = &"sprint_fov"
+label = "Sprint view widening"
+hint = "The view widens a little while you sprint."
+kind = &"toggle"
+order = 30

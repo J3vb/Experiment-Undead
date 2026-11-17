@@ -183,3 +183,10 @@ func test_loot_focus_is_visible_and_reopening_resets_navigation() -> void:
 	assert_true(screen.main_menu_button.focus_neighbor_left.is_empty())
 	assert_eq(screen.restart_button.get_node(screen.restart_button.focus_next), screen.main_menu_button)
 	assert_eq(screen.loot_scroll.scroll_vertical, 0)
+
+
+func test_new_best_round_is_marked() -> void:
+	screen.show_results({"round": 9, "new_best": true})
+	assert_eq(screen.round_label.text, "9  New best")
+	screen.show_results({"round": 5, "new_best": false})
+	assert_eq(screen.round_label.text, "5")

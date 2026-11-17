@@ -1,0 +1,60 @@
+[gd_scene load_steps=18 format=3]
+
+[ext_resource type="Script" path="res://systems/game/game_session.gd" id="1"]
+[ext_resource type="PackedScene" path="res://levels/lantern_post/lantern_post.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://systems/player/player.tscn" id="3"]
+[ext_resource type="Resource" path="res://content/weapons/rifle_ar.tres" id="4"]
+[ext_resource type="Resource" path="res://content/weapons/pistol_service.tres" id="5"]
+[ext_resource type="Resource" path="res://content/waves/default_waves.tres" id="6"]
+[ext_resource type="Resource" path="res://content/economy/default_economy.tres" id="7"]
+[ext_resource type="Script" path="res://systems/waves/wave_director.gd" id="8"]
+[ext_resource type="Script" path="res://systems/economy/economy.gd" id="9"]
+[ext_resource type="Script" uid="uid://08pmdntyclan" path="res://systems/progression/progression_service.gd" id="10"]
+[ext_resource type="PackedScene" path="res://systems/ui/hud.tscn" id="11"]
+[ext_resource type="Script" path="res://systems/weapons/weapon_data.gd" id="12"]
+[ext_resource type="Script" path="res://systems/power_ups/power_up_drops.gd" id="13"]
+[ext_resource type="Script" path="res://systems/power_ups/power_up_data.gd" id="14"]
+[ext_resource type="Resource" path="res://content/power_ups/resupply.tres" id="15"]
+[ext_resource type="Resource" path="res://content/power_ups/ammo_pack.tres" id="16"]
+
+[ext_resource type="PackedScene" path="res://systems/debug/debug_console.tscn" id="debug_console"]
+[ext_resource type="Script" path="res://systems/debug/debug_overlay.gd" id="debug_overlay"]
+
+[ext_resource type="PackedScene" path="res://systems/audio/music_player.tscn" id="music"]
+
+[node name="GameSession" type="Node"]
+process_mode = 3
+script = ExtResource("1")
+level_scene = ExtResource("2")
+player_scene = ExtResource("3")
+starting_loadout = Array[ExtResource("12")]([ExtResource("5"), ExtResource("4")])
+wave_rules = ExtResource("6")
+economy_rules = ExtResource("7")
+is_hub = true
+
+[node name="WaveDirector" type="Node" parent="."]
+process_mode = 1
+script = ExtResource("8")
+
+[node name="Economy" type="Node" parent="."]
+process_mode = 1
+script = ExtResource("9")
+
+[node name="Progression" type="Node" parent="."]
+process_mode = 1
+script = ExtResource("10")
+
+[node name="PowerUpDrops" type="Node" parent="."]
+process_mode = 1
+script = ExtResource("13")
+power_ups = Array[ExtResource("14")]([ExtResource("15")])
+ammo_pack = ExtResource("16")
+
+[node name="Hud" parent="." instance=ExtResource("11")]
+
+[node name="DebugConsole" parent="." instance=ExtResource("debug_console")]
+
+[node name="DebugOverlay" type="CanvasLayer" parent="."]
+script = ExtResource("debug_overlay")
+
+[node name="MusicPlayer" parent="." instance=ExtResource("music")]

@@ -1,7 +1,7 @@
 # Plan: Game feel and death screen
 
 Status: Approved
-Roadmap: F-14 / no issue (audit of the v0.1 slice against docs/design/game-feel.md)
+Roadmap: F-16 / no issue (audit of the v0.1 slice against docs/design/game-feel.md)
 Phase: P1 + P4 (feel layer the slice still misses)
 Size: M
 Approved by: plan review on PR #242 (Codex, 2 rounds, then a separate Claude reviewer when Codex hit its limit, 2026-11-17), no open decisions

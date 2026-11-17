@@ -69,8 +69,8 @@ signal reload_started(player: Player, duration: float)
 ## A player bought a Serum.
 ## Peers: every peer (clients from the synced player state).
 signal serum_gained(player: Player, serum: SerumData)
-## A player picked up a power-up (its effect has already been applied).
-## Peers: server only.
+## A player picked up a power-up (its effect runs on the PC that owns the guns).
+## Peers: every peer. The server emits it; PowerUpDrops relays it to clients.
 signal power_up_collected(player: Player, power_up: PowerUpData)
 ## A player's shot landed on an enemy.
 ## Peers: the shooter's owner (on the claim, then again on the kill), and the
@@ -83,6 +83,10 @@ signal exfil_opened
 ## A player called the exfil; the squad must now hold the hatch.
 ## Peers: every peer (clients from the synced hatch state).
 signal exfil_called(hatch: ExfilHatch)
+
+## The hub's deploy vote changed. Empty place = no vote. countdown_left is 0 until everyone is ready.
+## Peers: every peer (the server sends it to all, and once to a late joiner).
+signal deploy_vote_changed(place: StringName, ready_ids: Array[int], countdown_left: float)
 
 ## The match ended.
 ## Peers: every peer (the server sends the match end to all).

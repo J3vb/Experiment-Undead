@@ -184,7 +184,7 @@ def test_vest_shell_accepts_only_a_skinned_rig_origin(bound, pivot, fails):
 
 
 def test_unknown_folder(tmp_path):
-    assert has(broken(tmp_path, "wall_panel", folder="props"), "unknown model folder 'props'")
+    assert has(broken(tmp_path, "wall_panel", folder="vehicles"), "unknown model folder 'vehicles'")
 
 
 def test_model_without_rules(tmp_path):

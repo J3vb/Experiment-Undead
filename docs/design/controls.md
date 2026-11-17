@@ -102,6 +102,8 @@ Conflicts:
 
 Reset buttons exist per action, per page and for everything. The binding file has a version number, so a later update can add actions without wiping a player's custom layout.
 
+Built in F-05 (see `docs/DECISIONS.md`): keyboard and mouse only, one global "one key, one action" rule instead of contexts, and a plain Esc press cancels a rebind. Controller rebinding, presets and per-page reset come later.
+
 In co-op, bindings stay on the player's PC. The server only receives the actions (the InputFrame from the multiplayer rules), so rebinding never touches networking.
 
 ## Aim, camera and assists

@@ -23,6 +23,12 @@ theme_override_constants/separation = 16
 text = "Paused"
 theme_override_font_sizes/font_size = 36
 
+[node name="Banner" type="Label" parent="Menu"]
+visible = false
+text = "Match continues. Your squad is still fighting."
+theme_override_colors/font_color = Color(0.784, 0.125, 0.165, 1)
+theme_override_font_sizes/font_size = 20
+
 [node name="Resume" type="Button" parent="Menu"]
 text = "Resume"
 alignment = 0

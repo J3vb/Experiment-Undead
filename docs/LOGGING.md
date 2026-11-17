@@ -68,6 +68,8 @@ The server also prints every warning and error to stdout as
 | `build.previous_run_crashed` | warn | Last run did not quit cleanly; `previous_log` = its file |
 | `engine.engine_error` / `engine_script` / `engine_shader` | error | `push_error` or a script/shader error. `where`, `function`, `stack` |
 | `engine.engine_warning` | warn | `push_warning` or an engine warning |
+| `player.body_clips_missing` | warn | The player model has no third-person clips, so teammates show a still body; rebuild `player.glb` |
+| `player.world_model_missing` | warn | A teammate holds a gun whose `WeaponData` has no `world_model`, so its hands are empty; set the field in the gun's `.tres` |
 | `perf.long_frames` | warn | Frames over 50 ms in the last second (`count`, `worst_ms`). Hitch at load is normal; in a round it is not |
 | `perf.low_fps` | warn | Under 50 fps for 3 s in a row (windowed builds only), with a health snapshot |
 | `perf.health` | info | Every 30 s: fps, process/physics ms, memory, objects, nodes, orphan nodes, enemies, draw calls |
@@ -85,10 +87,19 @@ The server also prints every warning and error to stdout as
 | `player.weapon_has_no_grip` | warn | A gun has no `GripData`, so it shows no first-person arms. `weapon` id; once per gun per run. Add `content/grips/<base id>.tres` and set the gun's `grip` |
 | `progression.profile_save_failed` | warn | Character could not be saved; `id`, `path`, `error` (Godot Error code). Check folder permissions and disk space |
 | `progression.profile_unreadable` | warn | Existing character is unreadable, malformed or newer; file stays untouched, this match uses a temporary character. `id`, `path`; inspect nearby engine errors |
+| `settings.binding_unknown_action` | warn | `user://settings.cfg` has a key binding for an action the game no longer has (`action`); it is ignored. Normal after an action is renamed or removed |
+| `settings.binding_malformed` | warn | A saved key binding is not a list of up to 2 `{"type": "key", "physical": n}` / `{"type": "mouse", "button": n}` entries, or names Esc (`action`); that action uses its default keys |
+| `settings.display_mode_failed` | warn | The window refused the chosen display mode (`mode`: 0 Windowed, 1 Borderless, 2 Fullscreen). Usually the OS or driver does not allow exclusive fullscreen; pick Borderless |
+| `settings.row_unknown_key` | warn | A `content/settings/*.tres` row names a `section`/`key` that `Settings.DEFAULTS` does not have; the row is left off the settings screen. Fix the row or add the key |
 | `game.game_over` | info | Final stats |
 | `net.peer_connected` / `peer_disconnected` | info | Server side, peer id |
 | `net.round_state_ignored` | warn | A round message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
 | `net.interaction_rejected` | warn | Server refused a client's interact request (`peer`, `reason`, `path`): `player_not_alive`, `match_over`, `unknown_path`, `out_of_range`, `grant_pending` (last gun grant not applied yet), `bad_facts` (gun facts with wrong fields or ids). At most one per second. Many `out_of_range` = `InteractionSync.REACH_SLACK` too tight |
+| `net.deploy_refused` | warn | The hub's deploy vote or `deploy()` was refused (`place`, `reason` or `hub`): an unknown place id on a deploy board, or a deploy outside the hub. A board with a typo in `place` |
+| `net.place_change_kicked` | warn | A client was sent to another place but had not left after `Net.CONNECT_TIMEOUT`, so the server dropped it (`peer`). It never got the order: check the network |
+| `net.place_changed` | info | The server changed place (`place`, `players` sent along) |
+| `net.go_to_place` | info | This peer loads another place (`place`, `online`) |
+| `net.join_switches_place` | info | A joining client loaded another place than the server's and switches before spawning (`from`, `to`) |
 | `net.hit_claim_rejected` | warn | Server refused a client's hit or gravity well claim (`peer`, `reason`): `player_not_alive`, `zombie_not_alive`, `hit_out_of_bounds`, `zone_missing`, `claims_too_fast`, `well_out_of_bounds`, `well_wrong_weapon` (well or orb request named a gun whose `effect` is not WELL: a mismatched build or a cheat). At most one per second |
 | `net.loadout_rejected` | warn | Server refused a client's equipped loadout (`peer`, `reason`): `not_a_dictionary`, `too_much_gear` (over 3 gear items), `too_many_guns` (more than the player's weapon slots), `unknown_gun` (gun base not in content). The server keeps the last good loadout; check that both builds have the same content |
 | `net.interaction_rate_limited` | warn | A client sent interact requests less than 0.1 s apart; extra ones are refused. At most one per second |
@@ -137,3 +148,38 @@ zombies were hunted that way and the gun in hand. A death is not a failure, but
 log errors still are. Run several seeds and use the median death round. It is
 a rough stand-in for a player: it never trains zombies or picks a spot, so read
 it as a trend between two sets of numbers, not as how a human will do.
+
+## Co-op soak
+
+Run `godot --headless --path . --script res://tools/soak/coop_soak.gd -- --clients=2 --rounds=5`.
+Other options (all `--name=value`): `--seed=1`, `--timescale=4`, `--gun=rifle_ar_reforged`,
+`--port=24700`, `--limit=600` (real seconds before stragglers are killed) and
+`--out=user://coop_soak`. It starts one headless dedicated server
+(`tools/soak/coop_soak_server.gd`: players cannot die, power on, doors open) and
+N bot clients (`tools/soak/coop_soak_bot.gd`). Each bot joins `127.0.0.1` through
+the normal join and hello, gives itself the `--gun` on its own PC, moves its own
+player to 4 m from the nearest chasing zombie when it is more than 15 m away (or
+half the gun's range), and claims one body hit per fire interval (x1.2) through
+the real `HitClaims` client path. So every claim should pass the server's damage,
+range and rate checks, and kills, points and XP flow through the network code.
+
+Each process runs with its own `XDG_DATA_HOME` (`<out>/server`, `<out>/bot1`, ...)
+and writes `<out>/<name>.json`: `done`, the round it saw, its log path and counts
+(bots: `claims`, `moves`, `points`, `joined`, `lost_server`; server: `kills`,
+`players`). After the target round the bots leave one second apart, then the
+server quits. Two clients dropping in the same server frame log an ENet
+"Unable to send packet" engine error; that is a known separate issue.
+
+The table has one row per process, then each warning or error with its first log
+line. Every log goes through the solo soak's `check_log` (errors, fail events,
+target round reached and finished; bots need the client round events from F-40).
+On top of that every `net.*` warning fails, grouped by reason, except
+`net.hit_claim_rejected (zombie_not_alive)`: two bots hitting the same zombie is
+normal. The run also fails when a process wrote no result or did not finish, a
+bot lost the server early, or the server saw fewer players than `--clients`.
+The last line is `| PASS | co-op soak ... |` or `| FAIL | ...`.
+
+Workflow `Co-op soak` (`.github/workflows/coop-soak.yml`, not a required check):
+pull requests touching game code run 2 bots to round 5; nightly and manual runs
+use 4 bots to round 20. On failure the `coop-soak-logs` artifact has every
+result file and every process's `logs/` folder.

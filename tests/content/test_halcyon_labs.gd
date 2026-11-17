@@ -71,8 +71,9 @@ func _node_paths(root: Node) -> Array[String]:
 func test_map_uses_the_shared_look() -> void:
 	var level: Node = (load(MAP) as PackedScene).instantiate()
 	add_child_autofree(level)
-	var world: WorldEnvironment = level.get_node("WorldEnvironment") as WorldEnvironment
-	assert_eq(world.environment.resource_path, LOOK, "shared interior look, not a copy")
+	var world: EnvironmentQuality = level.get_node("WorldEnvironment") as EnvironmentQuality
+	assert_not_null(world, "graphics settings can turn its effects off")
+	assert_eq(world.look.resource_path, LOOK, "the scene points at the shared look; only the run-time copy changes")
 	assert_not_null(level.get_node_or_null("FilmPost"), "film grain and vignette")
 
 
@@ -186,7 +187,7 @@ func test_things_that_move_or_vanish_are_not_baked() -> void:
 	var blocks: Array[Node] = level.get_node("NavigationRegion3D/Doors").find_children("Blocker", "StaticBody3D")
 	blocks.append_array(level.find_children("Board", "StaticBody3D"))
 	blocks.append(level.get_node("NavigationRegion3D/Machines/SpecimenVault/Body"))
-	assert_eq(blocks.size(), 11 + 5 + 1, "9 doors, 2 vent grates, 5 wall-buys, the vault")
+	assert_eq(blocks.size(), 12 + 6 + 1, "9 doors, 2 vent grates, the freezer, 6 wall-buys, the vault")
 	for node: Node in blocks:
 		assert_false((node as Block).baked, "%s is not baked" % level.get_path_to(node))
 	var planks: Array[Node] = level.get_node("Barriers").find_children("Plank*", "MeshInstance3D", true, false)

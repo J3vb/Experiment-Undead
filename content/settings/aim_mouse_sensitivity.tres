@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"aim"
+section = &"aim"
+key = &"mouse_sensitivity"
+label = "Mouse sensitivity"
+hint = "How quickly the view turns when you move the mouse."
+kind = &"slider"
+min_value = 0.0002
+max_value = 0.02
+step = 0.0001
+display_scale = 1000.0
+order = 20

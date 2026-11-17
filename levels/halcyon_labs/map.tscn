@@ -1,10 +1,13 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://systems/level/level.gd" id="level"]
+[ext_resource type="Script" path="res://systems/effects/environment_quality.gd" id="env_quality"]
 [ext_resource type="Script" path="res://systems/level/block.gd" id="block"]
 [ext_resource type="Script" path="res://systems/waves/zombie_spawn_point.gd" id="spawn"]
 [ext_resource type="Script" path="res://systems/level/coop_wreckage.gd" id="wreckage"]
 [ext_resource type="Script" path="res://systems/level/vent_step.gd" id="vent_step"]
+[ext_resource type="Script" path="res://systems/level/radio_puzzle.gd" id="radio_puzzle"]
+[ext_resource type="PackedScene" path="res://systems/interactables/wall_radio.tscn" id="radio"]
 [ext_resource type="Environment" path="res://levels/looks/halcyon_interior.tres" id="look"]
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/blockout.tscn" id="blockout"]
 [ext_resource type="PackedScene" path="res://systems/effects/film_post.tscn" id="film"]
@@ -49,6 +52,7 @@
 [ext_resource type="Resource" path="res://content/serums/second_wind.tres" id="serum_second_wind"]
 [ext_resource type="Resource" path="res://content/serums/scavenger.tres" id="serum_scavenger"]
 [ext_resource type="LightmapGIData" uid="uid://bbbon50dn5n3m" path="res://levels/halcyon_labs/map.lmbake" id="lightmap"]
+[ext_resource type="PackedScene" path="res://levels/halcyon_labs/atmosphere.tscn" id="atmosphere"]
 
 [sub_resource type="NavigationMesh" id="navmesh"]
 resource_local_to_scene = true
@@ -101,6 +105,7 @@ player_spawn = NodePath("PlayerSpawn")
 start_area = &"loading_dock"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+script = ExtResource("env_quality")
 environment = ExtResource("look")
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
@@ -329,6 +334,21 @@ size = Vector3(3, 2.6, 0.3)
 material = ExtResource("rust")
 baked = false
 
+[node name="FreezerDoor" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.5, 1.3, 46)
+opens_area = &"cold_room"
+cost = 0
+label = "freezer door"
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/FreezerDoor"]
+shape = SubResource("door_area_2")
+
+[node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/FreezerDoor"]
+script = ExtResource("block")
+size = Vector3(2, 2.6, 0.5)
+material = ExtResource("rust")
+baked = false
+
 [node name="Machines" type="Node3D" parent="NavigationRegion3D"]
 
 [node name="MedDispenserQuickhands" parent="NavigationRegion3D/Machines" instance=ExtResource("meddisp")]
@@ -509,6 +529,27 @@ billboard = 1
 pixel_size = 0.004
 font_size = 40
 text = "AR-7 Rifle 1200"
+
+[node name="CryoRack" parent="NavigationRegion3D/Machines" instance=ExtResource("wallbuy")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 53.5, 1.4, 50.75)
+weapon = ExtResource("cryo_lance")
+once_per_player = true
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/CryoRack"]
+shape = SubResource("wallbuy_area")
+
+[node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/CryoRack"]
+script = ExtResource("block")
+size = Vector3(0.1, 0.8, 1.6)
+material = ExtResource("rust")
+baked = false
+
+[node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/CryoRack"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+billboard = 1
+pixel_size = 0.004
+font_size = 40
+text = "Cryo Lance"
 
 [node name="PlayerSpawn" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 0.1, 47.5)
@@ -712,6 +753,19 @@ script = ExtResource("spawn")
 area = &"containment_wing"
 min_players = 3
 
+[node name="SignalInTheStatic" type="Node3D" parent="." node_paths=PackedStringArray("door")]
+script = ExtResource("radio_puzzle")
+door = NodePath("../NavigationRegion3D/Doors/FreezerDoor")
+
+[node name="RadioGuardPost" parent="SignalInTheStatic" instance=ExtResource("radio")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 21.85, 1.5, 33)
+
+[node name="RadioGeneratorHall" parent="SignalInTheStatic" instance=ExtResource("radio")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.5, 6.15)
+
+[node name="RadioLabs" parent="SignalInTheStatic" instance=ExtResource("radio")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 48, 1.5, 25.85)
+
 [node name="VentStep" type="Node3D" parent="."]
 script = ExtResource("vent_step")
 
@@ -743,6 +797,8 @@ light_bake_mode = 0
 omni_range = 5.0
 
 [node name="FilmPost" parent="." instance=ExtResource("film")]
+
+[node name="Atmosphere" parent="." instance=ExtResource("atmosphere")]
 
 [node name="LightmapGI" type="LightmapGI" parent="."]
 quality = 2

@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://systems/player/player.gd" id="1"]
 [ext_resource type="Script" path="res://systems/player/player_camera.gd" id="2"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://assets/models/characters/player.glb" id="8_body"]
 [ext_resource type="Script" path="res://systems/gear/gear_rig.gd" id="9_rig"]
 [ext_resource type="PackedScene" path="res://systems/player/footsteps.tscn" id="10_steps"]
+[ext_resource type="Script" path="res://systems/player/body_animator.gd" id="11_anim"]
 
 [sub_resource type="SceneReplicationConfig" id="pose_sync"]
 properties/0/path = NodePath(".:position")
@@ -21,6 +22,15 @@ properties/1/replication_mode = 1
 properties/2/path = NodePath("Head:rotation")
 properties/2/spawn = true
 properties/2/replication_mode = 1
+properties/3/path = NodePath(".:is_crouching")
+properties/3/spawn = true
+properties/3/replication_mode = 2
+properties/4/path = NodePath("Body/BodyAnimator:held_weapon")
+properties/4/spawn = true
+properties/4/replication_mode = 2
+properties/5/path = NodePath("Body/BodyAnimator:reload_time")
+properties/5/spawn = true
+properties/5/replication_mode = 2
 
 [sub_resource type="CapsuleShape3D" id="capsule"]
 radius = 0.4
@@ -81,9 +91,14 @@ rotation = Vector3(0, 3.14159265, 0)
 
 [node name="Model" parent="Body" instance=ExtResource("8_body")]
 
-[node name="GearRig" type="Node3D" parent="Body" node_paths=PackedStringArray("body", "pitch_source")]
+[node name="GearRig" type="Node3D" parent="Body" node_paths=PackedStringArray("body")]
 script = ExtResource("9_rig")
 body = NodePath("..")
+
+[node name="BodyAnimator" type="Node" parent="Body" node_paths=PackedStringArray("player", "model", "pitch_source")]
+script = ExtResource("11_anim")
+player = NodePath("../..")
+model = NodePath("../Model")
 pitch_source = NodePath("../../Head")
 
 [node name="PoseSync" type="MultiplayerSynchronizer" parent="."]

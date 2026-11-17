@@ -49,6 +49,7 @@ func _process(_delta: float) -> void:
 		_material.set_shader_parameter(&"live", aimed)
 	if not aimed:
 		return
-	viewport.size = Vector2i(get_viewport().get_visible_rect().size / 2.0)
+	# Text size scales canvas units; undo it so the scope keeps its resolution.
+	viewport.size = Vector2i(get_viewport().get_visible_rect().size * get_tree().root.content_scale_factor / 2.0)
 	camera.global_transform = main.get_global_transform_interpolated()
 	camera.fov = main.fov / zoom

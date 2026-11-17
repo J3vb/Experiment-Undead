@@ -14,6 +14,8 @@ extends Node
 @export var profile_id: StringName = &"solo"
 ## False on a dedicated server, which has no player of its own.
 @export var has_local_player: bool = true
+## The hub: no waves start, and the deploy vote can send everyone to a match.
+@export var is_hub: bool = false
 
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var tick: int = 0
@@ -26,6 +28,7 @@ var hit_claims: HitClaims
 var interactions: InteractionSync
 var loot: LootService
 var remote_shots: RemoteShots
+var deploy_vote: DeployVote
 var is_over: bool = false
 var _kills: int = 0
 var _headshots: int = 0
@@ -89,8 +92,8 @@ func _setup_level() -> void:
 	spawner.session = self
 	level.add_child(spawner)
 	director.spawner = spawner
+	power_up_drops.setup(level)
 	_setup_shooting()
-
 	players = PlayerSpawner.new()
 	players.name = "PlayerSpawner"
 	players.player_scene = player_scene
@@ -126,7 +129,8 @@ func _setup_shooting() -> void:
 	remote_shots = RemoteShots.new()
 	remote_shots.name = "RemoteShots"
 	interactions = InteractionSync.new()
-	for system: Node in [hit_claims, loot, remote_shots, interactions]:
+	deploy_vote = DeployVote.new()
+	for system: Node in [hit_claims, loot, remote_shots, interactions, deploy_vote]:
 		system.set("session", self)
 		add_child(system)
 	(hud.get_node("Root/Pack") as PackOverlay).setup(loot)
@@ -157,6 +161,7 @@ func _on_player_added(player: Player) -> void:
 		progression.set_start_total(player, _start_total_xp)
 		_profile_player = player
 		loot.player = player
+	player.display_name = handshake.player_name(player.net_id) if player.state_sync.is_coop() else ""
 	player.spawn(self, starting_loadout)
 	if player == _profile_player and _profile:
 		var loadout: Variant = _profile.to_dict().get("loadout", {})
@@ -173,14 +178,14 @@ func _on_player_added(player: Player) -> void:
 
 ## Waves start once the navmesh is baked and someone is playing.
 func _try_start() -> void:
-	if is_over or not multiplayer.is_server():
+	if is_over or is_hub or not multiplayer.is_server():
 		return
 	if director.phase == WaveDirector.Phase.IDLE and level.is_navigation_ready and not get_players().is_empty():
 		director.start()
 
 
 func _on_connection_lost() -> void:
-	if _connection_lost or not is_inside_tree():
+	if _connection_lost or Net.changing_place or not is_inside_tree():
 		return
 	_connection_lost = true
 	Log.warn(&"net", &"connection_lost", {})
@@ -210,19 +215,12 @@ func get_players() -> Array[Player]:
 ## Esc opens pause only with no screen open; an open screen handles Esc itself.
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"pause") and not is_over and has_local_player and UI.top() == &"":
-		get_tree().paused = true
 		var pause: PauseScreen = UI.push(&"pause") as PauseScreen
-		pause.tree_exiting.connect(_on_pause_closed)
 		pause.main_menu_requested.connect(return_to_menu)
 		pause.quit_requested.connect(quit_game)
 	elif event.is_action_pressed(&"restart") and is_over:
 		get_viewport().set_input_as_handled()
 		restart()
-
-
-func _on_pause_closed() -> void:
-	if is_inside_tree():
-		get_tree().paused = false
 
 
 func return_to_menu() -> void:
@@ -299,11 +297,8 @@ func check_squad() -> void:
 	if is_over or not multiplayer.is_server():
 		return
 	var squad: Array[Player] = get_players()
-	if squad.is_empty():
+	if squad.is_empty() or squad.any(func(p: Player) -> bool: return p.is_alive() or p.can_self_revive()):
 		return
-	for player: Player in squad:
-		if player.is_alive() or player.can_self_revive():
-			return
 	_end_match(false)
 
 
@@ -335,9 +330,12 @@ func _receive_match_end(stats: Dictionary) -> void:
 	_match_stats = stats.duplicate()
 	_match_stats.merge(loot.results(), true)
 	if is_instance_valid(_profile_player):
+		_match_stats["points"] = _profile_player.wallet.points
 		_match_stats["xp"] = progression.get_xp(_profile_player)
 		_match_stats["start_total_xp"] = _start_total_xp
 		_match_stats["total_xp"] = progression.get_total_xp(_profile_player)
+		if _profile:
+			_match_stats["new_best"] = _profile.record_run(level_scene.resource_path.get_base_dir().get_file(), stats)
 	director.stop()
 	if not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
 		level.process_mode = Node.PROCESS_MODE_DISABLED

@@ -1,0 +1,779 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://levels/materials/pipe.tres" id="pipe"]
+[ext_resource type="Script" path="res://systems/level/atmosphere.gd" id="atmosphere"]
+[ext_resource type="PackedScene" path="res://systems/effects/spark_spot.tscn" id="spark"]
+[ext_resource type="Material" path="res://systems/effects/monitor_screen.tres" id="screen"]
+[ext_resource type="Material" path="res://levels/materials/fluorescent.tres" id="tube"]
+[ext_resource type="AudioStream" path="res://assets/audio/ambience/steam_hiss.ogg" id="hiss"]
+[ext_resource type="AudioStream" path="res://assets/audio/ambience/machine_hum.ogg" id="hum"]
+[ext_resource type="AudioStream" path="res://assets/audio/ambience/drip_loop.ogg" id="drips"]
+[ext_resource type="AudioStream" path="res://assets/audio/ambience/klaxon.wav" id="klaxon"]
+[ext_resource type="Texture2D" path="res://assets/textures/story/blood_smear.png" id="blood_smear"]
+[ext_resource type="Texture2D" path="res://assets/textures/story/drag_trail.png" id="drag_trail"]
+[ext_resource type="Texture2D" path="res://assets/textures/story/scratch_marks.png" id="scratch_marks"]
+[ext_resource type="Texture2D" path="res://assets/textures/story/tally_marks.png" id="tally_marks"]
+[ext_resource type="Texture2D" path="res://assets/textures/story/wick_symbol.png" id="wick_symbol"]
+[ext_resource type="Texture2D" path="res://assets/textures/story/leak_pool.png" id="leak_pool"]
+
+[sub_resource type="CylinderMesh" id="base_mesh"]
+material = ExtResource("pipe")
+top_radius = 0.14
+bottom_radius = 0.16
+height = 0.12
+
+[sub_resource type="StandardMaterial3D" id="alarm_glass"]
+albedo_color = Color(0.765, 0.125, 0.106, 1)
+emission_enabled = true
+emission = Color(0.765, 0.125, 0.106, 1)
+emission_energy_multiplier = 3.0
+roughness = 0.3
+
+[sub_resource type="CylinderMesh" id="dome_mesh"]
+material = SubResource("alarm_glass")
+top_radius = 0.07
+bottom_radius = 0.11
+height = 0.2
+
+[sub_resource type="Animation" id="spin"]
+resource_name = "spin"
+length = 1.6
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Spin:rotation:y")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.6),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 6.2831855]
+}
+
+[sub_resource type="AnimationLibrary" id="beacon_anims"]
+_data = {
+&"spin": SubResource("spin")
+}
+
+[sub_resource type="StandardMaterial3D" id="dust_mat"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.85, 0.95, 0.95, 0.6)
+billboard_mode = 1
+
+[sub_resource type="QuadMesh" id="dust_mesh"]
+material = SubResource("dust_mat")
+size = Vector2(0.008, 0.008)
+
+[sub_resource type="ParticleProcessMaterial" id="dust_big_hall"]
+emission_shape = 3
+emission_box_extents = Vector3(9, 2.5, 8)
+direction = Vector3(0, -1, 0)
+spread = 180.0
+initial_velocity_min = 0.02
+initial_velocity_max = 0.08
+gravity = Vector3(0, -0.01, 0)
+turbulence_enabled = true
+turbulence_noise_strength = 0.2
+turbulence_noise_speed_random = 0.1
+
+[sub_resource type="ParticleProcessMaterial" id="dust_labs"]
+emission_shape = 3
+emission_box_extents = Vector3(7, 1.4, 7)
+direction = Vector3(0, -1, 0)
+spread = 180.0
+initial_velocity_min = 0.02
+initial_velocity_max = 0.08
+gravity = Vector3(0, -0.01, 0)
+turbulence_enabled = true
+turbulence_noise_strength = 0.1
+turbulence_noise_speed_random = 0.1
+
+[sub_resource type="ParticleProcessMaterial" id="dust_corridor"]
+emission_shape = 3
+emission_box_extents = Vector3(14, 1.4, 1.8)
+direction = Vector3(0, -1, 0)
+spread = 180.0
+initial_velocity_min = 0.02
+initial_velocity_max = 0.08
+gravity = Vector3(0.03, -0.01, 0)
+turbulence_enabled = true
+turbulence_noise_strength = 0.2
+turbulence_noise_speed_random = 0.1
+
+[sub_resource type="Curve" id="grow"]
+_data = [Vector2(0, 0.3), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="grow_tex"]
+curve = SubResource("grow")
+
+[sub_resource type="Gradient" id="fade"]
+offsets = PackedFloat32Array(0, 0.2, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="fade_tex"]
+gradient = SubResource("fade")
+
+[sub_resource type="ParticleProcessMaterial" id="steam_process"]
+direction = Vector3(0, 0, -1)
+spread = 12.0
+initial_velocity_min = 1.2
+initial_velocity_max = 2.0
+gravity = Vector3(0, 0.4, 0)
+damping_min = 0.6
+damping_max = 1.0
+scale_min = 0.4
+scale_max = 0.7
+scale_curve = SubResource("grow_tex")
+color_ramp = SubResource("fade_tex")
+
+[sub_resource type="StandardMaterial3D" id="steam_mat"]
+transparency = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_color = Color(0.72, 0.82, 0.82, 0.18)
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+proximity_fade_enabled = true
+proximity_fade_distance = 0.6
+
+[sub_resource type="QuadMesh" id="steam_mesh"]
+material = SubResource("steam_mat")
+size = Vector2(1.4, 1.4)
+
+[sub_resource type="ParticleProcessMaterial" id="drip_process"]
+emission_shape = 1
+emission_sphere_radius = 0.15
+direction = Vector3(0, -1, 0)
+spread = 0.0
+initial_velocity_min = 0.0
+initial_velocity_max = 0.2
+gravity = Vector3(0, -9.8, 0)
+
+[sub_resource type="StandardMaterial3D" id="drip_mat"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.7, 0.85, 0.85, 0.5)
+billboard_mode = 2
+
+[sub_resource type="QuadMesh" id="drip_mesh"]
+material = SubResource("drip_mat")
+size = Vector2(0.012, 0.06)
+
+[sub_resource type="ParticleProcessMaterial" id="smoke_process"]
+emission_shape = 3
+emission_box_extents = Vector3(1, 0.3, 2.5)
+direction = Vector3(0, 1, 0)
+spread = 15.0
+initial_velocity_min = 0.6
+initial_velocity_max = 1.2
+gravity = Vector3(0.15, 0.25, 0)
+scale_min = 0.6
+scale_max = 1.0
+scale_curve = SubResource("grow_tex")
+color_ramp = SubResource("fade_tex")
+
+[sub_resource type="StandardMaterial3D" id="smoke_mat"]
+transparency = 1
+vertex_color_use_as_albedo = true
+albedo_color = Color(0.09, 0.09, 0.09, 0.55)
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="smoke_mesh"]
+material = SubResource("smoke_mat")
+size = Vector2(2.2, 2.2)
+
+[sub_resource type="ParticleProcessMaterial" id="ember_process"]
+emission_shape = 3
+emission_box_extents = Vector3(1, 0.3, 2.5)
+direction = Vector3(0, 1, 0)
+spread = 25.0
+initial_velocity_min = 1.0
+initial_velocity_max = 2.5
+gravity = Vector3(0, 0.3, 0)
+turbulence_enabled = true
+turbulence_noise_strength = 0.6
+
+[sub_resource type="StandardMaterial3D" id="ember_mat"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+albedo_color = Color(1, 0.55, 0.16, 1)
+billboard_mode = 1
+
+[sub_resource type="QuadMesh" id="ember_mesh"]
+material = SubResource("ember_mat")
+size = Vector2(0.03, 0.03)
+
+[sub_resource type="FogMaterial" id="floor_fog"]
+density = 0.08
+albedo = Color(0.6, 0.7, 0.7, 1)
+height_falloff = 1.5
+edge_fade = 0.3
+
+[sub_resource type="BoxMesh" id="monitor_body"]
+material = ExtResource("pipe")
+size = Vector3(0.5, 0.36, 0.12)
+
+[sub_resource type="QuadMesh" id="monitor_screen_mesh"]
+size = Vector2(0.44, 0.3)
+
+[sub_resource type="BoxMesh" id="cable_mesh"]
+material = ExtResource("pipe")
+size = Vector3(0.025, 1.0, 0.025)
+
+[sub_resource type="BoxMesh" id="lamp_housing"]
+material = ExtResource("pipe")
+size = Vector3(0.3, 0.04, 1.6)
+
+[sub_resource type="BoxMesh" id="lamp_tube"]
+material = ExtResource("tube")
+size = Vector3(0.16, 0.05, 1.4)
+
+[sub_resource type="Animation" id="swing"]
+resource_name = "swing"
+length = 2.6
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:rotation:z")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.3, 2.6),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [0.14, -0.14, 0.14]
+}
+
+[sub_resource type="AnimationLibrary" id="swing_anims"]
+_data = {
+&"swing": SubResource("swing")
+}
+
+[sub_resource type="Animation" id="sway"]
+resource_name = "sway"
+length = 4.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:rotation:x")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 2, 4),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [0.06, -0.06, 0.06]
+}
+
+[sub_resource type="AnimationLibrary" id="sway_anims"]
+_data = {
+&"sway": SubResource("sway")
+}
+
+[sub_resource type="StandardMaterial3D" id="leak_drip_mat"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.553, 1, 0.227, 0.8)
+billboard_mode = 2
+
+[sub_resource type="QuadMesh" id="leak_drip_mesh"]
+material = SubResource("leak_drip_mat")
+size = Vector2(0.012, 0.05)
+
+[node name="Atmosphere" type="Node3D"]
+script = ExtResource("atmosphere")
+
+[node name="Beacons" type="Node3D" parent="."]
+
+[node name="BeaconWest" type="Node3D" parent="Beacons"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.3, 0.6, 10)
+
+[node name="Base" type="MeshInstance3D" parent="Beacons/BeaconWest"]
+gi_mode = 0
+mesh = SubResource("base_mesh")
+
+[node name="Dome" type="MeshInstance3D" parent="Beacons/BeaconWest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.16, 0)
+gi_mode = 0
+mesh = SubResource("dome_mesh")
+
+[node name="Spin" type="Node3D" parent="Beacons/BeaconWest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.16, 0)
+
+[node name="Light" type="SpotLight3D" parent="Beacons/BeaconWest/Spin"]
+transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 0, 0)
+light_color = Color(0.765, 0.125, 0.106, 1)
+light_energy = 6.0
+light_volumetric_fog_energy = 2.0
+light_bake_mode = 0
+distance_fade_enabled = true
+distance_fade_begin = 20.0
+distance_fade_length = 5.0
+spot_range = 9.0
+spot_angle = 22.0
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Beacons/BeaconWest"]
+libraries = {
+&"": SubResource("beacon_anims")
+}
+autoplay = &"spin"
+
+[node name="BeaconEast" type="Node3D" parent="Beacons"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75.7, 0.6, 18)
+
+[node name="Base" type="MeshInstance3D" parent="Beacons/BeaconEast"]
+gi_mode = 0
+mesh = SubResource("base_mesh")
+
+[node name="Dome" type="MeshInstance3D" parent="Beacons/BeaconEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.16, 0)
+gi_mode = 0
+mesh = SubResource("dome_mesh")
+
+[node name="Spin" type="Node3D" parent="Beacons/BeaconEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.16, 0)
+
+[node name="Light" type="SpotLight3D" parent="Beacons/BeaconEast/Spin"]
+transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 0, 0)
+light_color = Color(0.765, 0.125, 0.106, 1)
+light_energy = 6.0
+light_volumetric_fog_energy = 2.0
+light_bake_mode = 0
+distance_fade_enabled = true
+distance_fade_begin = 20.0
+distance_fade_length = 5.0
+spot_range = 9.0
+spot_angle = 22.0
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Beacons/BeaconEast"]
+libraries = {
+&"": SubResource("beacon_anims")
+}
+autoplay = &"spin"
+
+[node name="Dust" type="Node3D" parent="."]
+
+[node name="MessHall" type="GPUParticles3D" parent="Dust"]
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 2.5, 38)
+amount = 120
+lifetime = 12.0
+preprocess = 12.0
+visibility_range_end = 30.0
+visibility_aabb = AABB(-10, -3, -8, 20, 6, 16)
+process_material = SubResource("dust_big_hall")
+draw_pass_1 = SubResource("dust_mesh")
+
+[node name="GeneratorHall" type="GPUParticles3D" parent="Dust"]
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 2.5, 16)
+amount = 120
+lifetime = 12.0
+preprocess = 12.0
+visibility_range_end = 30.0
+visibility_aabb = AABB(-10, -3, -10, 20, 6, 20)
+process_material = SubResource("dust_big_hall")
+draw_pass_1 = SubResource("dust_mesh")
+
+[node name="Labs" type="GPUParticles3D" parent="Dust"]
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 1.7, 18)
+amount = 80
+lifetime = 12.0
+preprocess = 12.0
+visibility_range_end = 30.0
+visibility_aabb = AABB(-8, -2, -8, 16, 4, 16)
+process_material = SubResource("dust_labs")
+draw_pass_1 = SubResource("dust_mesh")
+
+[node name="MainCorridor" type="GPUParticles3D" parent="Dust"]
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 1.7, 28)
+amount = 80
+lifetime = 12.0
+preprocess = 12.0
+visibility_range_end = 30.0
+visibility_aabb = AABB(-15, -2, -2, 30, 4, 4)
+process_material = SubResource("dust_corridor")
+draw_pass_1 = SubResource("dust_mesh")
+
+[node name="Steam" type="Node3D" parent="."]
+
+[node name="GeneratorWest" type="GPUParticles3D" parent="Steam" groups=["after_power"]]
+gi_mode = 0
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 8.4, 3.5, 20)
+amount = 40
+lifetime = 2.5
+visibility_range_end = 30.0
+visibility_aabb = AABB(-2, -2, -6, 4, 5, 7)
+process_material = SubResource("steam_process")
+draw_pass_1 = SubResource("steam_mesh")
+
+[node name="GeneratorEast" type="GPUParticles3D" parent="Steam" groups=["after_power"]]
+gi_mode = 0
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 27.6, 2.5, 9)
+amount = 40
+lifetime = 2.5
+visibility_range_end = 30.0
+visibility_aabb = AABB(-2, -2, -6, 4, 5, 7)
+process_material = SubResource("steam_process")
+draw_pass_1 = SubResource("steam_mesh")
+
+[node name="CoolantTunnel" type="GPUParticles3D" parent="Steam" groups=["after_power"]]
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 32, 2.8, 12.5)
+amount = 40
+lifetime = 2.5
+visibility_range_end = 30.0
+visibility_aabb = AABB(-2, -3, -2, 4, 6, 4)
+process_material = SubResource("steam_process")
+draw_pass_1 = SubResource("steam_mesh")
+
+[node name="Drips" type="Node3D" parent="."]
+
+[node name="CoolantTunnel" type="GPUParticles3D" parent="Drips"]
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.5, 2.95, 13)
+amount = 6
+lifetime = 1.2
+visibility_range_end = 30.0
+visibility_aabb = AABB(-0.5, -3.5, -0.5, 1, 4, 1)
+process_material = SubResource("drip_process")
+draw_pass_1 = SubResource("drip_mesh")
+
+[node name="ContainmentNorth" type="GPUParticles3D" parent="Drips"]
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 71, 3.45, 9)
+amount = 6
+lifetime = 1.4
+visibility_range_end = 30.0
+visibility_aabb = AABB(-0.5, -7, -0.5, 1, 7.5, 1)
+process_material = SubResource("drip_process")
+draw_pass_1 = SubResource("drip_mesh")
+
+[node name="ContainmentSouth" type="GPUParticles3D" parent="Drips"]
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66, 3.45, 24)
+amount = 6
+lifetime = 1.4
+visibility_range_end = 30.0
+visibility_aabb = AABB(-0.5, -7, -0.5, 1, 7.5, 1)
+process_material = SubResource("drip_process")
+draw_pass_1 = SubResource("drip_mesh")
+
+[node name="TruckFire" type="Node3D" parent="."]
+
+[node name="Smoke" type="GPUParticles3D" parent="TruckFire"]
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 3.0, 53)
+amount = 60
+lifetime = 6.0
+preprocess = 6.0
+visibility_range_end = 30.0
+visibility_aabb = AABB(-6, -1, -6, 12, 10, 12)
+process_material = SubResource("smoke_process")
+draw_pass_1 = SubResource("smoke_mesh")
+
+[node name="Embers" type="GPUParticles3D" parent="TruckFire"]
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 3.0, 53)
+amount = 30
+lifetime = 2.5
+preprocess = 3.0
+visibility_range_end = 30.0
+visibility_aabb = AABB(-4, -1, -4, 8, 8, 8)
+process_material = SubResource("ember_process")
+draw_pass_1 = SubResource("ember_mesh")
+
+[node name="Sparks" type="Node3D" parent="."]
+
+[node name="MainCorridor" parent="Sparks" instance=ExtResource("spark")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 3.35, 27)
+
+[node name="Labs" parent="Sparks" instance=ExtResource("spark")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.5, 3.35, 24.5)
+
+[node name="Fog" type="Node3D" parent="."]
+
+[node name="ContainmentFloor" type="FogVolume" parent="Fog"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68, -2.4, 18)
+size = Vector3(16, 1.4, 28)
+material = SubResource("floor_fog")
+
+[node name="CoolantTunnel" type="FogVolume" parent="Fog"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0.6, 12.5)
+size = Vector3(8, 1.2, 3)
+material = SubResource("floor_fog")
+
+[node name="Monitors" type="Node3D" parent="."]
+
+[node name="GuardDeskLeft" type="MeshInstance3D" parent="Monitors"]
+transform = Transform3D(0.966, 0, 0.259, 0, 1, 0, -0.259, 0, 0.966, 16.4, 1.08, 40.1)
+gi_mode = 0
+mesh = SubResource("monitor_body")
+
+[node name="Screen" type="MeshInstance3D" parent="Monitors/GuardDeskLeft"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.061)
+gi_mode = 0
+mesh = SubResource("monitor_screen_mesh")
+surface_material_override/0 = ExtResource("screen")
+
+[node name="GuardDeskRight" type="MeshInstance3D" parent="Monitors"]
+transform = Transform3D(0.966, 0, -0.259, 0, 1, 0, 0.259, 0, 0.966, 17.6, 1.08, 40.1)
+gi_mode = 0
+mesh = SubResource("monitor_body")
+
+[node name="Screen" type="MeshInstance3D" parent="Monitors/GuardDeskRight"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.061)
+gi_mode = 0
+mesh = SubResource("monitor_screen_mesh")
+surface_material_override/0 = ExtResource("screen")
+
+[node name="SwingingLamp" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.5, 3.5, 28)
+
+[node name="Cable" type="MeshInstance3D" parent="SwingingLamp"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+gi_mode = 0
+mesh = SubResource("cable_mesh")
+
+[node name="Housing" type="MeshInstance3D" parent="SwingingLamp"]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, -1.0, 0)
+gi_mode = 0
+mesh = SubResource("lamp_housing")
+
+[node name="Tube" type="MeshInstance3D" parent="SwingingLamp"]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, -1.035, 0)
+gi_mode = 0
+mesh = SubResource("lamp_tube")
+
+[node name="Light" type="SpotLight3D" parent="SwingingLamp"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, -1.1, 0)
+light_color = Color(0.804, 0.933, 0.91, 1)
+light_energy = 1.6
+light_volumetric_fog_energy = 1.5
+light_bake_mode = 0
+distance_fade_enabled = true
+distance_fade_begin = 20.0
+distance_fade_length = 5.0
+spot_range = 5.0
+spot_angle = 65.0
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="SwingingLamp"]
+root_node = NodePath("..")
+libraries = {
+&"": SubResource("swing_anims")
+}
+autoplay = &"swing"
+
+[node name="Cables" type="Node3D" parent="."]
+
+[node name="MainCorridor" type="Node3D" parent="Cables"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 3.5, 29.3)
+
+[node name="Cable" type="MeshInstance3D" parent="Cables/MainCorridor"]
+transform = Transform3D(1, 0, 0, 0, 1.3, 0, 0, 0, 1, 0, -0.65, 0)
+gi_mode = 0
+mesh = SubResource("cable_mesh")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Cables/MainCorridor"]
+root_node = NodePath("..")
+libraries = {
+&"": SubResource("sway_anims")
+}
+autoplay = &"sway"
+
+[node name="GeneratorHall" type="Node3D" parent="Cables"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 6, 12)
+
+[node name="Cable" type="MeshInstance3D" parent="Cables/GeneratorHall"]
+transform = Transform3D(1, 0, 0, 0, 2.2, 0, 0, 0, 1, 0, -1.1, 0)
+gi_mode = 0
+mesh = SubResource("cable_mesh")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Cables/GeneratorHall"]
+root_node = NodePath("..")
+libraries = {
+&"": SubResource("sway_anims")
+}
+autoplay = &"sway"
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="Steam/GeneratorWest"]
+stream = ExtResource("hiss")
+volume_db = -14.0
+unit_size = 3.0
+max_distance = 14.0
+bus = &"Ambient"
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="Steam/GeneratorEast"]
+stream = ExtResource("hiss")
+volume_db = -14.0
+unit_size = 3.0
+max_distance = 14.0
+bus = &"Ambient"
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="Steam/CoolantTunnel"]
+stream = ExtResource("hiss")
+volume_db = -14.0
+unit_size = 3.0
+max_distance = 14.0
+bus = &"Ambient"
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="Drips/CoolantTunnel"]
+stream = ExtResource("drips")
+volume_db = -12.0
+unit_size = 3.0
+max_distance = 14.0
+autoplay = true
+bus = &"Ambient"
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="Drips/ContainmentNorth"]
+stream = ExtResource("drips")
+volume_db = -12.0
+unit_size = 3.0
+max_distance = 14.0
+autoplay = true
+bus = &"Ambient"
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="Drips/ContainmentSouth"]
+stream = ExtResource("drips")
+volume_db = -12.0
+unit_size = 3.0
+max_distance = 14.0
+autoplay = true
+bus = &"Ambient"
+
+[node name="Hums" type="Node3D" parent="."]
+
+[node name="Generators" type="Node3D" parent="Hums" groups=["after_power"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 1.2, 16)
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="Hums/Generators"]
+stream = ExtResource("hum")
+volume_db = -10.0
+unit_size = 3.0
+max_distance = 14.0
+bus = &"Ambient"
+
+[node name="GuardMonitors" type="Node3D" parent="Hums" groups=["after_power"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 1.1, 40)
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="Hums/GuardMonitors"]
+stream = ExtResource("hum")
+volume_db = -20.0
+unit_size = 3.0
+max_distance = 6.0
+pitch_scale = 3.0
+bus = &"Ambient"
+
+[node name="Klaxon" type="AudioStreamPlayer3D" parent="Beacons/BeaconWest"]
+stream = ExtResource("klaxon")
+volume_db = -10.0
+unit_size = 3.0
+max_distance = 14.0
+bus = &"Ambient"
+
+[node name="Timer" type="Timer" parent="Beacons/BeaconWest/Klaxon"]
+wait_time = 30.0
+autostart = true
+
+[node name="Story" type="Node3D" parent="."]
+
+[node name="GuardBloodSmear" type="Decal" parent="Story"]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 10.12, 1.3, 42)
+size = Vector3(1.6, 0.4, 1.6)
+texture_albedo = ExtResource("blood_smear")
+upper_fade = 0.1
+lower_fade = 0.1
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
+[node name="GuardDragTrail" type="Decal" parent="Story"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 0.02, 43.5)
+size = Vector3(3.2, 0.4, 0.8)
+texture_albedo = ExtResource("drag_trail")
+upper_fade = 0.1
+lower_fade = 0.1
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
+[node name="MessWick" type="Decal" parent="Story"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 46, 2.2, 30.12)
+size = Vector3(1.6, 0.4, 1.6)
+texture_albedo = ExtResource("wick_symbol")
+modulate = Color(1, 1, 1, 0.85)
+upper_fade = 0.1
+lower_fade = 0.1
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
+[node name="GeneratorTally" type="Decal" parent="Story"]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 8.12, 1.6, 18.5)
+size = Vector3(1.6, 0.4, 0.8)
+texture_albedo = ExtResource("tally_marks")
+modulate = Color(1, 1, 1, 0.8)
+upper_fade = 0.1
+lower_fade = 0.1
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
+[node name="LabsLeak" type="Decal" parent="Story"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.6, 0.02, 14.9)
+size = Vector3(2.2, 0.5, 1.6)
+texture_albedo = ExtResource("leak_pool")
+texture_emission = ExtResource("leak_pool")
+emission_energy = 0.6
+modulate = Color(1, 1, 1, 0.7)
+upper_fade = 0.1
+lower_fade = 0.1
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
+[node name="ContainmentScratches" type="Decal" parent="Story"]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, 75.88, -1.6, 14)
+size = Vector3(1.4, 0.4, 1.4)
+texture_albedo = ExtResource("scratch_marks")
+upper_fade = 0.1
+lower_fade = 0.1
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
+[node name="ContainmentDragTrail" type="Decal" parent="Story"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66, -2.98, 19)
+size = Vector3(3.2, 0.4, 0.8)
+texture_albedo = ExtResource("drag_trail")
+upper_fade = 0.1
+lower_fade = 0.1
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
+[node name="LabsLeakDrip" type="GPUParticles3D" parent="Story"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.62, 1.6, 14.3)
+gi_mode = 0
+amount = 4
+lifetime = 0.8
+visibility_range_end = 30.0
+visibility_aabb = AABB(-0.5, -2, -0.5, 1, 2.5, 1)
+process_material = SubResource("drip_process")
+draw_pass_1 = SubResource("leak_drip_mesh")
+
+[connection signal="timeout" from="Beacons/BeaconWest/Klaxon/Timer" to="Beacons/BeaconWest/Klaxon" method="play"]

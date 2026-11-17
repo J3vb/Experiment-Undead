@@ -4,7 +4,8 @@ class_name WeaponData
 extends Resource
 
 enum FireMode { SEMI, BURST, AUTO }
-enum Slot { PRIMARY, SIDEARM }
+## MELEE is the knife (content/melee/), never a gun slot, the Vault or loot.
+enum Slot { PRIMARY, SIDEARM, MELEE }
 ## What a hit does beyond damage. The server applies CHAIN and FROST; WELL fires an orb instead of a trace.
 enum Effect { NONE, CHAIN, FROST, WELL }
 
@@ -64,6 +65,8 @@ enum Effect { NONE, CHAIN, FROST, WELL }
 @export var hip_position: Vector3 = Vector3(0.22, -0.2, -0.45)
 @export var ads_position: Vector3 = Vector3(0.0, -0.118, -0.32)
 @export var viewmodel_scene: PackedScene
+## The bare gun a teammate's third-person body holds; it has a Muzzle node.
+@export var world_model: PackedScene
 ## How the first-person hands hold this gun; a Reforged copy shares its base grip.
 @export var grip: GripData
 @export var fire_sound: AudioStream

@@ -18,6 +18,7 @@ func before_each() -> void:
 	hud.coop_hud.set_physics_process(false)
 	player = _make_player("Local")
 	teammate = _make_player("Rook")
+	teammate.display_name = "Rook"
 	teammate.position.x = 1.0
 	Events.player_spawned.emit(player)
 
@@ -44,7 +45,7 @@ func test_prompt_names_nearby_teammate_and_bar_tracks_hold() -> void:
 	teammate.is_downed = true
 	player.revive.progress = 0.5
 	hud._process(0.0)
-	assert_eq(hud.prompt_label.text, "Hold F to revive Rook")
+	assert_eq(hud.prompt_label.text, "Hold to revive Rook")
 	assert_true(hud.coop_hud.hold_bar.visible)
 	assert_almost_eq(hud.coop_hud.hold_bar.value, 0.5, 0.001)
 	teammate.position.x = 2.0

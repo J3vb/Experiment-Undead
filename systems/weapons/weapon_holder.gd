@@ -18,6 +18,9 @@ const SWAP_DIP: float = 0.25
 var weapons: Array[Weapon] = []
 var current: Weapon
 var arm_view: PlayerArmView
+var melee: Melee = Melee.new()
+## Comfort setting: scales viewmodel bob and sway (visual only).
+var weapon_bob: float = 1.0
 var _player: Player
 var _camera: Camera3D
 var _sway: Vector2 = Vector2.ZERO
@@ -28,8 +31,14 @@ var _swap_time: float = SWAP_TIME
 
 
 func setup(player: Player, camera: Camera3D) -> void:
+	weapon_bob = Settings.get_value(&"comfort", &"weapon_bob")
+	Settings.changed.connect(_on_setting_changed)
 	_player = player
 	_camera = camera
+	melee.shooter = player
+	melee.camera = camera
+	if not melee.hit_landed.is_connected(_on_hit_landed):
+		melee.hit_landed.connect(_on_hit_landed)
 
 
 ## Adds a gun. When every slot is full it replaces the gun in hand.
@@ -85,8 +94,10 @@ func equip(index: int) -> void:
 		current.trigger_held = false
 		current.aiming = false
 		current.ads_progress = 0.0
-		_swap_time = SWAP_TIME * (_player.get_stat(&"swap_time") if _player else 1.0)
-		_swap_left = _swap_time
+		var swap: float = SWAP_TIME * (_player.get_stat(&"swap_time") if _player else 1.0)
+		if swap >= _swap_left:
+			_swap_time = swap
+			_swap_left = swap
 	current = weapons[index]
 	current.set_active(true)
 	if not Build.is_server() and (_player == null or _player.is_multiplayer_authority()):
@@ -106,8 +117,10 @@ func _bind_arm_view() -> void:
 	arm_view.bind_weapon(current)
 
 
-## Mouse wheel and the 1/2/3 slot keys from one InputFrame.
-func switch_from(frame: InputFrame) -> void:
+## Mouse wheel, the 1/2/3 slot keys and the knife from one InputFrame.
+func handle_presses(frame: InputFrame) -> void:
+	if frame.has(InputFrame.MELEE):
+		swing()
 	if frame.has(InputFrame.NEXT_WEAPON):
 		cycle(1)
 	elif frame.has(InputFrame.PREV_WEAPON):
@@ -120,6 +133,18 @@ func switch_from(frame: InputFrame) -> void:
 func cycle(direction: int) -> void:
 	if weapons.size() > 1 and current:
 		equip(posmod(weapons.find(current) + direction, weapons.size()))
+
+
+## Knife swing: cancels a reload and keeps the gun down (no firing) for the swing.
+func swing() -> void:
+	if is_swapping():
+		return
+	if current:
+		RoundReload.cancel(current)
+		current.trigger_held = false
+	_swap_time = Melee.swing_time()
+	_swap_left = _swap_time
+	melee.swing()
 
 
 ## True while a freshly switched gun is still being raised.
@@ -149,7 +174,7 @@ func set_state(aiming: bool, sprinting: bool, move_factor: float) -> void:
 
 func add_sway(look_delta: Vector2) -> void:
 	var scale_factor: float = lerpf(1.0, 0.25, get_ads_progress())
-	_sway = (_sway + look_delta * sway_amount * scale_factor).limit_length(sway_max)
+	_sway = (_sway + look_delta * sway_amount * scale_factor * weapon_bob).limit_length(sway_max)
 
 
 ## Simulation step for the active weapon. Called from the player's physics tick.
@@ -178,9 +203,14 @@ func _process(delta: float) -> void:
 	var target_rot: Vector3 = Vector3(-_sway.y, -_sway.x, -_sway.x * 0.5)
 	rotation = rotation.lerp(target_rot, clampf(sway_smoothing * delta, 0.0, 1.0))
 	_bob_time += delta * (6.0 + 4.0 * _move_factor)
-	var bob: float = 0.012 * _move_factor * (1.0 - get_ads_progress() * 0.9)
+	var bob: float = 0.012 * weapon_bob * _move_factor * (1.0 - get_ads_progress() * 0.9)
 	var dip: float = SWAP_DIP * _swap_left / maxf(_swap_time, 0.001)
 	position = Vector3(cos(_bob_time * 0.5) * bob, -absf(sin(_bob_time)) * bob - dip, 0.0)
+
+
+func _on_setting_changed(section: StringName, key: StringName, value: Variant) -> void:
+	if section == &"comfort" and key == &"weapon_bob":
+		weapon_bob = value
 
 
 func _on_ammo_changed(in_mag: int, reserve: int, weapon: Weapon) -> void:

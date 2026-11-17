@@ -1,6 +1,6 @@
 # Plan: Rebind controls in Settings
 
-Status: Approved
+Status: Done
 Roadmap: F-05 / issue #105
 Phase: P4
 Size: M
@@ -196,11 +196,11 @@ change. The rows (about 18) are built once in `_ready` of the bindings scene.
 
 ## Acceptance
 
-- [ ] Controls tab lists every action with rebind and reset to default (test_key_bindings)
-- [ ] Rebinds save in settings and survive a restart (test_settings_bindings round trip)
-- [ ] Movement uses physical keys so AZERTY gets ZQSD by default (test_settings_bindings default check)
-- [ ] Unit test catches a key bound to two actions (test_settings_bindings conflict test)
-- [ ] Esc cancels a rebind and can never be bound (test_key_bindings)
+- [x] Controls tab lists every action with rebind and reset to default (test_key_bindings: test_every_rebindable_action_has_a_row_and_pause_has_none, test_reset_button_and_external_changes_update_the_rows)
+- [x] Rebinds save in settings and survive a restart (test_settings_bindings: test_rebind_survives_reload_and_saves_physical_key)
+- [x] Movement uses physical keys so AZERTY gets ZQSD by default (test_settings_bindings: test_movement_defaults_are_physical_wasd)
+- [x] Unit test catches a key bound to two actions (test_settings_bindings: test_binding_owner_catches_a_key_used_by_two_actions)
+- [x] Esc cancels a rebind and can never be bound (test_key_bindings: test_escape_cancels_the_rebind_and_does_not_close_settings; test_settings_bindings: test_pause_escape_and_controller_cannot_be_bound)
 
 ## Risks
 

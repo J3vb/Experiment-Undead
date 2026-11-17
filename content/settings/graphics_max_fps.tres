@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"graphics"
+section = &"graphics"
+key = &"max_fps"
+label = "Max FPS"
+hint = "Limits frames per second. Unlimited removes the cap."
+kind = &"choice"
+options = PackedStringArray("60", "120", "144", "165", "240", "Unlimited")
+option_values = PackedStringArray("60", "120", "144", "165", "240", "0")
+order = 60

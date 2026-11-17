@@ -37,9 +37,19 @@ func after_each() -> void:
 
 func test_defaults_for_missing_file() -> void:
 	var expected: Dictionary = {
-		&"controls": {&"mouse_sensitivity": 0.0022, &"ads_sensitivity_multiplier": 0.8, &"invert_y": false},
-		&"video": {&"fov": 110, &"max_fps": 0, &"vsync": false, &"show_fps": false},
+		&"aim": {&"fov": 110, &"mouse_sensitivity": 0.0022, &"ads_sensitivity_multiplier": 0.8, &"invert_y": false},
+		&"graphics": Graphics.DEFAULTS,
 		&"audio": {&"master_volume": 1.0, &"music_volume": 0.8, &"sfx_volume": 1.0},
+		&"comfort":
+		{&"head_bob": 0.6, &"weapon_bob": 1.0, &"sprint_fov": true, &"damage_effects": 1.0, &"centre_dot": false},
+		&"accessibility":
+		{
+			&"text_scale": 1.0,
+			&"toggle_ads": false,
+			&"toggle_sprint": false,
+			&"toggle_crouch": true,
+			&"reduce_motion": false,
+		},
 		&"network": {&"last_address": "", &"last_port": 7777},
 	}
 	for section: StringName in expected:
@@ -49,16 +59,16 @@ func test_defaults_for_missing_file() -> void:
 
 
 func test_save_load_round_trip() -> void:
-	_settings.set_value(&"controls", &"mouse_sensitivity", 0.004)
-	_settings.set_value(&"controls", &"invert_y", true)
-	_settings.set_value(&"video", &"fov", 100)
+	_settings.set_value(&"aim", &"mouse_sensitivity", 0.004)
+	_settings.set_value(&"aim", &"invert_y", true)
+	_settings.set_value(&"aim", &"fov", 100)
 	_settings.set_value(&"audio", &"music_volume", 0.4)
 	var loaded: Node = SETTINGS_SCRIPT.new()
 	loaded.config_path = PATH
 	add_child_autofree(loaded)
-	assert_eq(loaded.get_value(&"controls", &"mouse_sensitivity"), 0.004)
-	assert_eq(loaded.get_value(&"controls", &"invert_y"), true)
-	assert_eq(loaded.get_value(&"video", &"fov"), 100)
+	assert_eq(loaded.get_value(&"aim", &"mouse_sensitivity"), 0.004)
+	assert_eq(loaded.get_value(&"aim", &"invert_y"), true)
+	assert_eq(loaded.get_value(&"aim", &"fov"), 100)
 	assert_eq(loaded.get_value(&"audio", &"music_volume"), 0.4)
 
 
@@ -68,12 +78,12 @@ func test_clamps_values() -> void:
 		assert_eq(_settings.get_value(&"audio", key), 0.0)
 		_settings.set_value(&"audio", key, 2.0)
 		assert_eq(_settings.get_value(&"audio", key), 1.0)
-	_settings.set_value(&"video", &"fov", 20)
-	assert_eq(_settings.get_value(&"video", &"fov"), 70)
-	_settings.set_value(&"video", &"fov", 200)
-	assert_eq(_settings.get_value(&"video", &"fov"), 120)
-	_settings.set_value(&"video", &"max_fps", -30)
-	assert_eq(_settings.get_value(&"video", &"max_fps"), 0)
+	_settings.set_value(&"aim", &"fov", 20)
+	assert_eq(_settings.get_value(&"aim", &"fov"), 70)
+	_settings.set_value(&"aim", &"fov", 200)
+	assert_eq(_settings.get_value(&"aim", &"fov"), 120)
+	_settings.set_value(&"graphics", &"max_fps", -30)
+	assert_eq(_settings.get_value(&"graphics", &"max_fps"), 0)
 
 
 func test_network_address_and_port_survive_reload() -> void:
@@ -115,8 +125,8 @@ func test_broken_file_falls_back_to_defaults() -> void:
 	file.store_string("[controls]\nmouse_sensitivity=0.5\n[broken")
 	file.close()
 	_settings.load_settings()
-	assert_eq(_settings.get_value(&"controls", &"mouse_sensitivity"), 0.0022)
-	assert_eq(_settings.get_value(&"video", &"fov"), 110)
+	assert_eq(_settings.get_value(&"aim", &"mouse_sensitivity"), 0.0022)
+	assert_eq(_settings.get_value(&"aim", &"fov"), 110)
 
 
 func test_unknown_keys_and_invalid_values_are_ignored() -> void:
@@ -129,9 +139,9 @@ func test_unknown_keys_and_invalid_values_are_ignored() -> void:
 	config.save(PATH)
 	_settings.load_settings()
 	assert_null(_settings.get_value(&"unknown", &"key"))
-	assert_null(_settings.get_value(&"video", &"unknown"))
-	assert_eq(_settings.get_value(&"video", &"fov"), 110)
-	assert_eq(_settings.get_value(&"controls", &"invert_y"), false)
+	assert_null(_settings.get_value(&"aim", &"unknown"))
+	assert_eq(_settings.get_value(&"aim", &"fov"), 110)
+	assert_eq(_settings.get_value(&"aim", &"invert_y"), false)
 	assert_eq(_settings.get_value(&"audio", &"music_volume"), 1.0)
 	_settings.set_value(&"unknown", &"key", 4)
 	assert_null(_settings.get_value(&"unknown", &"key"))
@@ -139,8 +149,8 @@ func test_unknown_keys_and_invalid_values_are_ignored() -> void:
 
 func test_changed_signal_reports_clamped_value() -> void:
 	watch_signals(_settings)
-	_settings.set_value(&"video", &"fov", 500)
-	assert_signal_emitted_with_parameters(_settings, "changed", [&"video", &"fov", 120])
+	_settings.set_value(&"aim", &"fov", 500)
+	assert_signal_emitted_with_parameters(_settings, "changed", [&"aim", &"fov", 120])
 
 
 func test_reset_applies_and_saves_defaults() -> void:
@@ -167,23 +177,66 @@ func test_headless_does_not_apply_video() -> void:
 	if DisplayServer.get_name() != "headless":
 		return
 	Engine.max_fps = 123
-	_settings.set_value(&"video", &"max_fps", 60)
-	_settings.set_value(&"video", &"vsync", true)
+	_settings.set_value(&"graphics", &"max_fps", 60)
+	_settings.set_value(&"graphics", &"vsync", true)
 	_settings.load_settings()
 	assert_eq(Engine.max_fps, 123)
 
 
 func test_local_input_uses_loaded_controls_and_updates() -> void:
-	_settings.set_value(&"controls", &"mouse_sensitivity", 0.004)
+	_settings.set_value(&"aim", &"mouse_sensitivity", 0.004)
 	Settings.load_settings()
 	var local: LocalInput = LocalInput.new()
 	add_child_autofree(local)
 	local._look_accum = Vector2(10.0, 5.0)
 	assert_almost_eq(local.sample(1).look, Vector2(0.04, 0.02), Vector2.ONE * 0.000001)
-	Settings.set_value(&"controls", &"mouse_sensitivity", 0.01)
-	Settings.set_value(&"controls", &"invert_y", true)
+	Settings.set_value(&"aim", &"mouse_sensitivity", 0.01)
+	Settings.set_value(&"aim", &"invert_y", true)
 	local._look_accum = Vector2(10.0, 5.0)
 	assert_almost_eq(local.sample(2).look, Vector2(0.1, -0.05), Vector2.ONE * 0.000001)
 	Settings.reset_to_defaults()
 	assert_eq(local.mouse_sensitivity, 0.0022)
 	assert_false(local.invert_y)
+
+
+func test_old_video_keys_load_into_graphics() -> void:
+	var config: ConfigFile = ConfigFile.new()
+	config.set_value("video", "fov", 95)
+	config.set_value("video", "vsync", true)
+	config.set_value("video", "max_fps", 144)
+	config.set_value("video", "show_fps", true)
+	config.save(PATH)
+	_settings.load_settings()
+	assert_eq(_settings.get_value(&"aim", &"fov"), 95)
+	assert_eq(_settings.get_value(&"graphics", &"vsync"), true)
+	assert_eq(_settings.get_value(&"graphics", &"max_fps"), 144)
+	assert_eq(_settings.get_value(&"graphics", &"show_fps"), true)
+	_settings.set_value(&"graphics", &"vsync", false)
+	var saved: ConfigFile = ConfigFile.new()
+	saved.load(PATH)
+	assert_eq(saved.get_value("graphics", "vsync"), false, "the new section wins once saved")
+	_settings.load_settings()
+	assert_eq(_settings.get_value(&"graphics", &"vsync"), false)
+
+
+func test_preset_writes_its_keys_and_a_hand_change_makes_it_custom() -> void:
+	_settings.set_value(&"graphics", &"preset", Graphics.Preset.LOW)
+	for key: StringName in Graphics.PRESETS[Graphics.Preset.LOW]:
+		assert_eq(_settings.get_value(&"graphics", key), Graphics.PRESETS[Graphics.Preset.LOW][key], key)
+	_settings.set_value(&"graphics", &"preset", Graphics.Preset.HIGH)
+	assert_eq(_settings.get_value(&"graphics", &"aa"), Graphics.Aa.MSAA_4X)
+	assert_eq(_settings.get_value(&"graphics", &"preset"), Graphics.Preset.HIGH, "applying a preset keeps it")
+	_settings.set_value(&"graphics", &"brightness", 1.2)
+	assert_eq(_settings.get_value(&"graphics", &"preset"), Graphics.Preset.HIGH, "brightness is not part of presets")
+	_settings.set_value(&"graphics", &"shadows", 0)
+	assert_eq(_settings.get_value(&"graphics", &"preset"), Graphics.Preset.CUSTOM)
+	assert_eq(_settings.get_value(&"graphics", &"shadows"), 0, "picking Custom keeps the hand-set values")
+
+
+func test_graphics_values_clamp() -> void:
+	_settings.set_value(&"graphics", &"aa", 99)
+	assert_eq(_settings.get_value(&"graphics", &"aa"), Graphics.Aa.TAA)
+	_settings.set_value(&"graphics", &"render_scale", 0.1)
+	assert_eq(_settings.get_value(&"graphics", &"render_scale"), 0.5)
+	_settings.set_value(&"graphics", &"brightness", 9.0)
+	assert_eq(_settings.get_value(&"graphics", &"brightness"), 1.5)

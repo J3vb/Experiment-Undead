@@ -51,7 +51,7 @@ func show_results(stats: Dictionary, seconds: int = 0, rules: XpRules = DEFAULT_
 		level_ups.remove_child(row)
 		row.free()
 	map_time.text = "Halcyon Labs · %02d:%02d" % [seconds / 60, seconds % 60]
-	round_label.text = str(stats.get("round", 0))
+	round_label.text = str(stats.get("round", 0)) + ("  New best" if stats.get("new_best", false) else "")
 	kills_label.text = _format_number(int(stats.get("kills", 0)))
 	headshots_label.text = _format_number(int(stats.get("headshots", 0)))
 	points_label.text = _format_number(int(stats.get("points", 0)))
@@ -187,9 +187,10 @@ func _animate_panels() -> void:
 	if _panel_tween:
 		_panel_tween.kill()
 	_panel_tween = create_tween().set_parallel(true)
+	var slide: float = 0.0 if Settings.get_value(&"accessibility", &"reduce_motion") else 12.0
 	for panel: Control in [$StatsPanel, $LootPanel, $ProgressPanel]:
 		panel.modulate.a = 0.0
-		panel.position.y = size.y * 0.25 + 12.0
+		panel.position.y = size.y * 0.25 + slide
 		_panel_tween.tween_property(panel, "modulate:a", 1.0, 0.12)
 		_panel_tween.tween_property(panel, "position:y", size.y * 0.25, 0.12)
 

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"audio"
+section = &"audio"
+key = &"sfx_volume"
+label = "Effects volume"
+hint = "Weapons, zombies and world sounds."
+kind = &"slider"
+min_value = 0.0
+max_value = 1.0
+step = 0.01
+display_scale = 100.0
+order = 30

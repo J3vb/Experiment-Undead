@@ -60,11 +60,11 @@ func test_equipping_the_gun_in_hand_is_free() -> void:
 
 
 func test_slot_keys_pick_the_slot() -> void:
-	player.weapons.switch_from(_frame(InputFrame.SLOT_1))
+	player.weapons.handle_presses(_frame(InputFrame.SLOT_1))
 	assert_eq(player.weapons.current.data, PISTOL)
-	player.weapons.switch_from(_frame(InputFrame.SLOT_2))
+	player.weapons.handle_presses(_frame(InputFrame.SLOT_2))
 	assert_eq(player.weapons.current.data, RIFLE)
-	player.weapons.switch_from(_frame(InputFrame.SLOT_3))
+	player.weapons.handle_presses(_frame(InputFrame.SLOT_3))
 	assert_eq(player.weapons.current.data, RIFLE, "no third gun without Mule")
 
 

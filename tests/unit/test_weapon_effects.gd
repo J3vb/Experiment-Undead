@@ -79,3 +79,16 @@ func test_unknown_weapon_id_applies_plain_damage() -> void:
 	assert_lt(zombie.health.current, 1000.0)
 	assert_eq(neighbour.health.current, 1000.0)
 	assert_false(zombie.frozen)
+
+
+func test_knife_shattering_a_frozen_zombie_still_counts_as_melee() -> void:
+	var zombie: Zombie = _zombie(Vector3.ZERO)
+	zombie.frozen = true
+	watch_signals(Events)
+	var info: DamageInfo = DamageInfo.create(150.0, self, DamageInfo.Type.MELEE)
+	info.weapon_id = Melee.KNIFE.id
+	_claims._weapons[Melee.KNIFE.id] = Melee.KNIFE
+	_claims.apply_server_hit(zombie.hit_zones[1], info)
+	assert_true(zombie.health.is_dead, "the shatter kills")
+	var killed: Array = get_signal_parameters(Events, "enemy_killed")
+	assert_eq((killed[1] as DamageInfo).damage_type, DamageInfo.Type.MELEE)

@@ -5,7 +5,7 @@
 class_name SaveFile
 extends RefCounted
 
-const CURRENT_VERSION: int = 1
+const CURRENT_VERSION: int = 2
 const VERSION_KEY: String = "save_version"
 
 
@@ -59,9 +59,17 @@ static func upgrade(data: Dictionary, steps: Array[Callable]) -> Dictionary:
 static func _migrations() -> Array[Callable]:
 	return [
 		_v0_to_v1,
+		_v1_to_v2,
 	]
 
 
 ## Version 0 = saves written before versioning existed: same fields, no number.
 static func _v0_to_v1(data: Dictionary) -> Dictionary:
+	return data
+
+
+## Version 2 adds the best run per map: {map: {"round": int, "kills": int}}.
+static func _v1_to_v2(data: Dictionary) -> Dictionary:
+	if not data.get("best_runs") is Dictionary:
+		data["best_runs"] = {}
 	return data

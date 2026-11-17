@@ -2,7 +2,8 @@
 extends SceneTree
 
 const MENU_SCENE: String = "res://systems/ui/main_menu.tscn"
-const SESSION_SCENE: String = "res://systems/game/game_session.tscn"
+## Join and Host and play land in the hub (F-47 step 4).
+const SESSION_SCENE: String = "res://systems/game/hub_session.tscn"
 const TARGET: String = "127.0.0.1:24659"
 const HOST_PORT: int = 24658
 
@@ -49,7 +50,7 @@ func _timeout_flow() -> void:
 	var started: int = Time.get_ticks_msec()
 	await _start_join()
 	if current_scene.scene_file_path != SESSION_SCENE:
-		_failures.append("Join did not enter the existing match scene")
+		_failures.append("Join did not enter the hub scene")
 		return
 	_check_connecting()
 	while Time.get_ticks_msec() - started < 7000 and current_scene.scene_file_path == SESSION_SCENE:
@@ -79,7 +80,7 @@ func _timeout_flow() -> void:
 func _cancel_flow() -> void:
 	await _start_join()
 	if current_scene.scene_file_path != SESSION_SCENE:
-		_failures.append("Join did not enter the match scene")
+		_failures.append("Join did not enter the hub scene")
 		return
 	_check_connecting()
 	var cancel: InputEventAction = InputEventAction.new()
@@ -108,7 +109,7 @@ func _host_flow() -> void:
 	(menu.get_node("Screens/Root/HostPanel/Box/Start") as Button).pressed.emit()
 	await _settle()
 	if current_scene.scene_file_path != SESSION_SCENE:
-		_failures.append("Host did not enter the existing match scene")
+		_failures.append("Host did not enter the hub scene")
 		return
 	_check(_net.is_online() and _net.is_authority(), "Host opens a listen server")
 	_check(_net.pending_join.is_empty(), "Host has no pending client join")
