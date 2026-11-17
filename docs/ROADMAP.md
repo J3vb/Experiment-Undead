@@ -59,7 +59,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | Id | Feature | Issue | Needs | Plan | Size | Status |
 |---|---|---|---|---|---|---|
 | F-40 | Machines, doors and power-ups in co-op (rest after F-02) | #126 | F-02 | needed | M | Todo |
-| F-41 | Third-person walk, run and downed animations | #128 | F-11 | [needed](plans/teammate-animations.md) | L | Planning |
+| F-41 | Third-person walk, run and downed animations | #128 | F-11 | [needed](plans/teammate-animations.md) | L | Ready |
 | F-42 | Gear in first person | #129 | F-11 | needed | M | Todo |
 | F-43 | 4-player play-test to round 20 | #127 | F-40, F-41 | issue | S | Todo |
 | F-44 | Finish the server package | #130 | F-43 | needed | L | Todo |

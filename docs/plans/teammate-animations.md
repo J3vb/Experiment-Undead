@@ -1,10 +1,10 @@
 # Plan: Teammate animations in third person
 
-Status: Review
+Status: Approved
 Roadmap: F-41 / issue #128
 Phase: P7
 Size: L
-Approved by:
+Approved by: Codex plan review on PR #217 (2026-11-17), and the person (decision card, 2026-11-17, all 3 steps)
 
 ## Goal
 
