@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://systems/player/player.gd" id="1"]
 [ext_resource type="Script" path="res://systems/player/player_camera.gd" id="2"]
@@ -9,6 +9,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/player_hurt.wav" id="7"]
 [ext_resource type="PackedScene" path="res://assets/models/characters/player.glb" id="8_body"]
 [ext_resource type="Script" path="res://systems/gear/gear_rig.gd" id="9_rig"]
+[ext_resource type="PackedScene" path="res://systems/player/footsteps.tscn" id="10_steps"]
 
 [sub_resource type="SceneReplicationConfig" id="pose_sync"]
 properties/0/path = NodePath(".:position")
@@ -72,6 +73,8 @@ script = ExtResource("6")
 [node name="HurtSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("7")
 bus = &"Player"
+
+[node name="Footsteps" parent="." instance=ExtResource("10_steps")]
 
 [node name="Body" type="Node3D" parent="."]
 rotation = Vector3(0, 3.14159265, 0)

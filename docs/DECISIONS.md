@@ -106,6 +106,7 @@ built, what was simplified on purpose, and what is still to do.
   equipment gameplay or chain simulation.
 
 - **Music first slice:** generated Halcyon Bed + Drive (100 BPM, D minor, 16 bars), synchronized in a scene-local MusicPlayer; round/proximity intensity, 3 s combat/breather fades and 2 s game-over fade, on the existing Music bus. Warm 70 BPM breather also lives in the standalone main-menu scene (menu flow is not built yet). Four stems, stingers, ducking and `music_config.tres` wait.
+- **Player footsteps (provisional):** a `Footsteps` node under the Player plays the local player's own steps and landing thud on the Player bus (under SFX); remote players are silent for now. One step every 0.5 s walking, 0.34 s sprinting, 0.72 s crouched, none below 1.2 m/s or in the air. Landings under 3 m/s are silent, then the thud goes from -14 dB to full at 10 m/s and drops in pitch. Floors built from the `rust` or `pipe` materials sound metal (the list is on the scene), everything else concrete. Four generated variations per surface (`tools/assets/footstep_sfx.py`) through an `AudioStreamRandomizer` (±6% pitch, ±1.5 dB). Zombie footsteps, the Foley bus and SoundManager pooling wait for the sound foundation step.
 
 - **Navmesh bakes at load** from the grey-box blocks instead of being baked ahead. Keeps edits safe while the map changes; switch to a baked `.tres` when the layout settles.
 - **Zombie AI tiers:** only the re-path interval is tiered. Frame-skipping by tier and off-screen checks come with the performance pass.

@@ -25,7 +25,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-00 | Foundation fixes, in the ranked order of [FOUNDATIONS.md](FOUNDATIONS.md#foundation-fixes-in-order) | - | - | per fix: 1 (done, no plan: one CI PR), 2 = F-02 (done), [3](plans/item-effects-server.md) (done), [4](plans/ids-into-data.md) (done), [5](plans/ui-router.md) (done), 6 (done, no plan: one PR per issue), [7](plans/hot-path-allocations.md) (building) | - | Todo |
 | F-01 | First-person arms on the guns | #102 | - | issue | S | Check (PR #136 fitted arms) |
 | F-02 | Co-op clients can use doors, wall-buys and machines | #138 | F-00 | [done](plans/coop-interactions.md) | M | Done (play-test: #191) |
-| F-03 | Player footsteps and landing sounds | #103 | - | issue | S | Todo |
+| F-03 | Player footsteps and landing sounds | #103 | - | issue | S | Done |
 | F-04 | Halcyon Labs ambience | #104 | - | issue | S | Todo |
 | F-05 | Rebind controls in Settings | #105 | - | needed | M | Todo |
 | F-06 | Make the rounds 1-10 soak test a required CI check | #107 | - | issue | S | Todo |
