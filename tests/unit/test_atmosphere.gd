@@ -1,6 +1,7 @@
 ## Atmosphere: after_power nodes stay hidden until the Level's power comes on,
 ## before_power nodes hide then, and a scene added after power (a late joiner)
-## starts in the powered state.
+## starts in the powered state. Monitor screens anywhere under the Level get the
+## "powered" instance uniform.
 extends GutTest
 
 
@@ -50,3 +51,23 @@ func test_outside_a_level_stays_unpowered() -> void:
 	var atmosphere: Atmosphere = _atmosphere()
 	add_child_autofree(atmosphere)
 	assert_false(atmosphere.powered)
+
+
+func _screen(parent: Node) -> MeshInstance3D:
+	var screen: MeshInstance3D = MeshInstance3D.new()
+	screen.mesh = QuadMesh.new()
+	screen.set_surface_override_material(0, Atmosphere.MONITOR_SCREEN)
+	parent.add_child(screen)
+	return screen
+
+
+func test_screens_under_the_level_follow_the_power() -> void:
+	var level: Level = _level(false)
+	var prop_screen: MeshInstance3D = _screen(level)
+	var atmosphere: Atmosphere = _atmosphere()
+	level.add_child(atmosphere)
+	add_child_autofree(level)
+	assert_eq(atmosphere.screens().size(), 1, "finds the prop's screen outside its own scene")
+	assert_eq(prop_screen.get_instance_shader_parameter(&"powered"), 0.0, "dark before power")
+	level.turn_power_on()
+	assert_eq(prop_screen.get_instance_shader_parameter(&"powered"), 1.0, "lit after power")
