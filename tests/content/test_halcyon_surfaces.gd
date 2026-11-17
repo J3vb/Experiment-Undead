@@ -19,11 +19,14 @@ const FLAT_TODAY: Array[String] = [
 ]
 ## Prop models whose built-in slots still need the remap to levels/materials (step 3).
 const FLAT_MODELS_TODAY: Array[String] = [
+	"res://assets/models/dressing/body_bag.glb",
 	"res://assets/models/dressing/hazard_sign.glb",
 	"res://assets/models/dressing/lab_papers.glb",
 	"res://assets/models/dressing/mess_spill.glb",
 	"res://assets/models/dressing/pipe_run_3.glb",
 	"res://assets/models/dressing/pipe_run_6.glb",
+	"res://assets/models/props/barricade.glb",
+	"res://assets/models/props/covered_gurney.glb",
 	"res://assets/models/props/crate_large.glb",
 	"res://assets/models/props/crate_long.glb",
 	"res://assets/models/props/crate_stack.glb",

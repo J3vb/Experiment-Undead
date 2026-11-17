@@ -1,6 +1,6 @@
 # Plan: Halcyon Labs detail props
 
-Status: Building
+Status: Done
 Roadmap: F-15
 Phase: P4 (v0.1 Vertical slice)
 Size: M
@@ -249,13 +249,15 @@ No run-time code. Budget, checked by tests and `check_models.py`:
 
 ## Acceptance
 
-- [ ] No room prop in Halcyon Labs is a plain box (content test: every prop
+- [x] No room prop in Halcyon Labs is a plain box (content test: every prop
       has a `model`).
-- [ ] Every model passes `check_models.py` and the glTF validator.
-- [ ] Nav, clearance, spawn and table-loop tests pass unchanged.
-- [ ] Prop and dressing caps hold.
-- [ ] The person picked the look on each area's decision card.
+- [x] Every model passes `check_models.py` and the glTF validator.
+- [x] Nav, clearance, spawn and table-loop tests pass unchanged.
+- [x] Prop and dressing caps hold.
+- [x] The person picked the look on each area's decision card (one card after the Labs: keep this style for every area).
 - [ ] fps check after the re-bake holds 120 fps at 1440p (the person's PC).
+      Open: runs with the F-13 GPU re-bake prompt
+      (`/mnt/project-files/halcyon-labs/f13-rebake-and-fps-prompt.md`).
 
 ## Risks
 

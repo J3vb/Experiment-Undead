@@ -47,7 +47,7 @@ jobs:
             props/generator.glb props/holding_cell.glb props/supply_truck.glb props/crate_stack.glb \
             props/crate_long.glb props/crate_large.glb props/fuel_drum.glb props/forklift.glb \
             dressing/lab_papers.glb dressing/mess_spill.glb dressing/pipe_run_3.glb dressing/pipe_run_6.glb \
-            dressing/hazard_sign.glb; do
+            props/barricade.glb props/covered_gurney.glb dressing/hazard_sign.glb dressing/body_bag.glb; do
             test -s "$RUNNER_TEMP/models/$f" || { echo "missing $f"; exit 1; }
           done
           for name in charm_dog_tags charm_vial charm_keycard charm_dosimeter charm_coin implant_reflex implant_lung implant_spine implant_ocular implant_relay; do
