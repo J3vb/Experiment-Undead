@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"accessibility"
+section = &"accessibility"
+key = &"text_scale"
+label = "Text size"
+hint = "Makes all menu and HUD text and panels bigger or smaller. The 3D view is not affected."
+kind = &"slider"
+min_value = 0.8
+max_value = 1.5
+step = 0.05
+display_scale = 100.0
+order = 10
+apply_on_release = true

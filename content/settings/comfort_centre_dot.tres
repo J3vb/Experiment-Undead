@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"comfort"
+section = &"comfort"
+key = &"centre_dot"
+label = "Centre dot"
+hint = "Always shows a small dot in the middle of the screen, also while aiming or sprinting. Helps with motion sickness."
+kind = &"toggle"
+order = 50

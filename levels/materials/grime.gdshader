@@ -1,10 +1,14 @@
 // Painted or concrete surface with world-space grime: vertical drip streaks,
 // a dirt band near the floor and blotchy stains on ceilings. Works on any mesh
 // without UVs, so modular kit pieces never show a repeating pattern.
+// Optional texture sets (tools/assets/surface_textures.py) add surface detail,
+// mapped in world space too: albedo_map tints base_color, orm_map packs
+// occlusion, roughness and a metal mask. Without them the surface looks as before.
 shader_type spatial;
 
 uniform vec3 base_color : source_color = vec3(0.37, 0.43, 0.41);
 uniform float roughness : hint_range(0.0, 1.0) = 0.75;
+uniform float metallic : hint_range(0.0, 1.0) = 0.0;
 uniform sampler2D noise : hint_default_white, repeat_enable, filter_linear_mipmap;
 uniform sampler2D detail_normal : hint_normal, repeat_enable, filter_linear_mipmap;
 uniform float normal_strength : hint_range(0.0, 2.0) = 0.12;
@@ -12,6 +16,11 @@ uniform float streaks : hint_range(0.0, 1.0) = 0.5;
 uniform float floor_dirt : hint_range(0.0, 1.0) = 0.5;
 uniform float stains : hint_range(0.0, 1.0) = 0.4;
 uniform float ceiling_height = 3.0;
+uniform sampler2D albedo_map : source_color, hint_default_white, repeat_enable, filter_linear_mipmap_anisotropic;
+uniform sampler2D normal_map : hint_normal, repeat_enable, filter_linear_mipmap_anisotropic;
+uniform sampler2D orm_map : hint_default_white, repeat_enable, filter_linear_mipmap_anisotropic;
+uniform float texel_scale = 2.0;
+uniform float map_normal_strength : hint_range(0.0, 2.0) = 1.0;
 
 varying vec3 world_pos;
 varying vec3 world_normal;
@@ -42,9 +51,17 @@ void fragment() {
 	float grime = mix(wall_grime, stain + stain_ring * stains * 0.6, step(0.5, facing_up));
 	float variation = mix(0.88, 1.08, blotch);
 
-	ALBEDO = base_color * variation * (1.0 - grime * 0.75);
-	ROUGHNESS = clamp(roughness + grime * 0.2 - streak * 0.35, 0.0, 1.0);
+	vec2 map_uv = mix(vec2(along, -world_pos.y), world_pos.xz, step(0.5, facing_up)) / texel_scale;
+	vec3 orm = texture(orm_map, map_uv).rgb;
+
+	ALBEDO = base_color * texture(albedo_map, map_uv).rgb * variation * (1.0 - grime * 0.75);
+	ROUGHNESS = clamp(roughness * orm.g + grime * 0.2 - streak * 0.35, 0.0, 1.0);
+	METALLIC = metallic * orm.b;
+	AO = orm.r;
 	vec2 detail_uv = mix(wall_uv, world_pos.xz, step(0.5, facing_up)) * 0.6;
-	NORMAL_MAP = texture(detail_normal, detail_uv).rgb;
-	NORMAL_MAP_DEPTH = normal_strength;
+	// Only x and y are read: compressed normal maps carry two channels.
+	vec2 detail = (texture(detail_normal, detail_uv).rg * 2.0 - 1.0) * normal_strength;
+	vec2 surface = (texture(normal_map, map_uv).rg * 2.0 - 1.0) * map_normal_strength;
+	vec2 bent = detail + surface;
+	NORMAL_MAP = vec3(bent * 0.5 + 0.5, 1.0);
 }
