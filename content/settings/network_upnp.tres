@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"network"
+section = &"network"
+key = &"upnp"
+label = "Open router port automatically"
+hint = "Asks your home router (UPnP) to open the world's port so friends over the internet can join. Off: open UDP ports by hand, or only friends on your network can join."
+kind = &"toggle"
+order = 15

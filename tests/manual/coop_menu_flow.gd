@@ -114,6 +114,7 @@ func _cancel_flow() -> void:
 func _host_flow(with_friend: bool = false) -> void:
 	var menu: Control = current_scene as Control
 	_settings.set_value(&"network", &"last_port", HOST_PORT)
+	_settings.set_value(&"network", &"upnp", false)  # never ask a real router in tests
 	menu.enter_button.pressed.emit()
 	await _settle()
 	if current_scene.scene_file_path != SESSION_SCENE:
