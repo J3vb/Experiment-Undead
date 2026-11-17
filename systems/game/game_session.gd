@@ -157,6 +157,7 @@ func _on_player_added(player: Player) -> void:
 		progression.set_start_total(player, _start_total_xp)
 		_profile_player = player
 		loot.player = player
+	player.display_name = handshake.player_name(player.net_id) if player.state_sync.is_coop() else ""
 	player.spawn(self, starting_loadout)
 	if player == _profile_player and _profile:
 		var loadout: Variant = _profile.to_dict().get("loadout", {})

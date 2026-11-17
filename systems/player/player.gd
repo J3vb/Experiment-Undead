@@ -31,6 +31,8 @@ extends CharacterBody3D
 ## Set by GameSession when spawned. Gives access to the session RNG and tick.
 var session: GameSession
 var net_id: int = 0
+## Character name from the co-op hello; empty in solo.
+var display_name: String = ""
 
 var input_enabled: bool = true
 var is_sprinting: bool = false
