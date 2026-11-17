@@ -97,4 +97,6 @@ static func remove_friend(friend: Node) -> void:
 	close_side(friend)
 	if api.peer_authenticating.is_connected(_admit):
 		api.peer_authenticating.disconnect(_admit)
+	# A static Callable that outlives the tree's multiplayer crashes the engine at exit.
+	_admit = Callable()
 	api.auth_callback = Callable()
