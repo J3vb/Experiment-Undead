@@ -86,6 +86,15 @@ func test_downed_wins_over_crouch_and_crawls_when_moving() -> void:
 	assert_eq(_state(), "ground", "standing up again returns to the ground clips")
 
 
+func test_pose_updates_that_skip_ticks_still_read_as_steady_running() -> void:
+	var sprint: float = player.sprint_speed
+	for frame: int in 60:
+		await get_tree().physics_frame
+		if frame % 3 == 0:
+			player.global_position += Vector3(0.0, 0.0, -sprint) * get_physics_process_delta_time() * 3.0
+	assert_almost_eq(-animator.local_velocity.z, sprint, sprint * 0.1, "a 20 Hz pose stream is still a sprint")
+
+
 func test_teleport_is_not_read_as_running() -> void:
 	player.global_position += Vector3(50.0, 0.0, 0.0)
 	await wait_physics_frames(2)

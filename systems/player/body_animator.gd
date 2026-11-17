@@ -9,8 +9,10 @@ const WALK_CLIP_SPEED: float = 3.1
 const RUN_CLIP_SPEED: float = 5.5
 const CROUCH_CLIP_SPEED: float = 1.6
 const MAX_TIME_SCALE: float = 1.7
-## A position jump faster than this is a teleport (respawn), not movement.
-const TELEPORT_SPEED: float = 20.0
+## A position jump longer than this between two pose updates is a teleport (respawn), not movement.
+const TELEPORT_DISTANCE: float = 2.5
+## Synced positions can skip ticks; a body that has not moved for this long is standing still.
+const STALE_TIME: float = 0.25
 const SMOOTHING: float = 12.0
 ## Downed players crawl at this share of walk speed (Player._move).
 const DOWNED_SPEED_SHARE: float = 0.2
@@ -38,6 +40,8 @@ var aim: AimPitch
 var local_velocity: Vector3 = Vector3.ZERO
 
 var _last_position: Vector3 = Vector3.ZERO
+var _since_update: float = 0.0
+var _measured: Vector3 = Vector3.ZERO
 var _state: StringName = GROUND
 
 
@@ -68,15 +72,21 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	var position: Vector3 = player.global_position
-	var raw: Vector3 = (position - _last_position) / maxf(delta, 0.0001)
-	_last_position = position
-	raw.y = 0.0
-	if raw.length() > TELEPORT_SPEED:
-		raw = Vector3.ZERO
-	var local: Vector3 = player.global_basis.inverse() * raw
-	local_velocity = local_velocity.lerp(local, 1.0 - exp(-SMOOTHING * delta))
+	_measure(delta)
 	_apply(pick_state(player.is_downed, player.is_crouching))
+
+
+## Velocity over the time since the position last changed, so pose updates that skip ticks still read as steady.
+func _measure(delta: float) -> void:
+	_since_update += delta
+	var step: Vector3 = player.global_position - _last_position
+	step.y = 0.0
+	if not step.is_zero_approx() or _since_update >= STALE_TIME:
+		var moved: bool = step.length() <= TELEPORT_DISTANCE
+		_measured = player.global_basis.inverse() * (step / _since_update) if moved else Vector3.ZERO
+		_last_position = player.global_position
+		_since_update = 0.0
+	local_velocity = local_velocity.lerp(_measured, 1.0 - exp(-SMOOTHING * delta))
 
 
 ## Downed wins over crouch, crouch over standing.
