@@ -63,9 +63,9 @@ func _can_reach(viewer: Player) -> bool:
 
 static func item_name(data: Dictionary) -> String:
 	var base: StringName = StringName(data.get("base", ""))
-	if Content.ids(&"weapons").has(base):
+	if Content.has(&"weapons", base):
 		return Content.weapon(base).display_name
-	if Content.ids(&"loot").has(base):
+	if Content.has(&"loot", base):
 		var gear: GearBaseData = Content.get_item(&"loot", base) as GearBaseData
 		if gear:
 			return gear.display_name

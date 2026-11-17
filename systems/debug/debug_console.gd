@@ -217,7 +217,7 @@ func _spawn(args: PackedStringArray, session: GameSession) -> void:
 			return
 		count = args[1].to_int()
 	var id: StringName = StringName(args[0])
-	if not Content.ids(&"enemies").has(id):
+	if not Content.has(&"enemies", id):
 		write_line("Error: unknown enemy '%s'." % id)
 		return
 	var enemy: EnemyData = Content.enemy(id)

@@ -82,7 +82,7 @@ does nothing until someone edits code:
 - which guns get a shot-peak export (#163)
 - drop chance and rarity floor per enemy id in `LootService` (#148)
 - serum badge text and colour per serum id in the HUD (#154)
-- `Content.get_item()` reloads from disk on every call (#140)
+- ~~`Content.get_item()` reloads from disk on every call (#140)~~ fixed: Content keeps loaded resources
 
 **Fixed when:** each of these is a field on the matching data type, and CI
 fails when a content id literal appears in `core/` or `systems/` (with a

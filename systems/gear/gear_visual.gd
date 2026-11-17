@@ -14,7 +14,7 @@ const BASES: Dictionary[StringName, StringName] = {
 
 
 static func find(visual_id: StringName) -> GearVisual:
-	if not Content.ids(&"gear_visuals").has(visual_id):
+	if not Content.has(&"gear_visuals", visual_id):
 		return null
 	return Content.get_item(&"gear_visuals", visual_id) as GearVisual
 

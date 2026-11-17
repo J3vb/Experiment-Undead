@@ -144,7 +144,7 @@ func visible_stash_indices() -> Array[int]:
 		if item.is_empty():
 			continue
 		var base: StringName = StringName(item.get("base", ""))
-		var weapon: bool = Content.ids(&"weapons").has(base)
+		var weapon: bool = Content.has(&"weapons", base)
 		var gear: bool = Inventory.slot_for(item) in [&"vest", &"charm", &"implant"]
 		if (%Category.selected == 1 and not weapon) or (%Category.selected == 2 and not gear):
 			continue
@@ -219,9 +219,9 @@ func _item_name(item: Dictionary) -> String:
 	if item.is_empty():
 		return "Empty"
 	var base: StringName = StringName(item.get("base", ""))
-	if Content.ids(&"weapons").has(base):
+	if Content.has(&"weapons", base):
 		return Content.weapon(base).display_name
-	if Content.ids(&"loot").has(base):
+	if Content.has(&"loot", base):
 		var gear: GearBaseData = Content.get_item(&"loot", base) as GearBaseData
 		if gear != null:
 			return gear.display_name
