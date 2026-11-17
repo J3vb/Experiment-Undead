@@ -292,11 +292,8 @@ func check_squad() -> void:
 	if is_over or not multiplayer.is_server():
 		return
 	var squad: Array[Player] = get_players()
-	if squad.is_empty():
+	if squad.is_empty() or squad.any(func(p: Player) -> bool: return p.is_alive() or p.can_self_revive()):
 		return
-	for player: Player in squad:
-		if player.is_alive() or player.can_self_revive():
-			return
 	_end_match(false)
 
 
@@ -332,6 +329,8 @@ func _receive_match_end(stats: Dictionary) -> void:
 		_match_stats["xp"] = progression.get_xp(_profile_player)
 		_match_stats["start_total_xp"] = _start_total_xp
 		_match_stats["total_xp"] = progression.get_total_xp(_profile_player)
+		if _profile:
+			_match_stats["new_best"] = _profile.record_run(level_scene.resource_path.get_base_dir().get_file(), stats)
 	director.stop()
 	if not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
 		level.process_mode = Node.PROCESS_MODE_DISABLED
