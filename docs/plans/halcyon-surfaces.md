@@ -182,11 +182,11 @@ Autoloads, managers or base classes added: none.
 
 ### Step 3: Props, wall panels and placeholders
 
-- Build: sets `painted_metal` (panel seams, rivets), `brushed_steel`,
-  `rubber`, `wood_crate`; materials `pipe`, `panel_trim`, `wood`, `rust`,
-  `specimen_tank` frame, new `steel`, `glass`, `rubber`; door placeholder
-  material in `map.tscn`; flat parts of interactable scenes that appear in
-  the map.
+- Build: sets `painted_metal` (orange-peel paint, scratches, chips),
+  `brushed_steel`, `rubber`, `smudge` (glass), `specimen_fluid`; materials
+  `panel_paint`, `panel_trim`, `pipe`, `specimen_tank`, new `steel`, `glass`,
+  `rubber`; door and machine placeholder materials in `map.tscn`. `wood`,
+  `rust` and the other noise materials are already textured.
 - Files: those materials, the interactable `.tscn` files with flat parts,
   `map.tscn` door lines.
 - Tests: surface test allow-list empty; `test_shared_materials.gd` for the
