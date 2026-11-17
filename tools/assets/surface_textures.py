@@ -8,7 +8,7 @@ roughness (G) and a metal mask (B) that the material's metallic value scales.
 
     python tools/assets/surface_textures.py [set ...]
 
-writes assets/textures/halcyon/<set>_{albedo,normal,orm}.png (ORM at half size: it
+writes assets/textures/halcyon/<set>_{albedo,normal,orm}.png and decal_<name>.png (ORM at half size: it
 holds only soft detail, and the folder must stay small without Git LFS). The script is
 the source; never edit the PNGs by hand.
 """
@@ -307,6 +307,57 @@ SETS = {
 }
 
 
+# Decals ----------------------------------------------------------------------------
+# Each returns linear RGB and alpha (n x n x 4), written as decal_<name>.png.
+
+SODIUM = np.array([1.0, 0.33, 0.054])  # look-rules sodium #FF9A42, linear
+STAIN = np.array([0.09, 0.06, 0.03])
+
+
+def hazard(n: int) -> np.ndarray:
+    """Worn hazard stripes in sodium and near-black, painted across door sills."""
+    u, v = coords(n)
+    stripe = ((u * 4.0 + v) % 1.0) < 0.5
+    colour = np.where(stripe[..., None], SODIUM * 0.55, np.array([0.012, 0.013, 0.013]))
+    wear = fbm(n, 2, 24, 141) * 0.8 + fbm(n, 30, 90, 142) * 0.2
+    edge = np.minimum(np.minimum(v, 1.0 - v), np.minimum(u, 1.0 - u))
+    alpha = np.clip((wear - 0.3) * 4.0, 0.0, 1.0) * np.clip(edge * 30.0, 0.0, 1.0) * 0.9
+    return np.concatenate([colour, alpha[..., None]], axis=-1)
+
+
+def water_stain(n: int) -> np.ndarray:
+    """Dried puddle: brown tide-mark rings around a faint centre."""
+    u, v = coords(n)
+    r = np.hypot(u - 0.5, v - 0.5) * 2.0 + (fbm(n, 2, 10, 151) - 0.5) * 0.5
+    rings = np.clip(1.0 - np.abs((r * 3.0) % 1.0 - 0.85) / 0.08, 0.0, 1.0) * (r < 0.95)
+    alpha = np.clip(rings * 0.7 + (r < 0.9) * 0.15, 0.0, 1.0) * np.clip((0.95 - r) * 10.0, 0.0, 1.0)
+    colour = np.broadcast_to(STAIN, (n, n, 3))
+    return np.concatenate([colour, alpha[..., None]], axis=-1)
+
+
+def scuffs(n: int) -> np.ndarray:
+    """Boot and trolley scuffs: dark streaks with soft ends."""
+    u, v = coords(n)
+    marks = np.clip((streaks(n, 6, 60, 161, 30.0) - 0.62) * 6.0, 0.0, 1.0)
+    fade = np.clip(np.minimum(u, 1.0 - u) * 6.0, 0.0, 1.0) * np.clip(np.minimum(v, 1.0 - v) * 6.0, 0.0, 1.0)
+    colour = np.broadcast_to(np.array([0.015, 0.016, 0.016]), (n, n, 3))
+    return np.concatenate([colour, (marks * fade * 0.8)[..., None]], axis=-1)
+
+
+DECALS = {
+    "hazard": (hazard, 256),
+    "water_stain": (water_stain, 256),
+    "scuffs": (scuffs, 256),
+}
+
+
+def build_decal(name: str) -> np.ndarray:
+    make, n = DECALS[name]
+    rgba = np.clip(make(n), 0.0, 1.0)
+    rgba[..., :3] = rgba[..., :3] ** (1.0 / 2.2)
+    return np.round(rgba * 255.0).astype(np.uint8)
+
+
 def build(name: str) -> dict[str, np.ndarray]:
     """The three maps of one set as uint8 RGB arrays."""
     make, n = SETS[name]
@@ -326,25 +377,29 @@ def build(name: str) -> dict[str, np.ndarray]:
 
 
 def write_png(path: Path, rgb: np.ndarray) -> None:
-    """8-bit RGB PNG with the Sub filter on every row (small and dependency-free)."""
-    h, w, _ = rgb.shape
+    """8-bit RGB or RGBA PNG with the Sub filter on every row (small and dependency-free)."""
+    h, w, channels = rgb.shape
     filtered = rgb.astype(np.int16)
     filtered[:, 1:] -= rgb[:, :-1].astype(np.int16)
-    rows = np.concatenate([np.ones((h, 1), np.uint8), (filtered % 256).astype(np.uint8).reshape(h, w * 3)], axis=1)
+    packed = (filtered % 256).astype(np.uint8).reshape(h, w * channels)
+    rows = np.concatenate([np.ones((h, 1), np.uint8), packed], axis=1)
 
     def chunk(tag: bytes, data: bytes) -> bytes:
         return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", zlib.crc32(tag + data))
 
-    header = struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0)
+    header = struct.pack(">IIBBBBB", w, h, 8, 6 if channels == 4 else 2, 0, 0, 0)
     body = zlib.compress(rows.tobytes(), 9)
     path.write_bytes(b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", header) + chunk(b"IDAT", body) + chunk(b"IEND", b""))
 
 
 def main(names: list[str]) -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    for name in names or list(SETS):
-        for kind, rgb in build(name).items():
-            write_png(OUT / f"{name}_{kind}.png", rgb)
+    for name in names or [*SETS, *DECALS]:
+        if name in DECALS:
+            write_png(OUT / f"decal_{name}.png", build_decal(name))
+        else:
+            for kind, rgb in build(name).items():
+                write_png(OUT / f"{name}_{kind}.png", rgb)
         print("wrote", name)
 
 

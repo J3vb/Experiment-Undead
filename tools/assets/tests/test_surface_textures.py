@@ -52,3 +52,13 @@ def test_png_writer_round_trips(tmp_path):
     assert (rows[:, 0] == 1).all()
     decoded = np.cumsum(rows[:, 1:].reshape(6, 7, 3).astype(np.int64), axis=1) % 256
     assert (decoded == rgb).all()
+
+
+@pytest.mark.parametrize("name", sorted(st.DECALS))
+def test_decals_fade_out_at_their_edges(name):
+    rgba = st.build_decal(name)
+    border = np.concatenate([rgba[0, :, 3], rgba[-1, :, 3], rgba[:, 0, 3], rgba[:, -1, 3]])
+    assert border.max() < 40, f"{name}: decal edge alpha {border.max()} would show a hard border"
+    assert rgba[..., 3].max() > 150, f"{name}: decal is nearly invisible"
+    data = (st.OUT / f"decal_{name}.png").read_bytes()
+    assert data[25] == 6, "decals are RGBA"
