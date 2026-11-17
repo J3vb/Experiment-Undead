@@ -8,12 +8,14 @@ Plan and reasoning: https://claude.ai/artifact/HApjhDRXmDDVDYLezv4ozt
 |---|---|---|
 | Push or PR | `ci.yml` | tests and lint (owned by the code quality setup) |
 | Merge to main | `build.yml` | Windows + Linux builds under the run's **Artifacts** (kept 3 days), server image `edge` |
+| Pull request (not docs-only) | `build.yml` | same export and smoke test, builds under **Artifacts**, no image |
 | Tag `v1.2.3` | `release.yml` | GitHub Release with zips and notes, server image `1.2.3`, `1.2`, `latest` |
 | Actions tab, "Build", **Run workflow** | `build.yml` | builds of any branch, no image |
 
 All exports run on Linux runners (the Windows .exe is cross-exported), so they
 use the cheap 1x minutes. Every build is smoke-tested: the exported client and
-server must boot without script errors before anything is uploaded.
+server must boot without script errors, the client must join the server, and
+the server must stop cleanly before anything is uploaded.
 
 ## Cut a release
 
