@@ -1,4 +1,5 @@
-## Every ScreenData points at a scene that instances; the roots are the main menu, the hub and the match.
+## Every ScreenData points at a scene that instances. The roots are the launcher, the main menu,
+## the hub, the match and the dedicated server.
 extends GutTest
 
 
@@ -28,15 +29,16 @@ func test_every_screen_instances_and_uses_a_known_layer() -> void:
 			scene.free()
 
 
-func test_three_roots_and_only_the_places_capture_the_mouse() -> void:
+func test_five_roots_and_only_the_places_capture_the_mouse() -> void:
 	var roots: Array[StringName] = []
 	for id: StringName in Content.ids(&"screens"):
 		var data: ScreenData = Content.get_item(&"screens", id) as ScreenData
 		if data.root:
 			roots.append(id)
 		assert_eq(data.captures_mouse, id in [&"match", &"hub"], "%s captures_mouse" % id)
-	roots.sort()
-	assert_eq(roots, [&"hub", &"main_menu", &"match"] as Array[StringName])
+	var names: PackedStringArray = PackedStringArray(roots)
+	names.sort()
+	assert_eq(names, PackedStringArray(["dedicated_server", "hub", "launcher", "main_menu", "match"]))
 	assert_eq((Content.get_item(&"screens", &"main_menu") as ScreenData).scene, "res://systems/ui/main_menu.tscn")
 	assert_eq((Content.get_item(&"screens", &"match") as ScreenData).scene, "res://systems/game/game_session.tscn")
 	assert_eq((Content.get_item(&"screens", &"hub") as ScreenData).scene, "res://systems/game/hub_session.tscn")

@@ -147,3 +147,11 @@ func test_visible_dialog_holds_the_mouse_until_hidden() -> void:
 	await wait_process_frames(2)
 	assert_false(UI.mouse_should_be_free(), "a successful join gives the mouse back to the match")
 	UI._root = root
+
+
+func test_restart_to_update_only_for_older_release_client() -> void:
+	var older_client: Dictionary = {"older": "client"}
+	assert_true(NetErrorDialog.can_update(&"wrong_version", older_client, "0.1.0"))
+	assert_false(NetErrorDialog.can_update(&"wrong_version", {"older": "server"}, "0.1.0"))
+	assert_false(NetErrorDialog.can_update(&"wrong_version", older_client, "0.1.1-dev.3+abc1234"))
+	assert_false(NetErrorDialog.can_update(&"server_full", older_client, "0.1.0"))

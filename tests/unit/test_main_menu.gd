@@ -232,6 +232,7 @@ func test_command_line_join_and_host() -> void:
 	assert_eq(MainMenu.parse_launch(PackedStringArray(["--verbose", "--host=24605"])), {"host": 24605})
 	assert_eq(MainMenu.parse_launch(PackedStringArray(["--host=abc"])), {})
 	assert_eq(MainMenu.parse_launch(PackedStringArray()), {})
+	assert_eq(MainMenu.parse_launch(PackedStringArray(["--server", "--port=7778"])), {"server": true})
 
 
 func test_command_line_launch_runs_once_per_process() -> void:

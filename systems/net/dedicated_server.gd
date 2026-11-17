@@ -39,7 +39,7 @@ func _ready() -> void:
 	multiplayer.peer_disconnected.connect(_on_peer_left)
 	session = _make_session(start_place)
 	get_tree().root.add_child.call_deferred(session)
-	stop_file = OS.get_environment("EU_STOP_FILE")
+	stop_file = read_string_setting("stop-file", "EU_STOP_FILE")
 	if stop_file != "":
 		var timer: Timer = Timer.new()
 		timer.wait_time = 0.5
@@ -113,6 +113,16 @@ static func read_int_setting(arg_name: String, env_name: String, fallback: int) 
 	if env.is_valid_int():
 		return env.to_int()
 	return fallback
+
+
+## Command line (--stop-file=/path, after "--") wins over the environment variable.
+## The launcher passes it this way: OS.create_process cannot set environment variables.
+static func read_string_setting(arg_name: String, env_name: String) -> String:
+	var prefix: String = "--%s=" % arg_name
+	for arg: String in OS.get_cmdline_user_args():
+		if arg.begins_with(prefix):
+			return arg.substr(prefix.length())
+	return OS.get_environment(env_name)
 
 
 func _check_stop_file() -> void:

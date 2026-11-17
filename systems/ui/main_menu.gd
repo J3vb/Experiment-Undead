@@ -35,6 +35,8 @@ var _pending_profile: CharacterProfile
 
 
 func _ready() -> void:
+	if _hand_over():
+		return
 	Net.cancel_place_change()
 	_bind_gamepad()
 	Net.world.close()
@@ -55,6 +57,26 @@ func _ready() -> void:
 	_launch_from_command_line.call_deferred(OS.get_cmdline_user_args())
 
 
+## "--server" runs this build as a dedicated server. A release build run from the install
+## folder opens the launcher first, once per process. A copy the launcher started refreshes
+## the root copy when the root is older.
+func _hand_over() -> bool:
+	if parse_launch(OS.get_cmdline_user_args()).has("server"):
+		UI.replace.call_deferred(&"dedicated_server")
+		return true
+	var exe_dir: String = OS.get_executable_path().get_base_dir()
+	if VersionInstaller.is_version_dir(exe_dir):
+		var refresher: VersionInstaller = VersionInstaller.new()
+		add_child(refresher)
+		refresher.refresh_root()
+	var args: PackedStringArray = LauncherScreen.launch_args()
+	if LauncherScreen.shown or not LauncherScreen.should_open(args, Build.version, OS.has_feature("template"), exe_dir):
+		return false
+	LauncherScreen.shown = true
+	UI.replace.call_deferred(&"launcher")
+	return true
+
+
 ## Command-line launches run once per process, so returning to the menu
 ## after a failed join or a hosted match does not start them again.
 func _launch_from_command_line(args: PackedStringArray) -> void:
@@ -68,9 +90,12 @@ func _launch_from_command_line(args: PackedStringArray) -> void:
 		_start_host(launch["host"])
 
 
-## "--join=address:port" -> {"join": "address:port"}; "--host" or "--host=port" -> {"host": port}.
+## "--join=address:port" -> {"join": "address:port"}; "--host" or "--host=port" -> {"host": port};
+## "--server" -> {"server": true}.
 static func parse_launch(args: PackedStringArray) -> Dictionary:
 	for arg: String in args:
+		if arg == "--server":
+			return {"server": true}
 		if arg.begins_with("--join="):
 			return {"join": arg.substr(7)}
 		if arg == "--host":
