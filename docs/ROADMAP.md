@@ -33,7 +33,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-08 | Change log in the design doc | #110 | - | issue | S | Done |
 | F-12 | Core loop gaps: round scaling, stuck zombies, swap, melee, slide, best round | - | - | [needed](plans/core-loop-gaps.md) | M | Done |
 | F-13 | Finish Halcyon Labs: props, co-op spawn points, vent route, secret | - | - | [needed](plans/halcyon-labs-finish.md) | M | Ready |
-| F-62 | Texture every surface in Halcyon Labs: textured sets, a floor per room, decals | - | - | [ready](plans/halcyon-surfaces.md) | M | Ready |
+| F-62 | Texture every surface in Halcyon Labs: textured sets, a floor per room, decals | - | - | [ready](plans/halcyon-surfaces.md) | M | Building |
 | F-14 | Zombie sounds and gore: steps, deaths, voice caps, blood, head pops | - | - | [ready](plans/zombie-sounds-gore.md) | M | Ready |
 | F-15 | Halcyon Labs detail props: Blender models for every room prop, story clutter, barricades | - | - | [ready](plans/halcyon-labs-props.md) | M | Ready |
 | F-61 | Halcyon Labs atmosphere: dead and flickering lights, particles, fog, beacons, screens, sound spots, story decals | - | - | [ready](plans/halcyon-labs-atmosphere.md) | M | Building |
