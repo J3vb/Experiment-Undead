@@ -1,10 +1,10 @@
 # Plan: Halcyon Labs atmosphere and motion
 
-Status: Review
+Status: Approved
 Roadmap: F-61
 Phase: P4 (v0.1 Vertical slice)
 Size: M
-Approved by:
+Approved by: Claude plan review on PR #250 (2026-11-17, two blocking findings fixed: no runtime global uniform, dead lights written by the builder), size M, no open decisions
 
 ## Goal
 
@@ -110,6 +110,8 @@ Not in (non-goals, and where each one goes instead):
   truck, flickering teal tubes, emergency red before power, green tank glow).
 - docs/design/lore.md: Day 0 cold failure, staff turned first, the Night
   Supervisor, the Wick symbol as graffiti, "every room tells one small story".
+- Spark (3 to 9 s) and klaxon (20 to 40 s) timings are provisional feel picks,
+  single export values; step 5 writes the final ones into look-rules.md.
 - docs/design/sound.md and F-04 (`levels/halcyon_labs/ambience.tscn`, Ambient bus).
 
 ## Systems touched
@@ -154,7 +156,9 @@ node owns (which effects run before and after power), so rule 6 allows it.
 
 ## Performance
 
-Client cost does not grow with player count (all local visuals). Budget for
+Client cost does not grow with player count (all local visuals). The numbers
+below are provisional picks (none are in docs/design/ yet); step 5 adds the
+final ones to docs/design/look-rules.md after the fps check. Budget for
 the whole scene at the worst camera spot (Main Corridor looking into the Mess
 Hall), checked in the step 5 fps check:
 
@@ -172,19 +176,28 @@ Hall), checked in the step 5 fps check:
 
 ### Step 1: Dead and flickering lights, alarm beacons
 
-- Build: `light_states` in layout.json and `_build_lights` applies it.
-  `CeilingLight.dead` turns the spot off, darkens the tube and sets the spot
-  bake mode to Disabled, so the re-bake gets no bounce from dead tubes.
-  Flicker on the Guard Post (offices accent). Two red rotating alarm beacons
+- Build: `light_states` in layout.json and `_build_lights` applies it. The
+  bake runs in the editor where CeilingLight's `_ready` never runs (not
+  `@tool`), so the builder itself writes the dead state into blockout.tscn:
+  `dead = true`, `Fixture.light_bake_mode = 0`, `Fixture.light_energy = 0`
+  and a dark tube material override. `ceiling_light.gd` returns early from
+  `_ready` when `dead`, so no emergency glow and no power-on wave ever brings
+  the spot back. Flickering lights get `flickers = true` from the builder
+  (FlickerLight already exists). Flicker on the Guard Post (offices accent). Two red rotating alarm beacons
   in the Containment Wing (unshadowed SpotLight3D, bake 0, AnimationPlayer
   loop, emissive housing) inside a first, small atmosphere.tscn with its
   instance line in map.tscn. Tell the Halcyon Labs build thread that the
-  re-bake can include these changes.
+  re-bake can include these changes. The committed lightmap is allowed to be
+  stale between this PR and that re-bake (dead tubes keep their old bounce
+  for a while); no test checks bake freshness.
 - Files: layout.json, tools/blockout_builder.gd, blockout.tscn,
   systems/level/ceiling_light.gd, levels/halcyon_labs/atmosphere.tscn, map.tscn.
 - Tests: test_halcyon_labs.gd: lights listed in light_states are dead or
-  flicker in the built map; dead fixtures have energy 0 and bake Disabled;
-  shadow budget still holds. New test_halcyon_atmosphere.gd: every light in
+  flicker in the built map; dead fixtures have energy 0 and bake Disabled
+  in the saved blockout.tscn (not only after _ready); a dead light stays at
+  energy 0 after the Level turns power on; shadow budget still holds.
+  `test_ceiling_lights_stay_real_time` changes to: every Fixture that is not
+  dead is BAKE_DYNAMIC, every dead one is BAKE_DISABLED. New test_halcyon_atmosphere.gd: every light in
   atmosphere.tscn is unshadowed and bake mode 0, at most 3 per area box.
 - Done when: the blockout is regenerated, tests pass, and a look-check render
   of the Guard Post and Containment Wing is posted.
@@ -197,6 +210,10 @@ Hall), checked in the step 5 fps check:
   Coolant Tunnel). `SparkSpot`: one GPUParticles3D burst plus a short
   OmniLight3D flash every 3 to 9 s (cosmetic). `Atmosphere` root script shows
   `after_power` nodes when the Level power comes on and hides `before_power`.
+  It sits directly under the Level in map.tscn and finds it with
+  `get_parent() as Level` (no third copy of the `_find_level` loop). On
+  clients `Level.apply_net_state` calls `turn_power_on()`, so the signal
+  fires there too; reading `power_on` at ready covers late joiners.
 - Files: atmosphere.tscn, systems/level/atmosphere.gd, systems/effects/spark_spot.gd.
 - Tests: test_spark_spot.gd (burst restarts the particles and lights the
   flash, flash is off again after its time, next burst lands in 3 to 9 s);
@@ -211,15 +228,20 @@ Hall), checked in the step 5 fps check:
 
 - Build: monitor screen shader and material `systems/effects/monitor_screen.tres`
   (scanlines, slow roll, flicker; emission 1.0 max, teal text-like bars;
-  static noise before power through a global shader parameter that
-  Atmosphere registers at run time with RenderingServer, no project.godot edit). The props thread's monitor models name their screen surface
+  static noise before power through `instance uniform float powered`, which
+  Atmosphere sets with `set_instance_shader_parameter()` on each screen in
+  the `monitor_screen` group when power comes on; no global uniform, no
+  project.godot edit). The props thread's monitor models name their screen surface
   `Screen`; their import maps it to this material. Until those land, two
   flat screen quads sit on the existing Guard Post desk and Labs bench. One
   hanging fixture in the Main Corridor swinging on a looped tween with its
-  own unshadowed light; two loose cables swaying (AnimationPlayer).
+  own unshadowed light (bake mode 0, not the fixture default 2, because it
+  moves and a baked bounce would stay behind); two loose cables swaying
+  (AnimationPlayer).
 - Files: systems/effects/monitor_screen.gdshader, atmosphere.tscn.
 - Tests: test_halcyon_atmosphere.gd: shader compiles (material loads with no
-  error), swing light unshadowed and bake 0, every AnimationPlayer loops and
+  error and has the `powered` instance uniform); test_atmosphere.gd: screens
+  get powered 0 before power and 1 after; swing light unshadowed and bake 0, every AnimationPlayer loops and
   autoplays.
 - Done when: tests pass, one look-check render posted.
 
@@ -234,8 +256,9 @@ Hall), checked in the step 5 fps check:
   systems/effects/spark_spot.gd.
 - Tests: test_spark_spot.gd: a burst plays its crackle player if it has one;
   test_halcyon_atmosphere.gd: every sound spot is on Ambient, max_distance at
-  most 14 m, loops only on hum/hiss/drip streams; generated files are up to
-  date with the script (same check F-04 uses, if it has one).
+  most 14 m, loops only on hum/hiss/drip streams, every referenced stream
+  file exists. A Python test in tools/ci/ checks ambience_sfx.py produces each
+  new sound name it lists (GUT cannot run Python).
 - Done when: tests pass.
 
 ### Step 5: Story moments and story decals
@@ -250,8 +273,9 @@ Hall), checked in the step 5 fps check:
 - Files: tools/assets/story_decals.py, assets/textures/story/*,
   atmosphere.tscn, docs/DECISIONS.md, docs/ROADMAP.md, this plan.
 - Tests: test_halcyon_atmosphere.gd: decals use only story textures, nothing
-  in atmosphere.tscn has collision, the generated PNGs match the script, the
-  leak is the only bio-green effect. Existing navmesh and spawn tests in
+  in atmosphere.tscn has collision, the leak is the only bio-green effect. A
+  Python test in tools/ci/ runs story_decals.py into a temp folder and checks
+  each PNG it writes has the size and alpha the decals expect. Existing navmesh and spawn tests in
   test_halcyon_labs.gd still pass.
 - Done when: tests pass, renders of all five scenes go to the person on a
   decision card, fps check prompt written, plan set to Done.
@@ -280,5 +304,7 @@ Hall), checked in the step 5 fps check:
 
 ## Open decisions
 
-- none (look amounts are provisional picks, confirmed by screenshot cards
-  after steps 2 and 5, and are single values to change)
+- none
+
+Look amounts (fog, dust, steam, grime) are provisional picks, confirmed by
+screenshot cards after steps 2 and 5; each is a single value to change.
