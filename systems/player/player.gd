@@ -50,6 +50,8 @@ var focus: Interactable
 ## Serums bought this run. Their multipliers are read through get_stat().
 var serums: Array[SerumData] = []
 var stats: StatBlock = StatBlock.new()
+## Equipped item guns by uid. The server fills its copy from the owner's loadout.
+var item_guns: Dictionary[String, ItemInstance] = {}
 
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _fallback_rng: RandomNumberGenerator = RandomNumberGenerator.new()
