@@ -66,7 +66,8 @@ func play(data: WeaponData, origin: Vector3, points: PackedVector3Array) -> void
 func show_hits(origin: Vector3, hits: PackedVector3Array, kinds: PackedByteArray) -> void:
 	var parent: Node = get_tree().current_scene if get_tree().current_scene else get_parent()
 	for index: int in hits.size():
-		var normal: Vector3 = (origin - hits[index]).normalized()
+		var away: Vector3 = origin - hits[index]
+		var normal: Vector3 = away.normalized() if away.length_squared() > 0.0001 else Vector3.UP
 		Impact.spawn(parent, hits[index], normal, kinds[index] as Impact.Kind)
 
 

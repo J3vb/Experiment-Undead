@@ -77,7 +77,7 @@ func _on_fired(weapon: Weapon) -> void:
 	var muzzle: Node3D = _muzzles.get(weapon)
 	var origin: Vector3 = muzzle.global_position if muzzle else weapon.camera.global_position
 	if multiplayer.is_server():
-		_relay(weapon.shooter.net_id, weapon.data.id, origin, [points, hits, kinds])
+		_relay(weapon.shooter.net_id, weapon.data.id, origin, points, hits, kinds)
 	else:
 		shot.rpc_id(1, weapon.data.id, origin, points, hits, kinds)
 
@@ -104,7 +104,7 @@ func shot(
 		return
 	if not _valid_points(points) or not _valid_hits(points.size(), hits, kinds):
 		return
-	_relay(sender, weapon_id, origin, [points, hits, kinds])
+	_relay(sender, weapon_id, origin, points, hits, kinds)
 
 
 func _valid_points(points: PackedVector3Array) -> bool:
@@ -131,12 +131,18 @@ func _valid_pellet_count(data: WeaponData, count: int) -> bool:
 	return data.loot_tags.has(&"double") and count % 2 == 0 and count >= data.pellets * 2 and count <= max_pellets * 2
 
 
-## `shot_data` is [points, hits, kinds].
-func _relay(peer_id: int, weapon_id: StringName, origin: Vector3, shot_data: Array) -> void:
-	_show(peer_id, weapon_id, origin, shot_data[0], shot_data[1], shot_data[2])
+func _relay(
+	peer_id: int,
+	weapon_id: StringName,
+	origin: Vector3,
+	points: PackedVector3Array,
+	hits: PackedVector3Array,
+	kinds: PackedByteArray
+) -> void:
+	_show(peer_id, weapon_id, origin, points, hits, kinds)
 	for recipient: int in multiplayer.get_peers():
 		if recipient != peer_id:
-			play_shot.rpc_id(recipient, peer_id, weapon_id, origin, shot_data[0], shot_data[1], shot_data[2])
+			play_shot.rpc_id(recipient, peer_id, weapon_id, origin, points, hits, kinds)
 
 
 @rpc("authority", "call_remote", "unreliable")
