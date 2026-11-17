@@ -36,7 +36,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-09 | v0.1 performance check | #108 | F-01..F-07, F-12, F-13 | issue | S | Todo |
 | F-10 | First play-test (the person plays) | #109 | F-09 | issue | S | Todo |
 | F-11 | Release v0.1.0 | #111 | F-10 | issue | S | Todo |
-| F-40 | Round state and power-ups in co-op (rest of #126 after F-02) | #126 | F-02 | [plan](plans/coop-round-state-power-ups.md) | M | Ready |
+| F-40 | Round state and power-ups in co-op (rest of #126 after F-02) | #126 | F-02 | [plan](plans/coop-round-state-power-ups.md) | M | Building |
 | F-47 | A full co-op match: co-op soak, pause, squad cards, hub and deploy flow | #213 | F-40 | [plan](plans/coop-full-match.md) | L | Ready |
 
 ## Next: v0.2 Progression and loot
