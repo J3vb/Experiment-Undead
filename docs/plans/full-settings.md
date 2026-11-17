@@ -152,7 +152,9 @@ Settings is at its size limit and applying render options is its own job.
   `hint: String`, `kind: StringName` (toggle, slider, choice),
   `min_value: float`, `max_value: float`, `step: float`,
   `display_scale: float = 1.0` (100 for percent), `options: PackedStringArray`
-  (choice labels; the saved value is the index), `order: int`,
+  (choice labels; the saved value is the index),
+  `option_values: PackedStringArray` (optional; when set, the saved value is
+  the matching string, for keys like `accessibility/damage_numbers`), `order: int`,
   `needs_confirm: bool` (display mode, resolution).
   Read by `SettingsPage` only.
 - New Settings keys (section / key / default):
@@ -280,8 +282,9 @@ prompt (after step 2) measures all four presets at the four test spots.
 - Build: text size (root `content_scale_factor`, 0.8 to 1.5, applied by the
   UI autoload); hold or toggle for aim, sprint and crouch in LocalInput
   (toggle flips on press, clears on death and when the match ends); reduce
-  motion (settings and pause fades skip the 12 px slide). Rows for the shake
-  and damage-number keys from other threads land here as plain .tres files.
+  motion (settings and pause fades skip the 12 px slide). Row for the HUD
+  thread's `accessibility/damage_numbers` ("off", "crits", "all"; labels
+  Off, Crits only, All; that thread adds the DEFAULTS key).
 - Files: core/ui.gd, systems/input/local_input.gd, systems/ui/settings_screen.gd,
   systems/ui/pause_screen.gd, content/settings/*.tres,
   tests/unit/test_local_input.gd, tests/unit/test_ui.gd (or the router test file).
