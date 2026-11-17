@@ -1,6 +1,6 @@
 ## Local player's downed, revived and death screen: desaturation and vignette while
 ## down, a short flash on revive, and a fade to black with world sound dropping out
-## on death. Reads the local player's synced flags; presentation only.
+## on death, each with its own sound on the unfaded UI bus. Reads the local player's synced flags; presentation only.
 class_name DownScreen
 extends ColorRect
 
@@ -10,12 +10,17 @@ const QUIET_DB: float = -60.0
 const COLOUR_FADE_S: float = 0.3
 
 @export var rules: FeedbackRules
+@export var downed_sound: AudioStream
+@export var revived_sound: AudioStream
+@export var bled_out_sound: AudioStream
 
 var state: State = State.UP
 var _player: Player
 var _shade: ShaderMaterial
 var _tween: Tween
 var _amplify: AudioEffectAmplify
+
+@onready var _sting: AudioStreamPlayer = $Sting
 
 
 func _ready() -> void:
@@ -60,6 +65,7 @@ func world_db() -> float:
 func _enter(next: State) -> void:
 	var previous: State = state
 	state = next
+	_play_sting(next, previous)
 	if _tween:
 		_tween.kill()
 	_tween = create_tween().set_parallel()
@@ -76,6 +82,20 @@ func _enter(next: State) -> void:
 			_set_world_db(0.0)
 			if previous == State.DOWN:
 				_revive_flash()
+
+
+## Only the local player hears their own state change.
+func _play_sting(next: State, previous: State) -> void:
+	if not _player.is_multiplayer_authority():
+		return
+	var stream: AudioStream = bled_out_sound
+	if next == State.DOWN:
+		stream = downed_sound
+	elif next == State.UP:
+		stream = revived_sound if previous == State.DOWN else null
+	if stream:
+		_sting.stream = stream
+		_sting.play()
 
 
 ## Runs from the death tween's own callback, so it needs a fresh tween.

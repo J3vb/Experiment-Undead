@@ -311,3 +311,26 @@ for i, f in enumerate([261.6, 329.6, 392.0, 523.3]):
 bell_t = np.maximum(tt - 0.32, 0)
 bell = (np.sin(2 * np.pi * 1046.5 * tt) + 0.4 * np.sin(2 * np.pi * 2793 * tt)) * np.exp(-bell_t * 3.5) * (tt > 0.32)
 save("level_up.wav", lowpass(chord, 0.2) * 0.8 + bell * 0.35, peak=0.7)
+
+# Downed: a low falling thud with a ringing tail. Own seed leaves earlier sounds unchanged.
+rng = np.random.default_rng(53)
+tt = t(1.2)
+thud = np.sin(2 * np.pi * (70 * tt - 30 * tt**2)) * np.exp(-tt * 9)
+body = lowpass(rng.standard_normal(len(tt)), 0.05) * np.exp(-tt * 14) * 2.0
+ring = np.sin(2 * np.pi * 2900 * tt) * np.minimum(tt * 8, 1) * np.exp(-tt * 2.5) * 0.12
+save("downed.wav", thud * 1.4 + body + ring, peak=0.8)
+
+# Revived: a short rising sting with a soft attack.
+tt = t(0.5)
+sweep = np.sin(2 * np.pi * (330 * tt + 440 * tt**2)) + 0.35 * np.sin(2 * np.pi * (660 * tt + 880 * tt**2))
+save("revived.wav", sweep * np.minimum(tt * 60, 1) * np.exp(-tt * 6), peak=0.6)
+
+# Bled out: two deep heartbeats, then silence.
+tt = t(1.6)
+x = np.zeros(len(tt))
+for at, amp in [(0.0, 1.0), (0.22, 0.7), (0.9, 0.8), (1.12, 0.45)]:
+    beat = tt[: int(0.3 * SR)]
+    i = int(at * SR)
+    seg = np.sin(2 * np.pi * (55 * beat - 20 * beat**2)) * np.exp(-beat * 22) * amp
+    x[i : i + len(seg)] += seg[: len(x) - i]
+save("bled_out.wav", lowpass(x, 0.2), peak=0.85)

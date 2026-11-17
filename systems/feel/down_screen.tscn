@@ -1,8 +1,11 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://systems/feel/down_screen.gd" id="1_script"]
 [ext_resource type="Shader" path="res://systems/feel/down_screen.gdshader" id="2_shader"]
 [ext_resource type="Resource" path="res://content/feel/feedback_rules.tres" id="3_rules"]
+[ext_resource type="AudioStream" path="res://assets/audio/downed.wav" id="4_downed"]
+[ext_resource type="AudioStream" path="res://assets/audio/revived.wav" id="5_revived"]
+[ext_resource type="AudioStream" path="res://assets/audio/bled_out.wav" id="6_bled_out"]
 
 [sub_resource type="ShaderMaterial" id="down_mat"]
 shader = ExtResource("2_shader")
@@ -22,3 +25,9 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_script")
 rules = ExtResource("3_rules")
+downed_sound = ExtResource("4_downed")
+revived_sound = ExtResource("5_revived")
+bled_out_sound = ExtResource("6_bled_out")
+
+[node name="Sting" type="AudioStreamPlayer" parent="."]
+bus = &"UI"

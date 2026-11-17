@@ -156,3 +156,36 @@ func test_solo_death_and_second_wind_use_tilt_down() -> void:
 		0.001,
 		"no tween moves the rig; update_feel drops it"
 	)
+
+
+func _sting() -> AudioStreamPlayer:
+	return screen.get_node(^"Sting") as AudioStreamPlayer
+
+
+func test_each_state_change_plays_its_sound_once_on_the_ui_bus() -> void:
+	assert_eq(_sting().bus, &"UI", "stings skip the faded SFX bus")
+	player.is_downed = true
+	screen._process(DT)
+	assert_eq(_sting().stream, screen.downed_sound)
+	assert_true(_sting().playing)
+	_sting().stop()
+	screen._process(DT)
+	assert_false(_sting().playing, "staying down does not replay")
+	player.is_downed = false
+	screen._process(DT)
+	assert_eq(_sting().stream, screen.revived_sound)
+	player.is_dead = true
+	screen._process(DT)
+	assert_eq(_sting().stream, screen.bled_out_sound)
+	_sting().stop()
+	player.is_dead = false
+	screen._process(DT)
+	assert_false(_sting().playing, "respawn after death is silent")
+
+
+func test_remote_player_state_change_plays_nothing() -> void:
+	player.set_multiplayer_authority(2)
+	player.is_downed = true
+	screen._process(DT)
+	assert_false(_sting().playing)
+	assert_null(_sting().stream)
