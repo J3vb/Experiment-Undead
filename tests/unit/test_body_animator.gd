@@ -146,6 +146,16 @@ func test_owner_publishes_its_current_gun_and_holds_it_as_a_shadow() -> void:
 	assert_almost_eq(animator.reload_time, empty_reload, 0.001, "the owner publishes the real (empty) reload time")
 
 
+func test_owner_publishes_the_whole_per_round_reload() -> void:
+	var data: WeaponData = Content.weapon(&"fieldhand_lever")
+	var weapon: Weapon = player.weapons.give(data)
+	weapon.instance.ammo_in_mag = 0
+	assert_true(weapon.start_reload())
+	await wait_physics_frames(2)
+	var rounds: int = mini(data.magazine_size, weapon.instance.ammo_reserve)
+	assert_almost_eq(animator.reload_time, data.per_round_time * rounds, 0.001, "every missing round, not one")
+
+
 func test_teammate_swaps_the_held_gun_when_the_synced_id_changes() -> void:
 	animator.is_owner = false
 	animator.held_weapon = &"rifle_ar"

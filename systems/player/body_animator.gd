@@ -135,9 +135,15 @@ func _publish() -> void:
 	reload_time = _started_reload if weapon and weapon.is_reloading() else 0.0
 
 
+## Per-round guns report one round's time; the whole reload loads every missing round.
 func _on_reload_started(reloader: Player, duration: float) -> void:
-	if reloader == player:
-		_started_reload = duration
+	if reloader != player:
+		return
+	_started_reload = duration
+	var weapon: Weapon = player.weapons.current
+	if weapon and weapon.data.reload_per_round:
+		var ammo: WeaponInstance = weapon.instance
+		_started_reload *= maxi(mini(weapon.data.magazine_size - ammo.ammo_in_mag, ammo.ammo_reserve), 1)
 
 
 ## Velocity over the time since the position last changed, so pose updates that skip ticks still read as steady.
