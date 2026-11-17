@@ -31,7 +31,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-06 | Make the rounds 1-10 soak test a required CI check | #107 | - | issue | S | Done (branch rule: add `soak`) |
 | F-07 | Balance pass rounds 1-10 for the slice guns | #106 | F-06 | issue | S | Todo |
 | F-08 | Change log in the design doc | #110 | - | issue | S | Done |
-| F-12 | Core loop gaps: round scaling, stuck zombies, swap, melee, slide, best round | - | - | [needed](plans/core-loop-gaps.md) | M | Building |
+| F-12 | Core loop gaps: round scaling, stuck zombies, swap, melee, slide, best round | - | - | [needed](plans/core-loop-gaps.md) | M | Done |
 | F-13 | Finish Halcyon Labs: props, co-op spawn points, vent route, secret | - | - | [needed](plans/halcyon-labs-finish.md) | M | Ready |
 | F-14 | Zombie sounds and gore: steps, deaths, voice caps, blood, head pops | - | - | [ready](plans/zombie-sounds-gore.md) | M | Ready |
 | F-09 | v0.1 performance check | #108 | F-01..F-07, F-12, F-13 | issue | S | Todo |

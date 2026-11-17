@@ -1,6 +1,6 @@
 # Plan: Core loop gaps
 
-Status: Building
+Status: Done (built 2026-11-17; feel check by the person still open)
 Roadmap: F-12 / no issue (audit of the v0.1 slice against the design docs)
 Phase: P2-P4
 Size: M
@@ -342,16 +342,22 @@ measurable change at 24 zombies.
 
 ## Acceptance
 
-- [ ] Round counts, health and spawn delay match `rounds.csv` for rounds 1-30
-  (unit test).
-- [ ] Zombies roll speed tiers per the design mix; no Runner type (unit test).
-- [ ] A lost or far zombie relocates and the last zombies hurry (unit test;
-  soak PASS).
-- [ ] Swap takes 0.4 s, 1/2/3 select guns, sprint cancels reloads (unit tests).
-- [ ] Knife deals 150, pays 130 on a kill, works for co-op clients (unit tests).
-- [ ] Slide, crouch toggle, jump fall-off and design speeds (unit tests; feel
-  check by the person).
-- [ ] Best round per map saved and shown (unit tests).
+- [x] Round counts, health and spawn delay match `rounds.csv` for rounds 1-30
+  (unit test: `tests/unit/test_wave_rules.gd`, PR #223).
+- [x] Zombies roll speed tiers per the design mix; no Runner type (unit test:
+  `test_wave_rules.gd`, `tests/content/test_content_rules.gd`, PR #223).
+- [x] A lost or far zombie relocates and the last zombies hurry (unit test:
+  `tests/unit/test_zombie_relocate.gd`; soak PASS, PR #225).
+- [x] Swap takes 0.4 s, 1/2/3 select guns, sprint cancels reloads (unit tests:
+  `tests/unit/test_weapon_swap.gd`, PR #232).
+- [x] Knife deals 150, pays 130 on a kill, works for co-op clients (unit tests:
+  `tests/unit/test_melee.gd`, knife claim in `test_hit_claims.gd`, PR #239).
+- [ ] Slide, crouch toggle, jump fall-off and design speeds (unit tests:
+  `tests/unit/test_player_moves.gd`, PR #247; feel check by the person still
+  open).
+- [x] Best round per map saved and shown (unit tests:
+  `test_character_profile.gd` `test_best_run_per_map_keeps_highest_round_then_kills_and_saves`,
+  `test_results_screen.gd` `test_new_best_round_is_marked`, `test_character_save.gd`).
 
 ## Risks
 
