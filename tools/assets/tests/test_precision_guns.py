@@ -124,3 +124,17 @@ def test_br12_concept_shapes_shell_holder_open_red_dot_and_no_heat_shield():
     assert hit("Receiver", (0, 0.2, 0.06), (0, 0, -1)).z < 0.045, "no heat shield over the barrel"
     assert hit("Receiver", (0, -0.2, 0.089), (0, 1, 0)) is None, "red dot window and barrel leave the eye line open"
     assert len(bpy.data.objects["Receiver"].data.materials) <= 6
+
+
+def test_mr28_concept_shapes_skeleton_stock_big_turrets_and_tan_furniture():
+    models.reset_scene()
+    models.MODELS["talon_dmr"][1]()
+    bpy.context.view_layer.update()
+    assert hit("Stock", (0.08, -0.35, -0.025), (-1, 0, 0)) is None, "skeleton stock has an open triangle"
+    assert hit("Stock", (0.08, -0.35, 0.02), (-1, 0, 0)) is not None, "stock top bar stays solid"
+    turret = hit("Optic", (0, 0.039, 0.3), (0, 0, -1))
+    assert turret is not None and turret.z > 0.09 + 0.044, "elevation turret stands tall"
+    names = {mat.name for obj in bpy.data.objects if obj.type == "MESH" for mat in obj.data.materials}
+    assert {"TanWorn", "Markings", "GunMetalKnurledWorn"} <= names
+    assert "GreyPolymer" not in names
+    assert len(names) <= 6

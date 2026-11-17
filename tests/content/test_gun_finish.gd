@@ -20,7 +20,7 @@ const IMPORTER: GDScript = preload("res://tools/assets/gun_finish_import.gd")
 const KNURLED: Dictionary[String, String] = {
 	"rifle_ar": "TanKnurledWorn",
 	"kestrel_smg": "MatteBlackKnurledWorn",
-	"talon_dmr": "GunMetalKnurled",
+	"talon_dmr": "GunMetalKnurledWorn",
 	"hollis_44": "WoodKnurled",
 }
 
@@ -55,8 +55,8 @@ func test_finish_follows_the_material_name() -> void:
 	assert_eq(_param(coachman["Wood"], "finish"), 3, "walnut gets the wood grain")
 	assert_eq(_param(coachman["GunMetal"], "finish"), 0, "bare metal parts")
 	assert_eq(_param(coachman["MatteBlack"], "finish"), 1, "black parts are a coating")
-	var talon: Dictionary[String, Material] = _materials("talon_dmr")
-	assert_eq(_param(talon["GreyPolymer"], "finish"), 2, "grey stock is polymer")
+	var nightjar: Dictionary[String, Material] = _materials("nightjar_sd")
+	assert_eq(_param(nightjar["GreyPolymer"], "finish"), 2, "grey stock is polymer")
 	for id: String in KNURLED:
 		var materials: Dictionary[String, Material] = _materials(id)
 		assert_true(materials.has(KNURLED[id]), id + " has knurled parts")
