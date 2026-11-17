@@ -8,6 +8,7 @@ const SCREEN: String = "res://systems/effects/monitor_screen.tres"
 const WITH_SCREEN: Array[String] = [
 	"res://assets/models/props/lab_bench.glb",
 	"res://assets/models/props/guard_desk.glb",
+	"res://assets/models/props/vending_machine.glb",
 ]
 
 

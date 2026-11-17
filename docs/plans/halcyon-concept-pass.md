@@ -259,6 +259,15 @@ the person on a decision card before the next step starts.
   (no shadow, bake 0, fade 20 m).
 - Done when: Mess Hall render matches the concept's layout of wreck and fire;
   draw calls within + 15 %.
+- Built (2026-11-17): props `kitchen_line` (3.4 m, against the north wall
+  between the corridor door and Second Wind), `overturned_table`,
+  `vending_machine` (cracked `Screen` panel), `military_cases` (Corridor and
+  Dock), dressing `hanging_strip` (two in the Mess Hall, a spark spot under
+  the west one). Fires use a new shared `systems/effects/fire_spot.tscn`
+  (flame and ember particles, an unshadowed orange light, FlickerLight):
+  two on the stoves, and it replaces the truck wreckage's bare fire light so
+  the wreck shows flames (#297). Red exit lamps are emissive boxes with no
+  light, so no room passes its light cap. Test: `tests/content/test_halcyon_wreck.gd`.
 
 ### Step 4: Labs wreck
 
