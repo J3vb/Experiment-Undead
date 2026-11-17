@@ -1,10 +1,10 @@
 # Plan: Minimal UI router (foundation fix 5)
 
-Status: Review
+Status: Approved
 Roadmap: F-00 foundation fix 5 / ADR 0011, docs/design/ui-hud.md
 Phase: P7
 Size: M
-Approved by:
+Approved by: Codex plan review on PR #178 (2026-11-16); the person approved the UI autoload (2026-11-17)
 
 ## Goal
 
@@ -115,8 +115,8 @@ Not in (non-goals, and where each one goes instead):
 | docs/FOUNDATIONS.md, docs/adr/0011-one-ui-router.md, docs/DECISIONS.md, docs/CODE_RULES.md, docs/LOGGING.md, docs/HOW_TO_ADD.md, AGENTS.md | changed | Foundation 5 solid, ADR accepted, rule documented, "add a screen" recipe |
 
 Autoloads, managers or base classes added: `UI` autoload. ui-hud.md and ADR
-0011 name it, but it is not in AGENTS.md's autoload list, so it waits for the
-person's OK (Open decisions). No base class: screens are plain scenes that
+0011 name it; it is not in AGENTS.md's autoload list, so the person approved
+it on 2026-11-17 (Open decisions). No base class: screens are plain scenes that
 emit `closed`.
 
 ## Data
@@ -334,6 +334,6 @@ focus change only, never per frame. Budget: no per-frame cost.
 
 ## Open decisions
 
-- [ ] New autoload `UI` (AGENTS.md lists Events, Content, Settings, Audio,
-  Pool, Game, Net; ui-hud.md and ADR 0011 name `UI`). Recommended: yes.
-  Asked on a decision card.
+- [x] New autoload `UI` (AGENTS.md lists Events, Content, Settings, Audio,
+  Pool, Game, Net; ui-hud.md and ADR 0011 name `UI`): yes, the person
+  approved it on 2026-11-17 (decision card in the project thread).
