@@ -14,7 +14,7 @@ var _center_time: float = 0.0
 var _delta_time: float = 0.0
 var _delta_sum: int = 0
 var _exfil: ExfilHatch
-var _squad: SquadCards = SquadCards.new()
+var _squad: SquadCards
 
 @onready var coop_hud: CoopHud = $Root/Coop
 @onready var crosshair: Crosshair = $Root/Crosshair
@@ -55,6 +55,7 @@ func _ready() -> void:
 	prompt_key.text = Settings.key_name(&"interact")
 	Settings.changed.connect(_on_setting_changed)
 	$Root.add_child(VersionLabel.new())
+	_squad = SquadCards.new()
 	$Root.add_child(_squad)
 	Events.player_spawned.connect(_on_player_spawned)
 	Events.player_health_changed.connect(_on_health_changed)
