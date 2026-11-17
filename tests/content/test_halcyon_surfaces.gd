@@ -16,13 +16,22 @@ const FLAT_TODAY: Array[String] = [
 	"res://levels/halcyon_labs/map.tscn::door_dev",
 	"res://levels/halcyon_labs/map.tscn::machine_dev",
 	"res://levels/materials/pipe.tres",
-	"res://levels/materials/specimen_tank.tres",
+]
+## Prop models whose built-in slots still need the remap to levels/materials (step 3).
+const FLAT_MODELS_TODAY: Array[String] = [
+	"res://assets/models/dressing/lab_papers.glb",
+	"res://assets/models/props/filing_cabinets.glb",
+	"res://assets/models/props/jar_shelf.glb",
+	"res://assets/models/props/lab_bench.glb",
+	"res://assets/models/props/specimen_tank.glb",
 ]
 
 
 func test_no_flat_surfaces_outside_the_list() -> void:
 	var flat: Dictionary = _flat_surfaces()
 	for key: String in flat:
+		if FLAT_MODELS_TODAY.has(key.get_slice("::", 0)):
+			continue
 		assert_has(FLAT_TODAY, key, "flat surface, give it a textured material: %s (%s)" % [key, flat[key]])
 
 
@@ -30,6 +39,11 @@ func test_the_list_only_names_surfaces_that_are_still_flat() -> void:
 	var flat: Dictionary = _flat_surfaces()
 	for key: String in FLAT_TODAY:
 		assert_true(flat.has(key), "%s is textured now, remove it from FLAT_TODAY" % key)
+	var flat_models: Array[String] = []
+	for key: String in flat:
+		flat_models.append(key.get_slice("::", 0))
+	for model: String in FLAT_MODELS_TODAY:
+		assert_has(flat_models, model, "%s is textured now, remove it from FLAT_MODELS_TODAY" % model)
 
 
 func test_new_texture_materials_use_the_halcyon_sets() -> void:
