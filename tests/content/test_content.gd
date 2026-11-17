@@ -76,6 +76,8 @@ func test_enemies_are_valid() -> void:
 		assert_eq(String(e.id), path.get_file().get_basename(), path + " id matches file name")
 		assert_not_null(e.scene, path + " has scene")
 		assert_gt(e.max_health, 0.0, path + " health")
+		assert_gt(e.death_sounds.size(), 0, path + " has death sounds")
+		assert_gt(e.footstep_sounds.size(), 0, path + " has footstep sounds")
 		if e.scene:
 			var z: Node = e.scene.instantiate()
 			assert_true(z is Zombie, path + " scene root is Zombie")

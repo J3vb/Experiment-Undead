@@ -35,3 +35,5 @@ extends Resource
 @export var body_scale: float = 1.0
 @export var groan_sounds: Array[AudioStream] = []
 @export var attack_sound: AudioStream
+@export var death_sounds: Array[AudioStream] = []
+@export var footstep_sounds: Array[AudioStream] = []
