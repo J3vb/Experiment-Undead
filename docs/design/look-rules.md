@@ -169,7 +169,8 @@ Panels: square corners, thin borders, coloured top edge for rarity or category.
 | Prototype | `#8DFF3A` | 3 m + pulse | 5 |
 
 Colour is never the only cue: pips and beam height carry rarity too.
-Gear on characters: [gear-visuals.md](gear-visuals.md).
+Gear on characters: [gear-visuals.md](gear-visuals.md). Player and gear look target:
+[player_gear_concept.jpg](images/player_gear_concept.jpg) (plan: F-70).
 
 ## Lantern Post (town)
 
