@@ -24,7 +24,7 @@ func _spawner() -> Spawner:
 
 
 func _zombie(spawner: Spawner, point: Vector3) -> Zombie:
-	var data: Array = ["res://content/enemies/zombie_walker.tres", Net.allocate_id(), 1.0, 1.0, 1.0, ^"", point]
+	var data: Array = ["res://content/enemies/zombie_walker.tres", Spawner.allocate_id(), 1.0, 1.0, 1.0, ^"", point]
 	var zombie: Zombie = spawner._create(data) as Zombie
 	spawner.add_child(zombie)
 	zombie.set_physics_process(false)
@@ -77,7 +77,7 @@ func test_speed_mix_enemies_roll_a_design_tier() -> void:
 func test_speed_mix_zombie_moves_at_its_tier_exactly() -> void:
 	var spawner: Spawner = _spawner()
 	var walker_path: String = "res://content/enemies/zombie_walker.tres"
-	var data: Array = [walker_path, Net.allocate_id(), 1.0, 2.6 / 1.2, 1.0, ^"", Vector3.ZERO]
+	var data: Array = [walker_path, Spawner.allocate_id(), 1.0, 2.6 / 1.2, 1.0, ^"", Vector3.ZERO]
 	var zombie: Zombie = spawner._create(data) as Zombie
 	autofree(zombie)
 	assert_almost_eq(zombie._speed, 2.6, 0.0001)
@@ -109,3 +109,13 @@ func test_coop_points_wait_for_three_players() -> void:
 	assert_null(spawner._pick_marker(0.0), "2 players: still skipped")
 	players[2].add_to_group(&"players")
 	assert_same(spawner._pick_marker(0.0), point, "3 players: it can be picked")
+
+
+func test_allocated_ids_are_unique_and_restart_from_one() -> void:
+	Spawner.reset_ids()
+	assert_eq(Spawner.allocate_id(), 1)
+	assert_eq(Spawner.allocate_id(), 2)
+	assert_eq(Spawner.allocate_id(), 3)
+	Spawner.reset_ids()
+	assert_eq(Spawner.allocate_id(), 1)
+	assert_eq(Spawner.allocate_id(), 2)

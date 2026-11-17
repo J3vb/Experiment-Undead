@@ -30,7 +30,7 @@ func _point(at: Vector3) -> ZombieSpawnPoint:
 
 
 func _zombie(at: Vector3) -> Zombie:
-	var data: Array = [WALKER, Net.allocate_id(), 1.0, 1.0, 1.0, ^"", at]
+	var data: Array = [WALKER, Spawner.allocate_id(), 1.0, 1.0, 1.0, ^"", at]
 	var zombie: Zombie = spawner._create(data) as Zombie
 	spawner.add_child(zombie)
 	zombie.set_physics_process(false)

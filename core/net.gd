@@ -37,7 +37,6 @@ var world: OwnWorld = OwnWorld.new()
 ## Answers server browser queries while this PC runs a world or a dedicated server.
 var info: ServerInfo
 
-var _next_net_id: int = 1
 var _target: String = ""
 ## Server: peers sent to another place that have not disconnected yet. They get no player.
 var _leaving: Array[int] = []
@@ -343,14 +342,3 @@ func _host_ended_match() -> void:
 	_record_error(&"host_ended", {})
 	leave()
 	multiplayer.server_disconnected.emit()
-
-
-## Unique id for anything spawned during a session. Authority only.
-func allocate_id() -> int:
-	var id: int = _next_net_id
-	_next_net_id += 1
-	return id
-
-
-func reset_ids() -> void:
-	_next_net_id = 1

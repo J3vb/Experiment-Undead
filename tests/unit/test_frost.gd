@@ -16,7 +16,7 @@ func before_each() -> void:
 
 func _zombie(point: Vector3 = Vector3.ZERO) -> Zombie:
 	var zombie: Zombie = WALKER.scene.instantiate() as Zombie
-	zombie.setup(WALKER, Net.allocate_id(), 100.0, 1.0, 1.0, _rng)
+	zombie.setup(WALKER, Spawner.allocate_id(), 100.0, 1.0, 1.0, _rng)
 	_arena.add_child(zombie)
 	zombie.global_position = point
 	zombie.state = Zombie.State.CHASING

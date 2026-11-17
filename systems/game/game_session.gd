@@ -54,7 +54,7 @@ func _ready() -> void:
 		rng.randomize()
 	else:
 		rng.seed = rng_seed
-	Net.reset_ids()
+	Spawner.reset_ids()
 	economy.rules = economy_rules
 	director.rules = wave_rules
 	director.session = self

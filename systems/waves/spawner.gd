@@ -3,6 +3,9 @@
 class_name Spawner
 extends Node3D
 
+## Next network id; restarts with each GameSession.
+static var _next_net_id: int = 1
+
 @export var spawn_group: StringName = &"enemy_spawn"
 
 var session: GameSession
@@ -11,6 +14,17 @@ var zombies: Array[Zombie] = []
 
 var _net: MultiplayerSpawner
 var _sight_query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.new()
+
+
+## Unique id for anything spawned during a session. Authority only.
+static func allocate_id() -> int:
+	var id: int = _next_net_id
+	_next_net_id += 1
+	return id
+
+
+static func reset_ids() -> void:
+	_next_net_id = 1
 
 
 func _ready() -> void:
@@ -32,7 +46,7 @@ func spawn(enemy: EnemyData, round_number: int, rules: WaveRules) -> Zombie:
 	var barrier_path: NodePath = get_path_to(spawn_point.barrier) if spawn_point and spawn_point.barrier else ^""
 	var data: Array = [
 		enemy.resource_path,
-		Net.allocate_id(),
+		allocate_id(),
 		rules.get_health_multiplier(round_number),
 		_speed_multiplier(enemy, round_number, rules),
 		rules.get_damage_multiplier(round_number),
