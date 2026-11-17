@@ -6,6 +6,7 @@ import body_parts as soft
 import bpy
 import character_rig as rig
 import gear_paint as paint
+import player_clips
 from mathutils import Matrix, Vector
 
 
@@ -321,3 +322,4 @@ def build_player():
         _boot(armature, mats, side, sign)
     _join_details()
     bpy.context.view_layer.update()
+    player_clips.build_clips(armature)
