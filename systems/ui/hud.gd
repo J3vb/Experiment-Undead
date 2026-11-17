@@ -14,6 +14,7 @@ var _center_time: float = 0.0
 var _delta_time: float = 0.0
 var _delta_sum: int = 0
 var _exfil: ExfilHatch
+var _squad: SquadCards
 
 @onready var coop_hud: CoopHud = $Root/Coop
 @onready var crosshair: Crosshair = $Root/Crosshair
@@ -54,6 +55,8 @@ func _ready() -> void:
 	prompt_key.text = Settings.key_name(&"interact")
 	Settings.changed.connect(_on_setting_changed)
 	$Root.add_child(VersionLabel.new())
+	_squad = SquadCards.new()
+	$Root.add_child(_squad)
 	Events.player_spawned.connect(_on_player_spawned)
 	Events.player_health_changed.connect(_on_health_changed)
 	Events.player_damaged.connect(_on_player_damaged)
@@ -84,7 +87,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _process(delta: float) -> void:
-	_fps_label.visible = bool(Settings.get_value(&"video", &"show_fps"))
+	_fps_label.visible = bool(Settings.get_value(&"graphics", &"show_fps"))
 	_fps_label.text = "FPS: %d" % Engine.get_frames_per_second()
 	_hurt = maxf(_hurt - delta * 1.5, 0.0)
 	var low: float = clampf((0.6 - _health_ratio) / 0.6, 0.0, 1.0)
@@ -161,6 +164,7 @@ func _flash_center(text: String, seconds: float) -> void:
 func _on_player_spawned(player: Player) -> void:
 	if _player == null and player.is_multiplayer_authority():
 		_player = player
+		_squad.local_player = player
 		if player.session:
 			player.session.progression.xp_gained.connect(_on_xp_gained)
 			_on_xp_gained(player, 0, 0)

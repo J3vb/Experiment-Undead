@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 [ext_resource type="Script" path="res://systems/ui/settings_screen.gd" id="1"]
 
 [ext_resource type="Theme" path="res://systems/ui/menu_theme.tres" id="menu_theme"]
 [ext_resource type="Script" path="res://systems/ui/key_bindings.gd" id="key_bindings"]
+[ext_resource type="Script" path="res://systems/ui/settings_page.gd" id="settings_page"]
 
 [node name="SettingsScreen" type="PanelContainer"]
 process_mode = 3
@@ -77,19 +78,13 @@ theme_override_font_sizes/font_size = 24
 [node name="invert_yHint" type="Label" parent="Margin/Box/Tabs/Controls/Box"]
 theme_type_variation = &"LabelDim"
 text = "Move the mouse up to look down."
-[node name="KeyBindings" type="VBoxContainer" parent="Margin/Box/Tabs/Controls/Box"]
-unique_name_in_owner = true
-script = ExtResource("key_bindings")
-theme_override_constants/separation = 12
-[node name="Video" type="VBoxContainer" parent="Margin/Box/Tabs"]
+[node name="fovRow" type="HBoxContainer" parent="Margin/Box/Tabs/Controls/Box"]
 theme_override_constants/separation = 16
-[node name="fovRow" type="HBoxContainer" parent="Margin/Box/Tabs/Video"]
-theme_override_constants/separation = 16
-[node name="Label" type="Label" parent="Margin/Box/Tabs/Video/fovRow"]
+[node name="Label" type="Label" parent="Margin/Box/Tabs/Controls/Box/fovRow"]
 text = "Field of view (horizontal, 16:9)"
 custom_minimum_size = Vector2(450, 40)
 theme_override_font_sizes/font_size = 24
-[node name="fov" type="HSlider" parent="Margin/Box/Tabs/Video/fovRow"]
+[node name="fov" type="HSlider" parent="Margin/Box/Tabs/Controls/Box/fovRow"]
 unique_name_in_owner = true
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -97,52 +92,23 @@ custom_minimum_size = Vector2(220, 40)
 min_value = 70
 max_value = 120
 step = 1
-[node name="Number" type="Label" parent="Margin/Box/Tabs/Video/fovRow"]
+[node name="Number" type="Label" parent="Margin/Box/Tabs/Controls/Box/fovRow"]
 custom_minimum_size = Vector2(110, 40)
 theme_override_font_sizes/font_size = 24
-[node name="fovHint" type="Label" parent="Margin/Box/Tabs/Video"]
+[node name="fovHint" type="Label" parent="Margin/Box/Tabs/Controls/Box"]
 theme_type_variation = &"LabelDim"
 text = "Wider values show more of your surroundings."
-[node name="max_fpsRow" type="HBoxContainer" parent="Margin/Box/Tabs/Video"]
-theme_override_constants/separation = 16
-[node name="Label" type="Label" parent="Margin/Box/Tabs/Video/max_fpsRow"]
-text = "Max FPS"
-custom_minimum_size = Vector2(450, 40)
-theme_override_font_sizes/font_size = 24
-[node name="max_fps" type="OptionButton" parent="Margin/Box/Tabs/Video/max_fpsRow"]
+[node name="KeyBindings" type="VBoxContainer" parent="Margin/Box/Tabs/Controls/Box"]
 unique_name_in_owner = true
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 24
-item_count = 6
-popup/item_0/text = "60"
-popup/item_0/id = 0
-popup/item_1/text = "120"
-popup/item_1/id = 1
-popup/item_2/text = "144"
-popup/item_2/id = 2
-popup/item_3/text = "165"
-popup/item_3/id = 3
-popup/item_4/text = "240"
-popup/item_4/id = 4
-popup/item_5/text = "Unlimited"
-popup/item_5/id = 5
-[node name="max_fpsHint" type="Label" parent="Margin/Box/Tabs/Video"]
-theme_type_variation = &"LabelDim"
-text = "Limits frames per second. Unlimited removes the cap."
-[node name="vsync" type="CheckBox" parent="Margin/Box/Tabs/Video"]
+script = ExtResource("key_bindings")
+theme_override_constants/separation = 12
+[node name="Graphics" type="ScrollContainer" parent="Margin/Box/Tabs"]
+follow_focus = true
+horizontal_scroll_mode = 0
+[node name="Page" type="VBoxContainer" parent="Margin/Box/Tabs/Graphics"]
 unique_name_in_owner = true
-text = "VSync"
-theme_override_font_sizes/font_size = 24
-[node name="vsyncHint" type="Label" parent="Margin/Box/Tabs/Video"]
-theme_type_variation = &"LabelDim"
-text = "Synchronizes frames with the display to reduce tearing."
-[node name="show_fps" type="CheckBox" parent="Margin/Box/Tabs/Video"]
-unique_name_in_owner = true
-text = "Show FPS"
-theme_override_font_sizes/font_size = 24
-[node name="show_fpsHint" type="Label" parent="Margin/Box/Tabs/Video"]
-theme_type_variation = &"LabelDim"
-text = "Shows a small frames-per-second counter in the HUD."
+script = ExtResource("settings_page")
+page = &"graphics"
 [node name="Audio" type="VBoxContainer" parent="Margin/Box/Tabs"]
 theme_override_constants/separation = 16
 [node name="master_volumeRow" type="HBoxContainer" parent="Margin/Box/Tabs/Audio"]
@@ -221,3 +187,11 @@ horizontal_alignment = 2
 vertical_alignment = 1
 theme_type_variation = &"LabelDim"
 text = "Tab: move   Arrows: change   Esc: back"
+[node name="KeepDialog" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Keep these settings?"
+ok_button_text = "Keep"
+cancel_button_text = "Revert"
+dialog_autowrap = true
+[node name="KeepTimer" type="Timer" parent="."]
+unique_name_in_owner = true

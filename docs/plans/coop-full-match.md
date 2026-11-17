@@ -1,6 +1,6 @@
 # Plan: A full co-op match, start to finish
 
-Status: Approved
+Status: Building
 Roadmap: F-47 / issue #213
 Phase: P7
 Size: L
@@ -77,7 +77,7 @@ Not in (non-goals, and where each one goes instead):
   - Works on a dedicated server with no local player: yes, the soak runs exactly that.
 - Data: no new content or numbers; colours from docs/design/look-rules.md. Code compares a specific id: no.
 - Save: no change.
-- Events and UI: no new Events. Squad cards live in the existing Hud scene; pause stays on the UI router.
+- Events and UI: one new Event, `deploy_vote_changed` (step 4, every peer). Squad cards live in the existing Hud scene; pause stays on the UI router.
   The hub is a new root screen (content/screens/hub.tres) reached only through UI.replace.
 - Input through InputFrame, gameplay in _physics_process, randomness from the session RNG: yes.
 - Tests: two-peer ENet unit tests per step, the co-op soak, solo tests and the solo soak stay green.
@@ -112,6 +112,8 @@ Not in (non-goals, and where each one goes instead):
 | systems/net/coop_hud.gd | changed | Revive prompt uses the display name |
 | systems/ui/hud.gd / hud.tscn, systems/ui/squad_cards.gd (new) | new + changed | Squad cards |
 | systems/game/hub_session.tscn | new | game_session.tscn with the hub level and `is_hub` on |
+| systems/game/deploy_vote.gd | new | Ready-up vote in the hub, its sync and the countdown, then deploy (step 4) |
+| core/events.gd | changed | `deploy_vote_changed(place, ready_ids, countdown_left)`, every peer (step 4) |
 | content/screens/hub.tres | new | Root screen id for the hub |
 | systems/net/dedicated_server.gd | changed | Starts in the hub; swaps its session on deploy, match end and when it empties |
 | core/net.gd | changed | Current place id, the "go to place" message, rejoin after a place change |
@@ -231,32 +233,72 @@ is a test tool and never ships. No per-frame allocations.
   the HUD with two cards against the mockup (`look-check` skill).
 - Done when: teammates' names and states are on screen; tests pass.
 
-### Step 4: Hub as a place, and changing places
+### Step 4: Hub as a place, ready-up vote, and changing places
 
-- Build: `GameSession.is_hub` and `hub_session.tscn` (uses the hub thread's
-  `levels/lantern_post/lantern_post.tscn`; until it lands, the test uses a
-  small test level). `Net` holds `place` (screen id). Server side
-  `GameSession.deploy(place)` (called by the hub thread's deploy board through
-  `interact()`): refuses unless `is_hub`, then sends `_go_to_place` to all and
-  swaps the server's own session. Clients receive it, set `Net.pending_join`
-  to the same server and `UI.replace(place)`; the new session joins again in
-  `_ready()` (retrying for up to 6 s while the server swaps). The handshake
-  reply carries the server's place; a client in the wrong place switches
-  first. Dedicated server and Host and play start in the hub; a listen host
-  re-hosts on the same port after the swap. `GameSession._exit_tree` does not
-  show the lost-connection dialog for a planned place change.
-- Files: systems/game/game_session.gd, hub_session.tscn (new),
-  content/screens/hub.tres (new), core/net.gd, systems/net/handshake.gd,
-  systems/net/dedicated_server.gd, systems/ui/main_menu.gd, core/build.gd,
-  tests/unit/test_places.gd (new), tests/integration/test_net_match.gd,
-  tests/content/ screen check.
-- Tests: in-process: a hub session starts no waves and spawns no zombies;
-  `deploy()` from a client request moves the server and the client to the
-  match place, both players spawn there, round 1 starts; `deploy()` outside
-  the hub is refused. Integration (real processes): a client joins a
-  dedicated server, lands in the hub, deploys, and reaches round 1. Solo play
-  from the menu still goes straight into Halcyon Labs.
-- Done when: a squad on a dedicated server can go from the hub into a match.
+- Build: `GameSession.is_hub` (no waves start) and `hub_session.tscn` (a copy of
+  `game_session.tscn` with the hub level, not an inherited scene, so the hub
+  never loads the Halcyon Labs map; uses the hub thread's
+  `levels/lantern_post/lantern_post.tscn`, until it lands a placeholder
+  `levels/hub_placeholder/`). `content/screens/hub.tres` (root, captures the
+  mouse). `Net` holds `place` (screen id).
+  Ready-up vote (asked by the person, 2026-11-17), agreed with the hub plan
+  (`docs/plans/lantern-post-hub.md`): `DeployVote`
+  (`systems/game/deploy_vote.gd`, a child of GameSession reached as
+  `session.deploy_vote`; game_session.gd is at its line limit).
+  `toggle_ready(player, place)` is server only and called by the hub board's
+  `interact()` (Node already has a `request_ready()`): the first press
+  proposes the place and readies that player, any ready player pressing again
+  un-readies and stops the countdown, the last one un-readying ends the vote,
+  a press for another place while a vote runs is ignored, an unknown place
+  never starts one. When every connected peer (plus the host's own player) is
+  ready, a 5 s countdown runs, then `deploy_vote.deploy(place)`. A join or
+  leave re-checks (a joiner starts not ready). State reaches every peer by an
+  authority RPC that fires
+  `Events.deploy_vote_changed(place, ready_ids: Array[int], countdown_left)`
+  (empty place = no vote); a late joiner asks once on connect and gets it.
+  Read-only: `deploy_vote.place`, `deploy_vote.is_ready(peer_id)`.
+  `deploy(place)` refuses unless the session is the hub, on the server, and
+  the place is a known screens id (`net.deploy_refused`).
+  Changing place: the server's `Net.change_place(place)` sends
+  `_go_to_place` to every client and keeps their connections open (closing
+  them would drop the order); those peers are "leaving" and get no player in
+  the new session; any still connected after `CONNECT_TIMEOUT` are dropped.
+  Clients set `Net.changing_place`, remember the address and
+  `UI.replace(place)`; the old session's disconnect is not a lost connection,
+  and the new session joins again in `_ready()`. A dedicated server swaps its
+  session in one call (`DedicatedServer.start_place`, default hub; soak and
+  test servers start in the match). A listen host keeps its port open through
+  the swap. The handshake reply carries the server's place; a menu client in
+  another place switches before it completes auth (tools and tests that start
+  a session directly have no place and stay). Main menu: Host and play and
+  Join land in the hub; Play solo goes straight to the match.
+  PROTOCOL_VERSION 14.
+- Files: systems/game/game_session.gd, deploy_vote.gd (new),
+  hub_session.tscn (new), content/screens/hub.tres (new),
+  levels/hub_placeholder/hub_placeholder.tscn (new, removed by the hub town
+  PR), core/net.gd, core/events.gd, core/build.gd, systems/net/handshake.gd,
+  systems/net/player_spawner.gd, systems/net/dedicated_server.gd,
+  systems/ui/main_menu.gd, systems/ui/screen_data.gd, tools/soak/coop_soak_server.gd,
+  tests/unit/test_deploy_vote.gd (new), tests/unit/test_places.gd (new),
+  tests/integration/test_net_deploy.gd + net_deploy_server (new),
+  tests/integration/net_match_server.gd, tests/content/test_screens.gd,
+  docs/LOGGING.md.
+- Tests: two-peer (server with no local player, client, late joiner): first
+  press proposes and readies and every peer hears it; another place is
+  ignored; an unknown place never votes; pressing again un-readies, the last
+  un-ready ends the vote; everyone ready counts down and deploys once; a
+  joiner stops the countdown and gets the running vote, a leaver restarts it;
+  a ready player who leaves is dropped; no vote and no deploy outside the hub
+  or from a client; the hub starts no waves. Net: a planned leave keeps the
+  rejoin address, a listen host keeps its port, a planned disconnect is no
+  error, leaving peers get no player. Dedicated server starts in the hub and
+  swaps to the match at /root/GameSession. Integration (real processes): a
+  client joins from the menu, lands in the hub, the vote deploys, it rejoins
+  and reaches round 1 with no errors; the existing two-client test now also
+  covers a menu client switching from the hub to a running match. Solo play
+  still goes straight into Halcyon Labs.
+- Done when: a squad on a dedicated server can go from the hub into a match
+  after everyone readies.
 
 ### Step 5: Back to the hub after a match
 

@@ -91,6 +91,14 @@
 	"dressing": [
 		{"id": "labs_papers", "room": "labs", "at": [44.5, 0, 21.4], "model": "lab_papers", "turn": 20}
 	],
+	"light_states": {
+		"guard_post": {"flicker": [1, 4], "dead": [5]},
+		"mess_hall": {"flicker": [8], "dead": [6]},
+		"main_corridor": {"flicker": [0], "dead": [4]},
+		"generator_hall": {"dead": [2]},
+		"coolant_tunnel": {"flicker": [0]},
+		"containment_wing": {"flicker": [7], "dead": [0, 10, 14]}
+	},
 	"wall_buys": [
 		{"id": "coachman_2b", "node": "WallBuyCoachman", "area": "mess_hall", "position": [38.25, 1.4, 38], "cost": 900}
 	]

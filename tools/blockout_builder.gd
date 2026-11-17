@@ -3,12 +3,15 @@
 ## props (boxes or Blender models with a box collider) under each room's Props
 ## node, and visual-only dressing models under its Dressing node.
 ## Rooms with "lights": false (the small spaces behind windows) get no lights.
+## "light_states" marks lights (by index) that flicker, or are dead: a dark
+## housing with no light at all, so the lightmap bake gets nothing from it.
 ## Never hand-edit the output; change the JSON and run this again:
 ##   godot --headless --path . -s res://tools/blockout_builder.gd -- halcyon_labs
 extends SceneTree
 
 const WALL_PANEL: String = "res://assets/models/kit/wall_panel.glb"
 const CEILING_LIGHT: String = "res://levels/kit/ceiling_light.tscn"
+const DEAD_LIGHT: String = "res://levels/kit/ceiling_light_dead.tscn"
 const MATERIALS: String = "res://levels/materials/%s.tres"
 const PROP_MODEL: String = "res://assets/models/props/%s.glb"
 const DRESSING_MODEL: String = "res://assets/models/dressing/%s.glb"
@@ -43,8 +46,9 @@ static func build(layout: Dictionary) -> Node3D:
 	var root: Node3D = Node3D.new()
 	root.name = "Blockout"
 	var openings: Array = _mark_ramp_ends(layout.get("openings", []), layout.get("ramps", []))
+	var states: Dictionary = layout.get("light_states", {})
 	for room: Dictionary in layout["rooms"]:
-		_build_room(root, room, openings)
+		_build_room(root, room, openings, states.get(room["id"], {}))
 	var ramps: Node3D = _child(root, root, "Ramps")
 	for i: int in (layout.get("ramps", []) as Array).size():
 		_build_ramp(root, ramps, layout["ramps"][i], i)
@@ -125,7 +129,7 @@ static func _mark_ramp_ends(openings: Array, ramps: Array) -> Array:
 	return out
 
 
-static func _build_room(root: Node3D, room: Dictionary, openings: Array) -> void:
+static func _build_room(root: Node3D, room: Dictionary, openings: Array, light_state: Dictionary) -> void:
 	var r: Array = room["rect"]
 	var y: float = room["floor"]
 	var h: float = room["height"]
@@ -147,7 +151,7 @@ static func _build_room(root: Node3D, room: Dictionary, openings: Array) -> void
 	for i: int in edges.size():
 		_build_wall(root, walls, "Edge%d" % i, edges[i], openings, centre)
 	if room.get("lights", true):
-		_build_lights(root, node, size, minf(h, LIGHT_HANG) - 0.03)
+		_build_lights(root, node, size, minf(h, LIGHT_HANG) - 0.03, light_state)
 
 
 static func _build_wall(
@@ -241,7 +245,7 @@ static func _cut_piece(root: Node3D, walls: Node3D, label: String, at: Transform
 	block.transform = Transform3D(at.basis, at.origin + Vector3(0, size.z + size.y * 0.5, 0))
 
 
-static func _build_lights(root: Node3D, room: Node3D, size: Vector2, height: float) -> void:
+static func _build_lights(root: Node3D, room: Node3D, size: Vector2, height: float, state: Dictionary) -> void:
 	var lights: Node3D = _child(root, room, "Lights")
 	var nx: int = maxi(1, roundi(size.x / LIGHT_SPACING))
 	var nz: int = maxi(1, roundi(size.y / LIGHT_SPACING))
@@ -255,14 +259,20 @@ static func _build_lights(root: Node3D, room: Node3D, size: Vector2, height: flo
 	var by_distance: Array[Vector3] = spots.duplicate()
 	by_distance.sort_custom(func(a: Vector3, b: Vector3) -> bool: return a.length() < b.length())
 	var scene: PackedScene = load(CEILING_LIGHT)
+	var dead_scene: PackedScene = load(DEAD_LIGHT)
+	var flicker: Array = state.get("flicker", [])
+	var dead: Array = state.get("dead", [])
 	for k: int in spots.size():
-		var light: CeilingLight = scene.instantiate() as CeilingLight
+		var is_dead: bool = dead.has(float(k))
+		var light: Node3D = (dead_scene if is_dead else scene).instantiate() as Node3D
 		light.name = "Light%d" % k
 		light.position = spots[k]
 		# Tubes run along the room's long side.
 		if size.x > size.y:
 			light.rotation.y = PI * 0.5
-		light.casts_shadow = by_distance.find(spots[k]) < SHADOWED_LIGHTS_PER_ROOM
+		if not is_dead:
+			(light as CeilingLight).casts_shadow = by_distance.find(spots[k]) < SHADOWED_LIGHTS_PER_ROOM
+			(light as CeilingLight).flickers = flicker.has(float(k))
 		lights.add_child(light)
 		light.owner = root
 

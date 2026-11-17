@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="EnemyData" load_steps=8 format=3]
+[gd_resource type="Resource" script_class="EnemyData" format=3]
 
 [ext_resource type="Script" path="res://systems/enemies/enemy_data.gd" id="1"]
 [ext_resource type="PackedScene" path="res://systems/enemies/zombie.tscn" id="2"]
@@ -6,6 +6,13 @@
 [ext_resource type="AudioStream" path="res://assets/audio/zombie_groan_2.wav" id="4"]
 [ext_resource type="AudioStream" path="res://assets/audio/zombie_groan_3.wav" id="5"]
 [ext_resource type="AudioStream" path="res://assets/audio/zombie_attack.wav" id="6"]
+[ext_resource type="AudioStream" path="res://assets/audio/zombie_death_1.wav" id="20"]
+[ext_resource type="AudioStream" path="res://assets/audio/zombie_death_2.wav" id="21"]
+[ext_resource type="AudioStream" path="res://assets/audio/zombie_death_3.wav" id="22"]
+[ext_resource type="AudioStream" path="res://assets/audio/zombie_step_1.wav" id="23"]
+[ext_resource type="AudioStream" path="res://assets/audio/zombie_step_2.wav" id="24"]
+[ext_resource type="AudioStream" path="res://assets/audio/zombie_step_3.wav" id="25"]
+[ext_resource type="AudioStream" path="res://assets/audio/zombie_step_4.wav" id="26"]
 
 [resource]
 script = ExtResource("1")
@@ -24,3 +31,5 @@ body_scale = 1.0
 scene = ExtResource("2")
 groan_sounds = Array[AudioStream]([ExtResource("3"), ExtResource("4"), ExtResource("5")])
 attack_sound = ExtResource("6")
+death_sounds = Array[AudioStream]([ExtResource("20"), ExtResource("21"), ExtResource("22")])
+footstep_sounds = Array[AudioStream]([ExtResource("23"), ExtResource("24"), ExtResource("25"), ExtResource("26")])

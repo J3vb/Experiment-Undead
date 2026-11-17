@@ -123,7 +123,7 @@ func test_old_v1_save_banks_xp_with_empty_inventory() -> void:
 	for item: Dictionary in loaded.stash:
 		assert_eq(item, {})
 	assert_eq(loaded.loadout, {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}})
-	assert_eq(int(SaveFile.read(PATH)["save_version"]), 1)
+	assert_eq(int(SaveFile.read(PATH)["save_version"]), SaveFile.CURRENT_VERSION)
 
 
 func test_restart_mid_run_banks_once() -> void:
@@ -223,6 +223,17 @@ func test_stash_full_keeps_what_fits_saves_and_reports_overflow() -> void:
 	assert_eq(_results().loot_status.text, "Stash full · 1 kept, 2 items lost")
 	session.bank_run_xp()
 	assert_eq(session.loot.lost, 2)
+
+
+func test_game_over_records_best_round_even_after_xp_was_banked_first() -> void:
+	session.director.round_number = 4
+	watch_signals(Events)
+	session.bank_run_xp()
+	player.take_damage(DamageInfo.create(10000.0, null))
+	await wait_for_signal(Events.game_over, 3.0)
+	var stats: Dictionary = get_signal_parameters(Events, "game_over")[0]
+	assert_true(stats.get("new_best", false), "first run on the map is a best")
+	assert_eq(int(SaveFile.read(PATH)["best_runs"]["halcyon_labs"]["round"]), 4)
 
 
 func _results() -> ResultsScreen:

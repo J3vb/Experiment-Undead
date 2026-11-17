@@ -3,6 +3,7 @@ extends DedicatedServer
 
 
 func _ready() -> void:
+	start_place = &"match"
 	super()
 	session.rng_seed = 7
 	var rules: WaveRules = session.wave_rules.duplicate(true) as WaveRules
