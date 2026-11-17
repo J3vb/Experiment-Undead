@@ -1,10 +1,10 @@
 # Plan: Baked texture maps for the four concept guns
 
-Status: Review
+Status: Approved
 Roadmap: F-75
 Phase: P4 (v0.1 Vertical slice, look pass on built guns)
 Size: L
-Approved by:
+Approved by: the person by decision card on 2026-11-17 (AR-17 only for now), plan PR #323
 
 ## Goal
 
@@ -347,5 +347,8 @@ Can run any time after step 2.
 
 ## Open decisions
 
-- none (direction, budget, lighting and intake were chosen by the person on
-  2026-11-17; map size and file format are technical picks above)
+- [x] Plan: approved for steps 1 and 2 only (the person, 2026-11-17,
+  decision card "AR-17 only for now"). Steps 3 to 6 wait until the person has
+  seen the baked AR-17 from step 2 and says go.
+- [x] Direction, budget (30,000), lighting and intake: the person,
+  2026-11-17. Map size and file format are technical picks above.
