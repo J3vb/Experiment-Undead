@@ -51,10 +51,12 @@ signal points_changed(player: Player, total: int, delta: int)
 ## Peers: owner only. Other peers see the shot through RemoteShots.
 signal weapon_fired(player: Player, weapon: Weapon)
 ## A player gained a weapon (loadout, wall buy, crate, loot).
-## Peers: every peer for the starting loadout; later guns only on the owner.
+## Peers: every peer for the starting loadout, the downed sidearm and the respawn pistol;
+## other guns (buys, Vault, loot) only on the owner. Not a sign that the player is local.
 signal weapon_acquired(player: Player, weapon_id: StringName)
 ## A player's active weapon changed.
-## Peers: every peer for the starting loadout; later switches only on the owner.
+## Peers: every peer for the starting loadout, going down, getting up and respawning;
+## the player's own switches only on the owner. Not a sign that the player is local.
 signal weapon_switched(player: Player, weapon: Weapon)
 ## A player's active weapon ammo changed.
 ## Peers: owner; the server too when a power-up refills that player's ammo.
