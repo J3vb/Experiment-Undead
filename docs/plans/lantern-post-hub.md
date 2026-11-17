@@ -4,7 +4,7 @@ Status: Approved
 Roadmap: F-48 / issue #131 (first slice of F-45)
 Phase: P9 (pulled forward for the co-op week goal)
 Size: M
-Approved by: Codex plan review on PR #222 (no findings, 2026-11-17); the person approved the town look and asked for a ready-up vote (2026-11-17)
+Approved by: Codex plan review on PR #222 (no findings, 2026-11-17); the person approved the town look and asked for a ready-up vote (2026-11-17); vote section re-reviewed by a Claude plan review (2026-11-17), its findings fixed. Step 2 also needs the same interface text in `coop-full-match.md` (co-op thread adds it with its vote step).
 
 ## Goal
 
@@ -116,7 +116,7 @@ Not in (and where it goes):
 | levels/materials/sodium_lamp.tres, lit_window.tres, pine.tres, iron.tres | new | Emissive sodium lamp, warm window, pine, dark iron |
 | tools/assets/town_props.py, assets/models/town/*.glb (+ .import), docs/design/turnarounds/town/*.png | new | Blender-built street lamp, wall lantern, lit and dark windows with shutters, fence, signpost; new `town` folder in check_models.py BUDGETS (2,500 triangles, 4 materials) and turnarounds REFERENCES (style_hub.jpg); tests/content/test_town_models.gd |
 | tools/hub_shot.gd | new | Renders the street and an overview to `screenshots/` |
-| systems/hub/deploy_board.gd, deploy_board.tscn | new (step 2) | `DeployBoard extends Interactable`: `@export var place: StringName`, `@export var label: String`; `get_prompt()` shows "Ready: <label>" or "Cancel ready" from `deploy_vote.is_ready()`; `interact(player)` calls `player.session.deploy_vote.request_ready(player, place)` |
+| systems/hub/deploy_board.gd, deploy_board.tscn | new (step 2) | `DeployBoard extends Interactable`: `@export var place: StringName`, `@export var label: String`; `get_prompt()` shows "Ready: <label>" or "Cancel ready" from the last `Events.deploy_vote_changed` payload (local peer id in `ready_ids`), so it is right on clients too; `interact(player)` calls `player.session.deploy_vote.request_ready(player, place)` |
 | systems/hub/deploy_vote_panel.gd, deploy_vote_panel.tscn | new (step 2) | CanvasLayer in the town scene: hidden while no vote; shows the place label, each player's `display_name` with a ready tick and the countdown; updates only on `Events.deploy_vote_changed` |
 | tests/unit/test_lantern_post.gd, test_deploy_board.gd | new | See steps |
 
@@ -131,7 +131,7 @@ Interface with the co-op thread (same text in `coop-full-match.md`):
 3. The co-op thread owns `DeployVote` (`systems/game/deploy_vote.gd`, a child of
    GameSession reached as `session.deploy_vote`): `request_ready(player, place)`
    is server only; the first press proposes the place and readies that player,
-   the same player pressing again un-readies and cancels the countdown, a press
+   any ready player who presses again un-readies and cancels the countdown (ui-hud.md screen 8: any player can cancel), a press
    for another place while a vote runs is ignored; when every connected player
    is ready a 5 s countdown runs, then `session.deploy(place)`. Leaving or
    joining re-checks (a joiner starts not ready). Read-only: `deploy_vote.place`,
@@ -194,7 +194,12 @@ after step 1 merges.
   `levels/looks/lantern_post_night.tres`, `levels/materials/town_surface.gdshader`,
   `levels/materials/town_*.tres`, `levels/materials/sodium_lamp.tres`,
   `levels/materials/lit_window.tres`, `levels/materials/pine.tres`, `levels/materials/iron.tres`,
-  `tools/hub_shot.gd`, `tests/unit/test_lantern_post.gd`, roadmap row.
+  `tools/hub_shot.gd`, `tests/unit/test_lantern_post.gd`, `tools/assets/town_props.py`,
+  `assets/models/town/*.glb` (+ `.import`), `docs/design/turnarounds/town/*.png`,
+  `tests/content/test_town_models.gd`, and the `town` lines in `tools/assets/build_models.py`,
+  `tools/assets/check_models.py`, `tools/turnarounds.py` and `.github/workflows/assets.yml`.
+- Tests also: `test_town_models.gd` checks the props stand on the origin, the lamp
+  glows and reaches forward, and window shutters sit in front of the glass.
 - Tests: `test_lantern_post.gd` loads the scene, checks the root is a `Level`
   with `is_navigation_ready` true right after `_ready`, has a player spawn,
   has no zombie spawn points, and that all 8 lined-up spawn spots
@@ -209,8 +214,9 @@ after step 1 merges.
 - Build: `DeployBoard` interactable and scene (a sign board on posts with a
   green screen and a label), placed at `DeployBoardSpot` in the town with
   `place = &"match"`, label "Halcyon Labs". The vote panel in the town scene.
-  Starts after the co-op thread's `DeployVote` and `deploy()` are on main (the
-  calls must compile).
+  Starts after co-op steps 3 (`player.display_name`) and 4 (`deploy()`) and the
+  co-op vote step (`DeployVote`, `Events.deploy_vote_changed`, vote sync and
+  late-join replay) are on main.
 - Files: `systems/hub/deploy_board.gd`, `systems/hub/deploy_board.tscn`,
   `systems/hub/deploy_vote_panel.gd`, `systems/hub/deploy_vote_panel.tscn`,
   `levels/lantern_post/lantern_post.tscn`, `tests/unit/test_deploy_board.gd`,
@@ -220,8 +226,10 @@ after step 1 merges.
   ready; in the two-peer fixture (`tests/unit/coop_interaction_fixture.gd`) a
   client's interact request on the board readies that client on the server and
   a second press un-readies it; the panel shows names, ticks and the countdown
-  from a `deploy_vote_changed` emit and hides on an empty place. Fails without
-  the board or panel.
+  from a `deploy_vote_changed` emit and hides on an empty place; with a second
+  player ready, the first player's second press cancels the countdown. Fails without
+  the board or panel. Vote rules themselves (a press for another place is ignored,
+  leave and join re-checks, late-join replay) are tested in the co-op plan's vote step.
 - Done when: CI green; from a client, pressing the board readies you, and when
   everyone is ready the whole server goes into Halcyon Labs after 5 s
   (two-instance play-test goes on issue #191's checklist).
