@@ -14,6 +14,16 @@ If this file and `docs/DECISIONS.md` disagree, `DECISIONS.md` and the code win.
 |---|---|
 | ![Blackout round](images/style_blackout.jpg) | ![Lantern Post](images/style_hub.jpg) |
 
+## Halcyon Labs target
+
+| After the breakout (**the look target**) | Before the breakout (what the rooms were) |
+|---|---|
+| ![Halcyon Labs after the breakout](images/halcyon_concept_after.jpg) | ![Halcyon Labs before the breakout](images/halcyon_concept_before.jpg) |
+
+Match the post-breakout image for signage, wreck, Fenlight growth and fire,
+but keep the map as dark as it is: new light only comes from Fenlight, fire
+and red lamps. Plan: [halcyon-concept-pass.md](../plans/halcyon-concept-pass.md).
+
 ## Palette
 
 | Name | Hex | Use |

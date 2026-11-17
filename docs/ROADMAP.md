@@ -38,6 +38,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-15 | Halcyon Labs detail props: Blender models for every room prop, story clutter, barricades | - | - | [ready](plans/halcyon-labs-props.md) | M | Done |
 | F-63 | Halcyon Labs door models: bulkheads, debris, shutters, vent grates, freezer door | - | - | [done](plans/halcyon-doors.md) | S | Done |
 | F-64 | Halcyon Labs wall-buy racks (gun on the wall) and Specimen Vault model | - | - | [done](plans/halcyon-wall-buys-vault.md) | S | Done |
+| F-68 | Halcyon Labs concept pass after the breakout: signage, Fenlight vines, wrecked rooms, ceilings, #297 look lines (stays dark) | #297 | - | [review](plans/halcyon-concept-pass.md) | L | Planning |
 | F-61 | Halcyon Labs atmosphere: dead and flickering lights, particles, fog, beacons, screens, sound spots, story decals | - | - | [ready](plans/halcyon-labs-atmosphere.md) | M | Done |
 | F-16 | Game feel: camera punch, hitstop, downed and death screen | - | - | [ready](plans/game-feel-slice.md) | M | Done |
 | F-65 | Client and server updates: clear version refusals, saves safe across channels, a launcher that installs and updates the game and a server, self-updating Docker servers (steps 1-5 before F-11) | - | - | [ready](plans/client-server-updates.md) | L | Ready |
