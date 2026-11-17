@@ -103,3 +103,30 @@ func test_pushed_screen_draws_above_the_menu_and_takes_the_mouse() -> void:
 	get_viewport().push_input(motion)
 	await wait_process_frames(1)
 	assert_ne(get_viewport().gui_get_hovered_control(), menu.enter_button, "the menu under a screen gets no mouse")
+
+
+func test_newer_character_save_shows_update_message_then_opens_screen_and_keeps_file() -> void:
+	var path: String = CharacterProfile.directory() + "solo.json"
+	var backup: String = FileAccess.get_file_as_string(path) if FileAccess.file_exists(path) else ""
+	var raw: String = '{"save_version": %d, "total_xp": 9000}' % (SaveFile.CURRENT_VERSION + 1)
+	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
+	file.store_string(raw)
+	file.close()
+	menu.loadout_button.grab_focus()
+	menu.loadout_button.pressed.emit()
+	assert_eq(UI.top(), &"", "the message comes before the character screen")
+	assert_true(menu.error_dialog.visible)
+	assert_eq(menu.error_dialog.message_label.text, MainMenu.NEWER_SAVE)
+	menu.error_dialog.action_button.pressed.emit()
+	assert_eq(UI.top(), &"character")
+	var screen: CharacterScreen = _top_screen() as CharacterScreen
+	assert_true(screen.profile.saved_by_newer_version)
+	screen._close()
+	screen._close()
+	assert_eq(FileAccess.get_file_as_string(path), raw, "the newer save is never changed")
+	if backup.is_empty():
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	else:
+		file = FileAccess.open(path, FileAccess.WRITE)
+		file.store_string(backup)
+		file.close()

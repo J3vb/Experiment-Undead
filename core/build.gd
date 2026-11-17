@@ -55,6 +55,15 @@ func crash_marker() -> String:
 	return SERVER_CRASH_MARKER if is_server() else CRASH_MARKER
 
 
+## True only for plain X.Y.Z release versions. Test tags, main builds and the editor are not stable.
+func is_stable() -> bool:
+	return is_stable_version(version)
+
+
+func is_stable_version(text: String) -> bool:
+	return RegEx.create_from_string("^\\d+\\.\\d+\\.\\d+$").search(text) != null
+
+
 func is_server() -> bool:
 	return OS.has_feature("dedicated_server") or "--server" in OS.get_cmdline_user_args()
 

@@ -17,7 +17,7 @@ func after_each() -> void:
 	if is_instance_valid(_session):
 		_session.free()
 	Net.leave()
-	var path: String = CharacterProfile.DIRECTORY + String(PROFILE_ID) + ".json"
+	var path: String = CharacterProfile.directory() + String(PROFILE_ID) + ".json"
 	if FileAccess.file_exists(path):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 

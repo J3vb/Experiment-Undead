@@ -97,7 +97,8 @@ func _character_flow() -> void:
 	await _press_joypad_button(JOY_BUTTON_B)
 	assert(current_scene.get("character_screen") == null)
 	assert((current_scene.get_node("Screens/Root/Menu/Character") as Button).has_focus())
-	var path: String = "user://characters/test_main_menu_character.json"
+	var profiles: Script = load("res://systems/progression/character_profile.gd")
+	var path: String = str(profiles.call("directory")) + "test_main_menu_character.json"
 	assert(FileAccess.file_exists(path))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 

@@ -3,11 +3,11 @@ extends GutTest
 
 const SESSION: PackedScene = preload("res://tests/integration/character_save_session.tscn")
 const ID: StringName = &"test_character_session"
-const PATH: String = "user://characters/test_character_session.json"
 const START_XP: int = 450
 
 var session: GameSession
 var player: Player
+var _path: String = CharacterProfile.directory() + "test_character_session.json"
 
 
 func before_each() -> void:
@@ -29,7 +29,7 @@ func after_each() -> void:
 
 
 func _remove_files() -> void:
-	for path: String in [PATH, PATH + ".tmp"]:
+	for path: String in [_path, _path + ".tmp"]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
@@ -51,9 +51,9 @@ func test_kill_and_round_xp_survive_game_over_and_next_session() -> void:
 	var stats: Dictionary = get_signal_parameters(Events, "game_over")[0]
 	assert_eq(stats["start_total_xp"], START_XP)
 	assert_eq(stats["total_xp"], START_XP + run_xp)
-	assert_eq(int(SaveFile.read(PATH)["total_xp"]), START_XP + run_xp)
+	assert_eq(int(SaveFile.read(_path)["total_xp"]), START_XP + run_xp)
 	session.bank_run_xp()
-	assert_eq(int(SaveFile.read(PATH)["total_xp"]), START_XP + run_xp)
+	assert_eq(int(SaveFile.read(_path)["total_xp"]), START_XP + run_xp)
 	session.free()
 	session = SESSION.instantiate() as GameSession
 	add_child_autofree(session)
@@ -69,7 +69,7 @@ func test_exfil_banks_after_bonus_once() -> void:
 	session.finish_exfil()
 	session.bank_run_xp()
 	assert_eq(session.progression.get_xp(player), 151)
-	assert_eq(int(SaveFile.read(PATH)["total_xp"]), START_XP + 151)
+	assert_eq(int(SaveFile.read(_path)["total_xp"]), START_XP + 151)
 	await wait_seconds(0.05)
 
 
@@ -93,7 +93,7 @@ func test_inventory_and_unknown_item_keys_survive_match_save_and_load() -> void:
 	profile.loadout["primary"] = item.duplicate(true)
 	profile.loadout["primary"]["uid"] = "equipped"
 	assert_eq(profile.save(), OK)
-	var expected: Dictionary = SaveFile.read(PATH)
+	var expected: Dictionary = SaveFile.read(_path)
 	session = SESSION.instantiate() as GameSession
 	add_child_autofree(session)
 	player = session.get_players()[0]
@@ -111,7 +111,7 @@ func test_inventory_and_unknown_item_keys_survive_match_save_and_load() -> void:
 
 func test_old_v1_save_banks_xp_with_empty_inventory() -> void:
 	session.free()
-	assert_eq(SaveFile.write(PATH, {"id": String(ID), "total_xp": START_XP}), OK)
+	assert_eq(SaveFile.write(_path, {"id": String(ID), "total_xp": START_XP}), OK)
 	session = SESSION.instantiate() as GameSession
 	add_child_autofree(session)
 	player = session.get_players()[0]
@@ -123,7 +123,7 @@ func test_old_v1_save_banks_xp_with_empty_inventory() -> void:
 	for item: Dictionary in loaded.stash:
 		assert_eq(item, {})
 	assert_eq(loaded.loadout, {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}})
-	assert_eq(int(SaveFile.read(PATH)["save_version"]), SaveFile.CURRENT_VERSION)
+	assert_eq(int(SaveFile.read(_path)["save_version"]), SaveFile.CURRENT_VERSION)
 
 
 func test_restart_mid_run_banks_once() -> void:
@@ -135,7 +135,7 @@ func test_restart_mid_run_banks_once() -> void:
 	session.progression.add_xp(player, 75)
 	session.restart()
 	session.bank_run_xp()
-	assert_eq(int(SaveFile.read(PATH)["total_xp"]), START_XP + 75)
+	assert_eq(int(SaveFile.read(_path)["total_xp"]), START_XP + 75)
 	await wait_process_frames(2)
 	session = get_tree().current_scene as GameSession
 	get_tree().current_scene = runner_scene
@@ -147,7 +147,7 @@ func test_restart_mid_run_banks_once() -> void:
 	assert_eq(session.progression.get_level(player), 2)
 	session.bank_run_xp()
 	session.bank_run_xp()
-	assert_eq(int(SaveFile.read(PATH)["total_xp"]), START_XP + 75)
+	assert_eq(int(SaveFile.read(_path)["total_xp"]), START_XP + 75)
 	session.free()
 
 
@@ -160,7 +160,7 @@ func test_empty_profile_id_does_not_load_or_save() -> void:
 	assert_eq(session.progression.get_total_xp(player), 0)
 	session.progression.add_xp(player, 100)
 	session.bank_run_xp()
-	assert_eq(int(SaveFile.read(PATH)["total_xp"]), START_XP)
+	assert_eq(int(SaveFile.read(_path)["total_xp"]), START_XP)
 
 
 func test_window_close_banks_once() -> void:
@@ -168,7 +168,7 @@ func test_window_close_banks_once() -> void:
 	session.notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
 	session.notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
 	session.bank_run_xp()
-	assert_eq(int(SaveFile.read(PATH)["total_xp"]), START_XP + 75)
+	assert_eq(int(SaveFile.read(_path)["total_xp"]), START_XP + 75)
 
 
 func test_pause_main_menu_banks_before_leaving() -> void:
@@ -183,7 +183,7 @@ func test_pause_main_menu_banks_before_leaving() -> void:
 	pause.pressed = true
 	session._unhandled_input(pause)
 	(UI._stack.back()["layer"].get_child(0) as PauseScreen).main_menu_button.pressed.emit()
-	assert_eq(int(SaveFile.read(PATH)["total_xp"]), START_XP + 75)
+	assert_eq(int(SaveFile.read(_path)["total_xp"]), START_XP + 75)
 	await wait_process_frames(2)
 	assert_eq(CharacterProfile.load_or_create(ID).stash[0].get("uid"), "menu-exit")
 	var menu: Node = get_tree().current_scene
@@ -233,7 +233,7 @@ func test_game_over_records_best_round_even_after_xp_was_banked_first() -> void:
 	await wait_for_signal(Events.game_over, 3.0)
 	var stats: Dictionary = get_signal_parameters(Events, "game_over")[0]
 	assert_true(stats.get("new_best", false), "first run on the map is a best")
-	assert_eq(int(SaveFile.read(PATH)["best_runs"]["halcyon_labs"]["round"]), 4)
+	assert_eq(int(SaveFile.read(_path)["best_runs"]["halcyon_labs"]["round"]), 4)
 
 
 func _results() -> ResultsScreen:

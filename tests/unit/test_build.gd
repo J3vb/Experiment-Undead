@@ -67,6 +67,13 @@ func test_server_port_falls_back() -> void:
 	assert_eq(DedicatedServer.read_int_setting("no-such-arg", "EU_NO_SUCH_ENV", 7777), 7777)
 
 
+func test_only_plain_release_versions_are_stable() -> void:
+	for version: String in ["0.1.0", "1.20.3"]:
+		assert_true(Build.is_stable_version(version), version)
+	for version: String in ["dev", "0.1.0-test.1", "0.1.0-dev.4+abc123", "0.1", "v0.1.0", ""]:
+		assert_false(Build.is_stable_version(version), version)
+
+
 func test_compare_versions_orders_numbers_and_pre_releases() -> void:
 	var cases: Array[Array] = [
 		["0.10.0", "0.9.0", 1],

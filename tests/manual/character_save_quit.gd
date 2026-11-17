@@ -2,7 +2,6 @@
 extends SceneTree
 
 const ID: StringName = &"test_character_quit"
-const PATH: String = "user://characters/test_character_quit.json"
 
 
 func _initialize() -> void:
@@ -12,6 +11,7 @@ func _initialize() -> void:
 func _run() -> void:
 	var profiles: Script = load("res://systems/progression/character_profile.gd")
 	var saves: Script = load("res://systems/save/save_file.gd")
+	var path: String = str(profiles.call("directory")) + String(ID) + ".json"
 	var profile: RefCounted = profiles.call("load_or_create", ID) as RefCounted
 	profile.set("total_xp", 450)
 	assert(profile.call("save") == OK)
@@ -30,9 +30,9 @@ func _run() -> void:
 	var ui: Node = root.get_node("UI")
 	var pause_layer: Node = ui.get_child(ui.get_child_count() - 1)
 	(pause_layer.get_node("PauseScreen/Menu/QuitGame") as Button).pressed.emit()
-	var data: Dictionary = saves.call("read", PATH)
+	var data: Dictionary = saves.call("read", path)
 	var total: int = int(data.get("total_xp", -1))
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(PATH))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	if total != 525:
 		push_error("Quit did not bank run XP: %d" % total)
 		quit(1)
