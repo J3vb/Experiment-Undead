@@ -206,10 +206,15 @@ func swap_binding(action: StringName, slot: int, event: InputEvent) -> bool:
 	return true
 
 
+## Puts the default keys back; an action that took one of them gets this slot's current key instead.
 func reset_binding(action: StringName) -> void:
-	if can_rebind(action):
-		_replace_binding(action, _default_binding(action))
-		_binding_changed(action)
+	if not can_rebind(action):
+		return
+	var defaults: Array[InputEvent] = _default_binding(action)
+	for slot: int in defaults.size():
+		swap_binding(action, slot, defaults[slot])
+	_replace_binding(action, defaults)
+	_binding_changed(action)
 
 
 ## What to show for a key or button: the letter on the player's own keyboard layout.

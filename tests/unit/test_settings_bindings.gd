@@ -95,6 +95,15 @@ func test_swap_gives_the_other_action_the_old_key() -> void:
 	assert_eq(_codes(&"jump"), [], "an empty slot leaves the other action unbound, as the player chose")
 
 
+func test_reset_after_swap_never_puts_a_key_on_two_actions() -> void:
+	_settings.swap_binding(&"reload", 0, _key(KEY_F))
+	assert_eq(_codes(&"interact"), [KEY_R])
+	_settings.set_binding(&"reload", 1, _key(KEY_T))
+	_settings.reset_binding(&"reload")
+	assert_eq(_codes(&"reload"), [KEY_R], "default back, extra backup key dropped")
+	assert_eq(_codes(&"interact"), [KEY_F], "interact gets reload's key in that slot")
+
+
 func test_same_key_twice_in_one_action_keeps_one() -> void:
 	_settings.set_binding(&"reload", 1, _key(KEY_R))
 	assert_eq(_codes(&"reload"), [KEY_R])
