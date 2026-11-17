@@ -306,6 +306,20 @@ the person on a decision card before the next step starts.
 - Tests: props clearance; zombie path from each Containment spawn to the exfil
   hatch; vent duct tests still pass; prop models test.
 - Done when: Containment render matches the concept.
+- Built (2026-11-17): props `big_tank_shattered` (C-01, north of the
+  north spill) and `big_tank_cracked` (C-02 by the east spill, C-03 on the
+  west side north of the ramp lane), each inside a bent hazard railing with
+  its gap facing its spill; `toppled_console` against the west wall;
+  `fallen_barrels` under the catwalk. Dressing `catwalk_office` (5 m deck,
+  office, stair torn off 1.4 m above the floor) on the north wall between
+  Mule and the north-east window, and `floor_cables` out of C-03. Tank codes
+  are decals under `TankCodes` in map.tscn (`sign_decals.py` draws them; it
+  gained a `0` glyph). No new mist: Containment already has its one floor
+  FogVolume, which the green glow lights now tint. Tests: arena centre and
+  the ramp and vent approach lanes stay clear of the wreck props, every
+  Containment spawn reaches the exfil hatch (`test_halcyon_wreck.gd`).
+  Draw calls from the baseline Containment camera: 103 (+30 %, at the
+  budget); the barrels and catwalk office use fewer materials to get there.
 
 ### Step 6: Ceiling layer
 

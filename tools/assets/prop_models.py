@@ -238,6 +238,7 @@ import props_dock  # noqa: E402
 import props_fenlight  # noqa: E402
 import props_mess_guard  # noqa: E402
 import props_power_containment  # noqa: E402
+import props_wreck_containment  # noqa: E402
 import props_wreck_labs  # noqa: E402
 import props_wreck_mess  # noqa: E402
 
@@ -248,3 +249,4 @@ MODELS.update(props_aftermath.MODELS)
 MODELS.update(props_fenlight.MODELS)
 MODELS.update(props_wreck_mess.MODELS)
 MODELS.update(props_wreck_labs.MODELS)
+MODELS.update(props_wreck_containment.MODELS)
