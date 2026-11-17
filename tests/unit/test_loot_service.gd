@@ -144,9 +144,8 @@ func test_drop_reaches_only_its_owner_and_pickup_only_changes_their_pack() -> vo
 	var drop: LootDrop = client.get_child(0) as LootDrop
 	drop.interact(host_player)
 	assert_true(client.pack.items.is_empty(), "other owner cannot take the item")
-	client_player.focus = drop
-	client_player.last_frame.buttons = InputFrame.INTERACT
-	client._physics_process(0.016)
+	assert_true(drop.is_local(), "the owning client picks it up itself, no server request")
+	drop.interact(client_player)
 	assert_eq(client.pack.items, [item])
 	assert_true(server.pack.items.is_empty())
 	await wait_process_frames(2)

@@ -42,7 +42,7 @@ func get_prompt(_player: Player) -> String:
 	return "Repair barrier [F]" if planks < PLANKS else ""
 
 
-func interact(player: Player) -> void:
+func interact(player: Player, _facts: Dictionary = {}) -> void:
 	if planks >= PLANKS or _repair_cooldown > 0.0:
 		return
 	_repair_cooldown = REPAIR_TIME

@@ -43,12 +43,16 @@ func get_prompt(viewer: Player) -> String:
 	)
 
 
-func interact(viewer: Player) -> void:
+func interact(viewer: Player, _facts: Dictionary = {}) -> void:
 	if viewer != player or is_queued_for_deletion() or not _can_reach(viewer):
 		return
 	if pack.add(item):
 		viewer.focus = null
 		queue_free()
+
+
+func is_local() -> bool:
+	return true
 
 
 func _can_reach(viewer: Player) -> bool:

@@ -46,7 +46,7 @@ func get_prompt(player: Player) -> String:
 	return ""
 
 
-func interact(player: Player) -> void:
+func interact(player: Player, _facts: Dictionary = {}) -> void:
 	if not _level().power_on:
 		return
 	if state == State.OFFERING and player == _buyer:
