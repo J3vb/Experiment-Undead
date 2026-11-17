@@ -38,6 +38,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-11 | Release v0.1.0 | #111 | F-10 | issue | S | Todo |
 | F-40 | Round state and power-ups in co-op (rest of #126 after F-02) | #126 | F-02 | [plan](plans/coop-round-state-power-ups.md) | M | Building |
 | F-47 | A full co-op match: co-op soak, pause, squad cards, hub and deploy flow | #213 | F-40 | [plan](plans/coop-full-match.md) | L | Ready |
+| F-48 | HUD feedback and loading: loading screen, damage numbers, level-up burst, drop feed | - | - | [needed](plans/hud-feedback-loading.md) | M | Planning |
 
 ## Next: v0.2 Progression and loot
 
