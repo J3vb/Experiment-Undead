@@ -35,7 +35,7 @@ pattern. **Missing** = needed soon, not built.
 | 7 | [Game tick and randomness](#7-game-tick-and-randomness) | solid (1 leak) | AGENTS.md code rule 5 |
 | 8 | [Logging and diagnostics](#8-logging-and-diagnostics) | solid | `docs/LOGGING.md` |
 | 9 | [Tests and CI](#9-tests-and-ci) | solid | AGENTS.md, [ADR 0009](adr/0009-ci-is-the-gate.md) |
-| 10 | [Exported builds and dedicated server](#10-exported-builds-and-dedicated-server) | shaky | `docs/RELEASING.md`, [ADR 0006](adr/0006-self-hosted-servers.md) |
+| 10 | [Exported builds and dedicated server](#10-exported-builds-and-dedicated-server) | solid | `docs/RELEASING.md`, [ADR 0006](adr/0006-self-hosted-servers.md) |
 | 11 | [Asset pipeline](#11-asset-pipeline) | solid | [ADR 0008](adr/0008-code-built-assets-first.md), skills |
 | 12 | [Performance: pooling and hot paths](#12-performance-pooling-and-hot-paths) | shaky | AGENTS.md code rule 6 |
 | 13 | [Rules and docs agents read](#13-rules-and-docs-agents-read) | shaky | AGENTS.md, this file, `docs/adr/` |
@@ -154,11 +154,12 @@ action from a client.
 **Rule:** the same project exports a game client and a headless dedicated
 server; the Build workflow smoke-tests both.
 
-**Why shaky:** the Build workflow on main has failed at "Smoke test exported
-builds" since the co-op work started, so nobody can tell whether the exported
-server works. A fix is in progress (exported-server crash and smoke test,
-#156). Until Build is green on main, treat any server or export change as
-unverified.
+**Why solid:** Build has been green on main since the exported-server crash
+fix (#174). The smoke test checks exit codes, a clean stop and a real join of
+the exported server by the exported client. Build also runs on every pull
+request, so a PR that breaks an export shows a red check before it merges.
+Visual scripts that can run on the server must null-check materials (the
+server export strips them).
 
 ### 11. Asset pipeline
 
@@ -229,7 +230,7 @@ tests, as usual. The issue numbers have the details.
 
 | Order | Fix | Issues | Must land before |
 |---|---|---|---|
-| 1 | Green Build: exported server boots, smoke test checks exit codes and a real join | #156 | any server or export work |
+| 1 | Done: green Build. Exported server boots, smoke test checks exit codes and a real join (#174); Build also runs on pull requests | #156 | any server or export work |
 | 2 | **Done (F-02).** One interaction request path for co-op (client asks, server checks sender, range, state, then runs `interact()`), with a client-side test for every interactable | #138, #126 | new machines, doors, power-ups, the 4-player play-test (#127) |
 | 3 | Done: item effects run where the server applies the hit; one public equip function in `ItemLoadout`, called from a physics tick ([plan](plans/item-effects-server.md)) | #145, #147 | Legendaries (#116), sets (#117), skill effects (#113) |
 | 4 | Done: ids into data ([plan](plans/ids-into-data.md)): on-hit effect field on `WeaponData`, grip profile data, shot-peak flag, drop chance and rarity floor on `EnemyData`, badge on `SerumData`; cache loaded content; CI rule against content id literals in code | #143, #149, #163, #148, #154, #140 | new guns or zombies (Crawler #121, Stalker #123, Brute #124) |

@@ -2,10 +2,18 @@ name: Build
 
 # Every merge to main: playable Windows/Linux builds as downloadable
 # artifacts (kept 3 days) and the server image tagged "edge".
+# Pull requests run the same export and smoke test, so a PR that breaks the
+# exported client or server is caught before it reaches main. No image is pushed.
 # "Run workflow" on any branch builds without pushing an image.
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/pull_request_template.md"
+  pull_request:
     paths-ignore:
       - "docs/**"
       - "**/*.md"
