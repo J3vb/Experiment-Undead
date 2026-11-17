@@ -6,6 +6,9 @@ built to compare with the shipped body. It is **not** used by the game: nothing 
 
 ![comparison](comparison.jpg)
 
+Rows, top to bottom: the F-70 step 1 body from PR #314 (read from its branch at 45b669a, not changed),
+the trial body, both in the run clip, the body on main, and the concept.
+
 - Source: `tools/assets/body_trial/` (`build.py` builds and checks, `compare.py` renders this sheet).
 - Output: `characters/player.glb` in this folder. Same 22 bones, facing, scale and clips as
   the shipped body, 15,824 triangles (budget 16,000), materials BodySkin, BodyHair, BodyCloth, BodyRubber.

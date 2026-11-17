@@ -54,18 +54,24 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--size", type=int, default=384, help="pixels per square panel")
     parser.add_argument("--samples", type=int, default=48, help="CPU Cycles samples per pixel")
+    parser.add_argument("--other", type=Path, help="another player.glb to show first, such as one from a branch")
+    parser.add_argument("--other-label", default="OTHER", help="row name for --other")
     args = parser.parse_args()
+    views = [
+        ("TRIAL BODY", TRIAL, 1.0, ""),
+        ("TRIAL FACE", TRIAL, 5.0, ""),
+        ("TRIAL BODY, RUN CLIP", TRIAL, 1.0, "run"),
+        ("SHIPPED BODY", SHIPPED, 1.0, ""),
+    ]
+    if args.other:
+        name = args.other_label
+        views[:0] = [(f"{name} BODY", args.other, 1.0, ""), (f"{name} FACE", args.other, 5.0, "")]
+        views.insert(5, (f"{name} BODY, RUN CLIP", args.other, 1.0, "run"))
     rows = []
     with tempfile.TemporaryDirectory(prefix="body-trial-") as directory:
-        for label, path, zoom, clip in (
-            ("SHIPPED BODY", SHIPPED, 1.0, ""),
-            ("TRIAL BODY", TRIAL, 1.0, ""),
-            ("TRIAL FACE", TRIAL, 5.0, ""),
-            ("TRIAL BODY, RUN CLIP", TRIAL, 1.0, "run"),
-        ):
+        for label, path, zoom, clip in views:
             strip, triangles = _strip(path, args, directory, zoom, clip)
             rows.append((f"{label} / {triangles:,} triangles", strip))
-            strip.save(REVIEW / (label.lower().replace(",", "").replace(" ", "_") + ".png"), optimize=True)
     with Image.open(turnarounds.IMAGES_DIR / "player_gear_concept.jpg") as concept:
         width = rows[0][1].width
         rows.append(("LOOK TARGET: player_gear_concept.jpg", concept.convert("RGB").resize((width, width * 9 // 16))))
