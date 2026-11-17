@@ -127,14 +127,20 @@ func test_dying_zombie_says_a_death_sound_once() -> void:
 	assert_null(zombie.voice.stream, "the death plays only once")
 
 
-func test_corpse_seen_first_plays_no_death() -> void:
-	var data: EnemyData = load(WALKER) as EnemyData
-	var zombie: Zombie = data.scene.instantiate() as Zombie
-	zombie.setup(data, 1, 1.0, 1.0, 1.0, RandomNumberGenerator.new())
-	zombie.state = Zombie.State.DEAD
-	add_child_autofree(zombie)
-	await wait_process_frames(2)
-	assert_null(zombie.voice.stream, "a late joiner hears no death for an old corpse")
+func test_voice_waiting_for_sync_stays_silent_for_an_old_corpse() -> void:
+	var zombie: Zombie = _spawn(WALKER)
+	zombie.voice.waiting_for_sync = true
+	zombie.voice.show_state(Zombie.State.DEAD)
+	assert_null(zombie.voice.stream, "nothing plays before the first sync")
+	zombie.voice.start_state(Zombie.State.DEAD)
+	zombie.voice.show_state(Zombie.State.DEAD)
+	assert_null(zombie.voice.stream, "a corpse already down at the first sync stays silent")
+	assert_false(zombie.voice.is_processing(), "and does not groan")
+	var live: Zombie = _spawn(WALKER)
+	live.voice.waiting_for_sync = true
+	live.voice.start_state(Zombie.State.CHASING)
+	live.voice.show_state(Zombie.State.DEAD)
+	assert_true(live.voice.stream in live.data.death_sounds, "a death after the first sync is heard")
 
 
 func test_rising_zombie_climbs_out_of_the_floor() -> void:

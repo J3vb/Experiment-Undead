@@ -64,3 +64,21 @@ func test_footsteps_are_capped_and_limited_to_range() -> void:
 	var distant: ZombieVoice = _voice(ZombieVoice.STEP_RANGE + 2.0)
 	distant.step()
 	assert_false(distant.feet.playing, "steps past 15 m are not played")
+
+
+func test_a_playing_voice_keeps_its_slot_when_it_speaks_again() -> void:
+	var voices: Array[ZombieVoice] = []
+	for index: int in ZombieVoice.MAX_VOCALS:
+		voices.append(_voice(2.0 + index))
+		voices[-1].say(STREAM)
+	voices[-1].say(STREAM)
+	assert_eq(_playing(voices), ZombieVoice.MAX_VOCALS, "speaking again steals nobody")
+
+
+func test_freed_voices_leave_the_caps() -> void:
+	var voice: ZombieVoice = _voice(2.0)
+	voice.say(STREAM)
+	assert_true(ZombieVoice._vocals.has(voice))
+	remove_child(voice)
+	assert_false(ZombieVoice._vocals.has(voice), "a voice that leaves the tree frees its slot")
+	voice.free()

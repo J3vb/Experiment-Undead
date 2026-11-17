@@ -16,6 +16,8 @@ var groans: Array[AudioStream] = []
 var deaths: Array[AudioStream] = []
 var footsteps: Array[AudioStream] = []
 var attack: AudioStream
+## A client copy waits for its first state sync before it reacts to changes.
+var waiting_for_sync: bool = false
 var feet: AudioStreamPlayer3D
 var _timer: float = 0.0
 var _shown_state: Zombie.State = Zombie.State.SPAWNING
@@ -32,6 +34,11 @@ func _ready() -> void:
 	feet.max_distance = STEP_RANGE
 	feet.position = Vector3.DOWN * position.y
 	add_child(feet)
+
+
+func _exit_tree() -> void:
+	_vocals.erase(self)
+	_steps.erase(feet)
 
 
 func _process(delta: float) -> void:
@@ -54,11 +61,10 @@ func setup(data: EnemyData) -> void:
 ## but see the state through ZombieSync). The first look only records the
 ## state, so a late joiner hears no death for a corpse that was already down.
 func show_state(state: Zombie.State) -> void:
+	if waiting_for_sync:
+		return
 	if not _state_seen:
-		_state_seen = true
-		_shown_state = state
-		if state == Zombie.State.DEAD:
-			silence()
+		start_state(state)
 		return
 	if state == _shown_state:
 		return
@@ -67,6 +73,15 @@ func show_state(state: Zombie.State) -> void:
 		say(attack)
 	elif state == Zombie.State.DEAD:
 		say_death()
+
+
+## Records `state` as already shown, without a sound.
+func start_state(state: Zombie.State) -> void:
+	waiting_for_sync = false
+	_state_seen = true
+	_shown_state = state
+	if state == Zombie.State.DEAD:
+		silence()
 
 
 func say(sound: AudioStream) -> void:
