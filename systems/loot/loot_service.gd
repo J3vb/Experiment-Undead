@@ -12,6 +12,9 @@ var lost: int = 0
 ## Test fixture override; negative uses the normal source chance.
 var drop_chance_override: float = -1.0
 var _banked: bool = false
+var _queued_uid: String = ""
+## Ammo left in each Pack gun this run, by uid, so re-equipping does not refill it.
+var _run_weapons: Dictionary[String, WeaponInstance] = {}
 
 
 func _init() -> void:
@@ -23,6 +26,37 @@ func _ready() -> void:
 	Events.enemy_killed.connect(_on_enemy_killed)
 	if multiplayer.is_server():
 		Log.info(&"loot", &"seed_selected", {"seed": session.rng.seed})
+
+
+func _physics_process(_delta: float) -> void:
+	if _queued_uid.is_empty():
+		return
+	var uid: String = _queued_uid
+	_queued_uid = ""
+	_equip_from_pack(uid)
+
+
+## The Pack overlay asks; the gun changes in the next physics tick.
+func request_equip(uid: String) -> void:
+	_queued_uid = uid
+
+
+func _equip_from_pack(uid: String) -> void:
+	if session.is_over or not is_instance_valid(player) or player.is_downed or not player.is_alive():
+		return
+	var item: Dictionary = {}
+	for entry: Dictionary in pack.items:
+		if str(entry.get("uid", "")) == uid:
+			item = entry
+	if item.is_empty() or not Content.has(&"weapons", StringName(item.get("base", ""))):
+		return
+	for held: Weapon in player.weapons.weapons:
+		if held.item and str(held.item.data.get("uid", "")) == uid:
+			player.weapons.equip(player.weapons.weapons.find(held))
+			return
+	var weapon: Weapon = ItemLoadout.equip_weapon(player, ItemInstance.new(item), _run_weapons.get(uid))
+	_run_weapons[uid] = weapon.instance
+	player.state_sync.send_loadout()
 
 
 func _on_enemy_killed(enemy: Node3D, _info: DamageInfo) -> void:

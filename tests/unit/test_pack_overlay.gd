@@ -64,16 +64,22 @@ func test_pack_gun_equips_once_and_stays_available_for_stash_banking() -> void:
 	var item: Dictionary = ItemRoller.roll_weapon(session.rng, Content.weapon(&"rifle_ar"), &"rare", 17)
 	service.pack.add(item)
 	overlay._equip()
+	assert_eq(player.weapons.weapons.size(), 0, "the key handler only asks; nothing changes yet")
+	await wait_physics_frames(2)
 	assert_eq(player.weapons.current.item.data, item)
 	assert_eq(service.pack.items, [item])
+	player.weapons.give(Content.weapon(&"pistol_service"))
 	overlay._equip()
-	assert_eq(player.weapons.weapons.size(), 1, "reselecting equips the same run weapon")
+	await wait_physics_frames(2)
+	assert_eq(player.weapons.weapons.size(), 2, "reselecting equips the same run weapon")
+	assert_eq(player.weapons.current.item.data, item, "the Pack gun is back in hand")
 
 
 func test_solo_pack_leech_gun_heals_through_the_server_hit_path() -> void:
 	var item: Dictionary = {"v": 1, "uid": "pack_leech", "base": "rifle_ar", "rar": "rare", "aff": [["leech", 5, 1.0]]}
 	service.pack.add(item)
 	overlay._equip()
+	await wait_physics_frames(2)
 	assert_true(player.item_guns.has("pack_leech"))
 	player.health.current = 50.0
 	var info: DamageInfo = DamageInfo.create(10.0, player)
@@ -100,25 +106,30 @@ func test_replaced_pack_guns_restore_ammo_including_an_empty_gun() -> void:
 		service.pack.add(ItemRoller.roll_weapon(session.rng, Content.weapon(base), &"rare", 17))
 	overlay._select(0)
 	overlay._equip()
+	await wait_physics_frames(2)
 	player.weapons.current.instance.ammo_in_mag = 2
 	player.weapons.current.instance.ammo_reserve = 7
 	overlay._select(1)
 	overlay._equip()
+	await wait_physics_frames(2)
 	player.weapons.current.instance.ammo_in_mag = 3
 	player.weapons.current.instance.ammo_reserve = 9
 	overlay._select(0)
 	overlay._equip()
+	await wait_physics_frames(2)
 	assert_eq(player.weapons.current.instance.ammo_in_mag, 2)
 	assert_eq(player.weapons.current.instance.ammo_reserve, 7)
 	player.weapons.current.instance.ammo_in_mag = 0
 	player.weapons.current.instance.ammo_reserve = 0
 	overlay._select(1)
 	overlay._equip()
+	await wait_physics_frames(2)
 	assert_eq(player.weapons.current.instance.ammo_in_mag, 3)
 	assert_eq(player.weapons.current.instance.ammo_reserve, 9)
 	watch_signals(Events)
 	overlay._select(0)
 	overlay._equip()
+	await wait_physics_frames(2)
 	assert_eq(player.weapons.current.instance.ammo_in_mag, 0)
 	assert_eq(player.weapons.current.instance.ammo_reserve, 0)
 	assert_eq(player.weapons.weapons.size(), 2)
