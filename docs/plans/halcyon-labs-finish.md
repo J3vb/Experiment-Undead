@@ -37,8 +37,10 @@ In:
   the truck gaps are blocked by burning wreckage; at 3+ players it burns out.
 - The vent route: a duct from the Containment Wing up to a ledge in the Mess
   Hall east wall. One-way (a 1.4 m drop the player cannot jump back up). At
-  3+ players a step appears so it works as a climb too. Its Mess Hall grate
-  opens together with the Mess Hall, so the vent never skips the debris door.
+  3+ players a step appears so it works as a climb too. It has a grate at each
+  end: the Mess Hall grate opens with the Mess Hall, the Containment grate
+  opens with the Containment Wing, so the duct is usable only when both areas
+  are bought and can never skip a door in either direction.
 - Secret "Signal in the Static": three wall radios (Guard Post, Generator
   Hall, Labs), a Cold Room behind a freezer door in the Mess Hall south wall,
   a rack with a free Cryo Lance (each player takes it once per run).
@@ -116,19 +118,21 @@ Not in (non-goals, and where each one goes instead):
 | levels/halcyon_labs/map.tscn | changed | spawn points, wreckage, vent grate and step, radios, freezer door, rack, puzzle |
 | systems/waves/zombie_spawn_point.gd | changed | `min_players: int = 1` |
 | systems/waves/spawner.gd | changed | `_pick_marker()` skips points above the live player count |
-| systems/level/coop_only.gd | new | node that shows or hides (with collision) at a player count |
+| systems/level/coop_wreckage.gd | new | truck-gap wreckage: burns out once at 3+ players, server rebakes |
+| systems/level/vent_step.gd | new | vent climb step: there (with collision) while 3+ players are in the match |
 | systems/interactables/wall_radio.gd + .tscn | new | radio Interactable: plays its tone, forwards presses |
 | systems/level/radio_puzzle.gd | new | owns tone order and progress, opens the freezer door |
 | systems/interactables/wall_buy.gd | changed | `once_per_player` for the free rack |
 | tools/generate_sfx.py, assets/sounds/ | changed | radio tone and static burst |
 | tests/content/test_halcyon_labs.gd, tests/integration/test_halcyon_doors.gd | changed | new map checks |
-| tests/unit/test_coop_only.gd, tests/unit/test_radio_puzzle.gd | new | unit tests |
+| tests/unit/test_coop_wreckage.gd, tests/unit/test_vent_step.gd, tests/unit/test_radio_puzzle.gd, tests/unit/test_coop_secret.gd | new | unit and two-peer tests |
 
 Autoloads, managers or base classes added: `RadioPuzzle` is a small node that
 owns state no existing node owns (tone order and progress), allowed by Keep it
-simple rule 6. No autoloads, no base classes. `CoopOnly` is used twice (truck
-wreckage, vent step), so it is a plain script per rule 2 only because both
-uses are in this plan; it holds no more than the toggle.
+simple rule 6. No autoloads, no base classes. The wreckage and the vent step
+each get their own small script (Keep it simple rule 2: no shared helper
+before a third use; their rules also differ: the wreckage burns out for good,
+the step follows the current player count).
 
 ## Data
 
@@ -136,8 +140,8 @@ uses are in this plan; it holds no more than the toggle.
   "material", "glow": bool (optional), "baked": bool (optional, default true)}`.
   Positions are map coordinates like rooms. Read only by the builder.
 - `ZombieSpawnPoint.min_players: int = 1` (export). Co-op points use 3.
-- `CoopOnly.min_players: int = 3`, `CoopOnly.show_at_count: bool` (false =
-  wreckage that vanishes, true = step that appears).
+- `CoopWreckage` and `VentStep`: no exports; both use the co-op threshold
+  of 3 players from the maps doc as a constant.
 - `WallBuy.once_per_player: bool = false`.
 - Network: no new message. `WallRadio.net_state()` = `{"pitch": int}`;
   `RadioPuzzle` progress travels on the radios' net_state as `{"pitch": int,
@@ -148,8 +152,8 @@ uses are in this plan; it holds no more than the toggle.
 ## Co-op behaviour
 
 - Who owns the state: server owns spawn-point choice, puzzle order and
-  progress, freezer door, rack hand-outs. Each peer toggles `CoopOnly` from
-  its own `players` group size (every peer has every Player, so they agree).
+  progress, freezer door, rack hand-outs. Each peer toggles the wreckage and
+  the vent step from its own `players` group size (every peer has every Player, so they agree).
   The navmesh rebake after a toggle runs on the server only (`Level`).
 - What clients send, what the server sends back: radio and rack presses go
   through `InteractionSync.request()`; the server runs `interact()`, radios
@@ -158,14 +162,15 @@ uses are in this plan; it holds no more than the toggle.
   tone when a radio's net_state says it was pressed, and the idle tone loop
   from its pitch), the freezer opening, wreckage and the vent step.
 - Late joiner: radio pitches and lit state in the InteractionSync snapshot,
-  freezer door in `Level.removed`, CoopOnly from its own player count.
+  freezer door in `Level.removed`, vent grates in `Level.removed`, wreckage
+  and vent step from its own player count.
 - Dedicated server: tone playback is skipped where there is no audio (headless
   still runs it silently, no cost worth a branch).
 
 ## Performance
 
 No per-frame work added in hot paths. `_pick_marker()` adds one int compare
-per point per spawn. `CoopOnly` reacts to `Events.player_spawned` and
+per point per spawn. Wreckage and vent step react to `Events.player_spawned` and
 `tree_exiting` of players only. Radios run a cosmetic idle timer (one
 `Timer` node each). Props: about 40 boxes, baked into the lightmap; draw calls
 stay under the Mess Hall / corridor numbers measured on 2026-11-14, checked in
@@ -198,17 +203,19 @@ step 5.
 ### Step 2: Co-op-only spawn points and truck wreckage
 
 - Build: `ZombieSpawnPoint.min_players`; `Spawner._pick_marker()` skips points
-  with `min_players` above the `players` group size. `CoopOnly` script. Layout:
+  with `min_players` above the `players` group size. `CoopWreckage` script. Layout:
   a truck yard space behind the Dock south wall with two gaps. map.tscn: 4
   co-op points (2 truck gaps, 1 Mess Hall vent, 1 Containment Wing vent),
-  burning wreckage in the two gaps under a `CoopOnly` (blocks players and the
-  navmesh until 3 players, then hides and the server rebakes).
+  burning wreckage in the two gaps under a `CoopWreckage` (blocks players and
+  the navmesh until 3 players, then hides for the rest of the match and the
+  server rebakes).
 - Files: systems/waves/zombie_spawn_point.gd, systems/waves/spawner.gd,
-  systems/level/coop_only.gd (new), layout.json, blockout.tscn, map.tscn,
-  tests/unit/test_coop_only.gd (new), tests/unit/test_spawner.gd,
+  systems/level/coop_wreckage.gd (new), layout.json, blockout.tscn, map.tscn,
+  tests/unit/test_coop_wreckage.gd (new), tests/unit/test_spawner.gd,
   tests/content/test_halcyon_labs.gd.
 - Tests: spawner never picks a 3-player point with 1 or 2 players and can
-  pick it with 3; CoopOnly hides and drops collision at 3 players; map has
+  pick it with 3; the wreckage hides and drops collision at 3 players and
+  stays gone when one leaves; map has
   4 co-op points with min_players 3 and 21-28 normal points; with wreckage
   gone each truck-gap point has a navmesh path to the start.
 - Done when: a 1-player soak never spawns at a co-op point (soak stays green).
@@ -216,12 +223,18 @@ step 5.
 ### Step 3: Vent route Containment Wing to Mess Hall
 
 - Build: layout duct from the Containment Wing north wall up a ramp to a
-  ledge 1.4 m above the Mess Hall floor in its east wall. Mess Hall end: a
-  `Door` grate with cost 0 and `opens_area = mess_hall`, so it opens with the
-  Mess Hall debris. A `CoopOnly` step (show at 3 players) under the ledge.
-- Files: layout.json, blockout.tscn, map.tscn,
+  ledge 1.4 m above the Mess Hall floor in its east wall. Two `Door` grates
+  with cost 0: one at the Mess Hall end (`opens_area = mess_hall`), one at the
+  Containment end (`opens_area = containment_wing`), so each opens with its
+  area's own door and the duct never bypasses a purchase. `VentStep` (new,
+  present while 3+ players are in the match) under the ledge.
+- Files: systems/level/vent_step.gd (new), layout.json, blockout.tscn,
+  map.tscn, tests/unit/test_vent_step.gd (new),
   tests/content/test_halcyon_labs.gd, tests/integration/test_halcyon_doors.gd.
-- Tests: the grate opens when the Mess Hall debris is bought and not before;
+- Tests: each grate opens only when its area's door is bought; with 3
+  players, the Mess Hall debris bought and the Containment door shut, there is
+  no navmesh path from the Mess Hall into the Containment Wing through the
+  duct (and the same the other way);
   the ledge height is above the player's jump height (from `jump_velocity`
   and gravity) and the step makes it climbable; the door cost test ignores
   cost-0 doors and still totals 7,000.
@@ -242,11 +255,18 @@ step 5.
   systems/interactables/wall_radio.gd/.tscn (new),
   systems/level/radio_puzzle.gd (new), systems/interactables/wall_buy.gd,
   layout.json, blockout.tscn, map.tscn, tests/unit/test_radio_puzzle.gd (new),
+  tests/unit/test_coop_secret.gd (new), tests/unit/coop_interaction_fixture.gd,
   tests/integration/test_halcyon_doors.gd, docs/DECISIONS.md.
 - Tests: radios do nothing before power; right order opens the freezer; a
   wrong press resets; the same seed gives the same order; net_state round trip
   restores pitches and lit radios on a client copy; rack gives the Cryo Lance
-  once per player and sells no ammo; Cold Room has no spawn points.
+  once per player and sells no ammo; Cold Room has no spawn points. Two-peer
+  test (`tests/unit/test_coop_secret.gd` on `coop_interaction_fixture.gd`, a
+  server with no local player and a client): the client presses the radios
+  through `InteractionSync.request()`, the server opens the freezer, the
+  client sees it open; the client takes the rack and gets the Cryo Lance by
+  the GIVE grant, a second take is refused; a late joiner after solving gets
+  lit radios and the open freezer in its snapshot.
 - Done when: solving the puzzle in a headless run gives the Cryo Lance.
 
 ### Step 5: Re-bake, fps check and close-out
