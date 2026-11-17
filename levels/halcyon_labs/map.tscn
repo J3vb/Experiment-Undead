@@ -4,6 +4,7 @@
 [ext_resource type="Script" path="res://systems/level/block.gd" id="block"]
 [ext_resource type="Script" path="res://systems/waves/zombie_spawn_point.gd" id="spawn"]
 [ext_resource type="Script" path="res://systems/level/coop_wreckage.gd" id="wreckage"]
+[ext_resource type="Script" path="res://systems/level/vent_step.gd" id="vent_step"]
 [ext_resource type="Environment" path="res://levels/looks/halcyon_interior.tres" id="look"]
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/blockout.tscn" id="blockout"]
 [ext_resource type="PackedScene" path="res://systems/effects/film_post.tscn" id="film"]
@@ -298,6 +299,36 @@ size = Vector3(4, 2.6, 0.5)
 material = SubResource("door_dev")
 baked = false
 
+[node name="VentGrateMessHall" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 58, 2.7, 45)
+opens_area = &"mess_hall"
+cost = 0
+label = "vent grate"
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/VentGrateMessHall"]
+shape = SubResource("door_area_2")
+
+[node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/VentGrateMessHall"]
+script = ExtResource("block")
+size = Vector3(1.6, 2.6, 0.3)
+material = ExtResource("rust")
+baked = false
+
+[node name="VentGrateContainment" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 62.5, -1.7, 32)
+opens_area = &"containment_wing"
+cost = 0
+label = "vent grate"
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/VentGrateContainment"]
+shape = SubResource("door_area_3")
+
+[node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/VentGrateContainment"]
+script = ExtResource("block")
+size = Vector3(3, 2.6, 0.3)
+material = ExtResource("rust")
+baked = false
+
 [node name="Machines" type="Node3D" parent="NavigationRegion3D"]
 
 [node name="MedDispenserQuickhands" parent="NavigationRegion3D/Machines" instance=ExtResource("meddisp")]
@@ -334,10 +365,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68, -2, 4.5)
 serum = ExtResource("serum_mule")
 
 [node name="VaultSpotMessHall" type="Marker3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0.5, 45.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0.5, 45.4)
 
 [node name="SpecimenVault" parent="NavigationRegion3D/Machines" instance=ExtResource("vault")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0.5, 45.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0.5, 45.4)
 pool = Array[ExtResource("weapon_data")]([ExtResource("rifle"), ExtResource("brenner"), ExtResource("kestrel"), ExtResource("talon"), ExtResource("hollis"), ExtResource("mako"), ExtResource("atlas"), ExtResource("halberd"), ExtResource("corvid"), ExtResource("coachman"), ExtResource("grubber"), ExtResource("cryo_lance"), ExtResource("synapse"), ExtResource("fieldhand"), ExtResource("wren"), ExtResource("siphon"), ExtResource("sentry"), ExtResource("nightjar"), ExtResource("rampart"), ExtResource("bastion")])
 
 [node name="VaultSpotGuardPost" type="Marker3D" parent="NavigationRegion3D/Machines" groups=["vault_spot"]]
@@ -680,6 +711,16 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68, -2.9, 24)
 script = ExtResource("spawn")
 area = &"containment_wing"
 min_players = 3
+
+[node name="VentStep" type="Node3D" parent="."]
+script = ExtResource("vent_step")
+
+[node name="Ramp" type="StaticBody3D" parent="VentStep"]
+transform = Transform3D(0.894427, -0.447214, 0, 0.447214, 0.894427, 0, 0, 0, 1, 56.645, 0.611, 45)
+script = ExtResource("block")
+size = Vector3(3.4, 0.2, 1.6)
+material = ExtResource("rust")
+baked = false
 
 [node name="TruckWreckage" type="Node3D" parent="."]
 script = ExtResource("wreckage")

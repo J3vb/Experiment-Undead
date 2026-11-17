@@ -87,7 +87,7 @@ func test_power_doors_need_the_power_switch() -> void:
 func test_door_costs_match_the_maps_doc() -> void:
 	var by_area: Dictionary = {}
 	for door: Door in _doors():
-		by_area[door.opens_area] = door.cost
+		by_area[door.opens_area] = maxi(by_area.get(door.opens_area, 0), door.cost)
 	var total: int = 0
 	for cost: int in by_area.values():
 		total += cost
@@ -183,3 +183,15 @@ func test_coachman_wall_buy_sells_the_signature_shotgun() -> void:
 	assert_eq(player.weapons.current.data.id, &"coachman_2b")
 	assert_eq(player.weapons.current.instance.ammo_in_mag, 2)
 	assert_eq(player.wallet.points, 0, "charges the roster price once")
+
+
+func test_vent_grates_open_only_with_their_areas() -> void:
+	var mess_grate: Door = _door("VentGrateMessHall")
+	var containment_grate: Door = _door("VentGrateContainment")
+	player.wallet.set_points(5000)
+	mess_grate.interact(player)
+	assert_false(mess_grate.is_open, "a grate cannot be bought")
+	assert_eq(player.wallet.points, 5000)
+	_door("MessHallDebris").interact(player)
+	assert_true(mess_grate.is_open, "the Mess Hall grate opens with the Mess Hall")
+	assert_false(containment_grate.is_open, "the Containment grate waits for its own door")
