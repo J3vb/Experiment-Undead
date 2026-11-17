@@ -1,4 +1,4 @@
-## Halcyon Labs ambience: beds on the Ambient bus, area crossfade, ducking under music.
+## Halcyon Labs ambience: beds on the Ambient bus, bed follows the camera, ducking under music.
 extends GutTest
 
 const AMBIENCE: PackedScene = preload("res://levels/halcyon_labs/ambience.tscn")
@@ -29,32 +29,39 @@ func test_default_bed_is_audible_until_an_area_is_entered() -> void:
 	assert_eq(ambience.target_volume_db(labs.get_node("Bed") as AudioStreamPlayer), -80.0)
 
 
-func test_entering_and_leaving_areas_switches_bed() -> void:
+func test_bed_follows_the_camera_position() -> void:
 	var corridor: Area3D = ambience.get_node("MainCorridor") as Area3D
 	var hall: Area3D = ambience.get_node("MessHall") as Area3D
-	ambience.enter(corridor)
+	assert_eq(ambience.zone_at(Vector3(33, 1.6, 28)), corridor)
+	assert_eq(ambience.zone_at(Vector3(48, 1.6, 38)), hall)
+	assert_eq(ambience.zone_at(Vector3(44, 1.6, 18)), ambience.get_node("Labs"))
+	assert_null(ambience.zone_at(Vector3(18, 1.6, 15)), "generator hall has no bed of its own")
+	ambience.set_area(corridor)
 	assert_eq(ambience.active_bed(), corridor.get_node("Bed"))
 	assert_eq(ambience.target_volume_db(ambience.default_bed), -80.0)
-	ambience.enter(hall)
-	ambience.leave(corridor)
-	assert_eq(ambience.active_bed(), hall.get_node("Bed"), "leaving an old area keeps the new one")
-	ambience.leave(hall)
+	ambience.set_area(null)
 	assert_eq(ambience.active_bed(), ambience.default_bed)
 
 
-func test_backing_out_of_a_doorway_restores_the_area_still_occupied() -> void:
-	var corridor: Area3D = ambience.get_node("MainCorridor") as Area3D
-	var hall: Area3D = ambience.get_node("MessHall") as Area3D
-	ambience.enter(corridor)
-	ambience.enter(hall)
-	ambience.leave(hall)
-	assert_eq(ambience.active_bed(), corridor.get_node("Bed"), "still in the corridor")
+func test_switching_camera_switches_bed() -> void:
+	var camera: Camera3D = Camera3D.new()
+	add_child_autofree(camera)
+	camera.make_current()
+	camera.global_position = Vector3(48, 1.6, 38)
+	ambience._process(1.0)
+	assert_eq(ambience.area, ambience.get_node("MessHall"))
+	camera.global_position = Vector3(44, 1.6, 18)
+	ambience._process(1.0)
+	assert_eq(ambience.area, ambience.get_node("Labs"), "spectating a teammate in the labs")
+	camera.global_position = Vector3(18, 1.6, 15)
+	ambience._process(1.0)
+	assert_null(ambience.area)
 
 
-func test_areas_watch_only_players() -> void:
+func test_area_boxes_do_not_monitor_physics() -> void:
 	for zone_name: String in ["MainCorridor", "MessHall", "Labs"]:
 		var zone: Area3D = ambience.get_node(zone_name) as Area3D
-		assert_eq(zone.collision_mask, Layers.PLAYER)
+		assert_false(zone.monitoring)
 		assert_eq(zone.collision_layer, 0)
 
 

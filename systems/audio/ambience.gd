@@ -1,6 +1,7 @@
-## Map ambience: a looping room-tone bed per area, crossfaded by where the local
-## player stands, plus quiet distant one-shots around them. Sound only.
-## Each Area3D child is an area with a "Bed" player; "Default" plays everywhere else.
+## Map ambience: a looping room-tone bed per area, crossfaded by where the current
+## camera is (the local player, or the teammate being spectated), plus quiet distant
+## one-shots around it. Sound only. Each Area3D child is an area box with a "Bed"
+## player; "Default" plays everywhere else.
 class_name Ambience
 extends Node3D
 
@@ -9,11 +10,13 @@ extends Node3D
 @export var one_shot_min_seconds: float = 8.0
 @export var one_shot_max_seconds: float = 25.0
 @export var one_shot_distance: Vector2 = Vector2(8.0, 16.0)
+@export var check_interval: float = 0.25
 
 var area: Area3D
-## Areas the local player overlaps, newest last; doorways overlap two.
-var _inside: Array[Area3D] = []
+var _zones: Array[Area3D] = []
+var _half_sizes: Array[Vector3] = []
 var _beds: Array[AudioStreamPlayer] = []
+var _check_left: float = 0.0
 var _fade: Tween
 
 @onready var default_bed: AudioStreamPlayer = $Default
@@ -27,16 +30,27 @@ func _ready() -> void:
 		var zone: Area3D = child as Area3D
 		if zone == null:
 			continue
+		zone.monitoring = false
 		zone.collision_layer = 0
-		zone.collision_mask = Layers.PLAYER
-		zone.body_entered.connect(_on_body_entered.bind(zone))
-		zone.body_exited.connect(_on_body_exited.bind(zone))
+		zone.collision_mask = 0
+		_zones.append(zone)
+		_half_sizes.append(((zone.get_node("Shape") as CollisionShape3D).shape as BoxShape3D).size * 0.5)
 		_beds.append(zone.get_node("Bed") as AudioStreamPlayer)
 	for bed: AudioStreamPlayer in _beds:
 		bed.volume_db = target_volume_db(bed)
 		bed.play()
 	one_shot_timer.timeout.connect(_play_one_shot)
 	_restart_timer()
+
+
+func _process(delta: float) -> void:
+	_check_left -= delta
+	if _check_left > 0.0:
+		return
+	_check_left = check_interval
+	var camera: Camera3D = get_viewport().get_camera_3d()
+	if camera:
+		set_area(zone_at(camera.global_position))
 
 
 func beds() -> Array[AudioStreamPlayer]:
@@ -51,36 +65,20 @@ func target_volume_db(bed: AudioStreamPlayer) -> float:
 	return bed_volume_db if bed == active_bed() else -80.0
 
 
-func enter(zone: Area3D) -> void:
-	_inside.erase(zone)
-	_inside.append(zone)
-	_set_area(zone)
+## The area box containing a world position, or null.
+func zone_at(point: Vector3) -> Area3D:
+	for index: int in _zones.size():
+		var local: Vector3 = _zones[index].global_transform.affine_inverse() * point
+		var half: Vector3 = _half_sizes[index]
+		if absf(local.x) <= half.x and absf(local.y) <= half.y and absf(local.z) <= half.z:
+			return _zones[index]
+	return null
 
 
-func leave(zone: Area3D) -> void:
-	_inside.erase(zone)
-	_set_area(_inside.back() if not _inside.is_empty() else null)
-
-
-func _set_area(zone: Area3D) -> void:
+func set_area(zone: Area3D) -> void:
 	if zone != area:
 		area = zone
 		_crossfade()
-
-
-func _on_body_entered(body: Node3D, zone: Area3D) -> void:
-	if _is_local_player(body):
-		enter(zone)
-
-
-func _on_body_exited(body: Node3D, zone: Area3D) -> void:
-	if _is_local_player(body):
-		leave(zone)
-
-
-func _is_local_player(body: Node3D) -> bool:
-	var player: Player = body as Player
-	return player != null and player.camera.current
 
 
 func _crossfade() -> void:
