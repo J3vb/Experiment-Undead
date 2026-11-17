@@ -1,6 +1,6 @@
 # Plan: Hot-path allocations (foundation fix 7)
 
-Status: Approved
+Status: Building
 Roadmap: F-00 foundation fix 7 / issues #139, #141, #142, #150, #151
 Phase: P7
 Size: S

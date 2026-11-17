@@ -6,6 +6,8 @@ extends Node3D
 @export var spawn_group: StringName = &"enemy_spawn"
 
 var session: GameSession
+## Live zombies made here, on this peer. Each zombie shares this array as its neighbours.
+var zombies: Array[Zombie] = []
 
 var _net: MultiplayerSpawner
 
@@ -52,14 +54,16 @@ func _create(data: Array) -> Node:
 	if not (data[5] as NodePath).is_empty():
 		zombie.barrier = get_node(data[5]) as Barrier
 	zombie.add_child(ZombieSync.new())
+	zombie.neighbours = zombies
+	zombies.append(zombie)
+	zombie.tree_exiting.connect(func() -> void: zombies.erase(zombie))
 	return zombie
 
 
 func alive_count() -> int:
 	var n: int = 0
-	for child: Node in get_children():
-		var z: Zombie = child as Zombie
-		if z and z.state != Zombie.State.DEAD:
+	for zombie: Zombie in zombies:
+		if zombie.state != Zombie.State.DEAD:
 			n += 1
 	return n
 
