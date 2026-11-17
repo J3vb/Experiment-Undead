@@ -1,0 +1,12 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/halcyon/specimen_fluid_albedo.png" id="fluid"]
+
+[resource]
+albedo_color = Color(0.068, 0.089, 0.058, 1)
+albedo_texture = ExtResource("fluid")
+roughness = 0.15
+metallic_specular = 0.7
+uv1_scale = Vector3(1.5, 1.5, 1.5)
+uv1_triplanar = true
+uv1_world_triplanar = true

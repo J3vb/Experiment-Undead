@@ -34,7 +34,7 @@ func test_every_model_is_one_static_lightmapped_mesh() -> void:
 		assert_eq(settings.get_value("params", "meshes/light_baking"), 2, path + " bakes into the lightmap")
 		assert_eq(
 			settings.get_value("params", "import_script/path"),
-			"res://tools/assets/vertex_shading_import.gd",
+			"res://tools/assets/prop_import.gd",
 			path + " uses its baked AO shading"
 		)
 

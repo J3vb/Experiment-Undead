@@ -15,6 +15,8 @@ const BOARDS: Array = [
 	["raw_concrete", "steel_plate"],
 	["wall_paint", "clinic_tile"],
 	["raw_concrete", "grating"],
+	["steel", "rubber"],
+	["panel_trim", "wet_floor"],
 ]
 
 
