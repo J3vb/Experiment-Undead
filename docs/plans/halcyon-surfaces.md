@@ -214,7 +214,16 @@ Autoloads, managers or base classes added: none.
       ceiling (before/after attached to the step PRs).
 - [x] Texture folder under 25 MB, every set tiles (Python test).
 - [x] The person approved the look on a decision card.
-- [ ] GPU fps check after the re-bake meets the v0.1 gate (build thread, F-13 re-bake prompt).
+- [x] GPU fps check after the re-bake meets the v0.1 gate (build thread, F-13 re-bake prompt).
+      2026-11-17, 2560x1440, RTX 4080 Super, 24 zombies, power on, all doors open, F-62 textures
+      and the 57 decals in view:
+
+      | Spot | Before avg / 1% low | After avg / 1% low | Draw calls |
+      |---|---|---|---|
+      | Mess Hall | 276 / 190 | 250 / 158 | 1,430 |
+      | Main Corridor | 243 / 168 | 221 / 157 | 1,640 |
+      | Containment ramp | 441 / 249 | 410 / 241 | 486 |
+      | Loading Dock | 505 / 278 | 474 / 266 | 140 |
 
 ## Risks
 
