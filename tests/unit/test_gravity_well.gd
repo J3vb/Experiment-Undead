@@ -278,3 +278,10 @@ func test_damage_carries_the_id_of_the_gun_that_opened_the_well() -> void:
 	zombie.health.damaged.connect(func(info: DamageInfo) -> void: received.append(info.weapon_id))
 	_well().tick(0.5)
 	assert_eq(received, Array([&"test_well"], TYPE_STRING_NAME, &"", null))
+
+
+func test_well_scene_is_loaded_once_and_kept() -> void:
+	var well: GravityWell = GravityWell.open(_root, _attacker, Vector3.ZERO, _gun)
+	assert_not_null(well)
+	assert_not_null(GravityWell._scene)
+	assert_same(GravityWell._packed(), GravityWell._scene)

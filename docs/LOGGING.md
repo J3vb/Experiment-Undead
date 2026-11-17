@@ -120,4 +120,4 @@ malformed log, or a target round that never finishes. `enemies.zombie_stuck`
 and `perf.long_frames` only warn (exit 0); other warning lines are also listed.
 The event lists are constants at the top of `tools/soak/soak.gd`.
 The separate PR/manual Soak workflow writes the table to the job summary and
-uploads `user://logs/` on failure. It is not a required check yet.
+uploads `user://logs/` on failure. It is a required check (`soak`).

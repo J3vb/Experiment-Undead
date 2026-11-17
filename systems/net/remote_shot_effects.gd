@@ -3,11 +3,17 @@ class_name RemoteShotEffects
 extends Node3D
 
 const FLASH: Mesh = preload("res://systems/weapons/viewmodels/flash_quad.tres")
+const TRACER_TIME: float = 0.06
+
+static var _tracer_material: StandardMaterial3D
 
 var _audio: AudioStreamPlayer3D
 var _flash: MeshInstance3D
 var _light: OmniLight3D
 var _flash_left: float = 0.0
+var _tracers: MeshInstance3D
+var _tracer_lines: ImmediateMesh
+var _tracer_left: float = 0.0
 
 
 func _ready() -> void:
@@ -34,6 +40,9 @@ func _process(delta: float) -> void:
 	_flash_left = maxf(_flash_left - delta, 0.0)
 	_flash.visible = _flash_left > 0.0
 	_light.visible = _flash_left > 0.0
+	if _tracers:
+		_tracer_left = maxf(_tracer_left - delta, 0.0)
+		_tracers.visible = _tracer_left > 0.0
 
 
 func play(data: WeaponData, origin: Vector3, points: PackedVector3Array) -> void:
@@ -48,21 +57,30 @@ func play(data: WeaponData, origin: Vector3, points: PackedVector3Array) -> void
 	_draw_tracers(origin, points)
 
 
+## One tracer node per remote player, made on its first shot and redrawn per shot.
 func _draw_tracers(origin: Vector3, points: PackedVector3Array) -> void:
-	var lines: ImmediateMesh = ImmediateMesh.new()
-	var material: StandardMaterial3D = StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.albedo_color = Color("ffe6b0")
-	lines.surface_begin(Mesh.PRIMITIVE_LINES, material)
+	if _tracers == null:
+		_make_tracers()
+	_tracer_lines.clear_surfaces()
+	_tracer_lines.surface_begin(Mesh.PRIMITIVE_LINES, _tracer_material)
 	for point: Vector3 in points:
-		lines.surface_add_vertex(origin)
-		lines.surface_add_vertex(point)
-	lines.surface_end()
-	var tracer: MeshInstance3D = MeshInstance3D.new()
-	tracer.name = "Tracers"
-	tracer.mesh = lines
-	tracer.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(tracer)
-	tracer.top_level = true
-	tracer.global_transform = Transform3D.IDENTITY
-	get_tree().create_timer(0.06).timeout.connect(tracer.queue_free)
+		_tracer_lines.surface_add_vertex(origin)
+		_tracer_lines.surface_add_vertex(point)
+	_tracer_lines.surface_end()
+	_tracer_left = TRACER_TIME
+	_tracers.visible = true
+
+
+func _make_tracers() -> void:
+	if _tracer_material == null:
+		_tracer_material = StandardMaterial3D.new()
+		_tracer_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_tracer_material.albedo_color = Color("ffe6b0")
+	_tracer_lines = ImmediateMesh.new()
+	_tracers = MeshInstance3D.new()
+	_tracers.name = "Tracers"
+	_tracers.mesh = _tracer_lines
+	_tracers.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(_tracers)
+	_tracers.top_level = true
+	_tracers.global_transform = Transform3D.IDENTITY

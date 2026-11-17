@@ -1,6 +1,6 @@
 # Plan: Hot-path allocations (foundation fix 7)
 
-Status: Approved
+Status: Done
 Roadmap: F-00 foundation fix 7 / issues #139, #141, #142, #150, #151
 Phase: P7
 Size: S
@@ -200,12 +200,12 @@ PR; it must not get worse.
 
 ## Acceptance
 
-- [ ] Separation allocates no array per tick (test_spawner.gd, code check).
-- [ ] Impacts, remote tracers and chain arcs create no mesh or material per
+- [x] Separation allocates no array per tick (test_spawner.gd, code check).
+- [x] Impacts, remote tracers and chain arcs create no mesh or material per
       shot after first use (test_impact.gd, test_remote_shots.gd, test_chain.gd).
-- [ ] At most 48 impact nodes exist per scene (test_impact.gd).
-- [ ] Gravity well scene loads once (test_gravity_well.gd).
-- [ ] CPU benchmark at 24 and 48 zombies is not worse than before (step 1 PR).
+- [x] At most 48 impact nodes exist per scene (test_impact.gd).
+- [x] Gravity well scene loads once (test_gravity_well.gd).
+- [x] CPU benchmark at 24 and 48 zombies is not worse than before (step 1 PR).
 
 ## Risks
 
