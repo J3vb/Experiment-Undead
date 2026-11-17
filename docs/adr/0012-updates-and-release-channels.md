@@ -28,6 +28,9 @@ read.
   `versions/<version>/`, checks their SHA-256 and starts the newest. It never
   overwrites a running file. Release asset names, their zip layout and the
   GitHub Releases API are a contract from v0.1.0 on.
+- The launcher also hosts a dedicated server on the player's PC: the game
+  build runs as the server with `--server`, so one download covers both.
+  It keeps that server updated between matches, like the Docker image.
 - The server image is a runner that downloads the release for its channel
   (or a pinned `EU_VERSION`) from GitHub Releases, checks its SHA-256 and
   restarts into a new release only when no match is running.

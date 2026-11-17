@@ -28,8 +28,12 @@ In:
 - A launcher built into the game: it checks GitHub Releases, downloads a new
   version into its own folder next to the old one, and starts it, with patch
   notes and a stable/test switch (steps 4-5).
+- The same launcher installs, starts, stops and updates a dedicated server on
+  the player's PC. The game build doubles as the server (`--server`), so one
+  download covers both and they always match (step 6), and the launcher keeps
+  that server updated between matches (step 9).
 - A small server image that downloads the release you ask for and updates
-  itself between matches, never during one (steps 6-7).
+  itself between matches, never during one (steps 7-8).
 - Two release channels: stable and test.
 
 Not in (non-goals, and where each one goes instead):
@@ -42,10 +46,12 @@ Not in (non-goals, and where each one goes instead):
 - A Windows installer: players unzip the game anywhere they own. If one is
   ever made, it installs per user (`%LOCALAPPDATA%\Programs`), never to
   Program Files, which the launcher could not write to.
-- A Windows dedicated server package: Windows hosts use Host and play, which
-  the launcher updates with the game. The dedicated server scene only loads
-  in the `dedicated_server` export (`run/main_scene.dedicated_server`), so a
-  Windows server would need its own export preset. F-44, only if someone asks.
+- A separate Windows server download or export preset: the launcher hosts
+  the server from the game build itself (step 6). The stripped Linux server
+  export stays only for the Docker image.
+- A server that keeps running after the launcher closes, or a Windows
+  service: the launcher is the server's control window. Later, if a host
+  needs it.
 - Delta patches: the launcher downloads the full platform zip (about 65 MB
   today). When builds grow past about 1 GB, download only the `.pck` when the
   engine binary did not change. Later, when it hurts.
@@ -58,7 +64,7 @@ Not in (non-goals, and where each one goes instead):
   files the launcher downloads itself do not carry the browser's "downloaded
   from the internet" mark.
 - The rest of F-44 (server.cfg, download page): stays in F-44, which reuses
-  steps 6-7.
+  steps 7-8.
 
 ## How it fits together
 
@@ -81,7 +87,8 @@ it wants.
 Experiment Undead/              the folder the player unzipped
   ExperimentUndead.exe + .pck   the "root" copy: starts in launcher mode
   versions/0.1.1/               full game, downloaded by the launcher
-  versions/0.1.2/               newest; the launcher starts this one
+  versions/0.1.2/               newest; the launcher starts this one,
+                                as the game or with --server as a server
 ```
 
 - The launcher is the game itself, not a second program: when the exe runs
@@ -103,6 +110,12 @@ Experiment Undead/              the folder the player unzipped
   version folders.
 - When a join is refused because the player's game is older, the dialog
   offers "Restart to update", which starts the root copy.
+- **Host a server:** the launcher starts the newest version with `--server`
+  as a headless dedicated server (step 6) and stays open as its control
+  window. While it runs, the launcher checks for updates every 15 minutes,
+  installs a new version, asks the server to finish its match (drain file),
+  and starts it again on the new version (step 9). Same rules as the Docker
+  image, same game-side drain code (step 8).
 
 **Why the server image downloads the game instead of baking it in.** A
 container cannot replace its own image without access to the Docker socket.
@@ -186,20 +199,22 @@ to end. This is how most self-hosted game server images update.
 
 | Folder or file | New / changed | What changes |
 |---|---|---|
-| `systems/net/handshake.gd` | changed | hello and reply become objects with named keys; version checked first (step 1); `SERVER_UPDATING` refusal while draining in the hub (step 7) |
+| `systems/net/handshake.gd` | changed | hello and reply become objects with named keys; version checked first (step 1); `SERVER_UPDATING` refusal while draining in the hub (step 8) |
 | `core/build.gd` | changed | `compare_versions()`, `is_stable()`, protocol bumps |
-| `core/net.gd` | changed | `report_refusal()` survives reason codes it does not know (step 1); `RefusalReason.SERVER_UPDATING` appended and the host-ended notice carries a reason (step 7). The file is at 326 of 350 lines: keep both changes small |
-| `systems/ui/net_error_dialog.gd` | changed | wrong-version text names the older side; unknown reasons show the server's text (step 1); "server updating" text (step 7) |
+| `core/net.gd` | changed | `report_refusal()` survives reason codes it does not know (step 1); `RefusalReason.SERVER_UPDATING` appended and the host-ended notice carries a reason (step 8). The file is at 326 of 350 lines: keep both changes small |
+| `systems/ui/net_error_dialog.gd` | changed | wrong-version text names the older side; unknown reasons show the server's text (step 1); "server updating" text (step 8) |
 | `systems/save/save_file.gd` | changed | `saved_version()` tells "newer" from "broken" (step 2) |
 | `systems/progression/character_profile.gd` | changed | `directory()` replaces `DIRECTORY`, picks the stable or test folder and copies stable once (step 2) |
-| `systems/ui/main_menu.gd` | changed | "saved by a newer version" message before the character screen opens (step 2; `character_screen.gd` is at 340 of 350 lines, so not there) |
+| `systems/ui/main_menu.gd` | changed | "saved by a newer version" message before the character screen opens (step 2; `character_screen.gd` is at 340 of 350 lines, so not there); opens the launcher first (step 5); `--server` hands over to the dedicated server (step 6) |
 | `systems/loot/item_roller.gd`, `systems/ui/pack_overlay.gd` | changed | an unknown affix or rarity id no longer crashes (step 2) |
 | `systems/launcher/` | new | `ReleaseFeed`, `VersionInstaller` (step 4), launcher screen (step 5) |
 | `content/screens/launcher.tres` | new | the launcher screen for the UI router (step 5) |
-| `systems/net/dedicated_server.gd` | changed | drain mode and exit code 3; owns `draining` and hands it to each new session's `Handshake` in `_swap_session` (step 7) |
-| `deploy/server/` | changed | runner image and entrypoint (steps 6-7) |
-| `deploy/unraid/experiment-undead-server.xml` | changed | channel, pin and auto-update fields (step 6) |
-| `.github/workflows/` | changed | launcher end-to-end test, Windows launcher check (step 5); runner image build and test, no per-version images (step 6) |
+| `systems/launcher/server_host.gd` | new | start, stop and status of a server hosted from the launcher (step 6); update between matches (step 9) |
+| `content/screens/dedicated_server.tres` | new | lets the game build hand over to the dedicated server scene with `--server` (step 6, unless `--scene` works) |
+| `systems/net/dedicated_server.gd` | changed | `--stop-file=` and `--drain-file=` arguments (step 6); drain mode and exit code 3; owns `draining` and hands it to each new session's `Handshake` in `_swap_session` (step 8) |
+| `deploy/server/` | changed | runner image and entrypoint (steps 7-8) |
+| `deploy/unraid/experiment-undead-server.xml` | changed | channel, pin and auto-update fields (step 7) |
+| `.github/workflows/` | changed | launcher end-to-end test, Windows launcher check (step 5); runner image build and test, no per-version images (step 7) |
 | `tools/ci/` | changed | saved-id and save-version guard, old-client check, runner test |
 | `docs/` | changed | RELEASING, MULTIPLAYER, LOGGING, DECISIONS, ADR 0012 |
 
@@ -217,7 +232,7 @@ Autoloads, managers or base classes added: none.
   `reason`, `text`, `server_version` and the `t` values `hello`, `accepted`,
   `refused`, `refused_ack` are frozen forever: later versions add keys, never
   rename or remove these. `RefusalReason` values are on the wire: append only.
-- Host-ended notice (step 7, protocol bump): gains `reason: StringName`
+- Host-ended notice (step 8, protocol bump): gains `reason: StringName`
   (`&"stopped"` or `&"updating"`) and the new version string.
 - Save format change: none. Non-stable builds read and write
   `user://characters-test/` instead of `user://characters/`.
@@ -225,7 +240,7 @@ Autoloads, managers or base classes added: none.
   `content/weapons/`, `content/loot/gear/`, `content/loot/affixes/`,
   `content/loot/rarities/`, `content/skills/`, and level folder names
   (`best_runs` keys written by `GameSession`). Grows only.
-- Server environment (step 6): `EU_CHANNEL` (`stable` or `test`, default
+- Server environment (step 7): `EU_CHANNEL` (`stable` or `test`, default
   `stable`), `EU_VERSION` (empty = newest on the channel; set = pin),
   `EU_AUTO_UPDATE` (default `true`), `EU_DRAIN_FILE` (set by the
   image, like `EU_STOP_FILE`). Test hooks, not shown in the Unraid template:
@@ -241,7 +256,11 @@ Autoloads, managers or base classes added: none.
   depends on them. Change them only with a new ADR and a release that still
   publishes the old names.
 - Launcher settings: `user://launcher.cfg`, `[launcher] channel = "stable"`
-  (or `"test"`). Not a save; no version needed. Downloads go to
+  (or `"test"`), `[server] port = 7777`, `max_players = 8`. Not a save; no
+  version needed.
+- Command line (step 6): `--server` makes the game build run as a dedicated
+  server; `--stop-file=<path>` and `--drain-file=<path>` sit next to the
+  existing `--port=` and `--max-players=`. Downloads go to
   `user://launcher/` and are deleted after install.
 - Content checks to add in `tests/content/`: none (step 3's guard is a CI
   script).
@@ -261,9 +280,10 @@ Autoloads, managers or base classes added: none.
   Only a draining server in the hub refuses joins, with `SERVER_UPDATING`
   ("This server is restarting for an update. Try again in a minute.").
 - Dedicated server (no screen, no local player): drain and auto-update exist
-  only here. The launcher never runs on a server (the server export has its
-  own main scene). A listen server (Host and play) updates when its player
-  restarts the game.
+  only here, for both the Docker image and a server hosted from the launcher.
+  The launcher screen never opens in a server process (`--server`, or the
+  server export's own main scene). A listen server (Host and play) updates
+  when its player restarts the game.
 
 ## Performance
 
@@ -275,14 +295,16 @@ unauthenticated limit even with several servers on one home IP).
 
 ## Steps
 
-Steps 1, 2, 4 and 6 do not depend on each other. Steps 1-5 must merge before
+Steps 1, 2, 4 and 7 do not depend on each other. Steps 1-5 must merge before
 Release v0.1.0 (F-11): whatever handshake, save layout and launcher v0.1.0
 ships with is what every later version has to read, and a v0.1.0 without the
-launcher would leave its players to update by hand once. Step 6 needs one
+launcher would leave its players to update by hand once. Step 7 needs one
 GitHub Release to exist (v0.1.0, or a test tag) so the runner has something
 to download; until it merges, the current per-version image keeps working.
-Auto-update (step 7) works from the first release that contains it; a server
-on an older release moves to it on its next restart.
+Auto-update (step 8) works from the first release that contains it; a server
+on an older release moves to it on its next restart. Steps 6 and 9 (hosting
+from the launcher) can come after v0.1.0: the launcher refreshes its own
+root copy, so v0.1.0 players get the Host panel with their next update.
 
 ### Step 1: A handshake every future version can read
 
@@ -394,7 +416,8 @@ on an older release moves to it on its next restart.
   unzip with Godot's `ZIPReader` into `versions/<version>.tmp/` next to the
   exe, set the executable bit on Linux (`FileAccess.set_unix_permissions`),
   rename the folder to `versions/<version>/`, and delete all but the 2
-  newest version folders. A folder it cannot write (Program Files, read-only)
+  newest version folders. A folder still in use (the running game, or a
+  hosted server) is skipped and tried again next start. A folder it cannot write (Program Files, read-only)
   fails with a plain message and the release page link. Test hook:
   `--releases-api=<url>` (default the repo's GitHub Releases API).
 - Files: `systems/launcher/release_feed.gd`,
@@ -463,7 +486,51 @@ on an older release moves to it on its next restart.
   on Windows, with one click or none (play-tested by the person on v0.1.1,
   since v0.1.0 has nothing to update from).
 
-### Step 6: A server image that downloads its release
+### Step 6: Host a server from the launcher
+
+- Build: the game build can run as a dedicated server, so one download is
+  both client and server and they can never be on different versions.
+  `MainMenu.parse_launch()` gains `--server` (the flag `Build.is_server()`
+  already reads): with it, the main menu hands over to the dedicated server
+  scene through the router (`UI.replace(&"dedicated_server")`, new
+  `content/screens/dedicated_server.tres`) instead of showing the menu. If
+  Godot's `--scene` argument works in export templates, use that instead and
+  skip the screen entry; the step checks this first. `DedicatedServer` reads
+  `--stop-file=` and `--drain-file=` like it reads `--port=` (the command line
+  wins over `EU_STOP_FILE` / `EU_DRAIN_FILE`), because `OS.create_process`
+  cannot pass environment variables. In server mode `Build` uses its own
+  crash marker (`user://running-server.lock`) so a client and a server on one
+  PC do not trip each other's "last session crashed" note.
+  The launcher screen gets a **Host a server** panel: port (default 7777) and
+  max players (1 to 8) saved under `[server]` in `user://launcher.cfg`,
+  Start, Stop, "Play on my server" (starts the game with
+  `--join=127.0.0.1:<port>`), the running version and an "Open logs"
+  button. Start runs `versions/<newest>/<exe> --headless -- --server
+  --port=<p> --max-players=<n> --stop-file=<f> --drain-file=<d>`. While a
+  server runs, the launcher stays open as its control window (Play no longer
+  closes it), and closing the launcher asks, then stops the server through
+  the stop file. The Docker image stays the way to host on a headless box
+  such as Unraid.
+- Files: `systems/ui/main_menu.gd`, `content/screens/dedicated_server.tres`
+  (new, unless `--scene` works), `systems/net/dedicated_server.gd`,
+  `core/build.gd`, `systems/launcher/launcher_screen.gd`, `.tscn`,
+  `systems/launcher/server_host.gd` (new, the panel's start/stop and status
+  logic), `tools/ci/smoke_test.sh`, `docs/RELEASING.md`,
+  `tests/unit/test_main_menu_launch.gd` (or the existing main menu test),
+  `tests/unit/test_server_host.gd` (new),
+  `tests/integration/test_net_match.gd`.
+- Tests: `parse_launch` with `--server`; `DedicatedServer` takes the stop and
+  drain files from the command line; server mode uses the server crash
+  marker; `ServerHost` builds the right arguments from the saved settings and
+  clamps max players. Integration: the client build started with `--server`
+  opens the port and a second process joins it (fails today: `--server`
+  shows the main menu). `smoke_test.sh`: the exported Linux client started
+  with `--headless -- --server` reports "Server ready", accepts a join and
+  stops on its stop file.
+- Done when: a player can install, start, play on and stop a server from the
+  launcher on Windows, with no second download.
+
+### Step 7: A server image that downloads its release
 
 - Build: the image becomes a runner: Debian slim with `ca-certificates`,
   `curl`, `unzip` and `jq`, no game baked in. `entrypoint.sh`: pick the
@@ -498,7 +565,7 @@ on an older release moves to it on its next restart.
   ghcr.io/j3vb/experiment-undead-server` starts the newest stable release on
   any Docker host, and on the person's Unraid server.
 
-### Step 7: Servers update between matches
+### Step 8: Servers update between matches
 
 - Build: with `EU_AUTO_UPDATE=true` the entrypoint checks every
   `EU_UPDATE_CHECK_SECONDS` (900) and creates `EU_DRAIN_FILE` when the newest
@@ -515,15 +582,11 @@ on an older release moves to it on its next restart.
     empty for a moment), then quit with code 3.
   Clients show (`NetErrorDialog`): "The server restarted for an update.
   Restart the game to update it, then join again." with the "Restart to
-  update" button from step 5. Bump
-  `PROTOCOL_VERSION`. Close-out: `docs/DECISIONS.md` entry, ADR 0012
-  accepted, roadmap row Done, foundation 10 note.
+  update" button from step 5. Bump `PROTOCOL_VERSION`.
 - Files: `systems/net/dedicated_server.gd`, `systems/net/handshake.gd`,
   `core/net.gd`, `core/build.gd`, `systems/ui/net_error_dialog.gd`,
   `deploy/server/entrypoint.sh`, `tools/ci/runner_test.sh`,
-  `docs/LOGGING.md`, `docs/DECISIONS.md`, `docs/ROADMAP.md`,
-  `docs/FOUNDATIONS.md`, `docs/adr/0012-updates-and-release-channels.md`,
-  `tests/unit/test_dedicated_server_drain.gd` (new),
+  `docs/LOGGING.md`, `tests/unit/test_dedicated_server_drain.gd` (new),
   `tests/unit/test_handshake.gd`.
 - Tests (GUT): drain on an empty hub exits with code 3 only after
   `EMPTY_GRACE`; drain in the hub with a client sends the notice and exits;
@@ -532,9 +595,35 @@ on an older release moves to it on its next restart.
   a hello in a draining hub gets `SERVER_UPDATING`. `runner_test.sh` with
   `EU_UPDATE_CHECK_SECONDS=5`: publishing a second fake release while the
   first runs makes the empty server restart into it.
-- Done when: a server left alone on its channel is on the new release within
-  15 minutes of a release when nobody is playing, and right after the match
-  when someone is.
+- Done when: a Docker server left alone on its channel is on the new release
+  within 15 minutes of a release when nobody is playing, and right after the
+  match when someone is.
+
+### Step 9: Launcher-hosted servers update between matches
+
+- Build: while the launcher hosts a server, `ServerHost` checks the channel
+  every 15 minutes with `ReleaseFeed`. On a newer release it installs it with
+  `VersionInstaller` (step 4) while the server keeps running from its own
+  folder, then creates the drain file. When the server process exits with
+  code 3 (`OS.get_process_exit_code`), it starts the server again from the
+  new version folder and shows "Server updated to vX". Any other exit shows
+  "Server stopped" with the log button; no restart loop. The launcher's own
+  Play button now offers the new version too. Close-out: `docs/DECISIONS.md`
+  entry, ADR 0012 accepted, roadmap row Done, foundation 10 note,
+  `docs/RELEASING.md` hosting section.
+- Files: `systems/launcher/server_host.gd`,
+  `systems/launcher/launcher_screen.gd`, `docs/RELEASING.md`,
+  `docs/LOGGING.md`, `docs/DECISIONS.md`, `docs/ROADMAP.md`,
+  `docs/FOUNDATIONS.md`, `docs/adr/0012-updates-and-release-channels.md`,
+  `tests/unit/test_server_host.gd`.
+- Tests: with a fake feed, a newer release installs and writes the drain
+  file without stopping the server; exit code 3 restarts on the new version;
+  exit code 0 or a crash does not restart; the version that is running is
+  never deleted by the "keep 2 newest" clean-up. End to end
+  (`smoke_test.sh`, Linux): a launcher hosting the exported build moves its
+  empty server to a second fake release.
+- Done when: a server hosted from the launcher moves to a new release after
+  its match, with nobody touching it.
 
 ## Acceptance
 
@@ -551,9 +640,13 @@ on an older release moves to it on its next restart.
   play-test by the person).
 - [ ] A broken or partial download never leaves a version folder behind
   (step 4 tests).
+- [ ] A player can install, start, play on and stop a server from the
+  launcher on Windows, with no second download (step 6 tests and a play-test
+  by the person), and that server moves to a new release after its match
+  (step 9 tests).
 - [ ] A server on `stable` moves to a new release on its own and never
-  restarts during a match (step 7 tests, and once on the person's Unraid).
-- [ ] `EU_VERSION` keeps a server on one version across restarts (step 6 test).
+  restarts during a match (step 8 tests, and once on the person's Unraid).
+- [ ] `EU_VERSION` keeps a server on one version across restarts (step 7 test).
 
 ## Risks
 
@@ -585,6 +678,12 @@ on an older release moves to it on its next restart.
 - GitHub can be unreachable: the launcher starts the newest installed
   version ("Play offline"). One API call per start stays far under the
   60 an hour limit, even for a LAN party behind one IP.
+- Hosting from a PC: Windows asks to allow the server through the firewall
+  on its first start, and friends outside the home network still need the
+  router port forwarded. The Host panel says both in one line; RELEASING
+  explains them.
+- Running the full game build as a server costs more memory than the
+  stripped Linux export. Fine on a gaming PC; headless boxes use Docker.
 - Someone hosts with a pinned old version: their friends with an updated game
   get the "server is older" refusal, which says what to do.
 
