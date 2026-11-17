@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="GripData" format=3]
+
+[ext_resource type="Script" path="res://systems/player/grip_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"bastion_lmg"
+right_anchor = Vector3(0, -0.1445, -0.123)
+left_anchor = Vector3(-0.045, 0.21, 0.045)
+left_forward = Vector3(0.85, 0.487339705, 0.2)
+left_dorsal = Vector3(-0.173505515, -0.099477805, 0.979795873)
+left_shoulder = Vector3(-0.155, 0.03, -0.22)
+left_shoulder_lift = Vector2(0.055, 0.112)
+left_shoulder_sway = Vector2(0.5, -0.9)
+shot_peak = true

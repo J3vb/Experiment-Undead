@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="GripData" format=3]
+
+[ext_resource type="Script" path="res://systems/player/grip_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"synapse"
+right_anchor = Vector3(0, -0.1335, -0.098)
+left_anchor = Vector3(0, 0.195, 0.024)
