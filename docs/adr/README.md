@@ -40,4 +40,5 @@ change it), **replaced** (see the newer record).
 | [0009](0009-ci-is-the-gate.md) | CI is the merge gate, keep it simple | accepted |
 | [0010](0010-personal-loot-kept-on-death.md) | Personal loot, kept on death, no trading in v1 | accepted |
 | [0011](0011-one-ui-router.md) | One UI router owns screen flow and the mouse | proposed |
+| [0012](0012-updates-and-release-channels.md) | Exact versions, a built-in launcher, self-updating servers | proposed |
 | [0013](0013-every-game-joinable.md) | Every game is joinable; alone means solo | proposed |

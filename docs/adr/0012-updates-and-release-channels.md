@@ -1,0 +1,55 @@
+# 0012. Exact versions, a built-in launcher, self-updating servers
+
+- **Status:** proposed
+- **Date:** 2026-11-17
+- **Decided by:** the person (own updater as a launcher, servers update
+  between matches); the rest agent (provisional), see
+  [plans/client-server-updates.md](../plans/client-server-updates.md)
+
+## Context
+
+Players keep characters and loot across versions, servers are self-hosted
+(ADR 0006), and a new version must reach both sides without breaking saves
+or interrupting matches. Nothing has been released yet, so the handshake and
+save layout of the first release become a contract every later version must
+read.
+
+## Decision
+
+- Client and server must run exactly the same version, protocol and content.
+- The hello and refusal are JSON objects whose keys `t`, `protocol`,
+  `version`, `reason`, `text` and `server_version` never change. A mismatch
+  always ends in a refusal that names the older side.
+- Two channels: stable (`vX.Y.Z`) and test (`vX.Y.Z-test.N`). Test, dev and
+  editor builds keep their own characters folder, copied once from stable.
+  This amends ADR 0005's folder rule for non-stable builds only.
+- Clients update through a launcher built into the game exe: run from the
+  install root, it downloads new versions from GitHub Releases into
+  `versions/<version>/`, checks their SHA-256 and starts the newest. It never
+  overwrites a running file. Release asset names, their zip layout and the
+  GitHub Releases API are a contract from v0.1.0 on.
+- The launcher also hosts a dedicated server on the player's PC: the game
+  build runs as the server with `--server`, so one download covers both.
+  It keeps that server updated between matches, like the Docker image.
+- The server image is a runner that downloads the release for its channel
+  (or a pinned `EU_VERSION`) from GitHub Releases, checks its SHA-256 and
+  restarts into a new release only when no match is running.
+- Rollback means roll forward: a new patch release. The save version never
+  goes down.
+
+## Consequences
+
+- Handshake changes add keys; they never rename or remove the frozen ones.
+  `RefusalReason` values are append only.
+- Saved content ids and `SaveFile.CURRENT_VERSION` can never go backwards
+  (CI checked).
+- Save format bumps ship on the test channel before stable.
+- Do not add a second launcher program, an installer that writes to Program
+  Files, a store-only update path or our own patcher without a new record.
+- Servers depend on GitHub Releases only to download updates; with GitHub
+  down they keep running their cached version.
+
+## Links
+
+`docs/plans/client-server-updates.md`, `docs/RELEASING.md`,
+`docs/MULTIPLAYER.md`, ADR 0005, ADR 0006.
