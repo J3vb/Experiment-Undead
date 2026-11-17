@@ -256,35 +256,45 @@ budget.
 ### Step 4: Downed and death screen
 
 - Build: DownScreen (Control + canvas shader) in hud.tscn. It watches the
-  local player's `is_downed` / `is_dead` in `_process` (two bool reads; no new
-  Events, no net code). Downed: saturation tween to 0.2, vignette 0.5, camera
-  rig drops 0.9 m over 0.3 s (solo Second Wind and co-op), roll 6°. Drop and
-  roll go through `PlayerCamera.tilt()` from the co-op thread's next PR (a
-  physics-tick tween); this step only changes the 25.0 in that call to
-  `downed_roll_deg` and adds the drop next to it. Step 4 waits for that PR. Revived: colour returns, 8% white flash for 0.15 s (skipped with
-  flash_reduction). Died: 0.6 s fade to black, and an AudioEffectAmplify on
-  the SFX bus (added to default_bus_layout.tres) tweens to −60 dB; Music and
-  UI stay. Solo: the results screen follows after the existing restart delay
-  and shows a "Gear kept" banner when the run did not exfil. Co-op: fade back
-  in on the spectate camera, prompt reads "Spectating · Gear kept · Respawn
-  next round"; SFX returns on respawn. `_exit_tree` always restores the bus.
+  local player's `is_downed` / `is_dead` and its session's `is_over` in
+  `_process` (bool reads; no new Events, no net code). States:
+  - Downed: saturation tween to 0.2, vignette 0.5, camera rig drops 0.9 m over
+    0.3 s (solo Second Wind and co-op), roll 6°. Drop and roll go through
+    `PlayerCamera.tilt()` from the co-op thread's next PR (a physics-tick
+    tween); this step only changes the 25.0 in that call to `downed_roll_deg`
+    and adds the drop next to it. Step 4 waits for that PR.
+  - Revived: colour returns, 8% white flash for 0.15 s (skipped with
+    flash_reduction).
+  - Died: `is_dead`, or `session.is_over` while the local player is downed
+    (a co-op squad wipe ends the match with everyone downed and nobody
+    `is_dead`; an exfil ends it with players standing, so it never fades).
+    0.6 s fade to black, and world sound drops out: an AudioEffectAmplify
+    (added in default_bus_layout.tres) on each world bus, Weapons, Enemies,
+    Player and Ambient, tweens to −60 dB. Music, UI and Master stay, so menu
+    sounds and the death sting (played on the UI bus) are heard.
+  - Solo: the results screen follows after the existing restart delay and
+    shows a "Gear kept" banner when the run did not exfil. Co-op: fade back in
+    on the spectate camera, prompt reads "Spectating · Gear kept · Respawn next
+    round"; world sound returns on respawn. `_exit_tree` always restores 0 dB.
 - Files: systems/feel/down_screen.gd, systems/feel/down_screen.gdshader,
   systems/ui/hud.tscn, default_bus_layout.tres, systems/ui/results_screen.gd
   and .tscn, systems/net/coop_hud.gd, systems/net/player_state_sync.gd (one
   line), docs/DECISIONS.md.
 - Tests: tests/unit/test_down_screen.gd: downed sets saturation and vignette
-  targets; died fades to black and drops the SFX amplify; respawn and
-  `_exit_tree` restore 0 dB; flash_reduction skips the flash; no local player
-  does nothing. Results test: "Gear kept" banner visible on death, hidden on
-  exfil.
+  targets; died fades to black and drops the four world-bus amplifiers while
+  UI and Music stay at 0 dB; a squad wipe (downed + session over) fades too;
+  an exfil (standing + session over) does not; respawn and `_exit_tree`
+  restore 0 dB; flash_reduction skips the flash; no local player does
+  nothing. Results test: "Gear kept" banner visible on death, hidden on exfil.
 - Done when: dying in solo fades out before results; dying in co-op fades
-  into spectating; the bus is never left muted.
+  into spectating; a squad wipe fades before results; world sound is never
+  left muted.
 
 ### Step 5: Downed, revive and death sounds
 
 - Build: three generated sounds in tools/generate_sfx.py (`downed`: low
   falling thud with a ringing tail; `revived`: short rising sting;
-  `bled_out`: deep heartbeat stop). DownScreen plays them 2D on the Player bus
+  `bled_out`: deep heartbeat stop). DownScreen plays them 2D on the UI bus (not faded)
   for the local player only.
 - Files: tools/generate_sfx.py, assets/audio/downed.wav, revived.wav,
   bled_out.wav (+ .import), systems/feel/down_screen.gd, docs/CREDITS.md
@@ -300,7 +310,7 @@ budget.
 - [ ] Both comfort sliders at 0 remove all camera shake and punch (unit test).
 - [ ] Hitstop never pauses the simulation and never exceeds 4 per second (unit test).
 - [ ] Death fades to black with world sound dropping, then results or spectate;
-      the SFX bus is always restored (unit test + play-test).
+      UI sound stays audible and world buses are always restored (unit test + play-test).
 - [ ] The results screen says "Gear kept" after a death (unit test).
 - [ ] Soak stays green.
 - [ ] The person's feel play-test (list in the handoff).
@@ -310,7 +320,7 @@ budget.
 - Aim honesty: if anything else reads `camera.global_basis` for aim, shake
   would leak into gameplay. Step 2 greps for every use and the trace test
   catches the main path; interact focus may follow shake (harmless).
-- The SFX bus left muted after a crash in the death fade: `_exit_tree` and
+- World buses left muted after a crash in the death fade: `_exit_tree` and
   respawn both reset it, and the test covers both.
 - Camera writes outside physics: every camera change goes through
   `update_feel()` or `tilt()` on the physics tick; the boot test and soak
