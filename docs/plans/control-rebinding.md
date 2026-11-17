@@ -1,10 +1,10 @@
 # Plan: Rebind controls in Settings
 
-Status: Review
+Status: Approved
 Roadmap: F-05 / issue #105
 Phase: P4
 Size: M
-Approved by:
+Approved by: Codex plan review on PR #204 (2026-11-17, four findings fixed); size M with no open decisions, so no person approval needed
 
 ## Goal
 
