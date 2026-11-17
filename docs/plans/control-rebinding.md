@@ -131,7 +131,10 @@ change. The rows (about 18) are built once in `_ready` of the bindings scene.
   (keyboard/mouse events, max 2), `set_binding(action, slot, event)`,
   `binding_owner(event, except_action) -> StringName` (who already uses this
   key, `&""` if free), `swap_binding(action, slot, event)` (the other action
-  gets this slot's old key), `reset_binding(action)`, and `event_label(event)`
+  gets this slot's old key), `reset_binding(action)` (puts each default key
+  back with the same swap rule, so if another action took a default key it
+  gets this action's current key in that slot; nothing ends up on two
+  actions), and `event_label(event)`
   (local letter for keys, "Mouse 1" style names for buttons and wheel).
   Load applies saved bindings on start (keep controller events, replace
   keyboard/mouse events). `reset_to_defaults()` also resets bindings.
@@ -143,7 +146,9 @@ change. The rows (about 18) are built once in `_ready` of the bindings scene.
 - Tests: `test_settings_bindings.gd`: round trip survives reload; saved key
   uses physical_keycode; only changed actions are written; a key bound to two
   actions is caught by `binding_owner`; swap moves the old key; reset per
-  action and global reset restore project defaults; pause is refused;
+  action and global reset restore project defaults; swap reload and interact
+  then reset only reload leaves R on reload and F on interact (no key on two
+  actions); pause is refused;
   malformed entries and unknown actions fall back to defaults; controller
   events survive a rebind; default movement keys are physical W A S D. Tests
   restore the global InputMap from ProjectSettings after each run.
