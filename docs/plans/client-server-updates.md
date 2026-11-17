@@ -442,14 +442,18 @@ root copy, so v0.1.0 players get the Host panel with their next update.
   install root, in an exported build (`OS.has_feature("template")`) whose
   version is stable or test, and was not started with `--from-launcher`,
   `--join` or `--host` (smoke tests and tools start the game that way); dev
-  builds and the editor never see it. The screen shows: the installed
-  and newest version, the newest release's notes (the release body, as plain
-  text), a progress bar, Play, a stable/test switch saved in
+  builds and the editor never see it. The screen is built around one big
+  **Play** button (flow asked for by the person, 2026-11-17). Around it: the
+  installed and newest version, the newest release's notes (the release
+  body, as plain text), a progress bar, a stable/test switch saved in
   `user://launcher.cfg` (`ConfigFile`), and "Play offline" when GitHub
-  cannot be reached. It downloads a newer version on its own (with Cancel),
-  then starts `versions/<newest>/<exe> --from-launcher` with
-  `OS.create_process` and quits; if the root copy is the newest it opens the
-  main menu. A version started from `versions/` copies its exe and pck over
+  cannot be reached. It downloads a newer version on its own (with Cancel);
+  Play starts `versions/<newest>/<exe> --from-launcher` with
+  `OS.create_process` and quits, or opens the main menu in place when the
+  root copy is the newest. Play always lands in the game's main menu, where
+  the player picks a character and enters the world or hub (the main menu's
+  own flow, not changed by this plan). The launcher never passes `--join` or
+  `--host`: nothing joins a player straight into someone else's game. A version started from `versions/` copies its exe and pck over
   the root copy when the root is older, retrying while the root is still
   closing, through a temp name so a failed copy never leaves a broken root. `NetErrorDialog` gets a "Restart to
   update" button for "your game is older" that starts the root copy and
@@ -503,12 +507,12 @@ root copy, so v0.1.0 players get the Host panel with their next update.
   PC do not trip each other's "last session crashed" note.
   The launcher screen gets a **Host a server** panel: port (default 7777) and
   max players (1 to 8) saved under `[server]` in `user://launcher.cfg`,
-  Start, Stop, "Play on my server" (starts the game with
-  `--join=127.0.0.1:<port>`), the running version and an "Open logs"
-  button. Start runs `versions/<newest>/<exe> --headless -- --server
+  Start, Stop, the running version and an "Open logs" button. Players
+  (the host too) join it from the game's own join or server list screen,
+  like any other server. Start runs `versions/<newest>/<exe> --headless -- --server
   --port=<p> --max-players=<n> --stop-file=<f> --drain-file=<d>`. While a
-  server runs, the launcher stays open as its control window (Play no longer
-  closes it), and closing the launcher asks, then stops the server through
+  server runs, the launcher stays open as its control window (Play starts
+  the game but no longer closes the launcher), and closing the launcher asks, then stops the server through
   the stop file. The Docker image stays the way to host on a headless box
   such as Unraid.
 - Files: `systems/ui/main_menu.gd`, `content/screens/dedicated_server.tres`
@@ -527,7 +531,7 @@ root copy, so v0.1.0 players get the Host panel with their next update.
   shows the main menu). `smoke_test.sh`: the exported Linux client started
   with `--headless -- --server` reports "Server ready", accepts a join and
   stops on its stop file.
-- Done when: a player can install, start, play on and stop a server from the
+- Done when: a player can install, start and stop a server from the
   launcher on Windows, with no second download.
 
 ### Step 7: A server image that downloads its release
@@ -640,7 +644,7 @@ root copy, so v0.1.0 players get the Host panel with their next update.
   play-test by the person).
 - [ ] A broken or partial download never leaves a version folder behind
   (step 4 tests).
-- [ ] A player can install, start, play on and stop a server from the
+- [ ] A player can install, start and stop a server from the
   launcher on Windows, with no second download (step 6 tests and a play-test
   by the person), and that server moves to a new release after its match
   (step 9 tests).
