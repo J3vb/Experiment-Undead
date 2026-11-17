@@ -9,6 +9,7 @@
 [ext_resource type="Resource" path="res://content/weapons/wren_mp_reforged.tres" id="7"]
 [ext_resource type="Resource" path="res://content/grips/wren_mp.tres" id="grip"]
 [ext_resource type="PackedScene" path="res://assets/models/weapons/wren_mp.glb" id="world"]
+[ext_resource type="Resource" path="res://content/feel/class_smg.tres" id="feel"]
 
 [sub_resource type="Resource" id="recoil"]
 script = ExtResource("2")
@@ -51,6 +52,7 @@ move_spread = 2.0
 spread_per_shot = 0.18
 max_spread = 5.5
 recoil = SubResource("recoil")
+feel = ExtResource("feel")
 viewmodel_kick = 0.02
 hip_position = Vector3(0.17, -0.17, -0.34)
 ads_position = Vector3(0, -0.055, -0.24)

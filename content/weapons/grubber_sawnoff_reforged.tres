@@ -8,6 +8,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
 [ext_resource type="Resource" path="res://content/grips/grubber_sawnoff.tres" id="grip"]
 [ext_resource type="PackedScene" path="res://assets/models/weapons/grubber_sawnoff.glb" id="world"]
+[ext_resource type="Resource" path="res://content/feel/class_shotgun.tres" id="feel"]
 
 [sub_resource type="Resource" id="recoil"]
 script = ExtResource("2")
@@ -50,6 +51,7 @@ move_spread = 1.5
 spread_per_shot = 0.0
 max_spread = 8.0
 recoil = SubResource("recoil")
+feel = ExtResource("feel")
 viewmodel_kick = 0.11
 hip_position = Vector3(0.16, -0.15, -0.36)
 ads_position = Vector3(0, -0.063, -0.3)

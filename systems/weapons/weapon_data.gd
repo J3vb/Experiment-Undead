@@ -59,6 +59,8 @@ enum Effect { NONE, CHAIN, FROST, WELL }
 @export_group("Recoil")
 @export var recoil: RecoilData
 @export var viewmodel_kick: float = 0.045
+## Camera feel for this gun class (content/feel/class_*.tres). Cosmetic only.
+@export var feel: FeelData
 
 @export_group("Presentation")
 @export var no_muzzle_flash: bool = false
