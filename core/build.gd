@@ -6,6 +6,8 @@ extends Node
 const PROTOCOL_VERSION: int = 17
 const VERSION_FILE: String = "res://version.json"
 const CRASH_MARKER: String = "user://running.lock"
+## A server started from the launcher shares the client's user folder, so it keeps its own marker.
+const SERVER_CRASH_MARKER: String = "user://running-server.lock"
 
 var version: String = "dev"
 var commit: String = "editor"
@@ -21,13 +23,13 @@ func _ready() -> void:
 	load_version_file(VERSION_FILE)
 	ProjectSettings.set_setting("application/config/version", version)
 	_log_header()
-	crashed_last_run = begin_run(CRASH_MARKER)
+	crashed_last_run = begin_run(crash_marker())
 	if crashed_last_run:
 		push_warning("Previous session did not exit cleanly. Logs: %s" % logs_dir())
 
 
 func _exit_tree() -> void:
-	end_run(CRASH_MARKER)
+	end_run(crash_marker())
 
 
 func load_version_file(path: String) -> void:
@@ -47,6 +49,10 @@ func display_version() -> String:
 	if commit == "editor":
 		return "dev (editor)"
 	return "v%s" % version
+
+
+func crash_marker() -> String:
+	return SERVER_CRASH_MARKER if is_server() else CRASH_MARKER
 
 
 func is_server() -> bool:

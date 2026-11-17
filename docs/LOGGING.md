@@ -111,6 +111,14 @@ The server also prints every warning and error to stdout as
 | `net.hit_claim_rejected` | warn | Server refused a client's hit or gravity well claim (`peer`, `reason`): `player_not_alive`, `zombie_not_alive`, `hit_out_of_bounds`, `zone_missing`, `claims_too_fast`, `well_out_of_bounds`, `well_wrong_weapon` (well or orb request named a gun whose `effect` is not WELL: a mismatched build or a cheat). At most one per second |
 | `net.loadout_rejected` | warn | Server refused a client's equipped loadout (`peer`, `reason`): `not_a_dictionary`, `too_much_gear` (over 3 gear items), `too_many_guns` (more than the player's weapon slots), `unknown_gun` (gun base not in content). The server keeps the last good loadout; check that both builds have the same content |
 | `net.interaction_rate_limited` | warn | A client sent interact requests less than 0.1 s apart; extra ones are refused. At most one per second |
+| `launcher.download_failed` | warn | A release zip did not download (`version`, `result` = HTTPRequest result code, `code` = HTTP status). No network, GitHub down or a moved asset |
+| `launcher.digest_mismatch` | warn | A downloaded zip's SHA-256 is not the release's digest (`version`); nothing was installed. A cut-off download or a replaced asset |
+| `launcher.install_failed` | warn | A checked zip could not be unpacked into `versions/` (`version`, `folder`): a read-only install folder (Program Files) or a full disk |
+| `launcher.version_installed` | info | A release is unpacked and ready in `versions/<version>/` |
+| `launcher.releases_unreachable` | warn | The launcher could not read the GitHub Releases list (`result`, `code`; 403 = GitHub rate limit, 60 per hour per address); it plays offline |
+| `launcher.version_started` / `start_failed` | info / warn | Play started an installed version (`version`, `pid`) or could not (`exe`): a deleted or blocked versions folder |
+| `launcher.root_refreshed` / `root_refresh_failed` | info / warn | A started copy replaced the install folder's exe and pck (`version`, `tries`), or gave up after 15 s (`root`): the old copy was still running or the folder is read-only |
+| `launcher.server_started` / `server_stop_requested` / `server_exited` / `server_start_failed` | info / warn | The launcher's Host a server panel (`version`, `port`, `pid`, `exe`). A quick `server_exited` after start = port in use; read that server's own log |
 | `ui.unknown_screen` | warn | `UI.push` or `UI.replace` got an id with no `content/screens/<id>.tres`; `id`. Nothing opens |
 | `ui.pop_empty` | warn | `UI.pop()` with no screen open: a screen emitted `closed` twice or something popped a screen it did not push |
 | `ui.loading_failed` | warn | A root behind a loading screen failed its threaded load; `scene`. The router falls back to a plain scene change |

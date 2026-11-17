@@ -9,7 +9,7 @@ fail=0
 errors="SCRIPT ERROR|Parse Error"
 
 echo "::group::Client boot"
-timeout 60 linux/ExperimentUndead.x86_64 --headless --quit-after 600 > client.log 2>&1
+timeout 60 linux/ExperimentUndead.x86_64 --headless --quit-after 600 -- --from-launcher > client.log 2>&1
 code=$?
 cat client.log
 echo "::endgroup::"
@@ -149,4 +149,38 @@ old_client_check || fail=1
 echo "::endgroup::"
 
 rm -f client.log server.log join.log "$stop"
+
+echo "::group::Client build as a server (launcher Host a server)"
+stop="$(mktemp -u)"
+linux/ExperimentUndead.x86_64 --headless -- --server --port=7790 --max-players=4 "--stop-file=$stop" > host.log 2>&1 &
+pid=$!
+for _ in $(seq 1 60); do
+  grep -q "Server ready" host.log && break
+  kill -0 "$pid" 2>/dev/null || break
+  sleep 0.5
+done
+if grep -q "Server ready" host.log; then
+  timeout 60 linux/ExperimentUndead.x86_64 --headless --quit-after 900 -- --join=127.0.0.1:7790 > hostjoin.log 2>&1
+fi
+touch "$stop"
+timeout 15 tail --pid="$pid" -f /dev/null || kill -9 "$pid" 2>/dev/null
+wait "$pid"
+host_code=$?
+cat host.log
+echo "::endgroup::"
+if ! grep -q "Server ready" host.log || ! grep -q "Player connected" host.log; then
+  echo "::error::The client build started with --server did not open its port or accept a join"
+  fail=1
+fi
+if [ "$host_code" -ne 0 ] || ! grep -q "Server stopped" host.log || grep -qE "$errors" host.log hostjoin.log 2>/dev/null; then
+  echo "::error::The client build as a server did not stop cleanly on its stop file (exit $host_code)"
+  fail=1
+fi
+rm -f host.log hostjoin.log "$stop"
+
+echo "::group::Launcher installs a newer version and refreshes the root copy"
+if ! "$(git rev-parse --show-toplevel)/tools/ci/launcher_e2e.sh" .; then
+  fail=1
+fi
+echo "::endgroup::"
 exit "$fail"
