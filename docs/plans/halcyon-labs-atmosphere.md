@@ -227,11 +227,13 @@ Hall), checked in the step 5 fps check:
 - Build: monitor screen shader and material `systems/effects/monitor_screen.tres`
   (scanlines, slow roll, flicker; emission 1.0 max, teal text-like bars;
   static noise before power through `instance uniform float powered`, which
-  Atmosphere sets with `set_instance_shader_parameter()` on each screen in
-  the `monitor_screen` group when power comes on; no global uniform, no
+  Atmosphere sets with `set_instance_shader_parameter()` on every mesh
+  under the Level that uses `monitor_screen.tres` (found once at ready, so
+  the props' `Screen` surfaces need no group); no global uniform, no
   project.godot edit). The props thread's monitor models name their screen surface
   `Screen`; their import maps it to this material. Until those land, two
-  flat screen quads sit on the existing Guard Post desk and Labs bench. One
+  monitors sit on the existing Guard Post desk (the Labs bench model already
+  has its own `Screen`). One
   hanging fixture in the Main Corridor swinging on a looped tween with its
   own unshadowed light (bake mode 0, not the fixture default 2, because it
   moves and a baked bounce would stay behind); two loose cables swaying

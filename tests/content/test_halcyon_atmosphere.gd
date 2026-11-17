@@ -8,6 +8,8 @@ const BLOCKOUT: String = "res://levels/halcyon_labs/blockout.tscn"
 const ATMOSPHERE: String = "res://levels/halcyon_labs/atmosphere.tscn"
 const BUILDER: String = "res://tools/blockout_builder.gd"
 const DEAD_LIGHT: String = "res://levels/kit/ceiling_light_dead.tscn"
+const MAP: String = "res://levels/halcyon_labs/map.tscn"
+const SCREEN_SHADER: String = "res://systems/effects/monitor_screen.gdshader"
 const MAX_LIGHTS_PER_ROOM: int = 3
 ## Provisional budgets from the plan's Performance section.
 const MAX_PARTICLES: int = 1500
@@ -116,3 +118,12 @@ func test_atmosphere_is_decoration_under_an_atmosphere_root() -> void:
 	assert_eq(scene.find_children("*", "CollisionObject3D", true, false).size(), 0, "decoration only")
 	assert_true(scene is Atmosphere, "root swaps effects with the power")
 	scene.free()
+
+
+func test_monitor_screens_use_the_powered_instance_uniform() -> void:
+	var shader: Shader = load(SCREEN_SHADER) as Shader
+	assert_string_contains(shader.code, "instance uniform float powered")
+	var level: Level = (load(MAP) as PackedScene).instantiate() as Level
+	add_child_autofree(level)
+	var atmosphere: Atmosphere = level.get_node("Atmosphere") as Atmosphere
+	assert_gt(atmosphere.screens().size(), 0, "the map has monitor screens")
