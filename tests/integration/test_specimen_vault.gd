@@ -46,7 +46,7 @@ func test_needs_power() -> void:
 
 func test_player_sees_the_vault_prompt() -> void:
 	level.turn_power_on()
-	player.global_position = Vector3(55.0, 0.0, 44.1)
+	player.global_position = Vector3(50.0, 0.0, 44.1)
 	player.rotation = Vector3(0.0, PI, 0.0)
 	await wait_physics_frames(3)
 	assert_eq(player.focus, vault as Interactable, "Vault under the crosshair")

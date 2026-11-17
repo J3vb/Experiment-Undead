@@ -82,15 +82,21 @@ func _pick_marker(min_distance: float) -> Node3D:
 	if points.is_empty():
 		Log.warn(&"waves", &"spawn_points_missing", {"spawn_group": spawn_group})
 		return null
+	var players: int = maxi(get_tree().get_nodes_in_group(&"players").size(), 1)
+	var usable: Array[Node3D] = []
 	var far_enough: Array[Node3D] = []
 	for node: Node in points:
 		var marker: Node3D = node as Node3D
-		if marker and _distance_to_nearest_player(marker.global_position) >= min_distance:
+		var point: ZombieSpawnPoint = node as ZombieSpawnPoint
+		if marker == null or (point and point.min_players > players):
+			continue
+		usable.append(marker)
+		if _distance_to_nearest_player(marker.global_position) >= min_distance:
 			far_enough.append(marker)
-	var pool: Array = points
-	if not far_enough.is_empty():
-		pool = far_enough
-	return pool[session.rng.randi_range(0, pool.size() - 1)] as Node3D
+	var pool: Array[Node3D] = far_enough if not far_enough.is_empty() else usable
+	if pool.is_empty():
+		return null
+	return pool[session.rng.randi_range(0, pool.size() - 1)]
 
 
 ## Moves a lost zombie to a spawn point no player can see, at least
@@ -120,10 +126,12 @@ func _pick_hidden_spot(min_distance: float) -> Dictionary:
 	var markers: Array[Node] = get_tree().get_nodes_in_group(spawn_group)
 	if markers.is_empty():
 		return {}
+	var players: int = maxi(get_tree().get_nodes_in_group(&"players").size(), 1)
 	var first: int = session.rng.randi_range(0, markers.size() - 1)
 	for i: int in markers.size():
 		var marker: Node3D = markers[(first + i) % markers.size()] as Node3D
-		if marker == null:
+		var spawn_point: ZombieSpawnPoint = marker as ZombieSpawnPoint
+		if marker == null or (spawn_point and spawn_point.min_players > players):
 			continue
 		var point: Vector3 = _place(marker)
 		if _distance_to_nearest_player(point) >= min_distance and not _seen(point):

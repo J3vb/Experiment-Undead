@@ -18,6 +18,9 @@ const AREAS: Array[StringName] = [
 	&"coolant_tunnel",
 ]
 const MIN_SPAWN_DISTANCE: float = 12.0
+## A point on the vent ledge above the Mess Hall, and one in the Containment Wing.
+const VENT_LEDGE: Vector3 = Vector3(60, 1.4, 45.5)
+const CONTAINMENT: Vector3 = Vector3(70, -3, 20)
 ## Props keep this far (m) from openings, interactables and spawn points.
 const PROP_CLEARANCE: float = 1.5
 const MAX_SHADOWED_PER_ROOM: int = 2
@@ -89,7 +92,11 @@ func test_spawn_points_follow_the_rules() -> void:
 	var level: Level = (load(MAP) as PackedScene).instantiate() as Level
 	add_child_autofree(level)
 	var points: Array[ZombieSpawnPoint] = _spawn_points(level)
-	assert_between(points.size(), 21, 28, "21 to 28 spawn points")
+	var coop: Array[ZombieSpawnPoint] = points.filter(func(p: ZombieSpawnPoint) -> bool: return p.min_players > 1)
+	assert_between(points.size() - coop.size(), 21, 28, "21 to 28 spawn points for any squad")
+	assert_eq(coop.size(), 4, "co-op points: 2 truck gaps, Mess Hall vent, Containment Wing vent")
+	for point: ZombieSpawnPoint in coop:
+		assert_eq(point.min_players, 3, "%s opens at 3 players" % point.name)
 	var start: Vector3 = level.get_player_spawn().origin
 	for area: StringName in AREAS:
 		var count: int = points.filter(func(p: ZombieSpawnPoint) -> bool: return p.area == area).size()
@@ -106,11 +113,11 @@ func test_only_start_area_spawn_points_are_active() -> void:
 	add_child_autofree(level)
 	assert_eq(level.open_areas, [&"loading_dock"] as Array[StringName])
 	var active: Array[Node] = get_tree().get_nodes_in_group(&"enemy_spawn")
-	assert_eq(active.size(), 4, "the four Loading Dock windows")
+	assert_eq(active.size(), 6, "the four Loading Dock windows and the two co-op truck gaps")
 	for node: Node in active:
 		assert_eq((node as ZombieSpawnPoint).area, &"loading_dock")
 	level.open_area(&"guard_post")
-	assert_eq(get_tree().get_nodes_in_group(&"enemy_spawn").size(), 6, "Guard Post windows join")
+	assert_eq(get_tree().get_nodes_in_group(&"enemy_spawn").size(), 8, "Guard Post windows join")
 
 
 func test_every_spawn_point_reaches_the_start_with_doors_open() -> void:
@@ -179,7 +186,7 @@ func test_things_that_move_or_vanish_are_not_baked() -> void:
 	var blocks: Array[Node] = level.get_node("NavigationRegion3D/Doors").find_children("Blocker", "StaticBody3D")
 	blocks.append_array(level.find_children("Board", "StaticBody3D"))
 	blocks.append(level.get_node("NavigationRegion3D/Machines/SpecimenVault/Body"))
-	assert_eq(blocks.size(), 9 + 5 + 1, "9 doors, 5 wall-buys, the vault")
+	assert_eq(blocks.size(), 11 + 5 + 1, "9 doors, 2 vent grates, 5 wall-buys, the vault")
 	for node: Node in blocks:
 		assert_false((node as Block).baked, "%s is not baked" % level.get_path_to(node))
 	var planks: Array[Node] = level.get_node("Barriers").find_children("Plank*", "MeshInstance3D", true, false)
@@ -187,6 +194,11 @@ func test_things_that_move_or_vanish_are_not_baked() -> void:
 	for node: Node in planks:
 		var gi: int = (node as GeometryInstance3D).gi_mode
 		assert_ne(gi, GeometryInstance3D.GI_MODE_STATIC, "%s is not baked" % level.get_path_to(node))
+	assert_false((level.get_node("VentStep/Ramp") as Block).baked, "the vent step comes and goes")
+	var wreckage: Node = level.get_node("TruckWreckage")
+	assert_eq(wreckage.find_children("*", "CollisionObject3D", true, false).size(), 0, "wreckage is decoration only")
+	for node: Node in wreckage.find_children("*", "MeshInstance3D", true, false):
+		assert_ne((node as GeometryInstance3D).gi_mode, GeometryInstance3D.GI_MODE_STATIC, "wreckage vanishes in co-op")
 
 
 func test_ceiling_lights_stay_real_time() -> void:
@@ -283,3 +295,40 @@ func _length(path: PackedVector3Array) -> float:
 	for i: int in range(1, path.size()):
 		total += path[i - 1].distance_to(path[i])
 	return total
+
+
+func _load_map_keeping(kept_doors: Array[String]) -> Level:
+	var level: Level = (load(MAP) as PackedScene).instantiate() as Level
+	for door: Node in level.get_node("NavigationRegion3D/Doors").get_children():
+		if not kept_doors.has(String(door.name)):
+			door.free()
+	add_child_autofree(level)
+	await wait_until(func() -> bool: return level.is_navigation_ready, 15.0, "navmesh baked")
+	return level
+
+
+func test_vent_duct_never_skips_the_containment_door() -> void:
+	var level: Level = await _load_map_keeping(["ContainmentDoor", "VentGrateContainment"])
+	assert_gt(_path_end_gap(level, VENT_LEDGE, CONTAINMENT), 1.0, "Mess Hall open, Containment shut: no way in")
+
+
+func test_vent_duct_walks_down_into_containment_once_both_are_open() -> void:
+	var level: Level = await _load_map_keeping([])
+	assert_lt(_path_end_gap(level, VENT_LEDGE, CONTAINMENT), 1.0, "ledge to Containment Wing down the duct")
+	var map: RID = level.get_world_3d().navigation_map
+	var up: PackedVector3Array = NavigationServer3D.map_get_path(map, Vector3(55, 0, 44), VENT_LEDGE, true)
+	assert_gt(_length(up), 40.0, "no walking up the 1.4 m drop: only the long way round through the duct")
+
+
+func test_vent_ledge_is_out_of_jump_reach_but_the_step_reaches_it() -> void:
+	var player: Player = (load("res://systems/player/player.tscn") as PackedScene).instantiate() as Player
+	var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity") * player.gravity_multiplier
+	var jump: float = player.jump_velocity * player.jump_velocity / (2.0 * gravity)
+	player.free()
+	assert_lt(jump, VENT_LEDGE.y - 0.2, "solo players cannot jump back up")
+	var level: Node = (load(MAP) as PackedScene).instantiate()
+	add_child_autofree(level)
+	var ramp: Block = level.get_node("VentStep/Ramp") as Block
+	var top_end: Vector3 = ramp.global_transform * Vector3(ramp.size.x * 0.5, ramp.size.y * 0.5, 0)
+	assert_gte(top_end.y, VENT_LEDGE.y, "the step reaches the ledge")
+	assert_lt(rad_to_deg(ramp.global_basis.x.angle_to(Vector3.RIGHT)), 45.0, "the step is walkable")

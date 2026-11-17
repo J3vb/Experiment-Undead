@@ -1,4 +1,5 @@
 ## One-by-one loading shares Weapon's reload state and timer; firing keeps loaded rounds.
+## cancel() also stops a normal reload (sprinting cancels reloads, ammo in the magazine stays).
 class_name RoundReload
 extends RefCounted
 
@@ -12,7 +13,7 @@ static func can_fire(weapon: Weapon) -> bool:
 
 
 static func cancel(weapon: Weapon) -> void:
-	if not weapon.data.reload_per_round or weapon.state != Weapon.State.RELOADING:
+	if weapon.state != Weapon.State.RELOADING:
 		return
 	weapon.state = Weapon.State.IDLE
 	weapon._reload_timer = 0.0

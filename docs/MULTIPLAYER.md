@@ -26,7 +26,8 @@ already reads `InputFrame`s, so the server could replay them.
 - **Players.** `PlayerSpawner` (a `MultiplayerSpawner`) makes one `Player` per
   peer, named after the peer id, with that peer as its authority. The player's
   `net_id` is the peer id. A `MultiplayerSynchronizer` in `player.tscn` sends
-  position, body yaw and head pitch from the owner to everyone.
+  position, body yaw, head pitch and crouch from the owner to everyone
+  (teammate animations read them, F-41).
 - **Scene paths match on every peer.** The match is always `/root/GameSession`
   (clients change scene to it; the dedicated server adds it next to itself).
 - **Joining.** The client opens its connection inside `GameSession._ready()`,
