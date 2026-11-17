@@ -15,6 +15,8 @@ func before_each() -> void:
 
 func test_owner_teleport_outside_physics_waits_for_the_next_tick() -> void:
 	var target: Transform3D = Transform3D(Basis(), Vector3(12.0, 0.0, -4.0))
+	# Start outside a physics tick: the test before may have ended inside one.
+	await wait_process_frames(1)
 	player.teleport(target)
 	assert_ne(player.global_position, target.origin, "no move outside the physics tick")
 	await wait_physics_frames(1)
