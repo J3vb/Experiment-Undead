@@ -93,7 +93,10 @@ func test_kestrel_has_moving_parts_and_a_red_dot() -> void:
 	var gun: Node3D = _load(KESTREL)
 	if gun == null:
 		return
-	for part: String in ["Magazine", "Bolt", "Muzzle", "Barrel", "FoldingStock", "SightGlass", "ReticleMount", "Grip", "Trigger"]:
+	var parts: Array[String] = [
+		"Magazine", "Bolt", "Muzzle", "Barrel", "FoldingStock", "SightGlass", "ReticleMount", "Grip", "Trigger"
+	]
+	for part: String in parts:
 		assert_not_null(gun.find_child(part, true, false), "Kestrel has " + part)
 	assert_true(gun.find_child("Receiver", true, false) is MeshInstance3D)
 	var muzzle: Node3D = gun.find_child("Muzzle", true, false) as Node3D
