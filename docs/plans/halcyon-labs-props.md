@@ -1,10 +1,10 @@
 # Plan: Halcyon Labs detail props
 
-Status: Review
+Status: Approved
 Roadmap: F-15
 Phase: P4 (v0.1 Vertical slice)
 Size: M
-Approved by:
+Approved by: plan review on PR #249 (2026-11-17, Claude reviewer, Codex quota out; 2 blocking + 5 suggestions fixed), size M, no open decisions
 
 ## Goal
 
@@ -22,14 +22,23 @@ In:
 - A prop model script `tools/assets/prop_models.py` (same pattern as
   `character_models.py`: a `MODELS` dict that `build_models.py` merges) that
   exports `.glb` files into `assets/models/props/`. Finished with
-  `finish.finish()` (baked AO, weighted normals) like the guns.
+  `finish.finish()` (baked AO, weighted normals) like the guns. Materials
+  are embedded in the `.glb` (palette colours times baked AO), not mapped to
+  `levels/materials/` (the texture thread owns those). Monitor screens are a
+  separate surface with its own material named `Screen`, so the atmosphere
+  thread can override it with its screen shader. Dressing models export to
+  `assets/models/dressing/` (own budget folder).
 - `layout.json` `props` entries get an optional `"model"` field (a model name).
-  The builder instances that `.glb` at the box and gives it a plain box
-  collider of the box size, so footprint, clearance tests, collision and the
-  navmesh stay the same as today. Props without `"model"` stay boxes.
+  The builder makes a `StaticBody3D` (WORLD layer, mask 0, like `Block`) with
+  a `BoxShape3D` of the box size and the `.glb` as a child, so footprint,
+  clearance tests, collision and the navmesh stay the same as today. Model
+  props never go through `_block()`, so no grey box renders over the model.
+  Props without `"model"` stay `Block`s.
 - A new `dressing` list in `layout.json`: visual-only models with no collision
   (wall signs, cables and pipe runs, floor clutter under 0.3 m, papers, body
-  bags). They never touch the navmesh (the map's NavigationMesh parses static
+  bags). Anything that should block movement (barricades, crates, benches) is
+  a prop, never dressing. Dressing keeps 1.0 m from openings, interactables
+  and spawn points so it never hides a door, machine or window. They never touch the navmesh (the map's NavigationMesh parses static
   colliders only, `geometry_parsed_geometry_type = 1`).
 - Models per area, from `docs/design/maps.md` and `docs/design/lore.md`
   (Oriel's cold-tank lab, the cold failed on Day 0, staff turned first, last
@@ -48,7 +57,8 @@ In:
   - Everywhere: barricades (tables and planks piled at a door the staff
     held), body bags and a covered gurney.
 - Each step's look-check renders go to the person on a decision card before
-  the next area starts (look choices are theirs).
+  the next area starts (look choices are theirs, asked per step, not open
+  decisions on this plan).
 - The prop list for the GPU re-bake prompt
   (`/mnt/project-files/halcyon-labs/f13-rebake-and-fps-prompt.md`).
 
@@ -112,14 +122,18 @@ Not in (non-goals, and where each one goes instead):
 | tools/assets/prop_models.py | new | prop builders and `MODELS` |
 | tools/assets/prop_parts.py | new (step 2) | shared shapes once a third prop needs them (Keep it simple rule 2) |
 | tools/assets/build_models.py | changed | merges `prop_models.MODELS` |
-| tools/assets/check_models.py | changed | `props` folder budget and `JOINTS` entries |
-| assets/models/props/*.glb + .import | new | exported models, `light_baking=2`, vertex shading import script |
+| tools/assets/check_models.py | changed | `props` (2,000 tris, 4 materials) and `dressing` (1,000, 4) budgets, origin limit 0.05 m for both, `JOINTS` entries |
+| .github/workflows/assets.yml | changed | new props and dressing files in the required-output list |
+| assets/models/props/, assets/models/dressing/ (*.glb + .import) | new | exported models, `light_baking=2`, vertex shading import script |
 | tools/blockout_builder.gd | changed | `_build_prop()` instances `"model"`; new `_build_dressing()` |
 | levels/halcyon_labs/layout.json | changed | `model` on props, new props and `dressing` |
 | levels/halcyon_labs/blockout.tscn | regenerated | builder output |
-| levels/halcyon_labs/map.tscn | changed (step 4) | dock Truck, crates, drum use models |
-| tests/content/test_halcyon_labs.gd | changed | model props and dressing checks |
-| tests/content/test_generated_models.gd | changed | props load, have `light_baking` 2 |
+| levels/halcyon_labs/map.tscn | changed (step 4) | dock `Truck`, `CrateA-D`, `Drum` Blocks deleted (they move to layout.json props) |
+| tests/content/test_halcyon_labs_props.gd | new | model props, dressing, caps, bounds, dressing clearance |
+| tests/content/test_prop_models.gd | new | prop and dressing models load, `light_baking` 2, Screen surface |
+
+The existing `test_halcyon_labs.gd` (334 lines) and `test_generated_models.gd`
+(321 lines) are near the 350-line limit, so new checks go in the two new files.
 
 Autoloads, managers or base classes added: none.
 
@@ -133,7 +147,10 @@ Autoloads, managers or base classes added: none.
   No collider.
 - Save format change: none.
 - Content checks: every `model` file exists and loads; every dressing item sits
-  inside its room; dressing models have no collision shapes.
+  inside its room and 1.0 m clear of openings, interactables and spawns;
+  dressing models have no collision shapes; each model fits inside its box
+  plus 5 cm (if extras on top stick out, the box grows to cover them and the
+  clearance and table-loop tests run on the bigger box).
 
 ## Co-op behaviour
 
@@ -173,11 +190,15 @@ No run-time code. Budget, checked by tests and `check_models.py`:
   assets/models/props/, tools/blockout_builder.gd, layout.json,
   blockout.tscn, tests/content/test_halcyon_labs.gd,
   tests/content/test_generated_models.gd.
-- Tests: model props load and get a box collider of exactly the box size;
-  dressing has no collider and lies inside its room; prop and dressing caps;
-  `check_models.py` passes on the new glbs; existing nav, clearance and
-  "blockout up to date" tests still pass. Look-check render of the Labs on a
-  decision card.
+- Tests (new test_halcyon_labs_props.gd, test_prop_models.gd): model props
+  load and get a box collider of exactly the box size and no Block mesh;
+  dressing has no collider, lies inside its room and keeps 1.0 m clear; prop
+  and dressing caps; model bounds inside the box; `check_models.py` passes on
+  the new glbs; existing nav, clearance and "blockout up to date" tests still
+  pass. Time the model build: the Assets job has a 15-minute limit and every
+  finished model runs a CPU AO bake; if the step-1 models push it past 10
+  minutes, lower AO samples for props in this step. Look-check render of the
+  Labs on a decision card.
 - Done when: the Labs render shows the models, all checks green.
 
 ### Step 2: Mess Hall and Guard Post
@@ -202,20 +223,23 @@ No run-time code. Budget, checked by tests and `check_models.py`:
 
 ### Step 4: Loading Dock
 
-- Build: crate, barrel, forklift and truck models; dock `Truck`, `CrateA-D` and
-  `Drum` in map.tscn keep their colliders and swap the mesh for the model; a
-  forklift prop in the yard kept clear of the barriers and truck gaps.
-  `TruckFire` light and `TruckWreckage` stay as they are.
-- Files: prop_models.py, map.tscn, layout.json, check_models.py,
-  assets/models/props/, tests.
-- Tests: dock props keep their collision boxes (sizes unchanged);
-  "every spawn reaches the start" still passes.
+- Build: crate, barrel, forklift and truck models. The dock `Truck`,
+  `CrateA-D` and `Drum` are `Block` nodes in map.tscn (Block always builds its
+  own box), so they are deleted there and added as `loading_dock` props in
+  layout.json with the same boxes and a `model`; a forklift prop in the yard.
+  All kept 1.5 m clear of the barriers and `CoopTruckGap1/2` at (32.5 / 35.5,
+  62). `TruckFire` light and `TruckWreckage` stay as they are.
+- Files: prop_models.py, map.tscn, layout.json, blockout.tscn,
+  check_models.py, assets.yml, assets/models/props/, tests.
+- Tests: the dock props have the same boxes as the old Blocks; clearance test
+  covers them now; "every spawn reaches the start" still passes.
 - Done when: renders on the card, all green.
 
 ### Step 5: Barricades and bodies everywhere, re-bake handoff
 
-- Build: barricade (tables and planks), body bag and covered gurney models as
-  props or dressing in each room, telling where the staff held out; add every
+- Build: barricade (tables and planks) as props (they block, so they keep the
+  1.5 m clearance and sit beside doors, never in them), body bag and covered
+  gurney models as dressing in each room, telling where the staff held out; add every
   new model to the re-bake prompt list; tell the Halcyon Labs build thread.
 - Files: prop_models.py, layout.json, blockout.tscn, tests,
   `/mnt/project-files/halcyon-labs/f13-rebake-and-fps-prompt.md`.
@@ -236,8 +260,8 @@ No run-time code. Budget, checked by tests and `check_models.py`:
 ## Risks
 
 - Lightmap goes stale for changed meshes until the GPU re-bake. Static
-  props render with ambient + real-time lights meanwhile; the re-bake runs
-  once, after step 5 (not per step).
+  props render with ambient + real-time lights meanwhile (no bounce light);
+  each decision card says so. The re-bake runs once, after step 5.
 - Models that stick out of their box would let players clip into them or hide
   a gap the navmesh thinks is open. The builder places models inside the box,
   and `check_models.py`-style bounds are checked in the content test (model
@@ -250,5 +274,4 @@ No run-time code. Budget, checked by tests and `check_models.py`:
 
 ## Open decisions
 
-- none (the look of each area goes to the person as a decision card with
-  renders in its step)
+- none
