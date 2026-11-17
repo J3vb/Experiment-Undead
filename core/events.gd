@@ -3,6 +3,7 @@
 ## Every signal says on which peers it fires ("Peers:"). Server = the host or the
 ## dedicated server. Owner = the peer that controls that player. Every peer =
 ## the server and all clients. Solo play is the server, so everything fires there.
+## Player events carry the player: always check which one, never assume it is the local one.
 extends Node
 
 ## A round began spawning. count = total enemies this round.
@@ -59,7 +60,8 @@ signal weapon_acquired(player: Player, weapon_id: StringName)
 ## the player's own switches only on the owner. Not a sign that the player is local.
 signal weapon_switched(player: Player, weapon: Weapon)
 ## A player's active weapon ammo changed.
-## Peers: owner; the server too when a power-up refills that player's ammo.
+## Peers: every peer whenever an equip runs there (starting loadout, going down, getting up,
+## respawning); the owner for shots and reloads; the server for power-up ammo refills.
 signal ammo_changed(player: Player, in_mag: int, reserve: int)
 ## A player's reload started.
 ## Peers: owner only.
