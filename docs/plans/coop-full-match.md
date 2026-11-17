@@ -171,9 +171,15 @@ is a test tool and never ships. No per-frame allocations.
   `coop_soak_bot.gd`, each with its own `XDG_DATA_HOME` so their
   `user://logs/` stay apart. Server side: every joined player's health is
   `INF` on the server, power on, doors open (same as `soak_run.gd`). Bot
-  side: joins `127.0.0.1`, disables local input, and every 30 ticks claims a
-  killing hit on one chasing zombie through the real `HitClaims` client path,
-  so kills, points and XP flow through the network code. Pass when the server
+  side: joins `127.0.0.1`, disables local input, gives itself one strong gun
+  from Content on its own PC (guns are owner-side, like a wall-buy grant), and
+  fights with legal hits only: it moves its own player to within the gun's
+  range of one chasing zombie (owners move themselves under ADR 0003) and
+  claims one body hit per fire interval through the real `HitClaims` client
+  path, so every claim passes the server's damage, range and rate checks and
+  kills, points and XP flow through the network code. The gun is a soak
+  setting (`--gun <id>`, default the Reforged rifle) so higher rounds stay
+  killable without touching the claim limits. Pass when the server
   log finishes round N, every bot's log reached round N (needs F-40 step 1),
   no SCRIPT ERROR or `level: error` line in any log, and the fail list from
   `soak.gd` plus `net.hit_claim_rejected` above 1% of claims is empty.
@@ -263,11 +269,21 @@ is a test tool and never ships. No per-frame allocations.
   player leaves mid-match also returns to the hub (`Log.info net.match_reset`).
   Each new session starts clean: `Net.reset_ids()`, fresh wallets, no
   leftover zombies or pickups.
+  A planned place change is not a lost connection: `_go_to_place` sets
+  `Net.changing_place` and the target place before the client leaves, and
+  `GameSession._on_connection_lost` and `Net._on_server_disconnected` skip
+  the main-menu replace and the error dialog while it is set. A client
+  whose results screen is up when the order arrives keeps the screen (the
+  session stays until the player leaves it, the connection closes quietly),
+  and "Back to hub" then joins the remembered address into the remembered
+  place.
 - Files: systems/game/game_session.gd, systems/net/dedicated_server.gd,
   systems/ui/results_screen.gd, tests/unit/test_places.gd,
   tests/integration/test_net_match.gd.
 - Tests: in-process: after game over the server and client are back in the
-  hub with run XP banked once; an empty dedicated server mid-match returns to
+  hub with run XP banked once; a client on the results screen when the
+  server changes place still shows the results with no error dialog and
+  "Back to hub" joins the hub; an empty dedicated server mid-match returns to
   the hub with no orphan nodes; a second deploy starts a fresh round 1.
   Integration: client plays, squad goes down, client lands back in the hub.
 - Done when: a dedicated server runs hub, match, hub, match unattended.

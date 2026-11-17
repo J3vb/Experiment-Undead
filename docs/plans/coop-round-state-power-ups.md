@@ -159,8 +159,11 @@ frame is allocated. No measurable cost at 24 zombies and 4 players.
   and emits the same Event locally. A client asks `_request_round_state` on
   `connected_to_server` and when it enters a running match; the reply sets
   the fields and emits `intermission_started` (with time left) or
-  `round_started` (count 0) so the HUD and music catch up. Client-side
-  listeners that must stay server-only are checked: `Economy`,
+  `round_started` (count 0) so the HUD and music catch up.
+  `WaveDirector._physics_process` gets an authority guard
+  (`if not multiplayer.is_server(): return`), so a client never advances a
+  replicated phase, spawns, counts down `to_spawn` or emits round events of
+  its own; it only stores what the server sends. Client-side listeners that must stay server-only are checked: `Economy`,
   `ProgressionService`, `PlayerStateSync`, `ExfilHatch` already guard on
   `multiplayer.is_server()`; `PowerUpDrops` resets a counter (harmless);
   `HealthWatch.check_stall` gets an authority guard so clients do not report
@@ -174,7 +177,10 @@ frame is allocated. No measurable cost at 24 zombies and 4 players.
   `intermission_started` likewise; a late joiner connected mid-round gets the
   round number, and one connected in intermission gets the time left within
   0.2 s; a client running HealthWatch with a relayed round and no kills logs
-  no `waves.round_stalled`. Solo wave tests and the soak stay green.
+  no `waves.round_stalled`; a client that got an intermission snapshot with
+  0.1 s left and one that got a spawning snapshot emit no `round_started`
+  and keep the same `round_number` and `to_spawn` over 1 s with no server
+  message. Solo wave tests and the soak stay green.
 - Done when: a joined client's HUD shows the server's round number and
   flashes; tests above pass.
 
