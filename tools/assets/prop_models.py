@@ -230,3 +230,9 @@ MODELS = {
     "filing_cabinets": ("props/filing_cabinets.glb", build_filing_cabinets),
     "lab_papers": ("dressing/lab_papers.glb", build_lab_papers),
 }
+
+
+# Area modules import the helpers above, so they load last.
+import props_mess_guard  # noqa: E402
+
+MODELS.update(props_mess_guard.MODELS)
