@@ -34,7 +34,9 @@ In:
   lockers, Containment Wing cells, Loading Dock crates (moved from map.tscn).
 - Co-op-only spawn points: 2 at the Loading Dock truck gaps, 1 Mess Hall vent,
   1 Containment Wing vent. Active only with 3 or more players. Solo and duo:
-  the truck gaps are blocked by burning wreckage; at 3+ players it burns out.
+  the truck gaps are blocked by burning wreckage; while 3+ players are in the
+  match it is burned out (it follows the live count, so every peer and every
+  late joiner agrees without extra sync).
 - The vent route: a duct from the Containment Wing up to a ledge in the Mess
   Hall east wall. One-way (a 1.4 m drop the player cannot jump back up). At
   3+ players a step appears so it works as a climb too. It has a grate at each
@@ -118,7 +120,7 @@ Not in (non-goals, and where each one goes instead):
 | levels/halcyon_labs/map.tscn | changed | spawn points, wreckage, vent grate and step, radios, freezer door, rack, puzzle |
 | systems/waves/zombie_spawn_point.gd | changed | `min_players: int = 1` |
 | systems/waves/spawner.gd | changed | `_pick_marker()` skips points above the live player count |
-| systems/level/coop_wreckage.gd | new | truck-gap wreckage: burns out once at 3+ players, server rebakes |
+| systems/level/coop_wreckage.gd | new | truck-gap wreckage: gone while 3+ players are in the match, server rebakes on each change |
 | systems/level/vent_step.gd | new | vent climb step: there (with collision) while 3+ players are in the match |
 | systems/interactables/wall_radio.gd + .tscn | new | radio Interactable: plays its tone, forwards presses |
 | systems/level/radio_puzzle.gd | new | owns tone order and progress, opens the freezer door |
@@ -131,8 +133,7 @@ Autoloads, managers or base classes added: `RadioPuzzle` is a small node that
 owns state no existing node owns (tone order and progress), allowed by Keep it
 simple rule 6. No autoloads, no base classes. The wreckage and the vent step
 each get their own small script (Keep it simple rule 2: no shared helper
-before a third use; their rules also differ: the wreckage burns out for good,
-the step follows the current player count).
+before a third use; they share only a one-line count check).
 
 ## Data
 
@@ -207,15 +208,17 @@ step 5.
   a truck yard space behind the Dock south wall with two gaps. map.tscn: 4
   co-op points (2 truck gaps, 1 Mess Hall vent, 1 Containment Wing vent),
   burning wreckage in the two gaps under a `CoopWreckage` (blocks players and
-  the navmesh until 3 players, then hides for the rest of the match and the
-  server rebakes).
+  the navmesh while fewer than 3 players are in the match; hidden while 3+
+  are; the server rebakes on each change). It reads only the live `players`
+  group size, which every peer sees the same, so there is no state to sync
+  and a late joiner below 3 players sees the same wreckage as everyone.
 - Files: systems/waves/zombie_spawn_point.gd, systems/waves/spawner.gd,
   systems/level/coop_wreckage.gd (new), layout.json, blockout.tscn, map.tscn,
   tests/unit/test_coop_wreckage.gd (new), tests/unit/test_spawner.gd,
   tests/content/test_halcyon_labs.gd.
 - Tests: spawner never picks a 3-player point with 1 or 2 players and can
   pick it with 3; the wreckage hides and drops collision at 3 players and
-  stays gone when one leaves; map has
+  comes back (with collision) when the count drops to 2; map has
   4 co-op points with min_players 3 and 21-28 normal points; with wreckage
   gone each truck-gap point has a navmesh path to the start.
 - Done when: a 1-player soak never spawns at a co-op point (soak stays green).
@@ -297,7 +300,7 @@ step 5.
 - Props break the navmesh or block a window: tests in step 1 check clearance
   and paths before any later step builds on them.
 - Navmesh rebake when the wreckage vanishes causes a hitch: same main-thread
-  bake as a door purchase (already accepted), once per match.
+  bake as a door purchase (already accepted), only when the count crosses 3.
 - The lightmap goes stale after each layout step: map still renders (old bake
   just misses new boxes). The re-bake waits for step 5 so it runs once.
 - Players find the radio order by trial: wrong presses reset with static, and
@@ -306,5 +309,5 @@ step 5.
 ## Open decisions
 
 - none (provisional picks, changeable later: radio pitches random per run;
-  each player takes the Cryo Lance once per run; truck wreckage burns out at
-  3 players and does not come back if a player leaves)
+  each player takes the Cryo Lance once per run; truck wreckage follows the live
+  player count, so it is back if the squad drops below 3)
