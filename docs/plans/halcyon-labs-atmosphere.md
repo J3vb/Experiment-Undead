@@ -1,6 +1,6 @@
 # Plan: Halcyon Labs atmosphere and motion
 
-Status: Approved
+Status: Building
 Roadmap: F-61
 Phase: P4 (v0.1 Vertical slice)
 Size: M
@@ -121,7 +121,7 @@ Not in (non-goals, and where each one goes instead):
 | levels/halcyon_labs/layout.json | changed | New top-level `light_states` section only |
 | tools/blockout_builder.gd | changed | `_build_lights` applies light_states (flicker, dead) |
 | levels/halcyon_labs/blockout.tscn | regenerated | Builder output |
-| systems/level/ceiling_light.gd | changed | `dead` export: tube dark, spot off, bake disabled |
+| levels/kit/ceiling_light_dead.tscn | new | Dead fixture: housing and dark tube, no light |
 | levels/halcyon_labs/atmosphere.tscn | new | All particles, fog, beacons, motion, sound spots, story moments |
 | levels/halcyon_labs/map.tscn | changed | One instance line for atmosphere.tscn |
 | systems/level/atmosphere.gd | new | Shows `after_power` / `before_power` groups by Level power |
@@ -140,7 +140,6 @@ node owns (which effects run before and after power), so rule 6 allows it.
 - `layout.json` gains `"light_states": {"<room id>": {"flicker": [i...],
   "dead": [i...]}}` where `i` is the light index the builder already gives
   (`Light<i>`). Missing room = all normal. Read only by the builder.
-- `CeilingLight.dead: bool = false` (export, set by the builder).
 - Save format change: none.
 - Content checks: tests/content/test_halcyon_atmosphere.gd (below).
 
@@ -176,14 +175,13 @@ Hall), checked in the step 5 fps check:
 
 ### Step 1: Dead and flickering lights, alarm beacons
 
-- Build: `light_states` in layout.json and `_build_lights` applies it. The
-  bake runs in the editor where CeilingLight's `_ready` never runs (not
-  `@tool`), so the builder itself writes the dead state into blockout.tscn:
-  `dead = true`, `Fixture.light_bake_mode = 0`, `Fixture.light_energy = 0`
-  and a dark tube material override. `ceiling_light.gd` returns early from
-  `_ready` when `dead`, so no emergency glow and no power-on wave ever brings
-  the spot back. Flickering lights get `flickers = true` from the builder
-  (FlickerLight already exists). Flicker on the Guard Post (offices accent). Two red rotating alarm beacons
+- Build: `light_states` in layout.json and `_build_lights` applies it. A
+  dead light is a separate kit scene `levels/kit/ceiling_light_dead.tscn`
+  (housing and a dark tube, no light, no script), so the editor bake sees it
+  dark without any `_ready` code. (Changed while building: overriding the
+  instanced Fixture per light saved repeated blocks into blockout.tscn that
+  trip the `no-triple-copy` rule.) Flickering lights get `flickers = true`
+  from the builder (FlickerLight already exists). Flicker on the Guard Post (offices accent). Two red rotating alarm beacons
   in the Containment Wing (unshadowed SpotLight3D, bake 0, AnimationPlayer
   loop, emissive housing) inside a first, small atmosphere.tscn with its
   instance line in map.tscn. Tell the Halcyon Labs build thread that the
@@ -191,16 +189,15 @@ Hall), checked in the step 5 fps check:
   stale between this PR and that re-bake (dead tubes keep their old bounce
   for a while); no test checks bake freshness.
 - Files: layout.json, tools/blockout_builder.gd, blockout.tscn,
-  systems/level/ceiling_light.gd, levels/halcyon_labs/atmosphere.tscn, map.tscn.
-- Tests: test_halcyon_labs.gd: lights listed in light_states are dead or
-  flicker in the built map; dead fixtures have energy 0 and bake Disabled
-  in the saved blockout.tscn (not only after _ready); a dead light stays at
-  energy 0 after the Level turns power on; shadow budget still holds.
-  `test_ceiling_lights_stay_real_time` changes to: every Fixture that is not
-  dead is BAKE_DYNAMIC, every dead one is BAKE_DISABLED. New test_halcyon_atmosphere.gd: every light in
+  levels/kit/ceiling_light_dead.tscn, levels/halcyon_labs/atmosphere.tscn, map.tscn.
+- Tests: new test_halcyon_atmosphere.gd: lights listed in light_states
+  flicker, or are dead fixtures with no Light3D, in the saved blockout.tscn;
+  every room keeps working lights; shadow budget (test_halcyon_labs.gd) still
+  holds. Every light in
   atmosphere.tscn is unshadowed and bake mode 0, at most 3 per area box.
-- Done when: the blockout is regenerated, tests pass, and a look-check render
-  of the Guard Post and Containment Wing is posted.
+- Done when: the blockout is regenerated and tests pass. The cloud only
+  renders with OpenGL compatibility (no lightmap, no volumetric fog), so the
+  real look check of this step happens on the person's GPU with the re-bake.
 
 ### Step 2: Particles, fog and sparks
 
