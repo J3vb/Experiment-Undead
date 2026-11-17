@@ -24,7 +24,12 @@ const FLAT_MODELS_TODAY: Array[String] = [
 	"res://assets/models/dressing/mess_spill.glb",
 	"res://assets/models/dressing/pipe_run_3.glb",
 	"res://assets/models/dressing/pipe_run_6.glb",
+	"res://assets/models/props/crate_large.glb",
+	"res://assets/models/props/crate_long.glb",
+	"res://assets/models/props/crate_stack.glb",
 	"res://assets/models/props/filing_cabinets.glb",
+	"res://assets/models/props/forklift.glb",
+	"res://assets/models/props/fuel_drum.glb",
 	"res://assets/models/props/generator.glb",
 	"res://assets/models/props/guard_desk.glb",
 	"res://assets/models/props/holding_cell.glb",
@@ -34,6 +39,7 @@ const FLAT_MODELS_TODAY: Array[String] = [
 	"res://assets/models/props/mess_table.glb",
 	"res://assets/models/props/serving_counter.glb",
 	"res://assets/models/props/specimen_tank.glb",
+	"res://assets/models/props/supply_truck.glb",
 ]
 
 

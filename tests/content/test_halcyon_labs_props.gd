@@ -11,8 +11,6 @@ const MAX_DRESSING: int = 80
 const DRESSING_CLEARANCE: float = 1.0
 ## A model may poke this far (m) out of its box (bevels, rounding).
 const BOX_SLACK: float = 0.05
-## Rooms whose props are all Blender models now (plan steps 1-3).
-const MODELLED_ROOMS: Array[String] = ["labs", "mess_hall", "guard_post", "generator_hall", "containment_wing"]
 
 var _layout: Dictionary
 var _built: Node3D
@@ -46,10 +44,9 @@ func test_prop_and_dressing_counts_stay_under_the_caps() -> void:
 	assert_lte((_layout.get("dressing", []) as Array).size(), MAX_DRESSING, "dressing cap")
 
 
-func test_modelled_rooms_have_no_grey_box_props() -> void:
+func test_no_prop_is_a_grey_box() -> void:
 	for prop: Dictionary in _layout["props"]:
-		if MODELLED_ROOMS.has(prop["room"]):
-			assert_true(prop.has("model"), "%s in %s uses a model" % [prop["id"], prop["room"]])
+		assert_true(prop.has("model"), "%s in %s uses a model" % [prop["id"], prop["room"]])
 
 
 func test_model_props_collide_as_their_box_without_a_grey_block() -> void:
