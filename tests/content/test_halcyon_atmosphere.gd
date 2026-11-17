@@ -9,6 +9,10 @@ const ATMOSPHERE: String = "res://levels/halcyon_labs/atmosphere.tscn"
 const BUILDER: String = "res://tools/blockout_builder.gd"
 const DEAD_LIGHT: String = "res://levels/kit/ceiling_light_dead.tscn"
 const MAX_LIGHTS_PER_ROOM: int = 3
+## Provisional budgets from the plan's Performance section.
+const MAX_PARTICLES: int = 1500
+const MAX_PARTICLES_PER_ROOM: int = 400
+const PARTICLE_RANGE: float = 30.0
 
 
 func _states() -> Dictionary:
@@ -82,4 +86,33 @@ func test_alarm_beacons_spin_on_their_own() -> void:
 		var player: AnimationPlayer = node as AnimationPlayer
 		assert_ne(player.autoplay, &"", "%s autoplays" % player.get_parent().name)
 		assert_eq(player.get_animation(player.autoplay).loop_mode, Animation.LOOP_LINEAR, "and loops")
+	scene.free()
+
+
+func test_particles_stay_inside_the_budget() -> void:
+	var scene: Node3D = (load(ATMOSPHERE) as PackedScene).instantiate() as Node3D
+	add_child_autofree(scene)
+	var emitters: Array[Node] = scene.find_children("*", "GPUParticles3D", true, false)
+	assert_gt(emitters.size(), 0, "atmosphere has particles")
+	var total: int = 0
+	for node: Node in emitters:
+		var particles: GPUParticles3D = node as GPUParticles3D
+		total += particles.amount
+		assert_between(particles.visibility_range_end, 1.0, PARTICLE_RANGE, "%s has a view range" % particles.name)
+	assert_lte(total, MAX_PARTICLES, "map-wide particles")
+	for room: Dictionary in (load(BUILDER) as GDScript).load_layout("halcyon_labs")["rooms"]:
+		var r: Array = room["rect"]
+		var rect: Rect2 = Rect2(r[0], r[1], r[2] - r[0], r[3] - r[1])
+		var count: int = 0
+		for node: Node in emitters:
+			var at: Vector3 = (node as Node3D).global_position
+			if rect.has_point(Vector2(at.x, at.z)):
+				count += (node as GPUParticles3D).amount
+		assert_lte(count, MAX_PARTICLES_PER_ROOM, "%s particles" % room["id"])
+
+
+func test_atmosphere_is_decoration_under_an_atmosphere_root() -> void:
+	var scene: Node = (load(ATMOSPHERE) as PackedScene).instantiate()
+	assert_eq(scene.find_children("*", "CollisionObject3D", true, false).size(), 0, "decoration only")
+	assert_true(scene is Atmosphere, "root swaps effects with the power")
 	scene.free()

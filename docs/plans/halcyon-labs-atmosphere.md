@@ -217,9 +217,10 @@ Hall), checked in the step 5 fps check:
   test_atmosphere.gd (after_power hidden before power, shown after, a scene
   added after power starts shown: late joiner); test_halcyon_atmosphere.gd
   (particle totals under budget, every particle node has a visibility range).
-- Done when: tests pass and look-check renders of Corridor, Generator Hall
-  and Containment Wing go to the person on a decision card (amount of fog,
-  dust and steam).
+- Done when: tests pass. Fog volumes and lit steam do not render in the
+  cloud's OpenGL compatibility mode, so the look card (amount of fog, dust
+  and steam) uses renders from the person's GPU, taken with the step 5 fps
+  check prompt. (Changed while building.)
 
 ### Step 3: Screens and things that move
 

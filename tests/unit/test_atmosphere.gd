@@ -1,0 +1,52 @@
+## Atmosphere: after_power nodes stay hidden until the Level's power comes on,
+## before_power nodes hide then, and a scene added after power (a late joiner)
+## starts in the powered state.
+extends GutTest
+
+
+func _level(power_on: bool) -> Level:
+	var level: Level = Level.new()
+	level.power_on = power_on
+	return level
+
+
+func _atmosphere() -> Atmosphere:
+	var atmosphere: Atmosphere = Atmosphere.new()
+	var after: Node3D = Node3D.new()
+	after.name = "Steam"
+	after.add_to_group(Atmosphere.AFTER_POWER)
+	atmosphere.add_child(after)
+	var before: Node3D = Node3D.new()
+	before.name = "Static"
+	before.add_to_group(Atmosphere.BEFORE_POWER)
+	atmosphere.add_child(before)
+	return atmosphere
+
+
+func test_power_swaps_the_groups() -> void:
+	var level: Level = _level(false)
+	var atmosphere: Atmosphere = _atmosphere()
+	level.add_child(atmosphere)
+	add_child_autofree(level)
+	assert_false((atmosphere.get_node("Steam") as Node3D).visible, "steam waits for power")
+	assert_true((atmosphere.get_node("Static") as Node3D).visible)
+	level.turn_power_on()
+	assert_true(atmosphere.powered)
+	assert_true((atmosphere.get_node("Steam") as Node3D).visible, "steam starts with power")
+	assert_false((atmosphere.get_node("Static") as Node3D).visible)
+
+
+func test_late_joiner_starts_powered() -> void:
+	var level: Level = _level(true)
+	var atmosphere: Atmosphere = _atmosphere()
+	level.add_child(atmosphere)
+	add_child_autofree(level)
+	assert_true(atmosphere.powered)
+	assert_true((atmosphere.get_node("Steam") as Node3D).visible)
+	assert_false((atmosphere.get_node("Static") as Node3D).visible)
+
+
+func test_outside_a_level_stays_unpowered() -> void:
+	var atmosphere: Atmosphere = _atmosphere()
+	add_child_autofree(atmosphere)
+	assert_false(atmosphere.powered)
