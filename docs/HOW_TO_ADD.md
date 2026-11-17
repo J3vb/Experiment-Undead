@@ -23,6 +23,7 @@ live state belongs in objects such as `WeaponInstance`.
     [model](../.agents/skills/blender-model/SKILL.md) and [import](../.agents/skills/godot-asset-import/SKILL.md) skills.
 6. Create `systems/weapons/viewmodels/<name>_viewmodel.tscn` and assign
     `viewmodel_scene`; preserve `Muzzle`, `FlashLight`, `FlashMesh` and animated `Magazine`/`Bolt` parts.
+    Set `world_model` to the bare gun `.glb` (teammates hold it in third person; a Reforged copy uses the same one).
     Fit its first-person hands in `tools/assets/player_grip_profiles.py`, reusing the
     existing curl helpers. Rebuild `player_arms` and commit its GLB and generated `player_arm_grips.json`.
     Add `content/grips/<id>.tres` (`GripData`, `systems/player/grip_data.gd`, follow

@@ -41,6 +41,19 @@ func test_weapons_are_valid() -> void:
 			vm.free()
 
 
+func test_weapons_have_a_world_model_for_teammates() -> void:
+	for path: String in _files("weapons"):
+		var w: WeaponData = load(path) as WeaponData
+		assert_not_null(w.world_model, path + " has a world_model")
+		if w.world_model == null:
+			continue
+		var gun: Node = w.world_model.instantiate()
+		assert_not_null(gun.find_child("Muzzle", true, false), path + " world_model has Muzzle")
+		gun.free()
+		if w.upgraded:
+			assert_eq(w.upgraded.world_model, w.world_model, path + " Reforged copy keeps the same gun model")
+
+
 func test_reforged_guns_follow_tier_one() -> void:
 	for path: String in _files("weapons"):
 		var w: WeaponData = load(path) as WeaponData
@@ -102,6 +115,10 @@ func test_power_ups_are_valid() -> void:
 		assert_not_null(power_up, path + " is PowerUpData")
 		if power_up:
 			assert_eq(String(power_up.id), path.get_file().get_basename(), path + " id matches file name")
+			assert_true(PowerUpData.Effect.values().has(power_up.effect), path + " has a known effect")
+			assert_false(power_up.display_name.is_empty(), path + " has a name for the HUD flash")
+	var ammo: PowerUpData = load("res://content/power_ups/ammo_pack.tres") as PowerUpData
+	assert_eq(ammo.effect, PowerUpData.Effect.AMMO_PACK, "the Scavenger pack adds a magazine, not a full refill")
 
 
 func test_enemy_loot_fields_are_valid() -> void:
