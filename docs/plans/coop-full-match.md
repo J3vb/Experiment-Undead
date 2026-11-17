@@ -1,10 +1,10 @@
 # Plan: A full co-op match, start to finish
 
-Status: Review
+Status: Approved
 Roadmap: F-47 / issue #213
 Phase: P7
 Size: L
-Approved by:
+Approved by: Codex plan review on PR #214 (2026-11-17); hub flow asked for and late-join decision answered by the person (2026-11-17)
 
 ## Goal
 

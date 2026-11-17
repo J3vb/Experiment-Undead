@@ -1,10 +1,10 @@
 # Plan: Round state and power-ups in co-op
 
-Status: Review
+Status: Approved
 Roadmap: F-40 / issue #126
 Phase: P7
 Size: M
-Approved by:
+Approved by: Codex plan review on PR #214 (2026-11-17), size M, no open decisions
 
 ## Goal
 
