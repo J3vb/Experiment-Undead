@@ -1,10 +1,10 @@
 # Plan: Full settings screen (graphics first)
 
-Status: Review
+Status: Approved
 Roadmap: F-48
 Phase: P4
 Size: L
-Approved by:
+Approved by: Codex plan review on PR #240 (2026-11-17, three findings fixed, clean re-review on 2c7814c); no open decisions
 
 ## Goal
 
