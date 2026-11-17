@@ -74,6 +74,10 @@ func test_ambient_bus_ducks_under_music() -> void:
 	assert_true(AudioServer.is_bus_effect_enabled(bus, 0))
 
 
+func test_ambient_bus_follows_the_effects_volume_slider() -> void:
+	assert_eq(AudioServer.get_bus_send(AudioServer.get_bus_index(&"Ambient")), &"SFX")
+
+
 func test_halcyon_map_has_ambience() -> void:
 	var state: SceneState = MAP.get_state()
 	var found: bool = false

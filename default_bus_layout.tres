@@ -50,6 +50,6 @@ bus/7/solo = false
 bus/7/mute = false
 bus/7/bypass_fx = false
 bus/7/volume_db = 0.0
-bus/7/send = &"Master"
+bus/7/send = &"SFX"
 bus/7/effect/0/effect = SubResource("duck_under_music")
 bus/7/effect/0/enabled = true
