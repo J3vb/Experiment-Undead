@@ -227,5 +227,12 @@ func _on_reload_started(duration: float, weapon: Weapon) -> void:
 		Events.reload_started.emit(_player, duration)
 
 
-func _on_hit_landed(is_kill: bool, is_headshot: bool) -> void:
-	Events.hit_confirmed.emit(_player, is_kill, is_headshot)
+## A client's claim has not been through HitZone.receive_hit, so its number gets the zone multiplier here.
+func _on_hit_landed(is_kill: bool, info: DamageInfo, zone: HitZone) -> void:
+	Events.hit_confirmed.emit(_player, is_kill, info.is_headshot())
+	var shown: DamageInfo = info
+	if not multiplayer.is_server():
+		shown = DamageInfo.create(info.amount * zone.damage_multiplier, info.attacker, info.damage_type)
+		shown.hit_zone = zone.zone
+		shown.position = info.position
+	Events.damage_dealt.emit(_player, zone.health.get_parent() as Node3D if zone.health else null, shown)

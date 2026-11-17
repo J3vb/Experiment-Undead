@@ -146,7 +146,8 @@ func test_overlapping_head_and_body_count_as_one_zombie() -> void:
 	var info: DamageInfo = get_signal_parameters(_zombies[0].health, "damaged")[0] as DamageInfo
 	assert_eq(info.weapon_id, _weapon.data.id)
 	assert_true(info.is_headshot())
-	assert_eq(get_signal_parameters(_weapon, "hit_landed", 0), [false, true])
+	var first: Array = get_signal_parameters(_weapon, "hit_landed", 0)
+	assert_eq([first[0], (first[1] as DamageInfo).is_headshot()], [false, true])
 
 
 func test_falloff_uses_distance_from_the_original_shooter() -> void:

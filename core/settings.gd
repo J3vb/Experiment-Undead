@@ -14,6 +14,7 @@ const DEFAULTS: Dictionary = {
 		&"toggle_sprint": false,
 		&"toggle_crouch": true,
 		&"reduce_motion": false,
+		&"damage_numbers": "off",
 	},
 	&"comfort":
 	{&"head_bob": 0.6, &"weapon_bob": 1.0, &"sprint_fov": true, &"damage_effects": 1.0, &"centre_dot": false},

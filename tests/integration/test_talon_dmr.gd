@@ -77,7 +77,9 @@ func test_one_ads_headshot_kills_a_fresh_round_one_walker_but_body_does_not() ->
 	player.camera.look_at(zombie.head_zone.global_position)
 	weapon.fire()
 	assert_true(zombie.health.is_dead, "one headshot kills a fresh Walker")
-	assert_signal_emitted_with_parameters(weapon, "hit_landed", [true, true])
+	var landed: Array = get_signal_parameters(weapon, "hit_landed")
+	assert_true(landed[0], "the last hit killed")
+	assert_true((landed[1] as DamageInfo).is_headshot(), "it was a headshot")
 	assert_eq(weapon.instance.ammo_in_mag, 13, "one round per shot")
 
 
