@@ -226,7 +226,8 @@ budget.
   the comfort section.
 - Files: systems/player/player_camera.gd, systems/player/player.tscn,
   systems/weapons/weapon.gd (one line), systems/weapons/gravity_well.gd
-  (one line), core/settings.gd.
+  (one line), systems/weapons/melee.gd (one line, once the knife from PR #239
+  is merged), core/settings.gd.
 - Tests: tests/unit/test_camera_feel.gd: trauma decays at 1.6/s and caps at
   1.0; fire trauma caps at 0.35; shake 0 leaves the camera rotation at zero;
   the trace basis is the same with shake at 0 and 1 (the controls doc test);
