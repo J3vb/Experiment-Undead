@@ -40,6 +40,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-40 | Round state and power-ups in co-op (rest of #126 after F-02) | #126 | F-02 | [done](plans/coop-round-state-power-ups.md) | M | Done |
 | F-47 | A full co-op match: co-op soak, pause, squad cards, hub and deploy flow | #213 | F-40 | [plan](plans/coop-full-match.md) | L | Building |
 | F-48 | Full settings screen: Graphics page with presets, then Accessibility and Comfort | - | F-05 | [ready](plans/full-settings.md) | L | Building |
+| F-49 | HUD feedback and loading: loading screen, damage numbers, level-up burst, drop feed | - | - | [ready](plans/hud-feedback-loading.md) | M | Ready |
 
 ## Next: v0.2 Progression and loot
 
@@ -64,7 +65,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 
 | Id | Feature | Issue | Needs | Plan | Size | Status |
 |---|---|---|---|---|---|---|
-| F-41 | Third-person walk, run and downed animations | #128 | F-11 | [needed](plans/teammate-animations.md) | L | Building |
+| F-41 | Third-person walk, run and downed animations | #128 | F-11 | [needed](plans/teammate-animations.md) | L | Done |
 | F-42 | Gear in first person | #129 | F-11 | needed | M | Todo |
 | F-43 | 4-player play-test to round 20 | #127 | F-47, F-41 | issue | S | Todo |
 | F-44 | Finish the server package | #130 | F-43 | needed | L | Todo |

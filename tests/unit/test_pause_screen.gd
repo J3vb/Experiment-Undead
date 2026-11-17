@@ -145,3 +145,27 @@ func test_restart_from_results_leaves_an_empty_stack_and_pause_works_again() -> 
 	assert_false(fresh.is_over)
 	_press(&"pause")
 	assert_eq(UI.top(), &"pause")
+
+
+func test_coop_pause_keeps_the_match_running_and_says_so() -> void:
+	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
+	assert_eq(peer.create_server(24716, 2), OK)
+	var previous: MultiplayerPeer = multiplayer.multiplayer_peer
+	multiplayer.multiplayer_peer = peer
+	var pause: PauseScreen = PAUSE.instantiate() as PauseScreen
+	add_child(pause)
+	assert_false(get_tree().paused, "teammates keep playing")
+	assert_true(pause.banner.visible)
+	pause.free()
+	assert_false(get_tree().paused)
+	peer.close()
+	multiplayer.multiplayer_peer = previous
+
+
+func test_solo_pause_freezes_the_game_and_hides_the_banner() -> void:
+	var pause: PauseScreen = PAUSE.instantiate() as PauseScreen
+	add_child(pause)
+	assert_true(get_tree().paused)
+	assert_false(pause.banner.visible)
+	pause.free()
+	assert_false(get_tree().paused, "closing pause unfreezes")

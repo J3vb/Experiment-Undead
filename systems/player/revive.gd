@@ -30,7 +30,7 @@ func second_wind() -> void:
 	if not coop:
 		_player.is_downed = true
 		_player.is_crouching = true
-		create_tween().tween_property(_player.camera_rig, "rotation:z", deg_to_rad(25.0), 0.4)
+		_player.camera_rig.tilt(25.0, 0.4)
 	await get_tree().create_timer(_player.second_wind_time, false, true).timeout
 	if not _player.is_downed or _player.is_dead:
 		return
@@ -42,7 +42,7 @@ func second_wind() -> void:
 	_player.is_crouching = false
 	_player.input_enabled = true
 	_player.health.reset(_player.health.max_health)
-	create_tween().tween_property(_player.camera_rig, "rotation:z", 0.0, 0.4)
+	_player.camera_rig.tilt(0.0, 0.4)
 	Events.player_revived.emit(_player)
 
 

@@ -210,19 +210,12 @@ func get_players() -> Array[Player]:
 ## Esc opens pause only with no screen open; an open screen handles Esc itself.
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"pause") and not is_over and has_local_player and UI.top() == &"":
-		get_tree().paused = true
 		var pause: PauseScreen = UI.push(&"pause") as PauseScreen
-		pause.tree_exiting.connect(_on_pause_closed)
 		pause.main_menu_requested.connect(return_to_menu)
 		pause.quit_requested.connect(quit_game)
 	elif event.is_action_pressed(&"restart") and is_over:
 		get_viewport().set_input_as_handled()
 		restart()
-
-
-func _on_pause_closed() -> void:
-	if is_inside_tree():
-		get_tree().paused = false
 
 
 func return_to_menu() -> void:
@@ -335,6 +328,7 @@ func _receive_match_end(stats: Dictionary) -> void:
 	_match_stats = stats.duplicate()
 	_match_stats.merge(loot.results(), true)
 	if is_instance_valid(_profile_player):
+		_match_stats["points"] = _profile_player.wallet.points
 		_match_stats["xp"] = progression.get_xp(_profile_player)
 		_match_stats["start_total_xp"] = _start_total_xp
 		_match_stats["total_xp"] = progression.get_total_xp(_profile_player)

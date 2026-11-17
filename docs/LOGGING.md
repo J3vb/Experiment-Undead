@@ -69,6 +69,7 @@ The server also prints every warning and error to stdout as
 | `engine.engine_error` / `engine_script` / `engine_shader` | error | `push_error` or a script/shader error. `where`, `function`, `stack` |
 | `engine.engine_warning` | warn | `push_warning` or an engine warning |
 | `player.body_clips_missing` | warn | The player model has no third-person clips, so teammates show a still body; rebuild `player.glb` |
+| `player.world_model_missing` | warn | A teammate holds a gun whose `WeaponData` has no `world_model`, so its hands are empty; set the field in the gun's `.tres` |
 | `perf.long_frames` | warn | Frames over 50 ms in the last second (`count`, `worst_ms`). Hitch at load is normal; in a round it is not |
 | `perf.low_fps` | warn | Under 50 fps for 3 s in a row (windowed builds only), with a health snapshot |
 | `perf.health` | info | Every 30 s: fps, process/physics ms, memory, objects, nodes, orphan nodes, enemies, draw calls |

@@ -208,9 +208,11 @@ func test_dead_player_respawns_on_next_round_with_start_pistol() -> void:
 	await wait_until(func() -> bool: return _server(client_id).position.x == 30.0, 3.0, "old pose reached server")
 	Events.round_started.emit(2, 8)
 	await wait_until(func() -> bool: return _client(client_id).is_alive(), 3.0, "next round respawn")
+	await wait_until(
+		func() -> bool: return _client(client_id).position.is_equal_approx(spawn_point), 1.0, "moved on a physics tick"
+	)
 	assert_true(_client(client_id).visible)
 	assert_ne(_client(client_id).collision_layer, 0)
-	assert_true(_client(client_id).position.is_equal_approx(spawn_point))
 	assert_eq(_client(client_id).weapons.weapons.size(), 1)
 	assert_eq(_client(client_id).weapons.current.data.id, &"pistol_service")
 
