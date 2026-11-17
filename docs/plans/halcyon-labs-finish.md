@@ -1,10 +1,10 @@
 # Plan: Finish Halcyon Labs
 
-Status: Review
+Status: Approved
 Roadmap: F-12
 Phase: P4 (v0.1 Vertical slice), co-op points for P7
 Size: M
-Approved by:
+Approved by: Codex plan review on PR #212 (2026-11-17, five findings fixed), size M, no open decisions
 
 ## Goal
 
@@ -140,8 +140,9 @@ before a third use; they share only a one-line count check).
 ## Data
 
 - `layout.json` `props`: list of `{"id", "room", "box": [x, y, z, sx, sy, sz],
-  "material", "glow": bool (optional), "baked": bool (optional, default true)}`.
-  Positions are map coordinates like rooms. Read only by the builder.
+  "material"}`; box = [x, bottom above the room floor, z, size x, y, z] in map
+  coordinates. Glow comes from the material (new `specimen_tank.tres`: dim
+  bio-green emission). Read only by the builder.
 - `ZombieSpawnPoint.min_players: int = 1` (export). Co-op points use 3.
 - `CoopWreckage` and `VentStep`: no exports; both use the co-op threshold
   of 3 players from the maps doc as a constant.
@@ -185,15 +186,15 @@ step 5.
 ### Step 1: Room props as data
 
 - Build: `props` in `layout.json`; `blockout_builder.gd` builds them as
-  `Block`s (glow = emissive bio_leak material, baked unless `"baked": false`)
-  under a `Props` node per room. Mess Hall: two long table rows with a 2 m
+  `Block`s under a `Props` node per room (tank cores use the new dim
+  `specimen_tank.tres` material). Mess Hall: two long table rows with a 2 m
   lane around them. Labs: benches and 4 specimen tanks with green glow.
   Generator Hall: 2 generators. Guard Post: desk and lockers. Containment
-  Wing: 3 cells along the east wall. Loading Dock: the crates and drum move
-  from map.tscn into props (truck and fire stay in map.tscn). Keep every
+  Wing: 3 specimen cages. Loading Dock crates, drum and truck stay in
+  map.tscn (moving them would drop their baked light until the re-bake). Keep every
   doorway, wall-buy, machine and barrier clear by 1.5 m.
 - Files: tools/blockout_builder.gd, levels/halcyon_labs/layout.json,
-  blockout.tscn (regenerated), map.tscn (old crates removed),
+  blockout.tscn (regenerated), levels/materials/specimen_tank.tres (new),
   tests/content/test_halcyon_labs.gd.
 - Tests: every prop lies inside its room; no prop within 1.5 m of an
   opening, interactable or spawn point; a navmesh path exists all the way
@@ -305,13 +306,17 @@ step 5.
 - Zombies stranded by a closing route: avoided by design; no toggle in this
   plan closes a route (wreckage is decoration, the vent step only adds a way
   up, the duct always drains both ways once both grates are open).
-- The lightmap goes stale after each layout step: map still renders (old bake
-  just misses new boxes). The re-bake waits for step 5 so it runs once.
+- The lightmap goes stale after each layout step: LightmapGI errors when a
+  baked node disappears (any new opening renames wall runs), so each layout
+  step runs `tools/prune_lightmap_users.gd` (added with the ramp fix) to drop
+  those entries. New boxes stay unbaked until the single re-bake in step 5.
 - Players find the radio order by trial: wrong presses reset with static, and
   only 6 orders exist; fine for a secret that is "never needed to win".
 
 ## Open decisions
 
-- none (provisional picks, changeable later: radio pitches random per run;
-  each player takes the Cryo Lance once per run; truck wreckage follows the live
-  player count, so it is back if the squad drops below 3)
+- none
+
+Provisional picks (changeable later, recorded in docs/DECISIONS.md when
+built): radio pitches random per run; each player takes the Cryo Lance once
+per run; truck wreckage follows the live player count.
