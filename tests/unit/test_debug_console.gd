@@ -58,15 +58,17 @@ func test_history_preserves_draft_and_bounds() -> void:
 
 
 func test_toggle_uses_physical_key_and_restores_mouse() -> void:
-	var original: Input.MouseMode = Input.mouse_mode
+	var root: ScreenData = UI._root
+	UI._root = Content.get_item(&"screens", &"match") as ScreenData
 	var event: InputEventKey = _key(KEY_QUOTELEFT)
 	event.keycode = KEY_A
 	console._unhandled_input(event)
 	assert_true(console.panel.visible)
-	assert_eq(Input.mouse_mode, Input.MOUSE_MODE_VISIBLE)
+	assert_true(UI.mouse_should_be_free(), "the open console frees the mouse")
 	console._on_input_gui(event)
 	assert_false(console.panel.visible)
-	assert_eq(Input.mouse_mode, original)
+	assert_false(UI.mouse_should_be_free(), "closing the console gives the mouse back")
+	UI._root = root
 
 
 func test_game_commands_in_headless_session() -> void:
@@ -213,7 +215,7 @@ func test_open_console_consumes_pause_input() -> void:
 	assert_false(get_tree().paused, "first Escape must not reach the pause handler")
 	get_viewport().push_input(_key(KEY_ESCAPE), true)
 	assert_false(get_tree().paused, "Escape must not pause or recapture through the console")
-	assert_eq(Input.mouse_mode, Input.MOUSE_MODE_VISIBLE)
+	assert_true(UI.mouse_should_be_free())
 	debug._set_open(false)
 
 

@@ -106,3 +106,19 @@ func test_visible_error_restores_focus_after_scene_replacement() -> void:
 	dialog.action_button.release_focus()
 	dialog._on_scene_changed()
 	assert_false(dialog.action_button.has_focus(), "a hidden dialog never takes focus")
+
+
+func test_visible_dialog_holds_the_mouse_until_hidden() -> void:
+	var root: ScreenData = UI._root
+	UI._root = Content.get_item(&"screens", &"match") as ScreenData
+	assert_false(UI.mouse_should_be_free())
+	dialog.show_error(&"lost_connection")
+	assert_true(UI.mouse_should_be_free(), "an error over the match frees the mouse")
+	dialog.hide()
+	assert_false(UI.mouse_should_be_free())
+	dialog.show_connecting("1.2.3.4:7777")
+	assert_true(UI.mouse_should_be_free(), "the connecting overlay frees the mouse")
+	dialog._on_join_succeeded()
+	await wait_process_frames(2)
+	assert_false(UI.mouse_should_be_free(), "a successful join gives the mouse back to the match")
+	UI._root = root

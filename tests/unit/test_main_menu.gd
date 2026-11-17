@@ -32,8 +32,9 @@ func after_each() -> void:
 
 func test_play_has_default_focus_and_existing_match_target() -> void:
 	assert_true(menu.play_button.has_focus())
-	assert_true(ResourceLoader.exists(MainMenu.PLAY_SCENE))
-	assert_eq(MainMenu.PLAY_SCENE, "res://systems/game/game_session.tscn")
+	var match_screen: ScreenData = Content.get_item(&"screens", &"match") as ScreenData
+	assert_true(ResourceLoader.exists(match_screen.scene))
+	assert_eq(match_screen.scene, "res://systems/game/game_session.tscn")
 	assert_eq(menu.play_button.get_theme_font("font"), menu.get_theme_font("font"))
 	assert_eq(menu.get_node("Backdrop").process_mode, Node.PROCESS_MODE_DISABLED)
 
