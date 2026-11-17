@@ -138,12 +138,11 @@ func _refresh() -> void:
 	_select(mini(_selected, maxi(items.size() - 1, 0)))
 
 
-## The first key bound to an action, for button labels; follows rebinding.
+## The first key bound to an action, as printed on the player's keyboard; follows rebinding.
 static func key_name(action: StringName) -> String:
-	for event: InputEvent in InputMap.action_get_events(action):
-		var key: InputEventKey = event as InputEventKey
-		if key:
-			return key.as_text_physical_keycode()
+	for event: InputEvent in Settings.get_binding(action):
+		if event is InputEventKey:
+			return Settings.event_label(event)
 	return "?"
 
 
