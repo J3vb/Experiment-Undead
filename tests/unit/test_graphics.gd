@@ -9,6 +9,7 @@ func before_each() -> void:
 	_viewport = SubViewport.new()
 	add_child_autofree(_viewport)
 	_values = Graphics.DEFAULTS.duplicate()
+	Graphics._launch_window = true
 
 
 func test_high_preset_is_the_default_look() -> void:
@@ -98,3 +99,12 @@ func test_default_window_choices_keep_the_launch_window() -> void:
 	_values[&"window_size"] = Graphics.DEFAULTS[&"window_size"]
 	_values[&"display_mode"] = 1
 	assert_false(Graphics.uses_launch_window(_values))
+
+
+func test_after_a_pick_the_default_window_applies_again() -> void:
+	Graphics._launch_window = true
+	assert_true(Graphics.uses_launch_window(_values))
+	_values[&"display_mode"] = 2
+	assert_false(Graphics.uses_launch_window(_values))
+	_values[&"display_mode"] = Graphics.DEFAULTS[&"display_mode"]
+	assert_false(Graphics.uses_launch_window(_values), "a revert to Windowed must leave fullscreen")

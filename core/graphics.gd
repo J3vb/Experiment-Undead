@@ -58,6 +58,9 @@ const CHOICE_COUNTS: Dictionary = {
 	&"anisotropic": 5,
 }
 
+## True until the player picks a display mode or size, so a later pick of the defaults still applies.
+static var _launch_window: bool = true
+
 
 ## Clamps a loaded or picked value into its valid range.
 static func normalize(key: StringName, value: Variant) -> Variant:
@@ -163,5 +166,10 @@ static func window_size_for(index: int, usable: Vector2i) -> Vector2i:
 
 
 ## Default choices leave the window as launched, so --resolution, --fullscreen and the editor's run size still work.
+## Once a player has picked another mode or size, going back to the defaults (or a revert) applies them too.
 static func uses_launch_window(values: Dictionary) -> bool:
-	return values[&"display_mode"] == DEFAULTS[&"display_mode"] and values[&"window_size"] == DEFAULTS[&"window_size"]
+	var defaults: bool = (
+		values[&"display_mode"] == DEFAULTS[&"display_mode"] and values[&"window_size"] == DEFAULTS[&"window_size"]
+	)
+	_launch_window = _launch_window and defaults
+	return _launch_window

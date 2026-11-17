@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"graphics"
+section = &"graphics"
+key = &"fog"
+label = "Volumetric fog"
+hint = "Haze and light shafts in the air. Lower levels look blockier."
+kind = &"choice"
+options = PackedStringArray("Off", "Low", "Medium", "High")
+order = 140
