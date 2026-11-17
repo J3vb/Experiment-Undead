@@ -37,6 +37,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-14 | Zombie sounds and gore: steps, deaths, voice caps, blood, head pops | - | - | [done](plans/zombie-sounds-gore.md) | M | Done (play-test: #191) |
 | F-15 | Halcyon Labs detail props: Blender models for every room prop, story clutter, barricades | - | - | [ready](plans/halcyon-labs-props.md) | M | Done |
 | F-63 | Halcyon Labs door models: bulkheads, debris, shutters, vent grates, freezer door | - | - | [done](plans/halcyon-doors.md) | S | Done |
+| F-64 | Halcyon Labs wall-buy racks (gun on the wall) and Specimen Vault model | - | - | [ready](plans/halcyon-wall-buys-vault.md) | S | Ready |
 | F-61 | Halcyon Labs atmosphere: dead and flickering lights, particles, fog, beacons, screens, sound spots, story decals | - | - | [ready](plans/halcyon-labs-atmosphere.md) | M | Done |
 | F-16 | Game feel: camera punch, hitstop, downed and death screen | - | - | [ready](plans/game-feel-slice.md) | M | Done |
 | F-09 | v0.1 performance check | #108 | F-01..F-07, F-12, F-13, F-16 | issue | S | Todo |
