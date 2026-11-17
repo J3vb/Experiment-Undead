@@ -25,8 +25,6 @@ extends CharacterBody3D
 @export_group("Interact")
 @export var interact_range: float = 2.5
 
-@export_group("Look")
-
 ## Set by GameSession when spawned. Gives access to the session RNG and tick.
 var session: GameSession
 var net_id: int = 0

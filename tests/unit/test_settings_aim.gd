@@ -71,3 +71,12 @@ func test_aiming_sensitivity_setting_reaches_local_input() -> void:
 	Settings.set_value(&"aim", &"ads_sensitivity_multiplier", 1.5)
 	assert_eq(local.ads_multiplier, 1.5, "the slider changes look speed while aiming")
 	Settings.reset_to_defaults()
+
+
+func test_aim_sensitivities_clamp_to_the_slider_range() -> void:
+	_settings.set_value(&"aim", &"ads_sensitivity_multiplier", 0.0)
+	assert_eq(_settings.get_value(&"aim", &"ads_sensitivity_multiplier"), 0.2, "aiming can always turn")
+	_settings.set_value(&"aim", &"ads_sensitivity_multiplier", 3.0)
+	assert_eq(_settings.get_value(&"aim", &"ads_sensitivity_multiplier"), 2.0)
+	_settings.set_value(&"aim", &"mouse_sensitivity", 0.0)
+	assert_eq(_settings.get_value(&"aim", &"mouse_sensitivity"), 0.0002)

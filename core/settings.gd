@@ -91,6 +91,10 @@ func _normalize(section: StringName, key: StringName, value: Variant) -> Variant
 		normalized = clampf(float(value), 0.0, 1.0)
 	elif key == &"fov":
 		normalized = clampi(int(value), 70, 120)
+	elif key == &"ads_sensitivity_multiplier":
+		normalized = clampf(float(value), 0.2, 2.0)
+	elif key == &"mouse_sensitivity":
+		normalized = clampf(float(value), 0.0002, 0.02)
 	elif section == &"graphics":
 		normalized = Graphics.normalize(key, value)
 	return normalized
