@@ -18,26 +18,6 @@ func _bounds(node: Node, xform: Transform3D, out: Array[AABB]) -> void:
 		_bounds(child, here, out)
 
 
-func _blocks_sight(node: Node, xform: Transform3D, height: float) -> bool:
-	var here: Transform3D = xform * (node as Node3D).transform if node is Node3D else xform
-	if node is MeshInstance3D:
-		var faces: PackedVector3Array = (node as MeshInstance3D).mesh.get_faces()
-		for index: int in range(0, faces.size(), 3):
-			var hit: Variant = Geometry3D.ray_intersects_triangle(
-				Vector3(0, height, 0.6),
-				Vector3.FORWARD,
-				here * faces[index],
-				here * faces[index + 1],
-				here * faces[index + 2]
-			)
-			if hit != null:
-				return true
-	for child: Node in node.get_children():
-		if _blocks_sight(child, here, height):
-			return true
-	return false
-
-
 func test_belt_box_cover_and_folded_bipod_keep_their_parts_and_scale() -> void:
 	var gun: Node3D = _load_model()
 	for part: String in ["Belt", "FeedCover", "Magazine", "Bolt", "Muzzle", "Barrel", "Bipod", "CarryHandle", "Stock"]:
@@ -60,8 +40,13 @@ func test_belt_box_cover_and_folded_bipod_keep_their_parts_and_scale() -> void:
 
 func test_iron_sight_line_is_open_above_the_front_post() -> void:
 	var gun: Node3D = _load_model()
-	assert_false(_blocks_sight(gun, Transform3D.IDENTITY, 0.115), "cover and carry handle leave the sights open")
-	assert_true(_blocks_sight(gun, Transform3D.IDENTITY, 0.108), "front post lies on the ADS sight line")
+	assert_false(
+		MeshChecks.blocks_ray(gun, Vector3(0, 0.115, 0.6), Vector3.FORWARD),
+		"cover and carry handle leave the sights open"
+	)
+	assert_true(
+		MeshChecks.blocks_ray(gun, Vector3(0, 0.108, 0.6), Vector3.FORWARD), "front post lies on the ADS sight line"
+	)
 	gun.free()
 
 

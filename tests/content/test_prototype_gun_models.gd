@@ -69,27 +69,13 @@ func test_models_use_the_finish_shader_and_export_glow_mask() -> void:
 		gun.free()
 
 
-func _crown_blocks_ray(node: Node, transform: Transform3D, ray_start: Vector3) -> bool:
-	var here: Transform3D = transform * (node as Node3D).transform if node is Node3D else transform
-	if node is MeshInstance3D:
-		var faces: PackedVector3Array = (node as MeshInstance3D).mesh.get_faces()
-		for i: int in range(0, faces.size(), 3):
-			var point: Variant = Geometry3D.ray_intersects_triangle(
-				ray_start, Vector3.BACK, here * faces[i], here * faces[i + 1], here * faces[i + 2]
-			)
-			if point is Vector3 and ray_start.distance_to(point as Vector3) < 0.04:
-				return true
-	for child: Node in node.get_children():
-		if _crown_blocks_ray(child, here, ray_start):
-			return true
-	return false
-
-
 func test_muzzle_crowns_have_open_bores() -> void:
 	for id: StringName in GUNS:
 		var packed: PackedScene = load("res://assets/models/weapons/%s.glb" % id) as PackedScene
 		var gun: Node3D = packed.instantiate() as Node3D
 		var muzzle: Node3D = gun.find_child("Muzzle", true, false) as Node3D
 		var ray_start: Vector3 = muzzle.position + Vector3.FORWARD * 0.01
-		assert_false(_crown_blocks_ray(gun, Transform3D.IDENTITY, ray_start), "%s muzzle bore stays open" % id)
+		assert_false(
+			MeshChecks.blocks_segment(gun, ray_start, ray_start + Vector3.BACK * 0.04), "%s muzzle bore stays open" % id
+		)
 		gun.free()
