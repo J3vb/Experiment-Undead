@@ -78,6 +78,13 @@ Bastion uses an overhand brace at the receiver/barrel-base collar to route the
 support arm clear of its side ammunition box. Resolving the two remaining sleeve
 contacts is required before marking the character pass ready.
 
+**Follow-up 2026-11-17:** both sleeve contacts are fixed in grip data, not in the checker.
+Coachman's sprint shoulder offset moves 70 mm outward (`right_sprint_offset` x 0.07) and
+Bastion's right shoulder sits 30 mm wider and 40 mm lower (`right_shoulder` 0.22, -0.115, -0.274).
+The contact check now clears all 115 sampled poses; the closest right upper sleeve samples are
+13 mm (Coachman sprint) and 12 mm (Bastion sprint). `tests/integration/test_arm_sleeve_contacts.gd`
+fails if a right upper sleeve edge crosses either stock again. The character pass is ready.
+
 Final validation: 692 asset tests; all 41 fresh and committed GLBs pass Khronos
 and model checks; all 41 approved turnarounds match. Imported contact checks cover
 115 sampled poses: 111 clear, with only the four upper-sleeve cases above failing.
