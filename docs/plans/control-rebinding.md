@@ -91,7 +91,7 @@ Not in (non-goals, and where each one goes instead):
 | systems/ui/key_bindings.gd + .tscn | new | the list of binding rows on the Controls tab, listen mode, Swap/Cancel |
 | systems/ui/settings_screen.tscn | changed | Controls tab wrapped in a ScrollContainer, key bindings scene added |
 | systems/ui/settings_screen.gd | changed | only if the scroll wrap moves node paths |
-| systems/ui/pack_overlay.gd | changed | `key_name()` uses `Settings.event_label()` (local letter) |
+| systems/ui/pack_overlay.gd | changed | `key_name()` uses `Settings.event_label()` (local letter, mouse names too); Pack actions also fire from mouse buttons; button labels refresh when bindings change |
 | docs/design/controls.md, docs/DECISIONS.md | changed | note the simplifications above |
 
 Autoloads, managers or base classes added: none.
@@ -147,6 +147,10 @@ change. The rows (about 18) are built once in `_ready` of the bindings scene.
   malformed entries and unknown actions fall back to defaults; controller
   events survive a rebind; default movement keys are physical W A S D. Tests
   restore the global InputMap from ProjectSettings after each run.
+  `test_pack_overlay.gd`: with an open, already-built overlay, rebinding
+  `pack_toggle`, `pack_drop` and `pack_equip` to mouse buttons makes those
+  buttons open, drop and equip, and the visible button labels change to the
+  new names.
 - Done when: bindings set from code survive a restart, CI green.
 
 ### Step 2: Controls tab rebinding rows
