@@ -2,17 +2,14 @@
 extends GutTest
 
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
-const PORT: int = 24681
 
+var _port: int
 var _roots: Array[Node] = []
 var _sessions: Array[GameSession] = []
 
 
 func _make_side(side_name: String) -> Node:
-	var root: Node = Node.new()
-	root.name = side_name
-	add_child(root)
-	get_tree().set_multiplayer(SceneMultiplayer.new(), root.get_path())
+	var root: Node = TwoPeers.make_side(self, side_name)
 	var world: Node3D = Node3D.new()
 	world.name = "World"
 	root.add_child(world)
@@ -40,16 +37,13 @@ func _make_side(side_name: String) -> Node:
 
 
 func before_each() -> void:
+	_port = TwoPeers.next_port()
 	var server: Node = _make_side("Server")
 	var client: Node = _make_side("Client")
 	var observer: Node = _make_side("Observer")
-	var server_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(server_peer.create_server(PORT, 3), OK)
-	server.multiplayer.multiplayer_peer = server_peer
+	assert_eq(TwoPeers.host(server, _port, 3), OK)
 	for root: Node in [client, observer]:
-		var client_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-		assert_eq(client_peer.create_client("127.0.0.1", PORT), OK)
-		root.multiplayer.multiplayer_peer = client_peer
+		assert_eq(TwoPeers.join(root, _port), OK)
 	for index: int in [1, 2, 0]:
 		var root: Node = _roots[index]
 		var spawner: PlayerSpawner = _sessions[index].players
@@ -69,11 +63,7 @@ func before_each() -> void:
 func after_each() -> void:
 	_roots.reverse()
 	for root: Node in _roots:
-		var path: NodePath = root.get_path()
-		root.multiplayer.multiplayer_peer.close()
-		root.multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
-		root.free()
-		get_tree().set_multiplayer(null, path)
+		TwoPeers.close_side(root)
 	for session: GameSession in _sessions:
 		session.free()
 	_roots.clear()

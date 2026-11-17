@@ -6,8 +6,8 @@ const WALKER: EnemyData = preload("res://content/enemies/zombie_walker.tres")
 const WAVES: WaveRules = preload("res://content/waves/default_waves.tres")
 const CRYO: WeaponData = preload("res://content/weapons/cryo_lance.tres")
 const SYNAPSE: WeaponData = preload("res://content/weapons/synapse.tres")
-const PORT: int = 24683
 
+var _port: int
 var _server: HitClaims
 var _client: HitClaims
 var _claimant: Player
@@ -17,10 +17,7 @@ var _progression: ProgressionService
 
 
 func _side(side_name: String) -> HitClaims:
-	var root: Node = Node.new()
-	root.name = side_name
-	add_child(root)
-	get_tree().set_multiplayer(SceneMultiplayer.new(), root.get_path())
+	var root: Node = TwoPeers.make_side(self, side_name)
 	var session: GameSession = GameSession.new()
 	session.rng.seed = 83
 	var world: Node3D = Node3D.new()
@@ -57,6 +54,7 @@ func _prepare(player: Player, session: GameSession) -> void:
 
 
 func before_each() -> void:
+	_port = TwoPeers.next_port()
 	_server = _side("Server")
 	_client = _side("Client")
 	_progression = _server.get_parent().get_node("Progression") as ProgressionService
@@ -72,12 +70,8 @@ func before_each() -> void:
 
 
 func _connect() -> void:
-	var server_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(server_peer.create_server(PORT, 2), OK)
-	_server.multiplayer.multiplayer_peer = server_peer
-	var client_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(client_peer.create_client("127.0.0.1", PORT), OK)
-	_client.multiplayer.multiplayer_peer = client_peer
+	assert_eq(TwoPeers.host(_server, _port, 2), OK)
+	assert_eq(TwoPeers.join(_client, _port), OK)
 	_client.session.players.setup(_client.get_parent().get_node("World") as Node3D, Transform3D.IDENTITY)
 	_server.session.players.setup(_server.get_parent().get_node("World") as Node3D, Transform3D.IDENTITY)
 	await wait_until(
@@ -96,9 +90,6 @@ func _connect() -> void:
 func after_each() -> void:
 	for claims: HitClaims in [_client, _server]:
 		var root: Node = claims.get_parent()
-		var path: NodePath = root.get_path()
-		root.multiplayer.multiplayer_peer.close()
-		root.multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
 		for node: Node in claims.session.spawner.get_children():
 			if node is Zombie:
 				node.free()
@@ -106,8 +97,7 @@ func after_each() -> void:
 			if node is Player:
 				node.free()
 		claims.session.free()
-		root.free()
-		get_tree().set_multiplayer(null, path)
+		TwoPeers.close_side(root)
 
 
 func _pair(point: Vector3) -> Array[Zombie]:

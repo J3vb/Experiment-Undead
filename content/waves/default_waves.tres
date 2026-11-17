@@ -3,20 +3,13 @@
 [ext_resource type="Script" path="res://systems/waves/wave_rules.gd" id="1"]
 [ext_resource type="Script" path="res://systems/waves/enemy_spawn_entry.gd" id="2"]
 [ext_resource type="Resource" path="res://content/enemies/zombie_walker.tres" id="3"]
-[ext_resource type="Resource" path="res://content/enemies/zombie_runner.tres" id="4"]
 [ext_resource type="Resource" path="res://content/enemies/zombie_bloater.tres" id="5"]
+[ext_resource type="Script" path="res://systems/waves/speed_band.gd" id="6"]
 
 [sub_resource type="Resource" id="walker"]
 script = ExtResource("2")
 enemy = ExtResource("3")
 weight = 1.0
-
-[sub_resource type="Resource" id="runner"]
-script = ExtResource("2")
-enemy = ExtResource("4")
-weight = 0.15
-weight_per_round = 0.08
-first_round = 3
 
 [sub_resource type="Resource" id="bloater"]
 script = ExtResource("2")
@@ -25,15 +18,56 @@ weight = 0.05
 weight_per_round = 0.01
 first_round = 8
 
+[sub_resource type="Resource" id="band_1"]
+script = ExtResource("6")
+first_round = 1
+weights = PackedFloat64Array(1, 0, 0, 0)
+
+[sub_resource type="Resource" id="band_4"]
+script = ExtResource("6")
+first_round = 4
+weights = PackedFloat64Array(0.6, 0.4, 0, 0)
+
+[sub_resource type="Resource" id="band_7"]
+script = ExtResource("6")
+first_round = 7
+weights = PackedFloat64Array(0.3, 0.5, 0.2, 0)
+
+[sub_resource type="Resource" id="band_10"]
+script = ExtResource("6")
+first_round = 10
+weights = PackedFloat64Array(0.1, 0.4, 0.5, 0)
+
+[sub_resource type="Resource" id="band_15"]
+script = ExtResource("6")
+first_round = 15
+weights = PackedFloat64Array(0, 0.25, 0.65, 0.1)
+
+[sub_resource type="Resource" id="band_20"]
+script = ExtResource("6")
+first_round = 20
+weights = PackedFloat64Array(0, 0.1, 0.6, 0.3)
+
 [resource]
 script = ExtResource("1")
-enemy_mix = Array[ExtResource("2")]([SubResource("walker"), SubResource("runner"), SubResource("bloater")])
+enemy_mix = Array[ExtResource("2")]([SubResource("walker"), SubResource("bloater")])
 first_round_delay = 4.0
 intermission_time = 10.0
-base_count = 6
-count_linear = 3.0
-count_quadratic = 0.3
+spawn_interval_start = 2.0
+spawn_interval_factor = 0.95
+spawn_interval_min = 0.3
+early_counts = PackedInt32Array(6, 8, 13, 18)
+count_a = 0.09
+count_b = 0.6
+count_c = 15.0
+coop_count_per_player = 0.5
 max_alive = 24
-health_growth_per_round = 0.15
-speed_growth_per_round = 0.04
+max_alive_per_extra_player = 6
+base_health = 120.0
+health_step = 90.0
+linear_until_round = 9
+health_growth = 1.09
+damage_growth_per_round = 0.0
+speed_tiers = PackedFloat64Array(1.2, 2.6, 4.2, 5.6)
+speed_bands = Array[ExtResource("6")]([SubResource("band_1"), SubResource("band_4"), SubResource("band_7"), SubResource("band_10"), SubResource("band_15"), SubResource("band_20")])
 min_spawn_distance = 12.0

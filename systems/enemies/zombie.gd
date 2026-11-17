@@ -68,7 +68,9 @@ func setup(
 	data = p_data
 	net_id = p_net_id
 	_max_health = data.max_health * health_mult
-	_speed = data.move_speed * speed_mult * rng.randf_range(0.9, 1.1)
+	_speed = data.move_speed * speed_mult
+	if not data.uses_speed_mix:
+		_speed *= rng.randf_range(0.9, 1.1)
 	_damage = data.attack_damage * damage_mult
 	_rng = rng
 

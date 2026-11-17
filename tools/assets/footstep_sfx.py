@@ -4,21 +4,10 @@ Run: python tools/assets/footstep_sfx.py assets/audio   (needs numpy)
 """
 
 import argparse
-import wave
 from pathlib import Path
 
 import numpy as np
-
-SAMPLE_RATE = 44100
-
-
-def lowpass(samples: np.ndarray, amount: float) -> np.ndarray:
-    filtered = np.zeros_like(samples)
-    value = 0.0
-    for index, sample in enumerate(samples):
-        value += amount * (sample - value)
-        filtered[index] = value
-    return filtered
+from sfx_common import SAMPLE_RATE, lowpass, save_wav
 
 
 def timeline(duration: float) -> np.ndarray:
@@ -55,23 +44,14 @@ def landing() -> np.ndarray:
     return thud * 1.4 + body + gear
 
 
-def save(path: Path, samples: np.ndarray) -> None:
-    normalized = samples / (np.max(np.abs(samples)) + 1e-9) * 0.9
-    with wave.open(str(path), "wb") as output:
-        output.setnchannels(1)
-        output.setsampwidth(2)
-        output.setframerate(SAMPLE_RATE)
-        output.writeframes((normalized * 32767).astype(np.int16).tobytes())
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path)
     output: Path = parser.parse_args().output
     for index in range(1, 5):
-        save(output / f"footstep_concrete_{index}.wav", concrete_step(100 + index))
-        save(output / f"footstep_metal_{index}.wav", metal_step(200 + index))
-    save(output / "land.wav", landing())
+        save_wav(output / f"footstep_concrete_{index}.wav", concrete_step(100 + index))
+        save_wav(output / f"footstep_metal_{index}.wav", metal_step(200 + index))
+    save_wav(output / "land.wav", landing())
 
 
 if __name__ == "__main__":

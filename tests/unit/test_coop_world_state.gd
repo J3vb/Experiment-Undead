@@ -3,10 +3,6 @@
 extends "res://tests/unit/coop_interaction_fixture.gd"
 
 
-func port() -> int:
-	return 24705
-
-
 func _barrier(session: GameSession) -> Barrier:
 	return target(session, "Barrier") as Barrier
 

@@ -11,6 +11,8 @@ extends Resource
 @export_group("Stats")
 @export var max_health: float = 100.0
 @export var move_speed: float = 1.8
+## Speed comes from the round's speed mix (WaveRules) instead of move_speed.
+@export var uses_speed_mix: bool = false
 @export var acceleration: float = 8.0
 @export var turn_speed: float = 8.0
 @export var xp_reward: int = 10

@@ -32,7 +32,7 @@ func spawn(enemy: EnemyData, round_number: int, rules: WaveRules) -> Zombie:
 		enemy.resource_path,
 		Net.allocate_id(),
 		rules.get_health_multiplier(round_number),
-		rules.get_speed_multiplier(round_number),
+		_speed_multiplier(enemy, round_number, rules),
 		rules.get_damage_multiplier(round_number),
 		barrier_path,
 		to_local(point),
@@ -41,6 +41,13 @@ func spawn(enemy: EnemyData, round_number: int, rules: WaveRules) -> Zombie:
 	zombie.rotation.y = session.rng.randf() * TAU
 	Events.enemy_spawned.emit(zombie)
 	return zombie
+
+
+## Speed-mix enemies roll a design speed tier; others keep their own speed.
+func _speed_multiplier(enemy: EnemyData, round_number: int, rules: WaveRules) -> float:
+	if not enemy.uses_speed_mix or enemy.move_speed <= 0.0:
+		return 1.0
+	return rules.roll_speed(round_number, session.rng) / enemy.move_speed
 
 
 ## Runs on the server and on every client with the same data.
