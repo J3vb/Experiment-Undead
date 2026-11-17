@@ -39,8 +39,9 @@ in your PR.
 ## Images
 
 `images/` holds compressed copies (1280 px JPEG): `style_*` are the
-style-guide renders, `ui_*` the UI mockups, `gear_*` the gear visuals. They
-are references, not game assets: never load them from game code.
+style-guide renders, `ui_*` the UI mockups, `gear_*` the gear visuals and
+`guns_concept.jpg` the weapon concept sheet (look target for F-72). They are
+references, not game assets: never load them from game code.
 
 ## Turnarounds
 
