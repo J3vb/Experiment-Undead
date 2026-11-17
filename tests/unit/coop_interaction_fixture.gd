@@ -10,6 +10,9 @@ const POWER_SWITCH: PackedScene = preload("res://systems/interactables/power_swi
 const WALL_BUY: PackedScene = preload("res://systems/interactables/wall_buy.tscn")
 const REFORGER: PackedScene = preload("res://systems/interactables/reforger.tscn")
 const DISPENSER: PackedScene = preload("res://systems/interactables/med_dispenser.tscn")
+const BARRIER: PackedScene = preload("res://systems/interactables/barrier.tscn")
+const VAULT: PackedScene = preload("res://systems/interactables/specimen_vault.tscn")
+const HATCH: PackedScene = preload("res://systems/interactables/exfil_hatch.tscn")
 const ECONOMY: String = "res://content/economy/default_economy.tres"
 
 var server: GameSession
@@ -130,6 +133,13 @@ func build_level() -> Level:
 	var once: MedDispenser = _add(level, DISPENSER.instantiate(), "LastDispenser", Vector3(1.5, 1, -1.5))
 	once.serum = Content.get_item(&"serums", &"stride") as SerumData
 	once.max_sales = 1
+	_add(level, BARRIER.instantiate(), "Barrier", Vector3(-3, 1, 0))
+	_add(level, HATCH.instantiate(), "Hatch", Vector3(0, 0, -3))
+	for spot: Array in [["SpotNear", Vector3(0, 1, 3)], ["SpotFar", Vector3(20, 1, 20)]]:
+		var marker: Marker3D = _add(level, Marker3D.new(), spot[0], spot[1])
+		marker.add_to_group(&"vault_spot")
+	var vault: SpecimenVault = _add(level, VAULT.instantiate(), "Vault", Vector3(0, 1, 3))
+	vault.pool = [Content.weapon(&"hollis_44"), Content.weapon(&"coachman_2b")]
 	var point: ZombieSpawnPoint = ZombieSpawnPoint.new()
 	point.name = "EastSpawn"
 	point.area = &"east"

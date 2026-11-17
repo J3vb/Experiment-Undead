@@ -55,10 +55,6 @@ func retire() -> void:
 	super()
 
 
-func accepts_requests() -> bool:
-	return true
-
-
 func net_state() -> Dictionary:
 	return {"sales": sales}
 

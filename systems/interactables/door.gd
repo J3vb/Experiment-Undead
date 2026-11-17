@@ -38,10 +38,6 @@ func interact(player: Player, _facts: Dictionary = {}) -> void:
 		open()
 
 
-func accepts_requests() -> bool:
-	return true
-
-
 ## A client told by the server that this door is gone plays the opening too.
 func retire() -> void:
 	if is_open:

@@ -3,7 +3,8 @@
 ## plank per press from inside for points. The Blocker keeps players in; it
 ## sits on the barrier layer, which zombies and the navmesh bake ignore.
 ## Three attack slots line the window; extra zombies wait at queue points
-## further back, and only one zombie vaults through at a time.
+## further back, and only one zombie vaults through at a time. Planks reach
+## clients through net_state(); clients play the tear or repair sound.
 class_name Barrier
 extends Interactable
 
@@ -48,9 +49,8 @@ func interact(player: Player, _facts: Dictionary = {}) -> void:
 	_repair_cooldown = REPAIR_TIME
 	_set_planks(planks + 1)
 	($RepairSound as AudioStreamPlayer3D).play()
-	var session: GameSession = get_tree().get_first_node_in_group(&"game_session") as GameSession
-	if session:
-		session.economy.pay_repair(player)
+	if player.session:
+		player.session.economy.pay_repair(player)
 
 
 func tear_plank() -> void:
@@ -71,10 +71,22 @@ func inside_point() -> Vector3:
 	return global_position + global_basis.z * INSIDE_DEPTH
 
 
+func net_state() -> Dictionary:
+	return {"planks": planks}
+
+
+func apply_net_state(state: Dictionary) -> void:
+	var count: int = state.get("planks", planks)
+	if count != planks:
+		(get_node(^"RepairSound" if count > planks else ^"TearSound") as AudioStreamPlayer3D).play()
+		_set_planks(count)
+
+
 func _set_planks(count: int) -> void:
 	planks = count
 	for i: int in _boards.size():
 		(_boards[i] as Node3D).visible = i < planks
+	state_changed.emit()
 
 
 ## The slot `who` holds, or the nearest free one it now takes; -1 when all are taken.
