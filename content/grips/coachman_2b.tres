@@ -11,5 +11,5 @@ right_forward = Vector3(-0.45, 0.8, 0.39686269666)
 right_dorsal = Vector3(0.287252039, 0.550451875, -0.783893526)
 right_shoulder = Vector3(0.25, -0.225, -0.234)
 right_shoulder_lift = Vector2(0.07, 0.038)
-right_sprint_offset = Vector3(0.07, -0.04, -0.1)
+right_sprint_offset = Vector3(0.01, -0.07, -0.1)
 shot_peak = true

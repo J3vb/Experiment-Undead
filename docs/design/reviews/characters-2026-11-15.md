@@ -79,10 +79,10 @@ support arm clear of its side ammunition box. Resolving the two remaining sleeve
 contacts is required before marking the character pass ready.
 
 **Follow-up 2026-11-17:** both sleeve contacts are fixed in grip data, not in the checker.
-Coachman's sprint shoulder offset moves 70 mm outward (`right_sprint_offset` x 0.07) and
+Coachman's sprint shoulder drops 30 mm lower and 10 mm wider (`right_sprint_offset` 0.01, -0.07, -0.1) and
 Bastion's right shoulder sits 30 mm wider and 40 mm lower (`right_shoulder` 0.22, -0.115, -0.274).
 The contact check now clears all 115 sampled poses; the closest right upper sleeve samples are
-13 mm (Coachman sprint) and 12 mm (Bastion sprint). `tests/integration/test_arm_sleeve_contacts.gd`
+11 mm (Coachman sprint) and 12 mm (Bastion sprint). Both stay inside the anatomy test's shoulder allowances. `tests/integration/test_arm_sleeve_contacts.gd`
 fails if a right upper sleeve edge crosses either stock again. The character pass is ready.
 
 Final validation: 692 asset tests; all 41 fresh and committed GLBs pass Khronos
