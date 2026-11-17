@@ -58,10 +58,11 @@ Not in (non-goals, and where each one goes instead):
 - Co-op:
   - Who decides: server (kills, headshot kills); every peer shows effects locally.
   - How a client triggers it: it does not; clients react to synced Zombie.state,
-    a new synced head_popped bool, and the shot relay RemoteShots already sends.
+    a new synced head_popped bool, and the shot relay RemoteShots already sends
+    (which gains the shooter's hit points and flesh flags in step 3).
   - What other players see, and how it reaches them: death, attack, steps from
     Zombie.state (ZombieSync, already synced); head pop from head_popped (ZombieSync);
-    teammates' impacts from RemoteShots.play_shot points.
+    teammates' impacts from new hit lists in the RemoteShots.shot relay (step 3).
   - Works on a dedicated server with no local player: yes, effects are skipped
     when DisplayServer is headless.
 - Data: sounds as EnemyData fields in content/enemies/*.tres; gore and voice numbers
@@ -72,7 +73,8 @@ Not in (non-goals, and where each one goes instead):
 - Input through InputFrame, gameplay in _physics_process, randomness from the session RNG:
   yes; all of this is cosmetic, so it uses randf() with `# cosmetic`.
 - Tests: tests/unit/test_zombie_voice.gd, test_impact.gd, test_blood_pool.gd,
-  test_head_pop.gd, test_zombie_sync.gd, test_settings.gd, tests/content enemy checks.
+  test_remote_shots.gd, test_head_pop.gd, test_zombie_sync.gd, test_settings.gd,
+  tests/content enemy checks.
 - Logging: Log.warn when a voice is refused because every voice in its cap is closer
   (first time per match only).
 - Performance: everything pooled in static rings (Impact pattern); nothing created per hit.
@@ -108,8 +110,10 @@ Not in (non-goals, and where each one goes instead):
 | systems/effects/impact.gd | changed | Design blood colours/counts, flesh sounds (ring of 4), gore setting |
 | systems/effects/blood_pool.gd | new | Pooled floor decal ring |
 | systems/effects/head_pop.gd | new | Pooled head pop ring (chunks + mist) |
+| systems/weapons/weapon.gd | changed | Records each real hit (point, flesh) for the relay, not only the tracer end |
 | systems/net/zombie_sync.gd | changed | One synced property `head_popped` (agreed with the co-op thread) |
-| systems/net/remote_shot_effects.gd | changed | Spawns impacts at teammates' shot points |
+| systems/net/remote_shots.gd | changed | `shot`/`play_shot` carry hit points + flesh flags, validated by the server |
+| systems/net/remote_shot_effects.gd | changed | Spawns impacts at the relayed hit points |
 | core/settings.gd | changed | `video.gore` default 2 (Full) |
 | systems/ui/settings_screen.* | changed | Gore option row |
 | content/enemies/*.tres | changed | New sound fields filled |
@@ -126,9 +130,15 @@ Autoloads, managers or base classes added: none.
   `info.is_headshot()`, synced by ZombieSync.
 - Settings `video.gore: int` 0 Off, 1 Reduced, 2 Full, default 2.
 - Save format change: none.
-- Network messages: none new; one property added to ZombieSync's synced list.
-  Older clients cannot join anyway once Build.PROTOCOL_VERSION is bumped in
-  step 3 (synced property list changed).
+- Network messages: no new RPCs. Step 3 adds two arguments to
+  `RemoteShots.shot` and `play_shot`: `hits: PackedVector3Array` (each real
+  hit of the shot, every pierced target, never a miss) and
+  `flesh: PackedByteArray` (1 = a HitZone was hit, decided by the shooter at
+  trace time, so lethal hits count even though the zones are disabled after).
+  The server drops a shot whose arrays differ in size, hold a non-finite point,
+  or exceed pellets x 4 entries. Step 4 adds one property to ZombieSync's synced
+  list. Both steps bump Build.PROTOCOL_VERSION (take the next free number when
+  rebasing; the co-op thread also bumps it).
 - Content checks to add in `tests/content/`: every EnemyData has at least one
   death sound and one footstep sound.
 
@@ -136,8 +146,9 @@ Autoloads, managers or base classes added: none.
 
 - Who owns the state: server owns death and headshot kill; each client shows
   sounds and gore locally.
-- What clients send, what the server sends back: clients send nothing new. The
-  server already syncs `state`; step 3 adds `head_popped`.
+- What clients send, what the server sends back: the shooter's shot message
+  gains its hit list (step 3) and the server relays it as it relays tracers
+  today. The server already syncs `state`; step 4 adds `head_popped`.
 - What a client sees that the host sees too: steps, groans, attacks, deaths,
   death pools, head pops, and impacts from every player's shots. Only the owner
   hears its own hit marker (unchanged).
@@ -186,31 +197,57 @@ feel systems; F-09 measures it.
   `impact_flesh` (x4) or `hit_head` crack (x2) from a static ring of 4
   AudioStreamPlayer3D (steal oldest). New `BloodPool` (Decal) ring of 24,
   fades out over the last 5 s of 45 s; one pool under each zombie when it is
-  seen dying (same state watch as step 1). RemoteShotEffects spawns Impact at
-  each teammate shot point, flesh when a point query on the hit-zone layer
-  finds a HitZone. Renders of the look go to the person (taste check below).
+  seen dying (same state watch as step 1, so clients get pools too). Renders
+  of the look go to the person (taste check below).
 - Files: zombie_sfx.py (flesh, crack), systems/effects/{impact,blood_pool}.gd,
-  systems/enemies/zombie.gd, systems/net/remote_shot_effects.gd.
+  systems/enemies/zombie.gd.
 - Tests: test_impact.gd (flesh audio ring never exceeds 4, reuses oldest),
   test_blood_pool.gd (ring of 24, 25th reuses the oldest, hidden after 45 s),
-  test for remote impacts (a point inside a HitZone gives FLESH).
-- Done when: hits bleed for every player and kills leave pools.
+  a client-path test (a zombie copy whose synced state turns DEAD places one pool).
+- Done when: your own hits bleed and every player sees kills leave pools.
 
-### Step 3: Head pop and the gore setting
+### Step 3: Teammates' impacts
+
+- Build: `Weapon._trace` reports every entry of `Pierce.trace` to
+  `RemoteShots.record_hit(point, is_flesh)` (misses report nothing; the tracer
+  end point stays as it is). `RemoteShots.shot` / `play_shot` / `_relay` /
+  `_show` carry `hits` and `flesh`; the server validates them (see Data).
+  `RemoteShotEffects.play` spawns one Impact per hit, FLESH when the flag is 1,
+  normal = the reverse shot direction (good enough for a puff and a mark).
+  Bump Build.PROTOCOL_VERSION. Keeps the teammate-animation thread's
+  `body.fire()` line in `play()`.
+- Files: systems/weapons/weapon.gd, systems/net/remote_shots.gd,
+  systems/net/remote_shot_effects.gd, core/build.gd.
+- Tests: test_remote_shots.gd: a miss relays no impact; a piercing shot
+  through two zombies relays two flesh hits; a lethal hit (zones disabled after
+  death) still relays as flesh; mismatched array sizes and too many entries
+  are dropped by the server.
+- Done when: a client sees blood and dust where teammates' bullets land.
+
+### Step 4: Head pop and the gore setting
 
 - Build: Server sets `head_popped` on a headshot kill; ZombieSync syncs it;
-  bump Build.PROTOCOL_VERSION. On every peer, a zombie seen dying with
-  `head_popped` hides its head and plays a `HeadPop` from a ring of 8 (3 chunk
-  RigidBody3D + mist particles, freeze after 1.5 s, hide after 10 s). Settings
-  `video.gore` with a row in the settings screen; Impact, BloodPool and HeadPop
-  read it (Reduced: half particles, darker, 8 pools / 20 s, no head pop; Off:
-  grey dust, no pools, no head pop).
-- Files: systems/effects/head_pop.gd, systems/enemies/zombie.gd,
+  bump Build.PROTOCOL_VERSION. The head is part of the one skinned `Body`
+  mesh (and its face details are in `AnatomyDetails`), so `ZombieRig.head`
+  (the `HeadCenter` marker) cannot be hidden. Instead `ZombieRig.pop_head()`
+  sets the `head` bone's pose scale to 0.01: every vertex skinned to the head
+  bone, including the face details, collapses into the neck top, which reads
+  as a stump. No model change. On every peer, a zombie seen dying with
+  `head_popped` calls `pop_head()` and plays a `HeadPop` from a ring of 8
+  (3 chunk RigidBody3D + mist particles at the head marker, freeze after
+  1.5 s, hide after 10 s). Settings `video.gore` with a row in the settings
+  screen; Impact, BloodPool and HeadPop read it (Reduced: half particles,
+  darker, 8 pools / 20 s, no head pop; Off: grey dust, no pools, no head pop).
+- Files: systems/effects/head_pop.gd, systems/enemies/{zombie,zombie_rig}.gd,
   systems/net/zombie_sync.gd, core/settings.gd, core/build.gd,
   systems/ui/settings_screen.{gd,tscn}, systems/effects/{impact,blood_pool}.gd.
 - Tests: test_head_pop.gd (ring of 8, chunks frozen after 1.5 s),
-  test_zombie_sync.gd (`head_popped` is in SYNCED and a client copy pops the
-  head), test_settings.gd (gore default 2, clamps 0-2), gore Off spawns no pool.
+  test_zombie_rig.gd (`pop_head()` leaves the head bone's global scale under
+  0.05 for both Shambler and Bloater models), test_zombie_sync.gd
+  (`head_popped` is in SYNCED and a client copy pops the head),
+  test_settings.gd (gore default 2, clamps 0-2), gore Off spawns no pool.
+  Visual check (look-check skill): a headless render before and after
+  `pop_head()` shows no head or face left; the render goes in the PR.
 - Done when: headshot kills pop heads for every player; the setting changes it live.
 
 ## Acceptance
@@ -229,7 +266,10 @@ feel systems; F-09 measures it.
   replace them after v0.1 without code changes (data fields).
 - The step trigger from the rig's procedural phase may drift from the visible
   foot plant. Step 1 tests it first, and the phase is the same value the pose uses.
-- Gore look is a taste call: step 2 renders it and asks the person before step 3.
+- Gore look is a taste call: step 2 renders it and asks the person before step 4.
+- Collapsing the head bone might leave a neck spike if neck vertices carry
+  head weight. Step 4's render check catches it; the fallback is a stump cap
+  mesh on the head attachment, still no model change.
 
 ## Open decisions
 
