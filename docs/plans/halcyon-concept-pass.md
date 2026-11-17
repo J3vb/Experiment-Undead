@@ -1,10 +1,10 @@
 # Plan: Halcyon Labs concept pass (after the breakout)
 
-Status: Review
+Status: Approved
 Roadmap: F-68 / issue #297 (look follow-ups)
 Phase: P4 (v0.1 Vertical slice)
 Size: L
-Approved by:
+Approved by: the person on a decision card (2026-11-17, plan PR #304); Containment light question goes to its own card before step 2
 
 ## Goal
 
@@ -316,11 +316,14 @@ the person on a decision card before the next step starts.
 
 ## Open decisions
 
-- [ ] Containment is very dark (about 12/255). Light it with the green glow of
-  the spilled tanks and pods (recommended), leave it as is, or raise its fill
-  light a little?
-- Provisional picks (taken now, the person can change them on the step cards):
-  kitchen fires are the Mess Hall's one warm accent (rule 4); signs and
-  railings use the existing hazard colour, not the concept's yellow; pods
-  glow at the leak-glow strength (no rule 3 change); the catwalk is not
-  walkable.
+- [x] Approve the plan: approved by the person, start with step 1 (2026-11-17).
+- [x] How Containment stops being too dark: asked on its own card before step 2
+  (recommended: green glow from the broken tanks and pods only). Step 2 builds
+  the answer; step 1 does not depend on it.
+
+## Provisional picks
+
+Taken now; the person can change them on the step cards: kitchen fires are
+the Mess Hall's one warm accent (rule 4); signs and railings use the existing
+hazard colour, not the concept's yellow; pods glow at the leak-glow strength
+(no rule 3 change); the catwalk is not walkable.
