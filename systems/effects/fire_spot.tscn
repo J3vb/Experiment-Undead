@@ -1,0 +1,110 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://systems/effects/flicker_light.gd" id="flicker"]
+
+[sub_resource type="Gradient" id="flame_ramp"]
+offsets = PackedFloat32Array(0, 0.25, 1)
+colors = PackedColorArray(1, 0.85, 0.45, 1, 1, 0.5, 0.12, 1, 0.6, 0.12, 0.03, 0)
+
+[sub_resource type="GradientTexture1D" id="flame_colors"]
+gradient = SubResource("flame_ramp")
+
+[sub_resource type="Curve" id="flame_size"]
+_data = [Vector2(0, 0.6), 0.0, 0.0, 0, 0, Vector2(0.3, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="flame_scale"]
+curve = SubResource("flame_size")
+
+[sub_resource type="ParticleProcessMaterial" id="flame_process"]
+emission_shape = 3
+emission_box_extents = Vector3(0.25, 0.05, 0.2)
+direction = Vector3(0, 1, 0)
+spread = 10.0
+initial_velocity_min = 0.6
+initial_velocity_max = 1.2
+gravity = Vector3(0, 0.5, 0)
+scale_min = 0.7
+scale_max = 1.2
+scale_curve = SubResource("flame_scale")
+color_ramp = SubResource("flame_colors")
+turbulence_enabled = true
+turbulence_noise_strength = 0.3
+
+[sub_resource type="StandardMaterial3D" id="flame_mat"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_color = Color(1, 0.6, 0.2, 1)
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="flame_mesh"]
+material = SubResource("flame_mat")
+size = Vector2(0.22, 0.32)
+
+[sub_resource type="ParticleProcessMaterial" id="ember_process"]
+emission_shape = 3
+emission_box_extents = Vector3(0.3, 0.1, 0.3)
+direction = Vector3(0, 1, 0)
+spread = 25.0
+initial_velocity_min = 0.8
+initial_velocity_max = 1.8
+gravity = Vector3(0, 0.3, 0)
+turbulence_enabled = true
+turbulence_noise_strength = 0.6
+
+[sub_resource type="StandardMaterial3D" id="ember_mat"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+albedo_color = Color(1, 0.55, 0.16, 1)
+billboard_mode = 1
+
+[sub_resource type="QuadMesh" id="ember_mesh"]
+material = SubResource("ember_mat")
+size = Vector2(0.03, 0.03)
+
+[node name="FireSpot" type="Node3D"]
+
+[node name="Flames" type="GPUParticles3D" parent="."]
+cast_shadow = 0
+gi_mode = 0
+amount = 40
+lifetime = 0.7
+preprocess = 1.0
+visibility_range_end = 30.0
+visibility_aabb = AABB(-1, -0.5, -1, 2, 2.5, 2)
+process_material = SubResource("flame_process")
+draw_pass_1 = SubResource("flame_mesh")
+
+[node name="Embers" type="GPUParticles3D" parent="."]
+cast_shadow = 0
+gi_mode = 0
+amount = 12
+lifetime = 2.0
+preprocess = 2.0
+visibility_range_end = 30.0
+visibility_aabb = AABB(-2, -0.5, -2, 4, 5, 4)
+process_material = SubResource("ember_process")
+draw_pass_1 = SubResource("ember_mesh")
+
+[node name="Light" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+light_color = Color(1, 0.55, 0.2, 1)
+light_energy = 1.5
+light_bake_mode = 0
+distance_fade_enabled = true
+distance_fade_begin = 20.0
+distance_fade_length = 5.0
+omni_range = 4.5
+
+[node name="Flicker" type="Node" parent="Light"]
+script = ExtResource("flicker")
+min_energy = 0.7
+max_energy = 1.15
+flicker_speed = 8.0
+dropout_chance = 0.0

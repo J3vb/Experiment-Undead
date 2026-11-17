@@ -3,6 +3,7 @@
 [ext_resource type="Material" path="res://levels/materials/pipe.tres" id="pipe"]
 [ext_resource type="Script" path="res://systems/level/atmosphere.gd" id="atmosphere"]
 [ext_resource type="PackedScene" path="res://systems/effects/spark_spot.tscn" id="spark"]
+[ext_resource type="PackedScene" path="res://systems/effects/fire_spot.tscn" id="fire"]
 [ext_resource type="Material" path="res://levels/materials/fluorescent.tres" id="tube"]
 [ext_resource type="AudioStream" path="res://assets/audio/ambience/steam_hiss.ogg" id="hiss"]
 [ext_resource type="AudioStream" path="res://assets/audio/ambience/machine_hum.ogg" id="hum"]
@@ -28,6 +29,10 @@ emission_enabled = true
 emission = Color(0.765, 0.125, 0.106, 1)
 emission_energy_multiplier = 3.0
 roughness = 0.3
+
+[sub_resource type="BoxMesh" id="red_lamp_mesh"]
+material = SubResource("alarm_glass")
+size = Vector3(0.22, 0.12, 0.08)
 
 [sub_resource type="CylinderMesh" id="dome_mesh"]
 material = SubResource("alarm_glass")
@@ -513,6 +518,49 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 3.35, 27)
 
 [node name="Labs" parent="Sparks" instance=ExtResource("spark")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.5, 3.35, 24.5)
+
+[node name="MessHall" parent="Sparks" instance=ExtResource("spark")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.4, 2.1, 37.5)
+
+[node name="KitchenFires" type="Node3D" parent="."]
+
+[node name="Stove" parent="KitchenFires" instance=ExtResource("fire")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.35, 0.95, 30.78)
+
+[node name="Pan" parent="KitchenFires" instance=ExtResource("fire")]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 49.15, 0.95, 30.78)
+
+[node name="RedLamps" type="Node3D" parent="."]
+
+[node name="MessNorthExit" type="MeshInstance3D" parent="RedLamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.3, 2.2, 30.16)
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("red_lamp_mesh")
+
+[node name="MessSouthExit" type="MeshInstance3D" parent="RedLamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.3, 2.2, 45.84)
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("red_lamp_mesh")
+
+[node name="CorridorMessExit" type="MeshInstance3D" parent="RedLamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.3, 2.2, 29.84)
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("red_lamp_mesh")
+
+[node name="CorridorGuardExit" type="MeshInstance3D" parent="RedLamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.3, 2.2, 29.84)
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("red_lamp_mesh")
+
+[node name="CorridorLabsExit" type="MeshInstance3D" parent="RedLamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.3, 2.2, 26.16)
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("red_lamp_mesh")
 
 [node name="Fog" type="Node3D" parent="."]
 
