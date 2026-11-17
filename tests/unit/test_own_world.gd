@@ -27,6 +27,7 @@ func after_each() -> void:
 
 
 func test_a_world_is_open_to_friends_by_default() -> void:
+	assert_true(Net.world is OwnWorld)
 	Net.world.open(24682)
 	assert_true(Net.is_online(), "the world listens for friends")
 	assert_true(Net.is_authority())
