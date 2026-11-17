@@ -2,7 +2,7 @@
 
 Status: Review
 Roadmap: F-65
-Phase: P8 (steps 1-4 land before Release v0.1.0, F-11)
+Phase: P8 (steps 1-5 land before Release v0.1.0, F-11)
 Size: L
 Approved by:
 
@@ -25,32 +25,40 @@ In:
 - CI guards: saved content ids and the save version can never go backwards,
   and an old released client must get a clear refusal from a new server
   (step 3).
-- Clients get updates through a store app (itch.io, see Open decisions), so
-  the game itself has no updater code (step 4).
+- A launcher built into the game: it checks GitHub Releases, downloads a new
+  version into its own folder next to the old one, and starts it, with patch
+  notes and a stable/test switch (steps 4-5).
 - A small server image that downloads the release you ask for and updates
-  itself between matches, never during one (steps 5-6).
+  itself between matches, never during one (steps 6-7).
 - Two release channels: stable and test.
 
 Not in (non-goals, and where each one goes instead):
 
-- Our own launcher or self-updater: a store app does this better with no code
-  (see "Why no updater of our own" below). Never, unless we sell direct
-  downloads.
-- A Windows installer: the itch app (or Steam) installs the game. Direct zips
-  stay on GitHub Releases. Only if we sell outside a store.
-- Steam: later, when the game goes public. Step 4 notes the job to add.
+- A separate launcher program or project: the game exe is the launcher (see
+  "How the launcher works"). Never, unless the built-in one hits a wall.
+- A store app (itch.io, Steam): not now, the person chose our own launcher.
+  A store can be added later on top; the launcher then simply finds nothing
+  newer.
+- A Windows installer: players unzip the game anywhere they own. If one is
+  ever made, it installs per user (`%LOCALAPPDATA%\Programs`), never to
+  Program Files, which the launcher could not write to.
 - A Windows dedicated server package: Windows hosts use Host and play, which
-  the store app updates with the game. The dedicated server scene only loads
+  the launcher updates with the game. The dedicated server scene only loads
   in the `dedicated_server` export (`run/main_scene.dedicated_server`), so a
   Windows server would need its own export preset. F-44, only if someone asks.
-- Delta patches of our own: itch (and Steam) already send only changed data.
-  The Windows build is about 65 MB zipped today.
+- Delta patches: the launcher downloads the full platform zip (about 65 MB
+  today). When builds grow past about 1 GB, download only the `.pck` when the
+  engine binary did not change. Later, when it hurts.
+- Playing an older version from the launcher: the previous version folder is
+  kept only as an offline fallback. Later, if a crash ever needs it.
 - A server browser, LAN discovery, server-side saves: their own features.
   Any future server save uses `SaveFile` with its own version.
 - Code signing: still blocked for EU individuals (`docs/RELEASING.md`).
-  Store apps do not trigger SmartScreen on their installs.
+  Only the first zip, downloaded in a browser, gets the SmartScreen warning;
+  files the launcher downloads itself do not carry the browser's "downloaded
+  from the internet" mark.
 - The rest of F-44 (server.cfg, download page): stays in F-44, which reuses
-  steps 5-6.
+  steps 6-7.
 
 ## How it fits together
 
@@ -58,16 +66,43 @@ Not in (non-goals, and where each one goes instead):
 |---|---|
 | Version | The git tag is the version (exists). Client and server must run exactly the same version, protocol and content (exists, kept: simplest, and no hidden desyncs). |
 | Channels | **stable** = tags like `v0.2.0`. **test** = tags like `v0.2.0-test.1` (GitHub pre-releases). **dev** = main builds as Actions artifacts (exists). |
-| Client updates | stable: the itch app updates the game in the background (butler push from `release.yml`). test: zips from the GitHub pre-release. |
+| Client updates | The launcher built into the game checks GitHub Releases for its channel, downloads the platform zip into `versions/<version>/`, checks its SHA-256, and starts it. Old files are never overwritten while running. |
 | Server updates | The image is a runner. On start it downloads the newest release on its channel (or the version you pin) from GitHub Releases, checks its SHA-256, and runs it. Every 15 minutes it checks again; a new version makes the server finish the current match, tell players, and restart into the new version. |
 | Saves | Unchanged format rules (ADR 0005). Test, dev and editor builds keep their own characters folder, copied once from stable, so a test build can never upgrade a stable save that stable then refuses. |
 | Rollback | Roll forward: fix or revert, then tag the next patch. Never lower `SaveFile.CURRENT_VERSION` (CI checked). Emergency server pin: `EU_VERSION=0.2.0`. |
 
-**Why no updater of our own.** A running Windows game cannot replace its own
-`.exe` or `.pck` (Godot keeps the pack open), so an updater needs a second
-program, its own download, verify and swap logic, and an unsigned exe that
-downloads files, which antivirus tools dislike. The itch app does all of it,
-plus delta patches, for free, and the game needs zero lines for it.
+**How the launcher works.** The person chose our own updater over a store
+app (2026-11-17) and asked for a launcher. A running Windows program cannot
+overwrite its own `.exe` or `.pck`, so the launcher never replaces running
+files: each version lives in its own folder and the launcher starts the one
+it wants.
+
+```
+Experiment Undead/              the folder the player unzipped
+  ExperimentUndead.exe + .pck   the "root" copy: starts in launcher mode
+  versions/0.1.1/               full game, downloaded by the launcher
+  versions/0.1.2/               newest; the launcher starts this one
+```
+
+- The launcher is the game itself, not a second program: when the exe runs
+  from the root folder (not from `versions/`) in an exported stable or test
+  build, it opens the launcher screen before the main menu. One build, one
+  code base, GUT tests like everything else.
+- It asks GitHub for the newest release on its channel (stable: newest
+  non-pre-release; test: newest of all), shows its notes, downloads the
+  platform zip, checks the SHA-256 against the asset digest, unzips into
+  `versions/<version>/` through a temp folder, then starts that exe with
+  `--from-launcher` and quits.
+- If the root copy is the newest, it just continues to the main menu (no
+  double start after a fresh unzip). With no network, it starts the newest
+  installed version.
+- A newer version started from `versions/` refreshes the root copy with its
+  own exe and pck once the root process has exited (it retries for a few
+  seconds, then tries again next start), so launcher fixes reach every
+  player and the next start is a single start again. It keeps the 2 newest
+  version folders.
+- When a join is refused because the player's game is older, the dialog
+  offers "Restart to update", which starts the root copy.
 
 **Why the server image downloads the game instead of baking it in.** A
 container cannot replace its own image without access to the Docker socket.
@@ -103,20 +138,24 @@ to end. This is how most self-hosted game server images update.
   another folder (step 2). Renames or removes a saved id: no, and step 3
   makes CI refuse it.
 - Events and UI: no new Events. Messages use the existing themed join error
-  dialog in the main menu. New screens: n.a.
+  dialog. New screen: `launcher`, through the UI router (step 5).
 - Input through InputFrame, gameplay in _physics_process, randomness from the
   session RNG: yes (nothing here touches gameplay).
 - Tests: `test_handshake.gd`, `test_build.gd`, `test_net_errors.gd`,
-  `test_character_profile.gd`, `test_save_file.gd`, a new
-  `test_dedicated_server_drain.gd`, Python tests
-  in `tools/ci/`, and a shell test of the server image with a fake release
-  server. The old-client check runs a real released client against the new
-  server.
+  `test_character_profile.gd`, `test_save_file.gd`, new
+  `test_release_feed.gd`, `test_version_installer.gd`,
+  `test_launcher_screen.gd` and `test_dedicated_server_drain.gd`, Python
+  tests in `tools/ci/`, an end-to-end launcher update of the exported client
+  (Linux, plus Windows on release tags), and a shell test of the server image
+  with a fake release server. The old-client check runs a real released
+  client against the new server.
 - Logging: `net.join_refused` gains `older`; new `save.profile_newer`,
-  `server.drain_started`, `server.update_restart`; the runner prints its
-  update checks to the Docker log.
-- Performance: nothing per frame. The drain check reuses the existing 0.5 s
-  stop-file timer.
+  `launcher.check_failed`, `launcher.installed`, `launcher.install_failed`,
+  `launcher.root_refreshed`, `server.drain_started`,
+  `server.update_restart`; the runner prints its update checks to the
+  Docker log.
+- Performance: nothing per frame. The launcher runs before the game, the
+  drain check reuses the existing 0.5 s stop-file timer.
 - Out of scope: see Scope.
 
 ## Design references
@@ -135,8 +174,11 @@ to end. This is how most self-hosted game server images update.
 - `docs/MULTIPLAYER.md` (step 5, run end and saves): hello checks protocol,
   version and content.
 - `docs/FOUNDATIONS.md` foundation 3 ("Watch out": saved ids).
-- `docs/KEEP_IT_SIMPLE.md` rule 8: use the existing tool (here the store app)
-  before writing our own.
+- `docs/KEEP_IT_SIMPLE.md` rule 8: Godot built-ins first: `HTTPRequest`,
+  `ZIPReader`, `FileAccess.get_sha256()`, `ConfigFile`, `OS.create_process`.
+- `docs/design/look-rules.md` and `docs/design/ui-hud.md`: the launcher
+  screen uses the existing panel style; no mockup exists, so its look is
+  provisional until the person sees it.
 - No numbers from the balance sheet are needed. The 15-minute check and
   2 cached versions are fixed constants (rule 10), not settings.
 
@@ -144,18 +186,20 @@ to end. This is how most self-hosted game server images update.
 
 | Folder or file | New / changed | What changes |
 |---|---|---|
-| `systems/net/handshake.gd` | changed | hello and reply become objects with named keys; version checked first (step 1); `SERVER_UPDATING` refusal while draining in the hub (step 6) |
+| `systems/net/handshake.gd` | changed | hello and reply become objects with named keys; version checked first (step 1); `SERVER_UPDATING` refusal while draining in the hub (step 7) |
 | `core/build.gd` | changed | `compare_versions()`, `is_stable()`, protocol bumps |
-| `core/net.gd` | changed | `report_refusal()` survives reason codes it does not know (step 1); `RefusalReason.SERVER_UPDATING` appended and the host-ended notice carries a reason (step 6). The file is at 326 of 350 lines: keep both changes small |
-| `systems/ui/net_error_dialog.gd` | changed | wrong-version text names the older side; unknown reasons show the server's text (step 1); "server updating" text (step 6) |
+| `core/net.gd` | changed | `report_refusal()` survives reason codes it does not know (step 1); `RefusalReason.SERVER_UPDATING` appended and the host-ended notice carries a reason (step 7). The file is at 326 of 350 lines: keep both changes small |
+| `systems/ui/net_error_dialog.gd` | changed | wrong-version text names the older side; unknown reasons show the server's text (step 1); "server updating" text (step 7) |
 | `systems/save/save_file.gd` | changed | `saved_version()` tells "newer" from "broken" (step 2) |
 | `systems/progression/character_profile.gd` | changed | `directory()` replaces `DIRECTORY`, picks the stable or test folder and copies stable once (step 2) |
 | `systems/ui/main_menu.gd` | changed | "saved by a newer version" message before the character screen opens (step 2; `character_screen.gd` is at 340 of 350 lines, so not there) |
 | `systems/loot/item_roller.gd`, `systems/ui/pack_overlay.gd` | changed | an unknown affix or rarity id no longer crashes (step 2) |
-| `systems/net/dedicated_server.gd` | changed | drain mode and exit code 3; owns `draining` and hands it to each new session's `Handshake` in `_swap_session` (step 6) |
-| `deploy/server/` | changed | runner image and entrypoint (steps 5-6) |
-| `deploy/unraid/experiment-undead-server.xml` | changed | channel, pin and auto-update fields (step 5) |
-| `.github/workflows/` | changed | itch job (step 4); runner image build and test, no per-version images (step 5) |
+| `systems/launcher/` | new | `ReleaseFeed`, `VersionInstaller` (step 4), launcher screen (step 5) |
+| `content/screens/launcher.tres` | new | the launcher screen for the UI router (step 5) |
+| `systems/net/dedicated_server.gd` | changed | drain mode and exit code 3; owns `draining` and hands it to each new session's `Handshake` in `_swap_session` (step 7) |
+| `deploy/server/` | changed | runner image and entrypoint (steps 6-7) |
+| `deploy/unraid/experiment-undead-server.xml` | changed | channel, pin and auto-update fields (step 6) |
+| `.github/workflows/` | changed | launcher end-to-end test, Windows launcher check (step 5); runner image build and test, no per-version images (step 6) |
 | `tools/ci/` | changed | saved-id and save-version guard, old-client check, runner test |
 | `docs/` | changed | RELEASING, MULTIPLAYER, LOGGING, DECISIONS, ADR 0012 |
 
@@ -173,7 +217,7 @@ Autoloads, managers or base classes added: none.
   `reason`, `text`, `server_version` and the `t` values `hello`, `accepted`,
   `refused`, `refused_ack` are frozen forever: later versions add keys, never
   rename or remove these. `RefusalReason` values are on the wire: append only.
-- Host-ended notice (step 6, protocol bump): gains `reason: StringName`
+- Host-ended notice (step 7, protocol bump): gains `reason: StringName`
   (`&"stopped"` or `&"updating"`) and the new version string.
 - Save format change: none. Non-stable builds read and write
   `user://characters-test/` instead of `user://characters/`.
@@ -181,9 +225,9 @@ Autoloads, managers or base classes added: none.
   `content/weapons/`, `content/loot/gear/`, `content/loot/affixes/`,
   `content/loot/rarities/`, `content/skills/`, and level folder names
   (`best_runs` keys written by `GameSession`). Grows only.
-- Server environment (step 5): `EU_CHANNEL` (`stable` or `test`, default
+- Server environment (step 6): `EU_CHANNEL` (`stable` or `test`, default
   `stable`), `EU_VERSION` (empty = newest on the channel; set = pin),
-  `EU_AUTO_UPDATE` (default from Open decisions), `EU_DRAIN_FILE` (set by the
+  `EU_AUTO_UPDATE` (default `true`), `EU_DRAIN_FILE` (set by the
   image, like `EU_STOP_FILE`). Test hooks, not shown in the Unraid template:
   `EU_RELEASES_API` (default the repo's GitHub Releases API; the runner test
   points it at a fake server) and `EU_UPDATE_CHECK_SECONDS` (default 900).
@@ -191,8 +235,14 @@ Autoloads, managers or base classes added: none.
   with a SHA-256 digest. A release made in the web UI has no zips for about
   10 minutes, so it is ignored until they arrive.
 - Release assets: unchanged names (`ExperimentUndead-<version>-windows.zip`,
-  `-linux.zip`, `-server.zip`). The runner uses the asset's SHA-256 digest
-  from the GitHub API.
+  `-linux.zip`, `-server.zip`), each with the exe and pck at the zip's root.
+  From v0.1.0 on, these names, that layout, the GitHub Releases API and the
+  asset `digest` field are a contract: the launcher in every released version
+  depends on them. Change them only with a new ADR and a release that still
+  publishes the old names.
+- Launcher settings: `user://launcher.cfg`, `[launcher] channel = "stable"`
+  (or `"test"`). Not a save; no version needed. Downloads go to
+  `user://launcher/` and are deleted after install.
 - Content checks to add in `tests/content/`: none (step 3's guard is a CI
   script).
 
@@ -211,25 +261,28 @@ Autoloads, managers or base classes added: none.
   Only a draining server in the hub refuses joins, with `SERVER_UPDATING`
   ("This server is restarting for an update. Try again in a minute.").
 - Dedicated server (no screen, no local player): drain and auto-update exist
-  only here. A listen server (Host and play) updates when its player restarts
-  the game through the itch app.
+  only here. The launcher never runs on a server (the server export has its
+  own main scene). A listen server (Host and play) updates when its player
+  restarts the game.
 
 ## Performance
 
-No cost in the game loop. The handshake runs once per join. The drain check
+No cost in the game loop. The launcher makes one GitHub API call per start
+(the unauthenticated limit is 60 an hour per IP). The handshake runs once per join. The drain check
 reuses `DedicatedServer`'s 0.5 s stop-file timer. The runner polls the
 GitHub API every 15 minutes (4 calls an hour, under the 60 an hour
 unauthenticated limit even with several servers on one home IP).
 
 ## Steps
 
-Steps 1, 2 and 5 do not depend on each other. Steps 1-4 must merge before
-Release v0.1.0 (F-11): whatever handshake and save layout v0.1.0 ships with
-is what every later version has to read. Step 5 needs one GitHub Release to
-exist (v0.1.0, or a test tag) so the runner has something to download; until
-it merges, the current per-version image keeps working. Auto-update (step 6)
-works from the first release that contains it; a server on an older release
-moves to it on its next restart.
+Steps 1, 2, 4 and 6 do not depend on each other. Steps 1-5 must merge before
+Release v0.1.0 (F-11): whatever handshake, save layout and launcher v0.1.0
+ships with is what every later version has to read, and a v0.1.0 without the
+launcher would leave its players to update by hand once. Step 6 needs one
+GitHub Release to exist (v0.1.0, or a test tag) so the runner has something
+to download; until it merges, the current per-version image keeps working.
+Auto-update (step 7) works from the first release that contains it; a server
+on an older release moves to it on its next restart.
 
 ### Step 1: A handshake every future version can read
 
@@ -328,37 +381,89 @@ moves to it on its next restart.
   `quality` red, and from v0.1.1 on every Build proves the previous release
   is refused cleanly by the new server.
 
-### Step 4: Clients update through the itch app
+### Step 4: Download and install a version (no screen yet)
 
-- Build: an `itch` job in `release.yml` after `publish`, only for tags
-  without a dash: download the Windows and Linux artifacts, `chmod +x` the
-  Linux binary (download-artifact drops the bit, as `publish` already
-  handles), install a pinned butler version, then `butler push` to
-  `windows-stable` and `linux-stable` with `--userversion <version>`. It
-  reads `BUTLER_API_KEY` (secret) and `ITCH_GAME` (repo variable, like
-  `user/experiment-undead`) through `env` and is skipped while `ITCH_GAME`
-  is empty, so CI stays green before the page exists. Test tags stay GitHub
-  pre-releases only (two Windows uploads on one itch page would make the
-  itch app ask players to choose). `tools/ci/stamp_version.sh` ignores test
-  tags when it finds the last release (`--exclude 'v*-*'`), so main builds
-  after `v0.2.0-test.1` count up from the last stable release.
-  `docs/RELEASING.md` gets: the channel table, how players install and update
-  (itch app; manual zips), how to cut a stable or test release, "save version
-  bumps go to test first", and roll forward.
-- Files: `.github/workflows/release.yml`, `tools/ci/stamp_version.sh`,
-  `tools/ci/test_workflows.py`, `docs/RELEASING.md`.
-- Tests: `test_workflows.py`: the itch job runs only on stable tags, needs
-  `publish`, makes the Linux binary executable, passes secrets through `env`
-  only, and is skipped without `ITCH_GAME`; `stamp_version.sh` in a temp repo
-  with `v0.1.0` and `v0.2.0-test.1` tags prints `0.1.1-dev.N`.
-- Done when: tagging `vX.Y.Z` puts the build on itch. v0.1.0 is the first
-  push; the person checks that an installed itch app updates itself on
-  v0.1.1.
-- If the person picks Steam instead: this step becomes a `steamcmd` upload to
-  the default branch, with the test channel as a password-protected beta
-  branch. Everything else in this plan stays the same.
+- Build: `systems/launcher/` (new). `ReleaseFeed` (new, `RefCounted`, pure
+  functions): from the GitHub Releases JSON, pick the newest release on a
+  channel that has this platform's zip with a SHA-256 digest (a release made
+  in the web UI has no zips for about 10 minutes and is skipped), and compare
+  it with installed versions through `Build.compare_versions()` (step 1).
+  `VersionInstaller` (new, `Node`): download the zip with `HTTPRequest`
+  (`download_file` to `user://launcher/`, a `User-Agent` header, which
+  GitHub requires), check `FileAccess.get_sha256()` against the digest,
+  unzip with Godot's `ZIPReader` into `versions/<version>.tmp/` next to the
+  exe, set the executable bit on Linux (`FileAccess.set_unix_permissions`),
+  rename the folder to `versions/<version>/`, and delete all but the 2
+  newest version folders. A folder it cannot write (Program Files, read-only)
+  fails with a plain message and the release page link. Test hook:
+  `--releases-api=<url>` (default the repo's GitHub Releases API).
+- Files: `systems/launcher/release_feed.gd`,
+  `systems/launcher/version_installer.gd` (new), `docs/LOGGING.md`,
+  `tests/unit/test_release_feed.gd`, `tests/unit/test_version_installer.gd`
+  (new), `tests/fixtures/releases.json` (new).
+- Tests: `ReleaseFeed` on a fixture JSON: stable skips pre-releases, test
+  takes them, a release without this platform's zip or digest is skipped,
+  nothing newer gives nothing. `VersionInstaller` on a zip built in the test
+  with `ZIPPacker` and served from `user://` (no network): a good zip lands
+  in `versions/<version>/`, a wrong digest leaves nothing behind, a half
+  download leaves no folder, only the 2 newest folders stay.
+- Done when: the game can install any release into a version folder,
+  checked and complete or not at all. Nothing calls it yet, so the game
+  plays as before.
 
-### Step 5: A server image that downloads its release
+### Step 5: The launcher screen
+
+- Build: a `launcher` screen through the UI router, following the screen
+  recipe in `docs/HOW_TO_ADD.md` (`content/screens/launcher.tres`,
+  `systems/launcher/launcher_screen.tscn` and `.gd`, new). `MainMenu` opens it first when the exe runs from the
+  install root, in an exported build (`OS.has_feature("template")`) whose
+  version is stable or test, and was not started with `--from-launcher`,
+  `--join` or `--host` (smoke tests and tools start the game that way); dev
+  builds and the editor never see it. The screen shows: the installed
+  and newest version, the newest release's notes (the release body, as plain
+  text), a progress bar, Play, a stable/test switch saved in
+  `user://launcher.cfg` (`ConfigFile`), and "Play offline" when GitHub
+  cannot be reached. It downloads a newer version on its own (with Cancel),
+  then starts `versions/<newest>/<exe> --from-launcher` with
+  `OS.create_process` and quits; if the root copy is the newest it opens the
+  main menu. A version started from `versions/` copies its exe and pck over
+  the root copy when the root is older, retrying while the root is still
+  closing, through a temp name so a failed copy never leaves a broken root. `NetErrorDialog` gets a "Restart to
+  update" button for "your game is older" that starts the root copy and
+  quits. Look: the existing Cold Containment panel style
+  (`docs/design/look-rules.md`), provisional until the person sees it.
+  `docs/RELEASING.md` gets: the channel table, how players install (unzip
+  anywhere they own, run `ExperimentUndead.exe`) and update, how to cut a
+  stable or test release, "save version bumps go to test first", roll
+  forward, and the frozen asset names. `tools/ci/stamp_version.sh` ignores
+  test tags when it finds the last release (`--exclude 'v*-*'`), so main
+  builds after `v0.2.0-test.1` count up from the last stable release.
+- Files: `systems/launcher/launcher_screen.gd`, `.tscn` (new),
+  `content/screens/launcher.tres` (new), `systems/ui/main_menu.gd`,
+  `systems/ui/net_error_dialog.gd`, `tools/ci/smoke_test.sh`,
+  `tools/ci/stamp_version.sh`, `.github/workflows/export.yml` (Windows
+  launcher check), `tools/ci/test_workflows.py`, `docs/RELEASING.md`,
+  `tests/unit/test_launcher_screen.gd` (new).
+- Tests: GUT: the screen opens only for an exported stable or test build in
+  the root folder, never for dev, editor or `--from-launcher`; it picks the
+  newest of root, installed and online, plays offline with no network, and
+  saves the channel, and is skipped with `--join`. The existing smoke test
+  and step 3's old-client check pass `--from-launcher`, because on a release
+  tag the exported client is a stable build. End to end (`smoke_test.sh`,
+  Linux): serve a fake
+  releases JSON whose "newer" release is the freshly exported zip under a
+  higher version, start the exported client from a root folder with
+  `--releases-api`, and require it to install `versions/<v>/`, start it,
+  and the started copy to refresh the root. The same check runs on a
+  `windows-latest` runner on release tags and on pull requests that touch
+  `systems/launcher/` (Windows file locking is the risky part).
+  `stamp_version.sh` in a temp repo with `v0.1.0` and `v0.2.0-test.1` tags
+  prints `0.1.1-dev.N`.
+- Done when: a player who unzipped v0.1.0 gets v0.1.1 by starting the game,
+  on Windows, with one click or none (play-tested by the person on v0.1.1,
+  since v0.1.0 has nothing to update from).
+
+### Step 6: A server image that downloads its release
 
 - Build: the image becomes a runner: Debian slim with `ca-certificates`,
   `curl`, `unzip` and `jq`, no game baked in. `entrypoint.sh`: pick the
@@ -393,7 +498,7 @@ moves to it on its next restart.
   ghcr.io/j3vb/experiment-undead-server` starts the newest stable release on
   any Docker host, and on the person's Unraid server.
 
-### Step 6: Servers update between matches
+### Step 7: Servers update between matches
 
 - Build: with `EU_AUTO_UPDATE=true` the entrypoint checks every
   `EU_UPDATE_CHECK_SECONDS` (900) and creates `EU_DRAIN_FILE` when the newest
@@ -409,7 +514,8 @@ moves to it on its next restart.
   - In the hub with nobody: wait `EMPTY_GRACE` (a squad changing place looks
     empty for a moment), then quit with code 3.
   Clients show (`NetErrorDialog`): "The server restarted for an update.
-  Update your game if the itch app offers it, then join again." Bump
+  Restart the game to update it, then join again." with the "Restart to
+  update" button from step 5. Bump
   `PROTOCOL_VERSION`. Close-out: `docs/DECISIONS.md` entry, ADR 0012
   accepted, roadmap row Done, foundation 10 note.
 - Files: `systems/net/dedicated_server.gd`, `systems/net/handshake.gd`,
@@ -440,11 +546,14 @@ moves to it on its next restart.
   (step 2 test).
 - [ ] Deleting or renaming a saved content id, or lowering the save version,
   fails CI (step 3 tests).
-- [ ] Tagging `vX.Y.Z` publishes to itch, and an installed itch app updates
-  itself from v0.1.0 to v0.1.1 (play-test by the person).
+- [ ] A player who unzipped v0.1.0 on Windows gets v0.1.1 by starting the
+  game, without overwriting running files (step 5 end-to-end test, and a
+  play-test by the person).
+- [ ] A broken or partial download never leaves a version folder behind
+  (step 4 tests).
 - [ ] A server on `stable` moves to a new release on its own and never
-  restarts during a match (step 6 tests, and once on the person's Unraid).
-- [ ] `EU_VERSION` keeps a server on one version across restarts (step 5 test).
+  restarts during a match (step 7 tests, and once on the person's Unraid).
+- [ ] `EU_VERSION` keeps a server on one version across restarts (step 6 test).
 
 ## Risks
 
@@ -455,24 +564,35 @@ moves to it on its next restart.
 - GitHub's API is down or rate-limited: the server keeps running its cached
   version and tries again later. Never blocks a match.
 - A bad migration ships: `SaveFile` already keeps `.vN.bak` backups, and the
-  rule "save version bumps go to the test channel first" (step 4 docs) gives
+  rule "save version bumps go to the test channel first" (step 5 docs) gives
   it a test round before stable.
 - A match can run for hours, so drain can wait that long. The host can force
   it by restarting the container; players get the existing shutdown notice.
 - Unraid may not restart containers the way plain Docker does: the entrypoint
   restarts the server itself on exit code 3, so the update does not depend on
   Docker's restart policy.
+- Windows file locking: the launcher never overwrites a running file, and
+  the only copy (a new version refreshing the root) happens after the root
+  has quit. The Windows runner check in step 5 proves it on every release.
+- Antivirus: an unsigned exe that downloads and starts another exe is what
+  some antivirus heuristics look for. If a scanner blocks the start, the
+  launcher shows the release page link so the player can unzip by hand.
+  Code signing fixes it for good once it is open to EU individuals.
+- A compromised repo or release would reach every player who updates. The
+  SHA-256 check only catches broken downloads. Signing releases is the
+  fix if the game goes public; until then only people the person trusts
+  can push tags.
+- GitHub can be unreachable: the launcher starts the newest installed
+  version ("Play offline"). One API call per start stays far under the
+  60 an hour limit, even for a LAN party behind one IP.
 - Someone hosts with a pinned old version: their friends with an updated game
   get the "server is older" refusal, which says what to do.
 
 ## Open decisions
 
-- [ ] How do players get the game and its updates? Recommended: the itch.io
-  app (free, background updates and delta patches, one CI job, no updater
-  code). Other options: Steam now (100 USD app fee, best for a public
-  launch), our own updater (most code, antivirus risk), or GitHub zips only
-  (no auto-update).
-- [ ] How do servers update? Recommended: on their own, between matches
-  (`EU_AUTO_UPDATE=true` by default), so servers keep up with players whose
-  itch app already updated. Other option: only when the host restarts the
-  container (`EU_AUTO_UPDATE=false` by default; same code).
+- [x] How do players get the game and its updates? Our own updater
+  (the person, 2026-11-17), as a launcher (the person's follow-up the same
+  day). Built into the game exe rather than as a second program (technical
+  pick, see "How the launcher works").
+- [x] How do servers update? On their own, between matches:
+  `EU_AUTO_UPDATE=true` by default (the person, 2026-11-17).

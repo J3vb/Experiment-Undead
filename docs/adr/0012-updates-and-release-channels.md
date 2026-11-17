@@ -1,8 +1,9 @@
-# 0012. Exact versions, store-updated clients, self-updating servers
+# 0012. Exact versions, a built-in launcher, self-updating servers
 
 - **Status:** proposed
 - **Date:** 2026-11-17
-- **Decided by:** agent (provisional), waiting on the person's picks in
+- **Decided by:** the person (own updater as a launcher, servers update
+  between matches); the rest agent (provisional), see
   [plans/client-server-updates.md](../plans/client-server-updates.md)
 
 ## Context
@@ -22,8 +23,11 @@ read.
 - Two channels: stable (`vX.Y.Z`) and test (`vX.Y.Z-test.N`). Test, dev and
   editor builds keep their own characters folder, copied once from stable.
   This amends ADR 0005's folder rule for non-stable builds only.
-- Clients update through a store app (itch.io first, Steam later). The game
-  has no updater of its own.
+- Clients update through a launcher built into the game exe: run from the
+  install root, it downloads new versions from GitHub Releases into
+  `versions/<version>/`, checks their SHA-256 and starts the newest. It never
+  overwrites a running file. Release asset names, their zip layout and the
+  GitHub Releases API are a contract from v0.1.0 on.
 - The server image is a runner that downloads the release for its channel
   (or a pinned `EU_VERSION`) from GitHub Releases, checks its SHA-256 and
   restarts into a new release only when no match is running.
@@ -37,8 +41,8 @@ read.
 - Saved content ids and `SaveFile.CURRENT_VERSION` can never go backwards
   (CI checked).
 - Save format bumps ship on the test channel before stable.
-- Do not add a launcher, self-updater, installer or our own patcher without a
-  new record.
+- Do not add a second launcher program, an installer that writes to Program
+  Files, a store-only update path or our own patcher without a new record.
 - Servers depend on GitHub Releases only to download updates; with GitHub
   down they keep running their cached version.
 
