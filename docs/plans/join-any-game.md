@@ -311,5 +311,5 @@ peer is connected, so solo shooting allocates no more than today.
 
 ## Open decisions
 
-- [ ] Open the router port automatically (UPnP) by default? Recommended: yes, on by default, with the setting to turn it off.
+- [x] Open the router port automatically (UPnP) by default? Yes, on by default, with the setting to turn it off (the person, 2026-11-17).
 - [ ] Main menu: keep two buttons, renamed "Play" (straight to a match) and "Play in hub" (start in Lantern Post)? Recommended: yes; the alternatives are one Play button into the hub, or leaving the labels as they are.
