@@ -191,6 +191,24 @@ live state belongs in objects such as `WeaponInstance`.
 7. Done when success emits once, rejected requests emit nothing, and listeners
     observe the completed change without causing duplicate gameplay effects.
 
+## A screen
+
+1. Make the scene in `systems/ui/` (or the feature's folder). Its root has
+    `signal closed`, handles its own Back (Esc / `ui_cancel` / controller B)
+    and emits `closed`, like `settings_screen.gd` or `pause_screen.gd`.
+2. Add one `content/screens/<id>.tres` (`ScreenData`): `scene`, `layer` 20 for
+    screens or 30 for overlays. `root` and `captures_mouse` stay false; only
+    the main menu and the match are roots.
+3. Open it with `UI.push(&"<id>")`; it returns the screen so you can pass it
+    data (`UI.push(&"character").open(profile)`). The router hides what is
+    under it, frees the mouse, pops it on `closed` and gives focus back.
+    Never `add_child` a screen or set `Input.mouse_mode` yourself (CI rule `ui-router-only`).
+4. Ask the opener with signals, as `ResultsScreen.restart_requested` does;
+    the owner connects them after the push.
+5. Add `tests/unit/test_<screen>.gd`: push it, check `UI.top()`, Back pops
+    and focus returns. `tests/content/test_screens.gd` already instances every
+    `ScreenData`.
+
 ## A new player setting
 
 1. Add its default under the right section in `core/settings.gd`'s `DEFAULTS`;

@@ -137,6 +137,22 @@ class CheckRulesTests(unittest.TestCase):
             },
         )
 
+    def test_ui_router_only(self):
+        lines = ('get_tree().change_scene_to_file("res://menu.tscn")', "Input.mouse_mode = Input.MOUSE_MODE_VISIBLE")
+        for line in lines:
+            with self.subTest(line=line):
+                self.check("ui-router-only", {"systems/ui/menu.gd": line + "\n"}, 1)
+                self.check("ui-router-only", {"levels/hub.gd": line + "\n"}, 1)
+                self.check("ui-router-only", {"core/ui.gd": line + "\n"})
+                self.check("ui-router-only", {"tests/unit/test_menu.gd": line + "\n", "tools/shot.gd": line + "\n"})
+        self.check(
+            "ui-router-only",
+            {
+                "systems/game.gd": "var free: bool = Input.mouse_mode == Input.MOUSE_MODE_VISIBLE\n"
+                "# change_scene_to_file example\nvar label = 'change_scene_to_packed'\n",
+            },
+        )
+
     def test_no_absolute_paths(self):
         self.check(
             "no-absolute-paths",

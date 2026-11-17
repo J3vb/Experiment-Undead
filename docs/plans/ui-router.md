@@ -1,6 +1,6 @@
 # Plan: Minimal UI router (foundation fix 5)
 
-Status: Approved
+Status: Done
 Roadmap: F-00 foundation fix 5 / ADR 0011, docs/design/ui-hud.md
 Phase: P7
 Size: M
@@ -306,12 +306,12 @@ focus change only, never per frame. Budget: no per-frame cost.
 
 ## Acceptance
 
-- [ ] Every screen opens through `UI.push` or `UI.replace`; no scene change or mouse write outside `core/ui.gd` (CI rule, test_check_rules.py).
-- [ ] The mouse is free whenever a screen, the Pack overlay or the debug console is open, and captured in the match otherwise (test_ui_router.gd).
-- [ ] Back closes the top screen and focus returns to the button that opened it (test_ui_router.gd, test_main_menu.gd).
-- [ ] Every `ScreenData` loads and instances (tests/content/test_screens.gd).
-- [ ] Pause, settings and results look and work as before in a solo play-test.
-- [ ] The dedicated server boots and the smoke test passes with the `UI` autoload present.
+- [x] Every screen opens through `UI.push` or `UI.replace`; no scene change or mouse write outside `core/ui.gd` (CI rule, test_check_rules.py).
+- [x] The mouse is free whenever a screen, the Pack overlay or the debug console is open, and captured in the match otherwise (test_ui_router.gd).
+- [x] Back closes the top screen and focus returns to the button that opened it (test_ui_router.gd, test_main_menu.gd).
+- [x] Every `ScreenData` loads and instances (tests/content/test_screens.gd).
+- [ ] Pause, settings and results look and work as before in a solo play-test (waiting on the person's play-test).
+- [x] The dedicated server boots and the smoke test passes with the `UI` autoload present.
 
 ## Risks
 
