@@ -304,8 +304,11 @@ func test_scope_display_sits_behind_the_rebuilt_eyepiece() -> void:
 
 
 func test_red_dots_sit_on_the_aiming_line() -> void:
-	for id: String in ["rifle_ar", "kestrel_smg"]:
-		var gun: Node3D = _load("res://assets/models/weapons/%s.glb" % id)
+	var models: Dictionary[String, String] = {
+		"rifle_ar": "rifle_ar", "kestrel_smg": "kestrel_smg", "brenner_trench": "shotgun_brenner"
+	}
+	for id: String in models:
+		var gun: Node3D = _load("res://assets/models/weapons/%s.glb" % models[id])
 		var ads: WeaponData = load("res://content/weapons/%s.tres" % id) as WeaponData
 		var eye: Vector3 = Vector3(0, -ads.ads_position.y, 0.5)
 		var mount: Node3D = gun.find_child("ReticleMount", true, false) as Node3D
@@ -333,13 +336,3 @@ func _global_xform(node: Node3D) -> Transform3D:
 
 func _global(node: Node3D) -> Vector3:
 	return _global_xform(node).origin
-
-
-func test_brenner_heat_shield_stays_under_the_aiming_line() -> void:
-	var gun: Node3D = _load(SHOTGUN)
-	var ads: WeaponData = load("res://content/weapons/brenner_trench.tres") as WeaponData
-	var eye: Vector3 = Vector3(0, -ads.ads_position.y, 0.5)
-	assert_false(MeshChecks.blocks_ray(gun, eye, Vector3.FORWARD), "nothing blocks the bead sight line")
-	var low: Vector3 = eye + Vector3(0, -0.005, 0)
-	assert_true(MeshChecks.blocks_ray(gun, low, Vector3.FORWARD), "the sight line rides just over the gun")
-	gun.free()

@@ -112,3 +112,15 @@ def test_vx9_concept_shapes_vertical_grip_curved_mag_and_open_red_dot():
     bottom = hit("Magazine", (0.0, 0.2, -0.21), (0, -1, 0))
     assert bottom.y > top.y + 0.004, "magazine curves forward"
     assert hit("Receiver", (0, -0.2, 0.077), (0, 1, 0)) is None, "red dot window and front leave the eye line open"
+
+
+def test_br12_concept_shapes_shell_holder_open_red_dot_and_no_heat_shield():
+    models.reset_scene()
+    models.MODELS["shotgun_brenner"][1]()
+    bpy.context.view_layer.update()
+    for i in range(4):
+        shell = hit("Receiver", (0.1, -0.304 + i * 0.026, -0.03), (-1, 0, 0))
+        assert shell is not None and shell.x > 0.04, f"shell {i} stands proud of the stock"
+    assert hit("Receiver", (0, 0.2, 0.06), (0, 0, -1)).z < 0.045, "no heat shield over the barrel"
+    assert hit("Receiver", (0, -0.2, 0.089), (0, 1, 0)) is None, "red dot window and barrel leave the eye line open"
+    assert len(bpy.data.objects["Receiver"].data.materials) <= 6

@@ -51,10 +51,10 @@ func test_every_gun_surface_uses_the_finish_shader() -> void:
 
 
 func test_finish_follows_the_material_name() -> void:
-	var shotgun: Dictionary[String, Material] = _materials("shotgun_brenner")
-	assert_eq(_param(shotgun["Wood"], "finish"), 3, "walnut gets the wood grain")
-	assert_eq(_param(shotgun["GunMetal"], "finish"), 0, "receiver is bare metal")
-	assert_eq(_param(shotgun["MatteBlack"], "finish"), 1, "black parts are a coating")
+	var coachman: Dictionary[String, Material] = _materials("coachman_2b")
+	assert_eq(_param(coachman["Wood"], "finish"), 3, "walnut gets the wood grain")
+	assert_eq(_param(coachman["GunMetal"], "finish"), 0, "bare metal parts")
+	assert_eq(_param(coachman["MatteBlack"], "finish"), 1, "black parts are a coating")
 	var talon: Dictionary[String, Material] = _materials("talon_dmr")
 	assert_eq(_param(talon["GreyPolymer"], "finish"), 2, "grey stock is polymer")
 	for id: String in KNURLED:
