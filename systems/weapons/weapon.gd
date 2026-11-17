@@ -19,7 +19,6 @@ var data: WeaponData:
 var shooter: Player
 var item: ItemInstance
 var camera: Camera3D
-
 var trigger_held: bool = false
 var aiming: bool = false
 var sprinting: bool = false
@@ -265,6 +264,7 @@ func _hit(result: Dictionary, origin: Vector3, direction: Vector3) -> void:
 	var info: DamageInfo = DamageInfo.create(data.get_damage_at(origin.distance_to(point)), shooter)
 	info.amount *= float(result.damage_scale)
 	info.weapon_id = data.id
+	info.item_uid = str(item.data.get("uid", "")) if item else ""
 	info.position = point
 	info.normal = normal
 	info.impulse = _double_barrel.impulse(direction) if _double_barrel else direction * 2.0

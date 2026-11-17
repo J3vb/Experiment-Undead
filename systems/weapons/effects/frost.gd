@@ -74,6 +74,7 @@ func _shatter(info: DamageInfo) -> void:
 	_zombie.frozen = false
 	var kill: DamageInfo = _damage(_zombie.health.current, info, _zombie)
 	kill.hit_zone = info.hit_zone
+	kill.item_uid = info.item_uid
 	_zombie.health.take_damage(kill)
 	for node: Node in _zombie.get_parent().get_children():
 		var neighbour: Zombie = node as Zombie

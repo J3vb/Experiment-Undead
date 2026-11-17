@@ -51,7 +51,9 @@ func submit_hit(weapon: Weapon, hit_zone: HitZone, info: DamageInfo) -> void:
 	info.hit_zone = hit_zone.zone
 	weapon.hit_landed.emit(false, info.is_headshot())
 	_remember_hit(zombie, weapon.shooter, info.is_headshot())
-	claim_hit.rpc_id(1, zombie.name, hit_zone.zone, info.amount, info.weapon_id, info.position, info.impulse)
+	claim_hit.rpc_id(
+		1, zombie.name, hit_zone.zone, info.amount, info.weapon_id, info.position, info.impulse, info.item_uid
+	)
 
 
 func _remember_hit(zombie: Zombie, player: Player, headshot: bool) -> void:
@@ -64,14 +66,17 @@ func _remember_hit(zombie: Zombie, player: Player, headshot: bool) -> void:
 	_recent_hits.append({"zombie": zombie, "time": _time, "player": player, "headshot": headshot})
 
 
+## The arguments are the claim's wire format, so they stay flat instead of a packed Dictionary.
 @rpc("any_peer", "call_remote", "reliable")
+# gdlint:ignore = function-arguments-number
 func claim_hit(
 	zombie_name: StringName,
 	zone: int,
 	amount: float,
 	weapon_id: StringName,
 	point: Vector3,
-	impulse: Vector3 = Vector3.ZERO
+	impulse: Vector3 = Vector3.ZERO,
+	item_uid: String = ""
 ) -> void:
 	if not multiplayer.is_server():
 		return
@@ -95,7 +100,10 @@ func claim_hit(
 	):
 		_reject(sender, &"zombie_not_alive")
 		return
+	var item: ItemInstance = player.item_guns.get(item_uid) if not item_uid.is_empty() else null
 	var weapon: WeaponData = _weapons.get(weapon_id)
+	if item and weapon:
+		weapon = item.weapon_data(weapon, player.stats)
 	if not _valid_hit(player, weapon, amount, point, impulse):
 		_reject(sender, &"hit_out_of_bounds")
 		return
@@ -108,6 +116,7 @@ func claim_hit(
 		return
 	var info: DamageInfo = DamageInfo.create(amount, player)
 	info.weapon_id = weapon_id
+	info.item_uid = item_uid if item else ""
 	info.position = point
 	info.impulse = impulse if impulse != Vector3.ZERO else (point - player.camera.global_position).normalized() * 2.0
 	apply_server_hit(hit_zone, info)

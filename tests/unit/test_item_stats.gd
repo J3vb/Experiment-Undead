@@ -170,12 +170,18 @@ func test_loadout_applies_damage_magazine_and_reserve_to_the_live_gun_only() -> 
 	assert_eq(base.max_reserve, base_max_reserve)
 
 
+func _server_hit() -> void:
+	var info: DamageInfo = DamageInfo.create(10.0, player)
+	info.item_uid = "test_item"
+	Events.enemy_damaged.emit(null, info)
+
+
 func test_item_hit_pays_points_and_leech() -> void:
 	var item: Dictionary = _item("pistol_service", [["points_per_hit", 5, 1.0], ["leech", 5, 1.0]])
 	ItemLoadout.apply(player, {"sidearm": item})
 	var points_before: int = player.wallet.points
 	player.health.current = 50.0
-	player.weapons.current.hit_landed.emit(false, false)
+	_server_hit()
 	assert_eq(player.wallet.points, points_before + 3)
 	assert_eq(player.health.current, 53.0)
 
@@ -186,7 +192,7 @@ func test_leech_cap_combines_gun_and_all_gear() -> void:
 	var charm: Dictionary = _item("charm", [["leech", 5, 1.0]], "charm")
 	ItemLoadout.apply(player, {"sidearm": item, "vest": vest, "charm": charm})
 	player.health.current = 50.0
-	player.weapons.current.hit_landed.emit(true, true)
+	_server_hit()
 	assert_eq(player.health.current, 56.0)
 
 

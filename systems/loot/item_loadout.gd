@@ -27,7 +27,7 @@ static func apply(player: Player, loadout: Dictionary) -> void:
 		player.weapons.equip(starter)
 	var weapon: Weapon = player.weapons.replace_current(data) if starter >= 0 else player.weapons.give(data)
 	weapon.item = item
-	weapon.hit_landed.connect(_on_hit.bind(player, item))
+	player.item_guns[str(sidearm.get("uid", ""))] = item
 
 
 static func _pistol_slot(player: Player) -> int:
@@ -40,8 +40,7 @@ static func _pistol_slot(player: Player) -> int:
 	return -1
 
 
-static func _on_hit(_kill: bool, _headshot: bool, player: Player, item: ItemInstance) -> void:
-	if not Net.is_authority():
-		return
+## Server: an item gun's on-hit effects for one applied hit.
+static func apply_hit(player: Player, item: ItemInstance) -> void:
 	player.wallet.add(roundi(item.stats.value(&"points_per_hit", 0.0, player.stats)))
 	player.health.heal(item.stats.value(&"leech", 0.0, player.stats))
