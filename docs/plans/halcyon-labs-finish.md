@@ -34,9 +34,11 @@ In:
   lockers, Containment Wing cells, Loading Dock crates (moved from map.tscn).
 - Co-op-only spawn points: 2 at the Loading Dock truck gaps, 1 Mess Hall vent,
   1 Containment Wing vent. Active only with 3 or more players. Solo and duo:
-  the truck gaps are blocked by burning wreckage; while 3+ players are in the
-  match it is burned out (it follows the live count, so every peer and every
-  late joiner agrees without extra sync).
+  burning wreckage sits beside the truck gaps; while 3+ players are in the
+  match the fire is out. The wreckage is decoration only (no collision, no
+  navmesh change): the gaps are always open, and only the spawn points' own
+  `min_players` decides whether zombies come through, so a player leaving
+  can never trap a zombie in the yard.
 - The vent route: a duct from the Containment Wing up to a ledge in the Mess
   Hall east wall. One-way (a 1.4 m drop the player cannot jump back up). At
   3+ players a step appears so it works as a climb too. It has a grate at each
@@ -120,7 +122,7 @@ Not in (non-goals, and where each one goes instead):
 | levels/halcyon_labs/map.tscn | changed | spawn points, wreckage, vent grate and step, radios, freezer door, rack, puzzle |
 | systems/waves/zombie_spawn_point.gd | changed | `min_players: int = 1` |
 | systems/waves/spawner.gd | changed | `_pick_marker()` skips points above the live player count |
-| systems/level/coop_wreckage.gd | new | truck-gap wreckage: gone while 3+ players are in the match, server rebakes on each change |
+| systems/level/coop_wreckage.gd | new | truck-gap wreckage (decoration): fire and debris shown while fewer than 3 players are in the match |
 | systems/level/vent_step.gd | new | vent climb step: there (with collision) while 3+ players are in the match |
 | systems/interactables/wall_radio.gd + .tscn | new | radio Interactable: plays its tone, forwards presses |
 | systems/level/radio_puzzle.gd | new | owns tone order and progress, opens the freezer door |
@@ -155,7 +157,8 @@ before a third use; they share only a one-line count check).
 - Who owns the state: server owns spawn-point choice, puzzle order and
   progress, freezer door, rack hand-outs. Each peer toggles the wreckage and
   the vent step from its own `players` group size (every peer has every Player, so they agree).
-  The navmesh rebake after a toggle runs on the server only (`Level`).
+  Neither toggle changes the navmesh: the wreckage has no collision, and the
+  vent step only adds a way up next to a drop that is always walkable down.
 - What clients send, what the server sends back: radio and rack presses go
   through `InteractionSync.request()`; the server runs `interact()`, radios
   send `state_changed`, the rack sends the existing GIVE grant to the owner.
@@ -207,20 +210,20 @@ step 5.
   with `min_players` above the `players` group size. `CoopWreckage` script. Layout:
   a truck yard space behind the Dock south wall with two gaps. map.tscn: 4
   co-op points (2 truck gaps, 1 Mess Hall vent, 1 Containment Wing vent),
-  burning wreckage in the two gaps under a `CoopWreckage` (blocks players and
-  the navmesh while fewer than 3 players are in the match; hidden while 3+
-  are; the server rebakes on each change). It reads only the live `players`
-  group size, which every peer sees the same, so there is no state to sync
-  and a late joiner below 3 players sees the same wreckage as everyone.
+  burning wreckage beside the two gaps under a `CoopWreckage` (decoration
+  only: no collision, never in the navmesh source; shown while fewer than 3
+  players are in the match). The gaps stay open, so a zombie already in the
+  yard when the squad drops below 3 still walks in. Visibility reads the live
+  `players` group size, so nothing needs syncing.
 - Files: systems/waves/zombie_spawn_point.gd, systems/waves/spawner.gd,
   systems/level/coop_wreckage.gd (new), layout.json, blockout.tscn, map.tscn,
   tests/unit/test_coop_wreckage.gd (new), tests/unit/test_spawner.gd,
   tests/content/test_halcyon_labs.gd.
 - Tests: spawner never picks a 3-player point with 1 or 2 players and can
-  pick it with 3; the wreckage hides and drops collision at 3 players and
-  comes back (with collision) when the count drops to 2; map has
-  4 co-op points with min_players 3 and 21-28 normal points; with wreckage
-  gone each truck-gap point has a navmesh path to the start.
+  pick it with 3; the wreckage hides at 3 players and shows again at 2, and has no
+  collision shape; map has 4 co-op points with min_players 3 and 21-28
+  normal points; each truck-gap point has a navmesh path to the start with
+  any player count (the yard is never closed).
 - Done when: a 1-player soak never spawns at a co-op point (soak stays green).
 
 ### Step 3: Vent route Containment Wing to Mess Hall
@@ -299,8 +302,9 @@ step 5.
 
 - Props break the navmesh or block a window: tests in step 1 check clearance
   and paths before any later step builds on them.
-- Navmesh rebake when the wreckage vanishes causes a hitch: same main-thread
-  bake as a door purchase (already accepted), only when the count crosses 3.
+- Zombies stranded by a closing route: avoided by design; no toggle in this
+  plan closes a route (wreckage is decoration, the vent step only adds a way
+  up, the duct always drains both ways once both grates are open).
 - The lightmap goes stale after each layout step: map still renders (old bake
   just misses new boxes). The re-bake waits for step 5 so it runs once.
 - Players find the radio order by trial: wrong presses reset with static, and
