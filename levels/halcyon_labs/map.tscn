@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/ambience.tscn" id="ambience"]
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/decals.tscn" id="decals"]
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/signs.tscn" id="signs"]
+[ext_resource type="PackedScene" path="res://levels/halcyon_labs/fenlight.tscn" id="fenlight"]
 [ext_resource type="Material" path="res://levels/materials/rust.tres" id="rust"]
 [ext_resource type="PackedScene" path="res://systems/interactables/door.tscn" id="door"]
 [ext_resource type="PackedScene" path="res://assets/models/doors/bulkhead_door.glb" id="bulkhead_door"]
@@ -807,6 +808,8 @@ area = &"coolant_tunnel"
 [node name="Decals" parent="." instance=ExtResource("decals")]
 
 [node name="Signs" parent="." instance=ExtResource("signs")]
+
+[node name="Fenlight" parent="." instance=ExtResource("fenlight")]
 
 [node name="CoopTruckGap1" type="Marker3D" parent="ZombieSpawns"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.5, 0.1, 62)

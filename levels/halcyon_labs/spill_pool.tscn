@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/story/leak_pool.png" id="leak_pool"]
+[ext_resource type="Texture2D" path="res://assets/textures/story/leak_glow.png" id="leak_glow"]
+
+[node name="SpillPool" type="Decal"]
+size = Vector3(2.8, 0.2, 2.2)
+texture_albedo = ExtResource("leak_pool")
+texture_emission = ExtResource("leak_glow")
+emission_energy = 0.6
+modulate = Color(1, 1, 1, 0.75)
+upper_fade = 0.1
+lower_fade = 0.1
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0

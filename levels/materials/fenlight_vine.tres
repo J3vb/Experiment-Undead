@@ -1,0 +1,11 @@
+[gd_resource type="StandardMaterial3D" script_class="NoiseMaterial" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://levels/materials/noise_material.gd" id="setup"]
+
+[resource]
+script = ExtResource("setup")
+noise_frequency = 0.25
+noise_bump_strength = 6.0
+albedo_color = Color(0.17, 0.21, 0.11, 1)
+roughness = 0.55
+uv1_scale = Vector3(1.5, 1.5, 1.5)

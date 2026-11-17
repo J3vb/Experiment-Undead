@@ -1,0 +1,42 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://levels/halcyon_labs/spill_pool.tscn" id="pool"]
+
+[node name="Fenlight" type="Node3D"]
+
+[node name="Glow" type="Node3D" parent="."]
+
+[node name="North" type="OmniLight3D" parent="Glow"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68, -2.2, 12.8)
+light_color = Color(0.552941, 1, 0.227451, 1)
+light_energy = 1.4
+light_bake_mode = 1
+omni_range = 6.0
+omni_attenuation = 1.6
+
+[node name="East" type="OmniLight3D" parent="Glow"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 72.5, -2.2, 22.8)
+light_color = Color(0.552941, 1, 0.227451, 1)
+light_energy = 1.4
+light_bake_mode = 1
+omni_range = 6.0
+omni_attenuation = 1.6
+
+[node name="West" type="OmniLight3D" parent="Glow"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65.5, -2.2, 21.5)
+light_color = Color(0.552941, 1, 0.227451, 1)
+light_energy = 1.4
+light_bake_mode = 1
+omni_range = 6.0
+omni_attenuation = 1.6
+
+[node name="Pools" type="Node3D" parent="."]
+
+[node name="North" parent="Pools" instance=ExtResource("pool")]
+transform = Transform3D(0.9659, 0, 0.2588, 0, 1, 0, -0.2588, 0, 0.9659, 68, -2.98, 12.8)
+
+[node name="East" parent="Pools" instance=ExtResource("pool")]
+transform = Transform3D(0.8660, 0, -0.5000, 0, 1, 0, 0.5000, 0, 0.8660, 72.5, -2.98, 22.8)
+
+[node name="West" parent="Pools" instance=ExtResource("pool")]
+transform = Transform3D(0.3420, 0, 0.9397, 0, 1, 0, -0.9397, 0, 0.3420, 65.5, -2.98, 21.5)

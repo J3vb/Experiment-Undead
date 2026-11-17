@@ -168,8 +168,8 @@ Autoloads, managers or base classes added: none.
 
 - Baseline now: 434-530 avg fps at 1440p with 24 zombies (target 120, gate 60).
   Mess Hall and Main Corridor already have about 4x the draw calls of the ramp.
-- Step 1 records draw calls per room shot with `tools/room_shots.gd` (OpenGL,
-  enough for counts). Budget per step: each room at most baseline + 30 %,
+- Step 1 records draw calls per room shot with `tools/room_shots.gd` (Forward+
+  on software Vulkan, see the baseline below). Budget per step: each room at most baseline + 30 %,
   Mess Hall and Main Corridor at most + 15 %. A step over budget merges meshes
   before it merges.
 - Baseline (step 1, `room_shots.gd`, Forward+ on software Vulkan, power on):
@@ -234,6 +234,15 @@ the person on a decision card before the next step starts.
   shadow, bio-green colour).
 - Done when: render of Containment shows zombies readable against the glow,
   rest of the map as dark as before.
+- Built (2026-11-17): five dressing models (`vine_wall`, `vine_wall_small`,
+  `vine_pillar` around the Labs tanks, `vine_ceiling`, `fenlight_spill`), new
+  `Vine` slot -> `levels/materials/fenlight_vine.tres`, pods reuse the `Fluid`
+  slot (specimen tank glow, energy 0.8). The glow lights and leak pools live in
+  their own `levels/halcyon_labs/fenlight.tscn` (one instance line in map.tscn),
+  not atmosphere.tscn, because every atmosphere light must stay bake mode 0
+  and these are bake mode 1. Test: `tests/content/test_halcyon_fenlight.gd`.
+  Until the step 7 re-bake, the Static glow lights only reach zombies and new
+  dressing, not the baked walls and floor.
 
 ### Step 3: Mess Hall, Main Corridor and Dock wreck
 
