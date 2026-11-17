@@ -1,8 +1,7 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://systems/ui/main_menu.gd" id="1"]
 [ext_resource type="Theme" path="res://systems/ui/theme.tres" id="2"]
-[ext_resource type="PackedScene" path="res://systems/ui/settings_screen.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/map.tscn" id="4"]
 [ext_resource type="AudioStream" path="res://assets/audio/music/breather.ogg" id="5"]
 [ext_resource type="PackedScene" path="res://systems/ui/net_error_dialog.tscn" id="6"]
@@ -224,9 +223,6 @@ theme_override_styles/normal = SubResource("Normal")
 theme_override_styles/hover = SubResource("Hover")
 theme_override_styles/pressed = SubResource("Hover")
 theme_override_styles/focus = SubResource("Focus")
-
-[node name="SettingsScreen" parent="Screens/Root" instance=ExtResource("3")]
-visible = false
 
 [node name="HostPanel" type="PanelContainer" parent="Screens/Root"]
 visible = false
