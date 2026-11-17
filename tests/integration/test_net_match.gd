@@ -190,7 +190,9 @@ func _trace_first_hit(mine: Player, zombie: Zombie) -> void:
 	var points_before: int = mine.wallet.points
 	watch_signals(weapon)
 	weapon._trace(origin, -body.global_basis.z)
-	assert_signal_emitted_with_parameters(weapon, "hit_landed", [false, false])
+	var landed: Array = get_signal_parameters(weapon, "hit_landed")
+	assert_false(landed[0], "a client hit is never a kill until the server says so")
+	assert_false((landed[1] as DamageInfo).is_headshot(), "body hit")
 	assert_eq(zombie.health.current, zombie.health.max_health, "client trace never applies local damage")
 	await wait_until(
 		func() -> bool: return mine.wallet.points == points_before + session.economy.rules.points_per_hit,

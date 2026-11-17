@@ -76,6 +76,9 @@ signal power_up_collected(player: Player, power_up: PowerUpData)
 ## Peers: the shooter's owner (on the claim, then again on the kill), and the
 ## server for Gravity Well hits it applies.
 signal hit_confirmed(player: Player, is_kill: bool, is_headshot: bool)
+## A player's own shot or swing hit an enemy; info.amount is the zone-scaled damage.
+## Peers: the shooter's owner only (on clients from its hit prediction, like hit markers).
+signal damage_dealt(player: Player, target: Node3D, info: DamageInfo)
 
 ## The exfil hatch opened for this round.
 ## Peers: every peer (clients from the synced hatch state).

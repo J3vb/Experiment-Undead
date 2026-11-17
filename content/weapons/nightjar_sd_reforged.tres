@@ -8,6 +8,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
 [ext_resource type="Resource" path="res://content/grips/nightjar_sd.tres" id="grip"]
 [ext_resource type="PackedScene" path="res://assets/models/weapons/nightjar_sd.glb" id="world"]
+[ext_resource type="Resource" path="res://content/feel/class_smg.tres" id="feel"]
 
 [sub_resource type="Resource" id="recoil"]
 script = ExtResource("2")
@@ -49,6 +50,7 @@ move_spread = 2.0
 spread_per_shot = 0.12
 max_spread = 6.0
 recoil = SubResource("recoil")
+feel = ExtResource("feel")
 viewmodel_kick = 0.018
 hip_position = Vector3(0.17, -0.18, -0.32)
 ads_position = Vector3(0, -0.067, -0.24)

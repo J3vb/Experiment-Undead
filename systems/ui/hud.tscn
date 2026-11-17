@@ -17,6 +17,8 @@
 
 [ext_resource type="Script" path="res://systems/ui/pack_overlay.gd" id="pack"]
 
+[ext_resource type="PackedScene" path="res://systems/ui/damage_numbers.tscn" id="damage_numbers"]
+
 [sub_resource type="FontVariation" id="round_bold"]
 base_font = ExtResource("round_font")
 variation_opentype = {
@@ -405,6 +407,9 @@ bus = &"Music"
 [node name="RoundEndSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("sfx_round_end")
 bus = &"SFX"
+
+[node name="DamageNumbers" parent="Root" instance=ExtResource("damage_numbers")]
+layout_mode = 1
 
 [node name="Pack" type="Control" parent="Root"]
 layout_mode = 1

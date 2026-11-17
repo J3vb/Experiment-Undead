@@ -8,6 +8,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
 [ext_resource type="Resource" path="res://content/grips/rampart_br.tres" id="grip"]
 [ext_resource type="PackedScene" path="res://assets/models/weapons/rampart_br.glb" id="world"]
+[ext_resource type="Resource" path="res://content/feel/class_rifle.tres" id="feel"]
 
 [sub_resource type="Resource" id="recoil"]
 script = ExtResource("2")
@@ -49,6 +50,7 @@ move_spread = 2.4
 spread_per_shot = 0.4
 max_spread = 7.0
 recoil = SubResource("recoil")
+feel = ExtResource("feel")
 viewmodel_kick = 0.06
 hip_position = Vector3(0.17, -0.18, -0.36)
 ads_position = Vector3(0, -0.105, -0.26)

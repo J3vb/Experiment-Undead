@@ -209,7 +209,10 @@ func test_hit_marker_is_immediate_and_kill_marker_waits_for_synced_dead_state() 
 	info.weapon_id = RIFLE.id
 	client.submit_hit(weapon, pair[1].head_zone, info)
 	assert_signal_emit_count(weapon, "hit_landed", 1)
-	assert_eq(get_signal_parameters(weapon, "hit_landed"), [false, true])
+	var landed: Array = get_signal_parameters(weapon, "hit_landed")
+	assert_eq([landed[0], (landed[1] as DamageInfo).is_headshot()], [false, true])
+	var dealt: Array = get_signal_parameters(Events, "damage_dealt")
+	assert_eq([dealt[1], (dealt[2] as DamageInfo).amount], [pair[1], 34.0 * pair[1].head_zone.damage_multiplier])
 	assert_false(pair[1].health.is_dead, "trusted feedback never mutates client health")
 	_claim(pair[0].name, 66.0)
 	await wait_until(func() -> bool: return pair[1].state == Zombie.State.DEAD, 3.0, "death synced")
@@ -300,6 +303,8 @@ func test_solo_weapon_trace_still_applies_direct_hit_zone_damage() -> void:
 	var before: float = zombie.health.current
 	weapon._trace(origin, Vector3.FORWARD)
 	assert_lt(zombie.health.current, before, "server keeps Weapon's direct damage path")
+	var dealt: Array = get_signal_parameters(Events, "damage_dealt")
+	assert_almost_eq((dealt[2] as DamageInfo).amount, before - zombie.health.current, 0.01, "host number = damage done")
 
 
 func test_downed_sidearm_claims_damage_but_rifles_dead_and_finished_claims_do_not() -> void:

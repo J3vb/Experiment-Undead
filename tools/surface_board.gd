@@ -1,5 +1,5 @@
 ## Renders every shared surface material as a lit wall-and-floor corner into
-## screenshots/surfaces/<material>.png, for look checks of texture sets:
+## screenshots/surfaces/<floor material>.png, for look checks of texture sets:
 ##   xvfb-run -s "-screen 0 1280x720x24" godot --path . --rendering-driver opengl3 res://tools/surface_board.tscn
 extends Node
 
@@ -10,7 +10,11 @@ const OUT: String = "res://screenshots/surfaces/%s.png"
 const BOARDS: Array = [
 	["wall_paint", "tiled_wet_floor"],
 	["ceiling_stained", "raw_concrete"],
-	["panel_paint", "wet_floor"],
+	["panel_paint", "sealed_concrete"],
+	["wall_paint", "linoleum"],
+	["raw_concrete", "steel_plate"],
+	["wall_paint", "clinic_tile"],
+	["raw_concrete", "grating"],
 ]
 
 
@@ -39,8 +43,8 @@ func _run() -> void:
 		ground.material = load(MATERIALS % board[1])
 		for _i: int in 8:
 			await get_tree().process_frame
-		get_viewport().get_texture().get_image().save_png(OUT % board[0])
-		print("saved ", board[0])
+		get_viewport().get_texture().get_image().save_png(OUT % board[1])
+		print("saved ", board[1])
 	get_tree().quit()
 
 

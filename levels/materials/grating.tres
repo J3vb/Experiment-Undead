@@ -1,0 +1,17 @@
+[gd_resource type="ShaderMaterial" load_steps=5 format=3]
+
+[ext_resource type="Shader" path="res://levels/materials/grime_shader.tres" id="shader"]
+[ext_resource type="Texture2D" path="res://assets/textures/halcyon/grating_albedo.png" id="albedo"]
+[ext_resource type="Texture2D" path="res://assets/textures/halcyon/grating_normal.png" id="normal"]
+[ext_resource type="Texture2D" path="res://assets/textures/halcyon/grating_orm.png" id="orm"]
+
+[resource]
+shader = ExtResource("shader")
+shader_parameter/base_color = Color(0.5, 0.52, 0.52, 1)
+shader_parameter/roughness = 1.0
+shader_parameter/metallic = 0.5
+shader_parameter/stains = 0.1
+shader_parameter/albedo_map = ExtResource("albedo")
+shader_parameter/normal_map = ExtResource("normal")
+shader_parameter/orm_map = ExtResource("orm")
+shader_parameter/texel_scale = 1.0

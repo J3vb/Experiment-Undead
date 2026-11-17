@@ -8,6 +8,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
 [ext_resource type="Resource" path="res://content/grips/rifle_ar.tres" id="grip"]
 [ext_resource type="PackedScene" path="res://assets/models/weapons/rifle_ar.glb" id="world"]
+[ext_resource type="Resource" path="res://content/feel/class_rifle.tres" id="feel"]
 
 [sub_resource type="Resource" id="recoil"]
 script = ExtResource("2")
@@ -46,6 +47,7 @@ ads_spread = 0.12
 spread_per_shot = 0.3
 max_spread = 6.0
 recoil = SubResource("recoil")
+feel = ExtResource("feel")
 viewmodel_kick = 0.045
 hip_position = Vector3(0.17, -0.18, -0.34)
 ads_position = Vector3(0, -0.09, -0.2)
