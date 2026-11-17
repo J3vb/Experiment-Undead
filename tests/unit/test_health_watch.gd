@@ -57,3 +57,22 @@ func test_sample_has_leak_signals() -> void:
 	var data: Dictionary = watch.snapshot()
 	for key: String in ["fps", "memory_mb", "objects", "nodes", "orphan_nodes", "enemies"]:
 		assert_true(data.has(key), "snapshot has %s" % key)
+
+
+func test_clients_never_report_a_stalled_round() -> void:
+	var root: Node = Node.new()
+	add_child_autofree(root)
+	var scene: SceneMultiplayer = SceneMultiplayer.new()
+	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
+	assert_eq(peer.create_client("127.0.0.1", 24714), OK)
+	scene.multiplayer_peer = peer
+	get_tree().set_multiplayer(scene, root.get_path())
+	var client_watch: HealthWatch = HealthWatch.new()
+	root.add_child(client_watch)
+	client_watch.set_process(false)
+	var before: int = _count("waves.round_stalled")
+	client_watch._round_progress(true)
+	client_watch.check_stall(HealthWatch.STALL_SECONDS + 10.0)
+	assert_eq(_count("waves.round_stalled"), before, "clients get round events but no kill events")
+	peer.close()
+	get_tree().set_multiplayer(null, root.get_path())
