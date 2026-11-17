@@ -47,6 +47,7 @@ already reads `InputFrame`s, so the server could replay them.
 | Points, wall buys, machines, doors | Server | Client sends a request RPC; server runs the same `Economy.try_spend()` |
 | Waves, round number, power-ups | Server | Synced to all |
 | Run XP and loot rolls | Server (`ProgressionService`) | Grant RPC to the owning client, which saves it |
+| Equipped gear and item guns | Owning client picks; server owns the effects | `PlayerStateSync.submit_loadout` on spawn and every Pack equip; the server applies gear, loot luck and item on-hit effects (leech, points per hit) from its copy |
 | Cosmetics (muzzle flash, impacts, sounds) | Each peer | Local reaction to synced facts |
 
 ## Build order (one small PR each, tests in every PR)
