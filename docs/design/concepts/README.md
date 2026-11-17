@@ -43,3 +43,7 @@ Shared helpers live in `tools/concepts/blockout.py`: the
 fog, wet floors and the shot renderer. Use its colour names instead of new hex
 values: teal light inside, sodium only from outside, bio-green only where
 Fenlight is.
+
+## Game screens (2026-11-17)
+
+[screens/screens_concept.jpg](screens/screens_concept.jpg) is the person's concept art for four screens: main menu with Enter World, match HUD, server browser and character select. The UI mockups in `../images/ui_*.jpg` and [ui-hud.md](../ui-hud.md) follow it, except where the game has no such system (no master server, so no Official/Community/Modded lists or Region filter; no minimap, armour, medkits or seasons). The profile card's name was replaced with "Survivor": never put a real person's name in a screen.

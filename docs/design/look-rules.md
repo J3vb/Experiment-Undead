@@ -14,6 +14,16 @@ If this file and `docs/DECISIONS.md` disagree, `DECISIONS.md` and the code win.
 |---|---|
 | ![Blackout round](images/style_blackout.jpg) | ![Lantern Post](images/style_hub.jpg) |
 
+## Halcyon Labs target
+
+| After the breakout (**the look target**) | Before the breakout (what the rooms were) |
+|---|---|
+| ![Halcyon Labs after the breakout](images/halcyon_concept_after.jpg) | ![Halcyon Labs before the breakout](images/halcyon_concept_before.jpg) |
+
+Match the post-breakout image for signage, wreck, Fenlight growth and fire,
+but keep the map as dark as it is: new light only comes from Fenlight, fire
+and red lamps. Plan: [halcyon-concept-pass.md](../plans/halcyon-concept-pass.md).
+
 ## Palette
 
 | Name | Hex | Use |
@@ -169,7 +179,8 @@ Panels: square corners, thin borders, coloured top edge for rarity or category.
 | Prototype | `#8DFF3A` | 3 m + pulse | 5 |
 
 Colour is never the only cue: pips and beam height carry rarity too.
-Gear on characters: [gear-visuals.md](gear-visuals.md).
+Gear on characters: [gear-visuals.md](gear-visuals.md). Player and gear look target:
+[player_gear_concept.jpg](images/player_gear_concept.jpg) (plan: F-70).
 
 ## Lantern Post (town)
 
@@ -177,3 +188,11 @@ The one warm, safe place: fortified Ardennes village at night, lanterns, fire
 barrels, lit windows, cold blue fog and pines outside the walls. The only
 green in town is the Deploy Gate. Fully baked lighting except fire barrels and
 one sweeping watchtower spotlight.
+
+Look target (2026-11-17): [lantern_post_concept.jpg](images/lantern_post_concept.jpg),
+a snowy timber outpost on a mountain ridge with a market row, a Common Room
+lodge and a concrete Deploy gate with a green-lit tunnel. Build plan and the
+picks where it differs from these rules: [lantern-post-concept.md](../plans/lantern-post-concept.md).
+One exception to the green rule: the aurora in the night sky over the town is
+green, as in the concept (picked 2026-11-17). Nothing else in town is green
+except the Deploy gate and Fenlight samples.
