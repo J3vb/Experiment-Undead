@@ -33,6 +33,7 @@ BUDGETS = {
     "kit": (2_000, 4),
     "weapons": (8_000, 6),
     "zombies": (9_000, 8),
+    "town": (2_500, 4),
 }
 BUDGETS.update(character_checks.BUDGETS)
 
@@ -42,6 +43,12 @@ GUN_WITH_MAG = {**GUN, "Magazine": "Receiver"}
 # Required node -> required ancestor (None = any). Code finds these by name.
 JOINTS = {
     "wall_panel": {},
+    "street_lamp": {},
+    "wall_lantern": {},
+    "window_lit": {},
+    "window_dark": {},
+    "fence": {},
+    "signpost": {},
     "rifle_ar": GUN_WITH_MAG,
     "kestrel_smg": GUN_WITH_MAG,
     "talon_dmr": GUN_WITH_MAG,

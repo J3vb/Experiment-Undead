@@ -22,6 +22,7 @@ REFERENCES = {
     "kit": "style_corridor.jpg",
     "characters": "gear_sets.jpg",
     "gear": "gear_sets.jpg",
+    "town": "style_hub.jpg",
 }
 VIEWS = (("FRONT", 0), ("3/4", 45), ("SIDE", 90), ("BACK", 180))
 
