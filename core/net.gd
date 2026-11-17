@@ -31,6 +31,8 @@ var place: StringName = &""
 var changing_place: bool = false
 ## True while the results screen is up: a place change order then waits for the player.
 var holds_place: bool = false
+## Enter world opens it; the pause screen reads world.state.
+var world: OwnWorld = OwnWorld.new()
 
 var _next_net_id: int = 1
 var _target: String = ""
@@ -91,7 +93,7 @@ func join(address: String) -> Error:
 	last_error.clear()
 	refusal_reason = -1
 	refusal_message = ""
-	var target: Array = parse_address(address)
+	var target: Array = ServerAddress.parse(address)
 	_target = "%s:%d" % target
 	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
 	var err: Error = peer.create_client(target[0], target[1])
@@ -324,19 +326,6 @@ func _host_ended_match() -> void:
 	_record_error(&"host_ended", {})
 	leave()
 	multiplayer.server_disconnected.emit()
-
-
-## "1.2.3.4:7777" -> ["1.2.3.4", 7777]. Missing or bad port uses DEFAULT_PORT.
-static func parse_address(text: String) -> Array:
-	var address: String = text.strip_edges()
-	var port: int = DEFAULT_PORT
-	var colon: int = address.rfind(":")
-	if colon > 0 and address.substr(colon + 1).is_valid_int():
-		port = address.substr(colon + 1).to_int()
-		address = address.substr(0, colon)
-	if address.is_empty():
-		address = "127.0.0.1"
-	return [address, port]
 
 
 ## Unique id for anything spawned during a session. Authority only.

@@ -1,8 +1,8 @@
 ## Every SettingData row can be drawn and edits a real Settings key; no two rows share a key.
 extends GutTest
 
-const PAGES: Array[StringName] = [&"controls", &"aim", &"graphics", &"audio", &"accessibility", &"comfort"]
-const KINDS: Array[StringName] = [&"toggle", &"slider", &"choice"]
+const PAGES: Array[StringName] = [&"controls", &"aim", &"graphics", &"audio", &"accessibility", &"comfort", &"network"]
+const KINDS: Array[StringName] = [&"toggle", &"slider", &"choice", &"number"]
 
 
 func test_every_row_is_complete() -> void:
@@ -22,7 +22,7 @@ func test_every_row_is_complete() -> void:
 		var full_key: String = "%s/%s" % [row.section, row.key]
 		assert_false(seen.has(full_key), "%s and %s share %s" % [id, seen.get(full_key, &""), full_key])
 		seen[full_key] = id
-		if row.kind == &"slider":
+		if row.kind == &"slider" or row.kind == &"number":
 			assert_lt(row.min_value, row.max_value, "%s min < max" % id)
 			assert_gt(row.step, 0.0, "%s step" % id)
 		if row.kind == &"choice":

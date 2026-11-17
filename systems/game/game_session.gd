@@ -233,7 +233,7 @@ func return_to_menu() -> void:
 func restart() -> void:
 	bank_run_xp()
 	get_tree().paused = false
-	(deploy_vote.back_to_hub if Net.is_coop(multiplayer) or Net.changing_place else UI.reload).call()
+	(deploy_vote.back_to_hub if Net.is_coop(multiplayer) or Net.changing_place else Net.world.reload).call()
 
 
 func quit_game() -> void:

@@ -2,7 +2,7 @@
 extends SceneTree
 
 const MENU_SCENE: String = "res://systems/ui/main_menu.tscn"
-## Join and Host and play land in the hub (F-47 step 4).
+## Join and Enter world land in the hub (F-47 step 4, F-66 step 2).
 const SESSION_SCENE: String = "res://systems/game/hub_session.tscn"
 const TARGET: String = "127.0.0.1:24659"
 const HOST_PORT: int = 24658
@@ -25,7 +25,7 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	create_timer(20.0).timeout.connect(func() -> void: _finish("watchdog expired"))
+	create_timer(50.0 if _mode == "friend" else 20.0).timeout.connect(func() -> void: _finish("watchdog expired"))
 	_settings = root.get_node("Settings")
 	_net = root.get_node("Net")
 	_settings.config_path = "user://test_coop_menu_%s.cfg" % _mode
@@ -41,6 +41,8 @@ func _run() -> void:
 			await _cancel_flow()
 		"host":
 			await _host_flow()
+		"friend":
+			await _host_flow(true)
 		_:
 			_failures.append("Unknown mode: " + _mode)
 	_finish()
@@ -80,7 +82,7 @@ func _timeout_flow() -> void:
 	_check(not _net.is_online(), "Timeout closed the connection")
 	menu.error_dialog.action_button.pressed.emit()
 	_settings.load_settings()
-	menu.join_button.pressed.emit()
+	menu.servers_button.pressed.emit()
 	_check(menu.address_field.text == TARGET, "The next menu remembers the persisted address")
 
 
@@ -108,18 +110,24 @@ func _cancel_flow() -> void:
 	_check(_net.last_error.is_empty(), "Cancel leaves no pending failure")
 
 
-func _host_flow() -> void:
+## With a friend, the world waits for a second process to --join it (it writes <result>.ready first).
+func _host_flow(with_friend: bool = false) -> void:
 	var menu: Control = current_scene as Control
-	menu.host_button.pressed.emit()
-	_check(menu.port_field.has_focus(), "Host starts on its port field")
-	menu.port_field.text = str(HOST_PORT)
-	(menu.get_node("Screens/Root/HostPanel/Box/Start") as Button).pressed.emit()
+	_settings.set_value(&"network", &"last_port", HOST_PORT)
+	menu.enter_button.pressed.emit()
 	await _settle()
 	if current_scene.scene_file_path != SESSION_SCENE:
-		_failures.append("Host did not enter the hub scene")
+		_failures.append("Enter world did not enter the hub scene")
 		return
-	_check(_net.is_online() and _net.is_authority(), "Host opens a listen server")
-	_check(_net.pending_join.is_empty(), "Host has no pending client join")
+	_check(_net.is_online() and _net.is_authority(), "Enter world opens a listen server")
+	_check(_net.pending_join.is_empty(), "Enter world has no pending client join")
+	if with_friend:
+		FileAccess.open(_result_path + ".ready", FileAccess.WRITE).store_string("ready")
+		var until: int = Time.get_ticks_msec() + 30000
+		while current_scene.call(&"get_players").size() < 2 and Time.get_ticks_msec() < until:
+			await process_frame
+		_check(current_scene.call(&"get_players").size() == 2, "A friend's --join reached the world's hub")
+		_check(_net.is_coop(), "The world plays co-op once the friend is in")
 	var pause: InputEventAction = InputEventAction.new()
 	pause.action = &"pause"
 	pause.pressed = true
@@ -132,17 +140,17 @@ func _host_flow() -> void:
 		_failures.append("The match menu did not return to the main menu")
 		return
 	menu = current_scene as Control
-	_check(not paused, "Returning from a hosted match clears pause")
-	_check(not _net.is_online(), "Returning closes the hosted port")
+	_check(not paused, "Returning from your world clears pause")
+	_check(not _net.is_online(), "Returning closes the world's port")
+	_check(_net.world.state.is_empty(), "The menu runs no world")
 	_settings.load_settings()
-	menu.host_button.pressed.emit()
-	_check(menu.port_field.text == str(HOST_PORT), "Host remembers the persisted port")
-	_check(not menu.error_dialog.visible, "The host sees no disconnect error")
+	_check(_settings.get_value(&"network", &"last_port") == HOST_PORT, "The world port is remembered")
+	_check(not menu.error_dialog.visible, "The owner sees no disconnect error")
 
 
 func _start_join() -> void:
 	var menu: Control = current_scene as Control
-	menu.join_button.pressed.emit()
+	menu.servers_button.pressed.emit()
 	menu.address_field.text = TARGET
 	(menu.get_node("Screens/Root/JoinPanel/Box/Connect") as Button).pressed.emit()
 	await _settle()

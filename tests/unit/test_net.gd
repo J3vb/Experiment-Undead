@@ -21,10 +21,10 @@ func test_solo_is_authority() -> void:
 
 
 func test_parse_address_reads_port_or_uses_default() -> void:
-	assert_eq(NetScript.parse_address("10.0.0.5:24600"), ["10.0.0.5", 24600])
-	assert_eq(NetScript.parse_address(" myserver.lan "), ["myserver.lan", NetScript.DEFAULT_PORT])
-	assert_eq(NetScript.parse_address("host:notaport"), ["host:notaport", NetScript.DEFAULT_PORT])
-	assert_eq(NetScript.parse_address(""), ["127.0.0.1", NetScript.DEFAULT_PORT])
+	assert_eq(ServerAddress.parse("10.0.0.5:24600"), ["10.0.0.5", 24600])
+	assert_eq(ServerAddress.parse(" myserver.lan "), ["myserver.lan", NetScript.DEFAULT_PORT])
+	assert_eq(ServerAddress.parse("host:notaport"), ["host:notaport", NetScript.DEFAULT_PORT])
+	assert_eq(ServerAddress.parse(""), ["127.0.0.1", NetScript.DEFAULT_PORT])
 
 
 func test_host_goes_online_and_leave_returns_to_solo() -> void:

@@ -22,11 +22,29 @@ func test_cancel_returns_without_a_late_timeout_error() -> void:
 	await _run_flow("cancel")
 
 
-func test_host_and_play_returns_through_the_existing_match_menu() -> void:
+func test_enter_world_returns_through_the_existing_match_menu() -> void:
 	await _run_flow("host")
 
 
-func _run_flow(mode: String) -> void:
+func test_a_friend_joins_a_world_started_with_enter_world() -> void:
+	var ready_path: String = "user://test_coop_menu_friend_result.json.ready"
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(ready_path))
+	var friend: Array[int] = [-1]
+	var join_when_ready: Callable = func() -> void:
+		var until: int = Time.get_ticks_msec() + 25000
+		while not FileAccess.file_exists(ready_path) and Time.get_ticks_msec() < until:
+			await get_tree().process_frame
+		var arguments: PackedStringArray = ["--headless", "--path", ProjectSettings.globalize_path("res://")]
+		arguments.append_array(["--", "--join=127.0.0.1:24658"])
+		friend[0] = OS.create_process(OS.get_executable_path(), arguments)
+	join_when_ready.call()
+	await _run_flow("friend", 50.0)
+	if friend[0] > 0 and OS.is_process_running(friend[0]):
+		OS.kill(friend[0])
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(ready_path))
+
+
+func _run_flow(mode: String, seconds: float = 25.0) -> void:
 	_result_path = "user://test_coop_menu_%s_result.json" % mode
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(_result_path))
 	var arguments: PackedStringArray = PackedStringArray(
@@ -46,7 +64,7 @@ func _run_flow(mode: String) -> void:
 	if _pid <= 0:
 		return
 	var finished: Callable = func() -> bool: return not OS.is_process_running(_pid)
-	await wait_until(finished, 25.0, "The menu process finishes")
+	await wait_until(finished, seconds, "The menu process finishes")
 	assert_true(FileAccess.file_exists(_result_path), "The menu flow wrote its checks")
 	if not FileAccess.file_exists(_result_path):
 		return
