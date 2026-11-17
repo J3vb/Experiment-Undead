@@ -9,6 +9,7 @@ const CHEST_HEIGHT: float = 1.3
 const BOARD_CLEARANCE: float = 1.0
 const MAX_SHADOWED_LIGHTS: int = 6
 const MAX_LOCAL_LIGHTS: int = 30
+const STREET_HALF_WIDTH: float = 4.0
 
 var _hub: Level
 
@@ -73,3 +74,19 @@ func test_lights_stay_in_budget() -> void:
 			local_lights += 1
 	assert_lte(shadowed, MAX_SHADOWED_LIGHTS, "shadowed lights")
 	assert_lte(local_lights, MAX_LOCAL_LIGHTS, "real-time omni and spot lights")
+
+
+func test_hero_lodges_stand_west_of_the_street_and_block_players() -> void:
+	await wait_physics_frames(2)
+	var space: PhysicsDirectSpaceState3D = _hub.get_world_3d().direct_space_state
+	for lodge_name: String in ["LodgeLanternPost", "LodgeCommonRoom"]:
+		var lodge: Node3D = _hub.get_node_or_null("Lodges/" + lodge_name) as Node3D
+		assert_not_null(lodge, lodge_name + " is placed")
+		if lodge == null:
+			continue
+		assert_lt(lodge.global_position.x, -STREET_HALF_WIDTH, lodge_name + " stands west of the street")
+		var into: Vector3 = lodge.global_position + Vector3.UP * CHEST_HEIGHT
+		var ray: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
+			Vector3(0, CHEST_HEIGHT, into.z), into, Layers.WORLD
+		)
+		assert_false(space.intersect_ray(ray).is_empty(), lodge_name + " walls stop a player from the street")

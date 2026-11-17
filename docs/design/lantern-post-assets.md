@@ -2,7 +2,8 @@
 
 Every model the town needs to match the concept art
 ([images/lantern_post_concept.jpg](images/lantern_post_concept.jpg)), built with
-Blender Python in `tools/assets/` and exported to `assets/models/town/`. Plan and
+Blender Python in `tools/assets/` and exported to `assets/models/town/` (props) or
+`assets/models/town_large/` (buildings and the gate; the folder picks the budget). Plan and
 build order: [docs/plans/lantern-post-concept.md](../plans/lantern-post-concept.md).
 Layout map: [images/lantern_post_layout.png](images/lantern_post_layout.png).
 
@@ -17,7 +18,9 @@ replaced by these models. The generator only places them.
   slot for the shared textured material in `levels/materials/`, so the whole
   town shares a handful of materials and batches well.
 - Budgets (check_models.py): `town` 2,500 triangles / 4 materials for props;
-  new `town_large` 12,000 triangles / 6 materials for buildings and the gate.
+  `town_large` 12,000 triangles / 6 materials for buildings and the gate.
+  With six materials a building picks its slots: sign text is a Label3D and
+  lanterns are the `wall_lantern` model, both placed by the generator.
 - Colliders: buildings and blocking props get a simple box collider in the
   scene (the generator's `Block` nodes, invisible), never mesh colliders.
 - Glow parts (windows, lamps, Fenlight jars, tunnel strips) are emissive
@@ -47,6 +50,13 @@ replaced by these models. The generator only places them.
 | `Fluid` | Bio-green emissive liquid (#8DFF3A) | Fenlight jars, Deploy chevrons, tunnel strips |
 | `Paper` | Off-white notes and maps | Missions board |
 | `Screen` | Blue-green monitor glow | Technician monitors |
+
+`prop_import.gd` maps each slot to its material. Mapped now (step 2): `Logs`
+(`town_logs.tres`, round-log grain), `Planks`, `DarkWood`, `RoofSnow`
+(`town_slate.tres`), `Snow`, `Iron`, `WindowGlow` (`lit_window.tres`), plus the
+Halcyon slots the town reuses as they are (`Concrete`, `Hazard`, `Fluid`,
+`Paper`, `Screen`, `SodiumPaint`). `Canvas`, `Banner` and `SignPaint` get their
+materials in the step whose models first use them (3 and 4).
 
 ## 1. Buildings (`town_large`)
 
