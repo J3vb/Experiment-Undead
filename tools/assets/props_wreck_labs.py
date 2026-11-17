@@ -78,7 +78,7 @@ def build_lab_floor_wreck() -> None:
         jar = p._cyl(f"Jar{i}", 0.06, 0.18, (0, 0, 0), m["fluid"] if glow else m["dark"], verts=8)
         jar.rotation_euler = (0, math.radians(90), math.radians(40 * i))
         jar.location = (x, y, 0.06)
-    for i, (x, y, turn) in enumerate(((-0.1, -0.05, 30), (0.3, 0.05, -15), (-0.7, -0.35, 60))):
+    for i, (x, y, turn) in enumerate(((-0.1, -0.05, 30), (0.3, 0.05, -15), (-0.5, -0.4, 60))):
         sheet = box(f"Sheet{i}", (0.21, 0.297, 0.002), (x, y, 0.002 + i * 0.002), m["paper"])
         sheet.rotation_euler = (0, 0, math.radians(turn))
     p._merge("LabFloorWreck")
