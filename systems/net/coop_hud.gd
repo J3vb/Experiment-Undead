@@ -22,7 +22,7 @@ func get_prompt(player: Player, blocked: bool) -> String:
 	if target:
 		hold_bar.show()
 		hold_bar.value = player.revive.progress
-		return "Hold F to revive %s" % target.name
+		return "Hold to revive %s [F]" % target.name
 	return player.focus.get_prompt(player) if player.focus else ""
 
 

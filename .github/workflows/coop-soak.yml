@@ -1,0 +1,90 @@
+name: Co-op soak
+
+# Not a required check yet: the person decides that after a week of green runs.
+on:
+  pull_request:
+    paths:
+      - "core/**"
+      - "systems/**"
+      - "levels/**"
+      - "content/**"
+      - "tools/soak/**"
+      - "project.godot"
+      - ".github/workflows/coop-soak.yml"
+  schedule:
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+    inputs:
+      clients:
+        description: Bot players
+        default: "4"
+      rounds:
+        description: Rounds to finish
+        default: "20"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: coop-soak-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coop-soak:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      GODOT_VERSION: 4.7.2
+      # Pull requests: short run. Nightly and manual: 4 bots to round 20.
+      CLIENTS: ${{ github.event_name == 'pull_request' && '2' || inputs.clients || '4' }}
+      ROUNDS: ${{ github.event_name == 'pull_request' && '5' || inputs.rounds || '20' }}
+      LIMIT: ${{ github.event_name == 'pull_request' && '900' || '6600' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: godot
+          key: godot-${{ env.GODOT_VERSION }}
+
+      - name: Download Godot
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          curl -fSL --retry 3 -o godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot
+          chmod +x godot
+
+      - name: Import project
+        run: ./godot --headless --path . --import
+
+      - name: Play co-op rounds
+        run: |
+          set -o pipefail
+          timeout --signal=KILL $((LIMIT + 120))s ./godot --headless --path . --script res://tools/soak/coop_soak.gd -- \
+            --clients="$CLIENTS" --rounds="$ROUNDS" --seed=1 --timescale=4 --limit="$LIMIT" \
+            --out="$GITHUB_WORKSPACE/coop-soak" 2>&1 | tee coop-soak.log
+          if grep -E 'SCRIPT ERROR|Parse Error' coop-soak.log; then exit 1; fi
+          grep -q '^| PASS | co-op soak' coop-soak.log
+
+      - name: Write job summary
+        if: always()
+        run: |
+          echo "## Co-op soak: $CLIENTS bots, rounds 1–$ROUNDS, seed 1" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f coop-soak.log ] && grep -q '^|' coop-soak.log; then
+            sed -n '/^|/p; /^$/p' coop-soak.log >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Co-op soak stopped before producing a table; see logs.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: coop-soak-logs
+          path: |
+            coop-soak/*.json
+            coop-soak/*/godot/app_userdata/Experiment Undead/logs/
+            coop-soak.log
+          if-no-files-found: warn

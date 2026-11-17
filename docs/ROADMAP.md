@@ -27,7 +27,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-02 | Co-op clients can use doors, wall-buys and machines | #138 | F-00 | [done](plans/coop-interactions.md) | M | Done (play-test: #191) |
 | F-03 | Player footsteps and landing sounds | #103 | - | issue | S | Done |
 | F-04 | Halcyon Labs ambience | #104 | - | issue | S | Done |
-| F-05 | Rebind controls in Settings | #105 | - | [ready](plans/control-rebinding.md) | M | Ready |
+| F-05 | Rebind controls in Settings | #105 | - | [ready](plans/control-rebinding.md) | M | Building |
 | F-06 | Make the rounds 1-10 soak test a required CI check | #107 | - | issue | S | Done (branch rule: add `soak`) |
 | F-07 | Balance pass rounds 1-10 for the slice guns | #106 | F-06 | issue | S | Todo |
 | F-08 | Change log in the design doc | #110 | - | issue | S | Done |
@@ -36,8 +36,8 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-09 | v0.1 performance check | #108 | F-01..F-07, F-12, F-13 | issue | S | Todo |
 | F-10 | First play-test (the person plays) | #109 | F-09 | issue | S | Todo |
 | F-11 | Release v0.1.0 | #111 | F-10 | issue | S | Todo |
-| F-40 | Round state and power-ups in co-op (rest of #126 after F-02) | #126 | F-02 | [plan](plans/coop-round-state-power-ups.md) | M | Building |
-| F-47 | A full co-op match: co-op soak, pause, squad cards, hub and deploy flow | #213 | F-40 | [plan](plans/coop-full-match.md) | L | Ready |
+| F-40 | Round state and power-ups in co-op (rest of #126 after F-02) | #126 | F-02 | [done](plans/coop-round-state-power-ups.md) | M | Done |
+| F-47 | A full co-op match: co-op soak, pause, squad cards, hub and deploy flow | #213 | F-40 | [plan](plans/coop-full-match.md) | L | Building |
 | F-48 | Full settings screen: Graphics page with presets, then Accessibility and Comfort | - | F-05 | [ready](plans/full-settings.md) | L | Ready |
 
 ## Next: v0.2 Progression and loot

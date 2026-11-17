@@ -254,10 +254,7 @@ func _read_input(frame: InputFrame) -> void:
 		weapons.reload()
 	if is_downed:
 		return
-	if frame.has(InputFrame.NEXT_WEAPON):
-		weapons.cycle(1)
-	elif frame.has(InputFrame.PREV_WEAPON):
-		weapons.cycle(-1)
+	weapons.handle_presses(frame)
 
 
 func can_sprint() -> bool:
