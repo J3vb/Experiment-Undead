@@ -7,6 +7,8 @@ const CUFFS: PackedScene = preload("res://assets/models/gear/vest_medium.glb")
 const COMMON: RarityLook = preload("res://content/looks/rarity/common.tres")
 const PLACEHOLDERS: Array[String] = ["HandRight", "HandLeft", "SleeveRight", "SleeveLeft"]
 
+static var _warned_no_grip: Dictionary[StringName, bool] = {}
+
 var skeleton: Skeleton3D
 var mesh: MeshInstance3D
 var weapon: Weapon
@@ -48,8 +50,9 @@ func bind_weapon(current: Weapon) -> void:
 	if current == null:
 		hide()
 		return
-	profile = PlayerArmProfiles.profile(current.data.id)
+	profile = PlayerArmProfiles.profile(current.data)
 	if profile == null:
+		_warn_no_grip(current.data)
 		hide()
 		return
 	var viewmodel: Node3D = current.get_node("Viewmodel").get_child(0) as Node3D
@@ -65,6 +68,13 @@ func bind_weapon(current: Weapon) -> void:
 	_support_rest = (_support.get_meta(&"arm_support_rest", Vector3.ZERO) as Vector3 if _support else Vector3.ZERO)
 	_select_grip()
 	update_pose()
+
+
+func _warn_no_grip(data: WeaponData) -> void:
+	if data.grip != null or _warned_no_grip.has(data.id):
+		return
+	_warned_no_grip[data.id] = true
+	Log.warn(&"player", &"weapon_has_no_grip", {"weapon": String(data.id)})
 
 
 func _select_grip() -> void:

@@ -61,6 +61,8 @@ enum Slot { PRIMARY, SIDEARM }
 @export var hip_position: Vector3 = Vector3(0.22, -0.2, -0.45)
 @export var ads_position: Vector3 = Vector3(0.0, -0.118, -0.32)
 @export var viewmodel_scene: PackedScene
+## How the first-person hands hold this gun; a Reforged copy shares its base grip.
+@export var grip: GripData
 @export var fire_sound: AudioStream
 @export var dry_fire_sound: AudioStream
 @export var reload_sound: AudioStream
