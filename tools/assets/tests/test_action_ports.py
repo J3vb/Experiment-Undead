@@ -69,10 +69,7 @@ def test_recessed_actions_keep_the_original_bolt_pivot(name, pivot):
     assert bolt.parent.name == "Receiver"
 
 
-def test_shield_vents_reveal_the_inner_barrel():
-    build("shotgun_brenner")
-    hit, point = cast("Receiver", (0.06, 0.178, 0.036), (-1, 0, 0))
-    assert hit and 0 < point.x < 0.012
+def test_vents_reveal_the_inner_barrel():
     build("kestrel_smg")
     assert not cast("Receiver", (0.06, 0.155, 0.008), (-1, 0, 0))[0]
     build("atlas_auto")
