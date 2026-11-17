@@ -36,6 +36,7 @@ func before_each() -> void:
 	assert_eq(TwoPeers.host(server_root, _port, 2), OK)
 	assert_eq(TwoPeers.join(client_root, _port), OK)
 	client = _make_session(client_root)
+	client.handshake._display_name = "Mara"
 	server = _make_session(server_root)
 	var joined: Callable = func() -> bool: return server.get_players().size() == 2 and client.get_players().size() == 2
 	await wait_until(joined, 5.0, "both sessions have both players")
@@ -165,3 +166,49 @@ func test_late_joiner_receives_an_ended_match() -> void:
 	await wait_until(func() -> bool: return late_session.is_over, 5.0, "late join receives match results")
 	assert_eq(late_session._match_stats, server._match_stats)
 	assert_eq(late_session.level.process_mode, Node.PROCESS_MODE_DISABLED)
+
+
+func _host_on_client() -> Player:
+	return client.players.find_player(1)
+
+
+func _card_text(cards: SquadCards, index: int) -> String:
+	var card: VBoxContainer = cards.get_child(index) as VBoxContainer
+	return "%s|%s" % [(card.get_child(0) as Label).text, (card.get_child(2) as Label).text]
+
+
+func test_teammates_see_each_others_names_and_cards() -> void:
+	var client_id: int = client.multiplayer.get_unique_id()
+	assert_eq(server.players.find_player(client_id).display_name, "Mara", "the server keeps the hello name")
+	server.players.find_player(client_id).state_sync.publish()
+	await wait_until(func() -> bool: return client.players.find_player(client_id).display_name == "Mara", 3.0, "synced")
+	var cards: SquadCards = SquadCards.new()
+	add_child_autofree(cards)
+	cards.local_player = client.players.find_player(client_id)
+	cards.refresh()
+	assert_true(cards.visible)
+	assert_eq(cards.get_child_count(), 1, "one card: the host, not yourself")
+	assert_eq(_card_text(cards, 0), "Survivor|")
+
+
+func test_downed_teammate_card_counts_the_bleed_out_down() -> void:
+	_down(server.players.find_player(1))
+	await wait_until(func() -> bool: return _host_on_client().is_downed, 3.0, "downed state reached the client")
+	var cards: SquadCards = SquadCards.new()
+	add_child_autofree(cards)
+	cards.local_player = client.players.find_player(client.multiplayer.get_unique_id())
+	cards.refresh()
+	assert_eq(_card_text(cards, 0), "Survivor|DOWN 0:30")
+	_host_on_client().state_sync._physics_process(5.0)
+	cards.refresh()
+	assert_eq(_card_text(cards, 0), "Survivor|DOWN 0:25", "the client counts the bleed-out down between snapshots")
+	var prompt: String = client.hud.coop_hud.get_prompt(cards.local_player, false)
+	assert_eq(prompt, "Hold to revive Survivor [F]")
+
+
+func test_solo_has_no_squad_cards() -> void:
+	var cards: SquadCards = SquadCards.new()
+	add_child_autofree(cards)
+	cards.refresh()
+	assert_false(cards.visible)
+	assert_eq(cards.get_child_count(), 0)
