@@ -1,6 +1,6 @@
 # 0013. Every game is joinable; alone means solo
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-11-17
 - **Decided by:** the person asked for it (F-66); details are agent picks until the plan is approved
 
