@@ -31,6 +31,8 @@ var state_time: float = 0.0
 var target: Player
 ## The window this zombie climbs through; set by the Spawner, cleared once inside.
 var barrier: Barrier
+## The Spawner's live zombies (shared array, not a copy); separation pushes off these.
+var neighbours: Array[Zombie] = []
 
 var _max_health: float = 100.0
 var _speed: float = 1.8
@@ -291,11 +293,8 @@ func _repath_interval(distance: float) -> float:
 
 func _separation() -> Vector3:
 	var push: Vector3 = Vector3.ZERO
-	for node: Node in get_tree().get_nodes_in_group(&"enemies"):
-		if node == self:
-			continue
-		var other: Zombie = node as Zombie
-		if other == null or other.state == State.DEAD:
+	for other: Zombie in neighbours:
+		if other == self or other.state == State.DEAD:
 			continue
 		var away: Vector3 = global_position - other.global_position
 		away.y = 0.0
