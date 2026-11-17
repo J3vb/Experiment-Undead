@@ -245,6 +245,7 @@ func test_process_without_vignette_material_keeps_updating() -> void:
 
 func test_interact_badge_and_reload_hint_follow_rebinding() -> void:
 	var old_path: String = Settings.config_path
+	var old_values: Dictionary = Settings._values.duplicate(true)
 	Settings.config_path = "user://test_hud_bindings.cfg"
 	var door: Door = Door.new()
 	autofree(door)
@@ -262,8 +263,10 @@ func test_interact_badge_and_reload_hint_follow_rebinding() -> void:
 	Settings.set_binding(&"reload", 0, reload)
 	assert_eq(hud.prompt_key.text, "E", "a visible prompt shows the new key")
 	assert_eq(hud.hint_label.text, "RELOAD [T]")
-	Settings.reset_binding(&"interact")
-	Settings.reset_binding(&"reload")
-	assert_eq(hud.prompt_key.text, "F")
+	Settings.reset_to_defaults()
+	assert_eq(hud.prompt_key.text, "F", "Reset to defaults also refreshes prompts")
+	assert_eq(hud.hint_label.text, "RELOAD [R]")
+	Settings._values = old_values
+	Settings._apply_all()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(Settings.config_path))
 	Settings.config_path = old_path

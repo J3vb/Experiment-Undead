@@ -104,6 +104,7 @@ func _apply_all() -> void:
 		for key: StringName in DEFAULTS[section]:
 			_apply(section, key)
 			changed.emit(section, key, _values[section][key])
+	changed.emit(&"bindings", &"", null)
 
 
 func _apply(section: StringName, key: StringName) -> void:
