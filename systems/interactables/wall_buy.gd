@@ -1,15 +1,23 @@
 ## A gun on the wall. Buys the gun at its WeaponData cost, or refills its ammo
 ## for half that when the player already owns it (a fixed price once Reforged).
 ## Decides from the owner's facts about its guns; the gun or ammo is a grant.
+## A once_per_player rack (the secret Cryo Lance) gives its gun free, once per
+## player, and sells no ammo; who took it syncs to clients.
 class_name WallBuy
 extends Interactable
 
 @export var weapon: WeaponData
 @export var reforged_ammo_cost: int = 4000
+@export var once_per_player: bool = false
+
+## net ids of players who took the gun from a once_per_player rack.
+var taken_by: Array[int] = []
 
 
 func get_prompt(player: Player) -> String:
 	var owned: Weapon = _owned(player)
+	if once_per_player:
+		return "" if owned or taken_by.has(player.net_id) else "Take %s [F]" % weapon.display_name
 	if owned:
 		return "Buy ammo for %s [F]  %d" % [owned.data.display_name, ammo_cost(owned.data.id)]
 	return "Buy %s [F]  %d" % [weapon.display_name, weapon.cost]
@@ -23,11 +31,29 @@ func interact(player: Player, facts: Dictionary = {}) -> void:
 	if facts.is_empty():
 		facts = owner_facts(player)
 	var owned: StringName = facts.owned
-	if owned == &"":
+	if once_per_player:
+		_take(player, owned, facts.slot)
+	elif owned == &"":
 		if _pay(player, weapon.cost):
 			_grant(player, InteractionSync.Grant.GIVE, weapon, &"", facts.slot)
 	elif not facts.full and _pay(player, ammo_cost(owned)):
 		_grant(player, InteractionSync.Grant.REFILL, weapon, owned, facts.slot)
+
+
+func _take(player: Player, owned: StringName, slot: int) -> void:
+	if owned != &"" or taken_by.has(player.net_id):
+		return
+	taken_by.append(player.net_id)
+	state_changed.emit()
+	_grant(player, InteractionSync.Grant.GIVE, weapon, &"", slot)
+
+
+func net_state() -> Dictionary:
+	return {"taken_by": taken_by.duplicate()} if once_per_player else {}
+
+
+func apply_net_state(state: Dictionary) -> void:
+	taken_by.assign(state.get("taken_by", []))
 
 
 ## owned: held id of this gun or its Reforged tier (or empty); slot: that gun, or the gun in hand.

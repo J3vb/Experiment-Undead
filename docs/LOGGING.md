@@ -68,6 +68,7 @@ The server also prints every warning and error to stdout as
 | `build.previous_run_crashed` | warn | Last run did not quit cleanly; `previous_log` = its file |
 | `engine.engine_error` / `engine_script` / `engine_shader` | error | `push_error` or a script/shader error. `where`, `function`, `stack` |
 | `engine.engine_warning` | warn | `push_warning` or an engine warning |
+| `player.body_clips_missing` | warn | The player model has no third-person clips, so teammates show a still body; rebuild `player.glb` |
 | `perf.long_frames` | warn | Frames over 50 ms in the last second (`count`, `worst_ms`). Hitch at load is normal; in a round it is not |
 | `perf.low_fps` | warn | Under 50 fps for 3 s in a row (windowed builds only), with a health snapshot |
 | `perf.health` | info | Every 30 s: fps, process/physics ms, memory, objects, nodes, orphan nodes, enemies, draw calls |
@@ -85,6 +86,8 @@ The server also prints every warning and error to stdout as
 | `player.weapon_has_no_grip` | warn | A gun has no `GripData`, so it shows no first-person arms. `weapon` id; once per gun per run. Add `content/grips/<base id>.tres` and set the gun's `grip` |
 | `progression.profile_save_failed` | warn | Character could not be saved; `id`, `path`, `error` (Godot Error code). Check folder permissions and disk space |
 | `progression.profile_unreadable` | warn | Existing character is unreadable, malformed or newer; file stays untouched, this match uses a temporary character. `id`, `path`; inspect nearby engine errors |
+| `settings.binding_unknown_action` | warn | `user://settings.cfg` has a key binding for an action the game no longer has (`action`); it is ignored. Normal after an action is renamed or removed |
+| `settings.binding_malformed` | warn | A saved key binding is not a list of up to 2 `{"type": "key", "physical": n}` / `{"type": "mouse", "button": n}` entries, or names Esc (`action`); that action uses its default keys |
 | `game.game_over` | info | Final stats |
 | `net.peer_connected` / `peer_disconnected` | info | Server side, peer id |
 | `net.round_state_ignored` | warn | A round message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |

@@ -51,6 +51,8 @@ func _ready() -> void:
 	points_delta.modulate.a = 0.0
 	hint_label.text = ""
 	round_label.text = ""
+	prompt_key.text = Settings.key_name(&"interact")
+	Settings.changed.connect(_on_setting_changed)
 	$Root.add_child(VersionLabel.new())
 	Events.player_spawned.connect(_on_player_spawned)
 	Events.player_health_changed.connect(_on_health_changed)
@@ -134,6 +136,14 @@ func _update_prompt(text: String) -> void:
 		prompt_label.text = text.replace("[F]", "").strip_edges()
 
 
+func _on_setting_changed(section: StringName, _key: StringName, _value: Variant) -> void:
+	if section != &"bindings":
+		return
+	prompt_key.text = Settings.key_name(&"interact")
+	if hint_label.text.begins_with("RELOAD"):
+		hint_label.text = "RELOAD [%s]" % Settings.key_name(&"reload")
+
+
 func _format_points(value: int) -> String:
 	var digits: String = str(absi(value))
 	var index: int = digits.length() - 3
@@ -189,7 +199,7 @@ func _on_ammo_changed(player: Player, in_mag: int, reserve: int) -> void:
 	if in_mag == 0 and reserve == 0:
 		hint_label.text = "NO AMMO"
 	elif low and reserve > 0:
-		hint_label.text = "RELOAD [R]"
+		hint_label.text = "RELOAD [%s]" % Settings.key_name(&"reload")
 	else:
 		hint_label.text = ""
 

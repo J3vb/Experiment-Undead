@@ -1,6 +1,6 @@
 # Plan: Rebind controls in Settings
 
-Status: Approved
+Status: Building
 Roadmap: F-05 / issue #105
 Phase: P4
 Size: M

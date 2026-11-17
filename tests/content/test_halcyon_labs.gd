@@ -186,7 +186,7 @@ func test_things_that_move_or_vanish_are_not_baked() -> void:
 	var blocks: Array[Node] = level.get_node("NavigationRegion3D/Doors").find_children("Blocker", "StaticBody3D")
 	blocks.append_array(level.find_children("Board", "StaticBody3D"))
 	blocks.append(level.get_node("NavigationRegion3D/Machines/SpecimenVault/Body"))
-	assert_eq(blocks.size(), 11 + 5 + 1, "9 doors, 2 vent grates, 5 wall-buys, the vault")
+	assert_eq(blocks.size(), 12 + 6 + 1, "9 doors, 2 vent grates, the freezer, 6 wall-buys, the vault")
 	for node: Node in blocks:
 		assert_false((node as Block).baked, "%s is not baked" % level.get_path_to(node))
 	var planks: Array[Node] = level.get_node("Barriers").find_children("Plank*", "MeshInstance3D", true, false)

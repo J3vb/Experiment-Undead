@@ -1,6 +1,6 @@
 # Plan: Round state and power-ups in co-op
 
-Status: Building
+Status: Done
 Roadmap: F-40 / issue #126
 Phase: P7
 Size: M

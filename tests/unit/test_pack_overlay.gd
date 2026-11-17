@@ -157,11 +157,11 @@ func test_pack_keys_are_input_actions_so_rebinding_moves_them() -> void:
 	assert_false(overlay.panel.visible, "the old key no longer opens the Pack")
 	overlay._input(_key(KEY_I))
 	assert_true(overlay.panel.visible, "the rebound key opens it")
-	assert_eq(PackOverlay.key_name(&"pack_toggle"), "I", "labels follow the binding")
+	assert_eq(Settings.key_name(&"pack_toggle"), "I", "labels follow the binding")
 	InputMap.action_erase_events(&"pack_toggle")
 	for event: InputEvent in saved:
 		InputMap.action_add_event(&"pack_toggle", event)
-	assert_eq(PackOverlay.key_name(&"pack_toggle"), "Tab")
+	assert_eq(Settings.key_name(&"pack_toggle"), "Tab")
 
 
 func test_drop_and_equip_keys_go_through_their_actions() -> void:
@@ -184,3 +184,52 @@ func _key(code: Key) -> InputEventKey:
 	event.pressed = true
 	event.physical_keycode = code
 	return event
+
+
+func _click(button: MouseButton) -> InputEventMouseButton:
+	var event: InputEventMouseButton = InputEventMouseButton.new()
+	event.pressed = true
+	event.button_index = button
+	return event
+
+
+func test_pack_actions_rebound_to_mouse_buttons_work_and_relabel() -> void:
+	var old_path: String = Settings.config_path
+	Settings.config_path = "user://test_pack_bindings.cfg"
+	service.pack.add(ItemRoller.roll_weapon(session.rng, Content.weapon(&"rifle_ar"), &"rare", 17))
+	service.pack.add(ItemRoller.roll_weapon(session.rng, Content.weapon(&"rifle_ar"), &"rare", 17))
+	Settings.set_binding(&"pack_toggle", 0, _click(MOUSE_BUTTON_XBUTTON1))
+	Settings.set_binding(&"pack_drop", 0, _click(MOUSE_BUTTON_XBUTTON2))
+	Settings.set_binding(&"pack_equip", 0, _click(MOUSE_BUTTON_MIDDLE))
+	assert_eq(overlay.close_button.text, "Mouse 4 · Close", "built labels follow a rebind")
+	assert_eq(overlay.drop_button.text, "Mouse 5 · Drop")
+	assert_eq(overlay.equip_button.text, "Middle mouse · Into hands")
+	assert_eq(overlay.count.text, "Pack 2 / 6 [Mouse 4]")
+	overlay._input(_click(MOUSE_BUTTON_XBUTTON1))
+	assert_true(overlay.panel.visible, "a mouse button opens the Pack")
+	overlay._input(_click(MOUSE_BUTTON_XBUTTON2))
+	assert_eq(service.pack.items.size(), 1, "a mouse button drops")
+	var kept: Dictionary = service.pack.items[0]
+	overlay._input(_click(MOUSE_BUTTON_MIDDLE))
+	await wait_physics_frames(2)
+	assert_eq(player.weapons.current.item.data, kept, "a mouse button equips")
+	for action: StringName in [&"pack_toggle", &"pack_drop", &"pack_equip"]:
+		Settings.reset_binding(action)
+	assert_eq(overlay.close_button.text, "Tab · Close")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(Settings.config_path))
+	Settings.config_path = old_path
+
+
+func test_left_click_on_open_pack_stays_with_its_buttons() -> void:
+	var old_path: String = Settings.config_path
+	Settings.config_path = "user://test_pack_left_click.cfg"
+	service.pack.add(ItemRoller.roll_weapon(session.rng, Content.weapon(&"rifle_ar"), &"rare", 17))
+	Settings.swap_binding(&"pack_drop", 0, _click(MOUSE_BUTTON_LEFT))
+	overlay.set_open(true)
+	overlay._input(_click(MOUSE_BUTTON_LEFT))
+	assert_eq(service.pack.items.size(), 1, "a left click selects a slot instead of dropping")
+	assert_true(overlay.panel.visible)
+	overlay.set_open(false)
+	Settings.reset_binding(&"pack_drop")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(Settings.config_path))
+	Settings.config_path = old_path

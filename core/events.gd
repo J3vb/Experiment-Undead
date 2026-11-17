@@ -69,8 +69,8 @@ signal reload_started(player: Player, duration: float)
 ## A player bought a Serum.
 ## Peers: every peer (clients from the synced player state).
 signal serum_gained(player: Player, serum: SerumData)
-## A player picked up a power-up (its effect has already been applied).
-## Peers: server only.
+## A player picked up a power-up (its effect runs on the PC that owns the guns).
+## Peers: every peer. The server emits it; PowerUpDrops relays it to clients.
 signal power_up_collected(player: Player, power_up: PowerUpData)
 ## A player's shot landed on an enemy.
 ## Peers: the shooter's owner (on the claim, then again on the kill), and the

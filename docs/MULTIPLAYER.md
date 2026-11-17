@@ -26,7 +26,8 @@ already reads `InputFrame`s, so the server could replay them.
 - **Players.** `PlayerSpawner` (a `MultiplayerSpawner`) makes one `Player` per
   peer, named after the peer id, with that peer as its authority. The player's
   `net_id` is the peer id. A `MultiplayerSynchronizer` in `player.tscn` sends
-  position, body yaw and head pitch from the owner to everyone.
+  position, body yaw, head pitch and crouch from the owner to everyone
+  (teammate animations read them, F-41).
 - **Scene paths match on every peer.** The match is always `/root/GameSession`
   (clients change scene to it; the dedicated server adds it next to itself).
 - **Joining.** The client opens its connection inside `GameSession._ready()`,
@@ -94,8 +95,18 @@ already reads `InputFrame`s, so the server could replay them.
    open/hold reach every client; late joiners get one snapshot. Bought guns,
    ammo and Reforges reach the buyer as grants that name the gun they are for.
 
-After step 7, P7 continues with power-ups, round state on clients and the rest
-of #126, then a 4-player play-test to round 20 (the P7 exit test).
+8. **Round state and power-ups (done, plan `docs/plans/coop-round-state-power-ups.md`,
+   PRs #227 and this one):** the server relays round start, end and intermission
+   to every client as the same `Events`; late joiners ask once for phase, round
+   and time left. Clients never run the round loop. Power-up drops spawn through
+   a `MultiplayerSpawner` under the level (late joiners get the age); only the
+   server watches touches, picks the collector and frees the pickup. Resupply
+   and ammo packs run `PowerUp.apply_effect()` on the PC that owns the guns.
+   Protocol 11.
+
+After step 8, P7 finishes with `docs/plans/coop-full-match.md` (F-47): co-op
+soak, pause, squad cards, the hub and deploy flow, then a 4-player play-test to
+round 20 (the P7 exit test).
 
 ## Running it locally
 
