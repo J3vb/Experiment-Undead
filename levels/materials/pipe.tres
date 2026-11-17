@@ -1,6 +1,19 @@
-[gd_resource type="StandardMaterial3D" format=3]
+[gd_resource type="ShaderMaterial" load_steps=5 format=3]
+
+[ext_resource type="Shader" path="res://levels/materials/grime_shader.tres" id="shader"]
+[ext_resource type="Texture2D" path="res://assets/textures/halcyon/brushed_steel_albedo.png" id="albedo"]
+[ext_resource type="Texture2D" path="res://assets/textures/halcyon/brushed_steel_normal.png" id="normal"]
+[ext_resource type="Texture2D" path="res://assets/textures/halcyon/brushed_steel_orm.png" id="orm"]
 
 [resource]
-albedo_color = Color(0.3, 0.33, 0.33, 1)
-metallic = 0.3
-roughness = 0.45
+shader = ExtResource("shader")
+shader_parameter/base_color = Color(0.3, 0.33, 0.33, 1)
+shader_parameter/roughness = 0.6
+shader_parameter/metallic = 0.5
+shader_parameter/streaks = 0.3
+shader_parameter/floor_dirt = 0.3
+shader_parameter/stains = 0.2
+shader_parameter/albedo_map = ExtResource("albedo")
+shader_parameter/normal_map = ExtResource("normal")
+shader_parameter/orm_map = ExtResource("orm")
+shader_parameter/texel_scale = 0.8

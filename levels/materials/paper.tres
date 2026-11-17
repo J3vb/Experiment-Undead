@@ -1,0 +1,19 @@
+[gd_resource type="ShaderMaterial" load_steps=5 format=3]
+
+[ext_resource type="Shader" path="res://levels/materials/grime_shader.tres" id="shader"]
+[ext_resource type="Texture2D" path="res://assets/textures/halcyon/rubber_albedo.png" id="albedo"]
+[ext_resource type="Texture2D" path="res://assets/textures/halcyon/rubber_normal.png" id="normal"]
+[ext_resource type="Texture2D" path="res://assets/textures/halcyon/rubber_orm.png" id="orm"]
+
+[resource]
+shader = ExtResource("shader")
+shader_parameter/base_color = Color(0.69, 0.69, 0.64, 1)
+shader_parameter/roughness = 1.0
+shader_parameter/streaks = 0.2
+shader_parameter/floor_dirt = 0.2
+shader_parameter/stains = 0.3
+shader_parameter/map_normal_strength = 0.3
+shader_parameter/albedo_map = ExtResource("albedo")
+shader_parameter/normal_map = ExtResource("normal")
+shader_parameter/orm_map = ExtResource("orm")
+shader_parameter/texel_scale = 0.3

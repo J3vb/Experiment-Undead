@@ -54,7 +54,7 @@ void fragment() {
 	vec2 map_uv = mix(vec2(along, -world_pos.y), world_pos.xz, step(0.5, facing_up)) / texel_scale;
 	vec3 orm = texture(orm_map, map_uv).rgb;
 
-	ALBEDO = base_color * texture(albedo_map, map_uv).rgb * variation * (1.0 - grime * 0.75);
+	ALBEDO = base_color * COLOR.rgb * texture(albedo_map, map_uv).rgb * variation * (1.0 - grime * 0.75);
 	ROUGHNESS = clamp(roughness * orm.g + grime * 0.2 - streak * 0.35, 0.0, 1.0);
 	METALLIC = metallic * orm.b;
 	AO = orm.r;
