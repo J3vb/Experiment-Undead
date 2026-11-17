@@ -1,6 +1,6 @@
 # Plan: Halcyon Labs atmosphere and motion
 
-Status: Building
+Status: Done
 Roadmap: F-61
 Phase: P4 (v0.1 Vertical slice)
 Size: M
@@ -284,7 +284,7 @@ Hall), checked in the step 5 fps check:
 
 ## Acceptance
 
-- [ ] Every area has its accent (Guard Post flicker, Containment red beacons,
+- [x] Every area has its accent (Guard Post flicker, Containment red beacons,
       Dock fire and smoke, Labs green leak) in a look-check render.
 - [x] Steam, screens and hums start with power, also for a late joiner (test).
 - [x] Shadow budget, light bake modes and particle budget hold (tests).
@@ -309,5 +309,7 @@ Hall), checked in the step 5 fps check:
 
 - none
 
-Look amounts (fog, dust, steam, grime) are provisional picks, confirmed by
-screenshot cards after steps 2 and 5; each is a single value to change.
+Look amounts (fog, dust, steam, grime) were confirmed on the screenshot card
+after the GPU check (2026-11-17): one step up from the first pass (dust 1.5x
+and twice the speck size, truck smoke 100 particles at 3 m and 0.7 alpha,
+beacons energy 10, cables 4 cm). Each is a single value to change.
