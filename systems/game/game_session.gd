@@ -89,8 +89,8 @@ func _setup_level() -> void:
 	spawner.session = self
 	level.add_child(spawner)
 	director.spawner = spawner
+	power_up_drops.setup(level)
 	_setup_shooting()
-
 	players = PlayerSpawner.new()
 	players.name = "PlayerSpawner"
 	players.player_scene = player_scene
@@ -302,7 +302,7 @@ func check_squad() -> void:
 	if squad.is_empty():
 		return
 	for player: Player in squad:
-		if player.is_alive():
+		if player.is_alive() or player.can_self_revive():
 			return
 	_end_match(false)
 

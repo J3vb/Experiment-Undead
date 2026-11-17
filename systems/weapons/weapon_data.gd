@@ -4,7 +4,8 @@ class_name WeaponData
 extends Resource
 
 enum FireMode { SEMI, BURST, AUTO }
-enum Slot { PRIMARY, SIDEARM }
+## MELEE is the knife (content/melee/), never a gun slot, the Vault or loot.
+enum Slot { PRIMARY, SIDEARM, MELEE }
 ## What a hit does beyond damage. The server applies CHAIN and FROST; WELL fires an orb instead of a trace.
 enum Effect { NONE, CHAIN, FROST, WELL }
 

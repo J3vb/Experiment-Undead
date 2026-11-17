@@ -22,18 +22,22 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 
 | Id | Feature | Issue | Needs | Plan | Size | Status |
 |---|---|---|---|---|---|---|
-| F-00 | Foundation fixes, in the ranked order of [FOUNDATIONS.md](FOUNDATIONS.md#foundation-fixes-in-order) | - | - | per fix: 1 (done, no plan: one CI PR), 2 = F-02 (done), [3](plans/item-effects-server.md) (done), [4](plans/ids-into-data.md) (done), [5](plans/ui-router.md) (done), 6 (done, no plan: one PR per issue), [7](plans/hot-path-allocations.md) (done) | - | Todo |
+| F-00 | Foundation fixes, in the ranked order of [FOUNDATIONS.md](FOUNDATIONS.md#foundation-fixes-in-order) | - | - | per fix: 1 (done, no plan: one CI PR), 2 = F-02 (done), [3](plans/item-effects-server.md) (done), [4](plans/ids-into-data.md) (done), [5](plans/ui-router.md) (done), 6 (done, no plan: one PR per issue), [7](plans/hot-path-allocations.md) (done), 8 (done, no plan: one test-only PR per issue), 9 (done, no plan: doc lines plus a test) | - | Done |
 | F-01 | First-person arms on the guns | #102 | - | issue | S | Done (PR #136 fitted arms, sleeve fix) |
 | F-02 | Co-op clients can use doors, wall-buys and machines | #138 | F-00 | [done](plans/coop-interactions.md) | M | Done (play-test: #191) |
 | F-03 | Player footsteps and landing sounds | #103 | - | issue | S | Done |
 | F-04 | Halcyon Labs ambience | #104 | - | issue | S | Done |
-| F-05 | Rebind controls in Settings | #105 | - | needed | M | Todo |
+| F-05 | Rebind controls in Settings | #105 | - | [ready](plans/control-rebinding.md) | M | Building |
 | F-06 | Make the rounds 1-10 soak test a required CI check | #107 | - | issue | S | Done (branch rule: add `soak`) |
 | F-07 | Balance pass rounds 1-10 for the slice guns | #106 | F-06 | issue | S | Todo |
 | F-08 | Change log in the design doc | #110 | - | issue | S | Done |
-| F-09 | v0.1 performance check | #108 | F-01..F-07 | issue | S | Todo |
+| F-12 | Core loop gaps: round scaling, stuck zombies, swap, melee, slide, best round | - | - | [needed](plans/core-loop-gaps.md) | M | Building |
+| F-13 | Finish Halcyon Labs: props, co-op spawn points, vent route, secret | - | - | [needed](plans/halcyon-labs-finish.md) | M | Ready |
+| F-09 | v0.1 performance check | #108 | F-01..F-07, F-12, F-13 | issue | S | Todo |
 | F-10 | First play-test (the person plays) | #109 | F-09 | issue | S | Todo |
 | F-11 | Release v0.1.0 | #111 | F-10 | issue | S | Todo |
+| F-40 | Round state and power-ups in co-op (rest of #126 after F-02) | #126 | F-02 | [done](plans/coop-round-state-power-ups.md) | M | Done |
+| F-47 | A full co-op match: co-op soak, pause, squad cards, hub and deploy flow | #213 | F-40 | [plan](plans/coop-full-match.md) | L | Building |
 | F-12 | First Lantern Post hub: town blockout, Deploy board and ready-up vote (first slice of F-45, pulled forward for the co-op week goal) | #131 | F-02 | [approved](plans/lantern-post-hub.md) | M | Ready |
 
 ## Next: v0.2 Progression and loot
@@ -59,10 +63,9 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 
 | Id | Feature | Issue | Needs | Plan | Size | Status |
 |---|---|---|---|---|---|---|
-| F-40 | Machines, doors and power-ups in co-op (rest after F-02) | #126 | F-02 | needed | M | Todo |
-| F-41 | Third-person walk, run and downed animations | #128 | F-11 | needed | L | Todo |
+| F-41 | Third-person walk, run and downed animations | #128 | F-11 | [needed](plans/teammate-animations.md) | L | Building |
 | F-42 | Gear in first person | #129 | F-11 | needed | M | Todo |
-| F-43 | 4-player play-test to round 20 | #127 | F-40, F-41 | issue | S | Todo |
+| F-43 | 4-player play-test to round 20 | #127 | F-47, F-41 | issue | S | Todo |
 | F-44 | Finish the server package | #130 | F-43 | needed | L | Todo |
 | F-45 | Town hub Lantern Post (split into features when it starts) | #131 | F-44 | needed | L | Todo |
 | F-46 | Dyes | #132 | F-42 | needed | M | Todo |
@@ -77,6 +80,8 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 
 - v0.2 features after F-11 may run in parallel when their Needs are Done and
   they touch different systems.
+- F-40 and F-47 were pulled into Now on 2026-11-17: the person set co-op as
+  the goal for that week. They touch only co-op code, not the v0.1 rows.
 - Loot and co-op were partly built before v0.1 shipped (see
   `docs/DECISIONS.md` and `docs/MULTIPLAYER.md`). From here on, the order
   above is the order.

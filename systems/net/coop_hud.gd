@@ -12,7 +12,7 @@ func get_prompt(player: Player, blocked: bool) -> String:
 	_player = player
 	_blocked = blocked or (is_instance_valid(player) and player.session and player.session.is_over)
 	hold_bar.hide()
-	if not is_instance_valid(player) or _blocked:
+	if not is_instance_valid(player) or not player.is_inside_tree() or _blocked:
 		return ""
 	if player.is_dead:
 		return "Spectating · Respawn next round"
@@ -22,12 +22,12 @@ func get_prompt(player: Player, blocked: bool) -> String:
 	if target:
 		hold_bar.show()
 		hold_bar.value = player.revive.progress
-		return "Hold F to revive %s" % target.name
+		return "Hold to revive %s [F]" % target.name
 	return player.focus.get_prompt(player) if player.focus else ""
 
 
 func apply_frame(frame: InputFrame, delta: float) -> void:
-	if not is_instance_valid(_player):
+	if not is_instance_valid(_player) or not _player.is_inside_tree():
 		return
 	if _blocked or get_tree().paused or not _player.input_enabled:
 		frame.buttons = 0

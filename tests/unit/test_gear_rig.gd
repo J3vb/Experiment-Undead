@@ -6,16 +6,16 @@ const BODY: PackedScene = preload("res://assets/models/characters/player.glb")
 
 func test_apply_attaches_one_piece_per_slot_on_the_expected_body_bones() -> void:
 	var rig: GearRig = _rig()
-	var bones: Dictionary[StringName, StringName] = {
-		&"vest": &"spine_02", &"charm": &"spine_03", &"implant": &"forearm_L"
-	}
+	var bones: Dictionary[StringName, StringName] = {&"charm": &"spine_03", &"implant": &"forearm_L"}
 	rig.apply(_mixed_look())
 	for slot: StringName in CharacterLook.SLOTS:
-		var attachment: BoneAttachment3D = rig.skeleton.get_node(String(slot).capitalize()) as BoneAttachment3D
-		assert_not_null(attachment, String(slot) + " has a body attachment")
-		assert_eq(attachment.bone_name, bones[slot])
-		assert_eq(attachment.get_child_count(), 1, "one equipped scene per filled slot")
-		assert_same(attachment.get_parent(), rig.skeleton)
+		var holder: Node3D = rig.skeleton.get_node(String(slot).capitalize()) as Node3D
+		assert_eq(holder.get_child_count(), 1, "one equipped scene per filled slot")
+		assert_same(holder.get_parent(), rig.skeleton)
+		if bones.has(slot):
+			assert_eq((holder as BoneAttachment3D).bone_name, bones[slot], String(slot) + " follows its body bone")
+		else:
+			assert_false(holder is BoneAttachment3D, "the skinned vest is not moved by a bone a second time")
 	assert_eq(_equipped_count(rig), 3)
 
 
@@ -75,6 +75,11 @@ func test_vest_uses_body_skin_without_socket_offset_or_first_person_cuff_duplica
 	var shell: MeshInstance3D = vest.find_child("Shell", true, false) as MeshInstance3D
 	assert_same(shell.get_node(shell.skeleton), rig.skeleton, "vest bends on the body's skeleton")
 	assert_true(shell.global_transform.is_equal_approx(rig.skeleton.global_transform), "skin stays in body space")
+	var spine: int = rig.skeleton.find_bone("spine_02")
+	rig.skeleton.set_bone_pose_position(spine, rig.skeleton.get_bone_pose_position(spine) + Vector3(0.0, -0.3, 0.1))
+	rig.skeleton.set_bone_pose_rotation(spine, Quaternion(Vector3.RIGHT, 0.6))
+	await wait_process_frames(1)
+	assert_true(shell.global_transform.is_equal_approx(rig.skeleton.global_transform), "posed body moves the skin once")
 	assert_null(vest.find_child("CuffFP_L", true, false))
 	assert_null(vest.find_child("CuffFP_R", true, false))
 	for node: Node in vest.find_children("*", "BoneAttachment3D", true, false):
@@ -83,20 +88,13 @@ func test_vest_uses_body_skin_without_socket_offset_or_first_person_cuff_duplica
 		assert_same(attachment.get_node(attachment.external_skeleton), rig.skeleton)
 
 
-func test_arms_are_lowered_and_head_pitch_follows_yaw_rotated_body() -> void:
+func test_arms_are_lowered_for_previews_without_a_body_animator() -> void:
 	var rig: GearRig = _rig()
 	for side: String in ["L", "R"]:
 		var shoulder: Vector3 = rig.skeleton.get_bone_global_pose(rig.skeleton.find_bone("upperarm_" + side)).origin
 		var hand: Vector3 = rig.skeleton.get_bone_global_pose(rig.skeleton.find_bone("hand_" + side)).origin
 		assert_lt(hand.y, shoulder.y - 0.55, "arms hang down")
 		assert_almost_eq(hand.x, shoulder.x, 0.001, "hands are under the shoulders")
-	rig.body.rotation.y = PI + 0.8
-	rig.pitch_source.rotation.x = 0.4
-	rig._process(0.0)
-	var head: Transform3D = rig.skeleton.get_bone_global_pose(rig.skeleton.find_bone("head"))
-	var forward: Vector3 = (rig.skeleton.global_basis * head.basis.z).normalized()
-	var expected: Vector3 = Basis(Vector3.UP, 0.8) * Basis(Vector3.RIGHT, 0.4) * Vector3.FORWARD
-	assert_almost_eq(forward.distance_to(expected), 0.0, 0.001, "head follows synced yaw and pitch")
 
 
 func test_owner_body_and_new_pieces_cast_shadows_without_drawing_in_first_person() -> void:
@@ -176,11 +174,8 @@ func test_implant_module_follows_forearm_and_port_follows_neck_independently() -
 func _rig() -> GearRig:
 	var body: Node3D = BODY.instantiate() as Node3D
 	body.rotation.y = PI
-	var pitch: Node3D = Node3D.new()
-	body.add_child(pitch)
 	var rig: GearRig = GearRig.new()
 	rig.body = body
-	rig.pitch_source = pitch
 	body.add_child(rig)
 	add_child_autofree(body)
 	return rig

@@ -8,6 +8,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import bpy
+import check_models
 import pytest
 from mathutils import Quaternion, Vector
 from mathutils.bvhtree import BVHTree
@@ -30,6 +31,7 @@ def worn_vest(request):
     shell = bpy.data.objects["Shell"]
     vest_objects = set(bpy.context.scene.objects)
     bpy.ops.import_scene.gltf(filepath=str(ROOT / "assets/models/characters/player.glb"), disable_bone_shape=True)
+    check_models.rest_pose()
     body = [obj for obj in bpy.context.scene.objects if obj not in vest_objects and obj.type == "MESH"]
     armatures = [obj for obj in bpy.context.scene.objects if obj.type == "ARMATURE"]
     bpy.context.view_layer.update()

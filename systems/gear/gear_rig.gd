@@ -5,25 +5,17 @@ extends Node3D
 signal look_changed(look: CharacterLook)
 
 @export var body: Node3D
-@export var pitch_source: Node3D
 
 var skeleton: Skeleton3D
-var _attachments: Array[BoneAttachment3D] = []
+var _attachments: Array[Node3D] = []
 var _owner_view: bool = false
-var _head: int = -1
-var _head_rest: Quaternion
-var _head_axis: Quaternion
 
 
 func _ready() -> void:
 	skeleton = body.find_children("*", "Skeleton3D", true, false)[0] as Skeleton3D
-	_head = skeleton.find_bone("head")
-	_head_rest = skeleton.get_bone_pose_rotation(_head)
-	_head_axis = skeleton.get_bone_global_rest(_head).basis.get_rotation_quaternion()
-	# The source rig has no idle clip. Lower its A-pose arms to a relaxed stance.
+	# Relaxed arms for previews without a BodyAnimator (character screen); a playing body tree overrides them.
 	_lower_arm(&"upperarm_L", -PI / 4.0)
 	_lower_arm(&"upperarm_R", PI / 4.0)
-	set_process(pitch_source != null)
 
 
 func _lower_arm(bone_name: StringName, angle: float) -> void:
@@ -33,18 +25,13 @@ func _lower_arm(bone_name: StringName, angle: float) -> void:
 	skeleton.set_bone_pose_rotation(bone, skeleton.get_bone_pose_rotation(bone) * turn)
 
 
-func _process(_delta: float) -> void:
-	var turn: Quaternion = _head_axis.inverse() * Quaternion(Vector3.RIGHT, -pitch_source.rotation.x) * _head_axis
-	skeleton.set_bone_pose_rotation(_head, _head_rest * turn)
-
-
 func set_owner_view(value: bool) -> void:
 	_owner_view = value
 	_set_geometry(body)
 
 
 func apply(look: CharacterLook) -> void:
-	for attachment: BoneAttachment3D in _attachments:
+	for attachment: Node3D in _attachments:
 		attachment.free()
 	_attachments.clear()
 	for slot: StringName in CharacterLook.SLOTS:
@@ -67,17 +54,18 @@ func apply(look: CharacterLook) -> void:
 
 
 func _attach(visual: GearVisual) -> Node3D:
+	var piece: Node3D = visual.scene.instantiate() as Node3D
+	if visual.slot == &"vest":
+		_bind_vest(piece)
+		return piece
 	var attachment: BoneAttachment3D = BoneAttachment3D.new()
 	attachment.name = String(visual.slot).capitalize()
 	attachment.bone_name = visual.attach
 	skeleton.add_child(attachment)
 	attachment.transform = skeleton.get_bone_global_pose(skeleton.find_bone(visual.attach))
 	_attachments.append(attachment)
-	var piece: Node3D = visual.scene.instantiate() as Node3D
 	attachment.add_child(piece)
-	if visual.slot == &"vest":
-		_bind_vest(piece, attachment)
-	elif visual.slot == &"charm":
+	if visual.slot == &"charm":
 		var rest: Transform3D = skeleton.get_bone_global_rest(skeleton.find_bone(visual.attach))
 		piece.transform = rest.affine_inverse() * Transform3D(Basis.IDENTITY, Vector3(0.105, 1.38, 0.215))
 	else:
@@ -85,9 +73,14 @@ func _attach(visual: GearVisual) -> Node3D:
 	return piece
 
 
-func _bind_vest(piece: Node3D, attachment: BoneAttachment3D) -> void:
-	# Imported vest vertices and bind poses use skeleton space, rather than socket space.
-	piece.transform = attachment.transform.affine_inverse()
+func _bind_vest(piece: Node3D) -> void:
+	# Imported vest vertices and bind poses use skeleton space, so the vest sits in
+	# a fixed holder: a bone attachment would move the skin a second time.
+	var holder: Node3D = Node3D.new()
+	holder.name = "Vest"
+	skeleton.add_child(holder)
+	_attachments.append(holder)
+	holder.add_child(piece)
 	var shell: MeshInstance3D = piece.find_child("Shell", true, false) as MeshInstance3D
 	shell.skeleton = shell.get_path_to(skeleton)
 	for node: Node in piece.find_children("*", "BoneAttachment3D", true, false):

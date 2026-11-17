@@ -68,7 +68,9 @@ func setup(
 	data = p_data
 	net_id = p_net_id
 	_max_health = data.max_health * health_mult
-	_speed = data.move_speed * speed_mult * rng.randf_range(0.9, 1.1)
+	_speed = data.move_speed * speed_mult
+	if not data.uses_speed_mix:
+		_speed *= rng.randf_range(0.9, 1.1)
 	_damage = data.attack_damage * damage_mult
 	_rng = rng
 
@@ -193,7 +195,7 @@ func _tick_entering(delta: float) -> void:
 	if (
 		target
 		and _attack_cooldown <= 0.0
-		and _flat_distance(target) <= data.attack_range + HIT_SLACK
+		and ((target.global_position - global_position) * Vector3(1, 0, 1)).length() <= data.attack_range + HIT_SLACK
 		and _can_see(target)
 	):
 		_enter(State.ATTACKING)
@@ -217,20 +219,25 @@ func _tick_vault(delta: float) -> void:
 	if t >= 1.0:
 		barrier.release(self)
 		barrier = null
-		_vault_time = -1.0
-		_stuck_watch.restart(global_position)
-		_enter(State.CHASING)
+		restart_chase()
+
+
+## Chase again from where we stand (after a vault or a relocate); health is kept.
+func restart_chase() -> void:
+	_vault_time = -1.0
+	_repath_timer = 0.0
+	_stuck_watch.restart(global_position)
+	_enter(State.CHASING)
+
+
+## The round's last zombies run at least this fast so the round never stalls.
+func hurry(speed: float) -> void:
+	_speed = maxf(_speed, speed)
 
 
 ## 0..1 while vaulting through a window, -1 otherwise.
 func vault_progress() -> float:
 	return clampf(_vault_time / VAULT_TIME, 0.0, 1.0) if _vault_time >= 0.0 else -1.0
-
-
-func _flat_distance(other: Node3D) -> float:
-	var flat: Vector3 = other.global_position - global_position
-	flat.y = 0.0
-	return flat.length()
 
 
 func _tick_attacking(delta: float) -> void:
@@ -284,11 +291,7 @@ func _update_target(delta: float) -> void:
 
 
 func _repath_interval(distance: float) -> float:
-	if distance < 10.0:
-		return 0.25
-	if distance < 30.0:
-		return 0.5
-	return 1.5
+	return 0.25 if distance < 10.0 else (0.5 if distance < 30.0 else 1.5)
 
 
 func _separation() -> Vector3:
@@ -305,8 +308,7 @@ func _separation() -> Vector3:
 
 
 func _steer(wish: Vector3, delta: float) -> void:
-	var horizontal: Vector3 = Vector3(velocity.x, 0.0, velocity.z)
-	horizontal = horizontal.move_toward(wish, data.acceleration * delta)
+	var horizontal: Vector3 = Vector3(velocity.x, 0.0, velocity.z).move_toward(wish, data.acceleration * delta)
 	velocity.x = horizontal.x
 	velocity.z = horizontal.z
 
@@ -315,8 +317,7 @@ func _face(direction: Vector3, delta: float) -> void:
 	direction.y = 0.0
 	if direction.length_squared() < 0.0001:
 		return
-	var target_yaw: float = atan2(-direction.x, -direction.z)
-	rotation.y = lerp_angle(rotation.y, target_yaw, clampf(data.turn_speed * delta, 0.0, 1.0))
+	rotation.y = lerp_angle(rotation.y, atan2(-direction.x, -direction.z), clampf(data.turn_speed * delta, 0.0, 1.0))
 
 
 func _on_damaged(info: DamageInfo) -> void:

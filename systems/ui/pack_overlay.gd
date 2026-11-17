@@ -11,6 +11,9 @@ var slots: Array[Button] = []
 var tooltip: ItemTooltip
 var guns: Label
 var feed: Label
+var equip_button: Button
+var drop_button: Button
+var close_button: Button
 var _feed_left: float = 0.0
 var _selected: int = 0
 var _previous_items: int = 0
@@ -37,6 +40,7 @@ func _ready() -> void:
 	background.content_margin_bottom = 24
 	panel.add_theme_stylebox_override("panel", background)
 	resized.connect(_layout)
+	Settings.changed.connect(_on_setting_changed)
 	_layout()
 
 
@@ -82,21 +86,33 @@ func _build_panel() -> void:
 	box.add_child(spacer)
 	var actions: HBoxContainer = HBoxContainer.new()
 	box.add_child(actions)
-	var equip: Button = Button.new()
-	equip.text = "%s · Into hands" % key_name(&"pack_equip")
-	equip.pressed.connect(_equip)
-	actions.add_child(equip)
-	var discard: Button = Button.new()
-	discard.text = "%s · Drop" % key_name(&"pack_drop")
-	discard.pressed.connect(_drop)
-	actions.add_child(discard)
-	var close: Button = Button.new()
-	close.text = "%s · Close" % key_name(&"pack_toggle")
-	close.pressed.connect(set_open.bind(false))
-	actions.add_child(close)
+	equip_button = Button.new()
+	equip_button.pressed.connect(_equip)
+	actions.add_child(equip_button)
+	drop_button = Button.new()
+	drop_button.pressed.connect(_drop)
+	actions.add_child(drop_button)
+	close_button = Button.new()
+	close_button.pressed.connect(set_open.bind(false))
+	actions.add_child(close_button)
+	_update_key_labels()
 	tooltip = TOOLTIP.instantiate() as ItemTooltip
 	tooltip.hide()
 	add_child(tooltip)
+
+
+func _update_key_labels() -> void:
+	equip_button.text = "%s · Into hands" % Settings.key_name(&"pack_equip")
+	drop_button.text = "%s · Drop" % Settings.key_name(&"pack_drop")
+	close_button.text = "%s · Close" % Settings.key_name(&"pack_toggle")
+
+
+func _on_setting_changed(section: StringName, _key_name: StringName, _value: Variant) -> void:
+	if section != &"bindings":
+		return
+	_update_key_labels()
+	if service:
+		_refresh()
 
 
 func _layout() -> void:
@@ -110,7 +126,7 @@ func _layout() -> void:
 
 func _refresh() -> void:
 	var items: Array[Dictionary] = service.pack.items
-	count.text = "Pack %d / 6 [%s]" % [items.size(), key_name(&"pack_toggle")]
+	count.text = "Pack %d / 6 [%s]" % [items.size(), Settings.key_name(&"pack_toggle")]
 	if items.size() > _previous_items:
 		var item: Dictionary = items.back()
 		feed.text = "%s %s" % [String(item.get("rar", "common")).capitalize(), LootDrop.item_name(item)]
@@ -136,15 +152,6 @@ func _refresh() -> void:
 		slots[index].add_theme_stylebox_override("normal", style)
 		slots[index].add_theme_color_override("font_color", _colour(item))
 	_select(mini(_selected, maxi(items.size() - 1, 0)))
-
-
-## The first key bound to an action, for button labels; follows rebinding.
-static func key_name(action: StringName) -> String:
-	for event: InputEvent in InputMap.action_get_events(action):
-		var key: InputEventKey = event as InputEventKey
-		if key:
-			return key.as_text_physical_keycode()
-	return "?"
 
 
 static func _colour(item: Dictionary) -> Color:
@@ -182,13 +189,17 @@ func _input(event: InputEvent) -> void:
 		if panel.visible:
 			set_open(false)
 		return
-	if event is InputEventKey and event.pressed and not event.echo:
-		_key(event)
+	var key_press: bool = event is InputEventKey and not event.echo
+	var click: InputEventMouseButton = event as InputEventMouseButton
+	# Left clicks on the open Pack belong to its buttons, whatever is bound to them.
+	var shortcut_click: bool = click != null and not (panel.visible and click.button_index == MOUSE_BUTTON_LEFT)
+	if (key_press or shortcut_click) and event.pressed:
+		_on_action_event(event)
 	elif panel.visible and event is InputEventMouseMotion:
 		get_viewport().set_input_as_handled()
 
 
-func _key(event: InputEventKey) -> void:
+func _on_action_event(event: InputEvent) -> void:
 	if event.is_action_pressed(&"pack_toggle"):
 		set_open(not panel.visible)
 	elif not panel.visible:

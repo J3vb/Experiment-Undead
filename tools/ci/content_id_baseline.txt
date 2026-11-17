@@ -17,8 +17,6 @@ systems/gear/look_builder.gd: vest_light
 systems/gear/look_builder.gd: vest_medium
 systems/net/player_state_sync.gd: pistol_service
 systems/player/player.gd: second_wind
-systems/power_ups/power_up.gd: ammo_pack
-systems/power_ups/power_up.gd: resupply
 systems/power_ups/power_up_drops.gd: scavenger
 systems/serums/serum_data.gd: scavenger
 systems/serums/serum_data.gd: second_wind

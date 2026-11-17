@@ -46,7 +46,7 @@ func test_buying_a_door_opens_its_area() -> void:
 	assert_true(door.is_queued_for_deletion(), "door removed")
 	assert_null(door.get_node_or_null("Blocker"), "blocker gone at once, so the rebake does not see it")
 	assert_has(level.open_areas, &"guard_post")
-	assert_eq(get_tree().get_nodes_in_group(&"enemy_spawn").size(), 6, "Guard Post windows join")
+	assert_eq(get_tree().get_nodes_in_group(&"enemy_spawn").size(), 8, "Guard Post windows join")
 
 
 func test_door_stays_shut_without_points() -> void:
@@ -87,12 +87,12 @@ func test_power_doors_need_the_power_switch() -> void:
 func test_door_costs_match_the_maps_doc() -> void:
 	var by_area: Dictionary = {}
 	for door: Door in _doors():
-		by_area[door.opens_area] = door.cost
+		by_area[door.opens_area] = maxi(by_area.get(door.opens_area, 0), door.cost)
 	var total: int = 0
 	for cost: int in by_area.values():
 		total += cost
 	assert_eq(total, DOORS_TOTAL, "cost to open everything")
-	assert_eq(by_area.size(), 7, "every area but the start has a door")
+	assert_eq(by_area.size(), 8, "every area but the start has a door, plus the secret Cold Room")
 
 
 func test_machines_are_placed() -> void:
@@ -102,7 +102,7 @@ func test_machines_are_placed() -> void:
 	assert_eq(get_tree().get_nodes_in_group(&"exfil").size(), 1, "1 exfil point")
 	assert_not_null(level.find_child("PowerSwitch", true, false), "1 power switch")
 	var wall_buys: int = level.find_children("*", "Area3D").filter(func(n: Node) -> bool: return n is WallBuy).size()
-	assert_eq(wall_buys, 5, "four shared wall guns and the signature Coachman")
+	assert_eq(wall_buys, 6, "four shared wall guns, the signature Coachman and the Cryo Lance rack")
 	assert_eq(get_tree().get_nodes_in_group(&"wall_buy_spot").size(), 0, "no wall-gun placeholders remain")
 
 
@@ -154,7 +154,11 @@ func test_everything_open_lets_every_spawn_point_reach_the_start() -> void:
 	level.turn_power_on()
 	for door: Door in _doors():
 		door.open()
-	assert_eq(get_tree().get_nodes_in_group(&"enemy_spawn").size(), 21, "every spawn point is active")
+	assert_eq(
+		get_tree().get_nodes_in_group(&"enemy_spawn").size(),
+		25,
+		"every spawn point is active (co-op ones too; the Spawner filters by squad size)"
+	)
 	var map: RID = level.get_world_3d().navigation_map
 	var start: Vector3 = level.get_player_spawn().origin
 	var far: Vector3 = Vector3(75.0, -3.0, 8.0)
@@ -179,3 +183,15 @@ func test_coachman_wall_buy_sells_the_signature_shotgun() -> void:
 	assert_eq(player.weapons.current.data.id, &"coachman_2b")
 	assert_eq(player.weapons.current.instance.ammo_in_mag, 2)
 	assert_eq(player.wallet.points, 0, "charges the roster price once")
+
+
+func test_vent_grates_open_only_with_their_areas() -> void:
+	var mess_grate: Door = _door("VentGrateMessHall")
+	var containment_grate: Door = _door("VentGrateContainment")
+	player.wallet.set_points(5000)
+	mess_grate.interact(player)
+	assert_false(mess_grate.is_open, "a grate cannot be bought")
+	assert_eq(player.wallet.points, 5000)
+	_door("MessHallDebris").interact(player)
+	assert_true(mess_grate.is_open, "the Mess Hall grate opens with the Mess Hall")
+	assert_false(containment_grate.is_open, "the Containment grate waits for its own door")

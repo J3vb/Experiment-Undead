@@ -328,3 +328,17 @@ func test_downed_sidearm_claims_damage_but_rifles_dead_and_finished_claims_do_no
 	await _flush_claims()
 	assert_eq(pair[0].health.current, remaining, "dead players cannot claim sidearm damage")
 	assert_eq(claimant.wallet.points, points, "refused claims award no points")
+
+
+func test_knife_claims_count_as_melee_within_reach() -> void:
+	var zombie: Zombie = (await _zombies())[0]
+	var eye: Vector3 = claimant.camera.global_position
+	var before: int = claimant.wallet.points
+	client.claim_hit.rpc_id(1, zombie.name, DamageInfo.Zone.BODY, 150.0, Melee.KNIFE.id, eye + Vector3(0, 0, -6))
+	await _flush_claims()
+	assert_eq(zombie.health.current, zombie.health.max_health, "6 m is past knife reach plus slack")
+	client.claim_hit.rpc_id(1, zombie.name, DamageInfo.Zone.BODY, 150.0, Melee.KNIFE.id, eye + Vector3(0, 0, -1.5))
+	await wait_until(func() -> bool: return zombie.health.is_dead, 3.0, "knife killed")
+	var killed: Array = get_signal_parameters(Events, "enemy_killed")
+	assert_eq((killed[1] as DamageInfo).damage_type, DamageInfo.Type.MELEE)
+	assert_eq(claimant.wallet.points, before + 10 + 130, "hit points plus the melee kill")

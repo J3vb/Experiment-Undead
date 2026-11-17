@@ -27,6 +27,13 @@ func before_each() -> void:
 	Events.player_spawned.emit(player)
 
 
+func test_joining_between_rounds_shows_the_last_round() -> void:
+	Events.intermission_started.emit(8, 12.0)
+	assert_eq(hud.round_label.text, "7", "a late joiner in a break sees the round just survived")
+	Events.intermission_started.emit(1, 10.0)
+	assert_eq(hud.round_label.text, "7", "the first break leaves the label alone")
+
+
 func test_round_starts_white_and_intermission_blinks() -> void:
 	Events.round_started.emit(12, 24)
 	assert_eq(hud.round_label.text, "12")
@@ -234,3 +241,32 @@ func test_process_without_vignette_material_keeps_updating() -> void:
 	hud.center_label.modulate.a = 1.0
 	hud._process(0.1)
 	assert_almost_eq(hud.center_label.modulate.a, 0.4, 0.001)
+
+
+func test_interact_badge_and_reload_hint_follow_rebinding() -> void:
+	var old_path: String = Settings.config_path
+	var old_values: Dictionary = Settings._values.duplicate(true)
+	Settings.config_path = "user://test_hud_bindings.cfg"
+	var door: Door = Door.new()
+	autofree(door)
+	door.cost = 1500
+	player.focus = door
+	hud._process(0.0)
+	assert_eq(hud.prompt_key.text, "F")
+	var low_count: int = floori(player.weapons.current.data.magazine_size * 0.25)
+	Events.ammo_changed.emit(player, low_count, 210)
+	var interact: InputEventKey = InputEventKey.new()
+	interact.physical_keycode = KEY_E
+	var reload: InputEventKey = InputEventKey.new()
+	reload.physical_keycode = KEY_T
+	Settings.swap_binding(&"interact", 0, interact)
+	Settings.set_binding(&"reload", 0, reload)
+	assert_eq(hud.prompt_key.text, "E", "a visible prompt shows the new key")
+	assert_eq(hud.hint_label.text, "RELOAD [T]")
+	Settings.reset_to_defaults()
+	assert_eq(hud.prompt_key.text, "F", "Reset to defaults also refreshes prompts")
+	assert_eq(hud.hint_label.text, "RELOAD [R]")
+	Settings._values = old_values
+	Settings._apply_all()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(Settings.config_path))
+	Settings.config_path = old_path

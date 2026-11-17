@@ -286,3 +286,16 @@ tt = t(0.5)
 drive = np.sin(2 * np.pi * 148 * tt) + 0.45 * np.sin(2 * np.pi * 296 * tt)
 feed = np.sin(2 * np.pi * 740 * tt) * (0.65 + 0.35 * np.cos(2 * np.pi * 28 * tt))
 save("bastion_spin_up.wav", drive * 0.7 + feed * 0.2)
+
+# Wall radio (Signal in the Static): a clean carrier tone with a soft attack; the
+# game plays it at three pitches. Its own seed leaves all earlier sounds unchanged.
+rng = np.random.default_rng(41)
+tt = t(0.7)
+env = np.minimum(tt * 40, 1) * np.exp(-tt * 3.5)
+hiss = lowpass(rng.standard_normal(len(tt)), 0.3) * 0.05
+save("radio_tone.wav", (np.sin(2 * np.pi * 660 * tt) + 0.2 * np.sin(2 * np.pi * 1320 * tt)) * env + hiss, peak=0.5)
+
+# A wrong radio: a short burst of band-limited static.
+tt = t(0.45)
+burst = lowpass(rng.standard_normal(len(tt)), 0.45) * np.exp(-tt * 6) * (0.7 + 0.3 * np.sin(2 * np.pi * 31 * tt))
+save("radio_static.wav", burst, peak=0.45)

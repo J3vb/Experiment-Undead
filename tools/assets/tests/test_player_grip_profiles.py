@@ -2,7 +2,6 @@
 
 import itertools
 import json
-import math
 import os
 import sys
 
@@ -17,6 +16,7 @@ import bmesh
 import build_models
 import character_rig
 import finish
+import grip_checks
 import player_arms_model as arms
 import player_body_model as body
 import player_grip_profiles as profiles
@@ -154,15 +154,9 @@ def test_angled_stop_support_uses_short_digits_instead_of_wrapping_the_entire_fo
 
 
 def test_stock_trigger_finger_reaches_forward_without_dorsal_mcp_hyperextension():
-    across, along, inward = arms._frame(-1)
-    root = Vector((-0.675, -0.017, 0.985)) - across * 0.024
-    points = arms._finger_path(root, -1, 0.032, 0, "brenner_trench")
-    for station in (1, 2, 3):
-        direction = (points[station] - points[0]).normalized()
-        extension = math.degrees(math.atan2(-direction.dot(inward), direction.dot(along)))
-        abduction = math.degrees(math.atan2(direction.dot(across), direction.dot(along)))
-        assert -75 < extension < 30, "the trigger reach must not bend backward into the glove's dorsal side"
-        assert abs(abduction) < 30, "the proximal index must follow the palm before its distal curl"
+    across, _along, _inward = arms._frame(-1)
+    root = grip_checks.ROOT - across * 0.024
+    grip_checks.assert_index_reach(arms._finger_path(root, -1, grip_checks.WIDTH, 0, "brenner_trench"))
 
 
 def test_fitted_gloves_keep_rigid_hand_weights_after_join_and_cleanup(monkeypatch):

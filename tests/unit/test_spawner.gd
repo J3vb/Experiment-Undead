@@ -1,5 +1,7 @@
 extends GutTest
 
+const RULES: WaveRules = preload("res://content/waves/default_waves.tres")
+
 
 func test_missing_spawn_group_is_recorded_in_the_structured_log() -> void:
 	var spawner: Spawner = Spawner.new()
@@ -56,3 +58,54 @@ func test_zombies_of_another_spawner_do_not_push() -> void:
 	var a: Zombie = _zombie(_spawner(), Vector3.ZERO)
 	_zombie(_spawner(), Vector3(0.5, 0, 0))
 	assert_eq(a._separation(), Vector3.ZERO)
+
+
+func test_speed_mix_enemies_roll_a_design_tier() -> void:
+	var spawner: Spawner = _spawner()
+	spawner.session.rng.seed = 3
+	var walker: EnemyData = load("res://content/enemies/zombie_walker.tres") as EnemyData
+	var rules: WaveRules = RULES
+	assert_almost_eq(spawner._speed_multiplier(walker, 1, rules) * walker.move_speed, 1.2, 0.0001)
+	for i: int in 20:
+		var speed: float = spawner._speed_multiplier(walker, 20, rules) * walker.move_speed
+		assert_true(
+			is_equal_approx(speed, 2.6) or is_equal_approx(speed, 4.2) or is_equal_approx(speed, 5.6),
+			"round 20 speed %.2f is a design tier" % speed
+		)
+
+
+func test_speed_mix_zombie_moves_at_its_tier_exactly() -> void:
+	var spawner: Spawner = _spawner()
+	var walker_path: String = "res://content/enemies/zombie_walker.tres"
+	var data: Array = [walker_path, Net.allocate_id(), 1.0, 2.6 / 1.2, 1.0, ^"", Vector3.ZERO]
+	var zombie: Zombie = spawner._create(data) as Zombie
+	autofree(zombie)
+	assert_almost_eq(zombie._speed, 2.6, 0.0001)
+
+
+func test_fixed_speed_enemies_keep_their_own_speed() -> void:
+	var spawner: Spawner = _spawner()
+	var bloater: EnemyData = load("res://content/enemies/zombie_bloater.tres") as EnemyData
+	var rules: WaveRules = RULES
+	assert_eq(spawner._speed_multiplier(bloater, 20, rules), 1.0)
+
+
+func test_coop_points_wait_for_three_players() -> void:
+	var spawner: Spawner = _spawner()
+	spawner.spawn_group = &"test_coop_spawn"
+	var point: ZombieSpawnPoint = ZombieSpawnPoint.new()
+	point.min_players = 3
+	point.add_to_group(spawner.spawn_group)
+	add_child_autofree(point)
+	var players: Array[Node3D] = []
+	for i: int in 3:
+		var player: Node3D = Node3D.new()
+		player.position = Vector3(100, 0, 0)
+		add_child_autofree(player)
+		players.append(player)
+	players[0].add_to_group(&"players")
+	assert_null(spawner._pick_marker(0.0), "1 player: the co-op point is skipped")
+	players[1].add_to_group(&"players")
+	assert_null(spawner._pick_marker(0.0), "2 players: still skipped")
+	players[2].add_to_group(&"players")
+	assert_same(spawner._pick_marker(0.0), point, "3 players: it can be picked")

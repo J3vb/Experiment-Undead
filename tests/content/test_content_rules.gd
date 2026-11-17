@@ -79,13 +79,13 @@ func test_wave_rules() -> void:
 		var rules: WaveRules = load(path) as WaveRules
 		if rules == null:
 			continue
-		assert_gt(rules.base_count, 0, path + " base_count > 0")
+		assert_false(rules.early_counts.is_empty(), path + " has early counts")
 		assert_gt(rules.max_alive, 0, path + " max_alive > 0")
 		assert_gt(rules.spawn_interval_min, 0.0, path + " spawn_interval_min > 0")
 		assert_gte(
 			rules.spawn_interval_start, rules.spawn_interval_min, path + " spawn_interval_start >= spawn_interval_min"
 		)
-		assert_gte(rules.max_speed_multiplier, 1.0, path + " max_speed_multiplier >= 1")
+		_check_speed_bands(rules, path)
 		for index: int in range(rules.enemy_mix.size()):
 			var entry: EnemySpawnEntry = rules.enemy_mix[index]
 			var field: String = "%s enemy_mix[%d]" % [path, index]
@@ -146,3 +146,16 @@ func _check_resource_numbers(resource: Resource, field: String, visited: Array[R
 			assert_true(chance == -1.0 or (chance >= 0.0 and chance <= 1.0), field + "." + name + " is -1 or 0..1")
 			continue
 		_check_numbers(resource.get(name), field + "." + name, visited)
+
+
+func _check_speed_bands(rules: WaveRules, path: String) -> void:
+	assert_false(rules.speed_bands.is_empty(), path + " has speed bands")
+	var last_round: int = 0
+	for band: SpeedBand in rules.speed_bands:
+		assert_gt(band.first_round, last_round, path + " speed bands rise in first_round")
+		last_round = band.first_round
+		assert_eq(band.weights.size(), rules.speed_tiers.size(), path + " one weight per speed tier")
+		var total: float = 0.0
+		for weight: float in band.weights:
+			total += weight
+		assert_almost_eq(total, 1.0, 0.001, path + " speed band weights sum to 1")

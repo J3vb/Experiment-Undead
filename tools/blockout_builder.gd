@@ -1,5 +1,6 @@
 ## Turns levels/<map>/layout.json into levels/<map>/blockout.tscn: floors,
-## ceilings, panelled walls with door and window cuts, ramps and ceiling lights.
+## ceilings, panelled walls with door and window cuts, ramps, ceiling lights and
+## box props (tables, tanks, generators) under each room's Props node.
 ## Rooms with "lights": false (the small spaces behind windows) get no lights.
 ## Never hand-edit the output; change the JSON and run this again:
 ##   godot --headless --path . -s res://tools/blockout_builder.gd -- halcyon_labs
@@ -38,13 +39,42 @@ static func load_layout(map_id: String) -> Dictionary:
 static func build(layout: Dictionary) -> Node3D:
 	var root: Node3D = Node3D.new()
 	root.name = "Blockout"
-	var openings: Array = layout.get("openings", [])
+	var openings: Array = _mark_ramp_ends(layout.get("openings", []), layout.get("ramps", []))
 	for room: Dictionary in layout["rooms"]:
 		_build_room(root, room, openings)
 	var ramps: Node3D = _child(root, root, "Ramps")
 	for i: int in (layout.get("ramps", []) as Array).size():
 		_build_ramp(root, ramps, layout["ramps"][i], i)
+	for prop: Dictionary in layout.get("props", []):
+		_build_prop(root, prop)
 	return root
+
+
+## box = [x, bottom above the room floor, z, size x, size y, size z] in map coordinates.
+static func _build_prop(root: Node3D, prop: Dictionary) -> void:
+	var room: Node3D = root.get_node(NodePath(prop["room"])) as Node3D
+	var props: Node3D = room.get_node_or_null(^"Props") as Node3D
+	if props == null:
+		props = _child(root, room, "Props")
+	var b: Array = prop["box"]
+	var size: Vector3 = Vector3(b[3], b[4], b[5])
+	var at: Vector3 = Vector3(b[0], room.position.y + float(b[1]) + size.y * 0.5, b[2]) - room.position
+	_block(root, props, prop["id"], size, at, prop["material"])
+
+
+## An opening where a ramp ends gets no sill: the ramp fills the cut, and a
+## sill top above the sloped ramp surface is a lip that stops zombies.
+static func _mark_ramp_ends(openings: Array, ramps: Array) -> Array:
+	var out: Array = []
+	for opening: Dictionary in openings:
+		var marked: Dictionary = opening.duplicate()
+		var at: Vector3 = Vector3(opening["at"][0], float(opening["floor"]), opening["at"][1])
+		for ramp: Dictionary in ramps:
+			for end: Array in [ramp["from"], ramp["to"]]:
+				if at.distance_to(Vector3(end[0], end[1], end[2])) < 0.01:
+					marked["ramp_end"] = true
+		out.append(marked)
+	return out
 
 
 static func _build_room(root: Node3D, room: Dictionary, openings: Array) -> void:
@@ -81,15 +111,15 @@ static func _build_wall(
 	var h: float = edge[3]
 	var basis: Basis = Basis(Vector3.UP, atan2(normal.x, normal.z))
 	var along: Vector3 = basis.x
-	var cuts: Array[Vector3] = _cuts(start, normal, length, openings)
+	var cuts: Array[Vector4] = _cuts(start, normal, length, openings)
 	var wall_origin: Vector3 = start + normal * WALL_THICKNESS * 0.5 - centre
 	var t0: float = 0.0
 	var n: int = 0
-	for cut: Vector3 in cuts:
+	for cut: Vector4 in cuts:
 		_wall_run(root, walls, "%sRun%d" % [label, n], Transform3D(basis, wall_origin + along * t0), cut.x - t0, h)
 		var mid: Vector3 = wall_origin + along * (cut.x + cut.y) * 0.5
 		var width: float = cut.y - cut.x
-		if cut.z > 0.0:
+		if cut.z > 0.0 and cut.w == 0.0:
 			_cut_piece(root, walls, "%sSill%d" % [label, n], Transform3D(basis, mid), Vector3(width, cut.z, 0))
 		var top: float = cut.z + DOOR_HEIGHT
 		_cut_piece(root, walls, "%sLintel%d" % [label, n], Transform3D(basis, mid), Vector3(width, h - top, top))
@@ -98,17 +128,19 @@ static func _build_wall(
 	_wall_run(root, walls, "%sRun%d" % [label, n], Transform3D(basis, wall_origin + along * t0), length - t0, h)
 
 
-## Openings on this edge as (start t, end t, cut floor above the room floor), sorted along the wall.
-static func _cuts(start: Vector3, normal: Vector3, length: float, openings: Array) -> Array[Vector3]:
+## Openings on this edge as (start t, end t, cut floor above the room floor, 1 if a ramp ends there),
+## sorted along the wall.
+static func _cuts(start: Vector3, normal: Vector3, length: float, openings: Array) -> Array[Vector4]:
 	var along: Vector3 = Basis(Vector3.UP, atan2(normal.x, normal.z)).x
-	var cuts: Array[Vector3] = []
+	var cuts: Array[Vector4] = []
 	for opening: Dictionary in openings:
 		var at: Vector3 = Vector3(opening["at"][0], start.y, opening["at"][1])
 		var t: float = (at - start).dot(along)
 		if absf((at - start).dot(normal)) < 0.01 and t > 0.0 and t < length:
 			var half: float = float(opening["width"]) * 0.5
-			cuts.append(Vector3(t - half, t + half, float(opening["floor"]) - start.y))
-	cuts.sort_custom(func(a: Vector3, b: Vector3) -> bool: return a.x < b.x)
+			var ramp_end: float = 1.0 if opening.get("ramp_end", false) else 0.0
+			cuts.append(Vector4(t - half, t + half, float(opening["floor"]) - start.y, ramp_end))
+	cuts.sort_custom(func(a: Vector4, b: Vector4) -> bool: return a.x < b.x)
 	return cuts
 
 

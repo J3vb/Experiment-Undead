@@ -44,7 +44,7 @@ func test_prompt_names_nearby_teammate_and_bar_tracks_hold() -> void:
 	teammate.is_downed = true
 	player.revive.progress = 0.5
 	hud._process(0.0)
-	assert_eq(hud.prompt_label.text, "Hold F to revive Rook")
+	assert_eq(hud.prompt_label.text, "Hold to revive Rook")
 	assert_true(hud.coop_hud.hold_bar.visible)
 	assert_almost_eq(hud.coop_hud.hold_bar.value, 0.5, 0.001)
 	teammate.position.x = 2.0
@@ -76,3 +76,16 @@ func test_held_input_uses_frames_and_pause_cancels() -> void:
 	assert_almost_eq(player.revive.progress, 0.0, 0.001)
 	assert_false(hud.prompt_box.visible)
 	assert_false(hud.coop_hud.hold_bar.visible)
+
+
+func test_prompt_and_frames_skip_a_player_that_left_the_tree() -> void:
+	var gone: Player = _make_player("Gone")
+	gone.get_parent().remove_child(gone)
+	assert_eq(hud.coop_hud.get_prompt(gone, false), "", "the server went away and took the player out")
+	hud.coop_hud.apply_frame(InputFrame.new(), 0.016)
+	assert_null(gone.revive.nearest_target())
+	hud._player = gone
+	gone.free()
+	hud._process(0.016)
+	hud._physics_process(0.016)
+	assert_eq(hud.prompt_label.text, "", "a freed local player shows no prompt and raises no error")

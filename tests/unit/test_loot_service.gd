@@ -3,7 +3,6 @@ extends GutTest
 
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
 const WALKER: EnemyData = preload("res://content/enemies/zombie_walker.tres")
-const RUNNER: EnemyData = preload("res://content/enemies/zombie_runner.tres")
 const BLOATER: EnemyData = preload("res://content/enemies/zombie_bloater.tres")
 
 var session: GameSession
@@ -77,7 +76,7 @@ func test_source_chances_follow_enemy_data() -> void:
 		var curve: float = minf(0.015 + round_number * 0.001, 0.05)
 		assert_almost_eq(LootService.drop_chance(WALKER, round_number), curve, 0.0001, "walker round curve")
 	assert_almost_eq(LootService.drop_chance(WALKER, 1), 0.016, 0.0001)
-	assert_almost_eq(LootService.drop_chance(RUNNER, 100), 0.05, 0.0001)
+	assert_almost_eq(LootService.drop_chance(WALKER, 100), 0.05, 0.0001)
 	assert_eq(LootService.drop_chance(BLOATER, 1), 0.05)
 	assert_eq(LootService.drop_chance(BLOATER, 40), 0.05)
 
