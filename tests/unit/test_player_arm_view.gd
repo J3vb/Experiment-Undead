@@ -60,9 +60,9 @@ func test_rifle_uses_the_imported_rig_and_hides_only_placeholder_hands() -> void
 	_assert_grip_targets(holder)
 
 
-func test_rifle_arm_meshes_use_the_scope_excluded_layer_without_shadows() -> void:
+func test_scoped_arm_meshes_use_the_scope_excluded_layer_without_shadows() -> void:
 	var holder: WeaponHolder = _holder()
-	var weapon: Weapon = _give(holder)
+	var weapon: Weapon = _give(holder, &"talon_dmr")
 	var lens: ScopeLens = weapon.find_child("ScopeLens", true, false) as ScopeLens
 	for node: Node in holder.arm_view.find_children("*", "GeometryInstance3D", true, false):
 		var geometry: GeometryInstance3D = node as GeometryInstance3D

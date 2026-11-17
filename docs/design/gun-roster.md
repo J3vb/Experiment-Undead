@@ -8,6 +8,7 @@ The plan for every base gun in version 1: what each one is for, where you get it
 | --- | --- | --- |
 | Roster size | **22 base guns**: the 12 in the design doc plus 10 new | Chosen 2026-11-15 |
 | Projectile weapons (crossbow, grenade launcher) | **No, bullets only.** Every gun is hitscan, so no projectile system is needed. Explosives stay with grenades and the Siphon | Chosen 2026-11-15 |
+| In-game names of the four wall guns | **Concept codes**: AR-17 (`rifle_ar`), BR-12 (`brenner_trench`), VX-9 (`kestrel_smg`), MR-28 (`talon_dmr`); Reforged versions add " Reforged". Ids stay. The family names below (Vanguard AR, Brenner Trench, Kestrel SMG, Talon DMR) stay design names, as in the balance CSVs | Chosen 2026-11-17 (F-72) |
 | Everything else in this file (names, stats, sources, unlock levels, traits, build order) | Recommended picks | Provisional |
 
 ## How loot uses the roster
@@ -172,6 +173,6 @@ Build A1 first: the Vault in v0.1 needs those guns and they need no new code. Si
 
 ## Open items
 
-- The game uses prototype names that differ from the design: `rifle_ar` "AR-7" (design: Vanguard AR) and `pistol_service` "M-9 Service Pistol" (design: Warden P9). Decide whether to rename in game; `sync.csv` already flags the pistol.
+- `pistol_service` shows "M-9 Service Pistol" in game (design: Warden P9). Decide whether to rename; `sync.csv` already flags it. The rifle's name is settled: AR-17 (see Decisions).
 - The 12 designed guns keep their GDD numbers here; only the 10 new rows are new numbers.
 - Map threads place the signature wall guns; the Halcyon Labs Coachman needs a wall spot outside the Loading Dock (the start already has the Brenner).

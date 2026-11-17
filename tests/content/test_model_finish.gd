@@ -13,7 +13,7 @@ const FINISHED: Array[String] = [
 	"zombies/bloater",
 ]
 const GLOWING: Dictionary[String, String] = {
-	"weapons/rifle_ar": "OpticGlass",
+	"weapons/rifle_ar": "SightGlass",
 	"zombies/shambler": "EyeL",
 	"zombies/bloater": "Belly",
 }

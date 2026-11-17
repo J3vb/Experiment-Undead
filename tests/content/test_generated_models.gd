@@ -49,7 +49,7 @@ func test_rifle_has_moving_parts_and_muzzle() -> void:
 	var gun: Node3D = _load(RIFLE)
 	if gun == null:
 		return
-	for part: String in ["Magazine", "Bolt", "Muzzle", "Barrel", "OpticGlass"]:
+	for part: String in ["Magazine", "Bolt", "Muzzle", "Barrel", "SightGlass", "ReticleMount"]:
 		assert_not_null(gun.find_child(part, true, false), "rifle has " + part)
 	var muzzle: Node3D = gun.find_child("Muzzle", true, false) as Node3D
 	if muzzle:
@@ -293,11 +293,40 @@ func _rearmost_scope_z(node: Node, xform: Transform3D) -> float:
 
 
 func test_scope_display_sits_behind_the_rebuilt_eyepiece() -> void:
-	for path: String in [RIFLE, TALON, CORVID]:
+	for path: String in [TALON, CORVID]:
 		var gun: Node3D = _load(path)
 		var rear: float = _rearmost_scope_z(gun, Transform3D.IDENTITY)
 		assert_lt(rear, SCOPE_LENS_Z, path + " eyepiece stays in front of the picture-in-picture lens")
 		gun.free()
+
+
+func test_rifle_red_dot_sits_on_the_aiming_line() -> void:
+	var gun: Node3D = _load(RIFLE)
+	var ads: WeaponData = load("res://content/weapons/rifle_ar.tres") as WeaponData
+	var eye: Vector3 = Vector3(0, -ads.ads_position.y, 0.5)
+	var mount: Node3D = gun.find_child("ReticleMount", true, false) as Node3D
+	var glass: MeshInstance3D = gun.find_child("SightGlass", true, false) as MeshInstance3D
+	var dot: Vector3 = _global(mount)
+	assert_almost_eq(dot.x, eye.x, 0.0005, "reticle is centred left to right")
+	assert_almost_eq(dot.y, eye.y, 0.0005, "reticle is on the eye line")
+	assert_false(MeshChecks.blocks_segment(gun, eye, dot + Vector3(0, 0, 0.0005)), "nothing blocks the view to the dot")
+	var glass_box: AABB = _global_xform(glass) * glass.get_aabb()
+	assert_true(glass_box.has_point(Vector3(eye.x, eye.y, glass_box.get_center().z)), "the dot sits behind the glass")
+	assert_lt(dot.z, eye.z, "the dot is in front of the eye")
+	gun.free()
+
+
+func _global_xform(node: Node3D) -> Transform3D:
+	var xform: Transform3D = node.transform
+	var parent: Node = node.get_parent()
+	while parent is Node3D:
+		xform = (parent as Node3D).transform * xform
+		parent = parent.get_parent()
+	return xform
+
+
+func _global(node: Node3D) -> Vector3:
+	return _global_xform(node).origin
 
 
 func test_kestrel_rear_sight_leaves_the_aiming_line_open() -> void:

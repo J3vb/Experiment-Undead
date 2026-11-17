@@ -1,7 +1,8 @@
-"""AR-7 rifle: shaped upper and lower receiver, free-float handguard, curved magazine, turned scope.
+"""AR-17 rifle: shaped upper and lower receiver, free-float handguard, curved taped magazine, Oriel red dot.
 
-Static parts join into `Receiver`. `Magazine`, `Bolt`, `Barrel` (with `MuzzleBrake`)
-and `OpticGlass` stay separate nodes for code. Gun forward is Blender +Y.
+Static parts join into `Receiver`. `Magazine`, `Bolt`, `Barrel` (with `MuzzleBrake`),
+`SightGlass` and the `ReticleMount` marker stay separate nodes for code. Gun forward is Blender +Y.
+Worn materials and the `Markings` atlas follow docs/plans/guns-concept.md.
 """
 
 import math
@@ -9,6 +10,8 @@ import math
 import gun_parts as g
 
 AXIS_Z = 0.016  # barrel and handguard centre height
+EYE_Z = 0.09  # aim line: WeaponData.ads_position.y is -EYE_Z
+RAIL_TOP = 0.059
 
 
 def upper(m, metal, black):
@@ -116,7 +119,7 @@ def lower(m, metal, black):
                 f"GripPanel{side}",
                 [(-0.118, -0.06), (-0.152, -0.14), (-0.135, -0.155), (-0.112, -0.1), (-0.104, -0.07)],
                 0.002,
-                m.material("GunMetalKnurled", m.GUN_METAL, metallic=0.8, roughness=0.45),
+                m.material("GunMetalKnurledWorn", m.GUN_METAL, metallic=0.8, roughness=0.45),
                 x=side * 0.0165,
             )
         )
@@ -196,48 +199,8 @@ def stock(m, metal, black, tan):
     ]
 
 
-def scope(m, metal, black, glass, receiver):
-    """Turned 1-4x scope on two rings, with knurled turrets and a sunshade."""
-    tube = [
-        (0.017, -0.126),
-        (0.019, -0.12),
-        (0.019, -0.092),
-        (0.016, -0.084),
-        (0.0125, -0.066),
-        (0.0125, 0.075),
-        (0.0145, 0.09),
-        (0.021, 0.14),
-        (0.021, 0.186),
-        (0.0195, 0.19),
-    ]
-    parts = [g.lathe("ScopeTube", tube, (0, 0, 0.09), black, 24)]
-    parts.append(g.lathe("Saddle", [(0.0155, -0.012), (0.0155, 0.024)], (0, 0, 0.09), black, 16))
-    for name, axis, at in (("TurretTop", "z", (0, 0.006, 0.09)), ("TurretSide", "x", (0, 0.006, 0.09))):
-        knob = [(0.007, 0.0), (0.007, 0.022), (0.0105, 0.023), (0.0105, 0.034), (0.0095, 0.036)]
-        parts.append(
-            g.lathe(
-                name, knob, at, m.material("GunMetalKnurled", m.GUN_METAL, metallic=0.8, roughness=0.45), 16, axis=axis
-            )
-        )
-    for y in (-0.045, 0.05):
-        parts.append(g.lathe(f"Ring{y}", [(0.0158, y - 0.008), (0.0158, y + 0.008)], (0, 0, 0.09), black, 20))
-        parts.append(
-            g.slab(
-                f"RingBase{y}",
-                [(y - 0.012, 0.059), (y + 0.012, 0.059), (y + 0.008, 0.08), (y - 0.008, 0.08)],
-                0.024,
-                black,
-                bevel=0.002,
-            )
-        )
-        parts.append(g.lathe(f"RingBolt{y}", [(0.004, 0.012), (0.004, 0.018)], (0, y, 0.066), metal, 8, axis="x"))
-    parts.append(g.lathe("EyeLens", [(0.016, -0.1265), (0.016, -0.1255)], (0, 0, 0.09), glass, 20))
-    m.join_into(receiver, parts)
-    g.lathe("OpticGlass", [(0.018, 0.1902), (0.018, 0.1912)], (0, 0, 0.09), glass, 20, parent=receiver)
-
-
-def magazine(m, black, receiver):
-    """Curved 30-round box magazine with side ribs; the origin sits at its feed lip."""
+def magazine(m, black, markings, receiver):
+    """Curved 30-round box magazine with side ribs and a band of tape; the origin sits at its feed lip."""
     front = [(0.104, -0.03), (0.106, -0.09), (0.114, -0.14), (0.128, -0.185)]
     rear = [(0.058, -0.185), (0.044, -0.14), (0.034, -0.09), (0.032, -0.03)]
     mag = g.slab("Magazine", front + rear, 0.034, black, bevel=0.002)
@@ -246,6 +209,8 @@ def magazine(m, black, receiver):
     ]
     rib = [(0.094, -0.05), (0.098, -0.1), (0.106, -0.15), (0.096, -0.155), (0.088, -0.105), (0.084, -0.05)]
     parts += [g.slab("MagRib", rib, 0.037, black), g.slab("MagRib2", [(y - 0.03, z) for y, z in rib], 0.037, black)]
+    for side in (-1, 1):
+        parts.append(g.marking(f"MagTape{side}", (0.062, -0.174, 0.116, -0.16), side * 0.017, side, "tape", markings))
     m.join_into(mag, parts)
     m.attach(mag, (0, 0.068, -0.03), receiver)
 
@@ -268,14 +233,16 @@ def barrel(m, metal, black, receiver):
 
 
 def build(m) -> None:
-    metal = m.material("GunMetal", m.GUN_METAL, metallic=0.8, roughness=0.4)
-    black = m.material("MatteBlack", m.MATTE_BLACK, roughness=0.75)
-    tan = m.material("Tan", m.TAN, roughness=0.8)
-    glass = m.material("OpticGlass", m.LENS, metallic=0.3, roughness=0.05)
+    metal = m.material("GunMetalWorn", m.GUN_METAL, metallic=0.8, roughness=0.4)
+    black = m.material("MatteBlackWorn", m.MATTE_BLACK, roughness=0.75)
+    tan = m.material("TanWorn", m.TAN, roughness=0.8)
+    glass = m.material("SightGlass", m.LENS, metallic=0.3, roughness=0.05)
+    markings = m.material("Markings", m.MATTE_BLACK, roughness=0.7)
     receiver = upper(m, metal, black)
-    m.join_into(receiver, lower(m, metal, black) + handguard(m, black, tan) + stock(m, metal, black, tan))
-    scope(m, metal, black, glass, receiver)
-    magazine(m, black, receiver)
+    logos = [g.marking(f"Logo{s}", (0.03, -0.074, 0.098, -0.05), s * 0.023, s, "logo", markings) for s in (-1, 1)]
+    m.join_into(receiver, lower(m, metal, black) + handguard(m, black, tan) + stock(m, metal, black, tan) + logos)
+    m.join_into(receiver, g.red_dot(m, -0.01, RAIL_TOP, EYE_Z, black, glass, markings, receiver))
+    magazine(m, black, markings, receiver)
     barrel(m, metal, black, receiver)
     bolt = g.slab("Bolt", g.rounded(-0.015, 0.012, 0.045, 0.026, 0.003), 0.002, metal, x=0.022)
     m.attach(bolt, (0.0275, 0.015, 0.019), receiver)
