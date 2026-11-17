@@ -4,6 +4,8 @@
 ## "powered" instance uniform.
 extends GutTest
 
+const HISS: String = "res://assets/audio/ambience/steam_hiss.ogg"
+
 
 func _level(power_on: bool) -> Level:
 	var level: Level = Level.new()
@@ -17,6 +19,10 @@ func _atmosphere() -> Atmosphere:
 	after.name = "Steam"
 	after.add_to_group(Atmosphere.AFTER_POWER)
 	atmosphere.add_child(after)
+	var hiss: AudioStreamPlayer3D = AudioStreamPlayer3D.new()
+	hiss.name = "Hiss"
+	hiss.stream = load(HISS) as AudioStream
+	after.add_child(hiss)
 	var before: Node3D = Node3D.new()
 	before.name = "Static"
 	before.add_to_group(Atmosphere.BEFORE_POWER)
@@ -30,10 +36,12 @@ func test_power_swaps_the_groups() -> void:
 	level.add_child(atmosphere)
 	add_child_autofree(level)
 	assert_false((atmosphere.get_node("Steam") as Node3D).visible, "steam waits for power")
+	assert_false((atmosphere.get_node("Steam/Hiss") as AudioStreamPlayer3D).playing, "silent before power")
 	assert_true((atmosphere.get_node("Static") as Node3D).visible)
 	level.turn_power_on()
 	assert_true(atmosphere.powered)
 	assert_true((atmosphere.get_node("Steam") as Node3D).visible, "steam starts with power")
+	assert_true((atmosphere.get_node("Steam/Hiss") as AudioStreamPlayer3D).playing, "and its hiss with it")
 	assert_false((atmosphere.get_node("Static") as Node3D).visible)
 
 

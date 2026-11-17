@@ -1,5 +1,6 @@
 ## SparkSpot: a burst restarts the sparks and lights the flash, the flash goes
-## out again quickly, and the next burst is scheduled inside its interval.
+## out again quickly, the crackle plays, and the next burst is scheduled inside
+## its interval.
 extends GutTest
 
 const SCENE: String = "res://systems/effects/spark_spot.tscn"
@@ -37,3 +38,10 @@ func test_bursts_again_when_the_wait_runs_out() -> void:
 	var spot: SparkSpot = _spot()
 	spot._process(spot.time_to_next() + 0.01)
 	assert_true(spot.flash.visible, "next burst fired")
+
+
+func test_burst_plays_the_crackle() -> void:
+	var spot: SparkSpot = _spot()
+	assert_not_null(spot.crackle, "scene has a crackle player")
+	spot.burst()
+	assert_true(spot.crackle.playing, "crackle plays with the sparks")
