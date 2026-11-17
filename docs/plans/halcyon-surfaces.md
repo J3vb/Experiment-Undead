@@ -36,8 +36,7 @@ In:
   prop, the kit wall panel, and the flat placeholder parts of interactables
   that sit in the map (doors, planks, machine bodies). New shared materials
   `steel`, `glass` and `rubber` for the props thread.
-- Generic decals (hazard stripes at doors, floor markings, water stains,
-  scuffs) in their own scene `levels/halcyon_labs/decals.tscn`.
+- Generic decals (hazard stripes at doors, water stains, scuffs) in their own scene `levels/halcyon_labs/decals.tscn`.
 - A content test that fails when any mesh in the map has a flat material.
 - A render tool `tools/room_shots.gd` (one picture per room) for look checks.
 
@@ -187,8 +186,7 @@ Autoloads, managers or base classes added: none.
   `rubber`, `wood_crate`; materials `pipe`, `panel_trim`, `wood`, `rust`,
   `specimen_tank` frame, new `steel`, `glass`, `rubber`; door placeholder
   material in `map.tscn`; flat parts of interactable scenes that appear in
-  the map. Drop `wall_panel` from `finish.UNFINISHED` only if the re-bake has
-  not happened yet (the re-bake follows this plan anyway).
+  the map.
 - Files: those materials, the interactable `.tscn` files with flat parts,
   `map.tscn` door lines.
 - Tests: surface test allow-list empty; `test_shared_materials.gd` for the
@@ -198,8 +196,8 @@ Autoloads, managers or base classes added: none.
 
 ### Step 4: Decals and handoff
 
-- Build: decal textures from the same script (hazard stripes, floor arrows,
-  room stencils with names from `maps.md`, water stains, scuffs);
+- Build: decal textures from the same script (hazard stripes, water stains,
+  scuffs; text stencils and arrows need lettering and go with signage later);
   `decals.tscn` with Decal nodes at doors, machines and junctions; one
   instance line in `map.tscn`. Message the build thread that the re-bake can
   run; add a "decals and materials" spot list to its fps prompt if needed.
