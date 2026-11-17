@@ -83,7 +83,10 @@ func _timeout_flow() -> void:
 	menu.error_dialog.action_button.pressed.emit()
 	_settings.load_settings()
 	menu.servers_button.pressed.emit()
-	_check(menu.address_field.text == TARGET, "The next menu remembers the persisted address")
+	var browser: Control = _browser()
+	_check(browser.address_field.text == TARGET, "The next browser remembers the persisted address")
+	_check(browser.rows.has(TARGET), "Add and join keeps the server in Recent")
+	browser.closed.emit()
 
 
 func _cancel_flow() -> void:
@@ -152,9 +155,15 @@ func _host_flow(with_friend: bool = false) -> void:
 func _start_join() -> void:
 	var menu: Control = current_scene as Control
 	menu.servers_button.pressed.emit()
-	menu.address_field.text = TARGET
-	(menu.get_node("Screens/Root/JoinPanel/Box/Connect") as Button).pressed.emit()
+	var browser: Control = _browser()
+	browser.address_field.text = TARGET
+	(browser.get_node("%AddJoin") as Button).pressed.emit()
 	await _settle()
+
+
+func _browser() -> Control:
+	var stack: Array = root.get_node("UI").get("_stack")
+	return (stack.back()["layer"] as CanvasLayer).get_child(0) as Control
 
 
 func _check_connecting() -> void:
@@ -192,6 +201,8 @@ func _finish(extra_failure: String = "") -> void:
 		if result:
 			result.store_string(JSON.stringify({"mode": _mode, "failures": _failures}))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(_settings.config_path))
+	# Loaded here: naming the class compiles it before the autoloads exist.
+	load("res://systems/ui/server_list.gd").new().remove(TARGET)
 	if _failures.is_empty():
 		print("Co-op menu %s flow passed" % _mode)
 	else:

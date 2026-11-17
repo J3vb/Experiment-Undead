@@ -116,51 +116,24 @@ func test_menu_rows_are_focusable_in_keyboard_and_gamepad_order() -> void:
 		assert_eq(button.get_node(button.focus_previous), previous)
 
 
-func test_servers_opens_direct_connect_with_focus_and_back_restores_button() -> void:
+func test_servers_opens_the_server_browser_and_back_restores_the_button() -> void:
+	menu.servers_button.grab_focus()
 	menu.servers_button.pressed.emit()
-	assert_true(menu.join_panel.visible)
-	assert_false(menu.menu.visible)
-	assert_true(menu.address_field.has_focus())
+	assert_eq(UI.top(), &"server_browser")
+	assert_null(menu.get_node_or_null("Screens/Root/JoinPanel"), "joining goes through the browser")
+	var browser: ServerBrowser = UI._stack.back()["layer"].get_child(0) as ServerBrowser
 	var cancel: InputEventAction = InputEventAction.new()
 	cancel.action = &"ui_cancel"
 	cancel.pressed = true
-	menu._input(cancel)
-	assert_false(menu.join_panel.visible)
+	browser._unhandled_key_input(cancel)
+	assert_eq(UI.top(), &"")
 	assert_true(menu.servers_button.has_focus())
 
 
-func test_bad_join_shows_exact_error_without_calling_net_join() -> void:
-	watch_signals(Net)
-	menu.servers_button.pressed.emit()
-	menu.address_field.text = "https://not a server:banana"
-	(menu.get_node("Screens/Root/JoinPanel/Box/Connect") as Button).pressed.emit()
-	assert_true(menu.error_dialog.visible)
-	assert_eq(
-		menu.error_dialog.message_label.text, "That address doesn't look right. Use something like 192.168.1.20:7777."
-	)
-	assert_signal_not_emitted(Net, "join_started")
-	assert_eq(Net.pending_join, "")
-	assert_false(Net.is_online())
-	assert_true(menu.error_dialog.action_button.has_focus())
-	var root: Control = menu.get_node("Screens/Root") as Control
-	assert_eq(root.focus_behavior_recursive, Control.FOCUS_BEHAVIOR_DISABLED)
-	assert_eq(root.mouse_behavior_recursive, Control.MOUSE_BEHAVIOR_DISABLED)
-	menu.error_dialog.action_button.pressed.emit()
-	assert_false(menu.error_dialog.visible)
-	assert_true(menu.address_field.has_focus())
-	assert_eq(root.focus_behavior_recursive, Control.FOCUS_BEHAVIOR_INHERITED)
-	assert_eq(root.mouse_behavior_recursive, Control.MOUSE_BEHAVIOR_INHERITED)
-
-
-func test_menu_restores_saved_address_after_settings_reload() -> void:
-	Settings.set_value(&"network", &"last_address", "192.168.1.20:24640")
+func test_menu_keeps_the_saved_port_after_settings_reload() -> void:
 	Settings.set_value(&"network", &"last_port", 24641)
 	Settings._values = Settings.DEFAULTS.duplicate(true)
 	Settings.load_settings()
-	var reopened: MainMenu = MENU.instantiate() as MainMenu
-	add_child_autofree(reopened)
-	reopened.servers_button.pressed.emit()
-	assert_eq(reopened.address_field.text, "192.168.1.20:24640")
 	assert_eq(Settings.get_value(&"network", &"last_port"), 24641)
 
 
@@ -246,9 +219,6 @@ func test_menu_and_coop_dialogs_fit_standard_ultrawide_and_tall_viewports() -> v
 		for button: Control in resized_menu.menu.get_children():
 			assert_true(bounds.encloses(button.get_global_rect()), "Menu at %s: %s" % [dimensions, button.name])
 		assert_eq(viewport.gui_get_focus_owner(), resized_menu.enter_button)
-		resized_menu.servers_button.pressed.emit()
-		await wait_process_frames(2)
-		assert_true(bounds.encloses(resized_menu.join_panel.get_global_rect()), "Join at %s" % dimensions)
 		resized_menu._show_error(&"timeout", {"address": "192.168.1.20:7777"})
 		await wait_process_frames(2)
 		var panel: Control = resized_menu.error_dialog.get_node("Root/Center/Panel") as Control

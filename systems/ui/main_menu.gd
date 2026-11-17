@@ -24,8 +24,6 @@ var _drift_time: float = 0.0
 @onready var credits_button: Button = $Screens/Root/Menu/Credits
 @onready var credits_panel: PanelContainer = $Screens/Root/CreditsPanel
 @onready var camera: Camera3D = $Camera3D
-@onready var join_panel: PanelContainer = $Screens/Root/JoinPanel
-@onready var address_field: LineEdit = $Screens/Root/JoinPanel/Box/Address
 @onready var error_dialog: NetErrorDialog = $NetErrorDialog
 
 
@@ -34,10 +32,7 @@ func _ready() -> void:
 	_bind_gamepad()
 	Net.world.close()
 	enter_button.pressed.connect(enter_world)
-	servers_button.pressed.connect(_open_join)
-	$Screens/Root/JoinPanel/Box/Connect.pressed.connect(_join)
-	$Screens/Root/JoinPanel/Box/Back.pressed.connect(_close_join)
-	address_field.text_submitted.connect(func(_text: String) -> void: _join())
+	servers_button.pressed.connect(_open_servers)
 	error_dialog.closed.connect(_close_error)
 	loadout_button.pressed.connect(_open_character)
 	settings_button.pressed.connect(_open_settings)
@@ -89,13 +84,9 @@ func _input(event: InputEvent) -> void:
 		return
 	if error_dialog.visible:
 		return
-	if join_panel.visible:
-		_close_join()
-	elif credits_panel.visible:
+	if credits_panel.visible:
 		_close_credits()
-	else:
-		return
-	get_viewport().set_input_as_handled()
+		get_viewport().set_input_as_handled()
 
 
 ## Your own Lantern Post: open to friends on the saved port, or offline when it cannot be
@@ -106,18 +97,10 @@ func enter_world() -> void:
 	UI.replace(&"hub")
 
 
-func _open_join() -> void:
-	menu.hide()
-	address_field.text = str(Settings.get_value(&"network", &"last_address"))
-	join_panel.show()
-	address_field.grab_focus()
-	address_field.select_all()
-
-
-func _close_join() -> void:
-	join_panel.hide()
-	menu.show()
-	servers_button.grab_focus()
+## The server browser: the only way into someone else's game.
+func _open_servers() -> void:
+	if UI.top().is_empty():
+		UI.push(&"server_browser")
 
 
 func _start_host(port: int) -> void:
@@ -131,10 +114,6 @@ func _start_host(port: int) -> void:
 		return
 	Net.place = &"hub"
 	UI.replace(&"hub")
-
-
-func _join() -> void:
-	_start_join(address_field.text)
 
 
 func _start_join(address: String) -> void:
@@ -159,10 +138,7 @@ func _show_error(reason: StringName, details: Dictionary = {}) -> void:
 func _close_error() -> void:
 	$Screens/Root.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_INHERITED
 	$Screens/Root.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_INHERITED
-	if join_panel.visible:
-		address_field.grab_focus()
-	else:
-		enter_button.grab_focus()
+	enter_button.grab_focus()
 
 
 func _open_settings() -> void:
