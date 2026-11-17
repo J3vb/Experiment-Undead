@@ -165,6 +165,7 @@ built, what was simplified on purpose, and what is still to do.
   owner-only delivery and local Pack-to-stash banking.
   Final XP precedes the menu's host-ended notice on the same reliable channel;
   graceful host leave drains client disconnects before closing its transport.
+- **Game feel camera and hitstop (F-16 steps 2-3, plans/game-feel-slice.md):** each gun points at a FeelData class file (`content/feel/`); global numbers live in `content/feel/feedback_rules.tres`. View kick, trauma shake (rotation only) and FOV punch rotate only the Camera3D; bullets, the knife and Gravity Well aim from `PlayerCamera.aim_of()` (the recoil pivot), so shake never moves the aim (tested). Kill hitstop freezes only the local camera feel and the gun's look (25 ms headshot kill, class value for shotguns 35 and marksman 30, at most 4 per second); the simulation never pauses. Simplified: the doc's "< 4 m" condition for shotgun hitstop is dropped (`hit_confirmed` has no distance), the gun in hand when the kill confirm arrives decides the class, and the killed zombie's pose does not freeze (the event carries no enemy). The "shake from your gun" slider at 0 also turns hitstop off. Viewmodel kick stays in WeaponData until F-42.
 
 ## Not started
 

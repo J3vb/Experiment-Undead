@@ -34,6 +34,9 @@ var _punch_length: float = 0.0
 var _fov_current: float = 78.0
 var _shake_time: float = 0.0
 var _noise: FastNoiseLite = FastNoiseLite.new()
+var _hold_left: float = 0.0
+var _clock: float = 0.0
+var _hitstop_times: Array[float] = []
 
 @onready var recoil_pivot: Node3D = $RecoilPivot
 @onready var camera: Camera3D = $RecoilPivot/Camera3D
@@ -51,6 +54,7 @@ func _ready() -> void:
 	Events.weapon_fired.connect(_on_weapon_fired)
 	Events.player_damaged.connect(_on_player_damaged)
 	Events.round_started.connect(_on_round_started)
+	Events.hit_confirmed.connect(_on_hit_confirmed)
 
 
 ## Where bullets go from this camera: its parent's basis, without the camera's own
@@ -147,7 +151,32 @@ func update_feel(
 	_step_shake(delta)
 
 
+## Local kill hitstop: freezes camera feel and the gun's look for seconds. Longer
+## replaces shorter, never stacks, at most max_hitstops_per_second.
+func hitstop(seconds: float) -> bool:
+	if seconds <= 0.0 or is_zero_approx(_comfort(true)):
+		return false
+	while not _hitstop_times.is_empty() and _clock - _hitstop_times[0] >= 1.0:
+		_hitstop_times.pop_front()
+	if _hitstop_times.size() >= rules.max_hitstops_per_second:
+		return false
+	_hitstop_times.append(_clock)
+	_hold_left = maxf(_hold_left, seconds)
+	var player: Player = _body as Player
+	if player and player.weapons:
+		player.weapons.hold(seconds)
+	return true
+
+
+func is_holding() -> bool:
+	return _hold_left > 0.0
+
+
 func _step_shake(delta: float) -> void:
+	_clock += delta
+	if _hold_left > 0.0:
+		_hold_left = maxf(_hold_left - delta, 0.0)
+		return
 	_trauma = maxf(_trauma - rules.trauma_decay * delta, 0.0)
 	_view_kick *= exp(-3.0 * delta / _view_kick_return)
 	var shake: float = _trauma * _trauma
@@ -193,6 +222,18 @@ func _on_weapon_fired(player: Player, weapon: Weapon) -> void:
 func _on_player_damaged(player: Player, _info: DamageInfo) -> void:
 	if player == _body and _is_local():
 		add_trauma(rules.hit_trauma, false)
+
+
+func _on_hit_confirmed(player: Player, is_kill: bool, is_headshot: bool) -> void:
+	if player != _body or not is_kill or not _is_local():
+		return
+	var weapon: Weapon = player.weapons.current if player.weapons else null
+	var feel: FeelData = weapon.data.feel if weapon and weapon.data else null
+	var ms: float = feel.kill_hitstop_ms if feel else 0.0
+	if is_headshot:
+		ms = maxf(ms, rules.headshot_kill_hitstop_ms)
+		punch_fov(-rules.headshot_kill_zoom_deg * _comfort(true), rules.headshot_kill_fov_ms / 1000.0)
+	hitstop(ms / 1000.0)
 
 
 func _on_round_started(_round_number: int, _count: int) -> void:
