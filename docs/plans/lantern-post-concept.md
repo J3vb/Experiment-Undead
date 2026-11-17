@@ -109,7 +109,7 @@ Not in (and where it goes):
 | levels/materials/town_sky.gdshader | new (step 1) | Night sky: gradient, stars, aurora bands; no textures |
 | levels/materials/town_surface.gdshader + town_mud.tres | changed / new (step 1) | Wet mud road with puddles and snow edges |
 | levels/lantern_post/snowfall.tscn, chimney_smoke.tscn | new (step 1) | `GPUParticles3D` snow around the camera area and smoke columns |
-| tools/assets/town_props.py, town_lodges.py, town_stalls.py, town_gate.py | changed / new (steps 2-5) | Blender model scripts, added to `build_models.py` MODELS like the Halcyon prop scripts |
+| tools/assets/town_props.py, town_buildings.py, town_market.py, town_gate.py | changed / new (steps 2-5) | Blender model scripts, added to `build_models.py` MODELS like the Halcyon prop scripts |
 | assets/models/town/*.glb (+ .import), docs/design/turnarounds/town/*.png | new | Lodge kit, stalls, gate, props; `.import` uses `prop_import.gd` with `light_baking=2` |
 | tools/assets/prop_import.gd | changed (step 2) | New shared slots `Canvas`, `Logs`, `Snow`, `Banner` pointing at new `levels/materials/town_*.tres` |
 | tools/assets/check_models.py, tools/turnarounds.py, .github/workflows/assets.yml | changed | Town budget raised for the gate and lodges (see Performance); turnaround reference becomes the concept image; output list |
@@ -147,8 +147,8 @@ target), and the Low preset must stay playable.
 - Lodges and stalls are one mesh each with up to 4 materials; repeated pieces
   (crates, benches, barrels) are instanced scenes so the renderer batches them.
 - Model budget for the `town` folder: 2,500 triangles and 4 materials today.
-  The gate and the big lodges need about 8,000; they get their own `town_large`
-  entry (8,000 / 4) instead of raising the small-prop limit.
+  Buildings and the gate get their own `town_large` entry (12,000 / 6) instead
+  of raising the small-prop limit. 32 models in all (asset list).
 - Snow: one `GPUParticles3D` of at most 4,000 particles near the street,
   smoke: up to 4 emitters of 64. Particles cost no CPU per frame.
 - Draw calls: under 600 with the whole street in view (444 today); step 5
@@ -177,55 +177,67 @@ target), and the Low preset must stay playable.
   spawn-line tests stay.
 - Done when: CI green, side-by-side render with the concept in the PR.
 
-### Step 2: Timber lodges
+Every model, its size, budget and material slots: [docs/design/lantern-post-assets.md](../design/lantern-post-assets.md).
+Where each one goes: [docs/design/images/lantern_post_layout.png](../design/images/lantern_post_layout.png).
+Steps 2-5 build the models in that list and replace the old grey-box houses,
+palisade gate and boxes; the generator only places models and their box
+colliders. The spawn line and the Deploy board stay where they are.
 
-- Build: `town_lodges.py` kit (log wall, plank wall, balcony, snowy roof with
-  icicles, porch with steps) and two hero lodges: "LANTERN POST" (painted sign,
-  hanging lantern) and the Common Room (balcony with string lights, dish,
-  chimney). Houses in the generator switch to the kit. New shared slots in
-  `prop_import.gd`.
-- Files: `tools/assets/town_lodges.py`, `build_models.py`, `check_models.py`,
-  `turnarounds.py`, `assets.yml`, `prop_import.gd`, `assets/models/town/*`,
-  `docs/design/turnarounds/town/*`, `levels/materials/town_*.tres`,
-  generator, scene, `tests/content/test_town_models.gd`.
-- Tests: model checks (origin, facing, slots, no flat surfaces); the step 1
-  spawn and board tests still pass with the new houses.
-- Done when: CI green, render in the PR.
+### Step 2: Material slots, budgets and the two hero lodges
 
-### Step 3: Market row
+- Build: the shared town material slots in `prop_import.gd` (Logs, Planks,
+  DarkWood, RoofSnow, Snow, Iron, Concrete, Hazard, Canvas, Banner, SignPaint,
+  WindowGlow, SodiumPaint, Fluid, Paper, Screen) with their `levels/materials/town_*.tres`;
+  the `town_large` budget (12,000 triangles, 6 materials) in `check_models.py`;
+  `town_buildings.py` with B1 `lodge_lantern_post` and B2 `lodge_common_room`.
+  The generator places them on the west side per the layout map and removes the
+  old houses there. Hero buildings first: they are the riskiest look.
+- Files: `tools/assets/town_buildings.py`, `build_models.py`, `check_models.py`,
+  `turnarounds.py`, `assets.yml`, `prop_import.gd`, `levels/materials/town_*.tres`,
+  `assets/models/town/*`, `docs/design/turnarounds/town/*`, generator, scene,
+  `tests/content/test_town_models.gd`.
+- Tests: model checks (origin, facing, only known slots, budgets, no flat
+  surfaces); spawn line, board ray and light budget tests still pass.
+- Done when: CI green, render next to the concept in the PR, the person approves
+  the lodge look (decision card) before step 3 copies the style.
 
-- Build: `town_stalls.py`: stall frame with canvas awning, sign boards with the
-  picked names, counters, tool wall, gun rack, monitor, and the Missions board
-  with maps and notes. Placed along the west side of the street with 1.5 m
-  clearance for players.
-- Files: `tools/assets/town_stalls.py`, model lists, `assets/models/town/*`,
-  turnarounds, generator, scene, tests.
-- Tests: model checks; a test that every stall leaves a 1.5 m walk lane to the
-  street (box overlap check against the player capsule line).
+### Step 3: Cabins, sheds, watchtower and the market row
+
+- Build: B3 `cabin_small`, B4 `cabin_two_storey`, B5 `shed_lean_to`, B6 `watchtower`
+  in `town_buildings.py`; S1-S7 in `town_market.py` (stall frame, sign board,
+  Missions board, Trader goods, gun wall, workbench, tech desk). Signs are
+  Label3D on the sign model: MISSIONS, TRADER "Buy / Sell", GUNSMITH
+  "Upgrades / Mods", TECHNICIAN "Serums / Gear". The rest of the old houses go.
+  Adds the stall-name line and a Change log row to game-design.md.
+- Files: `tools/assets/town_buildings.py`, `tools/assets/town_market.py`, model lists,
+  `assets/models/town/*`, turnarounds, generator, scene, tests, `docs/design/game-design.md`.
+- Tests: model checks; every stall leaves a 1.5 m lane to the street (box
+  overlap against the player capsule).
 - Done when: CI green, render in the PR.
 
 ### Step 4: Deploy gate
 
-- Build: `town_gate.py`: concrete wall with walkway and rails, tunnel mouth,
-  DEPLOY sign with green chevrons, hazard stripes, banner hangers, floodlights,
-  watchtower. Green strip lights inside the tunnel. The watchtower spotlight
-  sweeps (a small `AnimationPlayer` loop, no script). The Deploy board moves
-  to the tunnel mouth only if `DeployBoardSpot` moves with it in the generator.
+- Build: `town_gate.py` with G1 `gate_wall`, G2 `gate_tunnel` (DEPLOY sign, green
+  chevrons, hazard posts, tunnel with green strips, blast door), G3 `banner`,
+  G4 `floodlight`, G5 `radio_mast` (replaces the step 1 box mast). The old
+  palisade wall and gate go. The watchtower spotlight sweeps (a small
+  `AnimationPlayer` loop, no script). The Deploy board stays at `DeployBoardSpot`.
 - Files: `tools/assets/town_gate.py`, model lists, `assets/models/town/*`,
   turnarounds, generator, scene, tests.
-- Tests: model checks; board reachable test from step 1; the tunnel is
-  blocked behind the board (players cannot walk out of town).
+- Tests: model checks; board ray from step 1; a collider closes the tunnel 3 m
+  in, so players cannot walk out of town.
 - Done when: CI green, render in the PR.
 
 ### Step 5: Props, light pass, close-out
 
-- Build: fire barrel with flame particles and a flickering light, benches,
-  snowy crates, Fenlight sample crates with glowing jars, hanging lanterns,
-  string lights. Light pass against the concept; draw-call count in the PR;
-  GPU fps and bake prompt into `/mnt/project-files/lantern-post/`.
+- Build: P1-P14 in `town_props.py` (fire barrel with flame particles and one
+  flickering light each, benches, crates, ammo cases, Fenlight crates with
+  glowing jars, lanterns, string lights, fence rails, drifts, firewood, snowy
+  pines). Light pass against the concept; draw-call count in the PR; GPU fps
+  and bake prompt into `/mnt/project-files/lantern-post/`.
 - Files: `tools/assets/town_props.py`, model lists, assets, generator, scene,
   tests, docs (`DECISIONS.md`, this plan to Done, roadmap row Done).
-- Tests: model checks; light budget test from step 1 still passes.
+- Tests: model checks; light budget test still passes.
 - Done when: CI green, the person approves the look (decision card), GPU
   agent reports fps at or above target.
 
