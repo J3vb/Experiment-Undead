@@ -14,6 +14,22 @@ func before_each() -> void:
 	add_child_autofree(_parent)
 
 
+func after_each() -> void:
+	for pool: BloodPool in BloodPool._ring:
+		if is_instance_valid(pool):
+			pool.free()
+	BloodPool._ring.clear()
+
+
+func _zombie() -> Zombie:
+	var data: EnemyData = load(WALKER) as EnemyData
+	var zombie: Zombie = data.scene.instantiate() as Zombie
+	zombie.setup(data, 1, 1.0, 1.0, 1.0, RandomNumberGenerator.new())
+	_parent.add_child(zombie)
+	zombie.position = Vector3(3, 0, 2)
+	return zombie
+
+
 func test_twenty_fifth_pool_reuses_the_oldest() -> void:
 	var first: BloodPool = BloodPool.spawn(_parent, Vector3.ZERO)
 	for index: int in BloodPool.MAX_ALIVE - 1:
@@ -37,13 +53,17 @@ func test_pool_fades_and_hides_after_its_lifetime() -> void:
 
 
 func test_falling_zombie_leaves_one_pool() -> void:
-	var data: EnemyData = load(WALKER) as EnemyData
-	var zombie: Zombie = data.scene.instantiate() as Zombie
-	zombie.setup(data, 1, 1.0, 1.0, 1.0, RandomNumberGenerator.new())
-	_parent.add_child(zombie)
-	zombie.position = Vector3(3, 0, 2)
+	var zombie: Zombie = _zombie()
 	var before: int = BloodPool._ring.size()
 	zombie.visual.fall_over()
 	assert_eq(BloodPool._ring.size(), before + 1, "one pool per fallen zombie")
 	assert_almost_eq(BloodPool._ring[-1].global_position.x, 3.0, 0.01)
+	zombie.free()
+
+
+func test_client_copy_lays_one_pool_from_the_synced_death() -> void:
+	var zombie: Zombie = _zombie()
+	var before: int = BloodPool._ring.size()
+	ZombieSync.show_death(zombie)
+	assert_eq(BloodPool._ring.size(), before + 1, "a client copy that turns DEAD lays one pool")
 	zombie.free()

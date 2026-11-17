@@ -200,12 +200,13 @@ feel systems; F-09 measures it.
   particles, 0.4 s, gravity (bio-green tint at 15 % is not used yet: no mutated
   types in v0.1). FLESH and HEAD hits show blood; FLESH plays
   `impact_flesh` (x4) or `hit_head` crack (x2) from a static ring of 4
-  AudioStreamPlayer3D (steal oldest). New `BloodPool` (Decal) ring of 24,
+  AudioStreamPlayer3D (steal oldest). New `BloodPool` ring of 24 (a flat lit quad: Decals do not draw in the
+  Compatibility renderer),
   fades out over the last 5 s of 45 s; one pool under each zombie when it is
   seen dying (same state watch as step 1, so clients get pools too). Renders
   of the look go to the person (taste check below).
 - Files: zombie_sfx.py (flesh, crack), systems/effects/{impact,blood_pool}.gd,
-  systems/enemies/zombie.gd, systems/weapons/weapon.gd.
+  systems/enemies/zombie_rig.gd (`fall_over`), systems/weapons/weapon.gd.
 - Tests: test_impact.gd (flesh audio ring never exceeds 4, reuses oldest; HEAD
   plays a crack and FLESH an impact_flesh), a weapon trace test (a head hit
   emits HEAD, a body hit FLESH, a lethal head hit still HEAD),

@@ -41,7 +41,7 @@ var _left: float = 0.0
 
 
 static func spawn(parent: Node, point: Vector3, normal: Vector3, kind: Kind) -> Impact:
-	if parent == null:
+	if parent == null or Build.is_server():
 		return null
 	var impact: Impact = _take(parent)
 	impact.global_position = point + normal * 0.01
@@ -61,7 +61,7 @@ static func kind_for(hit_zone: HitZone) -> Kind:
 ## Plays a flesh hit or a headshot crack on the next of MAX_SOUNDS reused players.
 static func _play_hit_sound(parent: Node, point: Vector3, kind: Kind) -> void:
 	var player: AudioStreamPlayer3D = _take_sound()
-	if not player.is_inside_tree():
+	if player.get_parent() == null:
 		parent.add_child(player)
 	elif player.get_parent() != parent:
 		player.reparent(parent, false)

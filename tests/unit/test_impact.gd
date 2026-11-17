@@ -1,6 +1,10 @@
 ## Impacts reuse the oldest of at most 48 nodes and share their meshes and materials.
 extends GutTest
 
+const WEAPON: String = "res://systems/weapons/weapon.tscn"
+const RIFLE: String = "res://content/weapons/rifle_ar.tres"
+const WALKER: String = "res://content/enemies/zombie_walker.tres"
+
 var _parent: Node3D
 
 
@@ -114,3 +118,31 @@ func test_impact_kind_comes_from_the_hit_zone() -> void:
 	zone.zone = DamageInfo.Zone.HEAD
 	assert_eq(Impact.kind_for(zone), Impact.Kind.HEAD, "a killing head hit keeps its kind")
 	zone.free()
+
+
+func _trace_kinds(zone_name: String, health: float) -> Array[Impact.Kind]:
+	var camera: Camera3D = Camera3D.new()
+	add_child_autofree(camera)
+	var weapon: Weapon = (load(WEAPON) as PackedScene).instantiate() as Weapon
+	weapon.setup(WeaponInstance.new(load(RIFLE) as WeaponData), null, camera)
+	camera.add_child(weapon)
+	var data: EnemyData = load(WALKER) as EnemyData
+	var zombie: Zombie = data.scene.instantiate() as Zombie
+	zombie.setup(data, 1, 1.0, 1.0, 1.0, RandomNumberGenerator.new())
+	add_child_autofree(zombie)
+	zombie.health.reset(health)
+	var zone: HitZone = zombie.head_zone if zone_name == "head" else zombie.hit_zones[-1]
+	var kinds: Array[Impact.Kind] = []
+	weapon.traced.connect(func(_point: Vector3, _normal: Vector3, kind: Impact.Kind) -> void: kinds.append(kind))
+	var hit: Dictionary = {"position": Vector3.ZERO, "normal": Vector3.BACK, "collider": zone, "damage_scale": 1.0}
+	weapon._hit(hit, Vector3(0, 0, 5), Vector3.FORWARD)
+	return kinds
+
+
+func test_weapon_trace_sends_head_for_a_head_hit_even_when_it_kills() -> void:
+	assert_eq(_trace_kinds("head", 1000.0), [Impact.Kind.HEAD] as Array[Impact.Kind])
+	assert_eq(_trace_kinds("head", 1.0), [Impact.Kind.HEAD] as Array[Impact.Kind], "lethal head hit stays HEAD")
+
+
+func test_weapon_trace_sends_flesh_for_a_body_hit() -> void:
+	assert_eq(_trace_kinds("body", 1000.0), [Impact.Kind.FLESH] as Array[Impact.Kind])

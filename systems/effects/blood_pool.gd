@@ -22,7 +22,7 @@ static func spawn(parent: Node, point: Vector3) -> BloodPool:
 	if parent == null or Build.is_server():
 		return null
 	var pool: BloodPool = _take(parent)
-	pool.global_position = point + Vector3.UP * 0.01
+	pool.global_position = point + Vector3.UP * 0.02
 	pool.rotation.y = randf() * TAU  # cosmetic
 	var spread: float = randf_range(0.8, 1.2)  # cosmetic
 	pool.scale = Vector3(spread, 1.0, spread * randf_range(0.8, 1.0))  # cosmetic
