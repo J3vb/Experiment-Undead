@@ -102,6 +102,10 @@ func test_power_ups_are_valid() -> void:
 		assert_not_null(power_up, path + " is PowerUpData")
 		if power_up:
 			assert_eq(String(power_up.id), path.get_file().get_basename(), path + " id matches file name")
+			assert_true(PowerUpData.Effect.values().has(power_up.effect), path + " has a known effect")
+			assert_false(power_up.display_name.is_empty(), path + " has a name for the HUD flash")
+	var ammo: PowerUpData = load("res://content/power_ups/ammo_pack.tres") as PowerUpData
+	assert_eq(ammo.effect, PowerUpData.Effect.AMMO_PACK, "the Scavenger pack adds a magazine, not a full refill")
 
 
 func test_enemy_loot_fields_are_valid() -> void:

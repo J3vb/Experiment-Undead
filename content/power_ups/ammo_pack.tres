@@ -6,3 +6,4 @@
 script = ExtResource("1")
 id = &"ammo_pack"
 display_name = "Ammo"
+effect = 1
