@@ -7,6 +7,12 @@ on:
 permissions:
   contents: read
 
+# Required check: runs on every PR so it always reports (a path filter would leave
+# docs-only PRs waiting forever on a required check that never starts).
+concurrency:
+  group: soak-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   soak:
     runs-on: ubuntu-latest
