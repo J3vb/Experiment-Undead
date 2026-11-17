@@ -235,8 +235,9 @@ is a test tool and never ships. No per-frame allocations.
 
 ### Step 4: Hub as a place, ready-up vote, and changing places
 
-- Build: `GameSession.is_hub` (no waves start) and `hub_session.tscn` (an
-  inherited `game_session.tscn` with the hub level; uses the hub thread's
+- Build: `GameSession.is_hub` (no waves start) and `hub_session.tscn` (a copy of
+  `game_session.tscn` with the hub level, not an inherited scene, so the hub
+  never loads the Halcyon Labs map; uses the hub thread's
   `levels/lantern_post/lantern_post.tscn`, until it lands a placeholder
   `levels/hub_placeholder/`). `content/screens/hub.tres` (root, captures the
   mouse). `Net` holds `place` (screen id).
