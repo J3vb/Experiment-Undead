@@ -92,6 +92,8 @@ Not in (non-goals, and where each one goes instead):
 | systems/ui/settings_screen.tscn | changed | Controls tab wrapped in a ScrollContainer, key bindings scene added |
 | systems/ui/settings_screen.gd | changed | only if the scroll wrap moves node paths |
 | systems/ui/pack_overlay.gd | changed | `key_name()` uses `Settings.event_label()` (local letter, mouse names too); Pack actions also fire from mouse buttons; button labels refresh when bindings change |
+| systems/ui/hud.gd | changed | interact key badge and `RELOAD [key]` hint read the binding and refresh when bindings change |
+| systems/net/coop_hud.gd | changed | revive prompt uses the `[F]` interact marker instead of a fixed "Hold F" |
 | docs/design/controls.md, docs/DECISIONS.md | changed | note the simplifications above |
 
 Autoloads, managers or base classes added: none.
@@ -142,7 +144,7 @@ change. The rows (about 18) are built once in `_ready` of the bindings scene.
   `pause` and `ui_*` actions are refused. Keys are stored as
   `physical_keycode` with `keycode` 0. Pack overlay `key_name()` uses
   `event_label()`.
-- Files: core/settings.gd, systems/ui/pack_overlay.gd, tests/unit/test_settings_bindings.gd (new), tests/unit/test_pack_overlay.gd, docs/LOGGING.md (new warn line).
+- Files: core/settings.gd, systems/ui/pack_overlay.gd, systems/ui/hud.gd, systems/net/coop_hud.gd, tests/unit/test_settings_bindings.gd (new), tests/unit/test_pack_overlay.gd, tests/unit/test_hud.gd, tests/unit/test_coop_hud.gd, docs/LOGGING.md (new warn lines).
 - Tests: `test_settings_bindings.gd`: round trip survives reload; saved key
   uses physical_keycode; only changed actions are written; a key bound to two
   actions is caught by `binding_owner`; swap moves the old key; reset per
@@ -155,7 +157,9 @@ change. The rows (about 18) are built once in `_ready` of the bindings scene.
   `test_pack_overlay.gd`: with an open, already-built overlay, rebinding
   `pack_toggle`, `pack_drop` and `pack_equip` to mouse buttons makes those
   buttons open, drop and equip, and the visible button labels change to the
-  new names.
+  new names. `test_hud.gd`: after rebinding interact and reload, a visible
+  interaction badge and the reload hint show the new keys.
+  `test_coop_hud.gd`: revive prompt text updated.
 - Done when: bindings set from code survive a restart, CI green.
 
 ### Step 2: Controls tab rebinding rows
