@@ -5,6 +5,8 @@ extends Resource
 
 enum FireMode { SEMI, BURST, AUTO }
 enum Slot { PRIMARY, SIDEARM }
+## What a hit does beyond damage. The server applies CHAIN and FROST; WELL fires an orb instead of a trace.
+enum Effect { NONE, CHAIN, FROST, WELL }
 
 @export_group("Identity")
 @export var id: StringName = &""
@@ -25,6 +27,7 @@ enum Slot { PRIMARY, SIDEARM }
 @export var head_multiplier: float = 2.0
 @export var limb_multiplier: float = 0.8
 @export var pierce_count: int = 0
+@export var effect: Effect = Effect.NONE
 
 @export_group("Handling")
 @export var fire_mode: FireMode = FireMode.AUTO

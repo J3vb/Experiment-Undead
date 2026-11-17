@@ -129,3 +129,18 @@ func test_all_prototype_versions_flash_at_the_muzzle_when_fired() -> void:
 			weapon._process(0.1)
 			assert_false(light.visible, "the presentation tick ends the light pulse")
 			assert_false(flash.visible, "the presentation tick ends the flash pulse")
+
+
+func test_only_the_effect_guns_have_an_effect_and_reforging_keeps_it() -> void:
+	var expected: Dictionary[StringName, WeaponData.Effect] = {
+		&"synapse": WeaponData.Effect.CHAIN,
+		&"synapse_reforged": WeaponData.Effect.CHAIN,
+		&"cryo_lance": WeaponData.Effect.FROST,
+		&"cryo_lance_reforged": WeaponData.Effect.FROST,
+		&"siphon": WeaponData.Effect.WELL,
+	}
+	for id: StringName in Content.ids(&"weapons"):
+		var gun: WeaponData = Content.weapon(id)
+		assert_eq(gun.effect, expected.get(id, WeaponData.Effect.NONE), String(id))
+		if gun.upgraded:
+			assert_eq(gun.upgraded.effect, gun.effect, String(id) + " Reforged keeps the effect")

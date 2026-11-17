@@ -3,7 +3,7 @@
 extends Node
 
 ## Bump when client/server messages change. Mismatched peers are refused.
-const PROTOCOL_VERSION: int = 7
+const PROTOCOL_VERSION: int = 8
 const VERSION_FILE: String = "res://version.json"
 const CRASH_MARKER: String = "user://running.lock"
 

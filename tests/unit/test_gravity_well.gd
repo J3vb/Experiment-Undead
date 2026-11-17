@@ -10,6 +10,7 @@ var _root: Node3D
 var _session: GameSession
 var _spawner: Spawner
 var _attacker: Player
+var _gun: WeaponData
 
 
 func before_each() -> void:
@@ -28,10 +29,19 @@ func before_each() -> void:
 	_root.add_child(_attacker)
 	_attacker.set_physics_process(false)
 	_attacker.local_input.enabled = false
+	_gun = _well_gun(TOTAL_DAMAGE)
 
 
 func after_each() -> void:
 	_session.free()
+
+
+func _well_gun(damage: float) -> WeaponData:
+	var gun: WeaponData = WeaponData.new()
+	gun.id = &"test_well"
+	gun.damage = damage
+	gun.effect = WeaponData.Effect.WELL
+	return gun
 
 
 func _zombie(point: Vector3) -> Zombie:
@@ -46,7 +56,7 @@ func _zombie(point: Vector3) -> Zombie:
 func _well() -> GravityWell:
 	var well: GravityWell = GravityWell.new()
 	_root.add_child(well)
-	well.setup(_attacker, Vector3.ZERO, TOTAL_DAMAGE)
+	well.setup(_attacker, Vector3.ZERO, _gun)
 	well.set_physics_process(false)
 	return well
 
@@ -166,15 +176,15 @@ func test_well_stops_when_its_attacker_is_freed() -> void:
 
 
 func test_maximum_two_wells_per_player_and_expiry_frees_a_slot() -> void:
-	var first: GravityWell = GravityWell.open(_root, _attacker, Vector3.ZERO, TOTAL_DAMAGE)
-	var second: GravityWell = GravityWell.open(_root, _attacker, Vector3.ZERO, TOTAL_DAMAGE)
+	var first: GravityWell = GravityWell.open(_root, _attacker, Vector3.ZERO, _gun)
+	var second: GravityWell = GravityWell.open(_root, _attacker, Vector3.ZERO, _gun)
 	assert_not_null(first)
 	assert_not_null(second)
 	first.set_physics_process(false)
 	second.set_physics_process(false)
-	assert_null(GravityWell.open(_root, _attacker, Vector3.ZERO, TOTAL_DAMAGE))
+	assert_null(GravityWell.open(_root, _attacker, Vector3.ZERO, _gun))
 	first.tick(3.0)
-	var replacement: GravityWell = GravityWell.open(_root, _attacker, Vector3.ZERO, TOTAL_DAMAGE)
+	var replacement: GravityWell = GravityWell.open(_root, _attacker, Vector3.ZERO, _gun)
 	assert_not_null(replacement)
 	replacement.set_physics_process(false)
 
@@ -185,9 +195,9 @@ func test_each_player_has_their_own_two_well_limit() -> void:
 	other.set_physics_process(false)
 	other.local_input.enabled = false
 	for _slot: int in 2:
-		var well: GravityWell = GravityWell.open(_root, _attacker, Vector3.ZERO, TOTAL_DAMAGE)
+		var well: GravityWell = GravityWell.open(_root, _attacker, Vector3.ZERO, _gun)
 		well.set_physics_process(false)
-	var other_well: GravityWell = GravityWell.open(_root, other, Vector3.ZERO, TOTAL_DAMAGE)
+	var other_well: GravityWell = GravityWell.open(_root, other, Vector3.ZERO, _gun)
 	assert_not_null(other_well)
 	other_well.set_physics_process(false)
 
@@ -205,7 +215,7 @@ func test_client_cannot_enable_gameplay_on_its_cosmetic_copy() -> void:
 	zombie.reparent(client_root)
 	var well: GravityWell = GravityWell.new()
 	client_root.add_child(well)
-	well.setup(_attacker, Vector3.ZERO, TOTAL_DAMAGE)
+	well.setup(_attacker, Vector3.ZERO, _gun)
 	well.set_physics_process(false)
 	well.gameplay = true
 	well.tick(0.5)
@@ -220,11 +230,11 @@ func test_client_cannot_enable_gameplay_on_its_cosmetic_copy() -> void:
 
 
 func test_delayed_cosmetic_well_replaces_the_oldest_display() -> void:
-	var first: GravityWell = GravityWell.open(_root, _attacker, Vector3.ZERO, 0.0, true)
-	var second: GravityWell = GravityWell.open(_root, _attacker, Vector3.ONE, 0.0, true)
+	var first: GravityWell = GravityWell.open(_root, _attacker, Vector3.ZERO, null, true)
+	var second: GravityWell = GravityWell.open(_root, _attacker, Vector3.ONE, null, true)
 	first.set_physics_process(false)
 	second.set_physics_process(false)
-	var newest: GravityWell = GravityWell.open(_root, _attacker, Vector3(2.0, 0.0, 0.0), 0.0, true)
+	var newest: GravityWell = GravityWell.open(_root, _attacker, Vector3(2.0, 0.0, 0.0), null, true)
 	assert_not_null(newest)
 	assert_true(first.collapsed)
 	assert_false(second.collapsed)
@@ -256,7 +266,15 @@ func test_empty_well_does_not_show_a_hit_marker() -> void:
 func test_a_pulse_with_zero_damage_does_not_show_a_hit_marker() -> void:
 	_zombie(Vector3(1.0, 0.0, 0.0))
 	var well: GravityWell = _well()
-	well.setup(_attacker, Vector3.ZERO, 0.0)
+	well.setup(_attacker, Vector3.ZERO, _well_gun(0.0))
 	watch_signals(Events)
 	well.tick(0.5)
 	assert_signal_emit_count(Events, "hit_confirmed", 0)
+
+
+func test_damage_carries_the_id_of_the_gun_that_opened_the_well() -> void:
+	var zombie: Zombie = _zombie(Vector3(1.0, 0.0, 0.0))
+	var received: Array[StringName] = []
+	zombie.health.damaged.connect(func(info: DamageInfo) -> void: received.append(info.weapon_id))
+	_well().tick(0.5)
+	assert_eq(received, Array([&"test_well"], TYPE_STRING_NAME, &"", null))
