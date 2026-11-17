@@ -23,8 +23,13 @@ func _run() -> void:
 	session.get_node("WaveDirector").call("stop")
 	var players: Array = session.call("get_players")
 	session.get_node("Progression").call("add_xp", players[0], 75)
-	session.call("_set_paused", true)
-	(session.get_node("Hud/Root/PausePanel/Menu/QuitGame") as Button).pressed.emit()
+	var pause: InputEventAction = InputEventAction.new()
+	pause.action = &"pause"
+	pause.pressed = true
+	session.call("_unhandled_input", pause)
+	var ui: Node = root.get_node("UI")
+	var pause_layer: Node = ui.get_child(ui.get_child_count() - 1)
+	(pause_layer.get_node("PauseScreen/Menu/QuitGame") as Button).pressed.emit()
 	var data: Dictionary = saves.call("read", PATH)
 	var total: int = int(data.get("total_xp", -1))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(PATH))

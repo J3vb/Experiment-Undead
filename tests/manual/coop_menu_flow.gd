@@ -112,8 +112,13 @@ func _host_flow() -> void:
 		return
 	_check(_net.is_online() and _net.is_authority(), "Host opens a listen server")
 	_check(_net.pending_join.is_empty(), "Host has no pending client join")
-	current_scene.call("_set_paused", true)
-	(current_scene.get_node("Hud/Root/PausePanel/Menu/MainMenu") as Button).pressed.emit()
+	var pause: InputEventAction = InputEventAction.new()
+	pause.action = &"pause"
+	pause.pressed = true
+	current_scene.call("_unhandled_input", pause)
+	var ui: Node = root.get_node("UI")
+	var pause_layer: Node = ui.get_child(ui.get_child_count() - 1)
+	(pause_layer.get_node("PauseScreen/Menu/MainMenu") as Button).pressed.emit()
 	await _settle()
 	if current_scene.scene_file_path != MENU_SCENE:
 		_failures.append("The match menu did not return to the main menu")

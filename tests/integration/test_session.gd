@@ -180,10 +180,14 @@ func test_game_over_shows_results_with_headshot_kills_and_xp() -> void:
 	var stats: Dictionary = get_signal_parameters(Events, "game_over")[0]
 	assert_eq(stats["kills"], 2)
 	assert_eq(stats["headshots"], 1)
-	var results: ResultsScreen = session.hud.results_screen
+	var results: ResultsScreen = _results()
 	assert_true(results.visible)
 	assert_eq(results.kills_label.text, "2")
 	assert_eq(results.headshots_label.text, "1")
 	assert_eq(results.xp_label.text, "XP +%d" % session.progression.get_xp(player))
 	assert_true(results.main_menu_button.has_focus())
 	assert_false(results.exfil_banner.visible)
+
+
+func _results() -> ResultsScreen:
+	return UI._stack.back()["layer"].get_child(0) as ResultsScreen

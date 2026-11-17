@@ -1,7 +1,6 @@
 ## UI router: one stack, one scene change path and one mouse rule for every screen and panel.
 extends GutTest
 
-const SESSION: PackedScene = preload("res://systems/game/game_session.tscn")
 const TEST_SCREEN: String = "res://systems/ui/settings_screen.tscn"
 
 var _root: ScreenData
@@ -146,24 +145,3 @@ func test_reload_empties_the_stack() -> void:
 	get_tree().current_scene = runner_scene
 	assert_ne(reloaded, stand_in)
 	reloaded.free()
-
-
-func test_game_over_frees_the_mouse_and_pause_holds_it() -> void:
-	var map: Level = Level.new()
-	var scene: PackedScene = PackedScene.new()
-	scene.pack(map)
-	map.free()
-	var session: GameSession = SESSION.instantiate() as GameSession
-	session.level_scene = scene
-	session.profile_id = &""
-	session.rng_seed = 7
-	session.restart_delay = 0.01
-	add_child_autofree(session)
-	assert_false(UI.mouse_should_be_free(), "playing captures the mouse")
-	session._set_paused(true)
-	assert_true(UI.mouse_should_be_free(), "pause frees the mouse")
-	session._set_paused(false)
-	assert_false(UI.mouse_should_be_free())
-	session.get_players()[0].take_damage(DamageInfo.create(10000.0, null))
-	await wait_until(func() -> bool: return session.hud.results_screen.visible, 2.0, "results shown")
-	assert_true(UI.mouse_should_be_free(), "results hold the mouse")

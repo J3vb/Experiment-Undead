@@ -1,4 +1,4 @@
-## In-match HUD and pause menu; gameplay facts arrive through Events.
+## In-match HUD; gameplay facts arrive through Events. Pause and results are router screens.
 class_name Hud
 extends CanvasLayer
 
@@ -48,12 +48,6 @@ var _exfil: ExfilHatch
 @onready var hint_label: Label = $Root/HintLabel
 @onready var center_label: Label = $Root/CenterLabel
 @onready var prompt_label: Label = $Root/Prompt/Row/PromptLabel
-@onready var pause_panel: Control = $Root/PausePanel
-@onready var settings_screen: SettingsScreen = $Root/PausePanel/SettingsScreen
-@onready var pause_menu: Control = $Root/PausePanel/Menu
-@onready var resume_button: Button = $Root/PausePanel/Menu/Resume
-@onready var settings_button: Button = $Root/PausePanel/Menu/Settings
-@onready var results_screen: ResultsScreen = $Root/ResultsScreen
 @onready var xp_bar: ProgressBar = $Root/XpBar
 @onready var level_label: Label = $Root/Level
 @onready var level_toast: Label = $Root/LevelToast
@@ -63,16 +57,6 @@ var _exfil: ExfilHatch
 
 
 func _ready() -> void:
-	pause_panel.theme = settings_screen.theme
-	resume_button.pressed.connect(func() -> void: (get_parent() as GameSession).resume())
-	settings_button.pressed.connect(_open_settings)
-	$Root/PausePanel/Menu/MainMenu.pressed.connect(_return_to_menu)
-	$Root/PausePanel/Menu/QuitGame.pressed.connect(func() -> void: (get_parent() as GameSession).quit_game())
-	results_screen.main_menu_requested.connect(_return_to_menu)
-	results_screen.restart_requested.connect(func() -> void: (get_parent() as GameSession).restart())
-	settings_screen.closed.connect(_close_settings)
-	pause_panel.visible = false
-	results_screen.hide()
 	level_toast.modulate.a = 0.0
 	center_label.modulate.a = 0.0
 	points_delta.modulate.a = 0.0
@@ -102,14 +86,6 @@ func _ready() -> void:
 	Events.player_leveled_up.connect(_on_player_leveled_up)
 
 
-func show_paused(paused: bool) -> void:
-	pause_panel.visible = paused
-	settings_screen.hide()
-	pause_menu.show()
-	if paused:
-		resume_button.grab_focus()
-
-
 func _physics_process(delta: float) -> void:
 	var frame: InputFrame = InputFrame.new()
 	frame.buttons = InputFrame.INTERACT if Input.is_action_pressed(&"interact") else 0
@@ -134,7 +110,7 @@ func _process(delta: float) -> void:
 			_delta_sum = 0
 
 	_update_exfil()
-	_update_prompt(coop_hud.get_prompt(_player, pause_panel.visible or results_screen.visible))
+	_update_prompt(coop_hud.get_prompt(_player, UI.top() != &""))
 	if is_instance_valid(_player) and _player.weapons.current:
 		var w: Weapon = _player.weapons.current
 		crosshair.spread_degrees = w.get_current_spread()
@@ -302,12 +278,9 @@ func _on_intermission(next_round: int, duration: float) -> void:
 		_flash_center("SURVIVE", duration)
 
 
-func _on_game_over(stats: Dictionary) -> void:
+func _on_game_over(_stats: Dictionary) -> void:
 	_exfil = null
 	exfil_box.hide()
-	var session: GameSession = get_parent() as GameSession
-	results_screen.show_results(stats, session.tick / Engine.physics_ticks_per_second, session.progression.rules)
-	UI.hold_mouse(results_screen, true)
 
 
 func _on_xp_gained(player: Player, _amount: int, _total: int) -> void:
@@ -332,19 +305,3 @@ func _on_player_leveled_up(player: Player, level: int) -> void:
 	_toast_tween.tween_property(level_toast, "modulate:a", 1.0, 0.12)
 	_toast_tween.tween_interval(1.68)
 	_toast_tween.tween_property(level_toast, "modulate:a", 0.0, 0.2)
-
-
-func _open_settings() -> void:
-	pause_menu.hide()
-	settings_screen.show()
-	(settings_screen.get_node("Margin/Box/Tabs") as TabContainer).get_tab_bar().grab_focus()
-
-
-func _close_settings() -> void:
-	pause_menu.show()
-	settings_button.grab_focus()
-
-
-func _return_to_menu() -> void:
-	(get_parent() as GameSession).bank_run_xp()
-	UI.replace(&"main_menu")

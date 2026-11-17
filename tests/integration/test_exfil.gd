@@ -73,7 +73,11 @@ func test_finished_exfil_ends_the_match_with_bonus_xp() -> void:
 	var stats: Dictionary = get_signal_parameters(Events, "game_over")[0]
 	assert_true(stats.get("exfil", false))
 
-	assert_true(session.hud.results_screen.visible)
-	assert_true(session.hud.results_screen.exfil_banner.visible)
-	assert_eq(session.hud.results_screen.xp_label.text, "XP +1,500")
-	assert_true(session.hud.results_screen.main_menu_button.has_focus())
+	assert_true(UI.top() == &"results")
+	assert_true(_results().exfil_banner.visible)
+	assert_eq(_results().xp_label.text, "XP +1,500")
+	assert_true(_results().main_menu_button.has_focus())
+
+
+func _results() -> ResultsScreen:
+	return UI._stack.back()["layer"].get_child(0) as ResultsScreen

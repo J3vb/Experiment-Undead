@@ -1,7 +1,10 @@
-## Run results and XP playback; navigation requests go up to the owning HUD.
+## Run results and XP playback; GameSession pushes it on game over and answers its navigation requests.
 class_name ResultsScreen
 extends Control
 
+## Router screen contract. Results never pop: both buttons leave the match, which clears the stack.
+@warning_ignore("unused_signal")  # every pushed screen has closed (tests/content/test_screens.gd)
+signal closed
 signal main_menu_requested
 signal restart_requested
 

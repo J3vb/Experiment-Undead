@@ -23,6 +23,8 @@ func before_each() -> void:
 
 
 func after_each() -> void:
+	while UI.top() != &"":
+		UI.pop()
 	Input.action_release(&"interact")
 	Net.leave()
 
@@ -68,7 +70,7 @@ func test_held_input_uses_frames_and_pause_cancels() -> void:
 	Input.action_press(&"interact")
 	hud._physics_process(0.3)
 	assert_almost_eq(player.revive.progress, 0.1, 0.001)
-	hud.show_paused(true)
+	UI.push(&"pause")
 	hud._process(0.0)
 	hud._physics_process(0.3)
 	assert_almost_eq(player.revive.progress, 0.0, 0.001)

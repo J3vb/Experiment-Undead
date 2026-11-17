@@ -139,6 +139,8 @@ func _physics_process(_delta: float) -> void:
 
 func _exit_tree() -> void:
 	get_tree().auto_accept_quit = _auto_accept_quit
+	while has_local_player and UI.top() != &"":
+		UI.pop()
 	if has_local_player:
 		Net.leave()
 
@@ -205,22 +207,27 @@ func get_players() -> Array[Player]:
 	return out
 
 
+## Esc opens pause only with no screen open; an open screen handles Esc itself.
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed(&"pause") and not is_over:
-		_set_paused(not get_tree().paused)
+	if event.is_action_pressed(&"pause") and not is_over and has_local_player and UI.top() == &"":
+		get_tree().paused = true
+		var pause: PauseScreen = UI.push(&"pause") as PauseScreen
+		pause.tree_exiting.connect(_on_pause_closed)
+		pause.main_menu_requested.connect(return_to_menu)
+		pause.quit_requested.connect(quit_game)
 	elif event.is_action_pressed(&"restart") and is_over:
+		get_viewport().set_input_as_handled()
 		restart()
 
 
-func _set_paused(value: bool) -> void:
-	get_tree().paused = value
-	UI.hold_mouse(hud.pause_panel, value)
-	hud.show_paused(value)
+func _on_pause_closed() -> void:
+	if is_inside_tree():
+		get_tree().paused = false
 
 
-func resume() -> void:
-	if not is_over:
-		_set_paused(false)
+func return_to_menu() -> void:
+	bank_run_xp()
+	UI.replace(&"main_menu")
 
 
 func restart() -> void:
@@ -336,3 +343,8 @@ func _receive_match_end(stats: Dictionary) -> void:
 		level.process_mode = Node.PROCESS_MODE_DISABLED
 	await get_tree().create_timer(restart_delay).timeout
 	Events.game_over.emit(_match_stats)
+	if has_local_player:
+		var results: ResultsScreen = UI.push(&"results") as ResultsScreen
+		results.show_results(_match_stats, tick / Engine.physics_ticks_per_second, progression.rules)
+		results.main_menu_requested.connect(return_to_menu)
+		results.restart_requested.connect(restart)

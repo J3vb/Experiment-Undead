@@ -1,116 +1,15 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=3 format=3]
 [ext_resource type="Script" path="res://systems/ui/settings_screen.gd" id="1"]
 
-[sub_resource type="StyleBoxFlat" id="Background"]
-bg_color = Color(0.043, 0.063, 0.078, 0.97)
-[sub_resource type="StyleBoxFlat" id="Panel"]
-bg_color = Color(0.071, 0.102, 0.125, 0.88)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.173, 0.231, 0.267, 1)
-content_margin_left = 24.0
-content_margin_right = 24.0
-content_margin_top = 24.0
-content_margin_bottom = 24.0
-[sub_resource type="StyleBoxFlat" id="Button"]
-bg_color = Color(0.071, 0.102, 0.125, 0.88)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.173, 0.231, 0.267, 1)
-content_margin_left = 20.0
-content_margin_right = 20.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
-[sub_resource type="StyleBoxFlat" id="Selected"]
-bg_color = Color(0.102, 0.145, 0.176, 1)
-border_width_top = 3
-border_color = Color(0.498, 0.839, 0.878, 1)
-content_margin_left = 20.0
-content_margin_right = 20.0
-content_margin_top = 12.0
-content_margin_bottom = 12.0
-[sub_resource type="StyleBoxFlat" id="Focus"]
-bg_color = Color(0, 0, 0, 0)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.498, 0.839, 0.878, 1)
-[sub_resource type="StyleBoxFlat" id="Track"]
-bg_color = Color(0.173, 0.231, 0.267, 1)
-content_margin_top = 3.0
-content_margin_bottom = 3.0
-[sub_resource type="StyleBoxFlat" id="Fill"]
-bg_color = Color(0.498, 0.839, 0.878, 1)
-content_margin_top = 3.0
-content_margin_bottom = 3.0
-[sub_resource type="Theme" id="MenuTheme"]
-default_font_size = 24
-Label/colors/font_color = Color(0.902, 0.925, 0.925, 1)
-Label/constants/outline_size = 0
-Label/constants/shadow_offset_x = 0
-Label/constants/shadow_offset_y = 0
-LabelDim/base_type = &"Label"
-LabelDim/colors/font_color = Color(0.561, 0.639, 0.659, 1)
-PanelContainer/styles/panel = SubResource("Background")
-TabContainer/styles/panel = SubResource("Panel")
-PopupMenu/styles/panel = SubResource("Panel")
-HSlider/styles/slider = SubResource("Track")
-HSlider/styles/grabber_area = SubResource("Fill")
-HSlider/styles/grabber_area_highlight = SubResource("Fill")
-HSlider/styles/focus = SubResource("Focus")
-Button/colors/font_color = Color(0.902, 0.925, 0.925, 1)
-Button/colors/font_hover_color = Color(0.902, 0.925, 0.925, 1)
-Button/colors/font_pressed_color = Color(0.902, 0.925, 0.925, 1)
-Button/colors/font_focus_color = Color(0.902, 0.925, 0.925, 1)
-OptionButton/colors/font_color = Color(0.902, 0.925, 0.925, 1)
-OptionButton/colors/font_hover_color = Color(0.902, 0.925, 0.925, 1)
-OptionButton/colors/font_pressed_color = Color(0.902, 0.925, 0.925, 1)
-OptionButton/colors/font_focus_color = Color(0.902, 0.925, 0.925, 1)
-CheckBox/colors/font_color = Color(0.902, 0.925, 0.925, 1)
-CheckBox/colors/font_hover_color = Color(0.902, 0.925, 0.925, 1)
-CheckBox/colors/font_pressed_color = Color(0.902, 0.925, 0.925, 1)
-CheckBox/colors/font_focus_color = Color(0.902, 0.925, 0.925, 1)
-TabBar/colors/font_color = Color(0.902, 0.925, 0.925, 1)
-TabBar/colors/font_selected_color = Color(0.902, 0.925, 0.925, 1)
-TabBar/colors/font_unselected_color = Color(0.902, 0.925, 0.925, 1)
-TabBar/colors/font_hover_color = Color(0.902, 0.925, 0.925, 1)
-PopupMenu/colors/font_color = Color(0.902, 0.925, 0.925, 1)
-PopupMenu/colors/font_selected_color = Color(0.902, 0.925, 0.925, 1)
-PopupMenu/colors/font_unselected_color = Color(0.902, 0.925, 0.925, 1)
-PopupMenu/colors/font_hover_color = Color(0.902, 0.925, 0.925, 1)
-Button/styles/normal = SubResource("Button")
-Button/styles/hover = SubResource("Selected")
-Button/styles/pressed = SubResource("Selected")
-Button/styles/focus = SubResource("Focus")
-OptionButton/styles/normal = SubResource("Button")
-OptionButton/styles/hover = SubResource("Selected")
-OptionButton/styles/pressed = SubResource("Selected")
-OptionButton/styles/focus = SubResource("Focus")
-CheckBox/styles/focus = SubResource("Focus")
-TabBar/styles/tab_selected = SubResource("Selected")
-TabBar/styles/tab_unselected = SubResource("Button")
-TabBar/styles/tab_hovered = SubResource("Selected")
-TabBar/styles/tab_focus = SubResource("Focus")
-TabContainer/colors/font_color = Color(0.902, 0.925, 0.925, 1)
-TabContainer/colors/font_selected_color = Color(0.902, 0.925, 0.925, 1)
-TabContainer/colors/font_unselected_color = Color(0.902, 0.925, 0.925, 1)
-TabContainer/colors/font_hover_color = Color(0.902, 0.925, 0.925, 1)
-TabContainer/styles/tab_selected = SubResource("Selected")
-TabContainer/styles/tab_unselected = SubResource("Button")
-TabContainer/styles/tab_hovered = SubResource("Selected")
-TabContainer/styles/tab_focus = SubResource("Focus")
+[ext_resource type="Theme" path="res://systems/ui/menu_theme.tres" id="menu_theme"]
+
 [node name="SettingsScreen" type="PanelContainer"]
 process_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1")
-theme = SubResource("MenuTheme")
+theme = ExtResource("menu_theme")
 [node name="Margin" type="MarginContainer" parent="."]
 theme_override_constants/margin_left = 48
 theme_override_constants/margin_right = 48
