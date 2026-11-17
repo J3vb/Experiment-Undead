@@ -236,6 +236,13 @@ def oriel_logo() -> list:
     return strokes
 
 
+def research_sign() -> list:
+    strokes = text_strokes("HALCYON", 24, 28, 84, 8.0)
+    strokes += text_strokes("RESEARCH", 28, 136, 32, 3.2)
+    strokes.append(((24, 178), (488, 178), 3.0))
+    return strokes
+
+
 def lane_line() -> list:
     return [((6, 16), (250, 16), 9.0)]
 
@@ -244,6 +251,7 @@ def build(out_dir: Path) -> list:
     out_dir.mkdir(parents=True, exist_ok=True)
     jobs = [("oriel_logo", (640, 256), oriel_logo(), PAINT, 41, False)]
     jobs.append(("lane_line", (256, 32), lane_line(), HAZARD, 43, False))
+    jobs.append(("halcyon_research", (512, 192), research_sign(), PAINT, 45, False))
     for index, (room, (code, name, sector)) in enumerate(ROOMS.items()):
         jobs.append(("sign_" + room, SIGN_SIZE, room_sign(code, name, sector), PAINT, 50 + index, room in BLOODIED))
     written = []

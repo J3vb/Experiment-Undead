@@ -281,6 +281,16 @@ the person on a decision card before the next step starts.
 - Tests: props clearance; late ring path test (Corridor, Generator Hall,
   Tunnel, Labs) still finds a path for a zombie-sized body; prop models test.
 - Done when: Labs render matches the concept; ring still 4-player wide.
+- Built (2026-11-17): the research room is a 4 m glass bay prop
+  (`research_room`: steel frame, cracked panes, one pane gone, a Fenlight
+  mass inside) built around the existing north jar shelf, which stays where
+  it is because removing a baked node breaks the lightmap until step 7.
+  `HALCYON RESEARCH` sign on the wall behind the glass, one mist FogVolume
+  inside. Dressing `screen_pair` (one cracked, one running `Screen`) on the
+  south wall and `lab_floor_wreck` (knocked stools, spilled jars) west of
+  the bench. The two step 2 Labs wall vines went: one covered the Labs sign,
+  the other stood where the bay is. No new bench: the island bench already
+  carries the microscope, and a second one would narrow the late ring.
 
 ### Step 5: Containment wreck
 

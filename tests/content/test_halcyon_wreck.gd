@@ -6,6 +6,8 @@ extends GutTest
 const MAP: String = "res://levels/halcyon_labs/map.tscn"
 const FIRE: String = "res://systems/effects/fire_spot.tscn"
 const MESS_HALL: Rect2 = Rect2(38, 30, 20, 16)
+const LABS: Rect2 = Rect2(36, 10, 16, 16)
+const RESEARCH_SIGN: String = "res://assets/textures/signs/halcyon_research.png"
 
 var _level: Node3D
 
@@ -60,3 +62,25 @@ func test_red_lamps_glow_without_lights() -> void:
 	assert_eq(lamps.find_children("*", "Light3D", true, false).size(), 0, "emission only, no extra lights")
 	for node: Node in lamps.get_children():
 		assert_eq((node as GeometryInstance3D).cast_shadow, GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
+
+
+func test_research_room_has_its_sign_and_one_mist_volume() -> void:
+	var room: Node3D = _level.get_node(^"NavigationRegion3D/Blockout/labs/Props/labs_research_room") as Node3D
+	assert_not_null(room, "the Labs research room stands in the map")
+	if room == null:
+		return
+	var painted: Decal = _level.get_node(^"Signs/HalcyonResearch") as Decal
+	assert_eq(painted.texture_albedo.resource_path, RESEARCH_SIGN, "HALCYON RESEARCH is painted on its back wall")
+	assert_lt(
+		Vector2(painted.global_position.x, painted.global_position.z).distance_to(
+			Vector2(room.global_position.x, room.global_position.z)
+		),
+		1.5,
+		"behind the glass"
+	)
+	var mist: int = 0
+	for node: Node in _level.get_node(^"Atmosphere/Fog").get_children():
+		var at: Vector3 = (node as Node3D).global_position
+		if LABS.has_point(Vector2(at.x, at.z)):
+			mist += 1
+	assert_eq(mist, 1, "one mist volume in the Labs, inside the research room")
