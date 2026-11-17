@@ -151,9 +151,11 @@ func add_sway(look_delta: Vector2) -> void:
 
 
 ## Simulation step for the active weapon. Called from the player's physics tick.
+## The gun in hand does not tick while it is raised, so no fire path (alt
+## fire, buffered shots, a burst) can shoot before the swap ends.
 func tick(delta: float) -> void:
 	_swap_left = maxf(_swap_left - delta, 0.0)
-	if current:
+	if current and not is_swapping():
 		current.tick(delta)
 
 

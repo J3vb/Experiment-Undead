@@ -86,3 +86,15 @@ func test_walking_does_not_cancel_a_reload() -> void:
 	gun.start_reload()
 	player.weapons.set_state(false, false, 1.0)
 	assert_true(gun.is_reloading())
+
+
+func test_no_fire_path_shoots_while_raising() -> void:
+	player.weapons.equip(0)
+	var gun: Weapon = player.weapons.current
+	watch_signals(gun)
+	gun.trigger_held = true
+	gun._buffered = Weapon.BUFFER_TIME
+	_tick(0.3)
+	assert_signal_not_emitted(gun, "fired", "buffered or held shots wait for the raise")
+	_tick(0.15)
+	assert_signal_emitted(gun, "fired")
