@@ -71,6 +71,22 @@ Kessel Dam is the vertical map: three heights stacked inside one concrete wall, 
 
 **Setting and mood.** A 1960s hydro dam closing a forested gorge, at night in steady rain. The crest road is lit by warm sodium lamps and a stalled army convoy. Inside the wall it is cold teal and wet, with dripping service galleries. A crack in the spillway glows bio-green where the lab's waste was dumped into the reservoir.
 
+**Key shot.** [Kessel Dam key shot](concepts/act1/keyshots/kessel_dam.jpg), looking along the Crest Road at night.
+
+![Kessel Dam key shot](concepts/act1/keyshots/kessel_dam.jpg)
+
+What the build takes from it:
+- **Mood:** heavy rain, a moonlit cloud gap, wet asphalt that mirrors every lamp, mist rising from the gorge.
+- **Key props:** the stalled convoy (canvas-top trucks, one armoured car, ammo crates, a body under a tarp), yellow-black concrete barriers and a yellow rail along the parapet, a thick pipe running along the outer face, steel stairs and landings bolted to the wall, a tall control building at the far end of the crest with radio masts and red tip lights.
+- **Lighting:** sodium street lamps along the crest are the only warm light up top, small lamps on the dam face mark the stairs and landings, the Turbine Hall below shows lit windows and four outflow pipes. Treat this as the outside, so warm is right here; inside the Turbine Hall the look rules still say cold teal.
+
+Where the art differs from this doc:
+- **Two waterfalls.** Water pours through the middle of the dam face, and a second, natural waterfall falls down the cliff on the right. The doc has no second waterfall; it can stay as backdrop only, not a play area. The centre falls can be the Spillway, but in the doc the Spillway is a sloped area you walk down, so the build needs a dry channel next to the water.
+- **Turbine Hall is outside.** The art shows the Turbine Hall as its own building at the foot of the dam. The doc puts it at river level, which fits, but the build has to link it to the dam stairs and the Tailrace Dock.
+- **No bio-green crack.** The glowing spillway crack from the doc is not in the shot. Keep it: it is the map's one bio-green accent.
+- **Bright red blood.** The look rules say gore is dark red-brown, never bright red. Follow the look rules.
+- **No zipline** is visible. Keep it from the doc.
+
 _(Diagram not copied: Kessel Dam side view · 3 heights, 8 areas, schematic.)_
 
 The map reads top to bottom: the crest is the start, the Valve Gallery is the mid-game hold, and the river level forms the late-game ring. The zipline is the fast way back down.
@@ -114,6 +130,21 @@ Marrow Junction is the open map built for a full squad: a foggy rail yard with w
 
 **Setting and mood.** A freight junction that became a quarantine checkpoint. A hospital train carrying the first patients out of Halcyon stalled here and never left. Thick ground fog, tall sodium floodlight masts, red signal lamps. Inside the train cars it is cold teal, with green-lit specimen cases in the last car.
 
+**Key shot.** [Marrow Junction key shot](concepts/act1/keyshots/marrow_junction.jpg), the checkpoint beside the stalled hospital train.
+
+![Marrow Junction key shot](concepts/act1/keyshots/marrow_junction.jpg)
+
+What the build takes from it:
+- **Mood:** thick low fog, wet ground with puddles and dead leaves, razor-wire fences, a moon behind cloud. Grauwald sits on the hill behind the yard with red-lit masts, so the next map is always in view.
+- **Key props:** the hospital train (white cars, red stripe and red cross, rust, red tail lamps, steps up to each door), the last car glowing bio-green with a zombie shape inside, a steel signal gantry across the tracks with red signal lamps, a raised watch tower on the gantry, floodlight masts, a striped boom barrier, yellow-black concrete barriers, an army field tent with a biohazard tarp, laptops and a lamp, yellow hard cases and loose cables.
+- **Lighting:** red signal lamps are the zone's accent, the green last car is the only bio-green, warm light only from the tent lamp and the car windows.
+
+Where the art differs from this doc:
+- **The train sits beside a checkpoint gate.** The art puts a boom barrier and a guarded checkpoint right next to the train. In the doc the Quarantine Gate (exfil) is on the road out, far from the train, and the train sits between Platform 1 and the Roundhouse. Build it as the doc says; use the boom barrier, tent and cases as dressing at the Quarantine Gate, and a smaller checkpoint by the train if it fits.
+- **The watch tower on the gantry** reads like the Signal Box. In the doc the Signal Box is a raised building at +6 m. A gantry tower is a fine shape for it if the DMR perch still covers the Freight Yard.
+- **White floodlights.** The doc says sodium floodlight masts, the art shows cold white beams. Pick one when the map is built; sodium keeps "outside warm" from the look rules.
+- **No container stacks, loco or roundhouse** in view. The shot only shows one corner; the doc layout stands.
+
 _(Diagram not copied: Marrow Junction top-down · 8 areas, schematic.)_
 
 The Freight Yard sits in the middle and touches four areas, so it is the crossroads of every run. The loco track wraps the whole map and is the fastest way across once the power is on.
@@ -154,6 +185,20 @@ The Freight Yard sits in the middle and touches four areas, so it is the crossro
 Grauwald Sanatorium is the dark, late-game map: a hub-and-spoke hospital where fire doors close and reopen every few rounds, so the safe route you learned can be gone next round. Blackout rounds come twice as often here, so a flashlight and sound matter more than anywhere else.
 
 **Setting and mood.** A 1910s tuberculosis sanatorium on a snowy hilltop above the valley, later used by Halcyon as its patient intake site. Moonlight on snow outside, a frozen fountain in the courtyard. Inside: long tiled wards under failing teal tubes, a three-floor rotunda with balconies, and steam from the basement boilers. The chapel and hydrotherapy baths are where the bio-green glow is strongest.
+
+**Key shot.** [Grauwald Sanatorium key shot](concepts/act1/keyshots/grauwald_sanatorium.jpg), the snowy courtyard seen through the iron gates.
+
+![Grauwald Sanatorium key shot](concepts/act1/keyshots/grauwald_sanatorium.jpg)
+
+What the build takes from it:
+- **Mood:** full moon, light snow falling, dead trees, low mist over the ground, icy wet paving that reflects the lamps.
+- **Key props:** the frozen tiered fountain with icicles, iron benches, tall iron gates on stone posts with lanterns, a grand stone front with columns, a balcony, wide stairs, arched windows and a small cupola on the roof, ivy and cracked plaster, a tall chimney (the Boiler Room), a radio mast with red lights on the hill.
+- **Lighting:** warm lanterns at the gates and doors outside, moonlight on snow, every window dark except one cold teal window on the upper floor. That single window is the one accent: it tells the player the inside is cold and something is still on in there.
+
+Where the art differs from this doc:
+- **The courtyard is a front forecourt.** The art shows an open forecourt in front of the main entrance, behind gates. In the doc the Courtyard is enclosed between the two wards and opened by debris from either ward, and the start is the Entrance Hall. Keep the doc layout: put the fountain courtyard behind the building with this look, and use the gates and front steps as the backdrop seen from the Entrance Hall.
+- **Cupola, not a glass roof.** The roof has a small domed cupola. The doc's Roof Solarium is a glass roof big enough for exfil. The cupola can sit on top of the Rotunda, with the solarium on a flat roof beside it.
+- **No bio-green** is visible from outside. That fits the doc: the green belongs to the Chapel and Hydrotherapy inside.
 
 _(Diagram not copied: Grauwald Sanatorium layout · 9 areas, schematic.)_
 
