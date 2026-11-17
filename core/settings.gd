@@ -17,7 +17,16 @@ const DEFAULTS: Dictionary = {
 		&"damage_numbers": "off",
 	},
 	&"comfort":
-	{&"head_bob": 0.6, &"weapon_bob": 1.0, &"sprint_fov": true, &"damage_effects": 1.0, &"centre_dot": false},
+	{
+		&"head_bob": 0.6,
+		&"weapon_bob": 1.0,
+		&"sprint_fov": true,
+		&"damage_effects": 1.0,
+		&"centre_dot": false,
+		&"shake_own_gun": 1.0,
+		&"shake_hits": 1.0,
+		&"flash_reduction": false,
+	},
 	&"network": {&"last_address": "", &"last_port": 7777},
 }
 ## Min and max of float options that are not 0 to 1.

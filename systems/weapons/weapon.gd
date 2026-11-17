@@ -211,7 +211,7 @@ func fire() -> void:
 	var rounds: int = DoubleBarrel.consume_rounds(self, _double_barrel)
 	var spread: float = get_current_spread()
 	var origin: Vector3 = camera.global_position
-	var basis: Basis = camera.global_basis
+	var basis: Basis = PlayerCamera.aim_of(camera)
 	for i: int in data.pellets * rounds:
 		_trace(origin, _spread_direction(basis, spread))
 	_bloom = minf(_bloom + data.spread_per_shot, data.max_spread)

@@ -1,12 +1,17 @@
-## Camera feel on top of the head: pitch, recoil spring, bob, crouch height
-## and FOV for sprint/ADS. Attach to the Head node.
+## Camera feel on top of the head: pitch, recoil spring, bob, crouch height,
+## FOV for sprint/ADS, and the cosmetic layer (view kick, trauma shake, FOV punch).
+## Cosmetic motion rotates only the Camera3D; aim comes from aim_of(). Attach to the Head node.
 class_name PlayerCamera
 extends Node3D
+
+const FOV_PUNCH_MAX: float = 4.0
+const FOV_PUNCH_RISE: float = 0.025
 
 @export var sprint_fov_bonus: float = 6.0
 @export var stand_height: float = 1.6
 @export var crouch_height: float = 1.05
 @export var bob_strength: float = 0.035
+@export var rules: FeedbackRules
 
 var base_fov: float = 78.0
 ## Comfort settings: head bob scale and whether sprinting widens the view.
@@ -20,6 +25,15 @@ var _bob_time: float = 0.0
 var _body: CharacterBody3D
 var _tilt: Tween
 var _tilt_degrees: float = 0.0
+var _trauma: float = 0.0
+var _view_kick: float = 0.0
+var _view_kick_return: float = 0.075
+var _punch_peak: float = 0.0
+var _punch_time: float = 0.0
+var _punch_length: float = 0.0
+var _fov_current: float = 78.0
+var _shake_time: float = 0.0
+var _noise: FastNoiseLite = FastNoiseLite.new()
 
 @onready var recoil_pivot: Node3D = $RecoilPivot
 @onready var camera: Camera3D = $RecoilPivot/Camera3D
@@ -27,10 +41,55 @@ var _tilt_degrees: float = 0.0
 
 func _ready() -> void:
 	_body = get_parent() as CharacterBody3D
+	if rules == null:
+		rules = FeedbackRules.new()
+	_noise.frequency = 1.0
 	Settings.changed.connect(_on_setting_changed)
 	_on_setting_changed(&"aim", &"fov", Settings.get_value(&"aim", &"fov"))
 	head_bob = Settings.get_value(&"comfort", &"head_bob")
 	sprint_fov = Settings.get_value(&"comfort", &"sprint_fov")
+	Events.weapon_fired.connect(_on_weapon_fired)
+	Events.player_damaged.connect(_on_player_damaged)
+	Events.round_started.connect(_on_round_started)
+
+
+## Where bullets go from this camera: its parent's basis, without the camera's own
+## cosmetic rotation (view kick and shake), so feel never moves the aim.
+static func aim_of(view: Camera3D) -> Basis:
+	var parent: Node3D = view.get_parent_node_3d()
+	return parent.global_basis if parent else view.global_basis
+
+
+func get_trauma() -> float:
+	return _trauma
+
+
+## Adds shake (0-1). own_gun picks the comfort slider; ADS halves it; firing alone
+## never pushes trauma past fire_trauma_cap.
+func add_trauma(amount: float, own_gun: bool) -> void:
+	var scaled: float = amount * _comfort(own_gun) * lerpf(1.0, rules.ads_trauma_mult, _ads())
+	var limit: float = maxf(_trauma, rules.fire_trauma_cap) if own_gun else 1.0
+	_trauma = clampf(minf(_trauma + scaled, limit), 0.0, 1.0)
+
+
+## Cosmetic camera kick for one shot of a gun with this feel.
+func kick_view(feel: FeelData) -> void:
+	if feel == null:
+		return
+	var comfort: float = _comfort(true)
+	_view_kick = minf(_view_kick + feel.view_kick_pitch * comfort * lerpf(1.0, rules.ads_view_kick_mult, _ads()), 4.0)
+	_view_kick_return = maxf(feel.view_kick_return_ms, 1.0) / 1000.0
+	add_trauma(feel.fire_trauma, true)
+	punch_fov(feel.fov_punch_deg * comfort, feel.fov_punch_ms / 1000.0)
+
+
+## FOV offset in degrees (negative zooms in): rises in 25 ms, eases back over seconds.
+func punch_fov(degrees: float, seconds: float) -> void:
+	if is_zero_approx(degrees) or seconds <= 0.0:
+		return
+	_punch_peak = clampf(degrees, -FOV_PUNCH_MAX, FOV_PUNCH_MAX)
+	_punch_time = 0.0
+	_punch_length = seconds
 
 
 ## Pitch only; yaw turns the body.
@@ -83,13 +142,69 @@ func update_feel(
 
 	var fov: float = base_fov + (sprint_fov_bonus if sprinting and sprint_fov else 0.0)
 	fov = lerpf(fov, ads_fov, ads_progress)
-	camera.fov = lerpf(camera.fov, fov, clampf(12.0 * delta, 0.0, 1.0))
+	_fov_current = lerpf(_fov_current, fov, clampf(12.0 * delta, 0.0, 1.0))
+	camera.fov = _fov_current + _step_fov_punch(delta)
+	_step_shake(delta)
+
+
+func _step_shake(delta: float) -> void:
+	_trauma = maxf(_trauma - rules.trauma_decay * delta, 0.0)
+	_view_kick *= exp(-3.0 * delta / _view_kick_return)
+	var shake: float = _trauma * _trauma
+	_shake_time += delta * rules.shake_noise_hz
+	var pitch: float = rules.max_shake_pitch_deg * shake * _noise.get_noise_2d(_shake_time, 0.0)
+	var yaw: float = rules.max_shake_yaw_deg * shake * _noise.get_noise_2d(_shake_time, 100.0)
+	var roll: float = rules.max_shake_roll_deg * shake * _noise.get_noise_2d(_shake_time, 200.0)
+	camera.rotation = Vector3(deg_to_rad(_view_kick + pitch), deg_to_rad(yaw), deg_to_rad(roll))
+
+
+func _step_fov_punch(delta: float) -> float:
+	if _punch_length <= 0.0:
+		return 0.0
+	_punch_time += delta
+	if _punch_time < FOV_PUNCH_RISE:
+		return _punch_peak * _punch_time / FOV_PUNCH_RISE
+	var t: float = (_punch_time - FOV_PUNCH_RISE) / _punch_length
+	if t >= 1.0:
+		_punch_length = 0.0
+		return 0.0
+	return _punch_peak * (1.0 - smoothstep(0.0, 1.0, t))
+
+
+func _is_local() -> bool:
+	return is_instance_valid(_body) and _body.is_multiplayer_authority()
+
+
+func _ads() -> float:
+	var player: Player = _body as Player
+	return player.weapons.get_ads_progress() if player and player.weapons else 0.0
+
+
+func _comfort(own_gun: bool) -> float:
+	var value: Variant = Settings.get_value(&"comfort", &"shake_own_gun" if own_gun else &"shake_hits")
+	return clampf(float(value), 0.0, 1.0) if value != null else 1.0
+
+
+func _on_weapon_fired(player: Player, weapon: Weapon) -> void:
+	if player == _body and _is_local() and weapon and weapon.data:
+		kick_view(weapon.data.feel)
+
+
+func _on_player_damaged(player: Player, _info: DamageInfo) -> void:
+	if player == _body and _is_local():
+		add_trauma(rules.hit_trauma, false)
+
+
+func _on_round_started(_round_number: int, _count: int) -> void:
+	if _is_local() and (_body as Player).is_alive():
+		add_trauma(rules.round_start_trauma, false)
 
 
 func _on_setting_changed(section: StringName, key: StringName, value: Variant) -> void:
 	if section == &"aim" and key == &"fov":
 		base_fov = rad_to_deg(2.0 * atan(tan(deg_to_rad(float(value)) / 2.0) * 9.0 / 16.0))
 		camera.fov = base_fov
+		_fov_current = base_fov
 	elif section == &"comfort" and key == &"head_bob":
 		head_bob = value
 	elif section == &"comfort" and key == &"sprint_fov":

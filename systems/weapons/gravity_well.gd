@@ -42,7 +42,7 @@ static func launch(weapon: Weapon) -> void:
 		return
 	var claims: Node = player.session.get_node_or_null("HitClaims") if player.session else null
 	var origin: Vector3 = weapon.camera.global_position
-	var direction: Vector3 = -weapon.camera.global_basis.z
+	var direction: Vector3 = -PlayerCamera.aim_of(weapon.camera).z
 	var parent: Node = player.session if player.session else player.get_parent()
 	var orb: GravityWell = spawn_orb(parent, player, origin, direction, claims)
 	orb.weapon_data = weapon.data
