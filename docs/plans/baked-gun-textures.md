@@ -141,9 +141,11 @@ Autoloads, managers or base classes added: none.
 - No Resource types, fields, ids or `.tres` changes. Weapons keep their
   `world_model` paths.
 - Bake record `<id>_bake.json` (tool data, not game data): sha256 of the gun
-  script, `gun_parts.py`, `gun_bake.py`, the markings atlas (or the handed-over
-  source), map size, low-poly triangle count. Read only by
-  `tools/ci/test_gun_bakes.py`.
+  script, `gun_bake.py` and the markings atlas (or the handed-over source),
+  map size, baked triangle count, and a fingerprint of the plain build
+  (triangles and bounds), so a `gun_parts.py` change that moves this gun
+  asks for a re-bake but one that does not leaves it alone. Read by
+  `tools/ci/test_gun_bakes.py` and `tools/assets/tests/test_gun_bake.py`.
 - Save format change: none.
 - Content checks: `tests/content/test_generated_models.gd` checks the four
   guns use the `Baked` material with all three maps loaded, and keep their
@@ -218,16 +220,18 @@ Needs F-72 step 2 (PR #322) merged.
   2. Low-poly: one-segment chamfer (Bevel modifier, angle limit 30 degrees,
      0.6 mm) on hard edges, weighted normals, Smart UV with 4 px margin at
      2048, all parts on one UV sheet, mirrored parts not overlapped.
-  3. High-detail copy of every part: three-segment bevel, subdivision where
-     curved, then detail by material name: `Knurled` gets stipple
-     (displacement from a fixed-seed Voronoi), `Worn` gets dents and edge chips
-     (curvature mask), `Markings` quads become engraved logo and serial text
-     (displacement from the markings atlas). Paint: base colour per material,
-     chipped edges showing bare metal or primer, grime in AO creases, the
-     atlas printed on.
-  4. Bakes part by part (high `Magazine` onto low `Magazine` and so on, so
-     moving parts never bake onto each other): normal (cage), base colour,
-     AO, roughness, metal. Packs ORM (R = AO, G = roughness, B = metal).
+  3. High detail without a second mesh (found while building step 2): the
+     game mesh gets a detail material instead. Cycles' Bevel shader rounds
+     every edge (0.9 mm) in the normal map, a wider Bevel finds edges for
+     paint chips, and bump nodes add the rest by material name: `Knurled`
+     gets stipple (Voronoi), `Worn` gets chips and dents, `Markings` become
+     engraved logo and serial text from the atlas. Paint follows the gun
+     finish shader's rules (chips to bare metal, grime in AO creases). This
+     needs no high-to-low cage, so moving parts can never bake onto each
+     other. A real high-poly source (handed-over guns, step 6) bakes
+     selected-to-active instead.
+  4. Bakes all parts onto the one UV sheet: normal (tangent space), base
+     colour, AO, roughness, metal. Packs ORM (R = AO, G = roughness, B = metal).
   5. Exports the low-poly `.glb` with one `Baked` material on the gun
      (optic and sight glass stay their own materials), writes the three PNGs
      and the bake record.
@@ -238,9 +242,10 @@ Needs F-72 step 2 (PR #322) merged.
   `assets/materials/gun_finish.gdshader`, `tools/assets/gun_finish_import.gd`,
   `assets/textures/weapons/rifle_ar_*`, `assets/models/weapons/rifle_ar.glb`,
   `tools/ci/test_gun_bakes.py`, turnaround, tests.
-- Tests: `tools/assets/tests/test_gun_bake.py` (bake a tiny two-part test
-  gun at 128 px: maps exist, normal map is not flat where the high copy has a
-  bevel, parts do not bake onto each other, UV islands do not overlap);
+- Tests: `tools/assets/tests/test_gun_bake.py` (bake the AR-17 at 64 px:
+  maps exist, normal map is not flat, one `Baked` material, UV islands of all
+  parts do not overlap; the committed bake's source fingerprint, triangles and
+  bounds of the plain build, still matches today's gun script and `gun_parts.py`);
   `tools/ci/test_gun_bakes.py` (record hashes match the inputs, maps 2048 px,
   set under 16 MB); `tests/content/test_gun_finish.gd` (the `Baked` material
   gets the shader in baked mode with three maps; rarity inlay still applies);
@@ -329,12 +334,11 @@ Can run any time after step 2.
 - **Forward+ does not run in the cloud container** (no GPU): checked
   2026-11-17, it runs on lavapipe. Fallback if a later Mesa breaks it: the
   local GPU agent prompt.
-- **Bake artefacts** (moving parts baking onto each other, seams, skewed
-  normals): per-part baking with a cage, tested on a two-part test gun in
-  step 2 before the four guns.
-- **Bake time in CI**: CI never bakes. It checks the committed maps against
-  the bake record. Cloud threads bake at 2048 with low samples (AO 64);
-  expected a few minutes per gun on 4 CPU cores.
+- **Bake artefacts** (seams, skewed normals): one shared UV sheet with a
+  no-overlap test, triangulated before the bake so Godot's tangents match.
+- **Bake time in CI**: CI never bakes the full maps. It checks the committed
+  maps against the bake record and runs a 64 px test bake. A 2048 bake takes
+  about 8 minutes on 4 CPU cores.
 - **Repo growth without LFS**: 16 MB cap per gun, re-bake only on input
   change. If it still grows too fast, switch the PNGs to lossless WebP (Godot
   imports it) before adding LFS.
