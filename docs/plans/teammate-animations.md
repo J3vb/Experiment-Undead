@@ -244,8 +244,9 @@ the soak machine; step 2 measures it with the existing `--print-fps` run.
 ## Risks
 
 - **Blender 5.3 glTF export of several actions.** Slotted actions may export
-  only the active one. Step 1 proves export and import first; fallback is one
-  NLA track per action (exporter "NLA tracks" mode).
+  only the active one. Checked while planning: one NLA track per action with
+  `export_animation_mode="NLA_TRACKS"` exports every clip by name. Step 1
+  still proves the Godot import.
 - **Bone axes.** Each bone has its own local axes, so a "pitch forward" must
   be converted per bone. Step 1 uses the same body-space-to-bone conversion
   `ZombieRig` already uses and renders every clip before any game code.
@@ -263,4 +264,4 @@ the soak machine; step 2 measures it with the existing `--print-fps` run.
 
 ## Open decisions
 
-- [ ] Approve this plan, including step 3 (teammates hold their gun, which the issue did not list)?
+- [x] Approve this plan, including step 3 (teammates hold their gun, which the issue did not list)? Approved, all 3 steps (the person, decision card, 2026-11-17).
