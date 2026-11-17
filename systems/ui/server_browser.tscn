@@ -1,0 +1,278 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://systems/ui/server_browser.gd" id="1"]
+[ext_resource type="Theme" path="res://systems/ui/menu_theme.tres" id="menu_theme"]
+[ext_resource type="PackedScene" path="res://systems/ui/net_error_dialog.tscn" id="dialog"]
+
+[sub_resource type="ButtonGroup" id="Tabs"]
+
+[sub_resource type="StyleBoxFlat" id="Backdrop"]
+bg_color = Color(0.043, 0.059, 0.063, 1)
+
+[sub_resource type="StyleBoxFlat" id="Main"]
+bg_color = Color(0.553, 1, 0.227, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+shadow_color = Color(0.553, 1, 0.227, 0.25)
+shadow_size = 10
+content_margin_left = 28.0
+content_margin_top = 12.0
+content_margin_right = 28.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="MainHover"]
+bg_color = Color(0.651, 1, 0.4, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+shadow_color = Color(0.553, 1, 0.227, 0.4)
+shadow_size = 14
+content_margin_left = 28.0
+content_margin_top = 12.0
+content_margin_right = 28.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="MainFocus"]
+draw_center = false
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.902, 0.925, 0.925, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[node name="ServerBrowser" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+theme = ExtResource("menu_theme")
+theme_override_styles/panel = SubResource("Backdrop")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 24
+
+[node name="Columns" type="HBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="Side" type="VBoxContainer" parent="Margin/Columns"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Margin/Columns/Side"]
+layout_mode = 2
+text = "Servers"
+theme_override_font_sizes/font_size = 36
+
+[node name="All" type="Button" parent="Margin/Columns/Side"]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+button_pressed = true
+button_group = SubResource("Tabs")
+text = "All"
+alignment = 0
+theme_override_font_sizes/font_size = 24
+
+[node name="Favourites" type="Button" parent="Margin/Columns/Side"]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("Tabs")
+text = "Favourites"
+alignment = 0
+theme_override_font_sizes/font_size = 24
+
+[node name="Recent" type="Button" parent="Margin/Columns/Side"]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("Tabs")
+text = "Recent"
+alignment = 0
+theme_override_font_sizes/font_size = 24
+
+[node name="Lan" type="Button" parent="Margin/Columns/Side"]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("Tabs")
+text = "LAN"
+alignment = 0
+theme_override_font_sizes/font_size = 24
+
+[node name="Space" type="Control" parent="Margin/Columns/Side"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="Refresh" type="Button" parent="Margin/Columns/Side"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Refresh"
+alignment = 0
+theme_override_font_sizes/font_size = 24
+
+[node name="Main" type="VBoxContainer" parent="Margin/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="List" type="Tree" parent="Margin/Columns/Main"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+columns = 6
+column_titles_visible = true
+hide_root = true
+select_mode = 1
+theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/title_button_font_size = 18
+
+[node name="AddRow" type="HBoxContainer" parent="Margin/Columns/Main"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="Margin/Columns/Main/AddRow"]
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "Add by address"
+theme_override_font_sizes/font_size = 20
+
+[node name="Address" type="LineEdit" parent="Margin/Columns/Main/AddRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+placeholder_text = "203.0.113.7:7777"
+theme_override_font_sizes/font_size = 20
+
+[node name="AddJoin" type="Button" parent="Margin/Columns/Main/AddRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Add and join"
+theme_override_font_sizes/font_size = 20
+
+[node name="Space" type="Control" parent="Margin/Columns/Main/AddRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="LanHint" type="Label" parent="Margin/Columns/Main/AddRow"]
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "LAN games show up by themselves"
+theme_override_font_sizes/font_size = 18
+
+[node name="Detail" type="PanelContainer" parent="Margin/Columns/Main"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="Box" type="HBoxContainer" parent="Margin/Columns/Main/Detail"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Info" type="VBoxContainer" parent="Margin/Columns/Main/Detail/Box"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="ServerName" type="Label" parent="Margin/Columns/Main/Detail/Box/Info"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+
+[node name="Line" type="Label" parent="Margin/Columns/Main/Detail/Box/Info"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 20
+
+[node name="NameField" type="LineEdit" parent="Margin/Columns/Main/Detail/Box/Info"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+max_length = 32
+placeholder_text = "Name for this server"
+theme_override_font_sizes/font_size = 20
+
+[node name="Edit" type="HBoxContainer" parent="Margin/Columns/Main/Detail/Box/Info"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Favourite" type="Button" parent="Margin/Columns/Main/Detail/Box/Info/Edit"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Favourite"
+theme_override_font_sizes/font_size = 18
+
+[node name="Rename" type="Button" parent="Margin/Columns/Main/Detail/Box/Info/Edit"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Rename"
+theme_override_font_sizes/font_size = 18
+
+[node name="Remove" type="Button" parent="Margin/Columns/Main/Detail/Box/Info/Edit"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Remove"
+theme_override_font_sizes/font_size = 18
+
+[node name="Side" type="VBoxContainer" parent="Margin/Columns/Main/Detail/Box"]
+layout_mode = 2
+alignment = 2
+theme_override_constants/separation = 8
+
+[node name="Ping" type="Label" parent="Margin/Columns/Main/Detail/Box/Side"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+horizontal_alignment = 2
+theme_override_font_sizes/font_size = 18
+
+[node name="JoinRow" type="HBoxContainer" parent="Margin/Columns/Main/Detail/Box/Side"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Players" type="Label" parent="Margin/Columns/Main/Detail/Box/Side/JoinRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+
+[node name="Join" type="Button" parent="Margin/Columns/Main/Detail/Box/Side/JoinRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+text = "Join Server"
+theme_override_colors/font_color = Color(0.043, 0.063, 0.078, 1)
+theme_override_colors/font_hover_color = Color(0.043, 0.063, 0.078, 1)
+theme_override_colors/font_pressed_color = Color(0.043, 0.063, 0.078, 1)
+theme_override_colors/font_focus_color = Color(0.043, 0.063, 0.078, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("Main")
+theme_override_styles/hover = SubResource("MainHover")
+theme_override_styles/pressed = SubResource("MainHover")
+theme_override_styles/focus = SubResource("MainFocus")
+
+[node name="Hint" type="Label" parent="Margin/Columns/Main"]
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "Enter: join   F: favourite   R: refresh   Del: remove   Esc: back"
+theme_override_font_sizes/font_size = 18
+
+[node name="NetErrorDialog" parent="." instance=ExtResource("dialog")]
