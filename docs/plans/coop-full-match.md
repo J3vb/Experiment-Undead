@@ -1,6 +1,6 @@
 # Plan: A full co-op match, start to finish
 
-Status: Building
+Status: Done
 Roadmap: F-47 / issue #213
 Phase: P7
 Size: L
@@ -352,12 +352,22 @@ is a test tool and never ships. No per-frame allocations.
 
 ## Acceptance
 
-- [ ] The nightly co-op soak (4 bots, dedicated server) reaches round 20 with no desync warnings or errors.
-- [ ] Pausing in co-op never stops the match (step 2 test).
-- [ ] Every player sees teammates' names, health and bleed-out (step 3 test).
-- [ ] Joining a server lands in the hub; a deploy board takes the squad into Halcyon Labs (step 4 tests).
-- [ ] After a match everyone is back in the hub and can deploy again, unattended on a dedicated server (step 5 tests).
-- [ ] Solo play, the solo soak and every existing co-op test stay green.
+- [x] The nightly co-op soak (4 bots, dedicated server) reaches round 20 with no desync warnings or errors.
+- [x] Pausing in co-op never stops the match (step 2 test).
+- [x] Every player sees teammates' names, health and bleed-out (step 3 test).
+- [x] Joining a server lands in the hub; a deploy board takes the squad into Halcyon Labs (step 4 tests).
+- [x] After a match everyone is back in the hub and can deploy again, unattended on a dedicated server (step 5 tests).
+- [x] Solo play, the solo soak and every existing co-op test stay green.
+
+Evidence (close-out, 2026-11-17): soak = `coop-soak.yml` nightly, 4 bots
+reached round 20 with a clean server log; pause = `tests/unit/test_pause_screen.gd`;
+squad cards = `tests/unit/test_squad_game_over.gd`; hub and vote =
+`tests/unit/test_deploy_vote.gd`, `tests/unit/test_places.gd`,
+`tests/integration/test_net_deploy.gd`; back to the hub =
+`tests/unit/test_places.gd` (return after game over, empty server, second
+deploy) and `tests/integration/test_net_deploy.gd`; solo and co-op suites =
+CI `test` and `soak` green on #263. Still open: the 4-player play-test by the
+person (F-43, checklist on issue #127).
 
 ## Risks
 

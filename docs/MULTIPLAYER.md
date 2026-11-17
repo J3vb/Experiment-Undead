@@ -32,7 +32,8 @@ already reads `InputFrame`s, so the server could replay them.
   (clients change scene to it; the dedicated server adds it next to itself).
 - **Joining.** The client opens its connection inside `GameSession._ready()`,
   after the map exists, so spawns from the server never arrive early.
-- **One match per server** until the town (P9). Port 7777 UDP.
+- **One place per server** until the town (P9): the hub or the match the squad
+  deployed to. Port 7777 UDP.
 - **No interpolation buffer yet.** Positions sync at the physics rate (60 Hz)
   and physics interpolation smooths the rest. Add a buffer only if remote
   players look jittery in a play-test.
@@ -105,17 +106,48 @@ already reads `InputFrame`s, so the server could replay them.
    and ammo packs run `PowerUp.apply_effect()` on the PC that owns the guns.
    Protocol 11.
 
-After step 8, P7 finishes with `docs/plans/coop-full-match.md` (F-47): co-op
-soak, pause, squad cards, the hub and deploy flow, then a 4-player play-test to
-round 20 (the P7 exit test).
+9. **A full co-op match (done, plan `docs/plans/coop-full-match.md`, F-47,
+   PRs #228, #246, #256, #255, #263 and this one):** co-op soak (dedicated
+   server plus bot clients, nightly to round 20), pause that never stops the
+   match, squad cards with names and bleed-out, and the hub flow below.
+   Protocol 14.
+
+P7 ends with the 4-player play-test to round 20 (F-43, issue #127).
+
+## Hub and deploy flow
+
+- Joining a server (dedicated or Host and play) lands in the hub
+  (`content/screens/hub.tres`, `hub_session.tscn`, `GameSession.is_hub`: no
+  waves). Play solo goes straight into the match.
+- Ready-up vote (`DeployVote`, `session.deploy_vote`): a deploy board calls
+  the server-only `toggle_ready(player, place)`. The first press proposes the
+  place, any ready player pressing again un-readies, a press for another place
+  is ignored. When every connected player is ready, a 5 s countdown runs,
+  then `deploy(place)`. Every peer gets `Events.deploy_vote_changed`; late
+  joiners get the running vote once.
+- Changing place: the server's `Net.change_place()` tells every client to go
+  (`_go_to_place`) and keeps their connections until they leave; those
+  "leaving" peers get no player. Clients load the place and join the same
+  server again; the planned disconnect is not a lost connection. The
+  dedicated server swaps its session in one call; a listen host keeps its port
+  open. The handshake reply carries the server's place, so a client that
+  loaded another place switches before it spawns (a mid-match joiner lands in
+  the running match).
+- Back to the hub: a dedicated server returns 1 s after game over and 12 s
+  after its last player leaves a match (`net.match_reset`). A client with its
+  results up holds the order and rejoins on "Back to hub". A listen host's
+  "Back to hub" takes the squad along. Every place change starts a fresh
+  session.
 
 ## Running it locally
 
 ```bash
-# Dedicated server on port 7777
+# Dedicated server on port 7777 (starts in the hub)
 godot --headless --path . res://systems/net/dedicated_server.tscn -- --port=7777
 # A client that joins it (or start the game and pass the same argument)
 godot --path . -- --join=127.0.0.1:7777
 # Host and play (listen server)
 godot --path . -- --host
+# Co-op soak: dedicated server plus 2 bots, rounds 1-5 (see docs/LOGGING.md)
+godot --headless --path . --script res://tools/soak/coop_soak.gd -- --clients=2 --rounds=5
 ```
