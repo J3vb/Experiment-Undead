@@ -1,6 +1,6 @@
 # Plan: Core loop gaps
 
-Status: Approved
+Status: Building
 Roadmap: F-12 / no issue (audit of the v0.1 slice against the design docs)
 Phase: P2-P4
 Size: M
