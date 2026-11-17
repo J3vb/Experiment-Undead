@@ -27,6 +27,8 @@ var place: StringName = &""
 ## True from a place change order until the next host() or join(): the old session's
 ## disconnect is planned, so nobody shows the lost-connection error.
 var changing_place: bool = false
+## True while the results screen is up: a place change order then waits for the player.
+var holds_place: bool = false
 
 var _next_net_id: int = 1
 var _target: String = ""
@@ -162,9 +164,23 @@ func go_to(next: StringName) -> void:
 	UI.replace(next)
 
 
+## Forgets a held place change (the player went to the main menu instead).
+func cancel_place_change() -> void:
+	changing_place = false
+	pending_join = ""
+
+
 @rpc("authority", "reliable")
 func _go_to_place(next: StringName) -> void:
-	go_to(next)
+	if not holds_place:
+		go_to(next)
+		return
+	# The results stay up; the connection closes quietly and "Back to hub" rejoins.
+	Log.info(&"net", &"place_change_held", {"place": String(next)})
+	place = next
+	changing_place = true
+	pending_join = _target
+	leave()
 
 
 func _exit_tree() -> void:
@@ -284,46 +300,6 @@ func _host_ended_match() -> void:
 	_record_error(&"host_ended", {})
 	leave()
 	multiplayer.server_disconnected.emit()
-
-
-## Compare gameplay resource values, so editor and exported resource formats agree.
-func content_fingerprint() -> String:
-	var rows: Array[String] = []
-	var categories: PackedStringArray = DirAccess.get_directories_at(Content.ROOT)
-	categories.sort()
-	for category: String in categories:
-		var ids: PackedStringArray = PackedStringArray(Content.ids(StringName(category)))
-		ids.sort()
-		for id: String in ids:
-			rows.append(
-				"%s/%s:%s" % [category, id, _content_value(Content.get_item(StringName(category), StringName(id)))]
-			)
-	return "\n".join(rows).sha256_text()
-
-
-func _content_value(value: Variant) -> String:
-	if value is Resource:
-		var resource: Resource = value
-		if resource.get_script() == null:
-			return resource.resource_path
-		var fields: Array[String] = []
-		for property: Dictionary in resource.get_property_list():
-			if property.usage & PROPERTY_USAGE_SCRIPT_VARIABLE and property.usage & PROPERTY_USAGE_STORAGE:
-				fields.append("%s=%s" % [property.name, _content_value(resource.get(property.name))])
-		return ";".join(fields)
-	if value is Array:
-		var entries: Array[String] = []
-		for entry: Variant in value:
-			entries.append(_content_value(entry))
-		return "[%s]" % ",".join(entries)
-	if value is Dictionary:
-		var fields: Array[String] = []
-		var keys: Array = value.keys()
-		keys.sort_custom(func(a: Variant, b: Variant) -> bool: return str(a) < str(b))
-		for key: Variant in keys:
-			fields.append("%s=%s" % [key, _content_value(value[key])])
-		return "{%s}" % ",".join(fields)
-	return var_to_str(value)
 
 
 ## "1.2.3.4:7777" -> ["1.2.3.4", 7777]. Missing or bad port uses DEFAULT_PORT.

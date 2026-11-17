@@ -102,11 +102,11 @@ func test_failed_host_reports_the_port() -> void:
 
 
 func test_content_fingerprint_is_repeatable_and_resource_values_matter() -> void:
-	assert_eq(Net.content_fingerprint(), Net.content_fingerprint())
+	assert_eq(Build.content_fingerprint(), Build.content_fingerprint())
 	var weapon: WeaponData = Content.weapon(&"rifle_ar").duplicate(true) as WeaponData
-	var before: String = Net._content_value(weapon)
+	var before: String = Build._content_value(weapon)
 	weapon.damage += 1.0
-	assert_ne(Net._content_value(weapon), before)
+	assert_ne(Build._content_value(weapon), before)
 
 
 func test_connection_configuration_preserves_the_match_handshake() -> void:

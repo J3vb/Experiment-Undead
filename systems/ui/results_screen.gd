@@ -40,7 +40,14 @@ func _ready() -> void:
 	theme.merge_with(UI_THEME)
 	main_menu_button.pressed.connect(func() -> void: main_menu_requested.emit())
 	restart_button.pressed.connect(func() -> void: restart_requested.emit())
+	if Net.is_online():
+		Net.holds_place = true
+		restart_button.text = "Back to hub"
 	$Background.color = get_theme_color("bg_deep", "ResultsScreen")
+
+
+func _exit_tree() -> void:
+	Net.holds_place = false
 
 
 func show_results(stats: Dictionary, seconds: int = 0, rules: XpRules = DEFAULT_RULES) -> void:

@@ -32,6 +32,7 @@ var _drift_time: float = 0.0
 
 
 func _ready() -> void:
+	Net.cancel_place_change()
 	_bind_gamepad()
 	play_button.pressed.connect(_play_solo)
 	host_button.pressed.connect(_open_host)

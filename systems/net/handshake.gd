@@ -28,7 +28,7 @@ func setup(display_name: String = "Survivor", level: int = 1) -> void:
 	_display_name = display_name
 	_level = level
 	if fingerprint.is_empty():
-		fingerprint = Net.content_fingerprint()
+		fingerprint = Build.content_fingerprint()
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--test-protocol="):
 			protocol_version = arg.trim_prefix("--test-protocol=").to_int()

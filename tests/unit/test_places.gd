@@ -12,6 +12,7 @@ func after_each() -> void:
 		_server.free()
 		await wait_process_frames(2)
 	Net.changing_place = false
+	Net.holds_place = false
 	Net.leave()
 	Net.place = &""
 	Net.last_error.clear()
@@ -23,6 +24,7 @@ func test_a_planned_change_keeps_the_rejoin_through_leave() -> void:
 	Net.leave()
 	assert_eq(Net.pending_join, "127.0.0.1:%d" % PORT, "the next session joins the same server")
 	Net.changing_place = false
+	Net.holds_place = false
 	Net.leave()
 	assert_eq(Net.pending_join, "", "a normal leave forgets the address")
 
@@ -86,3 +88,63 @@ func test_a_peer_on_its_way_out_gets_no_player() -> void:
 	spawner._parent = world
 	assert_null(spawner.add_peer(42))
 	Net._leaving.clear()
+
+
+func test_a_held_order_waits_on_the_results_and_the_menu_forgets_it() -> void:
+	var scene: Node = get_tree().current_scene
+	Net.holds_place = true
+	Net._go_to_place(&"hub")
+	assert_eq(Net.place, &"hub")
+	assert_true(Net.changing_place, "Back to hub will rejoin")
+	await wait_process_frames(2)
+	assert_eq(get_tree().current_scene, scene, "the scene did not change under the results")
+	Net.pending_join = "127.0.0.1:%d" % PORT
+	Net.cancel_place_change()
+	assert_false(Net.changing_place)
+	assert_eq(Net.pending_join, "", "the main menu never rejoins by itself")
+
+
+func test_co_op_results_offer_back_to_hub_and_hold_place_changes() -> void:
+	assert_eq(Net.host(PORT, 2), OK)
+	var results: ResultsScreen = (load("res://systems/ui/results_screen.tscn") as PackedScene).instantiate()
+	add_child(results)
+	assert_eq(results.restart_button.text, "Back to hub")
+	assert_true(Net.holds_place)
+	results.free()
+	assert_false(Net.holds_place, "closing the results lets orders through again")
+
+
+func test_dedicated_server_returns_to_the_hub_after_a_match() -> void:
+	OS.set_environment("EU_PORT", str(PORT))
+	_server = DedicatedServer.new()
+	get_tree().root.add_child(_server)
+	OS.unset_environment("EU_PORT")
+	await wait_until(func() -> bool: return is_instance_valid(_server.session) and _server.session.is_node_ready(), 5.0)
+	_server.session.deploy_vote.deploy(&"match")
+	await wait_until(func() -> bool: return not _server.session.is_hub and _server.session.is_node_ready(), 10.0)
+	var match_id: int = _server.session.get_instance_id()
+	Events.game_over.emit({})
+	await wait_until(func() -> bool: return _server.session.is_hub and _server.session.is_node_ready(), 10.0)
+	assert_true(_server.session.is_hub, "back in a fresh hub after the results")
+	await wait_process_frames(2)
+	assert_false(is_instance_id_valid(match_id), "the match session is gone")
+	assert_eq(Net.place, &"hub")
+	_server.session.deploy_vote.deploy(&"match")
+	await wait_until(func() -> bool: return not _server.session.is_hub and _server.session.is_node_ready(), 10.0)
+	assert_eq(_server.session.director.round_number, 0, "a second deploy starts a fresh match")
+	_server._return_later(&"empty", 0.1)
+	await wait_until(func() -> bool: return _server.session.is_hub, 5.0)
+	assert_true(_server.session.is_hub, "an empty server goes back to the hub")
+
+
+func test_a_server_that_starts_in_the_match_stays_after_game_over() -> void:
+	OS.set_environment("EU_PORT", str(PORT))
+	_server = DedicatedServer.new()
+	_server.start_place = &"match"
+	get_tree().root.add_child(_server)
+	OS.unset_environment("EU_PORT")
+	await wait_until(func() -> bool: return is_instance_valid(_server.session) and _server.session.is_node_ready(), 5.0)
+	var match_id: int = _server.session.get_instance_id()
+	Events.game_over.emit({})
+	await wait_seconds(DedicatedServer.RESULTS_GRACE + 0.3)
+	assert_eq(_server.session.get_instance_id(), match_id, "soak and test servers keep their match")
