@@ -307,6 +307,7 @@ func _on_game_over(stats: Dictionary) -> void:
 	exfil_box.hide()
 	var session: GameSession = get_parent() as GameSession
 	results_screen.show_results(stats, session.tick / Engine.physics_ticks_per_second, session.progression.rules)
+	UI.hold_mouse(results_screen, true)
 
 
 func _on_xp_gained(player: Player, _amount: int, _total: int) -> void:
@@ -346,5 +347,4 @@ func _close_settings() -> void:
 
 func _return_to_menu() -> void:
 	(get_parent() as GameSession).bank_run_xp()
-	get_tree().paused = false
-	get_tree().change_scene_to_file("res://systems/ui/main_menu.tscn")
+	UI.replace(&"main_menu")

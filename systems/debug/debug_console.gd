@@ -7,7 +7,6 @@ var history: PackedStringArray = []
 var _history_index: int = 0
 var _draft: String = ""
 var _pending: PackedStringArray = []
-var _mouse_mode: Input.MouseMode = Input.MOUSE_MODE_VISIBLE
 var _player_inputs: Dictionary[Player, bool] = {}
 
 @onready var backdrop: Control = $Backdrop
@@ -98,9 +97,8 @@ func _on_input_gui(event: InputEvent) -> void:
 func _set_open(value: bool) -> void:
 	panel.visible = value
 	backdrop.visible = value
+	UI.hold_mouse(self, value)
 	if value:
-		_mouse_mode = Input.mouse_mode
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		for node: Node in get_tree().get_nodes_in_group(&"players"):
 			var player: Player = node as Player
 			_player_inputs[player] = player.input_enabled
@@ -108,7 +106,6 @@ func _set_open(value: bool) -> void:
 			player.local_input.enabled = false
 		command_input.grab_focus()
 	else:
-		Input.mouse_mode = _mouse_mode
 		command_input.release_focus()
 		for player: Player in _player_inputs:
 			if is_instance_valid(player):
