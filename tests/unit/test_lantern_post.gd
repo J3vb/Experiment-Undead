@@ -54,9 +54,9 @@ func test_deploy_board_is_reachable_from_the_spawn() -> void:
 	var board: Node3D = _hub.get_node("Gate/DeployBoardSpot/DeployBoard") as Node3D
 	assert_not_null(board, "the Deploy board stands at its spot")
 	var chest: Vector3 = Vector3.UP * CHEST_HEIGHT
-	var from: Vector3 = _hub.get_player_spawn().origin + chest
-	var to: Vector3 = board.global_position + chest + Vector3.BACK * BOARD_CLEARANCE
-	var ray: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(from, to, Layers.WORLD)
+	var start: Vector3 = _hub.get_player_spawn().origin + chest
+	var target: Vector3 = board.global_position + chest + Vector3.BACK * BOARD_CLEARANCE
+	var ray: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(start, target, Layers.WORLD)
 	var hit: Dictionary = _hub.get_world_3d().direct_space_state.intersect_ray(ray)
 	assert_true(hit.is_empty(), "nothing stands between the spawn and the board: %s" % [hit.get("collider")])
 
