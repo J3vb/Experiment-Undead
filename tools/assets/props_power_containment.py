@@ -115,11 +115,11 @@ def build_hazard_sign() -> None:
 
     m = {**p._mats(), **_extra()}
     box("Plate", (0.6, 0.02, 0.45), (0, 0, 0.225), m["paper"])
-    box("Band", (0.6, 0.022, 0.1), (0, -0.001, 0.4), m["alarm"])
+    box("Band", (0.6, 0.022, 0.1), (0, -0.002, 0.4), m["alarm"])
     for i, (x, z, turn) in enumerate(((-0.07, 0.15, -60), (0.07, 0.15, 60), (0.0, 0.07, 0))):
-        bar = box(f"Tri{i}", (0.2, 0.024, 0.025), (x, -0.002, z), m["dark"])
+        bar = box(f"Tri{i}", (0.2, 0.024, 0.025), (x, -0.003, z), m["dark"])
         bar.rotation_euler = (0, math.radians(turn), 0)
-    box("Mark", (0.025, 0.026, 0.08), (0, -0.003, 0.15), m["alarm"])
+    box("Mark", (0.025, 0.026, 0.08), (0, -0.005, 0.15), m["alarm"])
     p._merge("HazardSign")
 
 
