@@ -1,6 +1,6 @@
 # Plan: Teammate animations in third person
 
-Status: Approved
+Status: Building
 Roadmap: F-41 / issue #128
 Phase: P7
 Size: L
