@@ -4,7 +4,7 @@ Status: Approved
 Roadmap: F-68 / issue #297 (look follow-ups)
 Phase: P4 (v0.1 Vertical slice)
 Size: L
-Approved by: the person on a decision card (2026-11-17, plan PR #304); Containment light question goes to its own card before step 2
+Approved by: the person on decision cards (2026-11-17, plan PR #304): plan approved, Containment lit by tank glow
 
 ## Goal
 
@@ -72,7 +72,7 @@ Not in (non-goals):
   guards that. The bake carries their bounce only. The new Fenlight glow lights
   are Static (bake only), so the re-bake in the last step shows them. Close
   this line with that reason.
-- **Containment very dark:** see Open decisions. Recommended: light it only
+- **Containment very dark:** decided: light it only
   with the green glow of the spilled tanks and pods (Static, baked), nothing
   else gets brighter.
 - **Truck wreckage barely shows:** step 3 checks its fire light and moves it
@@ -215,7 +215,7 @@ the person on a decision card before the next step starts.
   ceiling hang, 2 sizes each) and pods with bio-green emission (same strength
   as the existing leak glow, provisional), a spill mound. Place vines across the map as dressing,
   heaviest in Containment and Labs, lighter toward the Dock. Leak pool decals
-  under spills. Containment glow per the Open decision answer: Static green
+  under spills. Containment glow (decided): Static green
   OmniLights at the spill spots.
 - Files: tools/assets/props_fenlight.py, build_models.py,
   assets/models/dressing/, layout.json, blockout.tscn, atmosphere.tscn,
@@ -317,9 +317,8 @@ the person on a decision card before the next step starts.
 ## Open decisions
 
 - [x] Approve the plan: approved by the person, start with step 1 (2026-11-17).
-- [x] How Containment stops being too dark: asked on its own card before step 2
-  (recommended: green glow from the broken tanks and pods only). Step 2 builds
-  the answer; step 1 does not depend on it.
+- [x] How Containment stops being too dark: green glow from the broken tanks,
+  spills and pods only (the person, 2026-11-17). Nothing else gets brighter.
 
 ## Provisional picks
 
