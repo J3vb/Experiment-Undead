@@ -75,8 +75,9 @@ The server also prints every warning and error to stdout as
 | `level.navmesh_baked` / `navmesh_bake_slow` | info / warn | Navmesh bake time (`reason` load/rebake). Over 100 ms = visible hitch |
 | `level.navigation_ready` | info | Time from load until zombies can path |
 | `level.navigation_not_ready` | error | No usable navmesh 10 s after load: zombies will not move |
-| `enemies.zombie_stuck` | warn | A chasing zombie moved under 0.3 m in 3 s while out of reach. `at`, `next_path_point`, `path_finished`: navmesh hole, bad spawn point or geometry snag |
-| `enemies.zombie_fell_out` | warn | Zombie below y = -50: missing floor collision |
+| `enemies.zombie_stuck` | warn | A chasing zombie moved under 0.3 m in 2 s while out of reach (logged once per zombie). `at`, `next_path_point`, `path_finished`: navmesh hole, bad spawn point or geometry snag |
+| `enemies.zombie_fell_out` | warn | Zombie below y = -50: missing floor collision (it relocates at once) |
+| `enemies.zombie_relocated` | warn | A lost zombie moved to a hidden spawn: `reason` unreachable (20 s without progress), far (over 60 m for 15 s) or fell_out; `from`, `to` (spawn point). Many from one place = navmesh hole there |
 | `waves.round_started` | info | Round number, enemies this round, health snapshot |
 | `waves.round_ended` | info | Round cleared |
 | `waves.round_stalled` | warn | 90 s in a round with no kill; lists where the living zombies are |

@@ -6,6 +6,10 @@ extends Node
 
 enum Phase { IDLE, INTERMISSION, SPAWNING, CLEARING }
 
+## The last LAST_FEW zombies of a round sprint after LAST_FEW_TIME seconds (zombie-ai.md).
+const LAST_FEW: int = 2
+const LAST_FEW_TIME: float = 30.0
+
 @export var rules: WaveRules
 @export var spawner: Spawner
 
@@ -15,6 +19,7 @@ var to_spawn: int = 0
 var total_kills: int = 0
 var session: GameSession
 var _timer: float = 0.0
+var _last_few_time: float = 0.0
 
 
 func _ready() -> void:
@@ -53,6 +58,20 @@ func _physics_process(delta: float) -> void:
 				if to_spawn <= 0:
 					phase = Phase.CLEARING
 					_check_round_end()
+		Phase.CLEARING:
+			_tick_last_few(delta)
+
+
+## Counts time while only the last few zombies are left, then hurries them once.
+func _tick_last_few(delta: float) -> void:
+	var alive: int = spawner.alive_count()
+	if alive == 0 or alive > LAST_FEW or _last_few_time >= LAST_FEW_TIME:
+		return
+	_last_few_time += delta
+	if _last_few_time >= LAST_FEW_TIME and not rules.speed_tiers.is_empty():
+		for zombie: Zombie in spawner.zombies:
+			if zombie.state != Zombie.State.DEAD:
+				zombie.hurry(rules.speed_tiers[rules.speed_tiers.size() - 1])
 
 
 func _begin_intermission(duration: float) -> void:
@@ -64,6 +83,7 @@ func _begin_intermission(duration: float) -> void:
 func _begin_round() -> void:
 	round_number += 1
 	to_spawn = rules.get_enemy_count(round_number, _player_count())
+	_last_few_time = 0.0
 	_timer = 0.5
 	phase = Phase.SPAWNING
 	Events.round_started.emit(round_number, to_spawn)

@@ -10,9 +10,11 @@ var session: GameSession
 var zombies: Array[Zombie] = []
 
 var _net: MultiplayerSpawner
+var _sight_query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.new()
 
 
 func _ready() -> void:
+	_sight_query.collision_mask = Layers.WORLD
 	_net = MultiplayerSpawner.new()
 	_net.name = "Net"
 	_net.spawn_function = _create
@@ -89,6 +91,52 @@ func _pick_marker(min_distance: float) -> Node3D:
 	if not far_enough.is_empty():
 		pool = far_enough
 	return pool[session.rng.randi_range(0, pool.size() - 1)] as Node3D
+
+
+## Moves a lost zombie to a spawn point no player can see, at least
+## min_distance away; it keeps its health and chases again. False when no
+## hidden point is free (the caller retries).
+func relocate(zombie: Zombie, reason: StringName, min_distance: float = 10.0) -> bool:
+	if not Net.is_authority() or zombie.state == Zombie.State.DEAD:
+		return false
+	var marker: Node3D = _pick_hidden_marker(min_distance)
+	if marker == null:
+		return false
+	var start: Vector3 = zombie.global_position
+	if zombie.barrier:
+		zombie.barrier.release(zombie)
+		zombie.barrier = null
+	zombie.global_position = _place(marker)
+	zombie.velocity = Vector3.ZERO
+	zombie.restart_chase()
+	var info: Dictionary = {"reason": String(reason), "from": str(start.snappedf(0.1)), "to": str(marker.name)}
+	Log.warn(&"enemies", &"zombie_relocated", info)
+	return true
+
+
+func _pick_hidden_marker(min_distance: float) -> Node3D:
+	var hidden: Array[Node3D] = []
+	for node: Node in get_tree().get_nodes_in_group(spawn_group):
+		var marker: Node3D = node as Node3D
+		if marker and _distance_to_nearest_player(marker.global_position) >= min_distance and not _seen(marker):
+			hidden.append(marker)
+	if hidden.is_empty():
+		return null
+	return hidden[session.rng.randi_range(0, hidden.size() - 1)]
+
+
+## True when any living player has a clear line from their eyes to the point.
+func _seen(marker: Node3D) -> bool:
+	var space: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+	_sight_query.to = marker.global_position + Vector3.UP * 1.2
+	for node: Node in get_tree().get_nodes_in_group(&"players"):
+		var player: Player = node as Player
+		if player == null or not player.is_alive():
+			continue
+		_sight_query.from = player.camera.global_position
+		if space.intersect_ray(_sight_query).is_empty():
+			return true
+	return false
 
 
 func _place(chosen: Node3D) -> Vector3:
