@@ -15,11 +15,21 @@ func before_each() -> void:
 
 func test_owner_teleport_outside_physics_waits_for_the_next_tick() -> void:
 	var target: Transform3D = Transform3D(Basis(), Vector3(12.0, 0.0, -4.0))
+	await get_tree().process_frame  # GUT may run a test body inside a physics frame; RPCs land in the idle frame.
+	assert_false(Engine.is_in_physics_frame())
 	player.teleport(target)
 	assert_ne(player.global_position, target.origin, "no move outside the physics tick")
 	await wait_physics_frames(1)
 	assert_almost_eq(player.global_position.x, 12.0, 0.01)
 	assert_almost_eq(player.global_position.z, -4.0, 0.01)
+	assert_false(player._teleport_pending)
+
+
+func test_teleport_inside_the_physics_frame_moves_at_once() -> void:
+	await get_tree().physics_frame
+	assert_true(Engine.is_in_physics_frame())
+	player.teleport(Transform3D(Basis(), Vector3(7.0, 0.0, 3.0)))
+	assert_eq(player.global_position, Vector3(7.0, 0.0, 3.0))
 	assert_false(player._teleport_pending)
 
 
