@@ -153,7 +153,10 @@ func _wait_for_results(names: Array[String], out: String) -> void:
 		if not waiting or not OS.is_process_running(_pids[0]):
 			break
 		await create_timer(1.0).timeout
-	await create_timer(2.0).timeout
+	# Results say "done" before the staggered leaves, so wait for every process to exit on its own.
+	var exit_by: int = mini(deadline, Time.get_ticks_msec() + 30000 + _pids.size() * 1000)
+	while Time.get_ticks_msec() < exit_by and _pids.any(OS.is_process_running):
+		await create_timer(0.5).timeout
 
 
 ## Pass/fail for the whole run from each process's result file (empty when it never wrote one).
