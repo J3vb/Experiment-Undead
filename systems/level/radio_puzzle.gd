@@ -25,7 +25,8 @@ func is_solved() -> bool:
 
 
 func _roll() -> void:
-	var session: GameSession = get_parent().get_parent() as GameSession
+	var level: Level = get_parent() as Level
+	var session: GameSession = level.get_parent() as GameSession
 	if session == null or not multiplayer.is_server():
 		return
 	var rng: RandomNumberGenerator = session.rng
