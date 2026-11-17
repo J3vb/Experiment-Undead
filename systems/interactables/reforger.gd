@@ -1,5 +1,6 @@
 ## Reforges the gun in hand into its upgraded WeaponData (full ammo). A gun
 ## with no further tier gets a full ammo refill instead. Needs power.
+## Decides from the owner's facts; the next tier comes from the server's data.
 class_name Reforger
 extends Interactable
 
@@ -26,16 +27,36 @@ func get_prompt(player: Player) -> String:
 	return "Refill %s [F]  %d" % [weapon.data.display_name, refill_cost]
 
 
-func interact(player: Player, _facts: Dictionary = {}) -> void:
-	var weapon: Weapon = player.weapons.current
-	if not _level().power_on or weapon == null:
+func interact(player: Player, facts: Dictionary = {}) -> void:
+	if facts.is_empty():
+		facts = owner_facts(player)
+	var id: StringName = facts.current
+	if not _level().power_on or id == &"":
 		return
-	if weapon.data.upgraded:
+	var data: WeaponData = Content.weapon(id)
+	if data.upgraded:
 		if _pay(player, reforge_cost):
-			player.weapons.replace_current(weapon.data.upgraded)
-	elif not _is_full(weapon) and _pay(player, refill_cost):
-		weapon.instance.refill_all()
-		weapon.ammo_changed.emit(weapon.instance.ammo_in_mag, weapon.instance.ammo_reserve)
+			_grant(player, InteractionSync.Grant.UPGRADE, data.upgraded, id, facts.slot)
+	elif not facts.full and _pay(player, refill_cost):
+		_grant(player, InteractionSync.Grant.REFILL, data, id, facts.slot)
+
+
+func accepts_requests() -> bool:
+	return true
+
+
+## current: id of the gun in hand (or empty); slot: its index; full: no ammo to refill.
+func owner_facts(player: Player) -> Dictionary:
+	var held: Weapon = player.weapons.current
+	if held == null:
+		return {"current": &"", "slot": -1, "full": true}
+	return {"current": held.data.id, "slot": player.weapons.weapons.find(held), "full": _is_full(held)}
+
+
+func check_facts(facts: Dictionary) -> bool:
+	if not (facts.get("current") is StringName and facts.get("slot") is int and facts.get("full") is bool):
+		return false
+	return facts.current == &"" or Content.ids(&"weapons").has(facts.current)
 
 
 func _is_full(weapon: Weapon) -> bool:

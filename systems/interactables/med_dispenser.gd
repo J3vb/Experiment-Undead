@@ -1,4 +1,5 @@
 ## Sells one Serum. Needs power. A player can hold each Serum once per run.
+## Sales reach clients; a sold-out dispenser retires on every peer.
 class_name MedDispenser
 extends Interactable
 
@@ -36,7 +37,21 @@ func interact(player: Player, _facts: Dictionary = {}) -> void:
 			sound.reparent(_level())
 			sound.finished.connect(sound.queue_free)
 			sound.play()
-			queue_free()
+			retire()
+		else:
+			state_changed.emit()
+
+
+func accepts_requests() -> bool:
+	return true
+
+
+func net_state() -> Dictionary:
+	return {"sales": sales}
+
+
+func apply_net_state(state: Dictionary) -> void:
+	sales = state.get("sales", sales)
 
 
 func _light_up() -> void:

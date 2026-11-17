@@ -8,6 +8,8 @@ const HUD: PackedScene = preload("res://systems/ui/hud.tscn")
 const DOOR: PackedScene = preload("res://systems/interactables/door.tscn")
 const POWER_SWITCH: PackedScene = preload("res://systems/interactables/power_switch.tscn")
 const WALL_BUY: PackedScene = preload("res://systems/interactables/wall_buy.tscn")
+const REFORGER: PackedScene = preload("res://systems/interactables/reforger.tscn")
+const DISPENSER: PackedScene = preload("res://systems/interactables/med_dispenser.tscn")
 const ECONOMY: String = "res://content/economy/default_economy.tres"
 
 var server: GameSession
@@ -122,12 +124,25 @@ func build_level() -> Level:
 	wall.weapon = Content.weapon(&"kestrel_smg")
 	wall.position = Vector3(1.5, 1, 1.5)
 	level.add_child(wall)
+	_add(level, REFORGER.instantiate(), "Reforger", Vector3(-1.5, 1, 1.5))
+	var dispenser: MedDispenser = _add(level, DISPENSER.instantiate(), "Dispenser", Vector3(-1.5, 1, -1.5))
+	dispenser.serum = Content.get_item(&"serums", &"ironhide") as SerumData
+	var once: MedDispenser = _add(level, DISPENSER.instantiate(), "LastDispenser", Vector3(1.5, 1, -1.5))
+	once.serum = Content.get_item(&"serums", &"stride") as SerumData
+	once.max_sales = 1
 	var point: ZombieSpawnPoint = ZombieSpawnPoint.new()
 	point.name = "EastSpawn"
 	point.area = &"east"
 	level.add_child(point)
 	point.owner = level
 	return level
+
+
+func _add(level: Level, node: Node3D, node_name: String, at: Vector3) -> Node3D:
+	node.name = node_name
+	node.position = at
+	level.add_child(node)
+	return node
 
 
 func _add_door(level: Level, door_name: String, area: StringName, cost: int, at: Vector3) -> Door:
