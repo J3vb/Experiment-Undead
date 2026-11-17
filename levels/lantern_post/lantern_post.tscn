@@ -22,6 +22,8 @@
 [ext_resource type="Material" path="res://levels/materials/lit_window.tres" id="lit_window"]
 [ext_resource type="Material" path="res://levels/materials/pine.tres" id="pine"]
 [ext_resource type="Material" path="res://levels/materials/iron.tres" id="iron"]
+[ext_resource type="PackedScene" path="res://systems/hub/deploy_board.tscn" id="deploy_board"]
+[ext_resource type="PackedScene" path="res://systems/hub/deploy_vote_panel.tscn" id="deploy_vote_panel"]
 
 [sub_resource type="BoxMesh" id="box_bio_leak"]
 material = ExtResource("bio_leak")
@@ -1814,6 +1816,12 @@ mesh = SubResource("box_iron")
 
 [node name="DeployBoardSpot" type="Marker3D" parent="Gate"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -35.5)
+
+[node name="DeployBoard" parent="Gate/DeployBoardSpot" instance=ExtResource("deploy_board")]
+place = &"match"
+label = "Halcyon Labs"
+
+[node name="DeployVotePanel" parent="." instance=ExtResource("deploy_vote_panel")]
 
 [node name="Props" type="Node3D" parent="."]
 

@@ -1,0 +1,81 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://systems/hub/deploy_board.gd" id="1"]
+[ext_resource type="Material" path="res://levels/materials/town_dark_wood.tres" id="wood"]
+[ext_resource type="Material" path="res://levels/materials/iron.tres" id="iron"]
+
+[sub_resource type="BoxShape3D" id="area"]
+size = Vector3(1.8, 2.2, 1.0)
+
+[sub_resource type="BoxMesh" id="post"]
+size = Vector3(0.14, 2.3, 0.14)
+material = ExtResource("wood")
+
+[sub_resource type="BoxMesh" id="board"]
+size = Vector3(1.7, 1.0, 0.08)
+material = ExtResource("wood")
+
+[sub_resource type="BoxMesh" id="glass"]
+size = Vector3(1.5, 0.8, 0.02)
+material = ExtResource("iron")
+
+[sub_resource type="BoxMesh" id="cap"]
+size = Vector3(1.9, 0.06, 0.2)
+material = ExtResource("iron")
+
+[node name="DeployBoard" type="Area3D"]
+script = ExtResource("1")
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0.2)
+shape = SubResource("area")
+
+[node name="PostW" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 1.15, -0.05)
+mesh = SubResource("post")
+
+[node name="PostE" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 1.15, -0.05)
+mesh = SubResource("post")
+
+[node name="Board" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+mesh = SubResource("board")
+
+[node name="Screen" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0.05)
+mesh = SubResource("glass")
+
+[node name="Cap" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.13, 0)
+mesh = SubResource("cap")
+
+[node name="Heading" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.86, 0.07)
+pixel_size = 0.004
+modulate = Color(0.553, 1, 0.227, 1)
+outline_size = 0
+font_size = 48
+text = "DEPLOY"
+
+[node name="Title" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0.07)
+pixel_size = 0.004
+modulate = Color(0.553, 1, 0.227, 1)
+outline_size = 0
+font_size = 64
+text = "MAP"
+
+[node name="Hint" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.36, 0.07)
+pixel_size = 0.004
+modulate = Color(0.553, 1, 0.227, 1)
+outline_size = 0
+font_size = 36
+text = "Press F to ready up"
+
+[node name="Glow" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0.6)
+light_color = Color(0.553, 1, 0.227, 1)
+light_energy = 0.5
+omni_range = 3.0
