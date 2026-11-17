@@ -190,7 +190,10 @@ func _input(event: InputEvent) -> void:
 			set_open(false)
 		return
 	var key_press: bool = event is InputEventKey and not event.echo
-	if (key_press or event is InputEventMouseButton) and event.pressed:
+	var click: InputEventMouseButton = event as InputEventMouseButton
+	# Left clicks on the open Pack belong to its buttons, whatever is bound to them.
+	var shortcut_click: bool = click != null and not (panel.visible and click.button_index == MOUSE_BUTTON_LEFT)
+	if (key_press or shortcut_click) and event.pressed:
 		_on_action_event(event)
 	elif panel.visible and event is InputEventMouseMotion:
 		get_viewport().set_input_as_handled()

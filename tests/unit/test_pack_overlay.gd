@@ -218,3 +218,18 @@ func test_pack_actions_rebound_to_mouse_buttons_work_and_relabel() -> void:
 	assert_eq(overlay.close_button.text, "Tab · Close")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(Settings.config_path))
 	Settings.config_path = old_path
+
+
+func test_left_click_on_open_pack_stays_with_its_buttons() -> void:
+	var old_path: String = Settings.config_path
+	Settings.config_path = "user://test_pack_left_click.cfg"
+	service.pack.add(ItemRoller.roll_weapon(session.rng, Content.weapon(&"rifle_ar"), &"rare", 17))
+	Settings.swap_binding(&"pack_drop", 0, _click(MOUSE_BUTTON_LEFT))
+	overlay.set_open(true)
+	overlay._input(_click(MOUSE_BUTTON_LEFT))
+	assert_eq(service.pack.items.size(), 1, "a left click selects a slot instead of dropping")
+	assert_true(overlay.panel.visible)
+	overlay.set_open(false)
+	Settings.reset_binding(&"pack_drop")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(Settings.config_path))
+	Settings.config_path = old_path
