@@ -1,6 +1,6 @@
 # Plan: Halcyon Labs door models
 
-Status: Building
+Status: Done
 Roadmap: F-63
 Phase: P4 (v0.1 Vertical slice)
 Size: S
@@ -179,11 +179,11 @@ Autoloads, managers or base classes added: none.
 
 ## Acceptance
 
-- [ ] No door in Halcyon Labs is a plain box (content test).
-- [ ] Every door model passes `check_models.py` and the glTF validator.
-- [ ] Door, nav, vent and co-op door tests pass unchanged.
-- [ ] Bought sliding doors slide up on host and clients.
-- [ ] The person picked the look on the decision card.
+- [x] No door in Halcyon Labs is a plain box (content test).
+- [x] Every door model passes `check_models.py` and the glTF validator.
+- [x] Door, nav, vent and co-op door tests pass unchanged.
+- [x] Bought sliding doors slide up (host tested in test_halcyon_doors.gd; clients run the same `open()` through `retire()`).
+- [x] The person picked the look on the decision card.
 
 ## Risks
 

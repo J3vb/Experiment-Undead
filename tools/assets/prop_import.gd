@@ -18,6 +18,7 @@ const SHARED: Dictionary = {
 	"Alarm": "res://levels/materials/alarm_paint.tres",
 	"SodiumPaint": "res://levels/materials/sodium_paint.tres",
 	"Hazard": "res://levels/materials/hazard_paint.tres",
+	"Concrete": "res://levels/materials/raw_concrete.tres",
 	"Screen": "res://systems/effects/monitor_screen.tres",
 }
 
