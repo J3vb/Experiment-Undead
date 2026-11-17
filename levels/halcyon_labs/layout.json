@@ -93,6 +93,14 @@
 		{"id": "containment_cage_2", "room": "containment_wing", "box": [63.5, 0, 26, 2.5, 3, 2.5], "material": "rust"},
 		{"id": "containment_cage_3", "room": "containment_wing", "box": [72.5, 0, 11, 2.5, 3, 2.5], "material": "rust"}
 	],
+	"light_states": {
+		"guard_post": {"flicker": [1, 4], "dead": [5]},
+		"mess_hall": {"flicker": [8], "dead": [6]},
+		"main_corridor": {"flicker": [0], "dead": [4]},
+		"generator_hall": {"dead": [2]},
+		"coolant_tunnel": {"flicker": [0]},
+		"containment_wing": {"flicker": [7], "dead": [0, 10, 14]}
+	},
 	"wall_buys": [
 		{"id": "coachman_2b", "node": "WallBuyCoachman", "area": "mess_hall", "position": [38.25, 1.4, 38], "cost": 900}
 	]

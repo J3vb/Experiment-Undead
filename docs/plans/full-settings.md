@@ -1,10 +1,10 @@
 # Plan: Full settings screen (graphics first)
 
-Status: Approved
+Status: Building
 Roadmap: F-48
 Phase: P4
 Size: L
-Approved by: Codex plan review on PR #240 (2026-11-17, three findings fixed, clean re-review on 2c7814c); no open decisions
+Approved by: Codex plan review on PR #240 (2026-11-17, three findings fixed, clean re-review on 2c7814c) and the person (decision card, 2026-11-17); no open decisions
 
 ## Goal
 
@@ -131,7 +131,7 @@ Not in (non-goals, and where each one goes instead):
 | core/settings.gd | changed | New sections and keys; video apply moves out; preset sets its keys |
 | core/graphics.gd | new | Static helper (like core/layers.gd, not an autoload): applies window, viewport and RenderingServer options; preset tables |
 | systems/effects/environment_quality.gd | new | Script on each `WorldEnvironment`: works on a duplicate of its look, turns SSAO, SSIL, SSR, glow, fog and brightness on or off from Settings |
-| levels/halcyon_labs/map.tscn, levels/look_reference/halcyon_corridor.tscn, systems/ui/character_screen.tscn | changed | `WorldEnvironment` gets the script (one line each) |
+| levels/halcyon_labs/map.tscn, levels/look_reference/halcyon_corridor.tscn | changed | `WorldEnvironment` gets the script (one line each); the character screen's small preview booth keeps its own fixed look |
 | systems/ui/setting_data.gd | new | `SettingData` Resource |
 | systems/ui/settings_page.gd | new | Builds one page's rows from SettingData; search filter |
 | systems/ui/settings_screen.gd, .tscn | changed | Tabs from data, search box, Revert, Defaults, keep-settings dialog; KeyBindings placed on Controls |
@@ -158,8 +158,9 @@ Settings is at its size limit and applying render options is its own job.
   `needs_confirm: bool` (display mode, resolution).
   Read by `SettingsPage` only.
 - New Settings keys (section / key / default):
-  - graphics / display_mode / 1 (Borderless) ; window_size / 0 (index into a
-    resolution list built from the screen, 0 = screen size) ; render_scale /
+  - graphics / display_mode / 0 (Windowed, as today, so editor runs stay
+    windowed) ; window_size / 1 (1600x900, index into 1280x720, 1600x900,
+    1920x1080, 2560x1440, 3840x2160, shrunk to fit the screen) ; render_scale /
     1.0 ; upscaler / 0 (Off) ; preset / 2 (High) ; shadows / 2 ; aa / 3
     (MSAA 4x + FXAA, today's project setting: `msaa_3d=2` is 4x) ; ssao / 2 ; ssil / 0 ; ssr /
     true ; glow / true ; fog / 2 ; lightmap_bicubic / true ;
@@ -174,9 +175,9 @@ Settings is at its size limit and applying render options is its own job.
   - aim / fov (moved from video), mouse_sensitivity, ads_sensitivity_multiplier,
     invert_y (moved from controls in step 3).
 - High preset = today's look exactly: shadows High (directional atlas 4096,
-  soft shadow quality Medium), MSAA 4x + FXAA, SSAO Medium, SSIL off, SSR on,
+  soft shadow filter Low, the project default), MSAA 4x + FXAA, SSAO Medium, SSIL off, SSR on,
   glow on, fog Medium, bicubic lightmaps on. Ultra raises shadows (8192, soft
-  High), MSAA 4x + FXAA (same as High), SSAO High, SSIL Medium, fog High. Medium and Low step
+  filter Medium), MSAA 4x + FXAA (same as High), SSAO High, SSIL Medium, fog High. Medium and Low step
   down (Medium: MSAA 2x + FXAA; Low: shadows 1024 hard, FXAA only, SSAO off, SSR off, fog off, glow
   on). These are render costs, not look-defining picks: High, the default,
   keeps the approved look.
@@ -227,7 +228,7 @@ prompt (after step 2) measures all four presets at the four test spots.
   the `graphics` keys in the same step; step 2 replaces the tab.
 - Files: core/settings.gd, core/graphics.gd (new),
   systems/effects/environment_quality.gd (new), levels/halcyon_labs/map.tscn,
-  levels/look_reference/halcyon_corridor.tscn, systems/ui/character_screen.tscn,
+  levels/look_reference/halcyon_corridor.tscn,
   systems/ui/settings_screen.gd/.tscn (preset row, moved keys),
   tests/unit/test_settings_screen.gd, systems/ui/hud.gd (show_fps
   key), tests/unit/test_graphics.gd (new), tests/unit/test_environment_quality.gd

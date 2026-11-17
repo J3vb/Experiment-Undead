@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://systems/level/level.gd" id="level"]
+[ext_resource type="Script" path="res://systems/level/block.gd" id="block"]
+[ext_resource type="Material" path="res://levels/materials/ground.tres" id="ground"]
+
+[node name="HubPlaceholder" type="Node3D" node_paths=PackedStringArray("player_spawn")]
+script = ExtResource("level")
+player_spawn = NodePath("PlayerSpawn")
+
+[node name="Floor" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 0)
+collision_mask = 0
+script = ExtResource("block")
+size = Vector3(30, 0.5, 30)
+material = ExtResource("ground")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0.866025, 0, -0.866025, 0.5, 0, 10, 0)
+
+[node name="PlayerSpawn" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.1, 4)

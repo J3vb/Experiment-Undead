@@ -87,7 +87,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _process(delta: float) -> void:
-	_fps_label.visible = bool(Settings.get_value(&"video", &"show_fps"))
+	_fps_label.visible = bool(Settings.get_value(&"graphics", &"show_fps"))
 	_fps_label.text = "FPS: %d" % Engine.get_frames_per_second()
 	_hurt = maxf(_hurt - delta * 1.5, 0.0)
 	var low: float = clampf((0.6 - _health_ratio) / 0.6, 0.0, 1.0)
