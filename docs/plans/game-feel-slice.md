@@ -121,6 +121,7 @@ Not in (and where it goes instead):
 | systems/net/player_state_sync.gd | changed | downed roll number in the co-op thread's `tilt()` call: 25° to 6° (one line) |
 | systems/ui/hud.tscn | changed | DownScreen overlay node (no hud.gd change) |
 | systems/ui/results_screen.gd/.tscn | changed | "Gear kept" banner when not exfil |
+| systems/player/revive.gd | changed | Second Wind roll number in `tilt()` (step 4) |
 | systems/net/coop_hud.gd | changed | spectate prompt "Gear kept · Respawn next round" |
 | tools/generate_sfx.py, assets/audio/ | changed | downed.wav, revived.wav, bled_out.wav |
 
@@ -162,12 +163,14 @@ copies share their base's file):
 | class_rifle.tres | rifle_ar, sentry_br3, rampart_br |
 | class_lmg.tres | halberd_lmg, bastion_lmg |
 | class_shotgun.tres | brenner_trench, atlas_auto, coachman_2b, grubber_sawnoff |
-| class_marksman.tres | talon_dmr, corvid_338, fieldhand_lever |
-| class_heavy.tres | ironwood_50, cryo_lance, siphon, synapse |
+| class_marksman.tres | talon_dmr, corvid_338, fieldhand_lever, ironwood_50 |
+| class_heavy.tres | cryo_lance, siphon, synapse |
 
 Shotgun `kill_hitstop_ms` = 35 and marksman 30. The doc's "< 4 m" condition
 for shotguns is dropped: hit_confirmed has no distance, and a shotgun kill is
-almost always close. Written in DECISIONS.md.
+almost always close. Kill hitstop reads the feel of the gun in hand when the
+kill confirm arrives (hit_confirmed carries no weapon; a co-op kill confirm can
+land after a swap). Both written in DECISIONS.md.
 
 Settings: `comfort/shake_own_gun` (float, 1.0), `comfort/shake_hits` (float,
 1.0), `comfort/flash_reduction` (bool, false), names from
@@ -261,10 +264,15 @@ budget.
   - Downed: saturation tween to 0.2, vignette 0.5, camera rig drops 0.9 m over
     0.3 s (solo Second Wind and co-op), roll 6°. Drop and roll go through
     `PlayerCamera.tilt()` from the co-op thread's next PR (a physics-tick
-    tween); this step only changes the 25.0 in that call to `downed_roll_deg`
-    and adds the drop next to it. Step 4 waits for that PR.
-  - Revived: colour returns, 8% white flash for 0.15 s (skipped with
-    flash_reduction).
+    tween, also used by solo Second Wind in `revive.gd`); this step changes
+    the 25° in those calls to `downed_roll_deg`. Step 4 waits for that PR.
+    The drop is not a separate `position.y` write: `update_feel()` already
+    lerps the rig to stand/crouch height every tick and would undo it, so
+    `update_feel()` subtracts `downed_drop_m` from its target height while the
+    player is downed or dead. Saturation and vignette fade in over at least
+    0.2 s (controls.md: screen-wide colour changes never pop).
+  - Revived: colour returns, 8% white flash for 0.15 s. The only screen
+    change faster than 0.2 s; flash_reduction skips it.
   - Died: `is_dead`, or `session.is_over` while the local player is downed
     (a co-op squad wipe ends the match with everyone downed and nobody
     `is_dead`; an exfil ends it with players standing, so it never fades).
@@ -282,16 +290,21 @@ budget.
   - Solo: the results screen follows after the existing restart delay and
     shows a "Gear kept" banner when the run did not exfil. Co-op: fade back in
     on the spectate camera, prompt reads "Spectating · Gear kept · Respawn next
-    round"; world sound returns on respawn. `_exit_tree` always restores 0 dB.
+    round"; world sound comes back as the fade-in starts, so a spectator hears
+    the fight (the doc only drops sound during the 0.6 s fade). `_exit_tree` always restores 0 dB.
 - Files: systems/feel/down_screen.gd, systems/feel/down_screen.gdshader,
   systems/ui/hud.tscn, default_bus_layout.tres, systems/ui/results_screen.gd
   and .tscn, systems/net/coop_hud.gd, systems/net/player_state_sync.gd (one
   line), systems/player/player.gd (solo death tween to tilt()),
+  systems/player/revive.gd (Second Wind roll number), systems/player/player_camera.gd
+  (drop offset in update_feel),
   docs/DECISIONS.md.
 - Tests: tests/unit/test_down_screen.gd: downed sets saturation and vignette
   targets; died fades to black and drops the SFX amplifier while UI (now sent
   to Master) and Music stay at 0 dB; a door sound on SFX is attenuated; the
-  solo death uses tilt() and no other camera tween; a squad wipe (downed + session over) fades too;
+  solo death and solo Second Wind use tilt() and no other camera tween; the
+  rig ends 0.9 m lower after 0.3 s of physics ticks while downed and comes
+  back after revive; co-op world sound returns when spectating starts; a squad wipe (downed + session over) fades too;
   an exfil (standing + session over) does not; respawn and `_exit_tree`
   restore 0 dB; flash_reduction skips the flash; no local player does
   nothing. Results test: "Gear kept" banner visible on death, hidden on exfil.
