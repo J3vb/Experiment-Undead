@@ -188,3 +188,18 @@ For `wallet.gd`, whose class is `Wallet`:
 Add a useful test covering the reported script. If CI says to remove a stale
 baseline entry, remove that line from the baseline instead of changing the
 test or adding another exception.
+
+## 16. ui-router-only
+
+Screens and the mouse have one owner, the `UI` autoload (ADR 0011). In
+`core/`, `systems/` and `levels/`, calls to `change_scene_to_file` or
+`change_scene_to_packed` and assignments to `Input.mouse_mode` are allowed only
+in `core/ui.gd`. Reading `Input.mouse_mode` is fine, and tests and tools are not
+checked.
+
+- Good: `UI.replace(&"main_menu")`, `UI.push(&"settings")`, `UI.hold_mouse(self, open)`
+- Bad: `get_tree().change_scene_to_file("res://systems/ui/main_menu.tscn")`
+
+Open a screen with `UI.push` (a scene with `signal closed` plus one
+`content/screens/<id>.tres`), go to a root place with `UI.replace`, and let a
+panel that is not a screen ask for the mouse with `UI.hold_mouse`.

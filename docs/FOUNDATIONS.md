@@ -30,7 +30,7 @@ pattern. **Missing** = needed soon, not built.
 | 2 | [Content and ids in data](#2-content-and-ids-in-data) | shaky | [ADR 0002](adr/0002-content-as-resources.md), `docs/HOW_TO_ADD.md` |
 | 3 | [Save format](#3-save-format) | solid | [ADR 0005](adr/0005-local-versioned-saves.md) |
 | 4 | [Events and signals](#4-events-and-signals) | solid | [ADR 0007](adr/0007-signals-and-events.md) |
-| 5 | [UI screens and routing](#5-ui-screens-and-routing) | missing | [ADR 0011](adr/0011-one-ui-router.md), `docs/design/ui-hud.md` |
+| 5 | [UI screens and routing](#5-ui-screens-and-routing) | solid | [ADR 0011](adr/0011-one-ui-router.md), `docs/design/ui-hud.md` |
 | 6 | [Input](#6-input) | solid (1 leak) | AGENTS.md code rule 5 |
 | 7 | [Game tick and randomness](#7-game-tick-and-randomness) | solid (1 leak) | AGENTS.md code rule 5 |
 | 8 | [Logging and diagnostics](#8-logging-and-diagnostics) | solid | `docs/LOGGING.md` |
@@ -114,18 +114,12 @@ add or use an event in co-op code, say in the plan which peers see it.
 
 ### 5. UI screens and routing
 
-**Rule (designed, not built):** `docs/design/ui-hud.md` specifies one router:
-`UI.push()`, `UI.pop()`, `UI.replace()`. Screens never load other screens, and
-only the router captures or frees the mouse.
-
-**Why missing:** screens change scenes by hand in four places
-(`main_menu.gd`, `hud.gd`, `game_session.gd`, `net_error_dialog.gd`) and the
-main menu adds the character screen itself. That works for today's few
-screens, but the skill tree (#112), town hub (#131) and more pause pages would
-each add their own flow and mouse handling.
-
-**Fixed when:** a minimal router (push, pop, replace, mouse capture) exists and
-the current screens use it. Build it before the next new screen.
+**Rule:** the `UI` autoload (`core/ui.gd`) owns screen flow: `UI.replace()` for
+a root place (main menu, match), `UI.push()` / `UI.pop()` for screens on top,
+`UI.hold_mouse()` for panels that are not screens. Screens are listed in
+`content/screens/` and emit `closed`; only the router changes the scene or the
+mouse mode. CI checks it (`ui-router-only`). Built in
+[plans/ui-router.md](plans/ui-router.md); recipe in `docs/HOW_TO_ADD.md`.
 
 ### 6. Input
 
@@ -245,7 +239,7 @@ tests, as usual. The issue numbers have the details.
 | 2 | **Done (F-02).** One interaction request path for co-op (client asks, server checks sender, range, state, then runs `interact()`), with a client-side test for every interactable | #138, #126 | new machines, doors, power-ups, the 4-player play-test (#127) |
 | 3 | Done: item effects run where the server applies the hit; one public equip function in `ItemLoadout`, called from a physics tick ([plan](plans/item-effects-server.md)) | #145, #147 | Legendaries (#116), sets (#117), skill effects (#113) |
 | 4 | Ids into data: on-hit effect field on `WeaponData`, grip profile data, shot-peak flag, drop chance and rarity floor on `EnemyData`, badge on `SerumData`; cache loaded content; CI rule against content id literals in code | #143, #149, #163, #148, #154, #140 | new guns or zombies (Crawler #121, Stalker #123, Brute #124) |
-| 5 | Minimal UI router (push, pop, replace, mouse capture), current screens moved onto it | ui-hud.md | skill tree screen (#112), town hub (#131) |
+| 5 | Done: minimal UI router (push, pop, replace, mouse capture), current screens moved onto it ([plan](plans/ui-router.md)) | ui-hud.md | skill tree screen (#112), town hub (#131) |
 | 6 | Small leaks: regen in the physics tick (#144), Pack overlay input through the input layer (#146) | #144, #146 | anything touching health or the Pack |
 | 7 | Hot-path allocations: preload or pool shot, impact and effect visuals; zombie separation without per-tick arrays | #139, #141, #142, #150, #151 | 4-player play-test (#127), more VFX |
 | 8 | Shared test helpers for two-peer ENet and mesh checks | #161, #164, #170 | more co-op tests |

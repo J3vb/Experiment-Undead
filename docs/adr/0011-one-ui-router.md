@@ -1,6 +1,6 @@
 # 0011. One UI router owns screen flow and the mouse
 
-- **Status:** proposed (designed in ui-hud.md, not built yet)
+- **Status:** accepted (built in plans/ui-router.md, 2026-11-17)
 - **Date:** 2026-11-16
 - **Decided by:** UI design doc; build timing is an agent pick
 

@@ -143,6 +143,7 @@ Examples and fixes: [docs/CODE_RULES.md](docs/CODE_RULES.md).
 - `session-rng`: gameplay uses the session RNG; visual randomness ends in `# cosmetic`.
 - `log-not-print`: game diagnostics use Log outside the three allowed log entry points.
 - `no-absolute-paths`: use autoload names, signals or exported paths instead of climbing the tree.
+- `ui-router-only`: scene changes and mouse mode writes live only in `core/ui.gd` (`UI.replace`, `UI.push`, `UI.hold_mouse`).
 - `autoload-list`: autoload names must be explicitly allowed in the checker.
 - `no-weakening`: keep lint limits and Godot warning levels at least as strict.
 - `no-todo`: finish work or open an issue; no unfinished-work markers in scripts.

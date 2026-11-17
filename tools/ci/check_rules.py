@@ -166,6 +166,17 @@ def check_log_not_print(root: Path) -> list[str]:
     )
 
 
+def check_ui_router_only(root: Path) -> list[str]:
+    pattern = r"\bchange_scene_to_\w*|\bInput\s*\.\s*mouse_mode\s*=(?!=)"
+    return [
+        problem(path, number, "ui-router-only", "use UI.replace, UI.push or UI.hold_mouse; see docs/CODE_RULES.md")
+        for path, lines in text_files(root, GAME_DIRS, (".gd",))
+        if path != "core/ui.gd"
+        for number, line in enumerate(lines, 1)
+        if re.search(pattern, code(line))
+    ]
+
+
 def check_no_absolute_paths(root: Path) -> list[str]:
     errors = []
     for path, lines in text_files(root, GAME_DIRS, (".gd",)):
@@ -322,6 +333,7 @@ RULES = [
     check_session_rng,
     check_log_not_print,
     check_no_absolute_paths,
+    check_ui_router_only,
     check_autoload_list,
     check_no_weakening,
     check_no_todo,
