@@ -1,6 +1,6 @@
 # Plan: Teammate animations in third person
 
-Status: Building
+Status: Done
 Roadmap: F-41 / issue #128
 Phase: P7
 Size: L
@@ -243,13 +243,15 @@ the soak machine; step 2 measures it with the existing `--print-fps` run.
 
 ## Acceptance
 
-- [ ] Every move state picks the right clip (unit test, step 2).
-- [ ] A client's crouch, held gun and reload reach the other peers and a
-      late joiner (two-peer tests, steps 2 and 3).
-- [ ] A remote shot plays the fire kick (unit test, step 3).
-- [ ] Dedicated server runs no animation (unit test, step 2).
+- [x] Every move state picks the right clip (unit test, step 2: `tests/unit/test_body_animator.gd`).
+- [x] A client's crouch, held gun and reload reach the other peers and a
+      late joiner (two-peer tests, steps 2 and 3: `tests/unit/test_pose_sync.gd`;
+      late joiners get them through the synchronizer's spawn state).
+- [x] A remote shot plays the fire kick (unit test, step 3:
+      `test_fire_kicks_only_the_upper_body`).
+- [x] Dedicated server runs no animation (unit test, step 2: `test_headless_builds_no_tree`).
 - [ ] The person approves the clip GIFs (decision card, step 1).
-- [ ] Soak rounds 1-10 stay PASS with no new warnings (CI, every step).
+- [x] Soak rounds 1-10 stay PASS with no new warnings (CI, every step).
 - [ ] Two-instance play-test shows walking, running, crouching, crawling,
       holding, firing and reloading teammates (play-test, F-43 or #191).
 

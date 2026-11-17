@@ -1,4 +1,5 @@
-## Plays the third-person body clips from the player's measured movement, crouch and downed state.
+## Plays the third-person body clips from the player's measured movement, crouch and downed state,
+## puts the held gun in the right hand and plays its fire and reload motions on the upper body.
 ## Visual only: works the same for the owner's shadow body and for remote teammates.
 class_name BodyAnimator
 extends Node
@@ -26,6 +27,26 @@ const GROUND_BLEND: StringName = &"parameters/ground/blend_position"
 const CROUCH_BLEND: StringName = &"parameters/crouch/blend_position"
 const DOWNED_BLEND: StringName = &"parameters/downed/blend_position"
 const TIME_SCALE: StringName = &"parameters/speed/scale"
+const FIRE_REQUEST: StringName = &"parameters/fire/request"
+const RELOAD_REQUEST: StringName = &"parameters/reload/request"
+const RELOAD_SCALE: StringName = &"parameters/reload_speed/scale"
+## Bones the fire and reload clips move; the legs keep walking underneath.
+const UPPER_BODY: Array[StringName] = [
+	&"spine_02",
+	&"spine_03",
+	&"neck",
+	&"head",
+	&"clavicle_L",
+	&"upperarm_L",
+	&"forearm_L",
+	&"hand_L",
+	&"clavicle_R",
+	&"upperarm_R",
+	&"forearm_R",
+	&"hand_R",
+]
+## Where a gun's grip point sits in hand_R's bone space, tuned on the teammate look render.
+const PALM: Vector3 = Vector3(0.0, -0.109, -0.051)
 
 @export var player: Player
 ## The imported player.glb instance that holds the Skeleton3D and AnimationPlayer.
@@ -38,27 +59,35 @@ var headless: bool = DisplayServer.get_name() == "headless"
 var tree: AnimationTree
 var aim: AimPitch
 var local_velocity: Vector3 = Vector3.ZERO
+## Set by the owner each tick and sent to everyone by PoseSync.
+var held_weapon: StringName = &""
+var is_reloading: bool = false
+var gun: Node3D
 
 var _last_position: Vector3 = Vector3.ZERO
 var _since_update: float = 0.0
 var _measured: Vector3 = Vector3.ZERO
 var _state: StringName = GROUND
+var _hand: BoneAttachment3D
+var _shown_weapon: StringName = &""
+var _was_reloading: bool = false
+var _reload_length: float = 1.0
 
 
 func _ready() -> void:
 	if headless:
-		set_physics_process(false)
 		return
 	var players: Array[Node] = model.find_children("*", "AnimationPlayer", true, false)
-	if players.is_empty() or not (players[0] as AnimationPlayer).has_animation(&"run"):
+	if players.is_empty() or not (players[0] as AnimationPlayer).has_animation(&"reload"):
 		Log.warn(&"player", &"body_clips_missing", {"model": model.scene_file_path})
 		headless = true
-		set_physics_process(false)
 		return
 	var anim: AnimationPlayer = players[0] as AnimationPlayer
+	_reload_length = anim.get_animation(&"reload").length
 	tree = AnimationTree.new()
 	tree.name = "BodyTree"
 	tree.tree_root = _build_tree(player.walk_speed, player.sprint_speed)
+	_add_upper_body(tree.tree_root as AnimationNodeBlendTree, _upper_body_tracks(anim.get_animation(&"fire")))
 	model.add_child(tree)
 	tree.anim_player = tree.get_path_to(anim)
 	tree.active = true
@@ -68,12 +97,36 @@ func _ready() -> void:
 	aim.name = "AimPitch"
 	aim.pitch_source = pitch_source
 	skeleton.add_child(aim)
+	_hand = BoneAttachment3D.new()
+	_hand.name = "HeldGun"
+	_hand.bone_name = "hand_R"
+	skeleton.add_child(_hand)
 	_last_position = player.global_position
 
 
 func _physics_process(delta: float) -> void:
+	if player.is_multiplayer_authority():
+		_publish()
+	if tree == null:
+		return
 	_measure(delta)
 	_apply(pick_state(player.is_downed, player.is_crouching))
+	if held_weapon != _shown_weapon:
+		_show_weapon()
+	if is_reloading != _was_reloading:
+		_play_reload()
+
+
+## A teammate's shot: a short upper-body kick on top of whatever the legs do.
+func fire() -> void:
+	if tree:
+		tree.set(FIRE_REQUEST, AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE)
+
+
+func _publish() -> void:
+	var weapon: Weapon = player.weapons.current
+	held_weapon = weapon.data.id if weapon else &""
+	is_reloading = weapon != null and weapon.is_reloading()
 
 
 ## Velocity over the time since the position last changed, so pose updates that skip ticks still read as steady.
@@ -120,6 +173,47 @@ static func time_scale(state: StringName, speed: float, walk: float) -> float:
 	return clampf(speed / clip_speed, 1.0, MAX_TIME_SCALE)
 
 
+func _show_weapon() -> void:
+	_shown_weapon = held_weapon
+	if gun:
+		gun.queue_free()
+		gun = null
+	if held_weapon.is_empty() or not Content.has(&"weapons", held_weapon):
+		return
+	var data: WeaponData = Content.weapon(held_weapon)
+	if data.world_model == null:
+		Log.warn(&"player", &"world_model_missing", {"weapon": String(held_weapon)})
+		return
+	gun = data.world_model.instantiate() as Node3D
+	gun.transform = hold_transform(data.grip)
+	_hand.add_child(gun)
+	if player.is_multiplayer_authority():
+		for node: Node in gun.find_children("*", "GeometryInstance3D", true, false):
+			(node as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY
+
+
+## The gun model in hand_R's space: barrel along the bone, grip point on the palm.
+static func hold_transform(grip: GripData) -> Transform3D:
+	var turn: Basis = Basis(Vector3.RIGHT, PI / 2.0)
+	var anchor: Vector3 = Vector3.ZERO
+	if grip:
+		anchor = Vector3(grip.right_anchor.x, grip.right_anchor.z, -grip.right_anchor.y)
+	return Transform3D(turn, PALM - turn * anchor)
+
+
+## The reload clip is stretched to the gun's reload time and fades out when the reload ends early.
+func _play_reload() -> void:
+	_was_reloading = is_reloading
+	if not is_reloading:
+		tree.set(RELOAD_REQUEST, AnimationNodeOneShot.ONE_SHOT_REQUEST_FADE_OUT)
+		return
+	var time: float = _reload_length
+	if Content.has(&"weapons", held_weapon):
+		time = Content.weapon(held_weapon).reload_time
+	tree.set(RELOAD_SCALE, _reload_length / maxf(time, 0.1))
+	tree.set(RELOAD_REQUEST, AnimationNodeOneShot.ONE_SHOT_REQUEST_FIRE)
+
+
 func _build_tree(walk: float, sprint: float) -> AnimationNodeBlendTree:
 	var ground: AnimationNodeBlendSpace2D = AnimationNodeBlendSpace2D.new()
 	var reach: float = sprint / walk
@@ -148,8 +242,41 @@ func _build_tree(walk: float, sprint: float) -> AnimationNodeBlendTree:
 	for index: int in 3:
 		root.connect_node(&"state", index, [GROUND, CROUCH, DOWNED][index])
 	root.connect_node(&"speed", 0, &"state")
-	root.connect_node(&"output", 0, &"speed")
 	return root
+
+
+## Fire and reload play after the speed scale, so running does not speed them up.
+func _add_upper_body(root: AnimationNodeBlendTree, tracks: Array[NodePath]) -> void:
+	root.add_node(&"fire", _one_shot(tracks, 0.03, 0.12))
+	root.add_node(&"fire_clip", _clip(&"fire"))
+	root.add_node(&"reload", _one_shot(tracks, 0.15, 0.2))
+	root.add_node(&"reload_speed", AnimationNodeTimeScale.new())
+	root.add_node(&"reload_clip", _clip(&"reload"))
+	root.connect_node(&"fire", 0, &"speed")
+	root.connect_node(&"fire", 1, &"fire_clip")
+	root.connect_node(&"reload_speed", 0, &"reload_clip")
+	root.connect_node(&"reload", 0, &"fire")
+	root.connect_node(&"reload", 1, &"reload_speed")
+	root.connect_node(&"output", 0, &"reload")
+
+
+func _upper_body_tracks(clip: Animation) -> Array[NodePath]:
+	var tracks: Array[NodePath] = []
+	for index: int in clip.get_track_count():
+		var path: NodePath = clip.track_get_path(index)
+		if StringName(path.get_concatenated_subnames()) in UPPER_BODY:
+			tracks.append(path)
+	return tracks
+
+
+func _one_shot(tracks: Array[NodePath], fade_in: float, fade_out: float) -> AnimationNodeOneShot:
+	var shot: AnimationNodeOneShot = AnimationNodeOneShot.new()
+	shot.fadein_time = fade_in
+	shot.fadeout_time = fade_out
+	shot.filter_enabled = true
+	for path: NodePath in tracks:
+		shot.set_filter_path(path, true)
+	return shot
 
 
 func _line(still: StringName, moving: StringName) -> AnimationNodeBlendSpace1D:
