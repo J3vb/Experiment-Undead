@@ -7,6 +7,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/dry_fire.wav" id="5"]
 [ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
 [ext_resource type="Resource" path="res://content/grips/corvid_338.tres" id="grip"]
+[ext_resource type="PackedScene" path="res://assets/models/weapons/corvid_338.glb" id="world"]
 
 [sub_resource type="Resource" id="recoil"]
 script = ExtResource("2")
@@ -53,6 +54,7 @@ viewmodel_kick = 0.12
 hip_position = Vector3(0.17, -0.18, -0.34)
 ads_position = Vector3(0, -0.09, -0.2)
 viewmodel_scene = ExtResource("3")
+world_model = ExtResource("world")
 grip = ExtResource("grip")
 fire_sound = ExtResource("4")
 dry_fire_sound = ExtResource("5")
