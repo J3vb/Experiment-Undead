@@ -37,6 +37,12 @@ Not in (non-goals, and where each one goes instead):
 - Real crit hits: nothing in the game rolls crits yet. Until it does, "Crits
   only" shows headshots (see Open decisions). Orange crit numbers come with the
   first crit stat (F-31 or a loot affix).
+- Damage numbers for Siphon (Gravity Well) damage: the orb's damage is applied on
+  the server in `GravityWell._damage()` and the owner only gets `HitClaims.well_hit(killed)`
+  with no target or amount, so showing it needs a new network message. Siphon shows no
+  numbers for now; it goes with the next change to the Gravity Well claim path (idea
+  issue opened with step 2). Every gun that fires through `Weapon._hit()` (including
+  pierced extra hits and double barrels) shows numbers.
 - Moving the existing "LEVEL N" text toast out of `hud.gd`: `hud.gd` belongs
   to the co-op thread this week; the toast stays, the ring sits behind it.
 - The settings menu row for damage numbers: the settings thread adds it once
@@ -210,6 +216,7 @@ scene with one job that listens to Events itself, so `hud.gd` does not grow.
   systems/ui/hud.tscn (one instanced node), tests/unit/test_damage_numbers.gd (new),
   tests/unit/test_settings.gd, tests/unit/test_hit_claims.gd, tests/unit/test_events.gd,
   docs/DECISIONS.md.
+- Not in this step: Siphon (see Scope).
 - Tests: off shows nothing; all shows one label with the amount; crits shows a
   headshot and skips a body hit; two hits on one target 50 ms apart give one label with
   the sum, 200 ms apart give two; the 13th target reuses the oldest label; a remote
