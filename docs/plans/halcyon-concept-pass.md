@@ -1,6 +1,6 @@
 # Plan: Halcyon Labs concept pass (after the breakout)
 
-Status: Approved
+Status: Building
 Roadmap: F-68 / issue #297 (look follow-ups)
 Phase: P4 (v0.1 Vertical slice)
 Size: L
@@ -130,8 +130,7 @@ Not in (non-goals):
 |---|---|---|
 | docs/design/images/halcyon_concept_*.jpg | new | The two concept images |
 | docs/design/look-rules.md | changed | Short "Halcyon Labs target" section linking the images |
-| tools/assets/sign_decals.py | new | Draws sign textures (Pillow, Atkinson Hyperlegible fonts from assets/fonts) into assets/textures/signs/ |
-| tools/assets/requirements.txt | changed | Pillow pinned |
+| tools/assets/sign_decals.py | new | Draws sign textures (pure Python stencil stroke font, like story_decals.py) into assets/textures/signs/ |
 | assets/textures/signs/ | new | Generated sign PNGs + .import |
 | tools/assets/props_fenlight.py | new | Vines (pillar, wall, ceiling), pods, spill mound |
 | tools/assets/props_wreck_mess.py | new | Kitchen line, overturned table/bench/chair, vending machine, hanging light strip, cases |
@@ -141,7 +140,7 @@ Not in (non-goals):
 | tools/assets/build_models.py | changed | Merges the new MODELS dicts |
 | levels/halcyon_labs/layout.json | changed | New props and dressing entries |
 | levels/halcyon_labs/blockout.tscn | regenerated | By the builder, never by hand |
-| levels/halcyon_labs/decals.tscn | changed | Signs node with sign decals |
+| levels/halcyon_labs/signs.tscn | new | Sign decals (wall signs cannot go in decals.tscn, whose test wants every decal on a floor); one instance line in map.tscn |
 | levels/halcyon_labs/atmosphere.tscn | changed | Fire spots, Fenlight glow lights, mist FogVolumes, extra sparks and red lamps |
 | levels/halcyon_labs/map.exr / map.lmbake | re-baked | Last step, on the GPU |
 | tools/room_shots.gd | changed | Also prints draw calls per room shot (baseline and budget) |
@@ -173,6 +172,10 @@ Autoloads, managers or base classes added: none.
   enough for counts). Budget per step: each room at most baseline + 30 %,
   Mess Hall and Main Corridor at most + 15 %. A step over budget merges meshes
   before it merges.
+- Baseline (step 1, `room_shots.gd`, OpenGL, power on): Loading Dock 1788,
+  Guard Post 1830, Mess Hall 1163, Main Corridor 1709, Generator Hall 1206,
+  Labs 764, Coolant Tunnel 1226, Containment Wing 400 draw calls. Signs are
+  decals and add none.
 - Vines, ceiling and wreck dressing: merged per model, visibility range 30 m
   on small dressing, `light_baking` 2 (Static Lightmaps), shadows from the bake.
 - Fenlight glow lights: Static bake mode (1), zero run-time cost.
@@ -190,22 +193,25 @@ the person on a decision card before the next step starts.
 ### Step 1: References, signage and draw-call baseline
 
 - Build: save the two concept images and the look-rules section. Write
-  `sign_decals.py`: Oriel logo (original hexagon-ring mark drawn in code),
-  "HALCYON LABS / SECTOR A / MESS HALL" with chevrons, sector arrow signs, area
-  codes (A1 to A4 front half, B1 to B3 back half, C1 Containment), tank codes
-  C-01 to C-03, "CONTAINMENT", "HALCYON RESEARCH", pillar band, floor lane line.
+  `sign_decals.py`: Oriel logo (original hexagon-ring mark drawn in code), one
+  name sign per area ("A3 MESS HALL / HALCYON LABS - SECTOR A >>"; codes A1 to
+  A4 front half, B1 to B3 back half, C1 Containment), floor lane line. Tank
+  codes come with the tanks in step 5, "HALCYON RESEARCH" with the research
+  room in step 4, pillar bands with pillars (none in the map yet).
+  Signs hang at 2 to 3 m where the fixtures light the wall: higher walls stay
+  black in this dark map, so a sign up there could not be read.
   Paint colour `#B9C2B0` at 60 to 80 % on walls, hazard colour taken from the
   existing `decal_hazard.png`. Every texture gets grime, fade and scratches;
-  some get a blood overlay. Place them as Decals under a `Signs` node in
-  `decals.tscn`, distance fade 25-30 m like story decals. Hazard stripe on the
+  some get a blood overlay. Place them as Decals in a new
+  `signs.tscn`, distance fade 25-30 m like story decals. Hazard stripe on the
   vent ledge edge (#297). `room_shots.gd` prints draw calls; write the baseline
   into this plan.
-- Files: docs/design/images, look-rules.md, tools/assets/sign_decals.py,
-  requirements.txt, assets/textures/signs/, decals.tscn, tools/room_shots.gd.
-- Tests: `test_halcyon_surfaces.gd`: every Sign decal has a texture from
-  `assets/textures/signs/`, a distance fade, and sits inside a room rect;
-  every area name in maps.md has at least one sign. Python unit test for
-  `sign_decals.py` (output is byte-identical every run).
+- Files: tools/assets/sign_decals.py, assets/textures/signs/,
+  levels/halcyon_labs/signs.tscn, map.tscn (one line), tools/room_shots.gd.
+- Tests: new `tests/content/test_halcyon_signs.gd`: every area in maps.md has
+  its name sign, every sign uses a sign texture and fades like story decals,
+  sits on a wall or floor of its room, and misses the doorways.
+  `tools/ci/test_sign_decals.py`: output is byte-identical every run.
 - Done when: renders show readable signs in every room; draw-call baseline
   written here.
 
