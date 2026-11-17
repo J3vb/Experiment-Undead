@@ -183,6 +183,8 @@ live state belongs in objects such as `WeaponInstance`.
     owning node; requests remain direct calls.
 2. Add a past-tense `signal` in `core/events.gd`, with a short `##` meaning
     and typed arguments, following `enemy_spawned(enemy: Node3D)` or `round_ended(round_number: int)`.
+    Add a `## Peers:` line saying where it fires (server only, owner, every peer);
+    `tests/unit/test_events.gd` fails without it.
 3. Choose and document the emitter: only the system that owns and completes
     the change may emit. `Spawner` emits `enemy_spawned`; `Zombie` emits `enemy_killed`.
 4. For damage/spawns/points/XP, guard the mutation path with `Net.is_authority()`

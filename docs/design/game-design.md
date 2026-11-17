@@ -2,6 +2,8 @@
 
 Source: copy of the design doc as of Nov 14, 2026. Where this file and the code differ, the code and `docs/DECISIONS.md` win.
 
+Every design change since that copy is listed in the [Change log](#change-log) at the end of this file.
+
 ## Pitch, pillars and core loop
 
 Experiment Undead is a solo-first, round-based zombie survival FPS set in a Cold War bunker turned bio-lab in the Ardennes forest. You survive endless rounds, earn points from every hit and kill, and spend them to open the facility, buy guns, and power up.
@@ -497,3 +499,16 @@ Why this order: shooting and the wave loop are the core and must be fun before a
 - [ ] Decided: keep the setting (Cold War bunker bio-lab and a village outpost in the Ardennes).
 - [ ] Decided: code-built guns in the style-guide look up to v0.1, then upgrade with a pack or better models where it shows.
 - [ ] Decided: dying keeps all your loot, like Diablo. Exfil stays only as an optional bonus (more XP and a cache).
+
+## Change log
+
+Design changes since the Nov 14, 2026 copy, newest first. Add one row in the same PR that changes the design: the date, the area, one line on what changed, and where the detail lives. Bug fixes that bring the game back in line with this doc go here only when a number players feel changed.
+
+| Date | Area | Change | Detail |
+| --- | --- | --- | --- |
+| 2026-11-17 | Campaign | Long campaign: maps come in acts of four (Act I = the first four maps), each map has a boss reached through a mid-run Sublevel descent, Lantern Post grows per act, and endgame hooks are named. | [lore.md](lore.md), PR #201, roadmap F-60 |
+| 2026-11-16 | Process | Plan first: a feature whose roadmap row says "needed" gets an approved plan in `docs/plans/` before any code. `docs/ROADMAP.md` is the build order. | [PROCESS.md](../PROCESS.md), PR #172 |
+| 2026-11-15 | Loot | Zombie loot is personal: each player only sees and picks up their own drops. Every run exit, including death and co-op disconnects, banks the Pack into the stash. | [ADR 0010](../adr/0010-personal-loot-kept-on-death.md), PR #135 |
+| 2026-11-15 | Co-op | Co-op uses a trusted client: clients ask, the host or server decides shared state. Host and direct join are on the main menu. | [MULTIPLAYER.md](../MULTIPLAYER.md), [ADR 0003](../adr/0003-trusted-client-co-op.md), PRs #73, #96 |
+| 2026-11-15 | Weapons | Kestrel SMG and Talon DMR damage now match the balance sheet (25.65 and 68.4 per bullet); they were about 43% too low. | [weapons.csv](balance/weapons.csv), PR #76 |
+| 2026-11-15 | Weapons | Version 1 roster grows from 12 to 22 base guns, all bullet-based. The crossbow and launchers are dropped. | [gun-roster.md](gun-roster.md), PR #67 |

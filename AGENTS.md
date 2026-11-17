@@ -240,7 +240,7 @@ If you cannot download Godot, say so in the PR and let CI run the checks.
 
 ## Quality checks (CI is the merge gate)
 
-CI has two required checks. A PR can only merge when both are green.
+CI has three required checks. A PR can only merge when all three are green.
 
 - **`quality`** (pull requests only, all tracked `.gd` and `.py` files outside `addons/`):
   - `gdlint` with the repo `gdlintrc`: lines max 120, files max 350 lines,
@@ -259,6 +259,10 @@ CI has two required checks. A PR can only merge when both are green.
   script, so unused variables, shadowing, unreachable code and the other
   warnings set to error in `project.godot` fail CI too. Do not lower those
   warning levels or skip a test to get green.
+- **`soak`** (`.github/workflows/soak.yml`): plays Halcyon Labs rounds 1-10 headless
+  (seed 1, 4x speed) and must print `| PASS |` with no `SCRIPT ERROR`. A change
+  that breaks a round, a spawn or a wave cannot merge. Read the job summary table
+  and the `soak-logs` artifact when it fails. Do not loosen its thresholds.
 
 Run the same `quality` check locally before you push:
 
@@ -294,7 +298,7 @@ lines for its early warning signs and list them in that doc's catalogue.
   after each push with changes, comment `@codex review` on the PR once.
 - You may merge your PR yourself (squash merge), no human approval needed,
   when all of these hold for the current head commit:
-  1. `quality` and `test` checks are green.
+  1. `quality`, `test` and `soak` checks are green.
   2. The Codex review for that commit is finished: its "Codex Review
      Summary" comment shows ✅ Completed for that commit (or a 👍 reaction).
   3. Every review comment is fixed, or answered with a reason if it is a

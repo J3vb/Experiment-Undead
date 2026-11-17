@@ -25,7 +25,7 @@ or paste it here for a small change. Write n.a. only for docs, art or test-only 
 
 ## Checklist
 
-- [ ] CI is green (`quality` and `test`)
+- [ ] CI is green (`quality`, `test` and `soak`)
 - [ ] Behaviour change has a test (or the `no-tests-needed` label and a reason above)
 - [ ] Bug fix has a test that failed before the fix
 - [ ] Follows the Keep it simple rules in AGENTS.md

@@ -13,6 +13,9 @@ const PULL_SPEED: float = 8.0
 const DAMAGE_INTERVAL: float = 0.5
 const SCENE: String = "res://systems/weapons/gravity_well.tscn"
 
+## Loaded once on first use so orbs and wells never re-read the scene in combat.
+static var _scene: PackedScene
+
 var attacker: Player
 ## The gun that fired this orb or well; null on cosmetic copies.
 var weapon_data: WeaponData
@@ -54,7 +57,7 @@ static func launch(weapon: Weapon) -> void:
 static func spawn_orb(
 	parent: Node, player: Player, origin: Vector3, direction: Vector3, claims: Node = null, claim: bool = true
 ) -> GravityWell:
-	var orb: GravityWell = load(SCENE).instantiate() as GravityWell
+	var orb: GravityWell = _packed().instantiate() as GravityWell
 	orb._orb = true
 	orb._claim = claim
 	orb.gameplay = false
@@ -86,13 +89,19 @@ static func open(
 		if not cosmetic:
 			return null
 		oldest.collapse()
-	var well: GravityWell = load(SCENE).instantiate() as GravityWell
+	var well: GravityWell = _packed().instantiate() as GravityWell
 	well.gameplay = not cosmetic
 	well._claims = claims
 	well.setup(player, point, data)
 	parent.add_child(well)
 	well.global_position = point
 	return well
+
+
+static func _packed() -> PackedScene:
+	if _scene == null:
+		_scene = load(SCENE) as PackedScene
+	return _scene
 
 
 func setup(player: Player, point: Vector3, data: WeaponData) -> void:

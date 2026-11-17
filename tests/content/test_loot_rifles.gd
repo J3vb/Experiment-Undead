@@ -182,7 +182,6 @@ func test_remote_shots_honor_no_muzzle_flash_without_losing_sound_or_tracers() -
 	assert_true(effects._light.visible)
 	for id: StringName in [&"nightjar_sd", &"nightjar_sd_reforged"]:
 		var data: WeaponData = Content.weapon(id)
-		var previous_children: int = effects.get_child_count()
 		effects.play(data, Vector3.ZERO, points)
 		assert_false(effects._flash.visible, String(id) + " hides an already visible remote flash")
 		assert_false(effects._light.visible)
@@ -190,7 +189,9 @@ func test_remote_shots_honor_no_muzzle_flash_without_losing_sound_or_tracers() -
 		assert_false(effects._flash.visible, "the remote flash timer cannot restore it")
 		assert_false(effects._light.visible)
 		assert_eq(effects._audio.stream, data.fire_sound, "suppressed remote shots keep their own sound")
-		assert_eq(effects.get_child_count(), previous_children + 1, "suppressed shots create their own tracer")
+		var tracers: MeshInstance3D = effects.get_node("Tracers") as MeshInstance3D
+		assert_true(tracers.visible, "suppressed shots still draw their tracer")
+		assert_eq(tracers.mesh.get_surface_count(), 1)
 	effects.play(Content.weapon(&"sentry_br3"), Vector3.ZERO, points)
 	assert_true(effects._flash.visible, "ordinary remote shots can flash again")
 	assert_true(effects._light.visible)

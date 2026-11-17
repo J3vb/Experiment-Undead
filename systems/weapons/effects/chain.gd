@@ -8,6 +8,9 @@ const DAMAGE_FRACTION: float = 0.5
 const ARC_TIME: float = 0.12
 const ARC_COLOR: Color = Color("3fe0c8")
 
+## One unit-height cylinder shared by every arc segment; each segment scales it to length.
+static var _arc_mesh: CylinderMesh
+
 
 func _init() -> void:
 	name = "Chain"
@@ -80,22 +83,28 @@ func _segment(parent: Node3D, start: Vector3, end: Vector3) -> void:
 	var delta: Vector3 = end - start
 	if delta.length_squared() < 0.000001:
 		return
-	var mesh: CylinderMesh = CylinderMesh.new()
-	mesh.top_radius = 0.012
-	mesh.bottom_radius = 0.012
-	mesh.height = delta.length()
-	mesh.radial_segments = 4
-	mesh.rings = 0
-	var material: StandardMaterial3D = StandardMaterial3D.new()
-	material.albedo_color = ARC_COLOR
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.emission_enabled = true
-	material.emission = ARC_COLOR
-	material.emission_energy_multiplier = 1.5
-	mesh.material = material
 	var segment: MeshInstance3D = MeshInstance3D.new()
-	segment.mesh = mesh
+	segment.mesh = _shared_arc_mesh()
 	segment.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	parent.add_child(segment)
 	segment.position = (start + end) * 0.5
 	segment.quaternion = Quaternion(Vector3.UP, delta.normalized())
+	segment.scale = Vector3(1.0, delta.length(), 1.0)
+
+
+static func _shared_arc_mesh() -> CylinderMesh:
+	if _arc_mesh == null:
+		_arc_mesh = CylinderMesh.new()
+		_arc_mesh.top_radius = 0.012
+		_arc_mesh.bottom_radius = 0.012
+		_arc_mesh.height = 1.0
+		_arc_mesh.radial_segments = 4
+		_arc_mesh.rings = 0
+		var material: StandardMaterial3D = StandardMaterial3D.new()
+		material.albedo_color = ARC_COLOR
+		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		material.emission_enabled = true
+		material.emission = ARC_COLOR
+		material.emission_energy_multiplier = 1.5
+		_arc_mesh.material = material
+	return _arc_mesh

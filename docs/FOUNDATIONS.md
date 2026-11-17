@@ -37,7 +37,7 @@ pattern. **Missing** = needed soon, not built.
 | 9 | [Tests and CI](#9-tests-and-ci) | solid | AGENTS.md, [ADR 0009](adr/0009-ci-is-the-gate.md) |
 | 10 | [Exported builds and dedicated server](#10-exported-builds-and-dedicated-server) | solid | `docs/RELEASING.md`, [ADR 0006](adr/0006-self-hosted-servers.md) |
 | 11 | [Asset pipeline](#11-asset-pipeline) | solid | [ADR 0008](adr/0008-code-built-assets-first.md), skills |
-| 12 | [Performance: pooling and hot paths](#12-performance-pooling-and-hot-paths) | shaky | AGENTS.md code rule 6 |
+| 12 | [Performance: pooling and hot paths](#12-performance-pooling-and-hot-paths) | solid | AGENTS.md code rule 6 |
 | 13 | [Rules and docs agents read](#13-rules-and-docs-agents-read) | shaky | AGENTS.md, this file, `docs/adr/` |
 
 ### 1. Co-op authority
@@ -102,9 +102,11 @@ in the past tense; requests are direct calls.
 
 **What works:** 24 past-tense signals, used consistently.
 
-**Gap to keep in mind:** nothing says which peer emits each event in co-op
-(for example `enemy_killed` fires where the zombie dies, the server). When you
-add or use an event in co-op code, say in the plan which peers see it.
+**Which peers hear it:** every signal in `core/events.gd` has a `## Peers:`
+line (server only, owner, every peer); `tests/unit/test_events.gd` fails if one
+is missing. Read it before co-op code listens to an event. Round events
+(`round_started`, `round_ended`, `intermission_started`) fire on every peer:
+`WaveDirector` relays them and sends late joiners a snapshot (F-40).
 
 ### 5. UI screens and routing
 
@@ -174,14 +176,17 @@ Solid. The only gap is per-gun rig data kept in code (see foundation 2, #149).
 
 **Rule:** no per-frame allocations in hot paths; 120 fps target with 8 players.
 
-**Why shaky:** there is no pooling yet, and several hot paths build new nodes,
-meshes and materials per shot or hit (#141, #142, #150, #151); zombie
-separation is O(n²) and allocates each tick (#139). Fine at today's numbers
-(430+ fps solo), but it multiplies with 8 players and more effects.
+**What works:** ([plan](plans/hot-path-allocations.md)) zombie separation
+loops the `Spawner.zombies` live list (no array per tick); impacts reuse a
+ring of at most 48 nodes with shared meshes and materials; remote tracers
+redraw one node per player; chain arcs share one mesh; the gravity well scene
+is loaded once.
 
-**Fixed when:** shot, impact and effect visuals reuse resources (preloaded
-meshes and materials, a small pool where nodes are created often), before the
-4-player play-test (#127).
+**Watch:** new per-shot or per-hit visuals follow the same pattern: shared
+static meshes and materials, reused nodes where they appear every shot. A
+`Pool` autoload and zombie pooling wait for a measured stutter
+(`docs/KEEP_IT_SIMPLE.md`). Separation is still O(n²) (2304 checks at 48
+zombies), cheap without allocation.
 
 ### 13. Rules and docs agents read
 
@@ -238,6 +243,6 @@ tests, as usual. The issue numbers have the details.
 | 4 | Done: ids into data ([plan](plans/ids-into-data.md)): on-hit effect field on `WeaponData`, grip profile data, shot-peak flag, drop chance and rarity floor on `EnemyData`, badge on `SerumData`; cache loaded content; CI rule against content id literals in code | #143, #149, #163, #148, #154, #140 | new guns or zombies (Crawler #121, Stalker #123, Brute #124) |
 | 5 | Done: minimal UI router (push, pop, replace, mouse capture), current screens moved onto it ([plan](plans/ui-router.md)) | ui-hud.md | skill tree screen (#112), town hub (#131) |
 | 6 | Done: small leaks: regen in the physics tick (#144), Pack overlay input through the input layer (#146) | #144, #146 | anything touching health or the Pack |
-| 7 | Hot-path allocations: preload or pool shot, impact and effect visuals; zombie separation without per-tick arrays | #139, #141, #142, #150, #151 | 4-player play-test (#127), more VFX |
-| 8 | Shared test helpers for two-peer ENet and mesh checks | #161, #164, #170 | more co-op tests |
-| 9 | Write down which peer emits each Events signal (foundation 4) | - | next co-op feature that uses Events |
+| 7 | Done: hot-path allocations ([plan](plans/hot-path-allocations.md)): impacts, remote tracers, chain arcs and the gravity well reuse resources; zombie separation without per-tick arrays | #139, #141, #142, #150, #151 | 4-player play-test (#127), more VFX |
+| 8 | Done: shared test helpers: `TwoPeers` for two-peer ENet tests, `MeshChecks` for model sight-line checks, `grip_checks.py` for grip tests | #161, #164, #170 | more co-op tests |
+| 9 | Done: every Events signal says which peers emit it (`## Peers:` in `core/events.gd`, checked by a test) | - | next co-op feature that uses Events |

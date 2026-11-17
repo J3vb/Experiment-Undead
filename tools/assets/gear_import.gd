@@ -21,6 +21,19 @@ const FINISHES: Dictionary[String, int] = {
 	"ZombieShoe": 9,
 	"ZombieGlow": 10,
 }
+## Player clips that cycle; glTF has no loop flag. Names match LOOPS in player_clips.py.
+const LOOP_CLIPS: Array[StringName] = [
+	&"idle",
+	&"walk_fwd",
+	&"walk_back",
+	&"walk_left",
+	&"walk_right",
+	&"run",
+	&"crouch_idle",
+	&"crouch_walk",
+	&"downed_idle",
+	&"downed_crawl",
+]
 
 
 func _post_import(scene: Node) -> Object:
@@ -40,7 +53,15 @@ func _post_import(scene: Node) -> Object:
 			if not materials.has(source):
 				materials[source] = finish_material(source)
 			mesh.surface_set_material(surface, materials[source])
+	for node: Node in scene.find_children("*", "AnimationPlayer", true, false):
+		_loop_clips(node as AnimationPlayer)
 	return scene
+
+
+static func _loop_clips(player: AnimationPlayer) -> void:
+	for clip: StringName in player.get_animation_list():
+		if clip in LOOP_CLIPS:
+			player.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
 
 
 static func finish_material(source: BaseMaterial3D) -> ShaderMaterial:

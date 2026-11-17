@@ -122,7 +122,9 @@ func test_two_clients_meet_on_a_dedicated_server() -> void:
 	assert_true(mine.camera.current)
 	assert_eq(_remote_players().size(), 1, "the other client's player is here too")
 	assert_null(session.players.find_player(1), "a dedicated server has no player of its own")
-	assert_eq(session.director.phase, WaveDirector.Phase.IDLE, "clients never run the waves")
+	var follows: Callable = func() -> bool: return session.director.phase != WaveDirector.Phase.IDLE
+	await wait_until(follows, 10.0, "the client follows the server's round state")
+	assert_ne(session.director.phase, WaveDirector.Phase.IDLE, "the server's round state reached this client")
 	var has_zombie: Callable = func() -> bool: return session.spawner.alive_count() > 0
 	await wait_until(has_zombie, 30.0, "the server's first wave reached this client")
 	for child: Node in session.spawner.get_children():

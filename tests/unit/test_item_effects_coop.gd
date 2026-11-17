@@ -7,7 +7,6 @@ const HUD: PackedScene = preload("res://systems/ui/hud.tscn")
 const WALKER: EnemyData = preload("res://content/enemies/zombie_walker.tres")
 const WAVES: WaveRules = preload("res://content/waves/default_waves.tres")
 const RIFLE: WeaponData = preload("res://content/weapons/rifle_ar.tres")
-const PORT: int = 24697
 const UID: String = "leech_rifle"
 
 var server: HitClaims
@@ -16,13 +15,11 @@ var claimant: Player
 var host: Player
 var mine: Player
 var normal_points: int
+var _port: int
 
 
 func _make_side(side_name: String) -> HitClaims:
-	var root: Node = Node.new()
-	root.name = side_name
-	add_child(root)
-	get_tree().set_multiplayer(SceneMultiplayer.new(), root.get_path())
+	var root: Node = TwoPeers.make_side(self, side_name)
 	var session: GameSession = GameSession.new()
 	session.rng.seed = 7
 	var world: Node3D = Node3D.new()
@@ -57,18 +54,15 @@ func _prepare_player(player: Player, session: GameSession) -> void:
 
 
 func before_each() -> void:
+	_port = TwoPeers.next_port()
 	server = _make_side("Server")
 	client = _make_side("Client")
 	var marker: Marker3D = Marker3D.new()
 	marker.add_to_group(&"test_item_effect_points")
 	marker.position = Vector3(0, 0, -4)
 	server.get_parent().add_child(marker)
-	var server_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(server_peer.create_server(PORT, 2), OK)
-	server.multiplayer.multiplayer_peer = server_peer
-	var client_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(client_peer.create_client("127.0.0.1", PORT), OK)
-	client.multiplayer.multiplayer_peer = client_peer
+	assert_eq(TwoPeers.host(server, _port, 2), OK)
+	assert_eq(TwoPeers.join(client, _port), OK)
 	client.session.players.setup(client.get_parent().get_node("World") as Node3D, Transform3D.IDENTITY)
 	server.session.players.setup(server.get_parent().get_node("World") as Node3D, Transform3D.IDENTITY)
 	await wait_until(_players_ready, 5.0, "players connected")
@@ -93,9 +87,6 @@ func _players_ready() -> bool:
 func after_each() -> void:
 	for claims: HitClaims in [client, server]:
 		var root: Node = claims.get_parent()
-		var path: NodePath = root.get_path()
-		root.multiplayer.multiplayer_peer.close()
-		root.multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
 		for node: Node in claims.session.spawner.get_children():
 			if node is Zombie:
 				node.free()
@@ -103,8 +94,7 @@ func after_each() -> void:
 			if node is Player:
 				node.free()
 		claims.session.free()
-		root.free()
-		get_tree().set_multiplayer(null, path)
+		TwoPeers.close_side(root)
 
 
 func _item(affixes: Array, uid: String = UID) -> Dictionary:

@@ -1,6 +1,5 @@
 systems/debug/debug_overlay.gd
 systems/economy/economy_rules.gd
-systems/effects/impact.gd
 systems/enemies/zombie_voice.gd
 systems/ui/hit_marker.gd
 systems/ui/version_label.gd

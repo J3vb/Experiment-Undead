@@ -27,6 +27,13 @@ func before_each() -> void:
 	Events.player_spawned.emit(player)
 
 
+func test_joining_between_rounds_shows_the_last_round() -> void:
+	Events.intermission_started.emit(8, 12.0)
+	assert_eq(hud.round_label.text, "7", "a late joiner in a break sees the round just survived")
+	Events.intermission_started.emit(1, 10.0)
+	assert_eq(hud.round_label.text, "7", "the first break leaves the label alone")
+
+
 func test_round_starts_white_and_intermission_blinks() -> void:
 	Events.round_started.emit(12, 24)
 	assert_eq(hud.round_label.text, "12")
