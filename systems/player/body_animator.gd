@@ -228,7 +228,7 @@ func _build_tree(walk: float, sprint: float) -> AnimationNodeBlendTree:
 		&"run": Vector2(0.0, reach),
 	}
 	for clip: StringName in points:
-		ground.add_blend_point(_clip(clip), points[clip])
+		ground.add_blend_point(_clip(clip), points[clip], -1, clip)
 	var root: AnimationNodeBlendTree = AnimationNodeBlendTree.new()
 	root.add_node(GROUND, ground)
 	root.add_node(CROUCH, _line(&"crouch_idle", &"crouch_walk"))
@@ -283,8 +283,8 @@ func _line(still: StringName, moving: StringName) -> AnimationNodeBlendSpace1D:
 	var line: AnimationNodeBlendSpace1D = AnimationNodeBlendSpace1D.new()
 	line.min_space = 0.0
 	line.max_space = 1.0
-	line.add_blend_point(_clip(still), 0.0)
-	line.add_blend_point(_clip(moving), 1.0)
+	line.add_blend_point(_clip(still), 0.0, -1, still)
+	line.add_blend_point(_clip(moving), 1.0, -1, moving)
 	return line
 
 
