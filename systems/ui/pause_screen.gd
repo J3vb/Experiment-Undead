@@ -1,4 +1,5 @@
 ## Pause menu the match pushes on Esc. Resume and Esc close it; Settings opens above it through the router.
+## Solo freezes the game while it is open; in co-op the match goes on and a banner says so.
 class_name PauseScreen
 extends ColorRect
 
@@ -12,6 +13,7 @@ const MENU_THEME: Theme = preload("res://systems/ui/menu_theme.tres")
 @onready var settings_button: Button = $Menu/Settings
 @onready var main_menu_button: Button = $Menu/MainMenu
 @onready var quit_button: Button = $Menu/QuitGame
+@onready var banner: Label = $Menu/Banner
 
 
 func _ready() -> void:
@@ -23,6 +25,14 @@ func _ready() -> void:
 	main_menu_button.pressed.connect(main_menu_requested.emit)
 	quit_button.pressed.connect(quit_requested.emit)
 	resume_button.grab_focus()
+	banner.visible = Net.is_online()
+	if not banner.visible:
+		get_tree().paused = true
+
+
+func _exit_tree() -> void:
+	if not banner.visible:
+		get_tree().paused = false
 
 
 func _input(event: InputEvent) -> void:

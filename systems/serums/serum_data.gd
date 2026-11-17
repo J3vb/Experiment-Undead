@@ -15,6 +15,7 @@ const STATS: Array[StringName] = [
 	&"sprint_time",
 	&"sprint_out_time",
 	&"swap_time",
+	&"slide_time",
 ]
 
 ## Serums whose effect is code that checks for their id, not a stat.

@@ -62,6 +62,8 @@ func _physics_process(delta: float) -> void:
 				_present()
 				publish()
 				Events.player_died.emit(_player)
+	elif _player.is_downed:
+		bleed_left = maxf(bleed_left - delta, 0.0)
 	if _player.is_multiplayer_authority() and _player.is_dead and is_coop():
 		_spectate()
 
@@ -107,6 +109,8 @@ func _snapshot() -> Dictionary:
 		"dead": _player.is_dead,
 		"points": _player.wallet.points,
 		"serums": ids,
+		"name": _player.display_name,
+		"bleed": bleed_left,
 	}
 
 
@@ -137,6 +141,8 @@ func _receive_state(state: Dictionary) -> void:
 	_player.health.max_health = state.maximum
 	_player.health.is_dead = _player.is_downed or _player.is_dead
 	_player.wallet.set_points(state.points)
+	_player.display_name = state.get("name", "")
+	bleed_left = float(state.get("bleed", 0.0))
 	_sync_serums(state.serums)
 	_player.health.health_changed.emit(_player.health.current, _player.health.max_health)
 	if damage > 0.0 and _player.is_multiplayer_authority():
@@ -264,9 +270,7 @@ func respawn_player() -> void:
 @rpc("authority", "call_local", "reliable")
 func _respawn(spawn_point: Transform3D) -> void:
 	_restore_weapons()
-	_player.global_transform = spawn_point
-	_player.velocity = Vector3.ZERO
-	_player.reset_physics_interpolation()
+	_player.teleport(spawn_point)
 	for weapon: Weapon in _player.weapons.weapons:
 		weapon.queue_free()
 	_player.weapons.weapons.clear()
@@ -283,7 +287,7 @@ func _present() -> void:
 	_player.collision_mask = 0 if _player.is_dead else Layers.WORLD | Layers.ENEMY | Layers.BARRIER
 	_player.input_enabled = not _player.is_dead
 	_player.weapons.visible = local and not _player.is_dead
-	_player.camera_rig.rotation.z = deg_to_rad(25.0) if _player.is_downed else 0.0
+	_player.camera_rig.tilt(25.0 if _player.is_downed else 0.0, 0.2)
 	_icon.visible = _player.is_downed and not local
 	if _player.is_downed:
 		_equip_sidearm()

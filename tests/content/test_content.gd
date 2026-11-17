@@ -41,6 +41,19 @@ func test_weapons_are_valid() -> void:
 			vm.free()
 
 
+func test_weapons_have_a_world_model_for_teammates() -> void:
+	for path: String in _files("weapons"):
+		var w: WeaponData = load(path) as WeaponData
+		assert_not_null(w.world_model, path + " has a world_model")
+		if w.world_model == null:
+			continue
+		var gun: Node = w.world_model.instantiate()
+		assert_not_null(gun.find_child("Muzzle", true, false), path + " world_model has Muzzle")
+		gun.free()
+		if w.upgraded:
+			assert_eq(w.upgraded.world_model, w.world_model, path + " Reforged copy keeps the same gun model")
+
+
 func test_reforged_guns_follow_tier_one() -> void:
 	for path: String in _files("weapons"):
 		var w: WeaponData = load(path) as WeaponData

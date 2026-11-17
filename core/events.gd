@@ -84,6 +84,10 @@ signal exfil_opened
 ## Peers: every peer (clients from the synced hatch state).
 signal exfil_called(hatch: ExfilHatch)
 
+## The hub's deploy vote changed. Empty place = no vote. countdown_left is 0 until everyone is ready.
+## Peers: every peer (the server sends it to all, and once to a late joiner).
+signal deploy_vote_changed(place: StringName, ready_ids: Array[int], countdown_left: float)
+
 ## The match ended.
 ## Peers: every peer (the server sends the match end to all).
 signal game_over(stats: Dictionary)

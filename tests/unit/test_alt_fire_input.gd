@@ -52,3 +52,13 @@ func test_disabled_local_input_never_emits_alt_fire() -> void:
 	assert_eq(frame.buttons, 0)
 	local_input.enabled = true
 	assert_true(local_input.sample(52).has(InputFrame.ALT_FIRE), "reenabling resumes current input")
+
+
+func test_no_gameplay_input_while_a_screen_is_open() -> void:
+	Input.action_press(&"alt_fire")
+	UI.push(&"pause")
+	var frame: InputFrame = local_input.sample(42)
+	UI.pop()
+	get_tree().paused = false
+	assert_false(frame.has(InputFrame.ALT_FIRE), "a co-op pause menu does not let the player keep firing")
+	assert_true(local_input.sample(43).has(InputFrame.ALT_FIRE), "input comes back when the screen closes")

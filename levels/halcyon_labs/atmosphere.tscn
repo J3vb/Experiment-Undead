@@ -1,0 +1,114 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Material" path="res://levels/materials/pipe.tres" id="pipe"]
+
+[sub_resource type="CylinderMesh" id="base_mesh"]
+material = ExtResource("pipe")
+top_radius = 0.14
+bottom_radius = 0.16
+height = 0.12
+
+[sub_resource type="StandardMaterial3D" id="alarm_glass"]
+albedo_color = Color(0.765, 0.125, 0.106, 1)
+emission_enabled = true
+emission = Color(0.765, 0.125, 0.106, 1)
+emission_energy_multiplier = 3.0
+roughness = 0.3
+
+[sub_resource type="CylinderMesh" id="dome_mesh"]
+material = SubResource("alarm_glass")
+top_radius = 0.07
+bottom_radius = 0.11
+height = 0.2
+
+[sub_resource type="Animation" id="spin"]
+resource_name = "spin"
+length = 1.6
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Spin:rotation:y")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.6),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 6.2831855]
+}
+
+[sub_resource type="AnimationLibrary" id="beacon_anims"]
+_data = {
+&"spin": SubResource("spin")
+}
+
+[node name="Atmosphere" type="Node3D"]
+
+[node name="Beacons" type="Node3D" parent="."]
+
+[node name="BeaconWest" type="Node3D" parent="Beacons"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.3, 0.6, 10)
+
+[node name="Base" type="MeshInstance3D" parent="Beacons/BeaconWest"]
+gi_mode = 0
+mesh = SubResource("base_mesh")
+
+[node name="Dome" type="MeshInstance3D" parent="Beacons/BeaconWest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.16, 0)
+gi_mode = 0
+mesh = SubResource("dome_mesh")
+
+[node name="Spin" type="Node3D" parent="Beacons/BeaconWest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.16, 0)
+
+[node name="Light" type="SpotLight3D" parent="Beacons/BeaconWest/Spin"]
+transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 0, 0)
+light_color = Color(0.765, 0.125, 0.106, 1)
+light_energy = 6.0
+light_volumetric_fog_energy = 2.0
+light_bake_mode = 0
+distance_fade_enabled = true
+distance_fade_begin = 20.0
+distance_fade_length = 5.0
+spot_range = 9.0
+spot_angle = 22.0
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Beacons/BeaconWest"]
+libraries = {
+&"": SubResource("beacon_anims")
+}
+autoplay = &"spin"
+
+[node name="BeaconEast" type="Node3D" parent="Beacons"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75.7, 0.6, 18)
+
+[node name="Base" type="MeshInstance3D" parent="Beacons/BeaconEast"]
+gi_mode = 0
+mesh = SubResource("base_mesh")
+
+[node name="Dome" type="MeshInstance3D" parent="Beacons/BeaconEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.16, 0)
+gi_mode = 0
+mesh = SubResource("dome_mesh")
+
+[node name="Spin" type="Node3D" parent="Beacons/BeaconEast"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.16, 0)
+
+[node name="Light" type="SpotLight3D" parent="Beacons/BeaconEast/Spin"]
+transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 0, 0)
+light_color = Color(0.765, 0.125, 0.106, 1)
+light_energy = 6.0
+light_volumetric_fog_energy = 2.0
+light_bake_mode = 0
+distance_fade_enabled = true
+distance_fade_begin = 20.0
+distance_fade_length = 5.0
+spot_range = 9.0
+spot_angle = 22.0
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Beacons/BeaconEast"]
+libraries = {
+&"": SubResource("beacon_anims")
+}
+autoplay = &"spin"

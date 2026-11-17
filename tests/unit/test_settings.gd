@@ -38,7 +38,8 @@ func after_each() -> void:
 func test_defaults_for_missing_file() -> void:
 	var expected: Dictionary = {
 		&"controls": {&"mouse_sensitivity": 0.0022, &"ads_sensitivity_multiplier": 0.8, &"invert_y": false},
-		&"video": {&"fov": 110, &"max_fps": 0, &"vsync": false, &"show_fps": false},
+		&"video": {&"fov": 110},
+		&"graphics": Graphics.DEFAULTS,
 		&"audio": {&"master_volume": 1.0, &"music_volume": 0.8, &"sfx_volume": 1.0},
 		&"network": {&"last_address": "", &"last_port": 7777},
 	}
@@ -72,8 +73,8 @@ func test_clamps_values() -> void:
 	assert_eq(_settings.get_value(&"video", &"fov"), 70)
 	_settings.set_value(&"video", &"fov", 200)
 	assert_eq(_settings.get_value(&"video", &"fov"), 120)
-	_settings.set_value(&"video", &"max_fps", -30)
-	assert_eq(_settings.get_value(&"video", &"max_fps"), 0)
+	_settings.set_value(&"graphics", &"max_fps", -30)
+	assert_eq(_settings.get_value(&"graphics", &"max_fps"), 0)
 
 
 func test_network_address_and_port_survive_reload() -> void:
@@ -167,8 +168,8 @@ func test_headless_does_not_apply_video() -> void:
 	if DisplayServer.get_name() != "headless":
 		return
 	Engine.max_fps = 123
-	_settings.set_value(&"video", &"max_fps", 60)
-	_settings.set_value(&"video", &"vsync", true)
+	_settings.set_value(&"graphics", &"max_fps", 60)
+	_settings.set_value(&"graphics", &"vsync", true)
 	_settings.load_settings()
 	assert_eq(Engine.max_fps, 123)
 
@@ -187,3 +188,46 @@ func test_local_input_uses_loaded_controls_and_updates() -> void:
 	Settings.reset_to_defaults()
 	assert_eq(local.mouse_sensitivity, 0.0022)
 	assert_false(local.invert_y)
+
+
+func test_old_video_keys_load_into_graphics() -> void:
+	var config: ConfigFile = ConfigFile.new()
+	config.set_value("video", "fov", 95)
+	config.set_value("video", "vsync", true)
+	config.set_value("video", "max_fps", 144)
+	config.set_value("video", "show_fps", true)
+	config.save(PATH)
+	_settings.load_settings()
+	assert_eq(_settings.get_value(&"video", &"fov"), 95)
+	assert_eq(_settings.get_value(&"graphics", &"vsync"), true)
+	assert_eq(_settings.get_value(&"graphics", &"max_fps"), 144)
+	assert_eq(_settings.get_value(&"graphics", &"show_fps"), true)
+	_settings.set_value(&"graphics", &"vsync", false)
+	var saved: ConfigFile = ConfigFile.new()
+	saved.load(PATH)
+	assert_eq(saved.get_value("graphics", "vsync"), false, "the new section wins once saved")
+	_settings.load_settings()
+	assert_eq(_settings.get_value(&"graphics", &"vsync"), false)
+
+
+func test_preset_writes_its_keys_and_a_hand_change_makes_it_custom() -> void:
+	_settings.set_value(&"graphics", &"preset", Graphics.Preset.LOW)
+	for key: StringName in Graphics.PRESETS[Graphics.Preset.LOW]:
+		assert_eq(_settings.get_value(&"graphics", key), Graphics.PRESETS[Graphics.Preset.LOW][key], key)
+	_settings.set_value(&"graphics", &"preset", Graphics.Preset.HIGH)
+	assert_eq(_settings.get_value(&"graphics", &"aa"), Graphics.Aa.MSAA_4X)
+	assert_eq(_settings.get_value(&"graphics", &"preset"), Graphics.Preset.HIGH, "applying a preset keeps it")
+	_settings.set_value(&"graphics", &"brightness", 1.2)
+	assert_eq(_settings.get_value(&"graphics", &"preset"), Graphics.Preset.HIGH, "brightness is not part of presets")
+	_settings.set_value(&"graphics", &"shadows", 0)
+	assert_eq(_settings.get_value(&"graphics", &"preset"), Graphics.Preset.CUSTOM)
+	assert_eq(_settings.get_value(&"graphics", &"shadows"), 0, "picking Custom keeps the hand-set values")
+
+
+func test_graphics_values_clamp() -> void:
+	_settings.set_value(&"graphics", &"aa", 99)
+	assert_eq(_settings.get_value(&"graphics", &"aa"), Graphics.Aa.TAA)
+	_settings.set_value(&"graphics", &"render_scale", 0.1)
+	assert_eq(_settings.get_value(&"graphics", &"render_scale"), 0.5)
+	_settings.set_value(&"graphics", &"brightness", 9.0)
+	assert_eq(_settings.get_value(&"graphics", &"brightness"), 1.5)
