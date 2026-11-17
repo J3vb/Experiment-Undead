@@ -1,6 +1,7 @@
 ## Checks the gun finish from tools/assets/gun_finish_import.gd: every gun surface
 ## except optic glass uses the shared gun shader with the colour, finish and knurl
 ## its Blender material asked for, and the shader multiplies in the baked shading.
+## Baked guns (ADR 0014) get the same shader in baked mode with their three maps.
 extends GutTest
 
 const GUNS: Array[String] = [
@@ -17,8 +18,8 @@ const GUNS: Array[String] = [
 ]
 const SHADER: String = "res://assets/materials/gun_finish.gdshader"
 const IMPORTER: GDScript = preload("res://tools/assets/gun_finish_import.gd")
+const BAKED_GUNS: Array[String] = ["rifle_ar"]
 const KNURLED: Dictionary[String, String] = {
-	"rifle_ar": "TanKnurledWorn",
 	"kestrel_smg": "MatteBlackKnurledWorn",
 	"talon_dmr": "GunMetalKnurledWorn",
 	"hollis_44": "WoodKnurled",
@@ -67,7 +68,7 @@ func test_finish_follows_the_material_name() -> void:
 
 
 func test_colour_metal_and_roughness_come_from_blender() -> void:
-	var rifle: Dictionary[String, Material] = _materials("rifle_ar")
+	var rifle: Dictionary[String, Material] = _materials("kestrel_smg")
 	var tan_color: Color = _param(rifle["TanWorn"], "albedo")
 	assert_gt(tan_color.r, tan_color.b, "tan stays warm")
 	assert_almost_eq(_param(rifle["GunMetalWorn"], "metallic"), 0.8, 0.01, "gunmetal stays metallic")
@@ -75,11 +76,11 @@ func test_colour_metal_and_roughness_come_from_blender() -> void:
 
 
 func test_worn_suffix_adds_heavy_wear_and_grime_only_to_concept_guns() -> void:
-	var rifle: Dictionary[String, Material] = _materials("rifle_ar")
+	var rifle: Dictionary[String, Material] = _materials("kestrel_smg")
 	assert_eq(_param(rifle["MatteBlackWorn"], "finish"), 1, "worn black is still a coating")
 	assert_gt(_param(rifle["MatteBlackWorn"], "wear"), 1.0, "worn paint chips past the edges")
 	assert_gt(_param(rifle["MatteBlackWorn"], "grime"), 0.0, "worn guns collect grime")
-	assert_true(_param(rifle["TanKnurledWorn"], "knurled"), "Knurled still works before Worn")
+	assert_true(_param(rifle["MatteBlackKnurledWorn"], "knurled"), "Knurled still works before Worn")
 	var hollis: Dictionary[String, Material] = _materials("hollis_44")
 	for mat_name: String in hollis:
 		if hollis[mat_name] is ShaderMaterial:
@@ -88,13 +89,42 @@ func test_worn_suffix_adds_heavy_wear_and_grime_only_to_concept_guns() -> void:
 
 
 func test_markings_print_the_shared_atlas() -> void:
-	var markings: Material = _materials("rifle_ar")["Markings"]
+	var markings: Material = _materials("kestrel_smg")["Markings"]
 	assert_true(_param(markings, "marked"), "markings read the atlas")
 	var atlas: Texture2D = _param(markings, "markings_map")
 	assert_not_null(atlas, "atlas is set")
 	if atlas:
 		assert_eq(atlas.resource_path, IMPORTER.MARKINGS_MAP, "the one shared atlas")
 	assert_string_contains((load(SHADER) as Shader).code, "texture(markings_map, UV2)")
+
+
+func test_baked_guns_use_their_three_maps() -> void:
+	for id: String in BAKED_GUNS:
+		var materials: Dictionary[String, Material] = _materials(id)
+		assert_eq(materials.keys().filter(func(n: String) -> bool: return not n in IMPORTER.STANDARD), ["Baked"])
+		var baked: Material = materials.get("Baked")
+		assert_true(_param(baked, "baked"), id + " shader runs in baked mode")
+		for kind: String in ["albedo", "normal", "orm"]:
+			var map: Texture2D = _param(baked, kind + "_map")
+			assert_not_null(map, "%s %s map" % [id, kind])
+			if map:
+				assert_eq(map.resource_path, IMPORTER.BAKED_MAPS % [id, kind])
+				assert_eq(map.get_size(), Vector2(2048, 2048), "%s %s map is full size" % [id, kind])
+
+
+func test_baked_mode_keeps_the_rarity_inlay() -> void:
+	var code: String = (load(SHADER) as Shader).code
+	var tail: String = code.substr(code.find("if (baked)"))
+	assert_string_contains(tail, "NORMAL_MAP = texture(normal_map, UV)")
+	assert_string_contains(tail, "color = mix(color, rarity_color.rgb, inlay)", "inlay comes after both modes")
+
+
+func test_missing_baked_map_is_reported() -> void:
+	var material: ShaderMaterial = IMPORTER.baked_material("no_such_gun") as ShaderMaterial
+	assert_true(material.get_shader_parameter(&"baked"))
+	assert_push_error("has no albedo map")
+	assert_push_error("has no normal map")
+	assert_push_error("has no orm map")
 
 
 func test_unknown_material_keeps_its_standard_material() -> void:
@@ -107,7 +137,7 @@ func test_unknown_material_keeps_its_standard_material() -> void:
 func test_shader_multiplies_in_the_baked_shading() -> void:
 	var code: String = (load(SHADER) as Shader).code
 	assert_string_contains(code, "ALBEDO = color * ao")
-	assert_string_contains(code, "float ao = COLOR.r")
+	assert_string_contains(code, "ao = COLOR.r")
 
 
 func test_rarity_overrides_are_local_to_each_mesh() -> void:
@@ -140,7 +170,7 @@ func test_imported_rarity_masks_cover_only_a_thin_inlay() -> void:
 
 
 func test_red_dot_glass_is_see_through_and_non_emissive() -> void:
-	var glass: BaseMaterial3D = _materials("rifle_ar")["SightGlass"] as BaseMaterial3D
+	var glass: BaseMaterial3D = _materials("kestrel_smg")["SightGlass"] as BaseMaterial3D
 	assert_false(glass.emission_enabled, "red dot glass does not glow")
 	assert_eq(glass.transparency, BaseMaterial3D.TRANSPARENCY_ALPHA, "you aim through the red dot glass")
 	assert_lt(glass.albedo_color.a, 0.5, "the glass is mostly clear")

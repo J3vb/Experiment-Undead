@@ -219,6 +219,8 @@ def tilted_box(name: str, size: tuple, at: tuple, lean: float, mat, pivot: tuple
 # Not finished yet: the Halcyon Labs lightmap was baked on this mesh, so changing it
 # needs a GPU re-bake. Remove it from this set together with that bake.
 UNFINISHED = {"wall_panel"}
+# Guns with baked maps (ADR 0014): their game glb comes from gun_bake.py -> script name.
+BAKED = {"rifle_ar": "rifle_model"}
 
 MODELS = {
     "wall_panel": ("kit/wall_panel.glb", build_wall_panel),
@@ -273,9 +275,13 @@ def main(argv: list) -> None:
     parser.add_argument("names", nargs="*", help="models to build (default: all)")
     parser.add_argument("--out", default=os.path.join(REPO, "assets", "models"))
     args = parser.parse_args(argv)
+    into_assets = os.path.abspath(args.out) == os.path.join(REPO, "assets", "models")
     for name in args.names or MODELS:
         if name not in MODELS:
             sys.exit(f"unknown model: {name} (known: {', '.join(MODELS)})")
+        if name in BAKED and into_assets:
+            print(f"skipped {name}: a baked gun, run tools/assets/gun_bake.py {name}")
+            continue
         rel_path, build = MODELS[name]
         reset_scene()
         bpy.context.scene["unfinished"] = name in UNFINISHED

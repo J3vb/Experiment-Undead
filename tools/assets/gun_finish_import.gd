@@ -3,6 +3,8 @@
 ## comes from the Blender material name; a "Knurled" suffix adds the knurl pattern and a
 ## "Worn" suffix (after Knurled) the heavy chips and grime of the concept guns.
 ## "Markings" prints the shared markings atlas through UV2.
+## "Baked" (ADR 0014) turns on the shader's baked mode with the maps that
+## tools/assets/gun_bake.py wrote for this glb: assets/textures/weapons/<glb name>_*.png.
 ## Optic glass keeps its opaque, non-emissive standard material; red-dot sight glass
 ## stays a standard material too, but see-through.
 @tool
@@ -25,6 +27,8 @@ const MARKINGS_MAP: String = "res://assets/textures/gun_markings.png"
 ## Concept-gun wear: chips past the edges, and grime in creases.
 const WORN_WEAR: float = 1.6
 const WORN_GRIME: float = 0.8
+const BAKED: String = "Baked"
+const BAKED_MAPS: String = "res://assets/textures/weapons/%s_%s.png"
 const STANDARD: Array[String] = ["OpticGlass", "SightGlass"]
 const SIGHT_GLASS: String = "SightGlass"
 const SIGHT_GLASS_ALPHA: float = 0.18
@@ -45,7 +49,10 @@ func _post_import(scene: Node) -> Object:
 					source.albedo_color.a = SIGHT_GLASS_ALPHA
 					source.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 				continue
-			mesh.surface_set_material(i, finish_material(source))
+			if source.resource_name == BAKED:
+				mesh.surface_set_material(i, baked_material(get_source_file().get_file().get_basename()))
+			else:
+				mesh.surface_set_material(i, finish_material(source))
 	return scene
 
 
@@ -71,4 +78,18 @@ static func finish_material(source: BaseMaterial3D) -> Material:
 	if base == MARKINGS:
 		material.set_shader_parameter(&"marked", true)
 		material.set_shader_parameter(&"markings_map", load(MARKINGS_MAP) as Texture2D)
+	return material
+
+
+static func baked_material(gun: String) -> Material:
+	var material: ShaderMaterial = ShaderMaterial.new()
+	material.resource_name = BAKED
+	material.shader = SHADER
+	material.set_shader_parameter(&"baked", true)
+	for kind: String in ["albedo", "normal", "orm"]:
+		var path: String = BAKED_MAPS % [gun, kind]
+		if not ResourceLoader.exists(path):
+			push_error("baked gun '%s' has no %s map; run tools/assets/gun_bake.py" % [gun, kind])
+			continue
+		material.set_shader_parameter(StringName(kind + "_map"), load(path) as Texture2D)
 	return material
