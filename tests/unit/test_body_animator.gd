@@ -94,6 +94,7 @@ func test_teleport_is_not_read_as_running() -> void:
 
 func test_look_pitch_bends_the_head_after_the_clip() -> void:
 	await _move(Vector3.ZERO, 5)
+	assert_true(animator.aim is AimPitch, "the look pitch modifier sits on the skeleton")
 	var skeleton: Skeleton3D = animator.aim.get_skeleton()
 	var level: Vector3 = await _head_forward(skeleton)
 	player.camera_rig.rotation.x = 0.5
