@@ -1,4 +1,4 @@
-## Co-op downed controls retain crawl and sidearm fire, while dead players stay still.
+## Co-op downed controls retain crawl and sidearm fire (after the sidearm draw), while dead players stay still.
 extends GutTest
 
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
@@ -24,6 +24,7 @@ func test_downed_controls_and_dead_movement() -> void:
 	cycle.action = &"weapon_next"
 	cycle.pressed = true
 	player.local_input._unhandled_input(cycle)
+	player.weapons.tick(WeaponHolder.SWAP_TIME)
 	player._read_input(player.local_input.sample(0))
 	assert_true(player.input_enabled, "downed players retain crawl and fire input")
 	assert_true(player.is_crouching)
