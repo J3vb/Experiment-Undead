@@ -3,6 +3,7 @@
 python tools/assets/body_trial/build.py            # build, check and export the .glb
 """
 
+import math
 import os
 import sys
 
@@ -15,6 +16,7 @@ import extremities
 import gear_paint as paint
 import head
 import outfit
+import textures
 from mathutils import Matrix
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -34,6 +36,7 @@ def materials() -> dict:
 
 def _bind(parts: list, armature, zone: float, bone: str | None = None, blend: float = 0.14) -> list:
     for obj in parts:
+        textures.tag(obj)
         paint.zone(obj, zone)
         if bone:
             rig.bind_rigid(obj, armature, bone)
@@ -81,8 +84,19 @@ def main() -> None:
 
     build_models.reset_scene()
     build_player_trial()
+    finish.SMOOTH_ANGLE = math.radians(60.0)  # a soft body, not a hard-edged prop
     finish.finish()
-    build_models.export(OUT)
+    textures.bake(bpy.data.objects["Body"])
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    bpy.ops.export_scene.gltf(
+        filepath=OUT,
+        export_format="GLB",
+        export_yup=True,
+        export_apply=True,
+        export_vertex_color="ACTIVE",
+        export_image_format="JPEG",
+        export_jpeg_quality=88,
+    )
     errors = check_models.check_model(OUT)
     for error in errors:
         print("check failed:", error)

@@ -173,7 +173,24 @@ def patch(name, tube, span, thick, mat, cells=(6, 6), lift=None, dip=None):
     def sunk(points, uu, ss):
         return (lift(points, uu, ss) if lift else 0.0) - SUNK
 
-    return slab(name, tube.surface(u, s, raised), tube.surface(u, s, sunk), mat)
+    top = tube.surface(u, s, raised)
+    obj = slab(name, top, tube.surface(u, s, sunk), mat)
+    inner = (un > 0) & (un < 1) & (sn > 0) & (sn < 1)
+    seam = inner & (np.isclose(un, rim) | np.isclose(un, 1 - rim) | np.isclose(sn, rim) | np.isclose(sn, 1 - rim))
+    _mark_seam(obj, top[seam] if min(cells) > 1 else top[:0])  # narrow bands are all edge, no stitch row
+    return obj
+
+
+def _mark_seam(obj, points: np.ndarray) -> None:
+    """Flag the stitched row just inside a pad's edge in the `hem` attribute, for the texture bake."""
+
+    def key(point) -> tuple:
+        return tuple(np.rint(np.asarray(point, dtype=float) * 1e4).astype(int))
+
+    stitched = {key(point) for point in points}
+    hem = obj.data.attributes.new("hem", "FLOAT", "POINT")
+    for vertex, item in zip(obj.data.vertices, hem.data, strict=True):
+        item.value = 1.0 if key(vertex.co) in stitched else 0.0
 
 
 def sweep(name, path, radii, mat, sides=8, up=(0, 0, 1), closed=False):

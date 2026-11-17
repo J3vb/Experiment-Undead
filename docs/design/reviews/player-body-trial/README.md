@@ -22,10 +22,21 @@ dents (nose, brow, eye sockets, lips). Hair and beard are the same head surface 
 hair grows and sunk under the skin where it does not. Pockets, knee pads and straps are pads that
 follow the tube they sit on, so they never float or clip.
 
+## Baked textures (second pass, 2026-11-17)
+
+The person picked "baked textures" as the next step. `textures.py` gives every part its own look
+(skin, eyes, hair, jacket, pockets, scarf, trousers, pads, straps, gloves, boots, soles), builds a
+detailed material for each in code (cloth grain and wrinkles, hair strands, worn edges, stitching on
+pockets, mud towards the ground, lips and eye colour) and bakes them into three 2048 px maps:
+colour, normal and roughness. Triangle count is unchanged. The .glb carries the maps (JPEG, 2.8 MB).
+
+![closeups](closeups.jpg)
+
 ## Known weak spots
 
 - Hair reads as a cap and the hair and beard edges are stair-stepped.
-- One cloth colour for jacket and trousers (the 4-material limit); skin `#8F6A50` and hair
-  `#1E1915` are picked by eye, they are not in look-rules.md yet.
+- All look colours in `textures.py` are picked by eye from the concept, they are not in look-rules.md yet.
+- Texture detail is about 1 mm per pixel, so cloth weave is a grain, not threads.
+- The game's gear shader does not read these maps yet (it recolours by zone), so this is a Blender-render result.
 - The torso is bulkier than the shipped body, so today's vests would clip (the plan restyles them in step 4).
-- Not imported into Godot: the new material names need finishes in `gear_import.gd` first.
+- Not imported into Godot.
