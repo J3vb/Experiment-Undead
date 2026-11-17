@@ -277,7 +277,7 @@ Hall), checked in the step 5 fps check:
 - Tests: test_halcyon_atmosphere.gd: decals use only story textures, nothing
   in atmosphere.tscn has collision, the leak is the only bio-green effect. A
   Python test in tools/ci/ runs story_decals.py into a temp folder and checks
-  each PNG it writes has the size and alpha the decals expect. Existing navmesh and spawn tests in
+  each PNG is byte-identical to the committed one (so size and alpha match). Existing navmesh and spawn tests in
   test_halcyon_labs.gd still pass.
 - Done when: tests pass, renders of all five scenes go to the person on a
   decision card, fps check prompt written, plan set to Done.
@@ -286,9 +286,9 @@ Hall), checked in the step 5 fps check:
 
 - [ ] Every area has its accent (Guard Post flicker, Containment red beacons,
       Dock fire and smoke, Labs green leak) in a look-check render.
-- [ ] Steam, screens and hums start with power, also for a late joiner (test).
-- [ ] Shadow budget, light bake modes and particle budget hold (tests).
-- [ ] Story moments dressed with decals and effects; atmosphere.tscn has no collision (test).
+- [x] Steam, screens and hums start with power, also for a late joiner (test).
+- [x] Shadow budget, light bake modes and particle budget hold (tests).
+- [x] Story moments dressed with decals and effects; atmosphere.tscn has no collision (test).
 - [ ] Fps check on the person's PC still meets the v0.1 target.
 
 ## Risks
