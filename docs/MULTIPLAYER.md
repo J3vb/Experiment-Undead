@@ -52,6 +52,29 @@ already reads `InputFrame`s, so the server could replay them.
 | Cosmetics (muzzle flash, impacts, sounds) | Each peer | Local reaction to synced facts |
 | Teammate body animation (F-41) | Each peer, locally | `BodyAnimator` picks clips from the synced pose, crouch, downed state, held gun and reload time; a relayed remote shot plays the fire kick |
 
+## The handshake (frozen keys)
+
+Before a client gets any player or RPC, `Handshake` trades JSON objects
+through SceneMultiplayer's auth packets (F-65 step 1,
+`docs/plans/client-server-updates.md`):
+
+- Hello: `{"t": "hello", "protocol", "version", "content", "fingerprint", "name", "level"}`.
+- Replies: `{"t": "accepted", "place"}` or
+  `{"t": "refused", "reason", "server_version", "server_protocol", "text"}`
+  (plus `players` and `max_players` when full). The client answers a refusal
+  with `{"t": "refused_ack"}` so the reason arrives before the disconnect.
+
+**Frozen forever:** the keys `t`, `protocol`, `version`, `reason`, `text`,
+`server_version` and the `t` values `hello`, `accepted`, `refused`,
+`refused_ack`. Later versions add keys, never rename or remove these, so
+every released build can read any other build's refusal. Unknown keys are
+ignored. `Net.RefusalReason` values are on the wire: append only. The server
+reads `protocol` and `version` first and refuses any mismatch with
+`WRONG_VERSION`, whatever else the hello holds or lacks. A client that gets a
+reason code it does not know shows the server's `text`. The dialog names the
+older side for releases (`X.Y.Z`, `X.Y.Z-test.N`, ordered by
+`Build.compare_versions()`); dev and editor builds only hear "different builds".
+
 ## Build order (one small PR each, tests in every PR)
 
 1. **Players in one match** (done, PR #73): `Net.host/join/leave`, `PlayerSpawner`,

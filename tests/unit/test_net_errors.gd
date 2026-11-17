@@ -43,11 +43,36 @@ func test_full_server_text() -> void:
 	)
 
 
-func test_version_mismatch_text() -> void:
+func test_older_client_is_told_to_update_the_game() -> void:
 	assert_eq(
-		NetErrorDialog.message_for(&"wrong_version", {"server_version": "0.4.1", "client_version": "0.4.0"}),
-		"Different game version. Server: 0.4.1, you: 0.4.0. Update the game to join."
+		NetErrorDialog.message_for(
+			&"wrong_version", {"server_version": "0.1.1", "client_version": "0.1.0", "older": "client"}
+		),
+		"Your game is v0.1.0, the server runs v0.1.1. Update your game, then join again."
 	)
+
+
+func test_older_server_is_named_for_the_host() -> void:
+	assert_eq(
+		NetErrorDialog.message_for(
+			&"wrong_version", {"server_version": "0.1.0", "client_version": "0.1.1", "older": "server"}
+		),
+		"The server runs v0.1.0, your game is v0.1.1. The host needs to update the server."
+	)
+
+
+func test_dev_builds_are_only_called_different() -> void:
+	assert_eq(
+		NetErrorDialog.message_for(
+			&"wrong_version", {"server_version": "0.1.0-dev.4+abc", "client_version": "dev", "older": ""}
+		),
+		"Your game and the server are different builds. Use the same build on both."
+	)
+
+
+func test_unknown_refusal_shows_the_server_text() -> void:
+	assert_eq(NetErrorDialog.message_for(&"refused", {"text": "Closed for maintenance."}), "Closed for maintenance.")
+	assert_eq(NetErrorDialog.message_for(&"refused"), "The server refused to let you join.")
 
 
 func test_content_mismatch_text() -> void:
