@@ -1,6 +1,6 @@
 # Plan: The four starter guns to the concept art
 
-Status: Building
+Status: Done
 Roadmap: F-72
 Phase: P4 (v0.1 Vertical slice, look pass on built guns)
 Size: M
@@ -237,13 +237,23 @@ turnarounds, post the before/after in the thread.
 
 ## Acceptance
 
-- [ ] The four guns' turnarounds are approved and a lineup render sits next
-  to the concept.
-- [ ] Every red-dot gun aims through its dot (GUT ray tests).
-- [ ] Every gun is under 8,000 triangles and 6 materials (`check_models.py`).
-- [ ] Hands sit on the guns: arm contact check clean.
-- [ ] The person has looked at the lineup render.
-- [ ] `quality`, `test` and `soak` green on every step.
+- [x] The four guns' turnarounds are approved and a lineup render sits next
+  to the concept (`/mnt/project-files/gun-concept/f72_lineup_vs_concept.jpg`).
+- [x] Every red-dot gun aims through its dot (`test_red_dots_sit_on_the_aiming_line`:
+  AR-17, VX-9, BR-12).
+- [x] Every gun is under 8,000 triangles and 6 materials (`check_models.py`; MR-28 7,956).
+- [x] Hands sit on the guns: arm contact check 0 intersections for all four
+  (`tools/check_character_contacts.py`).
+- [x] The person has looked at the lineup render (posted in the thread 2026-11-17; they asked
+  for a detail bake follow-up next).
+- [x] `quality`, `test` and `soak` green on every step (#317, #322, #324, #325, close-out).
+
+Steps: 1 #317, 2 #322, 3 #324, 4 #325, 5 this close-out PR.
+Changes from the plan: the VX-9's left hand stays on the fore-end behind the vertical grip
+(the person's pick, decision card 2026-11-17), so the fore-end grew to make room. The BR-12
+keeps its stock wrist outline because the right-hand pose is fitted to it; a true pistol grip
+and the concept's surface detail go to the gun detail bake follow-up (30,000-triangle budget,
+baked maps), approved by the person 2026-11-17.
 
 ## Risks
 
