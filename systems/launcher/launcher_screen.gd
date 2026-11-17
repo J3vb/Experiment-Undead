@@ -88,9 +88,11 @@ func _process(_delta: float) -> void:
 		detail_label.text = "Downloading v%s  %d%%" % [newest.get("version", ""), roundi(installer.progress() * 100.0)]
 
 
+## The saved channel; before the first pick, a test build follows test releases.
 static func load_channel() -> StringName:
-	var saved: StringName = StringName(str(VersionInstaller.launcher_value(&"channel", ReleaseFeed.STABLE)))
-	return saved if saved in CHANNELS else ReleaseFeed.STABLE
+	var start: StringName = ReleaseFeed.TEST if Build.version.contains("-test.") else ReleaseFeed.STABLE
+	var saved: StringName = StringName(str(VersionInstaller.launcher_value(&"channel", start)))
+	return saved if saved in CHANNELS else start
 
 
 ## Installed version folders plus the copy this launcher runs from.

@@ -66,6 +66,15 @@ func test_plays_offline_without_network() -> void:
 	assert_string_contains(screen.status_label.text, "Offline")
 
 
+func test_channel_starts_on_the_build_s_own_channel() -> void:
+	var before: String = Build.version
+	Build.version = "0.1.0-test.1"
+	assert_eq(LauncherScreen.load_channel(), ReleaseFeed.TEST)
+	Build.version = "0.1.0"
+	assert_eq(LauncherScreen.load_channel(), ReleaseFeed.STABLE)
+	Build.version = before
+
+
 func test_saves_channel_and_root_version() -> void:
 	var screen: LauncherScreen = _screen()
 	assert_eq(VersionInstaller.launcher_value(&"root_version", ""), Build.version)
