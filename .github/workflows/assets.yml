@@ -44,7 +44,9 @@ jobs:
             zombies/crawler.glb zombies/bloater.glb characters/player.glb characters/player_arms.glb \
             props/specimen_tank.glb props/lab_bench.glb props/jar_shelf.glb props/filing_cabinets.glb \
             props/mess_table.glb props/serving_counter.glb props/guard_desk.glb props/locker_row.glb \
-            dressing/lab_papers.glb dressing/mess_spill.glb; do
+            props/generator.glb props/holding_cell.glb \
+            dressing/lab_papers.glb dressing/mess_spill.glb dressing/pipe_run_3.glb dressing/pipe_run_6.glb \
+            dressing/hazard_sign.glb; do
             test -s "$RUNNER_TEMP/models/$f" || { echo "missing $f"; exit 1; }
           done
           for name in charm_dog_tags charm_vial charm_keycard charm_dosimeter charm_coin implant_reflex implant_lung implant_spine implant_ocular implant_relay; do
