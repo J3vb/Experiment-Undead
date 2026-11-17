@@ -1,10 +1,10 @@
 # Plan: Lantern Post to the concept art
 
-Status: Review
+Status: Approved
 Roadmap: F-68 / issue none (follows F-50)
 Phase: P9 (pulled forward with F-50 for the co-op week goal)
 Size: L
-Approved by:
+Approved by: the person on decision cards (plan, stall names, aurora; 2026-11-17), plan PR #303
 
 ## Goal
 
@@ -255,7 +255,8 @@ target), and the Low preset must stay playable.
       Signs say Missions, Trader, Gunsmith, Technician ("Serums / Gear", never
       "Perks") and Common Room. Step 3 adds a line to game-design.md mapping
       each sign to its town job and a Change log row.
-- [ ] Aurora colour: green as in the concept breaks "the only green in town is
-      the Deploy Gate". Decision card.
+- [x] Aurora colour: green as in the concept (the person, 2026-11-17). The
+      sky is the one exception to "the only green in town is the Deploy Gate";
+      look-rules.md says so.
 - [x] Plan as a whole, including restyling the houses as timber lodges and
       the mountain ridge setting: approved, all 5 steps (the person, 2026-11-17).

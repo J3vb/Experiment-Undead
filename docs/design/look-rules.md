@@ -182,3 +182,6 @@ Look target (2026-11-17): [lantern_post_concept.jpg](images/lantern_post_concept
 a snowy timber outpost on a mountain ridge with a market row, a Common Room
 lodge and a concrete Deploy gate with a green-lit tunnel. Build plan and the
 picks where it differs from these rules: [lantern-post-concept.md](../plans/lantern-post-concept.md).
+One exception to the green rule: the aurora in the night sky over the town is
+green, as in the concept (picked 2026-11-17). Nothing else in town is green
+except the Deploy gate and Fenlight samples.
