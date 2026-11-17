@@ -10,7 +10,7 @@ import struct
 import zlib
 from pathlib import Path
 
-BLOOD = (58, 12, 9)
+BLOOD = (112, 18, 14)
 PAINT = (185, 194, 176)
 SCRATCH = (150, 158, 150)
 BIO_GREEN = (141, 255, 58)
@@ -38,7 +38,7 @@ def stroke_alpha(px: float, py: float, strokes: list) -> float:
     return alpha
 
 
-def render(size: tuple, color: tuple, strokes: list, seed: int, grain: float) -> bytes:
+def render(size: tuple, color: tuple, strokes: list, seed: int, grain: float, glow: bool = False) -> bytes:
     width, height = size
     rows = bytearray()
     for y in range(height):
@@ -46,7 +46,10 @@ def render(size: tuple, color: tuple, strokes: list, seed: int, grain: float) ->
         for x in range(width):
             alpha = stroke_alpha(x + 0.5, y + 0.5, strokes)
             alpha *= 1.0 - grain * noise(x, y, seed)
-            rows.extend((*color, round(255 * alpha)))
+            if glow:
+                rows.extend((*(round(c * alpha) for c in color), 255))
+            else:
+                rows.extend((*color, round(255 * alpha)))
     return bytes(rows)
 
 
@@ -60,16 +63,24 @@ def save_png(path: Path, size: tuple, pixels: bytes) -> None:
 
 
 def blood_smear() -> list:
-    strokes = [((40 + i * 8, 70 + i * 3), (200 + i * 4, 60 + i * 5), 9 - i) for i in range(6)]
-    strokes += [((x, 80), (x + 2, 80 + length), 2.5) for x, length in ((70, 90), (115, 140), (150, 70), (185, 110))]
+    strokes = [((62, 70), (84, 84), 24.0), ((92, 64), (100, 74), 12.0)]
+    for finger in range(4):
+        start = (84 + finger * 6, 66 + finger * 22)
+        for step in range(5):
+            a = (start[0] + step * 22, start[1] + step * 12)
+            b = (a[0] + 22, a[1] + 12)
+            strokes.append((a, b, 7.0 - step * 1.2))
+    strokes += [((60, 92), (61, 92 + length), 2.5) for length in (34, 58)]
     return strokes
 
 
 def drag_trail() -> list:
     strokes = []
-    for i in range(14):
-        x = 20 + i * 34
-        strokes.append(((x, 64 + 18 * math.sin(i * 0.7)), (x + 40, 64 + 18 * math.sin(i * 0.7 + 0.7)), 14 - i * 0.6))
+    for i in range(16):
+        x = 18 + i * 30
+        y = 64 + 10 * math.sin(i * 0.6)
+        width = 26 - i * 1.0 + 6 * math.sin(i * 2.7)
+        strokes.append(((x, y), (x + 34, 64 + 10 * math.sin(i * 0.6 + 0.6)), width))
     return strokes
 
 
@@ -110,12 +121,15 @@ def leak_pool() -> list:
 
 DECALS = {
     "blood_smear.png": ((256, 256), BLOOD, blood_smear, 0.35),
-    "drag_trail.png": ((512, 128), BLOOD, drag_trail, 0.45),
+    "drag_trail.png": ((512, 128), BLOOD, drag_trail, 0.55),
     "scratch_marks.png": ((256, 256), SCRATCH, scratch_marks, 0.3),
     "tally_marks.png": ((512, 256), PAINT, tally_marks, 0.4),
     "wick_symbol.png": ((256, 256), PAINT, wick_symbol, 0.45),
     "leak_pool.png": ((256, 256), BIO_GREEN, leak_pool, 0.25),
 }
+
+# Decal emission ignores alpha, so the glow map is the pool pre-multiplied onto black.
+GLOWS = {"leak_glow.png": ((256, 256), BIO_GREEN, leak_pool, 0.25)}
 
 
 def build(output: Path) -> list[Path]:
@@ -124,6 +138,10 @@ def build(output: Path) -> list[Path]:
     for seed, (name, (size, color, shape, grain)) in enumerate(DECALS.items()):
         path = output / name
         save_png(path, size, render(size, color, shape(), seed, grain))
+        written.append(path)
+    for seed, (name, (size, color, shape, grain)) in enumerate(GLOWS.items(), start=len(DECALS) - 1):
+        path = output / name
+        save_png(path, size, render(size, color, shape(), seed, grain, glow=True))
         written.append(path)
     return written
 

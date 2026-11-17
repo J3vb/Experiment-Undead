@@ -289,7 +289,8 @@ Hall), checked in the step 5 fps check:
 - [x] Steam, screens and hums start with power, also for a late joiner (test).
 - [x] Shadow budget, light bake modes and particle budget hold (tests).
 - [x] Story moments dressed with decals and effects; atmosphere.tscn has no collision (test).
-- [ ] Fps check on the person's PC still meets the v0.1 target.
+- [x] Fps check on the person's PC still meets the v0.1 target (2026-11-17: 300 to 486 fps
+      average, 1% lows 196 to 295 at 1440p with 24 zombies).
 
 ## Risks
 
