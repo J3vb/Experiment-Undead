@@ -22,6 +22,7 @@ in your PR.
 | [gun-roster.md](gun-roster.md) | All 22 base guns: niches, wall/loot sources, unlock levels, Legendary traits, build order (numbers in `balance/roster.csv`) |
 | [affixes.md](affixes.md) | Loot affixes, rarity rules, sets, Legendaries |
 | [gear-visuals.md](gear-visuals.md) | How equipped gear shows on characters (vertex-colour zones, dyes) |
+| [concepts/](concepts/README.md) | Concept art for areas not built yet: Act I map key shots and boss Sublevel renders |
 | [lore.md](lore.md) | Story, factions, map stories, names. Use these names in text and data |
 | [balance/](balance/) | CSV export of the balance sheet (weapons, enemies, rounds, economy, prices, TTK, XP, loot). Damage in the game is sheet damage x 0.57 for now (provisional, see `DECISIONS.md`) |
 

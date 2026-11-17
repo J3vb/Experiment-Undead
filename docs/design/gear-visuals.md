@@ -2,6 +2,8 @@
 
 Source: copy of the design doc as of Nov 14, 2026. Where this file and the code differ, the code and `docs/DECISIONS.md` win.
 
+Look target since 2026-11-17: [player_gear_concept.jpg](images/player_gear_concept.jpg). The rebuild to it is planned in [player-gear-concept.md](../plans/player-gear-concept.md) (F-70).
+
 ## Summary
 
 Every one of the 5 gear slots gets a fixed spot on the body, and 4 of those spots are in view in first person. That solves the core problem: you see your own loot while you play, not only in menus.
