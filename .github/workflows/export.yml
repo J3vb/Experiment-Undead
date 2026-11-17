@@ -62,6 +62,9 @@ jobs:
         run: tools/ci/export_all.sh ~/godot/godot
 
       - name: Smoke test exported builds
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: tools/ci/smoke_test.sh
 
       - uses: actions/upload-artifact@v4
