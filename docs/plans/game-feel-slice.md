@@ -268,10 +268,17 @@ budget.
   - Died: `is_dead`, or `session.is_over` while the local player is downed
     (a co-op squad wipe ends the match with everyone downed and nobody
     `is_dead`; an exfil ends it with players standing, so it never fades).
-    0.6 s fade to black, and world sound drops out: an AudioEffectAmplify
-    (added in default_bus_layout.tres) on each world bus, Weapons, Enemies,
-    Player and Ambient, tweens to −60 dB. Music, UI and Master stay, so menu
-    sounds and the death sting (played on the UI bus) are heard.
+    0.6 s fade to black, and world sound drops out: an AudioEffectAmplify on
+    the SFX bus (added in default_bus_layout.tres) tweens to −60 dB. That
+    covers every world sound, also the ones that send straight to SFX
+    (doors, barriers, machines, power-ups). The UI bus is re-routed from SFX
+    to Master so menu sounds and the death sting (played on UI) stay audible;
+    UI then follows only the master volume, which is fine for menu clicks.
+    Music stays.
+  - Solo death camera: `Player._on_died()` today tweens the camera rig to a
+    70° roll over 0.8 s outside the physics tick. It switches to the same
+    `PlayerCamera.tilt()` drop and roll as downed (6°, 0.9 m), so there is one
+    camera writer, and the fade covers the rest.
   - Solo: the results screen follows after the existing restart delay and
     shows a "Gear kept" banner when the run did not exfil. Co-op: fade back in
     on the spectate camera, prompt reads "Spectating · Gear kept · Respawn next
@@ -279,10 +286,12 @@ budget.
 - Files: systems/feel/down_screen.gd, systems/feel/down_screen.gdshader,
   systems/ui/hud.tscn, default_bus_layout.tres, systems/ui/results_screen.gd
   and .tscn, systems/net/coop_hud.gd, systems/net/player_state_sync.gd (one
-  line), docs/DECISIONS.md.
+  line), systems/player/player.gd (solo death tween to tilt()),
+  docs/DECISIONS.md.
 - Tests: tests/unit/test_down_screen.gd: downed sets saturation and vignette
-  targets; died fades to black and drops the four world-bus amplifiers while
-  UI and Music stay at 0 dB; a squad wipe (downed + session over) fades too;
+  targets; died fades to black and drops the SFX amplifier while UI (now sent
+  to Master) and Music stay at 0 dB; a door sound on SFX is attenuated; the
+  solo death uses tilt() and no other camera tween; a squad wipe (downed + session over) fades too;
   an exfil (standing + session over) does not; respawn and `_exit_tree`
   restore 0 dB; flash_reduction skips the flash; no local player does
   nothing. Results test: "Gear kept" banner visible on death, hidden on exfil.
@@ -320,7 +329,7 @@ budget.
 - Aim honesty: if anything else reads `camera.global_basis` for aim, shake
   would leak into gameplay. Step 2 greps for every use and the trace test
   catches the main path; interact focus may follow shake (harmless).
-- World buses left muted after a crash in the death fade: `_exit_tree` and
+- The SFX bus left muted after a crash in the death fade: `_exit_tree` and
   respawn both reset it, and the test covers both.
 - Camera writes outside physics: every camera change goes through
   `update_feel()` or `tilt()` on the physics tick; the boot test and soak
