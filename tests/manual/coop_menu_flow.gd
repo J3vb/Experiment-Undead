@@ -151,7 +151,13 @@ func _check_connecting() -> void:
 	_check(overlay.action_button.has_focus(), "Cancel has keyboard and controller focus")
 
 
+## Waits out a threaded load behind the loading screen, then lets the scene change land.
 func _settle() -> void:
+	var ui: Node = root.get_node("UI")
+	var started: int = Time.get_ticks_msec()
+	await process_frame
+	while ui.call(&"is_loading") and Time.get_ticks_msec() - started < 10000:
+		await process_frame
 	await process_frame
 	await process_frame
 

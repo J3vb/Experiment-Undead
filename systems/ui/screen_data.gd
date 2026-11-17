@@ -10,3 +10,9 @@ extends Resource
 @export var root: bool = false
 ## Only the match captures the mouse.
 @export var captures_mouse: bool = false
+## Id of the screen shown while this root loads (content/screens). Empty: plain scene change.
+@export var loading_screen: StringName = &""
+## Place name the loading screen shows.
+@export var title: String = ""
+## The loading screen shows one of these.
+@export var tips: PackedStringArray = []

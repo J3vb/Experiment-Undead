@@ -145,3 +145,90 @@ func test_reload_empties_the_stack() -> void:
 	get_tree().current_scene = runner_scene
 	assert_ne(reloaded, stand_in)
 	reloaded.free()
+
+
+## Gives the main menu a loading screen for one test; after_each order does not matter, it restores itself.
+func _menu_with_loading() -> ScreenData:
+	var menu: ScreenData = Content.get_item(&"screens", &"main_menu") as ScreenData
+	menu.loading_screen = &"loading"
+	menu.title = "Test Place"
+	menu.tips = PackedStringArray(["Only tip"])
+	return menu
+
+
+func _restore_menu(menu: ScreenData) -> void:
+	menu.loading_screen = &""
+	menu.title = ""
+	menu.tips = PackedStringArray()
+
+
+func test_replace_with_a_loading_screen_shows_it_until_the_scene_is_in() -> void:
+	var runner_scene: Node = get_tree().current_scene
+	var stand_in: Node = Node.new()
+	get_tree().root.add_child(stand_in)
+	get_tree().current_scene = stand_in
+	var menu_data: ScreenData = _menu_with_loading()
+	UI.replace(&"main_menu")
+	_restore_menu(menu_data)
+	assert_true(UI.is_loading(), "the root loads on a thread")
+	var layer: CanvasLayer = UI._loading_layer
+	assert_not_null(layer, "a loading layer is up")
+	assert_eq(layer.layer, 50, "loading sits on layer 50")
+	var screen: LoadingScreen = layer.get_child(0) as LoadingScreen
+	assert_eq(screen.title_label.text, "Test Place")
+	assert_eq(screen.tip_label.text, "Only tip")
+	var waited: int = 0
+	while UI.is_loading() and waited < 600:
+		await wait_process_frames(1)
+		waited += 1
+	assert_false(UI.is_loading(), "the load finished")
+	await wait_process_frames(3)
+	var menu: Node = get_tree().current_scene
+	get_tree().current_scene = runner_scene
+	assert_eq(menu.scene_file_path, "res://systems/ui/main_menu.tscn")
+	assert_false(is_instance_valid(layer), "the loading layer is gone once the scene is in")
+	menu.free()
+	if is_instance_valid(stand_in):
+		stand_in.free()
+
+
+func test_replace_without_a_loading_screen_shows_none() -> void:
+	var runner_scene: Node = get_tree().current_scene
+	var stand_in: Node = Node.new()
+	get_tree().root.add_child(stand_in)
+	get_tree().current_scene = stand_in
+	UI.replace(&"main_menu")
+	assert_false(UI.is_loading())
+	assert_null(UI._loading_layer)
+	await wait_process_frames(2)
+	var menu: Node = get_tree().current_scene
+	get_tree().current_scene = runner_scene
+	menu.free()
+
+
+func test_a_failed_load_warns_and_falls_back_to_a_plain_change() -> void:
+	var runner_scene: Node = get_tree().current_scene
+	var stand_in: Node = Node.new()
+	get_tree().root.add_child(stand_in)
+	get_tree().current_scene = stand_in
+	var before: int = Log.event_counts.get("ui.loading_failed", 0)
+	UI._loading_path = "res://systems/ui/main_menu.tscn"
+	UI._finish_loading("res://systems/ui/main_menu.tscn", null)
+	assert_eq(Log.event_counts.get("ui.loading_failed", 0), before + 1)
+	assert_false(UI.is_loading())
+	await wait_process_frames(2)
+	var menu: Node = get_tree().current_scene
+	get_tree().current_scene = runner_scene
+	assert_eq(menu.scene_file_path, "res://systems/ui/main_menu.tscn", "fell back to a plain scene change")
+	menu.free()
+
+
+func test_loading_screen_shows_progress_and_handles_no_tips() -> void:
+	var screen: LoadingScreen = (load("res://systems/ui/loading_screen.tscn") as PackedScene).instantiate()
+	add_child_autofree(screen)
+	screen.setup("Halcyon Labs", PackedStringArray())
+	assert_eq(screen.tip_label.text, "", "no tips leaves the tip empty")
+	screen.set_progress(0.4)
+	assert_almost_eq(screen.progress_bar.value, 0.4, 0.001)
+	screen.set_progress(3.0)
+	assert_almost_eq(screen.progress_bar.value, 1.0, 0.001, "clamped to full")

@@ -8,22 +8,45 @@ var _root: ScreenData
 ## {id, layer, focus} per pushed screen, top last.
 var _stack: Array[Dictionary] = []
 var _holders: Array[Node] = []
+## Scene path of the root being loaded behind a loading screen, or empty.
+var _loading_path: String = ""
+var _loading_layer: CanvasLayer
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	set_process(false)
 	get_tree().scene_changed.connect(_on_scene_changed)
 	_on_scene_changed.call_deferred()
 
 
 ## Goes to a root place (main menu, match): frees every pushed screen and unpauses.
+## A root that names a loading screen loads on a thread behind it.
 func replace(id: StringName) -> void:
 	var data: ScreenData = _screen(id)
 	if data == null:
 		return
 	_clear()
+	_end_loading()
 	get_tree().paused = false
-	get_tree().change_scene_to_file(data.scene)
+	var loading: ScreenData = null if data.loading_screen.is_empty() else _screen(data.loading_screen)
+	if loading == null or ResourceLoader.load_threaded_request(data.scene) != OK:
+		get_tree().change_scene_to_file(data.scene)
+		return
+	_loading_path = data.scene
+	_loading_layer = CanvasLayer.new()
+	_loading_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+	_loading_layer.layer = loading.layer
+	var screen: Node = (load(loading.scene) as PackedScene).instantiate()
+	_loading_layer.add_child(screen)
+	add_child(_loading_layer)
+	if screen.has_method(&"setup"):
+		screen.call(&"setup", data.title, data.tips)
+	set_process(true)
+
+
+func is_loading() -> bool:
+	return not _loading_path.is_empty()
 
 
 ## Restarts the current root with an empty stack.
@@ -68,6 +91,49 @@ func hold_mouse(node: Node, held: bool) -> void:
 		if connected:
 			node.tree_exiting.disconnect(_apply_mouse)
 	_apply_mouse()
+
+
+func _process(_delta: float) -> void:
+	if _loading_path.is_empty():
+		set_process(false)
+		return
+	var progress: Array = []
+	var status: ResourceLoader.ThreadLoadStatus = ResourceLoader.load_threaded_get_status(_loading_path, progress)
+	if status == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		_show_progress(float(progress[0]) if not progress.is_empty() else 0.0)
+		return
+	var path: String = _loading_path
+	var scene: PackedScene = null
+	if status == ResourceLoader.THREAD_LOAD_LOADED:
+		scene = ResourceLoader.load_threaded_get(path) as PackedScene
+	_finish_loading(path, scene)
+
+
+## Swaps in the loaded scene; a failed load falls back to a plain scene change.
+func _finish_loading(path: String, scene: PackedScene) -> void:
+	_loading_path = ""
+	set_process(false)
+	if scene == null:
+		Log.warn(&"ui", &"loading_failed", {"scene": path})
+		get_tree().change_scene_to_file(path)
+		return
+	_show_progress(1.0)
+	get_tree().change_scene_to_packed(scene)
+
+
+func _show_progress(value: float) -> void:
+	if is_instance_valid(_loading_layer) and _loading_layer.get_child_count() > 0:
+		var screen: Node = _loading_layer.get_child(0)
+		if screen.has_method(&"set_progress"):
+			screen.call(&"set_progress", value)
+
+
+func _end_loading() -> void:
+	_loading_path = ""
+	set_process(false)
+	if is_instance_valid(_loading_layer):
+		_loading_layer.queue_free()
+	_loading_layer = null
 
 
 ## The mouse is captured only on a captures-mouse root with no screen open and no panel holding it.
@@ -122,6 +188,8 @@ func _screen(id: StringName) -> ScreenData:
 
 
 func _on_scene_changed() -> void:
+	if _loading_path.is_empty() and is_instance_valid(_loading_layer):
+		_end_loading()
 	var scene: Node = get_tree().current_scene
 	_root = null
 	for id: StringName in Content.ids(TYPE):
