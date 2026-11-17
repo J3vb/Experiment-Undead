@@ -65,7 +65,7 @@ Not in (and where it goes):
   one? no
 - Co-op:
   - Who decides: server. The board's `interact()` runs only where
-    `Net.is_authority()` (InteractionSync); `DeployVote.request_ready()` is
+    `Net.is_authority()` (InteractionSync); `DeployVote.toggle_ready()` is
     server only and calls `deploy()` when everyone is ready.
   - How a client triggers it: presses interact on the board; InteractionSync
     sends the request, the server checks sender, range and rate (F-02) and
@@ -116,7 +116,7 @@ Not in (and where it goes):
 | levels/materials/sodium_lamp.tres, lit_window.tres, pine.tres, iron.tres | new | Emissive sodium lamp, warm window, pine, dark iron |
 | tools/assets/town_props.py, assets/models/town/*.glb (+ .import), docs/design/turnarounds/town/*.png | new | Blender-built street lamp, wall lantern, lit and dark windows with shutters, fence, signpost; new `town` folder in check_models.py BUDGETS (2,500 triangles, 4 materials) and turnarounds REFERENCES (style_hub.jpg); tests/content/test_town_models.gd |
 | tools/hub_shot.gd | new | Renders the street and an overview to `screenshots/` |
-| systems/hub/deploy_board.gd, deploy_board.tscn | new (step 2) | `DeployBoard extends Interactable`: `@export var place: StringName`, `@export var label: String`; `get_prompt()` shows "Ready: <label>" or "Cancel ready" from the last `Events.deploy_vote_changed` payload (local peer id in `ready_ids`), so it is right on clients too; `interact(player)` calls `player.session.deploy_vote.request_ready(player, place)` |
+| systems/hub/deploy_board.gd, deploy_board.tscn | new (step 2) | `DeployBoard extends Interactable`: `@export var place: StringName`, `@export var label: String`; `get_prompt()` shows "Ready: <label>" or "Cancel ready" from the last `Events.deploy_vote_changed` payload (local peer id in `ready_ids`), so it is right on clients too; `interact(player)` calls `player.session.deploy_vote.toggle_ready(player, place)` |
 | systems/hub/deploy_vote_panel.gd, deploy_vote_panel.tscn | new (step 2) | CanvasLayer in the town scene: hidden while no vote; shows the place label, each player's `display_name` with a ready tick and the countdown; updates only on `Events.deploy_vote_changed` |
 | tests/unit/test_lantern_post.gd, test_deploy_board.gd | new | See steps |
 
@@ -126,20 +126,20 @@ Interface with the co-op thread (same text in `coop-full-match.md`):
    return to the hub lands on the same `PlayerSpawn` marker.
 2. This plan delivers `systems/hub/deploy_board.gd/.tscn`, a normal (not
    `is_local()`) Interactable whose `interact(player)` only calls
-   `player.session.deploy_vote.request_ready(player, place)`, and the vote
+   `player.session.deploy_vote.toggle_ready(player, place)`, and the vote
    panel `systems/hub/deploy_vote_panel.gd/.tscn`.
 3. The co-op thread owns `DeployVote` (`systems/game/deploy_vote.gd`, a child of
-   GameSession reached as `session.deploy_vote`): `request_ready(player, place)`
+   GameSession reached as `session.deploy_vote`): `toggle_ready(player, place)`
    is server only; the first press proposes the place and readies that player,
    any ready player who presses again un-readies and cancels the countdown (ui-hud.md screen 8: any player can cancel), a press
    for another place while a vote runs is ignored; when every connected player
-   is ready a 5 s countdown runs, then `session.deploy(place)`. Leaving or
+   is ready a 5 s countdown runs, then `deploy_vote.deploy(place)`. Leaving or
    joining re-checks (a joiner starts not ready). Read-only: `deploy_vote.place`,
    `deploy_vote.is_ready(peer_id)`. It fires
    `Events.deploy_vote_changed(place: StringName, ready_ids: Array[int], countdown_left: float)`
    on every peer (empty place = no vote; once for a late joiner from a snapshot).
    Player names come from `player.display_name`. It also owns
-   `GameSession.deploy(place: StringName)`,
+   `deploy_vote.deploy(place: StringName)` (on the vote, game_session.gd is at its size limit),
    `hub_session.tscn`, `content/screens/hub.tres`, switching places, the return
    to the hub and landing in the hub from the menu, join and dedicated server.
 4. This plan stays out of `systems/game/`, `systems/net/` and `core/`; the
@@ -164,7 +164,7 @@ existing `Interactable` base named in the architecture doc.
 - Who owns the state: the town has no changing state. The vote and the deploy
   decision are the server's (`DeployVote`).
 - What clients send, what the server sends back: the F-02 interact request for
-  the board; the server runs `request_ready()`; the vote reaches every peer as
+  the board; the server runs `toggle_ready()`; the vote reaches every peer as
   `Events.deploy_vote_changed`, which the panel and the board prompt read.
 - What a client sees that the host sees too: the same static town and the
   other players (PlayerSpawner, LookSync, owned by the co-op thread).
@@ -196,6 +196,9 @@ after step 1 merges.
   `levels/materials/lit_window.tres`, `levels/materials/pine.tres`, `levels/materials/iron.tres`,
   `tools/hub_shot.gd`, `tests/unit/test_lantern_post.gd`, `tools/assets/town_props.py`,
   `assets/models/town/*.glb` (+ `.import`), `docs/design/turnarounds/town/*.png`,
+  the hub scene line in `systems/game/hub_session.tscn` (placeholder -> this town, and
+  delete `levels/hub_placeholder/`, agreed with the co-op thread; done in step 2 if
+  their PR lands after step 1),
   `tests/content/test_town_models.gd`, and the `town` lines in `tools/assets/build_models.py`,
   `tools/assets/check_models.py`, `tools/turnarounds.py` and `.github/workflows/assets.yml`.
 - Tests also: `test_town_models.gd` checks the props stand on the origin, the lamp
@@ -214,7 +217,7 @@ after step 1 merges.
 - Build: `DeployBoard` interactable and scene (a sign board on posts with a
   green screen and a label), placed at `DeployBoardSpot` in the town with
   `place = &"match"`, label "Halcyon Labs". The vote panel in the town scene.
-  Starts after co-op steps 3 (`player.display_name`) and 4 (`deploy()`) and the
+  Starts after the co-op squad cards PR (`player.display_name`), F-47 step 4 (`deploy()`) and the
   co-op vote step (`DeployVote`, `Events.deploy_vote_changed`, vote sync and
   late-join replay) are on main.
 - Files: `systems/hub/deploy_board.gd`, `systems/hub/deploy_board.tscn`,
