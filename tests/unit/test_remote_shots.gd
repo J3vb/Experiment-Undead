@@ -94,9 +94,7 @@ func test_client_shot_reaches_host_and_other_client_with_all_missed_pellets() ->
 	var health_before: float = server_copy.health.current
 	weapon.fire()
 	await wait_until(
-		func() -> bool: return host_effects.has_node("Tracers") and other_effects.has_node("Tracers"),
-		3.0,
-		"client shot relayed through server"
+		func() -> bool: return _drawn(host_effects) and _drawn(other_effects), 3.0, "client shot relayed through server"
 	)
 	assert_false(shooter.has_node("ShotEffects"), "owner only plays its original local effects")
 	_assert_shot(host_effects, weapon.data)
@@ -114,9 +112,7 @@ func test_host_shot_reaches_both_clients_without_echo() -> void:
 	var other_effects: RemoteShotEffects = _effects(2, 1)
 	host.weapons.current.fire()
 	await wait_until(
-		func() -> bool: return client_effects.has_node("Tracers") and other_effects.has_node("Tracers"),
-		3.0,
-		"host shot reaches clients"
+		func() -> bool: return _drawn(client_effects) and _drawn(other_effects), 3.0, "host shot reaches clients"
 	)
 	_assert_shot(client_effects, host.weapons.current.data)
 	_assert_shot(other_effects, host.weapons.current.data)
@@ -129,7 +125,7 @@ func test_replacement_weapon_is_watched() -> void:
 	var effects: RemoteShotEffects = _effects(2, peer_id)
 	var weapon: Weapon = shooter.weapons.replace_current(Content.weapon(&"rifle_ar"))
 	weapon.fire()
-	await wait_until(func() -> bool: return effects.has_node("Tracers"), 3.0, "replacement gun shot relayed")
+	await wait_until(func() -> bool: return _drawn(effects), 3.0, "replacement gun shot relayed")
 	_assert_shot(effects, weapon.data)
 
 
@@ -139,8 +135,8 @@ func test_bad_cosmetic_packets_are_dropped() -> void:
 	shots.shot.rpc_id(1, &"missing", Vector3.ZERO, PackedVector3Array([Vector3.ONE]))
 	shots.shot.rpc_id(1, &"brenner_trench", Vector3.ZERO, PackedVector3Array([Vector3.ONE]))
 	await wait_physics_frames(8)
-	assert_false(_effects(0, peer_id).has_node("Tracers"))
-	assert_false(_effects(2, peer_id).has_node("Tracers"))
+	assert_false(_drawn(_effects(0, peer_id)))
+	assert_false(_drawn(_effects(2, peer_id)))
 
 
 func test_coachman_alt_relays_twenty_pellets_in_one_packet() -> void:
@@ -158,7 +154,7 @@ func _check_double_barrel_alt(weapon_id: StringName) -> void:
 	shooter.last_frame.buttons = InputFrame.ALT_FIRE
 	weapon.tick(1.0 / 60.0)
 	await wait_until(
-		func() -> bool: return _effects(0, peer_id).has_node("Tracers") and _effects(2, peer_id).has_node("Tracers"),
+		func() -> bool: return _drawn(_effects(0, peer_id)) and _drawn(_effects(2, peer_id)),
 		3.0,
 		"both-barrel packet reaches host and observer"
 	)
@@ -174,7 +170,7 @@ func test_coachman_primary_packet_still_relays_one_barrel() -> void:
 	var shooter: Player = _sessions[1].players.find_player(peer_id)
 	var weapon: Weapon = shooter.weapons.replace_current(Content.weapon(&"coachman_2b"))
 	weapon.fire()
-	await wait_until(func() -> bool: return _effects(2, peer_id).has_node("Tracers"), 3.0, "one barrel relayed")
+	await wait_until(func() -> bool: return _drawn(_effects(2, peer_id)), 3.0, "one barrel relayed")
 	_assert_shot(_effects(2, peer_id), weapon.data)
 	assert_eq(weapon.instance.ammo_in_mag, 1)
 
@@ -210,8 +206,7 @@ func test_coachman_max_pellet_bonus_alt_relays_twenty_four_endpoints() -> void:
 func _wait_for_previous_tracers() -> void:
 	var peer_id: int = _roots[1].multiplayer.get_unique_id()
 	var expired: bool = await wait_until(
-		func() -> bool:
-			return not _effects(0, peer_id).has_node("Tracers") and not _effects(2, peer_id).has_node("Tracers"),
+		func() -> bool: return not _drawn(_effects(0, peer_id)) and not _drawn(_effects(2, peer_id)),
 		3.0,
 		"the previous host and observer tracers expire"
 	)
@@ -235,7 +230,7 @@ func _check_runtime_pellets(weapon_id: StringName, bonus: int, alternate: bool) 
 	else:
 		weapon.fire()
 	await wait_until(
-		func() -> bool: return _effects(0, peer_id).has_node("Tracers") and _effects(2, peer_id).has_node("Tracers"),
+		func() -> bool: return _drawn(_effects(0, peer_id)) and _drawn(_effects(2, peer_id)),
 		3.0,
 		"the equipped item's pellets reach host and observer"
 	)
@@ -264,8 +259,8 @@ func test_wrong_pellet_counts_are_dropped_for_double_and_normal_guns() -> void:
 			points.fill(Vector3.FORWARD * 50.0)
 			shots.shot.rpc_id(1, weapon_id, Vector3.ZERO, points)
 	await wait_physics_frames(8)
-	assert_false(_effects(0, peer_id).has_node("Tracers"), "host rejected all malformed pellet counts")
-	assert_false(_effects(2, peer_id).has_node("Tracers"), "observer received no rejected packets")
+	assert_false(_drawn(_effects(0, peer_id)), "host rejected all malformed pellet counts")
+	assert_false(_drawn(_effects(2, peer_id)), "observer received no rejected packets")
 
 
 func _assert_shot(effects: RemoteShotEffects, data: WeaponData, pellet_count: int = -1) -> void:
@@ -296,9 +291,7 @@ func test_downed_client_sidearm_shot_reaches_host_and_other_client() -> void:
 	var other_effects: RemoteShotEffects = _effects(2, peer_id)
 	shooter.weapons.current.fire()
 	await wait_until(
-		func() -> bool: return host_effects.has_node("Tracers") and other_effects.has_node("Tracers"),
-		3.0,
-		"downed sidearm cosmetics relayed"
+		func() -> bool: return _drawn(host_effects) and _drawn(other_effects), 3.0, "downed sidearm cosmetics relayed"
 	)
 	_assert_shot(host_effects, shooter.weapons.current.data)
 	_assert_shot(other_effects, shooter.weapons.current.data)
@@ -332,3 +325,8 @@ func test_finished_match_refuses_cosmetic_requests() -> void:
 	await wait_physics_frames(8)
 	assert_null(_effects(0, peer_id)._audio.stream)
 	assert_null(_effects(2, peer_id)._audio.stream)
+
+
+func _drawn(effects: RemoteShotEffects) -> bool:
+	var tracers: Node3D = effects.get_node_or_null("Tracers") as Node3D
+	return tracers != null and tracers.visible
