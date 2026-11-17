@@ -32,8 +32,8 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-07 | Balance pass rounds 1-10 for the slice guns | #106 | F-06 | issue | S | Todo |
 | F-08 | Change log in the design doc | #110 | - | issue | S | Done |
 | F-12 | Core loop gaps: round scaling, stuck zombies, swap, melee, slide, best round | - | - | [needed](plans/core-loop-gaps.md) | M | Done |
-| F-13 | Finish Halcyon Labs: props, co-op spawn points, vent route, secret | - | - | [needed](plans/halcyon-labs-finish.md) | M | Ready |
-| F-62 | Texture every surface in Halcyon Labs: textured sets, a floor per room, decals | - | - | [done](plans/halcyon-surfaces.md) | M | Done (GPU fps check with the F-13 re-bake) |
+| F-13 | Finish Halcyon Labs: props, co-op spawn points, vent route, secret | - | - | [done](plans/halcyon-labs-finish.md) | M | Done (look follow-ups #297) |
+| F-62 | Texture every surface in Halcyon Labs: textured sets, a floor per room, decals | - | - | [done](plans/halcyon-surfaces.md) | M | Done |
 | F-14 | Zombie sounds and gore: steps, deaths, voice caps, blood, head pops | - | - | [done](plans/zombie-sounds-gore.md) | M | Done (play-test: #191) |
 | F-15 | Halcyon Labs detail props: Blender models for every room prop, story clutter, barricades | - | - | [ready](plans/halcyon-labs-props.md) | M | Done |
 | F-63 | Halcyon Labs door models: bulkheads, debris, shutters, vent grates, freezer door | - | - | [done](plans/halcyon-doors.md) | S | Done |
