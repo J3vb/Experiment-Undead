@@ -194,6 +194,7 @@ func _receive_drop(item: Dictionary, at: Vector3) -> void:
 	drop.player = player
 	add_child(drop)
 	drop.global_position = at
+	Events.loot_dropped.emit(player, drop.item)
 	Log.info(&"loot", &"drop_received", {"uid": item.get("uid"), "base": item.get("base")})
 
 

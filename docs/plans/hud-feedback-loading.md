@@ -1,6 +1,6 @@
 # Plan: HUD feedback and loading screen
 
-Status: Building
+Status: Done
 Roadmap: F-49 / no issue
 Phase: P4 (loading, HUD polish), with the P5 level-up burst and P6 drop feed that were left out
 Size: M
@@ -246,15 +246,15 @@ scene with one job that listens to Events itself, so `hud.gd` does not grow.
   4 s; a fourth drop drops the oldest row; `_receive_drop` emits once and not after
   banking; the generated sound exists and is not silent.
 - Done when: a level-up and a loot drop in a solo match show the ring and the feed row;
-  `look-check` screenshot against match_hud.jpg; plan Done, roadmap F-48 Done.
+  `look-check` screenshot against match_hud.jpg; plan Done, roadmap F-49 Done.
 
 ## Acceptance
 
-- [ ] Play solo shows the loading screen with the map name, a tip and progress (test + screenshot)
-- [ ] Damage numbers follow the Off / Crits only / All setting, off by default (tests)
-- [ ] A level-up shows the brass ring and plays the sting, only for the local player (tests)
-- [ ] A loot drop shows "<Rarity> <name>" in rarity colour for 4 s, only for its owner (tests)
-- [ ] Soak green, no SCRIPT ERROR
+- [x] Play solo shows the loading screen with the map name, a tip and progress (test + screenshot)
+- [x] Damage numbers follow the Off / Crits only / All setting, off by default (tests)
+- [x] A level-up shows the brass ring and plays the sting, only for the local player (tests)
+- [x] A loot drop shows "<Rarity> <name>" in rarity colour for 4 s, only for its owner (tests)
+- [x] Soak green, no SCRIPT ERROR
 
 ## Risks
 

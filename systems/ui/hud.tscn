@@ -19,6 +19,10 @@
 
 [ext_resource type="PackedScene" path="res://systems/ui/damage_numbers.tscn" id="damage_numbers"]
 
+[ext_resource type="PackedScene" path="res://systems/ui/level_up_burst.tscn" id="level_up_burst"]
+
+[ext_resource type="PackedScene" path="res://systems/ui/loot_feed.tscn" id="loot_feed"]
+
 [sub_resource type="FontVariation" id="round_bold"]
 base_font = ExtResource("round_font")
 variation_opentype = {
@@ -358,6 +362,9 @@ offset_left = 12.0
 offset_top = 12.0
 mouse_filter = 2
 
+[node name="LevelUpBurst" parent="Root" instance=ExtResource("level_up_burst")]
+layout_mode = 1
+
 [node name="XpBar" type="ProgressBar" parent="Root"]
 layout_mode = 1
 anchor_top = 1.0
@@ -409,6 +416,9 @@ stream = ExtResource("sfx_round_end")
 bus = &"SFX"
 
 [node name="DamageNumbers" parent="Root" instance=ExtResource("damage_numbers")]
+layout_mode = 1
+
+[node name="LootFeed" parent="Root" instance=ExtResource("loot_feed")]
 layout_mode = 1
 
 [node name="Pack" type="Control" parent="Root"]
