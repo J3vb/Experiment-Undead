@@ -18,7 +18,7 @@ func ammo_cost(owned: Weapon) -> int:
 	return int(weapon.cost * 0.5) if owned.data.id == weapon.id else reforged_ammo_cost
 
 
-func interact(player: Player) -> void:
+func interact(player: Player, _facts: Dictionary = {}) -> void:
 	var owned: Weapon = _owned(player)
 	if owned == null:
 		if _pay(player, weapon.cost):

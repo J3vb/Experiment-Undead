@@ -24,7 +24,7 @@ func get_prompt(player: Player) -> String:
 	return "Buy %s [F]  %d" % [serum.display_name, serum.cost]
 
 
-func interact(player: Player) -> void:
+func interact(player: Player, _facts: Dictionary = {}) -> void:
 	if not _level().power_on or player.serums.has(serum):
 		return
 	if _pay(player, serum.cost):

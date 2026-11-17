@@ -1,6 +1,6 @@
 # Plan: Co-op interactions (doors, wall-buys, machines)
 
-Status: Approved
+Status: Building
 Roadmap: F-02 / issue #138 (also foundation fix 2 in docs/FOUNDATIONS.md, part of #126)
 Phase: P7
 Size: M

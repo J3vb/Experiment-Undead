@@ -35,9 +35,6 @@ func _physics_process(_delta: float) -> void:
 	if session.is_over or _banked or not is_instance_valid(player) or not player.input_enabled:
 		return
 	_sync_luck()
-	# Player already calls Interactable on solo/host. Clients consume the same input frame here.
-	if not multiplayer.is_server() and player.last_frame.has(InputFrame.INTERACT) and player.focus is LootDrop:
-		player.focus.interact(player)
 
 
 func _on_enemy_killed(enemy: Node3D, _info: DamageInfo) -> void:

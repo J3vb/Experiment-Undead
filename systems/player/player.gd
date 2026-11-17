@@ -198,8 +198,11 @@ func apply_frame(frame: InputFrame, delta: float) -> void:
 	_read_input(frame)
 	_tick_stamina(delta)
 	_update_focus()
-	if input_enabled and not is_downed and focus and frame.has(InputFrame.INTERACT) and Net.is_authority():
-		focus.interact(self)
+	if input_enabled and not is_downed and focus and frame.has(InputFrame.INTERACT):
+		if Net.is_authority() or focus.is_local():
+			focus.interact(self)
+		elif session:
+			session.interactions.request(self, focus)
 	_move(delta, frame)
 	weapons.tick(delta)
 	camera_rig.update_feel(

@@ -1,13 +1,14 @@
 ## Root script for a playable map. Bakes navigation at load (so grey-box
 ## edits never leave a stale navmesh), exposes the player spawn and tracks
 ## which areas are open (only spawn points in open areas are used) and
-## whether the power is on.
+## whether the power is on. In co-op the server sends net_state() to clients.
 class_name Level
 extends Node3D
 
 ## Emitted once the navigation map actually contains the baked mesh.
 signal navigation_ready
 signal power_turned_on
+signal area_opened(area: StringName)
 
 ## A navmesh bake slower than this is a visible hitch.
 const NAV_BAKE_WARN_MS: float = 100.0
@@ -21,6 +22,8 @@ const NAV_READY_WARN_MS: float = 10000.0
 var is_navigation_ready: bool = false
 var open_areas: Array[StringName] = []
 var power_on: bool = false
+## Paths of interactables that left the map on the server (opened doors, sold-out machines).
+var removed: Array[NodePath] = []
 var _baked: bool = false
 var _rebake_pending: bool = false
 var _ready_usec: int = 0
@@ -48,7 +51,7 @@ func turn_power_on() -> void:
 ## one frame give one bake. On the main thread: threaded bakes never finished
 ## on the 2-core CI runner, and a door purchase is rare enough for one short hitch.
 func rebake_navigation() -> void:
-	if not _rebake_pending:
+	if navigation_region and not _rebake_pending:
 		_rebake_pending = true
 		_rebake_now.call_deferred()
 
@@ -82,6 +85,24 @@ func open_area(area: StringName) -> void:
 		var point: ZombieSpawnPoint = node as ZombieSpawnPoint
 		if point and point.area == area:
 			point.add_to_group(&"enemy_spawn")
+	area_opened.emit(area)
+
+
+func net_state() -> Dictionary:
+	return {"power": power_on, "areas": open_areas.duplicate(), "removed": removed.duplicate()}
+
+
+## Client side: power, open areas and gone interactables from the server.
+func apply_net_state(state: Dictionary) -> void:
+	if state.get("power", false):
+		turn_power_on()
+	for area: StringName in state.get("areas", []):
+		open_area(area)
+	removed.assign(state.get("removed", []))
+	for path: NodePath in removed:
+		var node: Interactable = get_node_or_null(path) as Interactable
+		if node and not node.is_queued_for_deletion():
+			node.retire()
 
 
 func get_player_spawn() -> Transform3D:
