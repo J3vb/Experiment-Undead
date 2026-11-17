@@ -1,5 +1,6 @@
 ## Turns levels/<map>/layout.json into levels/<map>/blockout.tscn: floors,
-## ceilings, panelled walls with door and window cuts, ramps and ceiling lights.
+## ceilings, panelled walls with door and window cuts, ramps, ceiling lights and
+## box props (tables, tanks, generators) under each room's Props node.
 ## Rooms with "lights": false (the small spaces behind windows) get no lights.
 ## Never hand-edit the output; change the JSON and run this again:
 ##   godot --headless --path . -s res://tools/blockout_builder.gd -- halcyon_labs
@@ -44,7 +45,21 @@ static func build(layout: Dictionary) -> Node3D:
 	var ramps: Node3D = _child(root, root, "Ramps")
 	for i: int in (layout.get("ramps", []) as Array).size():
 		_build_ramp(root, ramps, layout["ramps"][i], i)
+	for prop: Dictionary in layout.get("props", []):
+		_build_prop(root, prop)
 	return root
+
+
+## box = [x, bottom above the room floor, z, size x, size y, size z] in map coordinates.
+static func _build_prop(root: Node3D, prop: Dictionary) -> void:
+	var room: Node3D = root.get_node(NodePath(prop["room"])) as Node3D
+	var props: Node3D = room.get_node_or_null(^"Props") as Node3D
+	if props == null:
+		props = _child(root, room, "Props")
+	var b: Array = prop["box"]
+	var size: Vector3 = Vector3(b[3], b[4], b[5])
+	var at: Vector3 = Vector3(b[0], room.position.y + float(b[1]) + size.y * 0.5, b[2]) - room.position
+	_block(root, props, prop["id"], size, at, prop["material"])
 
 
 ## An opening where a ramp ends gets no sill: the ramp fills the cut, and a
