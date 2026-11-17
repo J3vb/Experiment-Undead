@@ -11,7 +11,7 @@ the trial body, both in the run clip, the body on main, and the concept.
 
 - Source: `tools/assets/body_trial/` (`build.py` builds and checks, `compare.py` renders this sheet).
 - Output: `characters/player.glb` in this folder. Same 22 bones, facing, scale and clips as
-  the shipped body, 15,824 triangles (budget 16,000), materials BodySkin, BodyHair, BodyCloth, BodyRubber.
+  the shipped body, 15,764 triangles (budget 16,000), materials BodySkin, BodyHair, BodyCloth, BodyRubber.
 - Checks run on it: `check_models.py --dir docs/design/reviews/player-body-trial` and the glTF validator, both pass.
 
 ## How it is built
@@ -40,3 +40,8 @@ colour, normal and roughness. Triangle count is unchanged. The .glb carries the 
 - The game's gear shader does not read these maps yet (it recolours by zone), so this is a Blender-render result.
 - The torso is bulkier than the shipped body, so today's vests would clip (the plan restyles them in step 4).
 - Not imported into Godot.
+
+Poses (rest, run, crouch, reload). Clothes follow a named set of bones per part, so the jacket
+skirt does not chase the legs and pockets move with the cloth under them.
+
+![poses](poses.jpg)

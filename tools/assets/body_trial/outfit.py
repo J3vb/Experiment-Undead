@@ -8,9 +8,9 @@ from surface import bump
 
 # z, side shift, front shift, half width, front depth, back depth, squareness
 JACKET_KEYS = (
-    (0.865, 0, 0, 0.194, 0.134, 0.134, 2.5),
-    (0.900, 0, 0, 0.192, 0.133, 0.132, 2.5),
-    (0.980, 0, 0, 0.176, 0.124, 0.118, 2.5),
+    (0.905, 0, 0, 0.208, 0.140, 0.140, 2.5),
+    (0.930, 0, 0, 0.206, 0.139, 0.138, 2.5),
+    (0.985, 0, 0, 0.184, 0.128, 0.122, 2.5),
     (1.050, 0, 0, 0.168, 0.118, 0.108, 2.5),
     (1.150, 0, 0, 0.176, 0.124, 0.110, 2.5),
     (1.280, 0, 0, 0.196, 0.136, 0.118, 2.5),
@@ -21,10 +21,10 @@ JACKET_KEYS = (
     (1.550, 0, 0, 0.066, 0.058, 0.066, 2.0),
 )
 PELVIS_KEYS = (
-    (0.790, 0, 0, 0.050, 0.060, 0.070, 2.0),
-    (0.830, 0, 0, 0.130, 0.100, 0.108, 2.3),
-    (0.900, 0, 0, 0.168, 0.114, 0.120, 2.4),
-    (1.000, 0, 0, 0.164, 0.112, 0.108, 2.4),
+    (0.790, 0, 0, 0.070, 0.066, 0.086, 2.0),
+    (0.830, 0, 0, 0.150, 0.086, 0.104, 2.3),
+    (0.900, 0, 0, 0.188, 0.104, 0.110, 2.4),
+    (1.000, 0, 0, 0.166, 0.108, 0.106, 2.4),
 )
 # distance from the shoulder, side shift, front shift, half width, front depth, back depth, squareness
 SLEEVE_KEYS = (
@@ -47,8 +47,8 @@ LEG_KEYS = (
     (0.530, 0, 0.004, 0.076, 0.084, 0.080, 2.1),
     (0.640, 0, 0.002, 0.086, 0.090, 0.090, 2.1),
     (0.780, 0, 0, 0.098, 0.104, 0.106, 2.1),
-    (0.900, -0.004, 0, 0.104, 0.110, 0.114, 2.1),
-    (0.980, -0.008, 0, 0.098, 0.106, 0.110, 2.1),
+    (0.900, -0.006, 0, 0.096, 0.108, 0.112, 2.1),
+    (0.980, -0.012, 0, 0.088, 0.104, 0.108, 2.1),
 )
 SHOULDER = (0.19, 0.0, 1.47)
 ARM_AXIS = (1, 0, -1)
@@ -74,7 +74,7 @@ def jacket_folds(points, u, _s):
     z = points[..., 2]
     cinch = -0.010 * bump(z, 1.005, 0.022)
     slack = 0.005 * bump(z, 1.075, 0.035) * (0.6 + 0.4 * np.sin(math.tau * u * 9 + 1.0))
-    skirt = 0.004 * bump(z, 0.93, 0.04) * np.sin(math.tau * u * 7 + 0.4)
+    skirt = 0.004 * bump(z, 0.95, 0.03) * np.sin(math.tau * u * 7 + 0.4)
     chest = 0.003 * bump(z, 1.22, 0.05) * np.sin(math.tau * (u * 5 + z * 3.0))
     return cinch + slack + skirt + chest
 
@@ -97,18 +97,16 @@ def leg_folds(_points, u, s):
 
 def _jacket(mats: dict) -> list:
     tube = jacket_tube()
-    rows = np.concatenate(
-        [np.linspace(0.865, 1.15, 10), np.linspace(1.19, 1.45, 6), [1.475, 1.495, 1.515, 1.535, 1.55]]
-    )
+    rows = np.concatenate([np.linspace(0.905, 1.15, 9), np.linspace(1.19, 1.45, 6), [1.475, 1.495, 1.515, 1.535, 1.55]])
     body = surf.shell("Jacket", tube.grid(surf.turns(30), rows, jacket_folds), mats["cloth"])
-    hem = surf.patch("JacketHem", tube, (0.0, 1.0, 0.862, 0.888), 0.004, mats["cloth"], (26, 1), jacket_folds)
+    hem = surf.patch("JacketHem", tube, (0.25, 1.25, 0.902, 0.928), 0.004, mats["cloth"], (26, 1), jacket_folds)
     return [body, hem]
 
 
 def _jacket_details(mats: dict) -> list:
     tube = jacket_tube()
     parts = [
-        surf.patch("Placket", tube, (-0.016, 0.016, 0.87, 1.50), 0.0045, mats["cloth"], (1, 16), jacket_folds),
+        surf.patch("Placket", tube, (-0.016, 0.016, 0.932, 1.50), 0.0045, mats["cloth"], (1, 16), jacket_folds),
         surf.patch("BackYoke", tube, (0.30, 0.70, 1.36, 1.48), 0.0035, mats["cloth"], (12, 4), jacket_folds),
     ]
     for sign in (1, -1):
@@ -120,7 +118,7 @@ def _jacket_details(mats: dict) -> list:
                 "PocketFlap", tube, flap, 0.011, mats["cloth"], (5, 3), jacket_folds, lambda un: 0.012 * abs(un - 0.5)
             )
         )
-        hip = (sign * 0.045, sign * 0.150, 0.885, 0.975)
+        hip = (sign * 0.045, sign * 0.150, 0.918, 0.988)
         parts.append(surf.patch("HipPocket", tube, hip, 0.008, mats["cloth"], (5, 4), jacket_folds))
     for z in (1.06, 1.19, 1.32, 1.45):
         parts.append(

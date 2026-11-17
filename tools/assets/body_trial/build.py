@@ -34,11 +34,44 @@ def materials() -> dict:
     }
 
 
+TORSO = ("pelvis", "spine_01", "spine_02", "spine_03", "neck", "clavicle_L", "clavicle_R")
+ARM = ("clavicle_{s}", "upperarm_{s}", "forearm_{s}")
+# Clothes follow only the bones named here ({s} is the part's side), so a pocket moves with the
+# cloth under it and the jacket skirt never chases a leg.
+CLOTH_BONES = {
+    **dict.fromkeys(("Jacket", "JacketHem", "Placket", "BackYoke", "ChestPocket", "PocketFlap", "HipPocket"), TORSO),
+    **dict.fromkeys(("Snap", "HoodRoll", "HoodPouch"), TORSO),
+    **dict.fromkeys(("ScarfLow", "ScarfHigh"), ("spine_03", "neck")),
+    "Pelvis": ("pelvis",),
+    "Leg": ("pelvis", "thigh_{s}", "shin_{s}"),
+    **dict.fromkeys(("CargoPocket", "CargoFlap"), ("thigh_{s}",)),
+    **dict.fromkeys(("KneePad", "KneeStrap"), ("shin_{s}",)),
+    **dict.fromkeys(("Sleeve", "ElbowPatch"), ARM),
+    "ArmPocket": ("upperarm_{s}",),
+    "CuffBand": ("forearm_{s}",),
+}
+
+
+def _skin_to(obj, armature, bones: tuple, blend: float) -> None:
+    """Like character_rig.bind, but only among the named bones."""
+    world = armature.matrix_world
+    segments = [(b, world @ b.head_local, world @ b.tail_local) for b in armature.data.bones if b.name in bones]
+    rig._prepare_binding(obj, armature)
+    groups = {bone.name: obj.vertex_groups.new(name=bone.name) for bone, _head, _tail in segments}
+    for vertex in obj.data.vertices:
+        for bone, weight in rig._weights(obj.matrix_world @ vertex.co, segments, blend).items():
+            groups[bone].add([vertex.index], weight, "REPLACE")
+
+
 def _bind(parts: list, armature, zone: float, bone: str | None = None, blend: float = 0.14) -> list:
     for obj in parts:
         textures.tag(obj)
         paint.zone(obj, zone)
-        if bone:
+        cloth = CLOTH_BONES.get(obj.name.split(".")[0])
+        if cloth:
+            side = "L" if sum(vertex.co.x for vertex in obj.data.vertices) > 0 else "R"
+            _skin_to(obj, armature, tuple(name.format(s=side) for name in cloth), 0.12)
+        elif bone:
             rig.bind_rigid(obj, armature, bone)
         else:
             rig.bind(obj, armature, blend=blend)
