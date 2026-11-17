@@ -99,3 +99,16 @@ def test_ar17_concept_shapes_skeleton_stock_quad_rail_and_open_front_sight():
         assert surface is not None and (surface - Vector((0, 0.42, 0.016))).length > 0.036, direction
     assert hit("Receiver", (0, 0.4, 0.09), (0, 1, 0)) is None, "front sight window leaves the eye line open"
     assert hit("Receiver", (0, 0.4, 0.075), (0, 1, 0)) is not None, "front sight post rises into the window"
+
+
+def test_vx9_concept_shapes_vertical_grip_curved_mag_and_open_red_dot():
+    models.reset_scene()
+    models.MODELS["kestrel_smg"][1]()
+    bpy.context.view_layer.update()
+    grip = hit("Receiver", (0, 0.285, -0.2), (0, 0, 1))
+    assert grip is not None and -0.102 < grip.z < -0.095, "vertical foregrip hangs under the fore-end"
+    assert hit("Receiver", (0, 0.25, -0.2), (0, 0, 1)).z > -0.025, "support hand space behind the foregrip stays clear"
+    top = hit("Magazine", (0.0, 0.2, -0.06), (0, -1, 0))
+    bottom = hit("Magazine", (0.0, 0.2, -0.21), (0, -1, 0))
+    assert bottom.y > top.y + 0.004, "magazine curves forward"
+    assert hit("Receiver", (0, -0.2, 0.077), (0, 1, 0)) is None, "red dot window and front leave the eye line open"

@@ -19,7 +19,7 @@ const SHADER: String = "res://assets/materials/gun_finish.gdshader"
 const IMPORTER: GDScript = preload("res://tools/assets/gun_finish_import.gd")
 const KNURLED: Dictionary[String, String] = {
 	"rifle_ar": "TanKnurledWorn",
-	"kestrel_smg": "MatteBlackKnurled",
+	"kestrel_smg": "MatteBlackKnurledWorn",
 	"talon_dmr": "GunMetalKnurled",
 	"hollis_44": "WoodKnurled",
 }

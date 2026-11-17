@@ -89,11 +89,11 @@ func test_shotgun_has_a_pump_and_muzzle() -> void:
 	gun.free()
 
 
-func test_kestrel_has_moving_parts_and_iron_sights() -> void:
+func test_kestrel_has_moving_parts_and_a_red_dot() -> void:
 	var gun: Node3D = _load(KESTREL)
 	if gun == null:
 		return
-	for part: String in ["Magazine", "Bolt", "Muzzle", "Barrel", "FoldingStock", "IronSights", "Grip", "Trigger"]:
+	for part: String in ["Magazine", "Bolt", "Muzzle", "Barrel", "FoldingStock", "SightGlass", "ReticleMount", "Grip", "Trigger"]:
 		assert_not_null(gun.find_child(part, true, false), "Kestrel has " + part)
 	assert_true(gun.find_child("Receiver", true, false) is MeshInstance3D)
 	var muzzle: Node3D = gun.find_child("Muzzle", true, false) as Node3D
@@ -300,20 +300,23 @@ func test_scope_display_sits_behind_the_rebuilt_eyepiece() -> void:
 		gun.free()
 
 
-func test_rifle_red_dot_sits_on_the_aiming_line() -> void:
-	var gun: Node3D = _load(RIFLE)
-	var ads: WeaponData = load("res://content/weapons/rifle_ar.tres") as WeaponData
-	var eye: Vector3 = Vector3(0, -ads.ads_position.y, 0.5)
-	var mount: Node3D = gun.find_child("ReticleMount", true, false) as Node3D
-	var glass: MeshInstance3D = gun.find_child("SightGlass", true, false) as MeshInstance3D
-	var dot: Vector3 = _global(mount)
-	assert_almost_eq(dot.x, eye.x, 0.0005, "reticle is centred left to right")
-	assert_almost_eq(dot.y, eye.y, 0.0005, "reticle is on the eye line")
-	assert_false(MeshChecks.blocks_segment(gun, eye, dot + Vector3(0, 0, 0.0005)), "nothing blocks the view to the dot")
-	var glass_box: AABB = _global_xform(glass) * glass.get_aabb()
-	assert_true(glass_box.has_point(Vector3(eye.x, eye.y, glass_box.get_center().z)), "the dot sits behind the glass")
-	assert_lt(dot.z, eye.z, "the dot is in front of the eye")
-	gun.free()
+func test_red_dots_sit_on_the_aiming_line() -> void:
+	for id: String in ["rifle_ar", "kestrel_smg"]:
+		var gun: Node3D = _load("res://assets/models/weapons/%s.glb" % id)
+		var ads: WeaponData = load("res://content/weapons/%s.tres" % id) as WeaponData
+		var eye: Vector3 = Vector3(0, -ads.ads_position.y, 0.5)
+		var mount: Node3D = gun.find_child("ReticleMount", true, false) as Node3D
+		var glass: MeshInstance3D = gun.find_child("SightGlass", true, false) as MeshInstance3D
+		var dot: Vector3 = _global(mount)
+		assert_almost_eq(dot.x, eye.x, 0.0005, id + " reticle is centred left to right")
+		assert_almost_eq(dot.y, eye.y, 0.0005, id + " reticle is on the eye line")
+		var view_blocked: bool = MeshChecks.blocks_segment(gun, eye, dot + Vector3(0, 0, 0.0005))
+		assert_false(view_blocked, id + ": nothing blocks the view to the dot")
+		var glass_box: AABB = _global_xform(glass) * glass.get_aabb()
+		var behind_glass: bool = glass_box.has_point(Vector3(eye.x, eye.y, glass_box.get_center().z))
+		assert_true(behind_glass, id + ": the dot sits behind the glass")
+		assert_lt(dot.z, eye.z, id + ": the dot is in front of the eye")
+		gun.free()
 
 
 func _global_xform(node: Node3D) -> Transform3D:
@@ -327,17 +330,6 @@ func _global_xform(node: Node3D) -> Transform3D:
 
 func _global(node: Node3D) -> Vector3:
 	return _global_xform(node).origin
-
-
-func test_kestrel_rear_sight_leaves_the_aiming_line_open() -> void:
-	var gun: Node3D = _load(KESTREL)
-	var ads: WeaponData = load("res://content/weapons/kestrel_smg.tres") as WeaponData
-	var eye: Vector3 = Vector3(0, -ads.ads_position.y, 0.5)
-	assert_false(
-		MeshChecks.blocks_segment(gun, eye, Vector3(eye.x, eye.y, 0.0)),
-		"nothing behind the receiver centre blocks the aim"
-	)
-	gun.free()
 
 
 func test_brenner_heat_shield_stays_under_the_aiming_line() -> void:

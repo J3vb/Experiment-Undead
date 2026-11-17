@@ -1,7 +1,8 @@
-"""Kestrel SMG: shaped receiver, eight-sided fore-end, folding skeleton stock and serviceable moving parts.
+"""VX-9 SMG (`kestrel_smg`): black and tan, Oriel red dot, vertical foregrip, curved taped mag, flash hider.
 
 Static parts join into `Receiver`. Code needs `Magazine`, `Bolt` (with `ChargingHandle`),
-`Barrel`, `FoldingStock`, `IronSights`, `Grip`, `Trigger` and the `Muzzle` marker.
+`Barrel`, `FoldingStock`, `Grip`, `Trigger`, the `Muzzle` marker, `SightGlass` and `ReticleMount`.
+Worn materials and the `Markings` atlas follow docs/plans/guns-concept.md.
 """
 
 import math
@@ -9,15 +10,17 @@ import math
 import gun_parts as g
 
 BORE_Z = 0.008
+RAIL_TOP = 0.046
+EYE_Z = 0.077  # aim line: WeaponData.ads_position.y is -EYE_Z
 
 
-def body(m, metal, black, olive):
+def body(m, metal, black):
     """Upper with ejection port and charging slot, lower with flared mag well, fore-end and rail."""
     receiver = g.slab(
         "Receiver",
         [(-0.14, -0.01), (0.13, -0.01), (0.13, 0.022), (0.115, 0.034), (-0.125, 0.034), (-0.14, 0.024)],
         0.05,
-        metal,
+        black,
         bevel=0.002,
     )
     g.cut(
@@ -48,9 +51,10 @@ def body(m, metal, black, olive):
         g.slab(
             "WellLip", [(0.018, -0.066), (0.092, -0.066), (0.094, -0.075), (0.016, -0.075)], 0.05, black, bevel=0.0015
         ),
-        fore_end(olive),
-        g.slab("RailBase", [(-0.125, 0.034), (0.25, 0.034), (0.25, 0.039), (-0.125, 0.039)], 0.024, black),
-        g.slab("RailTeeth", g.teeth(-0.122, 0.245, 0.039, 0.046), 0.021, black),
+        fore_end(black),
+        *foregrip(black),
+        g.slab("RailBase", [(-0.125, 0.034), (0.3, 0.034), (0.3, 0.039), (-0.125, 0.039)], 0.024, black),
+        g.slab("RailTeeth", g.teeth(-0.122, 0.295, 0.039, 0.046), 0.021, black),
         g.slab("PortFloor", g.rounded(-0.011, 0.001, 0.063, 0.026, 0.003), 0.001, black, x=0.0155),
         g.slab("HandleFloor", g.rounded(-0.094, 0.015, -0.021, 0.021, 0.002), 0.001, black, x=0.0165),
         g.lathe("MagRelease", [(0.006, 0.023), (0.006, 0.029)], (0, 0.1, -0.035), metal, 12, axis="x"),
@@ -72,24 +76,43 @@ def body(m, metal, black, olive):
     return receiver
 
 
-def fore_end(olive):
-    """Hollow octagonal sleeve with through-vents and a barrel visible inside."""
+def fore_end(mat):
+    """Hollow octagonal sleeve with through-vents and a barrel visible inside (black on the VX-9)."""
     guard = g.lathe(
         "Handguard",
-        [(0.028, 0.128), (0.031, 0.133), (0.031, 0.252), (0.028, 0.258)],
+        [(0.028, 0.128), (0.031, 0.133), (0.031, 0.302), (0.028, 0.308)],
         (0, 0, BORE_Z),
-        olive,
+        mat,
         8,
         turn=math.pi / 8,
     )
-    cutters = [g.lathe("GuardCavity", [(0.023, 0.12), (0.023, 0.27)], (0, 0, BORE_Z), olive, 8, turn=math.pi / 8)]
-    for i in range(3):
+    cutters = [g.lathe("GuardCavity", [(0.023, 0.12), (0.023, 0.32)], (0, 0, BORE_Z), mat, 8, turn=math.pi / 8)]
+    for i in range(4):
         y = 0.145 + i * 0.036
-        cutters.append(g.slab("VentCut", g.rounded(y, 0.001, y + 0.024, 0.015, 0.005), 0.08, olive))
+        cutters.append(g.slab("VentCut", g.rounded(y, 0.001, y + 0.024, 0.015, 0.005), 0.08, mat))
     return g.cut(guard, cutters)
 
 
-def lower_controls(m, receiver, metal, black, olive):
+def foregrip(black):
+    """Vertical foregrip on a rail clamp at the front of the fore-end; the support hand stays behind it."""
+    clamp = g.slab("GripClamp", [(0.269, -0.017), (0.301, -0.017), (0.299, -0.03), (0.271, -0.03)], 0.03, black)
+    body = [(0.012, -0.026), (0.0135, -0.034), (0.0135, -0.086), (0.0155, -0.09), (0.0155, -0.097), (0.011, -0.1)]
+    grip = g.lathe("Foregrip", body, (0, 0.285, 0), black, 12, axis="z")
+    rings = [
+        g.lathe(
+            f"GripRing{i}",
+            [(0.0142, -0.046 - i * 0.012), (0.0142, -0.04 - i * 0.012)],
+            (0, 0.285, 0),
+            black,
+            12,
+            axis="z",
+        )
+        for i in range(3)
+    ]
+    return [clamp, grip, *rings]
+
+
+def lower_controls(m, receiver, metal, black):
     """Trigger guard joins the body; grip and trigger keep their own pivots."""
     guard = [
         (0.012, -0.045),
@@ -114,13 +137,13 @@ def lower_controls(m, receiver, metal, black, olive):
         (-0.084, -0.085),
         (-0.078, -0.068),
     ]
-    grip = g.slab("Grip", grip_shape, 0.032, olive, bevel=0.005)
+    grip = g.slab("Grip", grip_shape, 0.032, black, bevel=0.005)
     panels = [
         g.slab(
             f"GripPanel{x}",
             [(-0.103, -0.055), (-0.138, -0.14), (-0.12, -0.148), (-0.096, -0.09), (-0.088, -0.062)],
             0.002,
-            m.material("MatteBlackKnurled", m.MATTE_BLACK, roughness=0.75),
+            m.material("MatteBlackKnurledWorn", m.MATTE_BLACK, roughness=0.75),
             x=x * 0.0165,
         )
         for x in (-1, 1)
@@ -136,8 +159,8 @@ def lower_controls(m, receiver, metal, black, olive):
     m.attach(trigger, (0, -0.028, -0.047), receiver)
 
 
-def stock(m, receiver, metal, black, olive):
-    """Skeleton stock folding on a real hinge pivot, with cheek rest and rubber pad."""
+def stock(m, receiver, metal, black, tan):
+    """Skeleton stock folding on a real hinge pivot, with cheek rest and a tan butt pad."""
     hinge_at = (0, -0.145, -0.006)
     folding = g.lathe("FoldingStock", [(0.016, -0.03), (0.016, 0.03)], hinge_at, metal, 16, axis="z")
     parts = [
@@ -145,13 +168,13 @@ def stock(m, receiver, metal, black, olive):
             "ButtFrame",
             [(-0.325, 0.032), (-0.345, 0.032), (-0.35, -0.072), (-0.325, -0.066)],
             0.045,
-            metal,
+            black,
             bevel=0.003,
         ),
         g.slab(
-            "ButtPad", [(-0.345, 0.034), (-0.36, 0.034), (-0.364, -0.075), (-0.349, -0.077)], 0.049, black, bevel=0.003
+            "ButtPad", [(-0.345, 0.034), (-0.36, 0.034), (-0.364, -0.075), (-0.349, -0.077)], 0.049, tan, bevel=0.003
         ),
-        g.slab("CheekRest", g.rounded(-0.31, 0.012, -0.2, 0.03, 0.006), 0.042, olive, bevel=0.003),
+        g.slab("CheekRest", g.rounded(-0.31, 0.012, -0.2, 0.03, 0.006), 0.042, black, bevel=0.003),
     ]
     for x in (-1, 1):
         parts += [
@@ -159,7 +182,7 @@ def stock(m, receiver, metal, black, olive):
                 f"TopStrut{x}",
                 [(-0.15, 0.002), (-0.33, 0.016), (-0.33, 0.026), (-0.15, 0.012)],
                 0.008,
-                metal,
+                black,
                 x=x * 0.018,
                 bevel=0.0015,
             ),
@@ -167,7 +190,7 @@ def stock(m, receiver, metal, black, olive):
                 f"LowStrut{x}",
                 [(-0.155, -0.018), (-0.33, -0.06), (-0.33, -0.05), (-0.15, -0.008)],
                 0.008,
-                metal,
+                black,
                 x=x * 0.018,
                 bevel=0.0015,
             ),
@@ -176,55 +199,16 @@ def stock(m, receiver, metal, black, olive):
     m.attach(folding, hinge_at, receiver)
 
 
-def sights(m, receiver, metal, black):
-    """Flip-up aperture rear sight and a hooded front post, one node so code can find them."""
-    rear = g.slab(
-        "IronSights", [(-0.12, 0.046), (-0.098, 0.046), (-0.1, 0.058), (-0.118, 0.058)], 0.03, black, bevel=0.0015
-    )
+def moving_parts(m, receiver, metal, black, markings):
+    """Curved magazine with tape (origin at the feed lip), charging handle parented to its sliding bolt."""
+    front = [(0.083, -0.05), (0.085, -0.12), (0.089, -0.18), (0.095, -0.224)]
+    rear = [(0.035, -0.23), (0.031, -0.18), (0.028, -0.12), (0.027, -0.05)]
+    magazine = g.slab("Magazine", front + rear, 0.03, black, bevel=0.002)
     parts = [
-        g.slab("ApertureTop", [(-0.112, 0.068), (-0.106, 0.068), (-0.106, 0.071), (-0.112, 0.071)], 0.026, metal),
-        g.slab(
-            "FrontBase", [(0.232, 0.046), (0.252, 0.046), (0.25, 0.054), (0.234, 0.054)], 0.026, black, bevel=0.0015
-        ),
-        g.slab("FrontPost", [(0.24, 0.054), (0.244, 0.054), (0.244, 0.061), (0.24, 0.061)], 0.004, metal),
+        g.slab("MagBase", [(0.03, -0.228), (0.1, -0.222), (0.101, -0.235), (0.031, -0.241)], 0.036, black, bevel=0.002)
     ]
-    for x in (-1, 1):
-        parts.append(
-            g.slab(
-                f"ApertureEar{x}",
-                [(-0.114, 0.057), (-0.104, 0.057), (-0.106, 0.071), (-0.112, 0.071)],
-                0.004,
-                metal,
-                x=x * 0.011,
-            )
-        )
-        parts.append(
-            g.slab(
-                f"FrontGuard{x}",
-                [(0.234, 0.054), (0.25, 0.054), (0.248, 0.07), (0.236, 0.07)],
-                0.004,
-                black,
-                x=x * 0.011,
-            )
-        )
-    m.join_into(rear, parts)
-    m.attach(rear, (0, -0.109, 0.046), receiver)
-
-
-def moving_parts(m, receiver, metal, black, olive):
-    """Magazine origin at the feed lip, charging handle parented to its sliding bolt."""
-    magazine = g.slab(
-        "Magazine", [(0.027, -0.05), (0.083, -0.05), (0.086, -0.225), (0.024, -0.225)], 0.03, black, bevel=0.002
-    )
-    parts = [
-        g.slab("MagBase", [(0.02, -0.223), (0.092, -0.223), (0.09, -0.237), (0.022, -0.237)], 0.036, olive, bevel=0.002)
-    ]
-    for i in range(4):
-        parts.append(
-            g.lathe(
-                f"Witness{i}", [(0.003, 0.0145), (0.003, 0.0155)], (0, 0.045, -0.11 - i * 0.025), metal, 8, axis="x"
-            )
-        )
+    for side in (-1, 1):
+        parts.append(g.marking(f"MagTape{side}", (0.034, -0.15, 0.09, -0.128), side * 0.015, side, "tape", markings))
     m.join_into(magazine, parts)
     m.attach(magazine, (0, 0.055, -0.065), receiver)
     bolt = g.slab("Bolt", g.rounded(-0.005, 0.004, 0.05, 0.023, 0.003), 0.002, metal, x=0.020)
@@ -235,15 +219,18 @@ def moving_parts(m, receiver, metal, black, olive):
 
 
 def barrel(m, receiver, metal, black):
-    """Short barrel with a fluted muzzle cap."""
+    """Short barrel with a slotted flash hider (`MuzzleCap`)."""
     run = [(0.011, -0.12), (0.011, 0.085)]
     pipe = g.lathe("Barrel", run, (0, 0.25, BORE_Z), metal, 16)
-    cap = [(0.012, 0.08)]
-    for i in range(4):
-        y = 0.085 + i * 0.006
-        cap += [(0.0145, y), (0.0145, y + 0.004), (0.013, y + 0.0045), (0.013, y + 0.006)]
-    cap += [(0.0145, 0.112), (0.006, 0.113)]
-    muzzle_cap = g.lathe("MuzzleCap", cap, (0, 0.25, BORE_Z), black, 16)
+    hider = [(0.011, 0.08), (0.013, 0.084), (0.013, 0.11), (0.0115, 0.113)]
+    muzzle_cap = g.lathe("MuzzleCap", hider, (0, 0.25, BORE_Z), black, 16)
+    ports = []
+    for i in range(3):
+        port = g.slab(f"CagePort{i}", g.rounded(0.342, BORE_Z - 0.0022, 0.366, BORE_Z + 0.0022, 0.0018), 0.03, black)
+        port.rotation_euler = (0.0, math.pi / 3 * i, 0.0)
+        port.location = (0.0, 0.0, BORE_Z)
+        ports.append(port)
+    g.cut(muzzle_cap, ports)
     for part in (pipe, muzzle_cap):
         g.cut(part, [g.lathe("BoreCut", [(0.0045, 0.318), (0.0045, 0.37)], (0, 0, BORE_Z), black, 16)])
     m.join_into(pipe, [muzzle_cap])
@@ -253,14 +240,18 @@ def barrel(m, receiver, metal, black):
 
 def build_kestrel_smg(m):
     """Build in metres along Blender +Y (Godot -Z), keeping the shared animation nodes."""
-    metal = m.material("GunMetal", m.GUN_METAL, metallic=0.8, roughness=0.4)
-    black = m.material("MatteBlack", m.MATTE_BLACK, roughness=0.75)
-    olive = m.material("OlivePolymer", m.srgb("#5F6D68"), roughness=0.85)
-    receiver = body(m, metal, black, olive)
-    lower_controls(m, receiver, metal, black, olive)
-    stock(m, receiver, metal, black, olive)
-    sights(m, receiver, metal, black)
-    moving_parts(m, receiver, metal, black, olive)
+    metal = m.material("GunMetalWorn", m.GUN_METAL, metallic=0.8, roughness=0.4)
+    black = m.material("MatteBlackWorn", m.MATTE_BLACK, roughness=0.75)
+    tan = m.material("TanWorn", m.TAN, roughness=0.8)
+    glass = m.material("SightGlass", m.LENS, metallic=0.3, roughness=0.05)
+    markings = m.material("Markings", m.MATTE_BLACK, roughness=0.7)
+    receiver = body(m, metal, black)
+    logos = [g.marking(f"Logo{s}", (-0.056, -0.03, 0.01, -0.009), s * 0.023, s, "logo", markings) for s in (-1, 1)]
+    m.join_into(receiver, logos)
+    m.join_into(receiver, g.red_dot(m, -0.02, RAIL_TOP, EYE_Z, black, glass, markings, receiver))
+    lower_controls(m, receiver, metal, black)
+    stock(m, receiver, metal, black, tan)
+    moving_parts(m, receiver, metal, black, markings)
     barrel(m, receiver, metal, black)
     for side in (-1, 1):
         strip = g.slab("Inlay", g.rounded(-0.112, 0.029, 0.098, 0.031, 0.0008), 0.001, metal, x=side * 0.025)
