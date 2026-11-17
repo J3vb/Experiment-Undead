@@ -36,6 +36,8 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-09 | v0.1 performance check | #108 | F-01..F-07, F-12, F-13 | issue | S | Todo |
 | F-10 | First play-test (the person plays) | #109 | F-09 | issue | S | Todo |
 | F-11 | Release v0.1.0 | #111 | F-10 | issue | S | Todo |
+| F-40 | Round state and power-ups in co-op (rest of #126 after F-02) | #126 | F-02 | [plan](plans/coop-round-state-power-ups.md) | M | Ready |
+| F-47 | A full co-op match: co-op soak, pause, squad cards, hub and deploy flow | #213 | F-40 | [plan](plans/coop-full-match.md) | L | Ready |
 
 ## Next: v0.2 Progression and loot
 
@@ -60,10 +62,9 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 
 | Id | Feature | Issue | Needs | Plan | Size | Status |
 |---|---|---|---|---|---|---|
-| F-40 | Machines, doors and power-ups in co-op (rest after F-02) | #126 | F-02 | needed | M | Todo |
 | F-41 | Third-person walk, run and downed animations | #128 | F-11 | needed | L | Todo |
 | F-42 | Gear in first person | #129 | F-11 | needed | M | Todo |
-| F-43 | 4-player play-test to round 20 | #127 | F-40, F-41 | issue | S | Todo |
+| F-43 | 4-player play-test to round 20 | #127 | F-47, F-41 | issue | S | Todo |
 | F-44 | Finish the server package | #130 | F-43 | needed | L | Todo |
 | F-45 | Town hub Lantern Post (split into features when it starts) | #131 | F-44 | needed | L | Todo |
 | F-46 | Dyes | #132 | F-42 | needed | M | Todo |
@@ -78,6 +79,8 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 
 - v0.2 features after F-11 may run in parallel when their Needs are Done and
   they touch different systems.
+- F-40 and F-47 were pulled into Now on 2026-11-17: the person set co-op as
+  the goal for that week. They touch only co-op code, not the v0.1 rows.
 - Loot and co-op were partly built before v0.1 shipped (see
   `docs/DECISIONS.md` and `docs/MULTIPLAYER.md`). From here on, the order
   above is the order.
