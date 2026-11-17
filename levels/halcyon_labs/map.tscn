@@ -51,6 +51,7 @@
 [ext_resource type="Resource" path="res://content/serums/second_wind.tres" id="serum_second_wind"]
 [ext_resource type="Resource" path="res://content/serums/scavenger.tres" id="serum_scavenger"]
 [ext_resource type="LightmapGIData" uid="uid://bbbon50dn5n3m" path="res://levels/halcyon_labs/map.lmbake" id="lightmap"]
+[ext_resource type="PackedScene" path="res://levels/halcyon_labs/atmosphere.tscn" id="atmosphere"]
 
 [sub_resource type="NavigationMesh" id="navmesh"]
 resource_local_to_scene = true
@@ -794,6 +795,8 @@ light_bake_mode = 0
 omni_range = 5.0
 
 [node name="FilmPost" parent="." instance=ExtResource("film")]
+
+[node name="Atmosphere" parent="." instance=ExtResource("atmosphere")]
 
 [node name="LightmapGI" type="LightmapGI" parent="."]
 quality = 2
