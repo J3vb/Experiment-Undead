@@ -1,0 +1,231 @@
+# Plan: Texture every surface in Halcyon Labs
+
+Status: Review
+Roadmap: F-61
+Phase: P4 (v0.1 Vertical slice)
+Size: M
+Approved by:
+
+## Goal
+
+No flat-coloured or bare grey-box surface is left in Halcyon Labs, and each
+room has its own floor, wall and ceiling surfaces, so a player knows where
+they are from the ground they stand on (Generator Hall steel plate, Mess
+Hall linoleum, Labs clinical tile). Serves the look pillar in
+`docs/PROCESS.md` and look rule 4 (players learn the map by zone).
+
+Today (render of main `27011c3`, power on): every room has the same wet
+tile floor, the same panel walls and black ceilings; Labs benches, the dock
+crate, tanks and door placeholders are flat colours.
+
+## Scope
+
+In:
+
+- Tileable PBR texture sets (albedo, normal, packed ORM) baked by one Blender
+  Python script, `tools/assets/surface_textures.py`, into
+  `assets/textures/halcyon/`. The script is the source (ADR 0008).
+- `levels/materials/grime.gdshader` gains optional texture slots, sampled in
+  world space like its grime, so every existing grime material keeps working
+  and new materials add detail without UVs.
+- Per-room floor, ceiling and upper-wall materials from `layout.json`.
+- Textured materials for walls, trims, ramps, lintels and sills, every box
+  prop, the kit wall panel, and the flat placeholder parts of interactables
+  that sit in the map (doors, planks, machine bodies). New shared materials
+  `steel`, `glass` and `rubber` for the props thread.
+- Generic decals (hazard stripes at doors, floor markings, water stains,
+  scuffs) in their own scene `levels/halcyon_labs/decals.tscn`.
+- A content test that fails when any mesh in the map has a flat material.
+- A render tool `tools/room_shots.gd` (one picture per room) for look checks.
+
+Not in (non-goals, and where each one goes instead):
+
+- New prop models: the "Model custom props" thread (props array in
+  `layout.json`, `assets/models/props/`).
+- Lights, particles, sound spots, story decals (blood, graffiti): the "Make
+  Halcyon Labs feel alive" thread (`atmosphere.tscn`, `assets/textures/story/`).
+- Lightmap re-bake and real fps capture: after all three detail threads, by
+  the build thread's GPU prompt (`/mnt/project-files/halcyon-labs/f13-rebake-and-fps-prompt.md`).
+- Zombie, gun and character textures: own model plans.
+- Other maps and the Lantern Post hub: they can reuse the sets later.
+- Asset-pack textures: after v0.1 (ADR 0008).
+
+## Ready to build
+
+```
+### Ready to build
+- Foundations touched (numbers from docs/FOUNDATIONS.md): none (visual only: materials, textures, one generated scene).
+  Any of them shaky or missing? n.a.
+- Decision records that apply (docs/adr/): 0008 code-built assets first (textures come from a script). Does this go against one? no
+- Co-op:
+  - Who decides: nobody, static visuals loaded from the same files on every peer.
+  - How a client triggers it: n.a.
+  - What other players see, and how it reaches them: the same files, nothing is sent.
+  - Works on a dedicated server with no local player: yes (the dummy renderer loads materials and draws nothing).
+- Data: room material names live in levels/halcyon_labs/layout.json, materials in levels/materials/*.tres.
+  Code compares against a specific id anywhere: no (the builder reads the name from the JSON).
+- Save: changes what is saved? no
+  Renames or removes a saved id: no
+- Events and UI: none. New screens: n.a.
+- Input through InputFrame, gameplay in _physics_process, randomness from the session RNG: n.a. (no gameplay code)
+- Tests: tests/content/test_halcyon_surfaces.gd (new), tests/content/test_shared_materials.gd (extended),
+  tools/assets/tests/test_surface_textures.py (new), existing blockout freshness test.
+- Logging: none (no runtime code).
+- Performance: nothing per frame in code. Shader cost: 3 extra texture samples on grime surfaces. Budget below.
+- Out of scope: see Not in.
+```
+
+## Design references
+
+- `docs/design/look-rules.md` Palette (wall paint `#5F6D68`, fog `#0A1416`,
+  sodium `#FF9A42`, bio-green only for the experiment), Rules 3 and 4,
+  Materials. This plan changes the Materials line "no texture files" to
+  "detail from script-baked tileable sets plus world-space grime"; step 1
+  edits the doc.
+- `docs/design/maps.md` Halcyon Labs room descriptions (what each room is).
+- `docs/adr/0008-code-built-assets-first.md`.
+- `docs/DECISIONS.md` gets an entry in step 1.
+- No balance numbers involved.
+
+## Systems touched
+
+| Folder or file | New / changed | What changes |
+|---|---|---|
+| tools/assets/surface_textures.py | new | Blender script: bakes each set (1024 or 512 px, seamless via 4D torus noise) |
+| tools/assets/tests/test_surface_textures.py | new | Sets tile without seams, sizes and the folder size budget |
+| assets/textures/halcyon/ | new | `<set>_albedo.png`, `<set>_normal.png`, `<set>_orm.png` + `.import` |
+| levels/materials/grime.gdshader | changed | Optional `albedo_map`, `normal_map`, `orm_map`, `texel_scale`; defaults keep today's look |
+| levels/materials/*.tres | changed + new | Existing flat ones get sets; new per-room and prop materials |
+| tools/blockout_builder.gd | changed | Reads `ceiling_material` and `wall_material` per room (defaults = today) |
+| levels/halcyon_labs/layout.json | changed | Room entries only (the props thread owns `props`) |
+| levels/halcyon_labs/blockout.tscn | regenerated | From the builder, never by hand |
+| assets/models/kit/wall_panel.glb.import | changed | Remap stays on panel_paint / panel_trim, which gain sets |
+| levels/halcyon_labs/decals.tscn | new | Decal nodes; one instance line in map.tscn |
+| levels/halcyon_labs/map.tscn | changed | Door placeholder materials, decals instance line only |
+| tools/room_shots.gd / .tscn | new | Look-check renders per room |
+| docs/design/look-rules.md, docs/DECISIONS.md | changed | Materials line, decision entry |
+
+Autoloads, managers or base classes added: none.
+
+## Data
+
+- Room fields in `layout.json`: `floor_material` (exists), new
+  `ceiling_material` (default `ceiling_stained`), new `wall_material` for the
+  plain strip above the panels and the lintels (default `panel_paint`).
+- Material `.tres` names are the ids; the builder only formats them into a
+  path, as today.
+- Save format change: none.
+- Content checks: `tests/content/test_halcyon_surfaces.gd` walks
+  `blockout.tscn` and `map.tscn`; every `MeshInstance3D`, `Block` and
+  imported mesh surface must use a textured material: a ShaderMaterial on
+  `grime` or `wet_tiles`, a `StandardMaterial3D` with an albedo texture, or an
+  emissive material (light fixtures, bio-green). Step 1 starts it with a
+  named allow-list of today's flat surfaces; each step removes its entries;
+  step 3 ends with an empty list.
+
+## Co-op behaviour
+
+- Who owns the state: no state; static visuals.
+- What clients send, what the server sends back: nothing.
+- What a client sees that the host sees too: the same surfaces, same files.
+- Late joiner: nothing to receive.
+- Dedicated server: loads the scenes as today; nothing is drawn.
+
+## Performance
+
+- Shader: grime surfaces add 3 texture samples (one planar projection picked
+  by the surface normal, not a 3-way triplanar blend). No per-frame code.
+- VRAM: sets import VRAM-compressed with mipmaps; budget 64 MB for the
+  folder in VRAM (about 12 sets at 1024 px).
+- Repo: `assets/textures/halcyon/` stays under 25 MB on disk (no Git LFS);
+  the Python test fails above it. Smaller surfaces (trims, props) use 512 px.
+- The fps check on the GPU after the re-bake must still show the v0.1 gate
+  (60 fps with 24 zombies) and the 120 fps target at 1440p High; the
+  2026-11-14 capture was 434-530 fps, so there is a large margin.
+
+## Steps
+
+### Step 1: Texture pipeline, ceilings and plain walls
+
+- Build: `surface_textures.py` with the first sets: `ceiling_tile`
+  (acoustic grid tiles with stains), `painted_concrete` (upper walls,
+  lintels, sills), `raw_concrete` (Coolant Tunnel, ramp sides). Texture slots
+  in `grime.gdshader`. `ceiling_stained` and `panel_paint` point at the new
+  sets. `room_shots.gd`. Content test with the allow-list. Look-rules and
+  DECISIONS edits.
+- Files: as listed in Systems touched for these sets.
+- Tests: `test_surface_textures.py` (edges of every set match within a
+  small tolerance, sizes, folder budget); `test_halcyon_surfaces.gd` (fails if
+  a surface not on the allow-list is flat, and if an allow-listed surface is
+  no longer flat so the list must shrink); `test_shared_materials.gd`
+  checks the new texture parameters.
+- Done when: room shots show textured ceilings and upper walls in every
+  room; decision card on the look sent to the person with before/after.
+
+### Step 2: A floor and ceiling per room
+
+- Build: sets `steel_plate` (Generator Hall, diamond plate), `linoleum`
+  (Mess Hall, worn checker), `clinic_tile` (Labs, small white tiles),
+  `grating` (Containment Wing and ramp, metal grating over dark),
+  `sealed_concrete` (Loading Dock, painted bay lines). Guard Post and Main
+  Corridor keep the wet tiles. Room fields in `layout.json`; builder reads
+  `ceiling_material` and `wall_material`; regenerate `blockout.tscn`.
+- Files: `layout.json` (rooms only), `blockout_builder.gd`, new materials,
+  `blockout.tscn`.
+- Tests: builder test: a room with the new fields gets them, a room
+  without gets today's defaults; surface test passes with a shorter list.
+- Done when: each room in the shots has its own floor.
+
+### Step 3: Props, wall panels and placeholders
+
+- Build: sets `painted_metal` (panel seams, rivets), `brushed_steel`,
+  `rubber`, `wood_crate`; materials `pipe`, `panel_trim`, `wood`, `rust`,
+  `specimen_tank` frame, new `steel`, `glass`, `rubber`; door placeholder
+  material in `map.tscn`; flat parts of interactable scenes that appear in
+  the map. Drop `wall_panel` from `finish.UNFINISHED` only if the re-bake has
+  not happened yet (the re-bake follows this plan anyway).
+- Files: those materials, the interactable `.tscn` files with flat parts,
+  `map.tscn` door lines.
+- Tests: surface test allow-list empty; `test_shared_materials.gd` for the
+  new materials.
+- Done when: no flat surface left in the map; props thread told the
+  names are ready.
+
+### Step 4: Decals and handoff
+
+- Build: decal textures from the same script (hazard stripes, floor arrows,
+  room stencils with names from `maps.md`, water stains, scuffs);
+  `decals.tscn` with Decal nodes at doors, machines and junctions; one
+  instance line in `map.tscn`. Message the build thread that the re-bake can
+  run; add a "decals and materials" spot list to its fps prompt if needed.
+- Files: `surface_textures.py`, `assets/textures/halcyon/decal_*`,
+  `decals.tscn`, `map.tscn` (one line).
+- Tests: surface test also checks every Decal in `decals.tscn` has an
+  albedo texture and sits inside a room rect from `layout.json`.
+- Done when: shots show decals; build thread has the handoff.
+
+## Acceptance
+
+- [ ] `test_halcyon_surfaces.gd` passes with an empty allow-list.
+- [ ] Every room in `room_shots` has its own floor and textured walls and
+      ceiling (before/after attached to the step PRs).
+- [ ] Texture folder under 25 MB, every set tiles (Python test).
+- [ ] The person approved the look on a decision card.
+- [ ] GPU fps check after the re-bake meets the v0.1 gate (build thread).
+
+## Risks
+
+- Seams in tiling textures: torus-mapped 4D noise in Blender plus a test
+  on the edges, in step 1.
+- Repo growth without LFS: size budget test in step 1.
+- Fighting the lightmap: today's bake was made with the old materials;
+  albedo changes shift bounce colour until the re-bake, which is already
+  planned after the detail threads. Keep albedo values near the current
+  ones (wall paint `#5F6D68`).
+- Merge clashes with the sibling threads: agreed split (rooms and materials
+  here, props array and atmosphere scene there); `blockout.tscn` conflicts
+  are fixed by re-running the builder.
+
+## Open decisions
+
+- [ ] Look of the textured surfaces (per-room floors, detail strength): decision card with before/after renders after step 1. Provisional: build on as planned.
