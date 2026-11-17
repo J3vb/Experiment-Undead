@@ -135,3 +135,38 @@ zombies were hunted that way and the gun in hand. A death is not a failure, but
 log errors still are. Run several seeds and use the median death round. It is
 a rough stand-in for a player: it never trains zombies or picks a spot, so read
 it as a trend between two sets of numbers, not as how a human will do.
+
+## Co-op soak
+
+Run `godot --headless --path . --script res://tools/soak/coop_soak.gd -- --clients=2 --rounds=5`.
+Other options (all `--name=value`): `--seed=1`, `--timescale=4`, `--gun=rifle_ar_reforged`,
+`--port=24700`, `--limit=600` (real seconds before stragglers are killed) and
+`--out=user://coop_soak`. It starts one headless dedicated server
+(`tools/soak/coop_soak_server.gd`: players cannot die, power on, doors open) and
+N bot clients (`tools/soak/coop_soak_bot.gd`). Each bot joins `127.0.0.1` through
+the normal join and hello, gives itself the `--gun` on its own PC, moves its own
+player to 4 m from the nearest chasing zombie when it is more than 15 m away (or
+half the gun's range), and claims one body hit per fire interval (x1.2) through
+the real `HitClaims` client path. So every claim should pass the server's damage,
+range and rate checks, and kills, points and XP flow through the network code.
+
+Each process runs with its own `XDG_DATA_HOME` (`<out>/server`, `<out>/bot1`, ...)
+and writes `<out>/<name>.json`: `done`, the round it saw, its log path and counts
+(bots: `claims`, `moves`, `points`, `joined`, `lost_server`; server: `kills`,
+`players`). After the target round the bots leave one second apart, then the
+server quits. Two clients dropping in the same server frame log an ENet
+"Unable to send packet" engine error; that is a known separate issue.
+
+The table has one row per process, then each warning or error with its first log
+line. Every log goes through the solo soak's `check_log` (errors, fail events,
+target round reached and finished; bots need the client round events from F-40).
+On top of that every `net.*` warning fails, grouped by reason, except
+`net.hit_claim_rejected (zombie_not_alive)`: two bots hitting the same zombie is
+normal. The run also fails when a process wrote no result or did not finish, a
+bot lost the server early, or the server saw fewer players than `--clients`.
+The last line is `| PASS | co-op soak ... |` or `| FAIL | ...`.
+
+Workflow `Co-op soak` (`.github/workflows/coop-soak.yml`, not a required check):
+pull requests touching game code run 2 bots to round 5; nightly and manual runs
+use 4 bots to round 20. On failure the `coop-soak-logs` artifact has every
+result file and every process's `logs/` folder.
