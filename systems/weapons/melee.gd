@@ -3,7 +3,7 @@
 class_name Melee
 extends RefCounted
 
-signal hit_landed(is_kill: bool, is_headshot: bool)
+signal hit_landed(is_kill: bool, info: DamageInfo, zone: HitZone)
 
 const KNIFE: WeaponData = preload("res://content/melee/knife.tres")
 
@@ -39,7 +39,7 @@ func swing() -> void:
 	info.impulse = forward * 2.0
 	if not Net.is_authority():
 		if shooter and shooter.session and shooter.session.hit_claims.claim_local(shooter, hit_zone, info):
-			hit_landed.emit(false, info.is_headshot())
+			hit_landed.emit(false, info, hit_zone)
 		return
 	HitClaims.apply_host_hit(shooter, hit_zone, info)
-	hit_landed.emit(hit_zone.health.is_dead, info.is_headshot())
+	hit_landed.emit(hit_zone.health.is_dead, info, hit_zone)
