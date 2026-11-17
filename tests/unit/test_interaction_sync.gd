@@ -5,7 +5,7 @@ extends "res://tests/unit/coop_interaction_fixture.gd"
 
 
 func test_protocol_bumped_for_interaction_messages() -> void:
-	assert_eq(Build.PROTOCOL_VERSION, 5)
+	assert_gte(Build.PROTOCOL_VERSION, 5, "later protocol bumps keep this one")
 
 
 func test_client_opens_a_door_on_every_peer() -> void:

@@ -31,7 +31,7 @@ pattern. **Missing** = needed soon, not built.
 | 3 | [Save format](#3-save-format) | solid | [ADR 0005](adr/0005-local-versioned-saves.md) |
 | 4 | [Events and signals](#4-events-and-signals) | solid | [ADR 0007](adr/0007-signals-and-events.md) |
 | 5 | [UI screens and routing](#5-ui-screens-and-routing) | missing | [ADR 0011](adr/0011-one-ui-router.md), `docs/design/ui-hud.md` |
-| 6 | [Input](#6-input) | solid (2 leaks) | AGENTS.md code rule 5 |
+| 6 | [Input](#6-input) | solid (1 leak) | AGENTS.md code rule 5 |
 | 7 | [Game tick and randomness](#7-game-tick-and-randomness) | solid (1 leak) | AGENTS.md code rule 5 |
 | 8 | [Logging and diagnostics](#8-logging-and-diagnostics) | solid | `docs/LOGGING.md` |
 | 9 | [Tests and CI](#9-tests-and-ci) | solid | AGENTS.md, [ADR 0009](adr/0009-ci-is-the-gate.md) |
@@ -52,19 +52,21 @@ request and the server runs the same code it runs in solo.
 (`InteractionSync`: doors, power, barriers, wall-buys, Reforger, Med
 Dispenser, Specimen Vault, exfil) follow the rule, with two-peer ENet tests
 (`test_interaction_sync`, `test_coop_machines`, `test_coop_world_state`).
+Gear and item guns do too: each owner sends its loadout
+(`PlayerStateSync.submit_loadout`), the server applies gear and loot luck from
+its own copy, and leech / points per hit run where the server applies the hit
+(`ItemLoadout.apply_hit`). Pack equips run in `LootService`'s physics tick
+(plans/item-effects-server.md).
 
 **Why shaky:**
-- Equipped item effects (leech, points per hit) are wired on the owning
-  client only, so they never apply for clients (#145). Equipping from the Pack
-  runs inside a UI key handler (#147).
 - There is no standard "client asks the server" pattern. Eleven scripts each
   write their own `@rpc` with their own checks, so every new feature
   re-invents it.
 
 **Fixed when:** ~~one request path for interactions (client sends the request,
 server checks sender, range and state, then calls the same `interact()`)~~
-(done, F-02), ~~a test runs each interactable from a client~~ (done), and item
-effects run where the server applies the hit (#145, still open).
+(done, F-02), ~~a test runs each interactable from a client~~ (done), and
+~~item effects run where the server applies the hit~~ (done, #145).
 
 ### 2. Content and ids in data
 
@@ -130,8 +132,8 @@ the current screens use it. Build it before the next new screen.
 **Rule:** gameplay reads `InputFrame`s, never the keyboard. CI checks it
 (`input-only-in-input`).
 
-**Leaks:** the Pack overlay reads raw keys (#146) and equips guns from a key
-handler instead of the player's tick (#147).
+**Leak:** the Pack overlay reads raw keys (#146). Its equip key only queues a
+request; `LootService` equips in its physics tick (#147, fixed).
 
 ### 7. Game tick and randomness
 
@@ -241,7 +243,7 @@ tests, as usual. The issue numbers have the details.
 |---|---|---|---|
 | 1 | Green Build: exported server boots, smoke test checks exit codes and a real join | #156 | any server or export work |
 | 2 | **Done (F-02).** One interaction request path for co-op (client asks, server checks sender, range, state, then runs `interact()`), with a client-side test for every interactable | #138, #126 | new machines, doors, power-ups, the 4-player play-test (#127) |
-| 3 | Item effects run where the server applies the hit; one public equip function in `ItemLoadout`, called from the player's tick | #145, #147 | Legendaries (#116), sets (#117), skill effects (#113) |
+| 3 | Done: item effects run where the server applies the hit; one public equip function in `ItemLoadout`, called from a physics tick ([plan](plans/item-effects-server.md)) | #145, #147 | Legendaries (#116), sets (#117), skill effects (#113) |
 | 4 | Ids into data: on-hit effect field on `WeaponData`, grip profile data, shot-peak flag, drop chance and rarity floor on `EnemyData`, badge on `SerumData`; cache loaded content; CI rule against content id literals in code | #143, #149, #163, #148, #154, #140 | new guns or zombies (Crawler #121, Stalker #123, Brute #124) |
 | 5 | Minimal UI router (push, pop, replace, mouse capture), current screens moved onto it | ui-hud.md | skill tree screen (#112), town hub (#131) |
 | 6 | Small leaks: regen in the physics tick (#144), Pack overlay input through the input layer (#146) | #144, #146 | anything touching health or the Pack |

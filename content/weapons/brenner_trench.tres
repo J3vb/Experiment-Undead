@@ -7,6 +7,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/dry_fire.wav" id="5"]
 [ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
 [ext_resource type="Resource" path="res://content/weapons/brenner_trench_reforged.tres" id="7"]
+[ext_resource type="Resource" path="res://content/grips/brenner_trench.tres" id="grip"]
 
 [sub_resource type="Resource" id="recoil"]
 script = ExtResource("2")
@@ -52,6 +53,7 @@ viewmodel_kick = 0.09
 hip_position = Vector3(0.18, -0.17, -0.3)
 ads_position = Vector3(0, -0.05, -0.24)
 viewmodel_scene = ExtResource("3")
+grip = ExtResource("grip")
 fire_sound = ExtResource("4")
 dry_fire_sound = ExtResource("5")
 reload_sound = ExtResource("6")

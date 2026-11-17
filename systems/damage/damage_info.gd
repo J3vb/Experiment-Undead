@@ -8,6 +8,8 @@ enum Zone { BODY, HEAD, LIMB }
 var amount: float = 0.0
 var attacker: Node = null
 var weapon_id: StringName = &""
+## The item gun that fired, or empty. The server pays item on-hit effects for it.
+var item_uid: String = ""
 var damage_type: Type = Type.BULLET
 var hit_zone: Zone = Zone.BODY
 var position: Vector3 = Vector3.ZERO

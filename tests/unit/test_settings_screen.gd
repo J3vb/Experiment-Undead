@@ -184,3 +184,13 @@ func test_standalone_screen_has_keyboard_focus_and_readable_hints() -> void:
 		await wait_process_frames(2)
 		assert_lte(_screen.get_combined_minimum_size().x, 1600.0, "rows fit the game viewport")
 		assert_lte(_screen.get_combined_minimum_size().y, 900.0, "footer remains visible")
+
+
+func test_controller_back_closes_the_screen_and_emits_closed() -> void:
+	watch_signals(_screen)
+	var cancel: InputEventAction = InputEventAction.new()
+	cancel.action = &"ui_cancel"
+	cancel.pressed = true
+	_screen._input(cancel)
+	assert_signal_emitted(_screen, "closed")
+	assert_false(_screen.visible)

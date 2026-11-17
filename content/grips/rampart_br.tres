@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="GripData" format=3]
+
+[ext_resource type="Script" path="res://systems/player/grip_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"rampart_br"
+right_anchor = Vector3(0, -0.1555, -0.119)
+left_anchor = Vector3(0, 0.21, 0.016)
+left_shoulder = Vector3(-0.125, 0.03, -0.234)

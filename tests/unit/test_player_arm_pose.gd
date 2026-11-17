@@ -7,7 +7,7 @@ func test_parallel_palm_and_reach_axes_keep_both_arm_segments_and_hand_targets()
 	add_child_autofree(arms)
 	var skeleton: Skeleton3D = arms.find_children("*", "Skeleton3D", true, false)[0] as Skeleton3D
 	var solver: PlayerArmPose = PlayerArmPose.new(skeleton)
-	var profile: PlayerArmProfiles.Profile = PlayerArmProfiles.profile(&"rifle_ar")
+	var profile: PlayerArmProfiles.Profile = PlayerArmProfiles.profile(Content.weapon(&"rifle_ar"))
 	profile.hip_position = Vector3.ZERO
 	var grips: Array[PlayerArmProfiles.Hand] = [profile.right, profile.left]
 	var sides: Array[String] = ["R", "L"]

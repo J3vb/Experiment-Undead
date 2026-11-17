@@ -1,4 +1,4 @@
-## Applies equipped gear and the spawn Sidearm; Primary and Pack items wait outside this slice.
+## Applies equipped gear and the spawn Sidearm, equips item guns, and runs their on-hit effects on the server.
 class_name ItemLoadout
 extends RefCounted
 
@@ -9,6 +9,7 @@ static func apply(player: Player, loadout: Dictionary) -> void:
 		var equipped: Variant = loadout.get(slot)
 		if equipped is Dictionary:
 			gear.append(equipped)
+	player.state_sync.gear = gear
 	player.equip_gear(gear)
 	var sidearm: Variant = loadout.get("sidearm")
 	if not sidearm is Dictionary:
@@ -19,14 +20,27 @@ static func apply(player: Player, loadout: Dictionary) -> void:
 	var base_data: WeaponData = Content.weapon(base)
 	if not (base_data.loot_tags.has(&"pistol") or base_data.loot_tags.has(&"sidearm")):
 		return
-	var item: ItemInstance = ItemInstance.new(sidearm)
-	var data: WeaponData = item.weapon_data(base_data, player.stats)
 	var starter: int = _pistol_slot(player)
-	if starter >= 0:
-		player.weapons.equip(starter)
-	var weapon: Weapon = player.weapons.replace_current(data) if starter >= 0 else player.weapons.give(data)
+	var replacing: Weapon = player.weapons.weapons[starter] if starter >= 0 else null
+	equip_weapon(player, ItemInstance.new(sidearm), null, replacing)
+
+
+## Gives an item gun (or swaps it in for replacing), carries its run ammo and records it as an item gun.
+static func equip_weapon(
+	player: Player, item: ItemInstance, carried: WeaponInstance, replacing: Weapon = null
+) -> Weapon:
+	var base: WeaponData = Content.weapon(StringName(item.data.get("base", "")))
+	var data: WeaponData = item.weapon_data(base, player.stats)
+	if replacing:
+		player.weapons.equip(player.weapons.weapons.find(replacing))
+	var weapon: Weapon = player.weapons.replace(replacing, data) if replacing else player.weapons.give(data)
+	if carried:
+		weapon.instance.ammo_in_mag = mini(carried.ammo_in_mag, data.magazine_size)
+		weapon.instance.ammo_reserve = mini(carried.ammo_reserve, data.max_reserve)
+	weapon.ammo_changed.emit(weapon.instance.ammo_in_mag, weapon.instance.ammo_reserve)
 	weapon.item = item
-	weapon.hit_landed.connect(_on_hit.bind(player, item))
+	player.item_guns[str(item.data.get("uid", ""))] = item
+	return weapon
 
 
 static func _pistol_slot(player: Player) -> int:
@@ -39,8 +53,7 @@ static func _pistol_slot(player: Player) -> int:
 	return -1
 
 
-static func _on_hit(_kill: bool, _headshot: bool, player: Player, item: ItemInstance) -> void:
-	if not Net.is_authority():
-		return
+## Server: an item gun's on-hit effects for one applied hit.
+static func apply_hit(player: Player, item: ItemInstance) -> void:
 	player.wallet.add(roundi(item.stats.value(&"points_per_hit", 0.0, player.stats)))
 	player.health.heal(item.stats.value(&"leech", 0.0, player.stats))

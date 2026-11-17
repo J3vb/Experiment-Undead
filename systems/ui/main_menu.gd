@@ -2,7 +2,6 @@
 class_name MainMenu
 extends Control
 
-const CHARACTER_SCENE: String = "res://systems/ui/character_screen.tscn"
 const CREDITS: String = """Atkinson Hyperlegible Next and Mono, `assets/fonts/`
 Braille Institute of America, Applied Design Works
 https://github.com/googlefonts/atkinson-hyperlegible-next · SIL OFL 1.1
@@ -12,8 +11,6 @@ Butch Wesley and contributors
 https://github.com/bitwes/Gut · MIT"""
 
 static var launch_consumed: bool = false
-
-var character_screen: CharacterScreen
 
 var _panel_tween: Tween
 var _drift_time: float = 0.0
@@ -25,7 +22,6 @@ var _drift_time: float = 0.0
 @onready var character_button: Button = $Screens/Root/Menu/Character
 @onready var settings_button: Button = $Screens/Root/Menu/Settings
 @onready var credits_button: Button = $Screens/Root/Menu/Credits
-@onready var settings_screen: SettingsScreen = $Screens/Root/SettingsScreen
 @onready var credits_panel: PanelContainer = $Screens/Root/CreditsPanel
 @onready var camera: Camera3D = $Camera3D
 @onready var host_panel: PanelContainer = $Screens/Root/HostPanel
@@ -51,7 +47,6 @@ func _ready() -> void:
 	settings_button.pressed.connect(_open_settings)
 	credits_button.pressed.connect(_open_credits)
 	$Screens/Root/Menu/Quit.pressed.connect(func() -> void: get_tree().quit())
-	settings_screen.closed.connect(_close_settings)
 	$Screens/Root/CreditsPanel/Box/Back.pressed.connect(_close_credits)
 	$Screens/Root/CreditsPanel/Box/Text.text = CREDITS
 	$Screens/Root.add_child(VersionLabel.new())
@@ -94,14 +89,12 @@ func _process(delta: float) -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if is_instance_valid(character_screen) or not event.is_action_pressed(&"ui_cancel"):
+	if not UI.top().is_empty() or not event.is_action_pressed(&"ui_cancel"):
 		return
 	if error_dialog.visible:
 		return
 	if host_panel.visible or join_panel.visible:
 		_close_coop()
-	elif settings_screen.visible:
-		settings_screen._close()
 	elif credits_panel.visible:
 		_close_credits()
 	else:
@@ -242,22 +235,8 @@ func _close_error() -> void:
 
 
 func _open_settings() -> void:
-	menu.hide()
-	if _panel_tween:
-		_panel_tween.kill()
-	settings_screen.show()
-	settings_screen.modulate.a = 0.0
-	settings_screen.position.x = 12.0
-	_panel_tween = create_tween().set_parallel(true)
-	_panel_tween.tween_property(settings_screen, "modulate:a", 1.0, 0.12)
-	_panel_tween.tween_property(settings_screen, "position:x", 0.0, 0.12)
-	(settings_screen.get_node("Margin/Box/Tabs") as TabContainer).get_tab_bar().grab_focus()
-
-
-func _close_settings() -> void:
-	settings_screen.hide()
-	menu.show()
-	settings_button.grab_focus()
+	if UI.top().is_empty():
+		UI.push(&"settings")
 
 
 func _open_credits() -> void:
@@ -280,21 +259,8 @@ func _close_credits() -> void:
 
 
 func _open_character() -> void:
-	if is_instance_valid(character_screen):
-		return
-	character_screen = (load(CHARACTER_SCENE) as PackedScene).instantiate() as CharacterScreen
-	character_screen.closed.connect(_close_character)
-	$Screens/Root.add_child(character_screen)
-	menu.hide()
-	character_screen.open(CharacterProfile.load_or_create(&"solo"))
-
-
-func _close_character() -> void:
-	character_screen.hide()
-	character_screen.queue_free()
-	character_screen = null
-	menu.show()
-	character_button.grab_focus()
+	if UI.top().is_empty():
+		(UI.push(&"character") as CharacterScreen).open(CharacterProfile.load_or_create(&"solo"))
 
 
 func _bind_gamepad() -> void:

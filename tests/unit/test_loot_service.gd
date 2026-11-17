@@ -7,9 +7,12 @@ const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
 var session: GameSession
 var service: LootService
 var _roots: Array[Node] = []
+var _loot_before: Dictionary
 
 
 func before_each() -> void:
+	_loot_before = Content._by_type[&"loot"].duplicate()
+	Content._by_type[&"loot"][&"test_loot_luck"] = "res://tests/fixtures/loot/test_loot_luck.tres"
 	session = GameSession.new()
 	autofree(session)
 	session.director = WaveDirector.new()
@@ -30,6 +33,7 @@ func after_each() -> void:
 		root.free()
 		get_tree().set_multiplayer(null, path)
 	_roots.clear()
+	Content._by_type[&"loot"] = _loot_before
 
 
 func test_fixed_seed_repeats_the_complete_drop_stream() -> void:
@@ -131,10 +135,12 @@ func test_drop_reaches_only_its_owner_and_pickup_only_changes_their_pack() -> vo
 	var client_player: Player = _add_player(client, client_id)
 	server.player = host_player
 	client.player = client_player
-	client_player.stats.add_modifier(&"loot_luck", "increased", 0.2, &"charm")
-	client._physics_process(0.016)
-	await wait_until(func() -> bool: return server._peer_luck.has(client_id), 3.0, "trusted gear luck reached server")
-	assert_eq(server._peer_luck[client_id], 0.2)
+	client_player.state_sync.gear = [{"v": 1, "uid": "charm", "base": "charm", "aff": [["test_loot_luck", 1, 1.0]]}]
+	client_player.state_sync.send_loadout()
+	var server_copy: Player = server.get_parent().get_node(str(client_id)) as Player
+	await wait_until(
+		func() -> bool: return LootService.player_luck(server_copy, 1) == 0.2, 3.0, "charm luck counts on the server"
+	)
 
 	service.drop_chance_override = 1.0
 	var item: Dictionary = service.roll_drop(&"zombie_walker", 1)

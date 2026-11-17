@@ -14,7 +14,6 @@ var feed: Label
 var _feed_left: float = 0.0
 var _selected: int = 0
 var _previous_items: int = 0
-var _run_weapons: Dictionary[String, WeaponInstance] = {}
 
 
 func _ready() -> void:
@@ -210,26 +209,8 @@ func _drop() -> void:
 	service._receive_drop(item, service.player.global_position - service.player.global_basis.z)
 
 
+## Only asks; LootService equips in its next physics tick.
 func _equip() -> void:
 	var items: Array[Dictionary] = service.pack.items
-	if _selected >= items.size() or service.player.is_downed or not service.player.is_alive():
-		return
-	var item: Dictionary = items[_selected]
-	var base: StringName = StringName(item.get("base", ""))
-	if not Content.has(&"weapons", base):
-		return
-	for held: Weapon in service.player.weapons.weapons:
-		if held.item and held.item.data.get("uid") == item.get("uid"):
-			service.player.weapons.equip(service.player.weapons.weapons.find(held))
-			return
-	var uid: String = String(item["uid"])
-	var previous: WeaponInstance = _run_weapons.get(uid)
-	var instance: ItemInstance = ItemInstance.new(item)
-	var weapon: Weapon = service.player.weapons.give(instance.weapon_data(Content.weapon(base), service.player.stats))
-	if previous:
-		weapon.instance.ammo_in_mag = mini(previous.ammo_in_mag, weapon.data.magazine_size)
-		weapon.instance.ammo_reserve = mini(previous.ammo_reserve, weapon.data.max_reserve)
-	_run_weapons[uid] = weapon.instance
-	weapon.ammo_changed.emit(weapon.instance.ammo_in_mag, weapon.instance.ammo_reserve)
-	weapon.item = instance
-	weapon.hit_landed.connect(ItemLoadout._on_hit.bind(service.player, instance))
+	if _selected < items.size():
+		service.request_equip(str(items[_selected].get("uid", "")))

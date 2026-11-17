@@ -23,9 +23,11 @@ live state belongs in objects such as `WeaponInstance`.
     [model](../.agents/skills/blender-model/SKILL.md) and [import](../.agents/skills/godot-asset-import/SKILL.md) skills.
 6. Create `systems/weapons/viewmodels/<name>_viewmodel.tscn` and assign
     `viewmodel_scene`; preserve `Muzzle`, `FlashLight`, `FlashMesh` and animated `Magazine`/`Bolt` parts.
-    Fit its first-person hands in `tools/assets/player_grip_profiles.py` and
-    `systems/player/player_arm_profiles.gd`, reusing the existing curl helpers.
-    Rebuild `player_arms` and commit its GLB and generated `player_arm_grips.json`.
+    Fit its first-person hands in `tools/assets/player_grip_profiles.py`, reusing the
+    existing curl helpers. Rebuild `player_arms` and commit its GLB and generated `player_arm_grips.json`.
+    Add `content/grips/<id>.tres` (`GripData`, `systems/player/grip_data.gd`, follow
+    `rifle_ar.tres`): hand anchors, directions and shoulders, `shot_peak` if the shot
+    moves the hands. Set `grip` on the gun and its Reforged copy. No code change.
     Check hip, ADS and reload poses with `tools/weapon_arm_review.tscn` and the
     arm anatomy, marker and contact checks; a new weapon must have an authored fit.
 7. `Content.reload()` discovers it by filename; use `Content.weapon(&"<id>")`.

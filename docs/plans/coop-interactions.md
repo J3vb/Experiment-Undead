@@ -1,6 +1,6 @@
 # Plan: Co-op interactions (doors, wall-buys, machines)
 
-Status: Building
+Status: Done
 Roadmap: F-02 / issue #138 (also foundation fix 2 in docs/FOUNDATIONS.md, part of #126)
 Phase: P7
 Size: M
@@ -371,7 +371,7 @@ the server with 4 players).
 - [x] A late joiner sees open doors, power, planks, Vault and exfil state.
 - [x] Everything works on a dedicated server with no local player.
 - [x] All solo interactable tests pass unchanged.
-- [ ] Two-instance play-test on the person's PC recorded in the step 4 PR.
+- [x] Two-instance play-test: moved to follow-up issue #191 (the person chose to close F-02 first).
 
 ## Risks
 

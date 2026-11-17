@@ -217,7 +217,7 @@ func test_export_actual_imported_contacts() -> void:
 		weapon._process(1.0)
 		await _export(holder, "sprint_peak", directory)
 		_hip(weapon)
-		if id in [&"brenner_trench", &"fieldhand_lever", &"coachman_2b", &"grubber_sawnoff", &"bastion_lmg"]:
+		if weapon.data.grip.shot_peak:
 			weapon.fire()
 			weapon._process(.001)
 			await _export(holder, "shot_peak", directory)

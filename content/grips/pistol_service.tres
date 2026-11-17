@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GripData" format=3]
+
+[ext_resource type="Script" path="res://systems/player/grip_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"pistol_service"
+right_anchor = Vector3(0, -0.046, -0.064)
+left_anchor = Vector3(0.007678149, -0.036, -0.075)
+left_forward = Vector3(0.7, 0.49, 0.519519008314)
+left_dorsal = Vector3(-0.714142842854, 0.480296068822, 0.509230484432)
+right_shoulder = Vector3(0.19, -0.155, -0.234)
+left_shoulder = Vector3(-0.14, -0.02, -0.234)

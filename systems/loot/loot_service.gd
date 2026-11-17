@@ -12,8 +12,9 @@ var lost: int = 0
 ## Test fixture override; negative uses the normal source chance.
 var drop_chance_override: float = -1.0
 var _banked: bool = false
-var _last_luck: float = -1.0
-var _peer_luck: Dictionary[int, float] = {}
+var _queued_uid: String = ""
+## Ammo left in each Pack gun this run, by uid, so re-equipping does not refill it.
+var _run_weapons: Dictionary[String, WeaponInstance] = {}
 
 
 func _init() -> void:
@@ -23,18 +24,39 @@ func _init() -> void:
 
 func _ready() -> void:
 	Events.enemy_killed.connect(_on_enemy_killed)
-	process_physics_priority = 1
-	multiplayer.peer_disconnected.connect(func(peer_id: int) -> void: _peer_luck.erase(peer_id))
 	if multiplayer.is_server():
 		Log.info(&"loot", &"seed_selected", {"seed": session.rng.seed})
 
 
 func _physics_process(_delta: float) -> void:
-	if multiplayer.multiplayer_peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED:
+	if _queued_uid.is_empty():
 		return
-	if session.is_over or _banked or not is_instance_valid(player) or not player.input_enabled:
+	var uid: String = _queued_uid
+	_queued_uid = ""
+	_equip_from_pack(uid)
+
+
+## The Pack overlay asks; the gun changes in the next physics tick.
+func request_equip(uid: String) -> void:
+	_queued_uid = uid
+
+
+func _equip_from_pack(uid: String) -> void:
+	if session.is_over or not is_instance_valid(player) or player.is_downed or not player.is_alive():
 		return
-	_sync_luck()
+	var item: Dictionary = {}
+	for entry: Dictionary in pack.items:
+		if str(entry.get("uid", "")) == uid:
+			item = entry
+	if item.is_empty() or not Content.has(&"weapons", StringName(item.get("base", ""))):
+		return
+	for held: Weapon in player.weapons.weapons:
+		if held.item and str(held.item.data.get("uid", "")) == uid:
+			player.weapons.equip(player.weapons.weapons.find(held))
+			return
+	var weapon: Weapon = ItemLoadout.equip_weapon(player, ItemInstance.new(item), _run_weapons.get(uid))
+	_run_weapons[uid] = weapon.instance
+	player.state_sync.send_loadout()
 
 
 func _on_enemy_killed(enemy: Node3D, _info: DamageInfo) -> void:
@@ -46,29 +68,11 @@ func _on_enemy_killed(enemy: Node3D, _info: DamageInfo) -> void:
 	for owner_player: Player in session.get_players():
 		var owner_id: int = owner_player.get_multiplayer_authority()
 		var level: int = session.handshake.player_level(owner_id)
-		var gear_luck: float = _peer_luck.get(owner_id, player_luck(owner_player, 1))
+		var gear_luck: float = player_luck(owner_player, 1)
 		var luck: float = clampf(gear_luck + maxf(session.director.round_number - 10, 0) * 0.02, 0, 1)
 		var item: Dictionary = roll_drop(zombie.data.id, level, luck)
 		if not item.is_empty():
 			send_drop(owner_id, item, zombie.global_position)
-
-
-func _sync_luck() -> void:
-	if multiplayer.is_server():
-		return
-	var luck: float = player_luck(player, 1)
-	if luck != _last_luck:
-		_last_luck = luck
-		_receive_luck.rpc_id(1, luck)
-
-
-@rpc("any_peer", "call_remote", "reliable")
-func _receive_luck(luck: float) -> void:
-	if not multiplayer.is_server() or not is_finite(luck):
-		return
-	var sender: int = multiplayer.get_remote_sender_id()
-	if multiplayer.get_peers().has(sender):
-		_peer_luck[sender] = clampf(luck, 0.0, 1.0)
 
 
 static func player_luck(owner_player: Player, round_number: int) -> float:

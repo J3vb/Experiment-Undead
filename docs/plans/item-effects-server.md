@@ -1,6 +1,6 @@
 # Plan: Item effects run on the server
 
-Status: Approved
+Status: Done
 Roadmap: F-00 foundation fix 3 / issues #145, #147
 Phase: P7
 Size: M
@@ -232,12 +232,12 @@ No per-frame work. Budget: no measurable cost.
 
 ## Acceptance
 
-- [ ] A client's gear raises its server-side max health and loot luck (step 1 test).
-- [ ] Leech and points-per-hit work for clients, host and solo through one path (step 2 tests).
-- [ ] Item-gun hit claims are bounded by the item gun's numbers (step 2 test).
-- [ ] Pack equips run in a physics tick and reach the server (step 3 tests).
-- [ ] `LootService` has no luck RPC; `PackOverlay` has no gameplay code.
-- [ ] Foundation 1 in docs/FOUNDATIONS.md no longer lists #145 / #147.
+- [x] A client's gear raises its server-side max health and loot luck (step 1 test).
+- [x] Leech and points-per-hit work for clients, host and solo through one path (step 2 tests).
+- [x] Item-gun hit claims are bounded by the item gun's numbers (step 2 test).
+- [x] Pack equips run in a physics tick and reach the server (step 3 tests).
+- [x] `LootService` has no luck RPC; `PackOverlay` has no gameplay code.
+- [x] Foundation 1 in docs/FOUNDATIONS.md no longer lists #145 / #147.
 
 ## Risks
 

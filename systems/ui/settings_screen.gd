@@ -16,6 +16,8 @@ const CHECKS: Dictionary = {&"invert_y": &"controls", &"vsync": &"video", &"show
 const CHECK_LABELS: Dictionary = {&"invert_y": "Invert Y", &"vsync": "VSync", &"show_fps": "Show FPS"}
 const FPS: Array[int] = [60, 120, 144, 165, 240, 0]
 
+var fade: Tween
+
 
 func _ready() -> void:
 	var menu_theme: Theme = theme
@@ -34,11 +36,22 @@ func _ready() -> void:
 	Settings.changed.connect(_on_setting_changed)
 	_refresh()
 	if is_visible_in_tree():
+		_fade_in()
 		($Margin/Box/Tabs as TabContainer).get_tab_bar().grab_focus()
 
 
+func _fade_in() -> void:
+	modulate.a = 0.0
+	position.x = 12.0
+	fade = create_tween().set_parallel(true)
+	fade.tween_property(self, "modulate:a", 1.0, 0.12)
+	fade.tween_property(self, "position:x", 0.0, 0.12)
+
+
 func _input(event: InputEvent) -> void:
-	if is_visible_in_tree() and event.is_action_pressed(&"pause"):
+	if not is_visible_in_tree():
+		return
+	if event.is_action_pressed(&"pause") or event.is_action_pressed(&"ui_cancel"):
 		_close()
 		get_viewport().set_input_as_handled()
 

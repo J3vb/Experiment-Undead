@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GripData" format=3]
+
+[ext_resource type="Script" path="res://systems/player/grip_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"halberd_lmg"
+right_anchor = Vector3(0, -0.13375, -0.1155)
+left_anchor = Vector3(-0.021, 0.219, 0.03)
+left_dorsal = Vector3(-0.5090923495, 0.7927965138, -0.3351099332)
+left_shoulder = Vector3(-0.115, 0.032, -0.234)

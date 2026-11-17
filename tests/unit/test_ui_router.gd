@@ -56,6 +56,19 @@ func test_push_frees_the_mouse_and_closed_pops() -> void:
 	assert_false(UI.mouse_should_be_free())
 
 
+func test_push_settings_by_id_and_closed_returns_focus_to_the_opener() -> void:
+	var button: Button = Button.new()
+	add_child_autofree(button)
+	button.grab_focus()
+	var screen: Node = UI.push(&"settings")
+	assert_eq(UI.top(), &"settings")
+	assert_eq((screen.get_parent() as CanvasLayer).layer, 20)
+	assert_false(button.has_focus(), "the screen takes focus")
+	screen.emit_signal(&"closed")
+	assert_eq(UI.top(), &"")
+	assert_true(button.has_focus())
+
+
 func test_push_above_an_overlay_keeps_the_higher_layer_and_hides_it() -> void:
 	var lower: Node = _push_test_screen(30)
 	var upper: Node = _push_test_screen(20)
