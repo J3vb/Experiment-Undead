@@ -43,6 +43,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-47 | A full co-op match: co-op soak, pause, squad cards, hub and deploy flow | #213 | F-40 | [plan](plans/coop-full-match.md) | L | Building |
 | F-48 | Full settings screen: Graphics page with presets, then Accessibility and Comfort | - | F-05 | [ready](plans/full-settings.md) | L | Building |
 | F-49 | HUD feedback and loading: loading screen, damage numbers, level-up burst, drop feed | - | - | [ready](plans/hud-feedback-loading.md) | M | Ready |
+| F-50 | First Lantern Post hub: town blockout, Deploy board and ready-up vote (first slice of F-45, pulled forward for the co-op week goal) | #131 | F-02, F-47 step 4 (#255), co-op #256 | [approved](plans/lantern-post-hub.md) | M | Ready |
 
 ## Next: v0.2 Progression and loot
 
