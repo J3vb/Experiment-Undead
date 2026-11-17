@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"graphics"
+section = &"graphics"
+key = &"show_fps"
+label = "Show FPS"
+hint = "Shows a small frames-per-second counter in the HUD."
+kind = &"toggle"
+order = 180

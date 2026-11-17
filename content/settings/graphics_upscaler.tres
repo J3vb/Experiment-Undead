@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"graphics"
+section = &"graphics"
+key = &"upscaler"
+label = "Upscaler"
+hint = "Sharpens the picture when render scale is below 100%. FSR 2 uses its own anti-aliasing (TAA)."
+kind = &"choice"
+options = PackedStringArray("Off", "FSR 1", "FSR 2")
+order = 50

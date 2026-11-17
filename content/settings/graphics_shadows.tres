@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"graphics"
+section = &"graphics"
+key = &"shadows"
+label = "Shadows"
+hint = "Shadow sharpness and soft edges. Low gives hard, blocky shadows."
+kind = &"choice"
+options = PackedStringArray("Low", "Medium", "High", "Ultra")
+order = 80

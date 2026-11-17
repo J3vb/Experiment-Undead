@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"graphics"
+section = &"graphics"
+key = &"render_scale"
+label = "Render scale"
+hint = "Draws the 3D world at a lower resolution to raise FPS. The HUD stays sharp."
+kind = &"slider"
+min_value = 0.5
+max_value = 1.0
+step = 0.05
+display_scale = 100.0
+order = 40
