@@ -39,6 +39,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		_pressed |= InputFrame.NEXT_WEAPON
 	elif event.is_action_pressed(&"weapon_prev"):
 		_pressed |= InputFrame.PREV_WEAPON
+	elif event.is_action_pressed(&"weapon_slot_1"):
+		_pressed |= InputFrame.SLOT_1
+	elif event.is_action_pressed(&"weapon_slot_2"):
+		_pressed |= InputFrame.SLOT_2
+	elif event.is_action_pressed(&"weapon_slot_3"):
+		_pressed |= InputFrame.SLOT_3
 
 
 ## Builds the frame for this tick and clears the accumulators.
