@@ -145,3 +145,42 @@ func test_open_pack_frees_the_mouse_and_closing_gives_it_back() -> void:
 	overlay.set_open(false)
 	assert_false(UI.mouse_should_be_free())
 	UI._root = root
+
+
+func test_pack_keys_are_input_actions_so_rebinding_moves_them() -> void:
+	var saved: Array[InputEvent] = InputMap.action_get_events(&"pack_toggle")
+	InputMap.action_erase_events(&"pack_toggle")
+	var rebound: InputEventKey = InputEventKey.new()
+	rebound.physical_keycode = KEY_I
+	InputMap.action_add_event(&"pack_toggle", rebound)
+	overlay._input(_key(KEY_TAB))
+	assert_false(overlay.panel.visible, "the old key no longer opens the Pack")
+	overlay._input(_key(KEY_I))
+	assert_true(overlay.panel.visible, "the rebound key opens it")
+	assert_eq(PackOverlay.key_name(&"pack_toggle"), "I", "labels follow the binding")
+	InputMap.action_erase_events(&"pack_toggle")
+	for event: InputEvent in saved:
+		InputMap.action_add_event(&"pack_toggle", event)
+	assert_eq(PackOverlay.key_name(&"pack_toggle"), "Tab")
+
+
+func test_drop_and_equip_keys_go_through_their_actions() -> void:
+	var item: Dictionary = ItemRoller.roll_weapon(session.rng, Content.weapon(&"rifle_ar"), &"rare", 17)
+	service.pack.add(item)
+	overlay._input(_key(KEY_E))
+	await wait_physics_frames(2)
+	assert_eq(player.weapons.weapons.size(), 0, "closed Pack ignores the equip key")
+	overlay.set_open(true)
+	overlay._input(_key(KEY_E))
+	await wait_physics_frames(2)
+	assert_eq(player.weapons.current.item.data, item)
+	overlay._input(_key(KEY_G))
+	assert_true(service.pack.items.is_empty(), "the drop key removes the selected item")
+	overlay.set_open(false)
+
+
+func _key(code: Key) -> InputEventKey:
+	var event: InputEventKey = InputEventKey.new()
+	event.pressed = true
+	event.physical_keycode = code
+	return event

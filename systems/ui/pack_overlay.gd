@@ -83,15 +83,15 @@ func _build_panel() -> void:
 	var actions: HBoxContainer = HBoxContainer.new()
 	box.add_child(actions)
 	var equip: Button = Button.new()
-	equip.text = "E · Into hands"
+	equip.text = "%s · Into hands" % key_name(&"pack_equip")
 	equip.pressed.connect(_equip)
 	actions.add_child(equip)
 	var discard: Button = Button.new()
-	discard.text = "G · Drop"
+	discard.text = "%s · Drop" % key_name(&"pack_drop")
 	discard.pressed.connect(_drop)
 	actions.add_child(discard)
 	var close: Button = Button.new()
-	close.text = "Tab · Close"
+	close.text = "%s · Close" % key_name(&"pack_toggle")
 	close.pressed.connect(set_open.bind(false))
 	actions.add_child(close)
 	tooltip = TOOLTIP.instantiate() as ItemTooltip
@@ -110,7 +110,7 @@ func _layout() -> void:
 
 func _refresh() -> void:
 	var items: Array[Dictionary] = service.pack.items
-	count.text = "Pack %d / 6 [Tab]" % items.size()
+	count.text = "Pack %d / 6 [%s]" % [items.size(), key_name(&"pack_toggle")]
 	if items.size() > _previous_items:
 		var item: Dictionary = items.back()
 		feed.text = "%s %s" % [String(item.get("rar", "common")).capitalize(), LootDrop.item_name(item)]
@@ -136,6 +136,15 @@ func _refresh() -> void:
 		slots[index].add_theme_stylebox_override("normal", style)
 		slots[index].add_theme_color_override("font_color", _colour(item))
 	_select(mini(_selected, maxi(items.size() - 1, 0)))
+
+
+## The first key bound to an action, for button labels; follows rebinding.
+static func key_name(action: StringName) -> String:
+	for event: InputEvent in InputMap.action_get_events(action):
+		var key: InputEventKey = event as InputEventKey
+		if key:
+			return key.as_text_physical_keycode()
+	return "?"
 
 
 static func _colour(item: Dictionary) -> Color:
@@ -180,15 +189,15 @@ func _input(event: InputEvent) -> void:
 
 
 func _key(event: InputEventKey) -> void:
-	if event.physical_keycode == KEY_TAB:
+	if event.is_action_pressed(&"pack_toggle"):
 		set_open(not panel.visible)
 	elif not panel.visible:
 		return
 	elif event.is_action_pressed(&"pause"):
 		set_open(false)
-	elif event.physical_keycode == KEY_G:
+	elif event.is_action_pressed(&"pack_drop"):
 		_drop()
-	elif event.physical_keycode == KEY_E:
+	elif event.is_action_pressed(&"pack_equip"):
 		_equip()
 	else:
 		return

@@ -15,7 +15,7 @@
 
 [ext_resource type="FontFile" path="res://assets/fonts/AtkinsonHyperlegibleMono.ttf" id="round_font"]
 
-[ext_resource type="Script" path="res://systems/loot/pack_overlay.gd" id="pack"]
+[ext_resource type="Script" path="res://systems/ui/pack_overlay.gd" id="pack"]
 
 [sub_resource type="FontVariation" id="round_bold"]
 base_font = ExtResource("round_font")

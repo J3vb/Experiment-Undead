@@ -31,7 +31,7 @@ pattern. **Missing** = needed soon, not built.
 | 3 | [Save format](#3-save-format) | solid | [ADR 0005](adr/0005-local-versioned-saves.md) |
 | 4 | [Events and signals](#4-events-and-signals) | solid | [ADR 0007](adr/0007-signals-and-events.md) |
 | 5 | [UI screens and routing](#5-ui-screens-and-routing) | solid | [ADR 0011](adr/0011-one-ui-router.md), `docs/design/ui-hud.md` |
-| 6 | [Input](#6-input) | solid (1 leak) | AGENTS.md code rule 5 |
+| 6 | [Input](#6-input) | solid | AGENTS.md code rule 5 |
 | 7 | [Game tick and randomness](#7-game-tick-and-randomness) | solid | AGENTS.md code rule 5 |
 | 8 | [Logging and diagnostics](#8-logging-and-diagnostics) | solid | `docs/LOGGING.md` |
 | 9 | [Tests and CI](#9-tests-and-ci) | solid | AGENTS.md, [ADR 0009](adr/0009-ci-is-the-gate.md) |
@@ -120,8 +120,10 @@ mouse mode. CI checks it (`ui-router-only`). Built in
 **Rule:** gameplay reads `InputFrame`s, never the keyboard. CI checks it
 (`input-only-in-input`).
 
-**Leak:** the Pack overlay reads raw keys (#146). Its equip key only queues a
-request; `LootService` equips in its physics tick (#147, fixed).
+**Fixed leak:** the Pack overlay (now `systems/ui/pack_overlay.gd`) uses the
+`pack_toggle`, `pack_drop` and `pack_equip` input actions, so its keys can be
+rebound (#146, foundation fix 6). Its equip key only queues a request;
+`LootService` equips in its physics tick (#147).
 
 ### 7. Game tick and randomness
 
@@ -235,7 +237,7 @@ tests, as usual. The issue numbers have the details.
 | 3 | Done: item effects run where the server applies the hit; one public equip function in `ItemLoadout`, called from a physics tick ([plan](plans/item-effects-server.md)) | #145, #147 | Legendaries (#116), sets (#117), skill effects (#113) |
 | 4 | Done: ids into data ([plan](plans/ids-into-data.md)): on-hit effect field on `WeaponData`, grip profile data, shot-peak flag, drop chance and rarity floor on `EnemyData`, badge on `SerumData`; cache loaded content; CI rule against content id literals in code | #143, #149, #163, #148, #154, #140 | new guns or zombies (Crawler #121, Stalker #123, Brute #124) |
 | 5 | Done: minimal UI router (push, pop, replace, mouse capture), current screens moved onto it ([plan](plans/ui-router.md)) | ui-hud.md | skill tree screen (#112), town hub (#131) |
-| 6 | Small leaks: regen in the physics tick (#144), Pack overlay input through the input layer (#146) | #144, #146 | anything touching health or the Pack |
+| 6 | Done: small leaks: regen in the physics tick (#144), Pack overlay input through the input layer (#146) | #144, #146 | anything touching health or the Pack |
 | 7 | Hot-path allocations: preload or pool shot, impact and effect visuals; zombie separation without per-tick arrays | #139, #141, #142, #150, #151 | 4-player play-test (#127), more VFX |
 | 8 | Shared test helpers for two-peer ENet and mesh checks | #161, #164, #170 | more co-op tests |
 | 9 | Write down which peer emits each Events signal (foundation 4) | - | next co-op feature that uses Events |
