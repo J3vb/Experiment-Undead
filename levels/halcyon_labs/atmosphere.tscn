@@ -9,6 +9,12 @@
 [ext_resource type="AudioStream" path="res://assets/audio/ambience/machine_hum.ogg" id="hum"]
 [ext_resource type="AudioStream" path="res://assets/audio/ambience/drip_loop.ogg" id="drips"]
 [ext_resource type="AudioStream" path="res://assets/audio/ambience/klaxon.wav" id="klaxon"]
+[ext_resource type="Texture2D" path="res://assets/textures/story/blood_smear.png" id="blood_smear"]
+[ext_resource type="Texture2D" path="res://assets/textures/story/drag_trail.png" id="drag_trail"]
+[ext_resource type="Texture2D" path="res://assets/textures/story/scratch_marks.png" id="scratch_marks"]
+[ext_resource type="Texture2D" path="res://assets/textures/story/tally_marks.png" id="tally_marks"]
+[ext_resource type="Texture2D" path="res://assets/textures/story/wick_symbol.png" id="wick_symbol"]
+[ext_resource type="Texture2D" path="res://assets/textures/story/leak_pool.png" id="leak_pool"]
 
 [sub_resource type="CylinderMesh" id="base_mesh"]
 material = ExtResource("pipe")
@@ -275,6 +281,16 @@ tracks/0/keys = {
 _data = {
 &"sway": SubResource("sway")
 }
+
+[sub_resource type="StandardMaterial3D" id="leak_drip_mat"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.553, 1, 0.227, 0.8)
+billboard_mode = 2
+
+[sub_resource type="QuadMesh" id="leak_drip_mesh"]
+material = SubResource("leak_drip_mat")
+size = Vector2(0.012, 0.05)
 
 [node name="Atmosphere" type="Node3D"]
 script = ExtResource("atmosphere")
@@ -672,5 +688,92 @@ bus = &"Ambient"
 [node name="Timer" type="Timer" parent="Beacons/BeaconWest/Klaxon"]
 wait_time = 30.0
 autostart = true
+
+[node name="Story" type="Node3D" parent="."]
+
+[node name="GuardBloodSmear" type="Decal" parent="Story"]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 10.12, 1.3, 42)
+size = Vector3(1.6, 0.4, 1.6)
+texture_albedo = ExtResource("blood_smear")
+upper_fade = 0.1
+lower_fade = 0.1
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
+[node name="GuardDragTrail" type="Decal" parent="Story"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 0.02, 43.5)
+size = Vector3(3.2, 0.4, 0.8)
+texture_albedo = ExtResource("drag_trail")
+upper_fade = 0.1
+lower_fade = 0.1
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
+[node name="MessWick" type="Decal" parent="Story"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 46, 2.2, 30.12)
+size = Vector3(1.6, 0.4, 1.6)
+texture_albedo = ExtResource("wick_symbol")
+modulate = Color(1, 1, 1, 0.85)
+upper_fade = 0.1
+lower_fade = 0.1
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
+[node name="GeneratorTally" type="Decal" parent="Story"]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 8.12, 1.6, 18.5)
+size = Vector3(1.6, 0.4, 0.8)
+texture_albedo = ExtResource("tally_marks")
+modulate = Color(1, 1, 1, 0.8)
+upper_fade = 0.1
+lower_fade = 0.1
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
+[node name="LabsLeak" type="Decal" parent="Story"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.6, 0.02, 14.9)
+size = Vector3(2.2, 0.5, 1.6)
+texture_albedo = ExtResource("leak_pool")
+texture_emission = ExtResource("leak_pool")
+emission_energy = 0.6
+modulate = Color(1, 1, 1, 0.7)
+upper_fade = 0.1
+lower_fade = 0.1
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
+[node name="ContainmentScratches" type="Decal" parent="Story"]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, 75.88, -1.6, 14)
+size = Vector3(1.4, 0.4, 1.4)
+texture_albedo = ExtResource("scratch_marks")
+upper_fade = 0.1
+lower_fade = 0.1
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
+[node name="ContainmentDragTrail" type="Decal" parent="Story"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66, -2.98, 19)
+size = Vector3(3.2, 0.4, 0.8)
+texture_albedo = ExtResource("drag_trail")
+upper_fade = 0.1
+lower_fade = 0.1
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
+[node name="LabsLeakDrip" type="GPUParticles3D" parent="Story"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.62, 1.6, 14.3)
+gi_mode = 0
+amount = 4
+lifetime = 0.8
+visibility_range_end = 30.0
+visibility_aabb = AABB(-0.5, -2, -0.5, 1, 2.5, 1)
+process_material = SubResource("drip_process")
+draw_pass_1 = SubResource("leak_drip_mesh")
 
 [connection signal="timeout" from="Beacons/BeaconWest/Klaxon/Timer" to="Beacons/BeaconWest/Klaxon" method="play"]

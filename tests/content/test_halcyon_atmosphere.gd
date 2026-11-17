@@ -12,6 +12,8 @@ const MAP: String = "res://levels/halcyon_labs/map.tscn"
 const SCREEN_SHADER: String = "res://systems/effects/monitor_screen.gdshader"
 const SOUND_SCRIPT: String = "res://tools/assets/ambience_sfx.py"
 const MAX_SOUND_DISTANCE: float = 14.0
+const STORY_TEXTURES: String = "res://assets/textures/story/"
+const LEAK: String = "res://assets/textures/story/leak_pool.png"
 const MAX_LIGHTS_PER_ROOM: int = 3
 ## Provisional budgets from the plan's Performance section.
 const MAX_PARTICLES: int = 1500
@@ -149,4 +151,20 @@ func test_sound_spots_are_quiet_local_ambience() -> void:
 			assert_eq(
 				(player.stream as AudioStreamWAV).loop_mode, AudioStreamWAV.LOOP_DISABLED, "%s is a one-shot" % path
 			)
+	scene.free()
+
+
+func test_story_decals_use_story_textures_and_one_green_leak() -> void:
+	var scene: Node = (load(ATMOSPHERE) as PackedScene).instantiate()
+	var decals: Array[Node] = scene.find_children("*", "Decal", true, false)
+	assert_gt(decals.size(), 0, "story decals placed")
+	var leaks: int = 0
+	for node: Node in decals:
+		var decal: Decal = node as Decal
+		var path: String = decal.texture_albedo.resource_path
+		assert_true(path.begins_with(STORY_TEXTURES), "%s uses a story texture" % decal.name)
+		assert_true(decal.distance_fade_enabled, "%s fades with distance" % decal.name)
+		if path == LEAK:
+			leaks += 1
+	assert_eq(leaks, 1, "bio-green only on the one tank leak")
 	scene.free()
