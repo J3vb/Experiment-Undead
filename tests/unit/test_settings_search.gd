@@ -90,3 +90,12 @@ func test_defaults_reset_only_the_open_page() -> void:
 	_screen.reset_page()
 	assert_eq(InputEvents.label(Settings.get_binding(&"jump")[0]), "Space", "Controls resets bindings")
 	assert_eq(Settings.get_value(&"graphics", &"shadows"), 0)
+
+
+func test_rows_stop_growing_on_ultrawide_screens() -> void:
+	_screen.fit_width(5120.0)
+	var margin: MarginContainer = _screen.get_node("Margin") as MarginContainer
+	assert_eq(margin.get_theme_constant(&"margin_left"), 1660)
+	assert_eq(margin.get_theme_constant(&"margin_right"), 1660)
+	_screen.fit_width(1600.0)
+	assert_eq(margin.get_theme_constant(&"margin_left"), 48, "normal screens keep the side margin")
