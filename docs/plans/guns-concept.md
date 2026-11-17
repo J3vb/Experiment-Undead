@@ -49,7 +49,7 @@ In:
   grip, rifle and shotgun if the new shapes move the support hand).
 - Re-approved turnarounds, a lineup render next to the concept, look-rules
   rule 6 updated for the tape and marks.
-- Display names, only if open decision 1 picks a rename.
+- Display names AR-17, BR-12, VX-9, MR-28 (decision 1).
 
 Not in (and where each goes):
 
@@ -80,7 +80,7 @@ Not in (and where each goes):
   - What other players see: the new world_model in teammates' hands and on wall racks.
   - Works on a dedicated server with no local player: yes (export strips visual resources;
     ScopeLens and reticle already bail out when their material is stripped)
-- Data: no new ids or fields. Display names in content/weapons/*.tres only if decision 1 renames.
+- Data: no new ids or fields. Display names in content/weapons/*.tres (decision 1).
   Code compares against a specific id anywhere: no
 - Save: changes what is saved? no (saves keep weapon ids, not names). Renames a saved id: no
 - Events and UI: none. New screens: n.a.
@@ -130,7 +130,7 @@ Autoloads, managers or base classes added: none.
 
 - No new Resource types or fields. `reticle.tres` is a plain
   `StandardMaterial3D` (unshaded, red #E0322B at emission 2.0, provisional).
-- Display names change only if decision 1 says so; ids stay, so saves, loot
+- Display names change (decision 1); ids stay, so saves, loot
   dicts, maps and wall-buys keep working.
 - Save format change: none.
 - Content checks: `tests/content/test_generated_models.gd` gains red-dot and
@@ -178,7 +178,7 @@ turnarounds, post the before/after in the thread.
   the shared `reticle.tres`. Put the red dot on the rifle first only if
   decision 2 says red dot, else on the Kestrel, so the risky part (ADS line
   through a red dot) is proven in this step. Update look-rules rule 6.
-  Apply decision 1 (names) here if it renames.
+  Apply decision 1: the four display names and their Reforged names.
 - Files: as listed above, plus one viewmodel.
 - Tests: `test_gun_parts.py` checks `red_dot()` makes a window, a
   `ReticleMount` and stays under 300 triangles; a Python test that the atlas
@@ -261,11 +261,11 @@ turnarounds, post the before/after in the thread.
 
 ## Open decisions
 
-- [ ] Names: the concept says AR-17, BR-12, VX-9 and MR-28; the game says
-  AR-7 Rifle, Brenner Trench, Kestrel SMG and Talon DMR, and the roster doc
-  says Vanguard AR for the rifle. Recommended: keep the roster names and use
-  the concept codes as model numbers (Vanguard AR-17, Brenner BR-12, Kestrel
-  VX-9, Talon MR-28).
+- [x] Names: concept codes only (the person, 2026-11-17, decision card).
+  Display names become AR-17, BR-12, VX-9 and MR-28, Reforged versions
+  "AR-17 Reforged" and so on; ids stay. Step 1 changes the four
+  `content/weapons/*.tres` pairs and the names in gun-roster.md and
+  DECISIONS.md, and settles the roster's "AR-7 vs Vanguard AR" line.
 - [ ] Rifle optic: the concept rifle has a red dot, the game rifle has a 1-4x
   scope with a zoomed lens. Recommended: red dot, as in the concept; the
   Talon stays the scoped gun, so each wall gun aims differently.
