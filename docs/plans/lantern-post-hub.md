@@ -1,7 +1,7 @@
 # Plan: First Lantern Post hub (blockout and deploy board)
 
 Status: Approved
-Roadmap: F-12 / issue #131 (first slice of F-45)
+Roadmap: F-48 / issue #131 (first slice of F-45)
 Phase: P9 (pulled forward for the co-op week goal)
 Size: M
 Approved by: Codex plan review on PR #222 (no findings, 2026-11-17); the person approved the town look and asked for a ready-up vote (2026-11-17)
@@ -16,7 +16,7 @@ deploy, return with loot", game-design.md P9) and gives the week goal its
 join, hub, play, return loop.
 
 This plan covers the town scene and the board. The co-op thread's plan
-`docs/plans/coop-full-match.md` (PR #214, steps 4-5) covers the session that
+`docs/plans/coop-full-match.md` (F-47, steps 4-5) covers the session that
 runs the hub, `deploy()`, switching places and the return. The interface
 between the two is in "Systems touched" and is the same in both plans.
 
