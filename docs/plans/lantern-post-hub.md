@@ -1,16 +1,17 @@
 # Plan: First Lantern Post hub (blockout and deploy board)
 
-Status: Review
+Status: Approved
 Roadmap: F-12 / issue #131 (first slice of F-45)
 Phase: P9 (pulled forward for the co-op week goal)
 Size: M
-Approved by:
+Approved by: Codex plan review on PR #222 (no findings, 2026-11-17); the person approved the town look and asked for a ready-up vote (2026-11-17)
 
 ## Goal
 
 Players who join a server land in a small Lantern Post town instead of the
-match, walk to the Deploy board to start Halcyon Labs, and come back to the
-town when the match ends. Serves the co-op pillar ("friends meet, squad up,
+match, walk to the Deploy board and press Ready for Halcyon Labs, and when
+everyone is ready the whole server deploys. They come back to the town when
+the match ends. Serves the co-op pillar ("friends meet, squad up,
 deploy, return with loot", game-design.md P9) and gives the week goal its
 join, hub, play, return loop.
 
@@ -29,17 +30,22 @@ In:
   materials, Cold Containment town look (look-rules.md "Lantern Post").
 - Room for 8 players at the spawn (PlayerSpawner already lines them up 1.2 m
   apart from one marker).
-- One Deploy board in front of the gate that starts Halcyon Labs for the
-  server, through the normal F-02 interaction request path.
+- One Deploy board in front of the gate: pressing interact readies you for
+  Halcyon Labs (or cancels your ready), through the normal F-02 interaction
+  request path and the co-op thread's `DeployVote`.
+- A deploy vote panel in the town: map name, every player with a ready tick,
+  and the 5-second countdown (ui-hud.md screen 8 numbers).
 - A render tool for the look check (`tools/hub_shot.gd`).
 
 Not in (and where it goes):
 
 - Hub session, `deploy()`, place switching, return to hub, main menu and
   dedicated server landing in the hub (co-op thread, `coop-full-match.md`).
-- Map list screen with map cards, squads, ready ticks, countdown, "matches
+- Map list screen with map cards, squads (1-4 of the 8), squad leader, "matches
   running 1 of 2" (F-45 later step; ui-hud.md screen 8). A screen arrives
-  with the second map; until then one board per map is the pick.
+  with the second map; until then one board per map is the pick and the whole
+  server is one squad.
+- Vote state, its network sync and the countdown (co-op thread, `DeployVote`).
 - `MapData` resource: added when the second map arrives (third-use rule,
   agreed with the co-op thread). The board points at a screens id for now.
 - Stash, Workbench, Quartermaster, Trainer, Contract Board, Firing Range,
@@ -59,8 +65,8 @@ Not in (and where it goes):
   one? no
 - Co-op:
   - Who decides: server. The board's `interact()` runs only where
-    `Net.is_authority()` (InteractionSync), and `deploy()` returns early
-    unless `multiplayer.is_server()`.
+    `Net.is_authority()` (InteractionSync); `DeployVote.request_ready()` is
+    server only and calls `deploy()` when everyone is ready.
   - How a client triggers it: presses interact on the board; InteractionSync
     sends the request, the server checks sender, range and rate (F-02) and
     runs `interact()`. `deploy()` refuses when the session is not the hub, a
@@ -73,15 +79,16 @@ Not in (and where it goes):
   `content/screens/*.tres` id; its label is an exported string. Code compares
   against a specific id anywhere: no (the id lives in the scene, not in code).
 - Save: changes what is saved? no
-- Events and UI: no new Events. New screens go through the UI router: n.a.
-  (no new screen).
+- Events and UI: listens to `Events.deploy_vote_changed` (added by the co-op
+  thread, fired on every peer). The vote panel is a small CanvasLayer in the
+  town, not a pushed screen, and never takes the mouse: n.a. for the router.
 - Input through InputFrame, gameplay in _physics_process, randomness from the
   session RNG: yes (no new input, no randomness).
 - Tests: `tests/unit/test_lantern_post.gd` (scene), `tests/unit/test_deploy_board.gd`
   (board, run from a client in the two-peer fixture).
 - Logging: none new. `deploy()` already logs `net.deploy_refused`.
-- Performance: nothing created per frame. Static scene: about 200 nodes,
-  about 30 OmniLights (6 with shadows). Check fps on the GPU agent with 8
+- Performance: nothing created per frame. Static scene: about 800 nodes
+  (detail meshes share one BoxMesh per material), about 25 OmniLights (6 with shadows). Check fps on the GPU agent with 8
   players before F-45 adds more.
 - Out of scope: see "Not in".
 
@@ -105,9 +112,12 @@ Not in (and where it goes):
 |---|---|---|
 | levels/lantern_post/lantern_post.tscn | new | Town scene. Root uses `systems/level/level.gd` (`Level`), `player_spawn` set, no `navigation_region` (so `Level._ready()` calls `_finish()` and `is_navigation_ready` is true on load), no zombie spawn points |
 | levels/looks/lantern_post_night.tres | new | Night Environment: dark blue sky, blue volumetric fog, glow |
-| levels/materials/sodium_lamp.tres, lit_window.tres, pine.tres | new | Emissive sodium lamp, warm window, dark pine |
+| levels/materials/town_surface.gdshader + town_stone/plaster/planks/dark_wood/slate/cobbles/snow.tres | new | One world-space shader for stone courses, timber-framed plaster, planks, slate with snow, wet cobbles and snow; no UVs or texture files (code-built assets first, ADR 0008) |
+| levels/materials/sodium_lamp.tres, lit_window.tres, pine.tres, iron.tres | new | Emissive sodium lamp, warm window, pine, dark iron |
+| tools/assets/town_props.py, assets/models/town/*.glb (+ .import), docs/design/turnarounds/town/*.png | new | Blender-built street lamp, wall lantern, lit and dark windows with shutters, fence, signpost; new `town` folder in check_models.py BUDGETS (2,500 triangles, 4 materials) and turnarounds REFERENCES (style_hub.jpg); tests/content/test_town_models.gd |
 | tools/hub_shot.gd | new | Renders the street and an overview to `screenshots/` |
-| systems/hub/deploy_board.gd, deploy_board.tscn | new (step 2) | `DeployBoard extends Interactable`: `@export var place: StringName`, `@export var label: String`; `get_prompt()` shows the label; `interact(player)` calls `player.session.deploy(place)` |
+| systems/hub/deploy_board.gd, deploy_board.tscn | new (step 2) | `DeployBoard extends Interactable`: `@export var place: StringName`, `@export var label: String`; `get_prompt()` shows "Ready: <label>" or "Cancel ready" from `deploy_vote.is_ready()`; `interact(player)` calls `player.session.deploy_vote.request_ready(player, place)` |
+| systems/hub/deploy_vote_panel.gd, deploy_vote_panel.tscn | new (step 2) | CanvasLayer in the town scene: hidden while no vote; shows the place label, each player's `display_name` with a ready tick and the countdown; updates only on `Events.deploy_vote_changed` |
 | tests/unit/test_lantern_post.gd, test_deploy_board.gd | new | See steps |
 
 Interface with the co-op thread (same text in `coop-full-match.md`):
@@ -116,8 +126,20 @@ Interface with the co-op thread (same text in `coop-full-match.md`):
    return to the hub lands on the same `PlayerSpawn` marker.
 2. This plan delivers `systems/hub/deploy_board.gd/.tscn`, a normal (not
    `is_local()`) Interactable whose `interact(player)` only calls
-   `player.session.deploy(place)`.
-3. The co-op thread owns `GameSession.deploy(place: StringName)`,
+   `player.session.deploy_vote.request_ready(player, place)`, and the vote
+   panel `systems/hub/deploy_vote_panel.gd/.tscn`.
+3. The co-op thread owns `DeployVote` (`systems/game/deploy_vote.gd`, a child of
+   GameSession reached as `session.deploy_vote`): `request_ready(player, place)`
+   is server only; the first press proposes the place and readies that player,
+   the same player pressing again un-readies and cancels the countdown, a press
+   for another place while a vote runs is ignored; when every connected player
+   is ready a 5 s countdown runs, then `session.deploy(place)`. Leaving or
+   joining re-checks (a joiner starts not ready). Read-only: `deploy_vote.place`,
+   `deploy_vote.is_ready(peer_id)`. It fires
+   `Events.deploy_vote_changed(place: StringName, ready_ids: Array[int], countdown_left: float)`
+   on every peer (empty place = no vote; once for a late joiner from a snapshot).
+   Player names come from `player.display_name`. It also owns
+   `GameSession.deploy(place: StringName)`,
    `hub_session.tscn`, `content/screens/hub.tres`, switching places, the return
    to the hub and landing in the hub from the menu, join and dedicated server.
 4. This plan stays out of `systems/game/`, `systems/net/` and `core/`; the
@@ -132,20 +154,21 @@ existing `Interactable` base named in the architecture doc.
   (`&"match"` for Halcyon Labs). A second map adds a screens `.tres`, its
   session scene and one more board node in the town scene.
 - Save format change: none.
-- Network messages: none new. The board uses InteractionSync's request; place
-  switching messages belong to the co-op plan.
+- Network messages: none new in this plan. The board uses InteractionSync's
+  request; vote sync and place switching belong to the co-op plan.
 - Content checks to add in `tests/content/`: none (no new content type). The
   board test checks the place id exists in `content/screens/`.
 
 ## Co-op behaviour
 
-- Who owns the state: the town has no changing state. The deploy decision is
-  the server's.
+- Who owns the state: the town has no changing state. The vote and the deploy
+  decision are the server's (`DeployVote`).
 - What clients send, what the server sends back: the F-02 interact request for
-  the board; the server runs `deploy()`, which the co-op plan syncs.
+  the board; the server runs `request_ready()`; the vote reaches every peer as
+  `Events.deploy_vote_changed`, which the panel and the board prompt read.
 - What a client sees that the host sees too: the same static town and the
   other players (PlayerSpawner, LookSync, owned by the co-op thread).
-- Late joiner: nothing from this plan (static scene).
+- Late joiner: the co-op thread's snapshot fires `deploy_vote_changed` once, so the panel shows the running vote.
 - Dedicated server: loads the same scene (collision for player checks); no
   screen. Lights and meshes cost nothing without a renderer.
 
@@ -161,14 +184,16 @@ after step 1 merges.
 
 ### Step 1: Town scene
 
-- Build: `lantern_post.tscn` with the street, plaza, eight houses per side,
-  roofs and gables, lit windows, sodium street lamps and wall lanterns, three
-  fire barrels, palisade walls, the gate with the green "LANTERN POST" sign
+- Build: `lantern_post.tscn` with the street, plaza, houses on both sides
+  (stone ground floor, timber-framed or plank upper floor, slate roofs, chimneys,
+  framed and shuttered windows, doors with steps and awnings), sodium street
+  lamps, wall lanterns, string lights, a well, log stacks, fire barrels, palisade walls, the gate with the green "LANTERN POST" sign
   and a `DeployBoardSpot` marker, pines, moon light and the night look. Render
   tool. Look check against style_hub.jpg.
 - Files: `levels/lantern_post/lantern_post.tscn`,
-  `levels/looks/lantern_post_night.tres`, `levels/materials/sodium_lamp.tres`,
-  `levels/materials/lit_window.tres`, `levels/materials/pine.tres`,
+  `levels/looks/lantern_post_night.tres`, `levels/materials/town_surface.gdshader`,
+  `levels/materials/town_*.tres`, `levels/materials/sodium_lamp.tres`,
+  `levels/materials/lit_window.tres`, `levels/materials/pine.tres`, `levels/materials/iron.tres`,
   `tools/hub_shot.gd`, `tests/unit/test_lantern_post.gd`, roadmap row.
 - Tests: `test_lantern_post.gd` loads the scene, checks the root is a `Level`
   with `is_navigation_ready` true right after `_ready`, has a player spawn,
@@ -179,30 +204,34 @@ after step 1 merges.
 - Done when: CI green, render in the PR, the person approved the look (decision
   card).
 
-### Step 2: Deploy board
+### Step 2: Deploy board and vote panel
 
 - Build: `DeployBoard` interactable and scene (a sign board on posts with a
   green screen and a label), placed at `DeployBoardSpot` in the town with
-  `place = &"match"`, label "Deploy: Halcyon Labs". Starts after the co-op
-  thread's `deploy()` is on main (the call must compile).
+  `place = &"match"`, label "Halcyon Labs". The vote panel in the town scene.
+  Starts after the co-op thread's `DeployVote` and `deploy()` are on main (the
+  calls must compile).
 - Files: `systems/hub/deploy_board.gd`, `systems/hub/deploy_board.tscn`,
+  `systems/hub/deploy_vote_panel.gd`, `systems/hub/deploy_vote_panel.tscn`,
   `levels/lantern_post/lantern_post.tscn`, `tests/unit/test_deploy_board.gd`,
   docs (DECISIONS.md entry, this plan to Done, roadmap row Done).
-- Tests: `test_deploy_board.gd`: the prompt shows the label; the board's place
-  is a known screens id; in `tests/unit/coop_interaction_fixture.gd` a client's
-  interact request on the board makes the server's hub session start a deploy
-  to that place (the co-op thread's deploy state), and a second request while
-  it runs is refused. Fails without the board.
-- Done when: CI green; from a client, walking to the board and pressing
-  interact takes the whole server into Halcyon Labs (two-instance play-test
-  goes on issue #191's checklist).
+- Tests: `test_deploy_board.gd`: the board's place is a known screens id; the
+  prompt reads "Ready: Halcyon Labs", then "Cancel ready" once that player is
+  ready; in the two-peer fixture (`tests/unit/coop_interaction_fixture.gd`) a
+  client's interact request on the board readies that client on the server and
+  a second press un-readies it; the panel shows names, ticks and the countdown
+  from a `deploy_vote_changed` emit and hides on an empty place. Fails without
+  the board or panel.
+- Done when: CI green; from a client, pressing the board readies you, and when
+  everyone is ready the whole server goes into Halcyon Labs after 5 s
+  (two-instance play-test goes on issue #191's checklist).
 
 ## Acceptance
 
 - [ ] A player who joins a server lands in Lantern Post next to up to 7 others
       (co-op plan + step 1 test).
-- [ ] Pressing interact on the Deploy board from a client starts Halcyon Labs
-      for everyone (step 2 test).
+- [ ] Pressing interact on the Deploy board readies a player; when everyone
+      is ready, Halcyon Labs starts for everyone after 5 s (step 2 test + co-op plan test).
 - [ ] After the match, players are back at the town spawn (co-op plan test).
 - [ ] The town look is approved by the person (decision card, step 1).
 
@@ -212,12 +241,13 @@ after step 1 merges.
   the card before step 2 builds on it.
 - Software renders are darker than the GPU (no SSR, weak ambient); judge
   colour and layout, then check on the GPU agent.
-- `deploy()` lands later than step 1: step 2 waits; step 1 has no dependency.
+- `DeployVote` and `deploy()` land later than step 1: step 2 waits; step 1 has no dependency.
 - Many OmniLights: only 6 cast shadows; the lightmap bake later replaces most
   real-time light.
 
 ## Open decisions
 
-- [ ] Town layout and look (one walled street from the spawn plaza to the
+- [x] Town layout and look (one walled street from the spawn plaza to the
       Deploy Gate, houses both sides, sodium lamps): decision card to the
-      person with the render.
+      person with the render. First render: the person asked for better
+      textures, more detail and a bit brighter (2026-11-17); second render: they asked for more detail first (Blender props, fences, signs); third render sent, roof tilt fixed after their note. Answer: approved "for now" (2026-11-17), and add a ready-up vote so the server moves everyone when all are ready (added to step 2).

@@ -34,7 +34,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-09 | v0.1 performance check | #108 | F-01..F-07 | issue | S | Todo |
 | F-10 | First play-test (the person plays) | #109 | F-09 | issue | S | Todo |
 | F-11 | Release v0.1.0 | #111 | F-10 | issue | S | Todo |
-| F-12 | First Lantern Post hub: town blockout and Deploy board (first slice of F-45, pulled forward for the co-op week goal) | #131 | F-02 | [needed](plans/lantern-post-hub.md) | M | Planning |
+| F-12 | First Lantern Post hub: town blockout, Deploy board and ready-up vote (first slice of F-45, pulled forward for the co-op week goal) | #131 | F-02 | [approved](plans/lantern-post-hub.md) | M | Ready |
 
 ## Next: v0.2 Progression and loot
 
