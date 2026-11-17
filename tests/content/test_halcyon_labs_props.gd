@@ -44,6 +44,11 @@ func test_prop_and_dressing_counts_stay_under_the_caps() -> void:
 	assert_lte((_layout.get("dressing", []) as Array).size(), MAX_DRESSING, "dressing cap")
 
 
+func test_no_prop_is_a_grey_box() -> void:
+	for prop: Dictionary in _layout["props"]:
+		assert_true(prop.has("model"), "%s in %s uses a model" % [prop["id"], prop["room"]])
+
+
 func test_model_props_collide_as_their_box_without_a_grey_block() -> void:
 	for prop: Dictionary in _model_props():
 		var node: Node3D = _prop_node(prop)

@@ -128,42 +128,6 @@ navigation_mesh = SubResource("navmesh")
 
 [node name="Props" type="Node3D" parent="NavigationRegion3D"]
 
-[node name="Truck" type="StaticBody3D" parent="NavigationRegion3D/Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 1.4, 54)
-script = ExtResource("block")
-size = Vector3(2.6, 2.8, 7)
-material = ExtResource("rust")
-
-[node name="CrateA" type="StaticBody3D" parent="NavigationRegion3D/Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0.5, 52)
-script = ExtResource("block")
-size = Vector3(1, 1, 1)
-material = ExtResource("wood")
-
-[node name="CrateB" type="StaticBody3D" parent="NavigationRegion3D/Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.2, 1.4, 52.1)
-script = ExtResource("block")
-size = Vector3(0.8, 0.8, 0.8)
-material = ExtResource("wood")
-
-[node name="CrateC" type="StaticBody3D" parent="NavigationRegion3D/Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.3, 0.45, 53.4)
-script = ExtResource("block")
-size = Vector3(0.9, 0.9, 1.2)
-material = ExtResource("wood")
-
-[node name="CrateD" type="StaticBody3D" parent="NavigationRegion3D/Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 0.6, 56)
-script = ExtResource("block")
-size = Vector3(1.2, 1.2, 1.2)
-material = ExtResource("wood")
-
-[node name="Drum" type="StaticBody3D" parent="NavigationRegion3D/Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0.45, 49)
-script = ExtResource("block")
-size = Vector3(0.6, 0.9, 0.6)
-material = ExtResource("rust")
-
 [node name="TruckFire" type="OmniLight3D" parent="NavigationRegion3D/Props"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 3.2, 52)
 light_color = Color(1, 0.55, 0.2, 1)
