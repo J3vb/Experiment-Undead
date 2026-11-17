@@ -64,6 +64,8 @@ var held_weapon: StringName = &""
 ## Seconds the current reload takes (empty mag and Serums included); 0 when not reloading.
 var reload_time: float = 0.0
 var gun: Node3D
+## This peer drives the player. Read once in _ready: asking every tick errors once the peer has left.
+var is_owner: bool = false
 
 var _last_position: Vector3 = Vector3.ZERO
 var _since_update: float = 0.0
@@ -78,6 +80,7 @@ var _started_reload: float = 0.0
 
 func _ready() -> void:
 	Events.reload_started.connect(_on_reload_started)
+	is_owner = player.is_multiplayer_authority()
 	if headless:
 		return
 	var players: Array[Node] = model.find_children("*", "AnimationPlayer", true, false)
@@ -108,7 +111,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if player.is_multiplayer_authority():
+	if is_owner:
 		_publish()
 	if tree == null:
 		return
@@ -195,7 +198,7 @@ func _show_weapon() -> void:
 	gun = data.world_model.instantiate() as Node3D
 	gun.transform = hold_transform(data.grip)
 	_hand.add_child(gun)
-	if player.is_multiplayer_authority():
+	if is_owner:
 		for node: Node in gun.find_children("*", "GeometryInstance3D", true, false):
 			(node as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY
 

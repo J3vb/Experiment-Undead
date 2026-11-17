@@ -147,7 +147,7 @@ func test_owner_publishes_its_current_gun_and_holds_it_as_a_shadow() -> void:
 
 
 func test_teammate_swaps_the_held_gun_when_the_synced_id_changes() -> void:
-	player.set_multiplayer_authority(2)
+	animator.is_owner = false
 	animator.held_weapon = &"rifle_ar"
 	await wait_physics_frames(2)
 	var rifle: Node3D = animator.gun
@@ -182,7 +182,7 @@ func test_fire_kicks_only_the_upper_body() -> void:
 
 
 func test_reload_stretches_to_the_synced_reload_time_and_fades_out_when_it_ends() -> void:
-	player.set_multiplayer_authority(2)
+	animator.is_owner = false
 	animator.held_weapon = &"rifle_ar"
 	animator.reload_time = 2.8
 	await wait_physics_frames(2)
