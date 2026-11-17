@@ -1,7 +1,8 @@
 ## The Specimen Vault: pay to roll a random gun from its pool, then take it
 ## before the offer runs out. It sits on one of the map's vault_spot markers.
 ## After a few rolls the specimen is gone: that roll is refunded and the Vault
-## moves to another spot. Needs power.
+## moves to another spot. Needs power. The server rolls; state, offer, buyer
+## and spot reach clients, and taking the offer is a grant to the buyer.
 class_name SpecimenVault
 extends Interactable
 
@@ -22,7 +23,8 @@ var state: State = State.IDLE
 var offer: WeaponData
 var spot: Node3D
 var rolls_left: int = 0
-var _buyer: Player
+## Net id of the player who rolled; only they can take the offer. 0 = nobody.
+var buyer_id: int = 0
 var _timer: float = 0.0
 var _cycle: float = 0.0
 
@@ -39,23 +41,64 @@ func get_prompt(player: Player) -> String:
 		return "Needs power"
 	match state:
 		State.OFFERING:
-			return "Take %s [F]" % offer.display_name if player == _buyer else ""
+			return "Take %s [F]" % offer.display_name if player.net_id == buyer_id else ""
 		State.IDLE:
 			if _has_choice(player):
 				return "Roll the Specimen Vault [F]  %d" % cost
 	return ""
 
 
-func interact(player: Player, _facts: Dictionary = {}) -> void:
+func interact(player: Player, facts: Dictionary = {}) -> void:
 	if not _level().power_on:
 		return
-	if state == State.OFFERING and player == _buyer:
-		player.weapons.give(offer)
+	if facts.is_empty():
+		facts = owner_facts(player)
+	if state == State.OFFERING and player.net_id == buyer_id:
+		_grant(player, InteractionSync.Grant.GIVE, offer, &"", facts.slot)
 		_close()
 	elif state == State.IDLE:
-		var choices: Array[WeaponData] = _choices(player)
+		var choices: Array[WeaponData] = _choices_for(facts.held)
 		if not choices.is_empty() and _pay(player, cost):
 			_start_roll(player, choices)
+
+
+## held: ids of the owner's guns; slot: the gun in hand, the one a full holder gives up.
+func owner_facts(player: Player) -> Dictionary:
+	var held: Array[StringName] = []
+	for weapon: Weapon in player.weapons.weapons:
+		held.append(weapon.data.id)
+	return {"held": held, "slot": player.weapons.weapons.find(player.weapons.current)}
+
+
+func check_facts(facts: Dictionary) -> bool:
+	if not (facts.get("held") is Array and facts.get("slot") is int):
+		return false
+	for id: Variant in facts.held:
+		if not (id is StringName and Content.ids(&"weapons").has(id)):
+			return false
+	return true
+
+
+func net_state() -> Dictionary:
+	return {
+		"state": state,
+		"offer": offer.id if offer else &"",
+		"buyer": buyer_id,
+		"spot": _level().get_path_to(spot) if spot else ^"",
+	}
+
+
+## Client side: clients run no timers, only the label.
+func apply_net_state(net: Dictionary) -> void:
+	state = net.get("state", state)
+	var offer_id: StringName = net.get("offer", &"")
+	offer = Content.weapon(offer_id) if Content.ids(&"weapons").has(offer_id) else null
+	buyer_id = net.get("buyer", 0)
+	var spot_path: NodePath = net.get("spot", ^"")
+	var new_spot: Node3D = _level().get_node_or_null(spot_path) as Node3D if not spot_path.is_empty() else null
+	if new_spot:
+		spot = new_spot
+		global_transform = spot.global_transform
 
 
 func _start_roll(player: Player, choices: Array[WeaponData]) -> void:
@@ -69,13 +112,14 @@ func _start_roll(player: Player, choices: Array[WeaponData]) -> void:
 		for gun: WeaponData in choices:
 			weights.append(gun.crate_weight)
 		offer = choices[rng.rand_weighted(weights)]
-	_buyer = player
+	buyer_id = player.net_id
 	state = State.ROLLING
 	_timer = ROLL_TIME
+	state_changed.emit()
 
 
 func _physics_process(delta: float) -> void:
-	if state == State.IDLE or not Net.is_authority():
+	if state == State.IDLE or not multiplayer.is_server():
 		return
 	_timer -= delta
 	if _timer > 0.0:
@@ -85,18 +129,24 @@ func _physics_process(delta: float) -> void:
 	elif offer:
 		state = State.OFFERING
 		_timer = OFFER_TIME
+		state_changed.emit()
 	else:
-		if is_instance_valid(_buyer):
-			_buyer.wallet.add(cost)
+		var buyer: Player = _session().players.find_player(buyer_id)
+		if buyer:
+			buyer.wallet.add(cost)
 		_move()
 		_close()
 
 
 ## Guns in the pool that the player does not hold yet (base or Reforged).
 func _choices(player: Player) -> Array[WeaponData]:
+	return _choices_for(owner_facts(player).held)
+
+
+func _choices_for(held: Array) -> Array[WeaponData]:
 	var out: Array[WeaponData] = []
 	for gun: WeaponData in pool:
-		if gun.crate_weight > 0.0 and not _holds(player, gun):
+		if gun.crate_weight > 0.0 and not held.has(gun.id) and not (gun.upgraded and held.has(gun.upgraded.id)):
 			out.append(gun)
 	return out
 
@@ -118,7 +168,7 @@ func _holds(player: Player, gun: WeaponData) -> bool:
 
 func _move() -> void:
 	var others: Array[Node3D] = []
-	for node: Node in get_tree().get_nodes_in_group(&"vault_spot"):
+	for node: Node in _spots():
 		if node != spot:
 			others.append(node as Node3D)
 	if others.is_empty():
@@ -130,13 +180,14 @@ func _move() -> void:
 func _close() -> void:
 	state = State.IDLE
 	offer = null
-	_buyer = null
+	buyer_id = 0
+	state_changed.emit()
 
 
 func _nearest_spot() -> Node3D:
 	var best: Node3D
 	var best_distance: float = INF
-	for node: Node in get_tree().get_nodes_in_group(&"vault_spot"):
+	for node: Node in _spots():
 		var distance: float = (node as Node3D).global_position.distance_to(global_position)
 		if distance < best_distance:
 			best = node as Node3D
@@ -144,8 +195,16 @@ func _nearest_spot() -> Node3D:
 	return best
 
 
+## This map's spots only (a test can hold several maps).
+func _spots() -> Array[Node]:
+	var level: Level = _level()
+	return get_tree().get_nodes_in_group(&"vault_spot").filter(
+		func(node: Node) -> bool: return level == null or level.is_ancestor_of(node)
+	)
+
+
 func _session() -> GameSession:
-	return get_tree().get_first_node_in_group(&"game_session") as GameSession
+	return _level().get_parent() as GameSession
 
 
 ## Visual only: the label flicks through gun names while rolling.

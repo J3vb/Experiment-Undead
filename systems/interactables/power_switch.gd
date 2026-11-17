@@ -15,7 +15,3 @@ func get_prompt(_player: Player) -> String:
 
 func interact(_player: Player, _facts: Dictionary = {}) -> void:
 	_level().turn_power_on()
-
-
-func accepts_requests() -> bool:
-	return true

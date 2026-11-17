@@ -30,10 +30,6 @@ func interact(player: Player, facts: Dictionary = {}) -> void:
 		_grant(player, InteractionSync.Grant.REFILL, weapon, owned, facts.slot)
 
 
-func accepts_requests() -> bool:
-	return true
-
-
 ## owned: held id of this gun or its Reforged tier (or empty); slot: that gun, or the gun in hand.
 func owner_facts(player: Player) -> Dictionary:
 	var owned: Weapon = _owned(player)
