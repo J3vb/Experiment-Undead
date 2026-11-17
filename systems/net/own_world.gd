@@ -28,6 +28,7 @@ func open(port: int) -> void:
 		state.status = &"offline_busy"
 		return
 	state.status = &"open"
+	Net.info.start(port, str(Settings.get_value(&"network", &"world_name")))
 	if not Settings.get_value(&"network", &"upnp"):
 		state.merge({"router": &"off", "address": PortOpener.local_address()})
 		return
@@ -44,6 +45,7 @@ func reload() -> void:
 
 func close() -> void:
 	state = {}
+	Net.info.stop()
 
 
 ## The game is quitting: give the router its ports back.

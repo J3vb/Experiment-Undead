@@ -33,6 +33,8 @@ var changing_place: bool = false
 var holds_place: bool = false
 ## Enter world opens it; the pause screen reads world.state.
 var world: OwnWorld = OwnWorld.new()
+## Answers server browser queries while this PC runs a world or a dedicated server.
+var info: ServerInfo
 
 var _next_net_id: int = 1
 var _target: String = ""
@@ -45,6 +47,11 @@ var _deadline: Timer
 var _signals_bound: bool = false
 var _connected: bool = false
 var _coop: bool = false
+
+
+func _ready() -> void:
+	info = ServerInfo.new()
+	add_child(info)
 
 
 func is_authority() -> bool:

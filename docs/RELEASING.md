@@ -56,12 +56,12 @@ Tags with a dash (`v0.2.0-rc.1`) become pre-releases and do not move `latest`.
 3. Copy `deploy/unraid/experiment-undead-server.xml` to
    `/boot/config/plugins/dockerMan/templates-user/` and add the container from
    **Docker**, **Add Container**, template `experiment-undead-server`.
-4. It runs as `99:100` (nobody:users) so it can write to appdata. Port 7777/udp.
+4. It runs as `99:100` (nobody:users) so it can write to appdata. Ports 7777/udp (game) and 8777/udp (server browser info; set `EU_SERVER_NAME` to name the server).
 
 Run it anywhere else:
 
 ```bash
-docker run -d --name eu-server -p 7777:7777/udp -v eu-data:/data \
+docker run -d --name eu-server -p 7777:7777/udp -p 8777:8777/udp -v eu-data:/data \
   ghcr.io/j3vb/experiment-undead-server:latest
 ```
 

@@ -7,3 +7,4 @@ script = ExtResource("1_screen")
 scene = "res://systems/game/hub_session.tscn"
 root = true
 captures_mouse = true
+title = "Lantern Post"

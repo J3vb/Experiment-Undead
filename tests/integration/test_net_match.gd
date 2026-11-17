@@ -74,6 +74,25 @@ func _process_events(pid: int) -> Array[Dictionary]:
 	return events
 
 
+func test_the_server_browser_sees_the_dedicated_server_before_joining() -> void:
+	var nonce: PackedByteArray = PackedByteArray([7, 7, 7, 7, 1, 2, 3, 4])
+	var socket: PacketPeerUDP = PacketPeerUDP.new()
+	socket.bind(0, "127.0.0.1")
+	var info: Dictionary = {}
+	for i: int in 60:
+		if i % 10 == 0:
+			ServerInfo.send_queries(socket, nonce, PackedInt32Array([PORT + ServerInfo.PORT_OFFSET]), "127.0.0.1")
+		await wait_physics_frames(1)
+		while info.is_empty() and socket.get_available_packet_count() > 0:
+			info = ServerInfo.parse_reply(socket.get_packet(), nonce)
+		if not info.is_empty():
+			break
+	socket.close()
+	assert_eq(info.get("name"), "Dedicated server")
+	assert_eq(info.get("protocol"), Build.PROTOCOL_VERSION)
+	assert_eq(info.get("max"), Net.MAX_PLAYERS)
+
+
 func test_wrong_protocol_client_is_refused_and_logs_the_reason() -> void:
 	var wrong_protocol: int = Build.PROTOCOL_VERSION + 1
 	var pid: int = _launch(["--", "--join=127.0.0.1:%d" % PORT, "--test-protocol=%d" % wrong_protocol])

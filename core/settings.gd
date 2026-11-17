@@ -27,7 +27,14 @@ const DEFAULTS: Dictionary = {
 		&"shake_hits": 1.0,
 		&"flash_reduction": false,
 	},
-	&"network": {&"last_address": "", &"last_port": 7777, &"open_to_friends": true, &"upnp": true},
+	&"network":
+	{
+		&"last_address": "",
+		&"last_port": 7777,
+		&"open_to_friends": true,
+		&"upnp": true,
+		&"world_name": "Lantern Post",
+	},
 }
 ## Min and max of float options that are not 0 to 1.
 const RANGES: Dictionary = {

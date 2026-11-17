@@ -2,7 +2,7 @@
 extends GutTest
 
 const PAGES: Array[StringName] = [&"controls", &"aim", &"graphics", &"audio", &"accessibility", &"comfort", &"network"]
-const KINDS: Array[StringName] = [&"toggle", &"slider", &"choice", &"number"]
+const KINDS: Array[StringName] = [&"toggle", &"slider", &"choice", &"number", &"text"]
 
 
 func test_every_row_is_complete() -> void:
