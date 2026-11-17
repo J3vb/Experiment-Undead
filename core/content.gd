@@ -5,6 +5,7 @@ extends Node
 const ROOT: String = "res://content"
 
 var _by_type: Dictionary[StringName, Dictionary] = {}
+var _loaded: Dictionary[String, Resource] = {}
 
 
 func _ready() -> void:
@@ -13,6 +14,7 @@ func _ready() -> void:
 
 func reload() -> void:
 	_by_type.clear()
+	_loaded.clear()
 	var root: DirAccess = DirAccess.open(ROOT)
 	if root == null:
 		push_error("Content: missing %s" % ROOT)
@@ -46,7 +48,14 @@ func get_item(type: StringName, id: StringName) -> Resource:
 	if not items.has(id):
 		push_error("Content: no %s with id '%s'" % [type, id])
 		return null
-	return load(items[id])
+	var path: String = items[id]
+	if not _loaded.has(path):
+		_loaded[path] = load(path)
+	return _loaded[path]
+
+
+func has(type: StringName, id: StringName) -> bool:
+	return _by_type.get(type, {}).has(id)
 
 
 func ids(type: StringName) -> Array:

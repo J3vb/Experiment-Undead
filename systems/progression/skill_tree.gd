@@ -22,7 +22,7 @@ static func points_in_branch(ranks: Dictionary[StringName, int], branch: StringN
 
 
 static func can_rank_up(ranks: Dictionary[StringName, int], node_id: StringName, level: int) -> bool:
-	if not Content.ids(&"skills").has(node_id) or points_available(level, ranks) < 1:
+	if not Content.has(&"skills", node_id) or points_available(level, ranks) < 1:
 		return false
 	var node: SkillNodeData = Content.get_item(&"skills", node_id) as SkillNodeData
 	var rank: int = ranks.get(node_id, 0)

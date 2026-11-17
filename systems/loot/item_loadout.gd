@@ -14,7 +14,7 @@ static func apply(player: Player, loadout: Dictionary) -> void:
 	if not sidearm is Dictionary:
 		return
 	var base: StringName = StringName(sidearm.get("base", ""))
-	if not Content.ids(&"weapons").has(base):
+	if not Content.has(&"weapons", base):
 		return
 	var base_data: WeaponData = Content.weapon(base)
 	if not (base_data.loot_tags.has(&"pistol") or base_data.loot_tags.has(&"sidearm")):

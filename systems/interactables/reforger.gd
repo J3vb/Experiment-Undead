@@ -26,7 +26,7 @@ func get_prompt(player: Player) -> String:
 	return "Refill %s [F]  %d" % [weapon.data.display_name, refill_cost]
 
 
-func interact(player: Player) -> void:
+func interact(player: Player, _facts: Dictionary = {}) -> void:
 	var weapon: Weapon = player.weapons.current
 	if not _level().power_on or weapon == null:
 		return

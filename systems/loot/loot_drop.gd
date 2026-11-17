@@ -43,12 +43,16 @@ func get_prompt(viewer: Player) -> String:
 	)
 
 
-func interact(viewer: Player) -> void:
+func interact(viewer: Player, _facts: Dictionary = {}) -> void:
 	if viewer != player or is_queued_for_deletion() or not _can_reach(viewer):
 		return
 	if pack.add(item):
 		viewer.focus = null
 		queue_free()
+
+
+func is_local() -> bool:
+	return true
 
 
 func _can_reach(viewer: Player) -> bool:
@@ -63,9 +67,9 @@ func _can_reach(viewer: Player) -> bool:
 
 static func item_name(data: Dictionary) -> String:
 	var base: StringName = StringName(data.get("base", ""))
-	if Content.ids(&"weapons").has(base):
+	if Content.has(&"weapons", base):
 		return Content.weapon(base).display_name
-	if Content.ids(&"loot").has(base):
+	if Content.has(&"loot", base):
 		var gear: GearBaseData = Content.get_item(&"loot", base) as GearBaseData
 		if gear:
 			return gear.display_name

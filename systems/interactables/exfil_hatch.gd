@@ -27,7 +27,7 @@ func get_prompt(_player: Player) -> String:
 	return "Call exfil [F]" if is_open and not is_holding else ""
 
 
-func interact(_player: Player) -> void:
+func interact(_player: Player, _facts: Dictionary = {}) -> void:
 	if not is_open or is_holding:
 		return
 	is_holding = true

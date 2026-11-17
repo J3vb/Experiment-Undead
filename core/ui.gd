@@ -115,7 +115,7 @@ func _clear() -> void:
 
 
 func _screen(id: StringName) -> ScreenData:
-	if not Content.ids(TYPE).has(id):
+	if not Content.has(TYPE, id):
 		Log.warn(&"ui", &"unknown_screen", {"id": String(id)})
 		return null
 	return Content.get_item(TYPE, id) as ScreenData

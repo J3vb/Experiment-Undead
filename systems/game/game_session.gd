@@ -23,6 +23,7 @@ var players: PlayerSpawner
 var handshake: Handshake
 var look_sync: LookSync
 var hit_claims: HitClaims
+var interactions: InteractionSync
 var loot: LootService
 var remote_shots: RemoteShots
 var is_over: bool = false
@@ -62,7 +63,6 @@ func _ready() -> void:
 	Events.player_died.connect(_on_player_died)
 	Events.enemy_killed.connect(_on_enemy_killed)
 	_setup_handshake()
-
 	if not _setup_network():
 		return
 	_auto_accept_quit = get_tree().auto_accept_quit
@@ -125,7 +125,8 @@ func _setup_shooting() -> void:
 	loot = LootService.new()
 	remote_shots = RemoteShots.new()
 	remote_shots.name = "RemoteShots"
-	for system: Node in [hit_claims, loot, remote_shots]:
+	interactions = InteractionSync.new()
+	for system: Node in [hit_claims, loot, remote_shots, interactions]:
 		system.set("session", self)
 		add_child(system)
 	(hud.get_node("Root/Pack") as PackOverlay).setup(loot)
@@ -163,7 +164,6 @@ func _on_player_added(player: Player) -> void:
 		player.gear_rig.apply(LookBuilder.from_equipped(_profile.loadout if _profile else {}))
 	if is_over and multiplayer.is_server():
 		_receive_match_end.rpc_id(player.net_id, _match_stats)
-
 	remote_shots.watch_player(player)
 	_try_start()
 

@@ -28,7 +28,7 @@ built, what was simplified on purpose, and what is still to do.
 - **Godot 4.7.2, Forward+, Jolt at 60 Hz, physics interpolation on.**
 - **Typed GDScript enforced:** `untyped_declaration` and `inferred_declaration` are errors (addons excluded).
 - **Folders:** `core/` autoloads, `systems/<feature>/` code + scenes, `content/<type>/` data only.
-- **Autoloads:** `Events` (past-tense facts only), `Content` (id = file name, strips `.remap`), `Net` (`is_authority()`, id allocation).
+- **Autoloads:** `Events` (past-tense facts only), `Content` (id = file name, strips `.remap`, keeps each loaded resource until `reload()`, `has(type, id)`), `Net` (`is_authority()`, id allocation).
 - **Content as Resources:** `WeaponData` + `RecoilData` (per-shot pattern), `EnemyData`, `WaveRules` + `EnemySpawnEntry`, `EconomyRules`. Live state is in `WeaponInstance`; `.tres` files are never mutated (tested).
 - **Damage:** `DamageInfo` (amount, attacker, weapon id, type, zone, position, normal, impulse) → `HitZone` (Area3D on layer 4) → `HealthComponent`. Weapon head/limb multipliers from data, per-zone armour on the HitZone.
 - **Collision layers 1-8** named as in the doc.

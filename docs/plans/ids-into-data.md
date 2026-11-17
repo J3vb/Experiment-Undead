@@ -345,6 +345,9 @@ use). Budget: no new per-frame work.
   than disk loads. Step 1 is first and its PR records the re-check; if the
   spikes stay, open a performance issue for foundation fix 7 instead of
   growing this plan.
+  Step 1 result (PR #179): repeat rolls 145 ms to 0.2 ms; the first roll of a
+  match still loads all loot bases once (~90 ms headless). Follow-up: #181
+  (load them at match start). In-game HealthWatch check waits for the next play-test.
 - **Arms move by a hair.** Hand-copying 22 guns' numbers could shift a hand.
   The snapshot test is written against today's code before the rewrite and
   must pass unchanged, and the character contact check must not need a new

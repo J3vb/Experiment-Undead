@@ -1,7 +1,8 @@
 ## Buyable door or debris. Buying it removes the door (and its blocker child),
 ## opens its area so that area's spawn points join, and rebakes the navmesh.
 ## Doors that open the same area open together. A door with cost 0 that needs
-## power opens by itself when the power comes on.
+## power opens by itself when the power comes on. Clients open doors the
+## server lists as removed; only the server rebakes.
 class_name Door
 extends Interactable
 
@@ -30,10 +31,22 @@ func get_prompt(_player: Player) -> String:
 	return "Open %s [F]  %d" % [label, cost]
 
 
-func interact(player: Player) -> void:
+func interact(player: Player, _facts: Dictionary = {}) -> void:
 	if is_open or cost == 0 or (needs_power and not level.power_on):
 		return
 	if _pay(player, cost):
+		open()
+
+
+func accepts_requests() -> bool:
+	return true
+
+
+## A client told by the server that this door is gone plays the opening too.
+func retire() -> void:
+	if is_open:
+		super()
+	else:
 		open()
 
 
@@ -53,11 +66,12 @@ func open() -> void:
 		buy.play()
 	# Free the blocker now so the navmesh rebake no longer sees it.
 	get_node("Blocker").free()
-	queue_free()
+	retire()
 	var others: Array[Node] = get_tree().get_nodes_in_group(&"doors")
 	for node: Node in others:
 		var other: Door = node as Door
 		if other != self and other.opens_area == opens_area:
 			other.open()
 	level.open_area(opens_area)
-	level.rebake_navigation()
+	if multiplayer.is_server():
+		level.rebake_navigation()

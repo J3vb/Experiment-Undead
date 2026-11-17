@@ -93,7 +93,7 @@ func _load_implicit(line: Array) -> void:
 
 
 func _affix(id: StringName) -> AffixData:
-	if not Content.ids(&"loot").has(id):
+	if not Content.has(&"loot", id):
 		return null
 	return Content.get_item(&"loot", id) as AffixData
 

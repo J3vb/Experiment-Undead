@@ -216,7 +216,7 @@ func _equip() -> void:
 		return
 	var item: Dictionary = items[_selected]
 	var base: StringName = StringName(item.get("base", ""))
-	if not Content.ids(&"weapons").has(base):
+	if not Content.has(&"weapons", base):
 		return
 	for held: Weapon in service.player.weapons.weapons:
 		if held.item and held.item.data.get("uid") == item.get("uid"):

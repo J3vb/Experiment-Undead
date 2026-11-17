@@ -57,7 +57,7 @@ func apply(look: CharacterLook) -> void:
 			visual = GearVisual.fallback(slot)
 			rarity = &"common"
 		var piece: Node3D = _attach(visual)
-		if not Content.ids(&"looks").has(rarity):
+		if not Content.has(&"looks", rarity):
 			rarity = &"common"
 		var finish: RarityLook = Content.get_item(&"looks", rarity) as RarityLook
 		var dyes: Array = entry.get("dyes", [CharacterLook.DEFAULT_DYE_MAIN, CharacterLook.DEFAULT_DYE_ACCENT])
