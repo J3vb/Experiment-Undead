@@ -150,7 +150,7 @@ Control script owned by the Hud (one job: draw the cards).
 - Late joiner: gets every player's snapshot through the existing
   `_request_snapshot`, which now includes names and bleed. A player who joins
   during a match lands in that running match (one place per server until P9;
-  see Open decisions).
+  decided by the person).
 - Place changes: the server owns the current place. Deploy and return go to
   every peer; nobody can be left in a different place than the server.
 - Dedicated server: no HUD; it runs the reset loop and the soak's server side.
@@ -309,8 +309,5 @@ is a test tool and never ships. No per-frame allocations.
 
 ## Open decisions
 
-- [ ] Where does a player land who joins while the squad is in a match?
-  Recommended: in that running match, as a late joiner (one place per server
-  until the town in P9). Other option: alone in the hub until the match
-  ends, which needs a server to run two places at once (P9 work pulled
-  forward).
+- [x] Where does a player land who joins while the squad is in a match? In
+  that running match, as a late joiner (the person, 2026-11-17).
