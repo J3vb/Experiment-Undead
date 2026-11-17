@@ -8,6 +8,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/reload.wav" id="6"]
 [ext_resource type="Resource" path="res://content/weapons/pistol_service_reforged.tres" id="7"]
 [ext_resource type="Resource" path="res://content/grips/pistol_service.tres" id="grip"]
+[ext_resource type="PackedScene" path="res://assets/models/weapons/warden_p9.glb" id="world"]
 
 [sub_resource type="Resource" id="recoil"]
 script = ExtResource("2")
@@ -50,6 +51,7 @@ viewmodel_kick = 0.06
 hip_position = Vector3(0.18, -0.17, -0.42)
 ads_position = Vector3(0, -0.046, -0.3)
 viewmodel_scene = ExtResource("3")
+world_model = ExtResource("world")
 grip = ExtResource("grip")
 fire_sound = ExtResource("4")
 dry_fire_sound = ExtResource("5")

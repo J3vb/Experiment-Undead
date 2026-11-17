@@ -69,15 +69,18 @@ func test_squad_wipe_freezes_both_peers_and_shows_identical_results() -> void:
 	server._kills = 7
 	server._headshots = 3
 	server.players.find_player(1).wallet.set_points(1234)
+	server.players.find_player(client.multiplayer.get_unique_id()).wallet.set_points(555)
 	_down(server.players.find_player(1))
 	_down(server.players.find_player(client.multiplayer.get_unique_id()))
 	assert_true(server.is_over)
 	await wait_until(func() -> bool: return client.is_over, 3.0, "server ended the client's match")
-	assert_eq(client._match_stats, server._match_stats)
+	for key: String in ["round", "kills", "headshots", "exfil"]:
+		assert_eq(client._match_stats[key], server._match_stats[key], "shared results stay identical")
 	assert_eq(client._match_stats["round"], 4)
 	assert_eq(client._match_stats["kills"], 7)
 	assert_eq(client._match_stats["headshots"], 3)
-	assert_eq(client._match_stats["points"], 1234)
+	assert_eq(server._match_stats["points"], 1234, "the host sees its own points")
+	assert_eq(client._match_stats["points"], 555, "the client sees its own points, not the host's")
 	assert_eq(server.level.process_mode, Node.PROCESS_MODE_DISABLED)
 	assert_eq(client.level.process_mode, Node.PROCESS_MODE_DISABLED)
 	await wait_until(func() -> bool: return _results_count() == 2, 3.0, "host and client both push results")

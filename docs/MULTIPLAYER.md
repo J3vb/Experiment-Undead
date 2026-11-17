@@ -26,8 +26,8 @@ already reads `InputFrame`s, so the server could replay them.
 - **Players.** `PlayerSpawner` (a `MultiplayerSpawner`) makes one `Player` per
   peer, named after the peer id, with that peer as its authority. The player's
   `net_id` is the peer id. A `MultiplayerSynchronizer` in `player.tscn` sends
-  position, body yaw, head pitch and crouch from the owner to everyone
-  (teammate animations read them, F-41).
+  position, body yaw, head pitch, crouch, the held gun id and the current
+  reload time from the owner to everyone (teammate animations read them, F-41).
 - **Scene paths match on every peer.** The match is always `/root/GameSession`
   (clients change scene to it; the dedicated server adds it next to itself).
 - **Joining.** The client opens its connection inside `GameSession._ready()`,
@@ -50,6 +50,7 @@ already reads `InputFrame`s, so the server could replay them.
 | Run XP and loot rolls | Server (`ProgressionService`) | Grant RPC to the owning client, which saves it |
 | Equipped gear and item guns | Owning client picks; server owns the effects | `PlayerStateSync.submit_loadout` on spawn and every Pack equip; the server applies gear, loot luck and item on-hit effects (leech, points per hit) from its copy |
 | Cosmetics (muzzle flash, impacts, sounds) | Each peer | Local reaction to synced facts |
+| Teammate body animation (F-41) | Each peer, locally | `BodyAnimator` picks clips from the synced pose, crouch, downed state, held gun and reload time; a relayed remote shot plays the fire kick |
 
 ## Build order (one small PR each, tests in every PR)
 
