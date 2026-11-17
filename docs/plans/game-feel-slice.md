@@ -147,7 +147,7 @@ fields come with their features.
   `hit_trauma` 0.25, `round_start_trauma` 0.15, `ads_trauma_mult` 0.5,
   `ads_view_kick_mult` 0.6
 - kill: `headshot_kill_hitstop_ms` 25, `max_hitstops_per_second` 4,
-  `headshot_kill_fov_deg` −0.8, `headshot_kill_fov_ms` 120
+  `headshot_kill_zoom_deg` 0.8 (FOV narrows; content numbers stay non-negative), `headshot_kill_fov_ms` 120
 - downed and death: `downed_drop_m` 0.9, `downed_drop_s` 0.3, `downed_roll_deg`
   6, `downed_saturation` 0.2, `downed_vignette` 0.5, `revive_flash_alpha`
   0.08, `revive_flash_s` 0.15, `death_fade_s` 0.6
