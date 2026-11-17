@@ -18,6 +18,7 @@ const SWAP_DIP: float = 0.25
 var weapons: Array[Weapon] = []
 var current: Weapon
 var arm_view: PlayerArmView
+var melee: Melee = Melee.new()
 var _player: Player
 var _camera: Camera3D
 var _sway: Vector2 = Vector2.ZERO
@@ -30,6 +31,10 @@ var _swap_time: float = SWAP_TIME
 func setup(player: Player, camera: Camera3D) -> void:
 	_player = player
 	_camera = camera
+	melee.shooter = player
+	melee.camera = camera
+	if not melee.hit_landed.is_connected(_on_hit_landed):
+		melee.hit_landed.connect(_on_hit_landed)
 
 
 ## Adds a gun. When every slot is full it replaces the gun in hand.
@@ -106,8 +111,10 @@ func _bind_arm_view() -> void:
 	arm_view.bind_weapon(current)
 
 
-## Mouse wheel and the 1/2/3 slot keys from one InputFrame.
-func switch_from(frame: InputFrame) -> void:
+## Mouse wheel, the 1/2/3 slot keys and the knife from one InputFrame.
+func handle_presses(frame: InputFrame) -> void:
+	if frame.has(InputFrame.MELEE):
+		swing()
 	if frame.has(InputFrame.NEXT_WEAPON):
 		cycle(1)
 	elif frame.has(InputFrame.PREV_WEAPON):
@@ -120,6 +127,18 @@ func switch_from(frame: InputFrame) -> void:
 func cycle(direction: int) -> void:
 	if weapons.size() > 1 and current:
 		equip(posmod(weapons.find(current) + direction, weapons.size()))
+
+
+## Knife swing: cancels a reload and keeps the gun down (no firing) for the swing.
+func swing() -> void:
+	if is_swapping():
+		return
+	if current:
+		RoundReload.cancel(current)
+		current.trigger_held = false
+	_swap_time = Melee.swing_time()
+	_swap_left = _swap_time
+	melee.swing()
 
 
 ## True while a freshly switched gun is still being raised.

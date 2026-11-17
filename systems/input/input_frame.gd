@@ -17,6 +17,7 @@ const SLOT_1: int = 1 << 10  ## Pressed this tick; SLOT_2 and SLOT_3 follow.
 const SLOT_2: int = 1 << 11
 const SLOT_3: int = 1 << 12
 const SLOTS: Array[int] = [SLOT_1, SLOT_2, SLOT_3]
+const MELEE: int = 1 << 13  ## Pressed this tick.
 
 var tick: int = 0
 var move: Vector2 = Vector2.ZERO

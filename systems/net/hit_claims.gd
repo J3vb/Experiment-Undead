@@ -23,8 +23,9 @@ var _chain: Chain = Chain.new()
 func _ready() -> void:
 	add_child(_chain)
 	multiplayer.peer_disconnected.connect(_forget_peer)
-	for id: StringName in Content.ids(&"weapons"):
-		_weapons[id] = Content.weapon(id)
+	for type: StringName in [&"weapons", &"melee"]:
+		for id: StringName in Content.ids(type):
+			_weapons[id] = Content.get_item(type, id) as WeaponData
 
 
 func _physics_process(delta: float) -> void:
@@ -43,17 +44,23 @@ func _physics_process(delta: float) -> void:
 
 ## Called by the owning gun instead of mutating the client's health copy.
 func submit_hit(weapon: Weapon, hit_zone: HitZone, info: DamageInfo) -> void:
-	if multiplayer.is_server() or weapon.shooter == null or not weapon.shooter.is_multiplayer_authority():
-		return
+	if claim_local(weapon.shooter, hit_zone, info):
+		weapon.hit_landed.emit(false, info.is_headshot())
+
+
+## Sends the local owner's hit to the host. True when a claim went out (show the hit marker).
+func claim_local(shooter: Player, hit_zone: HitZone, info: DamageInfo) -> bool:
+	if multiplayer.is_server() or shooter == null or not shooter.is_multiplayer_authority():
+		return false
 	var zombie: Zombie = hit_zone.health.get_parent() as Zombie if hit_zone.health else null
 	if zombie == null or zombie.get_parent() != session.spawner or zombie.state == Zombie.State.DEAD:
-		return
+		return false
 	info.hit_zone = hit_zone.zone
-	weapon.hit_landed.emit(false, info.is_headshot())
-	_remember_hit(zombie, weapon.shooter, info.is_headshot())
+	_remember_hit(zombie, shooter, info.is_headshot())
 	claim_hit.rpc_id(
 		1, zombie.name, hit_zone.zone, info.amount, info.weapon_id, info.position, info.impulse, info.item_uid
 	)
+	return true
 
 
 func _remember_hit(zombie: Zombie, player: Player, headshot: bool) -> void:
@@ -142,6 +149,7 @@ func apply_server_hit(hit_zone: HitZone, info: DamageInfo) -> void:
 		return
 	info.hit_zone = hit_zone.zone
 	var weapon: WeaponData = _weapons.get(info.weapon_id)
+	info.damage_type = DamageInfo.Type.MELEE if weapon and weapon.slot == WeaponData.Slot.MELEE else info.damage_type
 	var effect: WeaponData.Effect = weapon.effect if weapon else WeaponData.Effect.NONE
 	var collateral_killed: bool = false
 	if effect == WeaponData.Effect.CHAIN:
@@ -237,10 +245,7 @@ func _accept_well(peer_id: int, point: Vector3, weapon_id: StringName) -> void:
 	if player == null or not player.is_alive() or not point.is_finite():
 		_reject(peer_id, &"well_out_of_bounds")
 		return
-	if not _well_in_range(peer_id, player, data, point):
-		_reject(peer_id, &"well_out_of_bounds")
-		return
-	if not _take_claim(peer_id, data):
+	if not _well_in_range(peer_id, player, data, point) or not _take_claim(peer_id, data):
 		_reject(peer_id, &"well_out_of_bounds")
 		return
 	var well: GravityWell = GravityWell.open(session, player, point, data, false, self)
