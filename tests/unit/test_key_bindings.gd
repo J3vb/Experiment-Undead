@@ -114,5 +114,5 @@ func test_reset_button_and_external_changes_update_the_rows() -> void:
 	assert_eq(_first_key(&"jump"), KEY_SPACE)
 	assert_eq(_slot(&"jump", 0).text, "Space")
 	Settings.set_binding(&"jump", 0, _key(KEY_J))
-	_screen.get_node("%Reset").pressed.emit()
-	assert_eq(_slot(&"jump", 0).text, "Space", "Reset to defaults resets bindings too")
+	_screen.get_node("%Defaults").pressed.emit()
+	assert_eq(_slot(&"jump", 0).text, "Space", "Defaults on the Controls page resets bindings")

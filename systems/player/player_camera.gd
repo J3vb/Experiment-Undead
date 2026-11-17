@@ -25,7 +25,7 @@ var _tilt_degrees: float = 0.0
 func _ready() -> void:
 	_body = get_parent() as CharacterBody3D
 	Settings.changed.connect(_on_setting_changed)
-	_on_setting_changed(&"video", &"fov", Settings.get_value(&"video", &"fov"))
+	_on_setting_changed(&"aim", &"fov", Settings.get_value(&"aim", &"fov"))
 
 
 ## Pitch only; yaw turns the body.
@@ -82,6 +82,6 @@ func update_feel(
 
 
 func _on_setting_changed(section: StringName, key: StringName, value: Variant) -> void:
-	if section == &"video" and key == &"fov":
+	if section == &"aim" and key == &"fov":
 		base_fov = rad_to_deg(2.0 * atan(tan(deg_to_rad(float(value)) / 2.0) * 9.0 / 16.0))
 		camera.fov = base_fov
