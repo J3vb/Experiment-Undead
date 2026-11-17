@@ -2,7 +2,8 @@
 ## for half that when the player already owns it (a fixed price once Reforged).
 ## Decides from the owner's facts about its guns; the gun or ammo is a grant.
 ## A once_per_player rack (the secret Cryo Lance) gives its gun free, once per
-## player, and sells no ammo; who took it syncs to clients.
+## player, and sells no ammo; who took it syncs to clients. The gun hangs on
+## the rack at Board/GunMount (its WeaponData.world_model).
 class_name WallBuy
 extends Interactable
 
@@ -12,6 +13,13 @@ extends Interactable
 
 ## net ids of players who took the gun from a once_per_player rack.
 var taken_by: Array[int] = []
+
+
+func _ready() -> void:
+	super()
+	var mount: Node3D = get_node_or_null(^"Board/GunMount") as Node3D
+	if mount and weapon and weapon.world_model:
+		mount.add_child(weapon.world_model.instantiate())
 
 
 func get_prompt(player: Player) -> String:

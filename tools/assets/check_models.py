@@ -36,6 +36,7 @@ BUDGETS = {
     "props": (2_000, 4),
     "dressing": (1_000, 4),
     "doors": (2_000, 4),
+    "machines": (2_000, 4),
     "town": (2_500, 4),
 }
 BUDGETS.update(character_checks.BUDGETS)
@@ -58,6 +59,9 @@ JOINTS = {
     "vent_grate": {},
     "vent_grate_wide": {},
     "freezer_door": {},
+    "weapon_rack": {},
+    "weapon_rack_cold": {},
+    "specimen_vault": {},
     "street_lamp": {},
     "wall_lantern": {},
     "window_lit": {},
@@ -218,7 +222,7 @@ def check_origin(objects: list, folder: str) -> list:
     errors = []
     if abs(lo.z) > TOLERANCE:
         errors.append(f"lowest point is at height {lo.z:.3f}, must be 0 (feet/bottom on the origin)")
-    limit = 0.05 if folder in ("kit", "props", "dressing", "doors") else 0.35
+    limit = 0.05 if folder in ("kit", "props", "dressing", "doors", "machines") else 0.35
     if Vector((centre.x, centre.y)).length > limit:
         errors.append(f"origin is {Vector((centre.x, centre.y)).length:.2f} m from the footprint centre (max {limit})")
     return errors

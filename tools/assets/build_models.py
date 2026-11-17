@@ -24,6 +24,7 @@ import bmesh
 import character_models
 import door_models
 import finish
+import machine_models
 import prop_models
 import town_props
 import zombie_model
@@ -251,6 +252,7 @@ MODELS.update(character_models.MODELS)
 MODELS.update(prop_models.MODELS)
 MODELS.update(town_props.MODELS)
 MODELS.update(door_models.MODELS)
+MODELS.update(machine_models.MODELS)
 
 
 def export(path: str) -> None:
