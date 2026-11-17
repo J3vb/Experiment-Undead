@@ -135,16 +135,17 @@ def build_catwalk_office() -> None:
         _tube(f"RailPost{i}", [(x, back - 1.48, deck), (x, back - 1.48, deck + 1.0)], 0.025, 0.025, m["hazard"])
     box("RailTop", (5.0, 0.04, 0.04), (0, back - 1.48, deck + 1.0), m["hazard"])
     box("RailMid", (5.0, 0.03, 0.03), (0, back - 1.48, deck + 0.5), m["hazard"])
-    box("Office", (2.4, 1.2, 2.2), (1.2, back - 0.62, deck + 1.1), m["steel"], bevel=0.02)
-    box("Window", (1.6, 0.02, 0.7), (1.2, back - 1.23, deck + 1.5), m["dark"])
+    box("Office", (2.4, 1.2, 2.2), (1.0, back - 0.62, deck + 1.1), m["steel"], bevel=0.02)
+    box("Window", (1.6, 0.02, 0.7), (1.0, back - 1.23, deck + 1.5), m["dark"])
     for i, x in enumerate((-2.4, 2.4)):
         brace = box(f"Brace{i}", (0.08, 0.08, 1.3), (x, back - 0.4, deck - 0.6), m["dark"])
         brace.rotation_euler = (math.radians(-35), 0, 0)
-    stair = box("Stair", (0.8, 2.4, 0.06), (-1.9, back - 1.9, deck * 0.5), m["steel"])
-    stair.rotation_euler = (math.radians(32), 0, math.radians(12))
-    for i in range(5):
-        tread = box(f"Tread{i}", (0.8, 0.22, 0.03), (-1.9 + 0.05 * i, back - 1.1 - i * 0.4, deck - 0.25 * i), m["dark"])
-        tread.rotation_euler = (0, 0, math.radians(12))
+    stair = box("Stair", (0.8, 1.8, 0.06), (-1.4, back - 1.75, deck * 0.45), m["steel"])
+    stair.rotation_euler = (math.radians(65), 0, math.radians(8))
+    for i in range(4):
+        z = deck - 0.15 - 0.3 * i
+        tread = box(f"Tread{i}", (0.8, 0.22, 0.03), (-1.4 + 0.03 * i, back - 1.55 - i * 0.13, z), m["dark"])
+        tread.rotation_euler = (0, 0, math.radians(8))
     p._merge("CatwalkOffice")
 
 
