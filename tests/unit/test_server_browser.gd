@@ -105,7 +105,34 @@ func test_full_and_other_version_rows_are_tagged_and_say_why_before_joining() ->
 	browser.take_reply(SAVED, _info(3, "0.0.1-old"), 20, false)
 	assert_eq(_item(0).get_text(5), "v0.0.1-old")
 	browser.join_selected()
-	assert_string_contains(browser.error_dialog.message_label.text, "Server: 0.0.1-old, you: %s" % Build.version)
+	assert_eq(
+		browser.error_dialog.message_label.text,
+		(
+			NetErrorDialog
+			. message_for(
+				&"wrong_version",
+				{
+					"server_version": "0.0.1-old",
+					"client_version": Build.version,
+					"older": Handshake.older_side(Build.version, "0.0.1-old"),
+				}
+			)
+		)
+	)
+	assert_eq(Net.pending_join, "")
+
+
+func test_an_older_release_server_is_named_for_the_host() -> void:
+	var own: String = Build.version
+	Build.version = "0.2.0"
+	browser.take_reply(SAVED, _info(3, "0.1.0"), 20, false)
+	_select(0)
+	browser.join_selected()
+	Build.version = own
+	assert_eq(
+		browser.error_dialog.message_label.text,
+		"The server runs v0.1.0, your game is v0.2.0. The host needs to update the server."
+	)
 	assert_eq(Net.pending_join, "")
 
 

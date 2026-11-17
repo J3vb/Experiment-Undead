@@ -217,3 +217,9 @@ func test_older_client_release_is_refused_with_both_versions() -> void:
 	await _assert_refused(Net.RefusalReason.WRONG_VERSION)
 	assert_true(client_handshake.refusal_message.contains("0.1.0"))
 	assert_true(client_handshake.refusal_message.contains("0.1.1"))
+
+
+func test_reason_key_survives_codes_from_newer_servers() -> void:
+	assert_eq(Handshake.reason_key(Net.RefusalReason.WRONG_VERSION), "WRONG_VERSION")
+	assert_eq(Handshake.reason_key(99), "REFUSED")
+	assert_eq(Handshake.reason_key(-1), "REFUSED")
