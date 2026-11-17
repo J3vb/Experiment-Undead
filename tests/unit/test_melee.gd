@@ -105,3 +105,14 @@ func test_knife_kill_pays_the_melee_bonus() -> void:
 	player.weapons.swing()
 	assert_signal_emit_count(Events, "enemy_killed", 1)
 	assert_eq(player.wallet.points, before + economy.rules.points_per_hit + 130)
+
+
+func test_switching_guns_cannot_shorten_a_swing() -> void:
+	player.weapons.give(load("res://content/weapons/pistol_service.tres") as WeaponData)
+	player.weapons.tick(1.0)
+	player.weapons.swing()
+	player.weapons.cycle(1)
+	player.weapons.tick(0.45)
+	assert_true(player.weapons.is_swapping(), "the 0.6 s swing still holds the gun down")
+	player.weapons.tick(0.16)
+	assert_false(player.weapons.is_swapping())

@@ -90,8 +90,10 @@ func equip(index: int) -> void:
 		current.trigger_held = false
 		current.aiming = false
 		current.ads_progress = 0.0
-		_swap_time = SWAP_TIME * (_player.get_stat(&"swap_time") if _player else 1.0)
-		_swap_left = _swap_time
+		var swap: float = SWAP_TIME * (_player.get_stat(&"swap_time") if _player else 1.0)
+		if swap >= _swap_left:
+			_swap_time = swap
+			_swap_left = swap
 	current = weapons[index]
 	current.set_active(true)
 	if not Build.is_server() and (_player == null or _player.is_multiplayer_authority()):
