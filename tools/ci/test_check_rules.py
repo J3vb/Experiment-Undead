@@ -335,6 +335,37 @@ class CheckRulesTests(unittest.TestCase):
             1,
         )
 
+    def test_no_content_id_literals(self):
+        gun = {"content/weapons/test_gun.tres": "[resource]\n", "content/loot/affixes/head_damage.tres": "[resource]\n"}
+        problems = self.check("no-content-id-literals", {**gun, "systems/a.gd": 'if id == &"test_gun":\n'}, 1)
+        self.assertIn("test_gun", problems[0])
+        self.check("no-content-id-literals", {**gun, "core/b.gd": "var x: String = 'test_gun'\n"}, 1)
+        self.check("no-content-id-literals", {**gun, "systems/a.gd": "pass  # test_gun is special\n"})
+        self.check("no-content-id-literals", {**gun, "systems/a.gd": '## "test_gun" in a doc comment\n'})
+        self.check("no-content-id-literals", {**gun, "systems/a.gd": 'var stat: StringName = &"head_damage"\n'})
+        self.check("no-content-id-literals", {**gun, "levels/map.gd": 'var id: StringName = &"test_gun"\n'})
+        self.check("no-content-id-literals", {**gun, "systems/a.gd": 'var id: StringName = &"test_gun_2"\n'})
+
+    def test_content_id_baseline_only_shrinks(self):
+        baseline_path = "tools/ci/content_id_baseline.txt"
+        files = {"content/serums/second_wind.tres": "[resource]\n", "content/weapons/test_gun.tres": "[resource]\n"}
+        original = "systems/player/player.gd: second_wind"
+        if original in rules.INITIAL_CONTENT_ID_BASELINE:
+            literal = {"systems/player/player.gd": 'if has_serum(&"second_wind"):\n'}
+            self.check("no-content-id-literals", {**files, **literal, baseline_path: original + "\n"})
+            problems = self.check("no-content-id-literals", {**files, baseline_path: original + "\n"}, 1)
+            self.assertIn("remove", problems[0].lower())
+        problems = self.check(
+            "no-content-id-literals",
+            {
+                **files,
+                "systems/new.gd": 'var id: StringName = &"test_gun"\n',
+                baseline_path: "systems/new.gd: test_gun\n",
+            },
+            1,
+        )
+        self.assertIn("remove", problems[0].lower())
+
     def test_scope_uses_tracked_files_and_excludes_vendor_and_cache(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

@@ -151,6 +151,7 @@ Examples and fixes: [docs/CODE_RULES.md](docs/CODE_RULES.md).
 - `doc-comment`: core and systems scripts have a `##` comment in their first five lines.
 - `no-triple-copy`: extract a shared operation when an eight-line block has a third copy.
 - `tested-scripts`: core and systems scripts need test references; the baseline only shrinks.
+- `no-content-id-literals`: core and systems code never names a content id; add a data field instead. The baseline only shrinks.
 
 ## Keep it simple
 
