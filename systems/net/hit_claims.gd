@@ -252,7 +252,7 @@ func _accept_well(peer_id: int, point: Vector3, weapon_id: StringName) -> void:
 	if well == null:
 		_reject(peer_id, &"well_out_of_bounds")
 		return
-	if not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
+	if Net.is_coop(multiplayer):
 		show_well.rpc(peer_id, point)
 
 
@@ -266,9 +266,9 @@ func show_well(peer_id: int, point: Vector3) -> void:
 func send_well_orb(origin: Vector3, direction: Vector3, weapon_id: StringName) -> void:
 	if multiplayer.is_server():
 		_remember_well_launch(multiplayer.get_unique_id(), origin)
-		if not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
+		if Net.is_coop(multiplayer):
 			_relay_well_orb(multiplayer.get_unique_id(), origin, direction)
-	elif not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
+	elif Net.is_coop(multiplayer):
 		well_orb.rpc_id(1, origin, direction, weapon_id)
 
 

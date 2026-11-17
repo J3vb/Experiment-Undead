@@ -118,3 +118,39 @@ func test_connection_configuration_preserves_the_match_handshake() -> void:
 	assert_eq((multiplayer as SceneMultiplayer).auth_callback, callback, "Net never installs a competing hello")
 	Net.leave()
 	handshake.free()
+
+
+func _admit_everyone(api: SceneMultiplayer) -> Callable:
+	var admit: Callable = func(peer_id: int) -> void: api.complete_auth(peer_id)
+	api.auth_callback = func(_peer_id: int, _data: PackedByteArray) -> void: pass
+	api.peer_authenticating.connect(admit)
+	return admit
+
+
+func test_coop_switches_on_with_the_first_friend_and_off_with_the_last() -> void:
+	var api: SceneMultiplayer = multiplayer as SceneMultiplayer
+	var callback: Callable = api.auth_callback
+	var admit: Callable = _admit_everyone(api)
+	watch_signals(Net)
+	assert_eq(Net.host(24657, 2), OK)
+	assert_false(Net.is_coop(), "a world with nobody else in it plays solo")
+	var friend: Node = TwoPeers.make_side(self, "Friend")
+	_admit_everyone(friend.multiplayer as SceneMultiplayer)
+	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
+	assert_eq(peer.create_client("127.0.0.1", 24657), OK)
+	friend.multiplayer.multiplayer_peer = peer
+	await wait_until(func() -> bool: return not multiplayer.get_peers().is_empty(), 5.0, "friend connected")
+	assert_true(Net.is_coop())
+	assert_true(Net.is_coop(friend.multiplayer), "a client always plays co-op")
+	assert_signal_emit_count(Net, "coop_changed", 1)
+	assert_eq(get_signal_parameters(Net, "coop_changed"), [true])
+	TwoPeers.close_side(friend)
+	await wait_until(func() -> bool: return multiplayer.get_peers().is_empty(), 5.0, "friend gone")
+	await wait_process_frames(1)
+	assert_false(Net.is_coop())
+	assert_signal_emit_count(Net, "coop_changed", 2)
+	assert_eq(get_signal_parameters(Net, "coop_changed"), [false])
+	Net.leave()
+	assert_signal_emit_count(Net, "coop_changed", 2, "leaving alone changes nothing")
+	api.peer_authenticating.disconnect(admit)
+	api.auth_callback = callback

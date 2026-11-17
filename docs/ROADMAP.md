@@ -49,7 +49,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-48 | Full settings screen: Graphics page with presets, then Accessibility and Comfort | - | F-05 | [ready](plans/full-settings.md) | L | Done |
 | F-49 | HUD feedback and loading: loading screen, damage numbers, level-up burst, drop feed | - | - | [done](plans/hud-feedback-loading.md) | M | Done |
 | F-50 | First Lantern Post hub: town blockout, Deploy board and ready-up vote (first slice of F-45, pulled forward for the co-op week goal) | #131 | F-02, F-47 step 4 (#255), co-op #256 | [done](plans/lantern-post-hub.md) | M | Done |
-| F-66 | Your own world, open to friends: Enter world into your own Lantern Post (listen server, UPnP), server browser with add by address and LAN discovery, no master server | - | F-02, F-50 | [ready](plans/join-any-game.md) | L | Ready |
+| F-66 | Your own world, open to friends: Enter world into your own Lantern Post (listen server, UPnP), server browser with add by address and LAN discovery, no master server | - | F-02, F-50 | [ready](plans/join-any-game.md) | L | Building |
 | F-67 | Character select and create before Enter world (ui-hud screen 3: slots, create, delete) | - | F-66 step 2 | needed | M | Todo |
 
 ## Next: v0.2 Progression and loot
