@@ -36,7 +36,7 @@ func apply(zombie: Zombie, info: DamageInfo) -> bool:
 	if ends.is_empty():
 		return false
 	var start: Vector3 = zombie.global_position + Vector3.UP
-	if multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
+	if not Net.is_coop(multiplayer):
 		show_arcs(start, ends)
 	else:
 		show_arcs.rpc(start, ends)

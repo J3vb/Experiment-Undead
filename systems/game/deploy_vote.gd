@@ -130,6 +130,6 @@ func _receive_state(next_place: StringName, ready_ids: Array, countdown: float) 
 ## After a co-op match ("Back to hub" on the results). A listen host takes the squad
 ## along; a client goes back to the server, which has moved (or soon moves) to the hub.
 func back_to_hub() -> void:
-	if Net.is_online() and multiplayer.is_server():
+	if Net.is_coop(multiplayer) and multiplayer.is_server():
 		Net.change_place(HUB)
 	Net.go_to(HUB)

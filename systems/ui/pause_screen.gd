@@ -1,5 +1,6 @@
 ## Pause menu the match pushes on Esc. Resume and Esc close it; Settings opens above it through the router.
-## Solo freezes the game while it is open; in co-op the match goes on and a banner says so.
+## Alone it freezes the game while open; with friends the match goes on and a banner says so.
+## A friend joining while it is open unfreezes it, and it stays unfrozen until closed.
 class_name PauseScreen
 extends ColorRect
 
@@ -8,6 +9,8 @@ signal main_menu_requested
 signal quit_requested
 
 const MENU_THEME: Theme = preload("res://systems/ui/menu_theme.tres")
+
+var _froze: bool = false
 
 @onready var resume_button: Button = $Menu/Resume
 @onready var settings_button: Button = $Menu/Settings
@@ -25,13 +28,24 @@ func _ready() -> void:
 	main_menu_button.pressed.connect(main_menu_requested.emit)
 	quit_button.pressed.connect(quit_requested.emit)
 	resume_button.grab_focus()
-	banner.visible = Net.is_online()
+	banner.visible = Net.is_coop()
 	if not banner.visible:
+		_froze = true
 		get_tree().paused = true
+	Net.coop_changed.connect(_on_coop_changed)
 
 
 func _exit_tree() -> void:
-	if not banner.visible:
+	if _froze:
+		get_tree().paused = false
+
+
+func _on_coop_changed(on: bool) -> void:
+	if not on:
+		return
+	banner.visible = true
+	if _froze:
+		_froze = false
 		get_tree().paused = false
 
 

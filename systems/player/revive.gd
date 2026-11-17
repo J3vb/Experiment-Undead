@@ -43,6 +43,7 @@ func second_wind() -> void:
 	_player.input_enabled = true
 	_player.health.reset(_player.health.max_health)
 	_player.camera_rig.tilt_down(false)
+	_player.state_sync.publish()
 	Events.player_revived.emit(_player)
 
 
@@ -88,7 +89,7 @@ func nearest_target() -> Player:
 
 
 func can_revive(target: Player) -> bool:
-	if not _online() or not is_instance_valid(target) or target == _player:
+	if not Net.is_coop(multiplayer) or not is_instance_valid(target) or target == _player:
 		return false
 	if target.get_multiplayer() != multiplayer or target.is_queued_for_deletion():
 		return false
@@ -160,7 +161,3 @@ func _begin(target: Player) -> void:
 func _connected(player: Player) -> bool:
 	var peer: int = player.get_multiplayer_authority()
 	return not player.is_queued_for_deletion() and (peer == 1 or multiplayer.get_peers().has(peer))
-
-
-func _online() -> bool:
-	return multiplayer.multiplayer_peer != null and not multiplayer.multiplayer_peer is OfflineMultiplayerPeer

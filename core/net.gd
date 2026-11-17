@@ -1,5 +1,5 @@
 ## Network role, admission failures and connection deadline. Solo has no open port.
-## Shared gameplay changes check Net.is_authority(). See docs/MULTIPLAYER.md.
+## Shared gameplay changes check Net.is_authority(); solo or co-op rules check is_coop(). See docs/MULTIPLAYER.md.
 extends Node
 
 signal connection_error(reason: StringName, details: Dictionary)
@@ -7,6 +7,8 @@ signal join_started(address: String)
 signal join_succeeded
 ## Server only: the session must change to this place (the dedicated server swaps its session).
 signal place_changed(place: StringName)
+## The first friend joined (true) or the last one left (false). A world alone plays solo.
+signal coop_changed(on: bool)
 
 enum RefusalReason { WRONG_VERSION, CONTENT_MISMATCH, SERVER_FULL }
 
@@ -40,6 +42,7 @@ var _leave_deadline: Timer
 var _deadline: Timer
 var _signals_bound: bool = false
 var _connected: bool = false
+var _coop: bool = false
 
 
 func is_authority() -> bool:
@@ -47,10 +50,21 @@ func is_authority() -> bool:
 
 
 func is_online() -> bool:
+	return _live(multiplayer.multiplayer_peer)
+
+
+## Co-op rules apply: a client, or a server with a friend connected. Read it when a rule is used
+## (friends come and go). Pass the caller's multiplayer when it differs (tests use subtrees).
+func is_coop(api: MultiplayerAPI = null) -> bool:
+	var on: MultiplayerAPI = api if api else multiplayer
+	return _live(on.multiplayer_peer) and (not on.is_server() or not on.get_peers().is_empty())
+
+
+static func _live(peer: MultiplayerPeer) -> bool:
 	return (
-		multiplayer.multiplayer_peer != null
-		and not multiplayer.multiplayer_peer is OfflineMultiplayerPeer
-		and multiplayer.multiplayer_peer.get_connection_status() != MultiplayerPeer.CONNECTION_DISCONNECTED
+		peer != null
+		and not peer is OfflineMultiplayerPeer
+		and peer.get_connection_status() != MultiplayerPeer.CONNECTION_DISCONNECTED
 	)
 
 
@@ -122,6 +136,7 @@ func leave() -> void:
 			_notify_host_ended()
 		multiplayer.multiplayer_peer.close()
 	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
+	_update_coop()
 
 
 ## Server: sends every client to next. They leave and rejoin into the new session
@@ -226,6 +241,8 @@ func _configure() -> void:
 	_leave_deadline.timeout.connect(_drop_leaving)
 	add_child(_leave_deadline)
 	api.peer_disconnected.connect(func(peer_id: int) -> void: _leaving.erase(peer_id))
+	api.peer_connected.connect(func(_peer_id: int) -> void: _update_coop())
+	api.peer_disconnected.connect(func(_peer_id: int) -> void: _update_coop.call_deferred())
 	api.peer_authentication_failed.connect(_on_authentication_failed, CONNECT_DEFERRED)
 	api.connected_to_server.connect(_on_connected)
 	api.connection_failed.connect(_on_connection_failed)
@@ -249,6 +266,13 @@ func _on_authentication_failed(_peer_id: int) -> void:
 		multiplayer.connection_failed.emit()
 	else:
 		_fail_join(&"timeout", {"address": _target})
+
+
+func _update_coop() -> void:
+	if is_coop() != _coop:
+		_coop = not _coop
+		Log.info(&"net", &"coop_started" if _coop else &"coop_ended", {"peers": multiplayer.get_peers().size()})
+		coop_changed.emit(_coop)
 
 
 func _on_connected() -> void:

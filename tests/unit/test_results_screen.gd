@@ -193,3 +193,14 @@ func test_new_best_round_is_marked() -> void:
 	assert_eq(screen.round_label.text, "9  New best")
 	screen.show_results({"round": 5, "new_best": false})
 	assert_eq(screen.round_label.text, "5")
+
+
+func test_alone_offers_restart_and_a_friend_joining_switches_to_back_to_hub() -> void:
+	assert_eq(screen.restart_button.text, "Restart", "alone in the world")
+	assert_false(Net.holds_place)
+	Net.coop_changed.emit(true)
+	assert_eq(screen.restart_button.text, "Back to hub")
+	assert_true(Net.holds_place, "a place change order waits for the player")
+	Net.coop_changed.emit(false)
+	assert_eq(screen.restart_button.text, "Restart", "the last friend left")
+	assert_false(Net.holds_place)
