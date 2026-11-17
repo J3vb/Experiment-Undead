@@ -23,6 +23,19 @@ static func write(path: String, data: Dictionary) -> Error:
 	return DirAccess.rename_absolute(ProjectSettings.globalize_path(tmp), ProjectSettings.globalize_path(path))
 
 
+## The file's save_version, or -1 when it is missing or not a JSON object.
+## Lets callers tell a save from a newer game apart from a broken one.
+static func saved_version(path: String) -> int:
+	if not FileAccess.file_exists(path):
+		return -1
+	var json: JSON = JSON.new()
+	if json.parse(FileAccess.get_file_as_string(path)) != OK or not json.data is Dictionary:
+		return -1
+	var data: Dictionary = json.data
+	var version: Variant = data.get(VERSION_KEY, 0)
+	return int(version) if version is int or version is float else -1
+
+
 ## Returns the upgraded data, or an empty Dictionary when the file is missing,
 ## unreadable or from a newer game version.
 static func read(path: String) -> Dictionary:

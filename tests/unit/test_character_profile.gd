@@ -2,12 +2,12 @@
 extends GutTest
 
 const ID: StringName = &"test_character_profile"
-const PATH: String = "user://characters/test_character_profile.json"
 const RULES: XpRules = preload("res://content/progression/xp_rules.tres")
+var _path: String = CharacterProfile.directory() + "test_character_profile.json"
 
 
 func before_each() -> void:
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(CharacterProfile.DIRECTORY))
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(CharacterProfile.directory()))
 	_remove_files()
 
 
@@ -16,7 +16,7 @@ func after_each() -> void:
 
 
 func _remove_files() -> void:
-	for path: String in [PATH, PATH + ".tmp", PATH + ".v0.bak", PATH + ".v1.bak"]:
+	for path: String in [_path, _path + ".tmp", _path + ".v0.bak", _path + ".v1.bak"]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
@@ -88,7 +88,7 @@ func test_old_v1_save_defaults_to_empty_inventory_without_migration() -> void:
 	assert_eq(profile.loadout, {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}})
 	assert_eq(profile.best_runs, {})
 	assert_eq(profile.save(), OK)
-	assert_eq(int(SaveFile.read(PATH)["save_version"]), SaveFile.CURRENT_VERSION)
+	assert_eq(int(SaveFile.read(_path)["save_version"]), SaveFile.CURRENT_VERSION)
 
 
 func test_legacy_empty_array_loadout_deserializes_without_changing_input() -> void:
@@ -108,8 +108,8 @@ func test_legacy_empty_array_save_keeps_xp_items_unknown_fields_and_can_save() -
 		"stash": [{"uid": "kept", "future": {"retired": true}}],
 		"future_flag": true,
 	}
-	assert_eq(SaveFile.write(PATH, data), OK)
-	var before: Dictionary = SaveFile.read(PATH)
+	assert_eq(SaveFile.write(_path, data), OK)
+	var before: Dictionary = SaveFile.read(_path)
 	var warnings: int = Log.event_counts.get("progression.profile_unreadable", 0)
 	var profile: CharacterProfile = CharacterProfile.load_or_create(ID)
 	assert_eq(profile.total_xp, int(data["total_xp"]))
@@ -119,7 +119,7 @@ func test_legacy_empty_array_save_keeps_xp_items_unknown_fields_and_can_save() -
 	assert_eq(Log.event_counts.get("progression.profile_unreadable", 0), warnings)
 	profile.total_xp += 75
 	assert_eq(profile.save(), OK)
-	var saved: Dictionary = SaveFile.read(PATH)
+	var saved: Dictionary = SaveFile.read(_path)
 	assert_eq(int(saved["total_xp"]), int(data["total_xp"]) + 75)
 	assert_true(saved["future_flag"])
 	assert_eq(saved["stash"][0], before["stash"][0])
@@ -139,7 +139,7 @@ func test_legacy_v1_empty_loadout_array_keeps_xp_and_remains_saveable() -> void:
 	var parsed: CharacterProfile = CharacterProfile.from_dict({"loadout": []})
 	assert_eq(parsed.loadout, empty_loadout)
 	assert_eq(profile.save(), OK)
-	var saved: Dictionary = SaveFile.read(PATH)
+	var saved: Dictionary = SaveFile.read(_path)
 	assert_true(saved["loadout"] is Dictionary)
 	assert_eq(saved["loadout"], empty_loadout)
 	assert_eq(int(saved["total_xp"]), 400)
@@ -154,12 +154,12 @@ func test_unknown_fields_survive_load_and_save() -> void:
 		"loadout": {"primary": {"uid": "equipped", "future": {"nested": [false, null, "kept"]}}},
 		"future_flag": false,
 	}
-	assert_eq(SaveFile.write(PATH, data), OK)
-	var original: Dictionary = SaveFile.read(PATH)
+	assert_eq(SaveFile.write(_path, data), OK)
+	var original: Dictionary = SaveFile.read(_path)
 	var profile: CharacterProfile = CharacterProfile.load_or_create(ID)
 	profile.total_xp += 75
 	assert_eq(profile.save(), OK)
-	var saved: Dictionary = SaveFile.read(PATH)
+	var saved: Dictionary = SaveFile.read(_path)
 	assert_eq(saved["stash"][0], original["stash"][0])
 	assert_eq(saved["stash"].size(), 60)
 	assert_eq(saved["loadout"]["primary"], original["loadout"]["primary"])
@@ -193,33 +193,36 @@ func test_missing_file_gives_new_saveable_profile() -> void:
 	assert_eq(profile.display_name, "Survivor")
 	assert_eq(profile.total_xp, 0)
 	assert_eq(profile.skill_ranks, {})
-	assert_false(FileAccess.file_exists(PATH))
+	assert_false(FileAccess.file_exists(_path))
 	assert_eq(profile.save(), OK)
-	assert_true(FileAccess.file_exists(PATH))
+	assert_true(FileAccess.file_exists(_path))
 
 
 func test_newer_file_is_not_overwritten() -> void:
 	var raw: String = '{"save_version": %d, "total_xp": 9000}' % (SaveFile.CURRENT_VERSION + 1)
 	_write_raw(raw)
-	var warnings: int = Log.event_counts.get("progression.profile_unreadable", 0)
+	var warnings: int = Log.event_counts.get("save.profile_newer", 0)
+	var unreadable: int = Log.event_counts.get("progression.profile_unreadable", 0)
 	var profile: CharacterProfile = CharacterProfile.load_or_create(ID)
-	assert_push_error("Update the game")
+	assert_true(profile.saved_by_newer_version)
 	assert_eq(profile.total_xp, 0)
 	profile.total_xp += 60
 	assert_eq(profile.save(), ERR_UNAVAILABLE)
 	assert_eq(profile.save(), ERR_UNAVAILABLE)
-	assert_eq(FileAccess.get_file_as_string(PATH), raw)
-	assert_eq(Log.event_counts.get("progression.profile_unreadable", 0), warnings + 1)
-	assert_false(FileAccess.file_exists(PATH + ".tmp"))
+	assert_eq(FileAccess.get_file_as_string(_path), raw)
+	assert_eq(Log.event_counts.get("save.profile_newer", 0), warnings + 1)
+	assert_eq(Log.event_counts.get("progression.profile_unreadable", 0), unreadable, "newer is not broken")
+	assert_false(FileAccess.file_exists(_path + ".tmp"))
 
 
 func test_broken_file_is_not_overwritten() -> void:
 	_write_raw("{broken")
 	var profile: CharacterProfile = CharacterProfile.load_or_create(ID)
 	assert_push_error("not valid JSON")
+	assert_false(profile.saved_by_newer_version)
 	assert_eq(profile.total_xp, 0)
 	assert_eq(profile.save(), ERR_UNAVAILABLE)
-	assert_eq(FileAccess.get_file_as_string(PATH), "{broken")
+	assert_eq(FileAccess.get_file_as_string(_path), "{broken")
 
 
 func test_malformed_fields_use_temporary_profile() -> void:
@@ -235,12 +238,12 @@ func test_malformed_fields_use_temporary_profile() -> void:
 		{"loadout": [{}]},
 		{"loadout": {"primary": "bad"}},
 	]:
-		assert_eq(SaveFile.write(PATH, fields), OK)
-		var raw: String = FileAccess.get_file_as_string(PATH)
+		assert_eq(SaveFile.write(_path, fields), OK)
+		var raw: String = FileAccess.get_file_as_string(_path)
 		var profile: CharacterProfile = CharacterProfile.load_or_create(ID)
 		assert_eq(profile.total_xp, 0)
 		assert_eq(profile.save(), ERR_UNAVAILABLE)
-		assert_eq(FileAccess.get_file_as_string(PATH), raw)
+		assert_eq(FileAccess.get_file_as_string(_path), raw)
 
 
 func test_level_is_derived_and_never_stored() -> void:
@@ -264,7 +267,7 @@ func test_failed_save_is_logged() -> void:
 
 
 func _write_raw(raw: String) -> void:
-	var file: FileAccess = FileAccess.open(PATH, FileAccess.WRITE)
+	var file: FileAccess = FileAccess.open(_path, FileAccess.WRITE)
 	file.store_string(raw)
 	file.close()
 
@@ -285,4 +288,4 @@ func test_best_run_per_map_keeps_highest_round_then_kills_and_saves() -> void:
 func test_round_zero_run_is_not_a_best() -> void:
 	var profile: CharacterProfile = CharacterProfile.load_or_create(ID)
 	assert_false(profile.record_run("halcyon_labs", {"round": 0, "kills": 0}))
-	assert_false(FileAccess.file_exists(PATH), "nothing to save")
+	assert_false(FileAccess.file_exists(_path), "nothing to save")

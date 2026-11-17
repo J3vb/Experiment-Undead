@@ -306,3 +306,9 @@ func _gear_bases() -> Array[GearBaseData]:
 		if base != null:
 			bases.append(base)
 	return bases
+
+
+func test_unknown_affix_or_tier_from_a_newer_save_is_worth_zero() -> void:
+	assert_eq(ItemRoller.affix_value(&"test_future_affix", 1, 0.5), 0.0)
+	assert_eq(ItemRoller.affix_value(&"dmg_pct", 0, 0.5), 0.0)
+	assert_eq(ItemRoller.affix_value(&"dmg_pct", 99, 0.5), 0.0)

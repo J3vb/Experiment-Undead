@@ -2,11 +2,11 @@
 extends GutTest
 
 const PROFILE_ID: StringName = &"test_inventory_acquisition_order"
-const PROFILE_PATH: String = "user://characters/test_inventory_acquisition_order.json"
+var _profile_path: String = CharacterProfile.directory() + "test_inventory_acquisition_order.json"
 
 
 func after_each() -> void:
-	for path: String in [PROFILE_PATH, PROFILE_PATH + ".tmp", PROFILE_PATH + ".v0.bak"]:
+	for path: String in [_profile_path, _profile_path + ".tmp", _profile_path + ".v0.bak"]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
