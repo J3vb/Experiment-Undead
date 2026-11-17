@@ -1,6 +1,6 @@
 # Plan: Player and gear to the concept art
 
-Status: Approved
+Status: Building
 Roadmap: F-70 / issue none (follows the gear look work in DECISIONS.md)
 Phase: P6 (pulled forward with the concept-art passes, 2026-11-17)
 Size: L
@@ -215,7 +215,9 @@ the 120 fps target on the RTX 4080 Super. Gloves, boots and headgear hide past
 
 - Build: light, medium and heavy frames restyled to the concept's plate carrier
   with pouch rows, each in three tiers (shoulder plates from plated up, brass
-  plates on Oriel); add a `VialClip` socket on the left chest. Keep the 3 mm
+  plates on Oriel), plus the concept's neck scarf as part of each vest (a body
+  scarf collides with vest collars and straps, found in step 1); add a
+  `VialClip` socket on the left chest. Keep the 3 mm
   clearance and the frame triangle ranges in DECISIONS.md.
 - Files: vest_model.py, gear_parts.py, nine vest .glb, three vest .tres
   (tier scenes), turnarounds.

@@ -53,7 +53,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-66 | Your own world, open to friends: Enter world into your own Lantern Post (listen server, UPnP), server browser with add by address and LAN discovery, no master server | - | F-02, F-50 | [ready](plans/join-any-game.md) | L | Ready |
 | F-67 | Character select and create before Enter world (ui-hud screen 3: slots, create, delete) | - | F-66 step 2 | needed | M | Todo |
 | F-68 | Lantern Post to the concept art: ridge sky, timber lodges, market stalls, concrete Deploy gate, props | - | F-50 | [ready](plans/lantern-post-concept.md) | L | Ready |
-| F-70 | Player and gear to the concept art: bearded survivor body, headgear, gloves, backpack and boots models in three tiers (field, plated, Oriel), plate carrier vests, eye implant and vest vial | - | - | [ready](plans/player-gear-concept.md) | L | Ready |
+| F-70 | Player and gear to the concept art: bearded survivor body, headgear, gloves, backpack and boots models in three tiers (field, plated, Oriel), plate carrier vests, eye implant and vest vial | - | - | [ready](plans/player-gear-concept.md) | L | Building |
 | F-71 | Four new loot slots: headgear, gloves, backpack, boots (item bases, affix pools, drops, sets, save, inventory and character screen) | - | F-70 step 2 | needed | L | Todo |
 
 ## Next: v0.2 Progression and loot

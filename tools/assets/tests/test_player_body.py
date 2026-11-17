@@ -1,4 +1,4 @@
-"""Player geometry, painted zones and skinning survive the source-to-glTF pipeline."""
+"""Survivor body geometry, painted zones and skinning survive the source-to-glTF pipeline."""
 
 import math
 import os
@@ -50,7 +50,7 @@ def test_player_adult_scale_and_material_contract(player):
     assert 1.75 <= high.z - low.z <= 1.85
     assert low.z == pytest.approx(0.0, abs=0.01)
     materials = {mat.name for obj in parts for mat in obj.data.materials}
-    assert materials == {"BodySuit", "BodyKnit", "BodyRubber", "BodyLens"}
+    assert materials == {"BodySuit", "BodyHair", "BodyRubber", "BodySkin"}
 
 
 def test_player_has_the_shared_bones_and_valid_skin_weights(player):
@@ -94,7 +94,7 @@ def test_undersuit_is_one_closed_connected_surface(player):
     assert not any(modifier.type in {"SKIN", "SUBSURF"} for modifier in suit.modifiers)
 
 
-def test_zones_use_surface_area_and_keep_the_lenses_small(player):
+def test_zones_use_surface_area_and_the_body_never_glows(player):
     areas = dict.fromkeys(gear_paint.ZONES, 0.0)
     for obj in meshes(player):
         shares = gear_paint.zone_shares(obj)
@@ -103,14 +103,11 @@ def test_zones_use_surface_area_and_keep_the_lenses_small(player):
         bm.free()
         for value in areas:
             areas[value] += shares[value] * area
-        lens_faces = [face for face in obj.data.polygons if obj.data.materials[face.material_index].name == "BodyLens"]
-        if lens_faces:
-            attr = obj.data.color_attributes["Color"]
-            assert all(gear_paint._face_zone(obj.data, attr, face) == gear_paint.ZONE_GLOW for face in lens_faces)
     total = sum(areas.values())
-    assert all(area > 0.0 for area in areas.values()), "all four paint zones must be present"
+    painted = (gear_paint.ZONE_MAIN, gear_paint.ZONE_ACCENT, gear_paint.ZONE_TRIM)
+    assert all(areas[zone] > 0.0 for zone in painted), "main, accent and trim zones must be present"
     assert areas[gear_paint.ZONE_MAIN] / total > 0.5
-    assert 0.0 < areas[gear_paint.ZONE_GLOW] / total < 0.05
+    assert areas[gear_paint.ZONE_GLOW] == 0.0, "glow belongs to gear such as the implant, not the body"
 
 
 def test_eyes_follow_the_head_and_face_forward(player):
@@ -127,10 +124,10 @@ def test_eyes_follow_the_head_and_face_forward(player):
     assert abs(position.x) < 0.015
 
 
-def test_boots_goggles_and_buckles_are_rigidly_bound(player):
-    parts = [obj for obj in meshes(player) if obj.name.startswith(("Boot", "Goggle", "Buckle"))]
+def test_boots_face_details_and_buckles_are_rigidly_bound(player):
+    parts = [obj for obj in meshes(player) if obj.name.startswith(("Boot", "Face", "Buckle"))]
     assert any(obj.name.startswith("Boot") for obj in parts)
-    assert any(obj.name.startswith("Goggle") for obj in parts)
+    assert any(obj.name.startswith("Face") for obj in parts)
     assert any(obj.name.startswith("Buckle") for obj in parts)
     for obj in parts:
         assigned = [weights(obj, vertex) for vertex in obj.data.vertices]
@@ -139,7 +136,7 @@ def test_boots_goggles_and_buckles_are_rigidly_bound(player):
         assert len(bones) == 1, obj.name
         if obj.name.startswith("Boot"):
             assert bones <= {"foot_L", "foot_R"}
-        elif obj.name.startswith("Goggle"):
+        elif obj.name.startswith("Face"):
             assert bones == {"head"}
 
 
@@ -158,3 +155,35 @@ def test_undersuit_follows_an_arm_pose(player):
     after = evaluated.matrix_world @ evaluated.data.vertices[vertex.index].co
     assert (after - before).length > 0.01
     assert all(math.isfinite(component) for component in Vector(after))
+
+
+def _head_faces(player, material):
+    suit = next(obj for obj in meshes(player) if obj.name == "Undersuit")
+    return [
+        face
+        for face in suit.data.polygons
+        if suit.data.materials[face.material_index].name == material and face.center.z > 1.55
+    ]
+
+
+def test_head_shows_a_bare_face_framed_by_beard_and_hair(player):
+    skin = _head_faces(player, "BodySkin")
+    hair = _head_faces(player, "BodyHair")
+    assert skin and hair
+    eye_level = [face for face in skin if abs(face.center.z - 1.704) < 0.01 and face.center.y < -0.05]
+    assert eye_level, "the eyes look out of skin, not a mask"
+    chin = [face for face in hair if face.center.z < 1.64 and face.center.y < -0.05 and abs(face.center.x) < 0.03]
+    assert chin, "a beard covers the chin"
+    crown = [face for face in hair if face.center.z > 1.78]
+    assert crown, "cropped hair covers the crown"
+
+
+def test_beard_and_nose_stand_out_from_the_face(player):
+    suit = next(obj for obj in meshes(player) if obj.name == "Undersuit")
+    points = [vertex.co for vertex in suit.data.vertices if abs(vertex.co.x) < 0.012 and vertex.co.y < 0]
+
+    def front(low, high):
+        return min(point.y for point in points if low <= point.z <= high)
+
+    assert front(1.67, 1.69) < front(1.70, 1.71) - 0.008, "the nose tip stands in front of the eye line"
+    assert front(1.60, 1.64) < -0.09, "the beard fills out the chin"

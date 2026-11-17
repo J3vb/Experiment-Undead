@@ -1,4 +1,4 @@
-"""Lantern Post salvager: one continuous thermal undersuit with sewn winter details."""
+"""Lantern Post survivor: field jacket and trousers on one continuous body, bearded head, bare hands."""
 
 import math
 
@@ -7,7 +7,8 @@ import bpy
 import character_rig as rig
 import gear_paint as paint
 import player_clips
-from mathutils import Matrix, Vector
+import player_head_model as head
+from mathutils import Vector
 
 
 def _body_nodes():
@@ -82,37 +83,21 @@ def _suit(armature, mats):
             soft.fabric_fold(obj, (sign * 0.11, 0, z), (sign * 0.16, 0.22, 1), 0.030, depth, 0.105)
     for z in (1.045, 1.085):
         soft.fabric_fold(obj, (0, 0, z), (0, 0.12, 1), 0.024, 0.005, 0.19)
-    _mask_shape(obj)
+    head.sculpt(obj)
     # Projected channels follow the surface rather than sitting above it like wires.
     soft.groove(obj, [(0, z) for z in (1.07, 1.14, 1.22, 1.30, 1.38, 1.46, 1.53)], 0.004)
     for sign in (-1, 1):
         soft.groove(obj, [(sign * 0.14, z) for z in (0.86, 0.78, 0.70, 0.62, 0.55, 0.47, 0.38, 0.29)])
-    obj.data.materials.append(mats["knit"])
+    obj.data.materials.append(mats["hair"])
+    obj.data.materials.append(mats["skin"])
     soft.clean(obj)
     _paint_bind(obj, armature, paint.ZONE_MAIN)
-    for face in obj.data.polygons:
-        if sum(obj.data.vertices[i].co.z for i in face.vertices) / len(face.vertices) > 1.57:
-            face.material_index = 1
-            paint.zone(obj, paint.ZONE_ACCENT, [face])
+    head.paint_head(obj, skin_index=2, hair_index=1)
     return obj
 
 
-def _mask_shape(obj):
-    """A covered jaw and nose distinguish the balaclava from a smooth skin cylinder."""
-    for vertex in obj.data.vertices:
-        x, y, z = vertex.co
-        jaw = max(0, 1 - abs(z - 1.63) / 0.055)
-        vertex.co.x *= 1 - jaw * 0.16
-        if y < 0 and z > 1.59:
-            nose = max(0, 1 - abs(x) / 0.035) * max(0, 1 - abs(z - 1.675) / 0.035)
-            vertex.co.y -= nose * 0.016
-    obj.data.update()
-    for sign in (-1, 1):
-        soft.groove(obj, [(sign * x, z) for x, z in ((0.048, 1.68), (0.037, 1.65), (0.026, 1.62))], 0.002)
-
-
-def _collar_belt(armature, mats):
-    for name, z, rx, ry, height in (("Collar", 1.535, 0.086, 0.082, 0.052), ("WaistBelt", 1.00, 0.163, 0.118, 0.044)):
+def _belt(armature, mats):
+    for name, z, rx, ry, height in (("WaistBelt", 1.00, 0.163, 0.118, 0.044),):
         rings = []
         for dz, expansion in (
             (-height / 2, 0),
@@ -133,8 +118,6 @@ def _collar_belt(armature, mats):
     for x in (-0.019, 0.019):
         keeper = soft.pad("BuckleInset", (0.008, 0.006, 0.020), (x, -0.143, 1.00), mats["suit"])
         _paint_bind(keeper, armature, paint.ZONE_TRIM, "pelvis")
-    zip_pull = soft.ellipsoid("BuckleZipPull", (0, -0.092, 1.55), (0.0045, 0.0028, 0.0105), mats["rubber"])
-    _paint_bind(zip_pull, armature, paint.ZONE_TRIM, "neck")
     for z in (1.13, 1.19, 1.25, 1.31, 1.37, 1.43):
         hit, point, _n, _i = bpy.data.objects["Undersuit"].ray_cast(Vector((0.008, -0.6, z)), Vector((0, 1, 0)))
         if hit:
@@ -142,41 +125,9 @@ def _collar_belt(armature, mats):
             _paint_bind(tab, armature, paint.ZONE_MAIN)
 
 
-def _goggles(armature, mats):
-    for sign in (-1, 1):
-        at = (sign * 0.048, -0.099, 1.704)
-        frame = soft.ellipse_ring("GoggleFrame", at, (0.043, 0.029), 0.008, mats["rubber"])
-        for vertex in frame.data.vertices:
-            for index, radius in ((0, 0.043), (2, 0.029)):
-                value = (vertex.co[index] - at[index]) / radius
-                vertex.co[index] = at[index] + math.copysign(abs(value) ** 0.72, value) * radius
-        _paint_bind(frame, armature, paint.ZONE_ACCENT, "head")
-        lens = soft.ellipsoid("GoggleLens", (at[0], -0.108, at[2]), (0.038, 0.010, 0.025), mats["lens"])
-        for vertex in lens.data.vertices:
-            for index, radius in ((0, 0.038), (2, 0.025)):
-                value = vertex.co[index] / radius
-                vertex.co[index] = math.copysign(abs(value) ** 0.72, value) * radius
-        _paint_bind(lens, armature, paint.ZONE_GLOW, "head")
-        buckle = soft.pad("BuckleGoggle", (0.016, 0.024, 0.028), (sign * 0.099, -0.045, 1.702), mats["rubber"])
-        _paint_bind(buckle, armature, paint.ZONE_TRIM, "head")
-    bridge = soft.pad("GoggleBridge", (0.022, 0.019, 0.015), (0, -0.102, 1.704), mats["rubber"])
-    _paint_bind(bridge, armature, paint.ZONE_ACCENT, "head")
-    rings = [
-        [(0.100 * math.cos(a), 0.104 * math.sin(a), z) for a in (2 * math.pi * j / 32 for j in range(32))]
-        for z in (1.692, 1.711)
-    ]
-    strap = soft.loft("GoggleStrap", rings, mats["rubber"])
-    _paint_bind(strap, armature, paint.ZONE_ACCENT, "head")
-    eyes = bpy.data.objects.new("Eyes", None)
-    bpy.context.collection.objects.link(eyes)
-    eyes.parent, eyes.parent_type, eyes.parent_bone = armature, "BONE", "head"
-    bpy.context.view_layer.update()
-    eyes.matrix_world = Matrix.Translation((0, -0.115, 1.704))
-
-
 def _patches(armature, mats):
     for side, sign in (("L", 1), ("R", -1)):
-        knee = soft.pad("KneePatch" + side, (0.113, 0.017, 0.116), (sign * 0.11, -0.067, 0.54), mats["knit"], 0.007)
+        knee = soft.pad("KneePatch" + side, (0.113, 0.017, 0.116), (sign * 0.11, -0.067, 0.54), mats["rubber"], 0.007)
         for vertex in knee.data.vertices:
             vertex.co.x *= 0.78 + 0.22 * (1 - abs(vertex.co.z) / 0.058)
             vertex.co.y += 0.012 * (vertex.co.x / 0.0565) ** 2
@@ -187,6 +138,23 @@ def _patches(armature, mats):
         for z in (0.510, 0.535, 0.560):
             stitch = soft.pad("KneeStitch", (0.084, 0.003, 0.004), (sign * 0.11, -0.077, z), mats["knit"])
             _paint_bind(stitch, armature, paint.ZONE_MAIN)
+        _cargo_pocket(armature, mats, side, sign)
+
+
+def _cargo_pocket(armature, mats, side, sign):
+    """Bellows pocket and flap on the outer thigh, rigid on the thigh."""
+    hit, point, _normal, _index = bpy.data.objects["Undersuit"].ray_cast(
+        Vector((sign * 0.6, -0.01, 0.71)), Vector((-sign, 0, 0))
+    )
+    if not hit:
+        raise ValueError("cargo pocket must sit on the thigh")
+    at = point + Vector((sign * 0.012, 0, 0))
+    pocket = soft.pad("CargoPocket" + side, (0.026, 0.105, 0.125), tuple(at), mats["suit"], 0.008)
+    _paint_bind(pocket, armature, paint.ZONE_MAIN, "thigh_" + side)
+    flap = soft.pad(
+        "CargoFlap" + side, (0.032, 0.112, 0.032), tuple(at + Vector((sign * 0.004, 0, 0.058))), mats["suit"], 0.006
+    )
+    _paint_bind(flap, armature, paint.ZONE_ACCENT, "thigh_" + side)
 
 
 def _gloves(armature, mats):
@@ -289,15 +257,15 @@ def _boot_details(boot, mats, sign):
 
 
 def _join_details():
-    """Keep one continuous suit; batch overlay parts that share the same rig."""
+    """Keep one continuous body; batch overlay parts that share the same rig."""
     from build_models import join_into
 
     objects = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
-    goggles = [obj for obj in objects if obj.name.startswith(("Goggle", "BuckleGoggle"))]
+    face = [obj for obj in objects if obj.name.startswith("Face")]
     belt = [obj for obj in objects if obj.name.startswith(("BuckleBelt", "BuckleInset"))]
-    retained = {bpy.data.objects[name] for name in ("Undersuit", "BootL", "BootR", "BuckleZipPull")}
-    details = [obj for obj in objects if obj not in retained and obj not in goggles and obj not in belt]
-    for name, parts in (("Goggles", goggles), ("BuckleBelt", belt), ("ThermalDetails", details)):
+    retained = {bpy.data.objects[name] for name in ("Undersuit", "BootL", "BootR")}
+    details = [obj for obj in objects if obj not in retained and obj not in face and obj not in belt]
+    for name, parts in (("FaceDetails", face), ("BuckleBelt", belt), ("FieldDetails", details)):
         join_into(parts[0], parts[1:])
         parts[0].name = name
 
@@ -307,17 +275,21 @@ def build_player():
     from build_models import material, srgb
 
     mats = {
-        "suit": material("BodySuit", srgb("#5F6D68"), roughness=0.88),
-        "knit": material("BodyKnit", srgb("#2F393B"), roughness=0.96),
+        "suit": material("BodySuit", srgb("#4A4A3B"), roughness=0.9),
         "rubber": material("BodyRubber", srgb("#1C2122"), roughness=0.78),
-        "lens": material("BodyLens", srgb("#3FE0C8"), metallic=0.45, roughness=0.16),
+        "skin": material("BodySkin", srgb("#8A6650"), roughness=0.6),
+        "hair": material("BodyHair", srgb("#3A2C22"), roughness=0.85),
     }
+    # Field clothes have no separate knit: cuffs and patches are jacket fabric.
+    mats["knit"] = mats["suit"]
     armature = rig.build_armature()
-    _suit(armature, mats)
-    _collar_belt(armature, mats)
-    _goggles(armature, mats)
+    suit = _suit(armature, mats)
+    _belt(armature, mats)
+    head.details(armature, mats, suit)
     _patches(armature, mats)
-    _gloves(armature, mats)
+    _gloves(armature, {**mats, "rubber": mats["skin"]})
+    for knuckle in [obj for obj in bpy.context.scene.objects if obj.name.startswith("KnucklePad")]:
+        bpy.data.objects.remove(knuckle, do_unlink=True)
     for side, sign in (("L", 1), ("R", -1)):
         _boot(armature, mats, side, sign)
     _join_details()

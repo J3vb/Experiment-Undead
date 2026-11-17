@@ -14,9 +14,11 @@ const int ZOMBIE_SKIN = 7;
 const int ZOMBIE_CLOTH = 8;
 const int ZOMBIE_SHOE = 9;
 const int ZOMBIE_GLOW = 10;
+const int SKIN = 11;
+const int HAIR = 12;
 
 uniform vec3 albedo : source_color = vec3(0.2);
-uniform int finish : hint_range(0, 10) = 0;
+uniform int finish : hint_range(0, 12) = 0;
 uniform vec3 emission_color : source_color = vec3(0.0);
 uniform float emission_strength : hint_range(0.0, 2.0) = 0.0;
 
@@ -98,7 +100,7 @@ void fragment() {
 	vec2 uv = surface_uv(p, obj_normal);
 	int zone = int(round(COLOR.a * 3.0));
 	vec3 color = albedo;
-	bool zombie = finish >= ZOMBIE_SKIN;
+	bool zombie = finish >= ZOMBIE_SKIN && finish <= ZOMBIE_GLOW;
 	if (zombie) {
 		color = albedo;
 	} else if (zone == 3) {
@@ -178,13 +180,23 @@ void fragment() {
 		height = grain * 0.00006 * detail;
 	} else if (finish == ZOMBIE_GLOW) {
 		rough = 0.3;
+	} else if (finish == SKIN) {
+		color *= mix(0.9, 1.04, fbm(p * 24.0));
+		rough = 0.58 + (grain - 0.5) * 0.08 * detail;
+		height = grain * 0.00002 * detail;
+	} else if (finish == HAIR) {
+		float strand = noise(vec3(p.x * 900.0, p.y * 900.0, p.z * 160.0));
+		color *= mix(1.0, 0.82 + strand * 0.3, detail);
+		rough = 0.82;
+		fuzz = 0.3;
+		height = strand * 0.00006 * detail;
 	}
 
 	ALBEDO = color * COLOR.r;
 	ROUGHNESS = clamp(rough + (1.0 - COLOR.r) * 0.08, 0.05, 1.0);
 	METALLIC = metal;
-	SPECULAR = finish == LENS || finish == ZOMBIE_SKIN ? 0.65 : 0.5;
-	BACKLIGHT = finish == ZOMBIE_SKIN ? color * 0.16 : vec3(0.0);
+	SPECULAR = finish == LENS || finish == ZOMBIE_SKIN || finish == SKIN ? 0.65 : 0.5;
+	BACKLIGHT = finish == ZOMBIE_SKIN || finish == SKIN ? color * 0.16 : vec3(0.0);
 	RIM = fuzz;
 	RIM_TINT = 0.65;
 	NORMAL = bump(NORMAL, VERTEX, height);
