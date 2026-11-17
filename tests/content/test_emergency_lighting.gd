@@ -42,8 +42,8 @@ func test_flickering_lights_flicker_around_the_new_level() -> void:
 	var level: Level = (load(MAP) as PackedScene).instantiate() as Level
 	add_child_autofree(level)
 	var flicker: FlickerLight = null
-	for node: Node in level.find_children("*", "Node"):
-		if node is FlickerLight:
+	for node: Node in level.find_children("*", "Node", true, false):
+		if node is FlickerLight and node.get_parent() is CeilingLight:
 			flicker = node as FlickerLight
 			break
 	if flicker == null:
