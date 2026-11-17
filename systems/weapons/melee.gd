@@ -20,7 +20,7 @@ func swing() -> void:
 	if camera == null or not camera.is_inside_tree():
 		return
 	var origin: Vector3 = camera.global_position
-	var forward: Vector3 = -camera.global_basis.z
+	var forward: Vector3 = -PlayerCamera.aim_of(camera).z
 	var exclude: Array[RID] = []
 	if shooter:
 		exclude.append(shooter.get_rid())

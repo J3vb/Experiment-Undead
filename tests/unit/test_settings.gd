@@ -41,7 +41,16 @@ func test_defaults_for_missing_file() -> void:
 		&"graphics": Graphics.DEFAULTS,
 		&"audio": {&"master_volume": 1.0, &"music_volume": 0.8, &"sfx_volume": 1.0},
 		&"comfort":
-		{&"head_bob": 0.6, &"weapon_bob": 1.0, &"sprint_fov": true, &"damage_effects": 1.0, &"centre_dot": false},
+		{
+			&"head_bob": 0.6,
+			&"weapon_bob": 1.0,
+			&"sprint_fov": true,
+			&"damage_effects": 1.0,
+			&"centre_dot": false,
+			&"shake_own_gun": 1.0,
+			&"shake_hits": 1.0,
+			&"flash_reduction": false,
+		},
 		&"accessibility":
 		{
 			&"text_scale": 1.0,
@@ -56,6 +65,20 @@ func test_defaults_for_missing_file() -> void:
 		for key: StringName in expected[section]:
 			assert_eq(_settings.get_value(section, key), expected[section][key])
 	assert_false(FileAccess.file_exists(PATH))
+
+
+func test_comfort_sliders_clamp_and_flash_reduction_is_bool() -> void:
+	for key: StringName in [&"shake_own_gun", &"shake_hits"]:
+		_settings.set_value(&"comfort", key, -0.5)
+		assert_eq(_settings.get_value(&"comfort", key), 0.0)
+		_settings.set_value(&"comfort", key, 3.0)
+		assert_eq(_settings.get_value(&"comfort", key), 1.0)
+		_settings.set_value(&"comfort", key, 0.25)
+		assert_eq(_settings.get_value(&"comfort", key), 0.25)
+	_settings.set_value(&"comfort", &"flash_reduction", true)
+	assert_true(_settings.get_value(&"comfort", &"flash_reduction"))
+	_settings.set_value(&"comfort", &"flash_reduction", 1.0)
+	assert_false(_settings.get_value(&"comfort", &"flash_reduction"), "a non-bool falls back to the default")
 
 
 func test_save_load_round_trip() -> void:

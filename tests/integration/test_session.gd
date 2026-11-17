@@ -93,7 +93,7 @@ func test_headshots_kill_and_pay() -> void:
 	weapon.ads_progress = 1.0
 	var shots: int = 0
 	while z.state != Zombie.State.DEAD and shots < 15:
-		player.camera.look_at(z.head_zone.global_position)
+		player.camera_rig.recoil_pivot.look_at(z.head_zone.global_position)
 		weapon.fire()
 		shots += 1
 		await wait_physics_frames(2)

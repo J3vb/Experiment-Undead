@@ -110,7 +110,7 @@ func _can_hit(eye: Vector3, point: Vector3, zombie: Zombie) -> bool:
 ## Look change for this tick, capped at max_turn radians, in InputFrame signs.
 func _look_toward(point: Vector3, max_turn: float) -> Vector2:
 	var wanted: Vector3 = (point - player.camera.global_position).normalized()
-	return turn_toward(-player.camera.global_basis.z, wanted, max_turn)
+	return turn_toward(-PlayerCamera.aim_of(player.camera).z, wanted, max_turn)
 
 
 ## Yaw and pitch change that turns forward toward wanted (InputFrame.look signs).

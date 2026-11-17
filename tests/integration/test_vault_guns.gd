@@ -57,7 +57,7 @@ func test_every_vault_gun_hits_a_walker() -> void:
 		var zombie: Zombie = _walker()
 		await wait_physics_frames(2)
 		var start: float = zombie.health.current
-		player.camera.look_at(zombie.global_position + Vector3(0, 0.9, 0))
+		player.camera_rig.recoil_pivot.look_at(zombie.global_position + Vector3(0, 0.9, 0))
 		weapon.fire()
 		var dealt: float = start - zombie.health.current
 		assert_gte(dealt, minf(weapon.data.damage, start) - 0.001, String(id) + " lands at least one full hit")
@@ -69,7 +69,7 @@ func test_corvid_body_shot_kills_a_round_one_walker() -> void:
 	_take(&"corvid_338")
 	var zombie: Zombie = _walker()
 	await wait_physics_frames(2)
-	player.camera.look_at(zombie.global_position + Vector3(0, 0.9, 0))
+	player.camera_rig.recoil_pivot.look_at(zombie.global_position + Vector3(0, 0.9, 0))
 	player.weapons.current.fire()
 	assert_true(zombie.health.is_dead, "600 x 0.57 is far over a fresh Walker")
 

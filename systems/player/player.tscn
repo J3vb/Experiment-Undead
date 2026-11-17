@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://systems/player/player.gd" id="1"]
 [ext_resource type="Script" path="res://systems/player/player_camera.gd" id="2"]
+[ext_resource type="Resource" path="res://content/feel/feedback_rules.tres" id="feel_rules"]
 [ext_resource type="Script" path="res://systems/weapons/weapon_holder.gd" id="3"]
 [ext_resource type="Script" path="res://systems/damage/health_component.gd" id="4"]
 [ext_resource type="Script" path="res://systems/economy/wallet.gd" id="5"]
@@ -46,6 +47,7 @@ shape = SubResource("capsule")
 [node name="Head" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 script = ExtResource("2")
+rules = ExtResource("feel_rules")
 
 [node name="RecoilPivot" type="Node3D" parent="Head"]
 

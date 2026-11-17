@@ -40,10 +40,10 @@ func test_damage_aim_replays_from_the_same_session_seed() -> void:
 		player.camera_rig.update_feel(1.0 / 60.0, false, false, 0.0, player.camera_rig.base_fov, player.walk_speed)
 		if run == 0:
 			kick = player.camera_rig._recoil_target
-			aim = -player.camera.global_basis.z
+			aim = -PlayerCamera.aim_of(player.camera).z
 			final_state = session.rng.state
 		else:
 			assert_eq(player.camera_rig._recoil_target, kick, "seeded damage repeats pitch and yaw")
-			assert_eq(-player.camera.global_basis.z, aim, "hitscan sees the same aim direction")
+			assert_eq(-PlayerCamera.aim_of(player.camera).z, aim, "hitscan sees the same aim direction")
 			assert_eq(session.rng.state, final_state, "later gameplay receives the same random stream")
 	assert_ne(aim, Vector3.FORWARD, "the replay assertion includes an actual aiming change")
