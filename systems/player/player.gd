@@ -26,7 +26,6 @@ extends CharacterBody3D
 @export var interact_range: float = 2.5
 
 @export_group("Look")
-@export var ads_sensitivity_multiplier: float = 0.65
 
 ## Set by GameSession when spawned. Gives access to the session RNG and tick.
 var session: GameSession
@@ -213,7 +212,7 @@ func _physics_process(delta: float) -> void:
 	if _teleport_pending:
 		teleport(_teleport_to)
 	local_input.enabled = input_enabled
-	local_input.sensitivity_scale = lerpf(1.0, ads_sensitivity_multiplier, weapons.get_ads_progress())
+	local_input.sensitivity_scale = lerpf(1.0, local_input.ads_multiplier, weapons.get_ads_progress())
 	var tick: int = session.tick if session else 0
 	apply_frame(local_input.sample(tick), delta)
 

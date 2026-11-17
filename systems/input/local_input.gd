@@ -15,6 +15,8 @@ const PRESS_BITS: Dictionary[StringName, int] = {
 
 var mouse_sensitivity: float = 0.0022
 var invert_y: bool = false
+## Look scale at full aim, from the ADS sensitivity setting.
+var ads_multiplier: float = 0.8
 
 var enabled: bool = true
 ## Set by the owner each tick; scales look while aiming.
@@ -31,12 +33,13 @@ func _ready() -> void:
 
 
 func _update_controls() -> void:
-	mouse_sensitivity = Settings.get_value(&"controls", &"mouse_sensitivity")
-	invert_y = Settings.get_value(&"controls", &"invert_y")
+	mouse_sensitivity = Settings.get_value(&"aim", &"mouse_sensitivity")
+	invert_y = Settings.get_value(&"aim", &"invert_y")
+	ads_multiplier = Settings.get_value(&"aim", &"ads_sensitivity_multiplier")
 
 
 func _on_settings_changed(section: StringName, _key: StringName, _value: Variant) -> void:
-	if section == &"controls":
+	if section == &"aim":
 		_update_controls()
 
 

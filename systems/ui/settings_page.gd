@@ -10,6 +10,7 @@ signal confirm_needed(row: SettingData, old_value: Variant)
 
 var rows: Array[SettingData] = []
 var _controls: Dictionary[SettingData, Control] = {}
+var _lines: Dictionary[SettingData, Array] = {}
 
 
 ## Rows of one page from content/settings, in their order.
@@ -60,6 +61,24 @@ func build(new_rows: Array[SettingData]) -> void:
 		hint.text = row.hint
 		hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		add_child(hint)
+		_lines[row] = [line, hint]
+
+
+## Shows only rows whose label or hint holds the text (any case); returns how many match.
+func filter(text: String) -> int:
+	var matches: int = 0
+	for row: SettingData in rows:
+		var shown: bool = text.is_empty() or row.label.containsn(text) or row.hint.containsn(text)
+		for node: Control in _lines[row]:
+			node.visible = shown
+		matches += int(shown)
+	return matches
+
+
+## Puts every row of this page back to its default.
+func reset_defaults() -> void:
+	for row: SettingData in rows:
+		Settings.set_value(row.section, row.key, Settings.DEFAULTS[row.section][row.key])
 
 
 func control_for(key: StringName) -> Control:
@@ -130,17 +149,20 @@ func refresh() -> void:
 			var shown: float = float(value) * row.display_scale
 			(control as HSlider).set_value_no_signal(shown)
 			var number: Label = control.get_node("../Number") as Label
-			number.text = (
-				"%d %%" % roundi(shown)
-				if row.display_scale == 100.0
-				else str(snappedf(shown, row.step * row.display_scale))
-			)
+			number.text = _number_text(row, shown)
 		elif control is OptionButton:
 			(control as OptionButton).select(_choice_index(row, value))
 		else:
 			var check: CheckBox = control as CheckBox
 			check.set_pressed_no_signal(bool(value))
 			check.text = "On" if check.button_pressed else "Off"
+
+
+func _number_text(row: SettingData, shown: float) -> String:
+	if row.display_scale == 100.0:
+		return "%d %%" % roundi(shown)
+	var step: float = row.step * row.display_scale
+	return str(roundi(shown)) if step >= 1.0 else str(snappedf(shown, step))
 
 
 func _on_setting_changed(_section: StringName, _key: StringName, _value: Variant) -> void:
