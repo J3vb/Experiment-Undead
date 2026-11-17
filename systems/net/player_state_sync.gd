@@ -27,7 +27,6 @@ func _init() -> void:
 func _ready() -> void:
 	_player = get_parent() as Player
 	_initial_spawn = _player.transform
-	_player.health.set_process(false)
 	_player.wallet.points_changed.connect(_points_changed)
 	Events.serum_gained.connect(_serum_gained)
 	Events.round_started.connect(_on_round_started)
@@ -55,7 +54,6 @@ func _physics_process(delta: float) -> void:
 	if _player.session and _player.session.is_over:
 		return
 	if multiplayer.is_server():
-		_player.health._process(delta)
 		if _player.is_downed and is_coop():
 			bleed_left = maxf(bleed_left - delta, 0.0)
 			if bleed_left <= 0.0:

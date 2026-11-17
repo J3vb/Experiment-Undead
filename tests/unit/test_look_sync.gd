@@ -218,7 +218,7 @@ func _make_side(side_name: String, loadout: Dictionary) -> Node:
 
 func _on_player_added(player: Player, loadout: Dictionary) -> void:
 	player.set_physics_process(false)
-	player.health.set_process(false)
+	player.health.set_physics_process(false)
 	if player.is_multiplayer_authority():
 		player.gear_rig.apply(LookBuilder.from_equipped(loadout))
 

@@ -32,7 +32,7 @@ pattern. **Missing** = needed soon, not built.
 | 4 | [Events and signals](#4-events-and-signals) | solid | [ADR 0007](adr/0007-signals-and-events.md) |
 | 5 | [UI screens and routing](#5-ui-screens-and-routing) | solid | [ADR 0011](adr/0011-one-ui-router.md), `docs/design/ui-hud.md` |
 | 6 | [Input](#6-input) | solid (1 leak) | AGENTS.md code rule 5 |
-| 7 | [Game tick and randomness](#7-game-tick-and-randomness) | solid (1 leak) | AGENTS.md code rule 5 |
+| 7 | [Game tick and randomness](#7-game-tick-and-randomness) | solid | AGENTS.md code rule 5 |
 | 8 | [Logging and diagnostics](#8-logging-and-diagnostics) | solid | `docs/LOGGING.md` |
 | 9 | [Tests and CI](#9-tests-and-ci) | solid | AGENTS.md, [ADR 0009](adr/0009-ci-is-the-gate.md) |
 | 10 | [Exported builds and dedicated server](#10-exported-builds-and-dedicated-server) | solid | `docs/RELEASING.md`, [ADR 0006](adr/0006-self-hosted-servers.md) |
@@ -128,8 +128,8 @@ request; `LootService` equips in its physics tick (#147, fixed).
 **Rule:** gameplay runs in `_physics_process`, gameplay randomness uses the
 session RNG (CI checked).
 
-**Leak:** health regen runs in `_process` with no authority check and is
-patched by a manual call in `PlayerStateSync` (#144).
+**Fixed leak:** health regen now runs in `HealthComponent._physics_process`,
+only on the server (#144, foundation fix 6).
 
 ### 8. Logging and diagnostics
 
