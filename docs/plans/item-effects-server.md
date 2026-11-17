@@ -1,6 +1,6 @@
 # Plan: Item effects run on the server
 
-Status: Approved
+Status: Building
 Roadmap: F-00 foundation fix 3 / issues #145, #147
 Phase: P7
 Size: M

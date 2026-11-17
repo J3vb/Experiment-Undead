@@ -9,6 +9,7 @@ static func apply(player: Player, loadout: Dictionary) -> void:
 		var equipped: Variant = loadout.get(slot)
 		if equipped is Dictionary:
 			gear.append(equipped)
+	player.state_sync.gear = gear
 	player.equip_gear(gear)
 	var sidearm: Variant = loadout.get("sidearm")
 	if not sidearm is Dictionary:

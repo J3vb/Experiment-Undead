@@ -160,6 +160,7 @@ func _on_player_added(player: Player) -> void:
 		var loadout: Variant = _profile.to_dict().get("loadout", {})
 		if loadout is Dictionary:
 			ItemLoadout.apply(player, loadout)
+		player.state_sync.send_loadout()
 	if player.is_multiplayer_authority():
 		player.gear_rig.apply(LookBuilder.from_equipped(_profile.loadout if _profile else {}))
 	if is_over and multiplayer.is_server():

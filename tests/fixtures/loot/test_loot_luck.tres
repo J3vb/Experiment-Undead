@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AffixData" format=3]
+
+[ext_resource type="Script" path="res://systems/loot/affix_data.gd" id="1"]
+[ext_resource type="Script" path="res://systems/loot/affix_tier.gd" id="2"]
+
+[sub_resource type="Resource" id="tier"]
+script = ExtResource("2")
+low = 20.0
+high = 20.0
+
+[resource]
+script = ExtResource("1")
+id = &"test_loot_luck"
+family = &"loot_luck"
+stat = &"loot_luck"
+op = "increased"
+tiers = Array[ExtResource("2")]([SubResource("tier")])
+text = "+{v}% loot luck"
