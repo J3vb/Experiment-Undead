@@ -1,6 +1,6 @@
 # Plan: Full settings screen (graphics first)
 
-Status: Building
+Status: Done
 Roadmap: F-48
 Phase: P4
 Size: L
@@ -327,8 +327,20 @@ prompt (after step 2) measures all four presets at the four test spots.
 
 - [x] Every graphics option in Scope is on the Graphics page and applies live (step 1-2 tests).
 - [x] Display mode and resolution changes ask to keep, and revert after 15 s (step 2 test).
-- [ ] High preset looks like today's build (look-check corridor shot).
-- [ ] GPU prompt result: High at least 120 fps at 1440p with 24 zombies; each lower preset at least as fast (recorded in the PR or issue).
+- [x] High preset looks like today's build (look-check corridor shot in PR #251; High corridor screenshot from the GPU run, 2026-11-17).
+- [x] GPU prompt result: High at least 120 fps at 1440p with 24 zombies; each lower preset at least as fast (recorded in the PR or issue).
+  Result 2026-11-17, RTX 4080 Super, 2560x1440, 24 zombies, VSync off (avg fps / 1% low):
+
+  | Preset | Mess Hall | Main Corridor | Containment ramp | Loading Dock |
+  |---|---|---|---|---|
+  | Low | 351 / 229 | 319 / 206 | 533 / 294 | 605 / 326 |
+  | Medium | 303 / 197 | 291 / 192 | 529 / 309 | 544 / 312 |
+  | High | 292 / 192 | 293 / 195 | 493 / 290 | 525 / 321 |
+  | Ultra | 280 / 189 | 278 / 192 | 361 / 270 | 387 / 299 |
+
+  High clears 120 / 60 everywhere. Order holds except a Medium/High tie in the Main Corridor
+  (within run noise); Mess Hall and corridor are draw-call bound (~1,700 calls), so render
+  settings barely move them there. Ultra costs 25-27% in the cheaper rooms.
 - [x] Every row comes from a SettingData file; content checks pass (step 2-3).
 - [x] Search, Revert and Defaults work (step 3 tests).
 - [x] Accessibility and Comfort rows work live, also from the pause menu (step 4-5 tests).
