@@ -1,7 +1,6 @@
 ## Seeded personal rolls and ENet owner-only delivery/pickup in one process.
 extends GutTest
 
-const PORT: int = 24665
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
 const WALKER: EnemyData = preload("res://content/enemies/zombie_walker.tres")
 const RUNNER: EnemyData = preload("res://content/enemies/zombie_runner.tres")
@@ -9,11 +8,13 @@ const BLOATER: EnemyData = preload("res://content/enemies/zombie_bloater.tres")
 
 var session: GameSession
 var service: LootService
+var _port: int
 var _roots: Array[Node] = []
 var _loot_before: Dictionary
 
 
 func before_each() -> void:
+	_port = TwoPeers.next_port()
 	_loot_before = Content._by_type[&"loot"].duplicate()
 	Content._by_type[&"loot"][&"test_loot_luck"] = "res://tests/fixtures/loot/test_loot_luck.tres"
 	session = GameSession.new()
@@ -30,11 +31,7 @@ func before_each() -> void:
 func after_each() -> void:
 	_roots.reverse()
 	for root: Node in _roots:
-		var path: NodePath = root.get_path()
-		root.multiplayer.multiplayer_peer.close()
-		root.multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
-		root.free()
-		get_tree().set_multiplayer(null, path)
+		TwoPeers.close_side(root)
 	_roots.clear()
 	Content._by_type[&"loot"] = _loot_before
 
@@ -110,10 +107,7 @@ func test_prototypes_are_fixed_and_only_in_their_rarity_pool() -> void:
 
 
 func _make_side(side_name: String) -> LootService:
-	var root: Node = Node.new()
-	root.name = side_name
-	add_child(root)
-	get_tree().set_multiplayer(SceneMultiplayer.new(), root.get_path())
+	var root: Node = TwoPeers.make_side(self, side_name)
 	_roots.append(root)
 	var loot: LootService = LootService.new()
 	loot.name = "LootService"
@@ -135,12 +129,8 @@ func _add_player(loot: LootService, owner_id: int) -> Player:
 func test_drop_reaches_only_its_owner_and_pickup_only_changes_their_pack() -> void:
 	var server: LootService = _make_side("LootHost")
 	var client: LootService = _make_side("LootClient")
-	var server_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(server_peer.create_server(PORT, 2), OK)
-	server.multiplayer.multiplayer_peer = server_peer
-	var client_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(client_peer.create_client("127.0.0.1", PORT), OK)
-	client.multiplayer.multiplayer_peer = client_peer
+	assert_eq(TwoPeers.host(server, _port, 2), OK)
+	assert_eq(TwoPeers.join(client, _port), OK)
 	await wait_until(func() -> bool: return server.multiplayer.get_peers().size() == 1, 5.0, "connected")
 	var client_id: int = client.multiplayer.get_unique_id()
 	var host_player: Player = _add_player(server, 1)

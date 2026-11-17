@@ -5,7 +5,6 @@ const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
 const WALKER: EnemyData = preload("res://content/enemies/zombie_walker.tres")
 const WAVES: WaveRules = preload("res://content/waves/default_waves.tres")
 const IRONWOOD: WeaponData = preload("res://content/weapons/ironwood_50.tres")
-const PORT: int = 24692
 
 var server: HitClaims
 var client: HitClaims
@@ -13,15 +12,13 @@ var claimant: Player
 var host: Player
 var mine: Player
 var progression: ProgressionService
+var _port: int
 var _servers: Array[Zombie] = []
 var _clients: Array[Zombie] = []
 
 
 func _make_side(side_name: String) -> HitClaims:
-	var root: Node = Node.new()
-	root.name = side_name
-	add_child(root)
-	get_tree().set_multiplayer(SceneMultiplayer.new(), root.get_path())
+	var root: Node = TwoPeers.make_side(self, side_name)
 	var session: GameSession = GameSession.new()
 	session.rng.seed = 7
 	var world: Node3D = Node3D.new()
@@ -68,6 +65,7 @@ func _prepare_player(player: Player, session: GameSession) -> void:
 
 
 func before_each() -> void:
+	_port = TwoPeers.next_port()
 	server = _make_side("Server")
 	client = _make_side("Client")
 	progression = server.get_parent().get_node("Progression") as ProgressionService
@@ -75,12 +73,8 @@ func before_each() -> void:
 	marker.add_to_group(&"test_pierce_claim_points")
 	marker.position = Vector3(0, 0, -4)
 	server.get_parent().add_child(marker)
-	var server_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(server_peer.create_server(PORT, 2), OK)
-	server.multiplayer.multiplayer_peer = server_peer
-	var client_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(client_peer.create_client("127.0.0.1", PORT), OK)
-	client.multiplayer.multiplayer_peer = client_peer
+	assert_eq(TwoPeers.host(server, _port, 2), OK)
+	assert_eq(TwoPeers.join(client, _port), OK)
 	client.session.players.setup(client.get_parent().get_node("World") as Node3D, Transform3D.IDENTITY)
 	server.session.players.setup(server.get_parent().get_node("World") as Node3D, Transform3D.IDENTITY)
 	await wait_until(_players_connected, 5.0, "two peers have their players")
@@ -107,9 +101,6 @@ func _players_connected() -> bool:
 func after_each() -> void:
 	for claims: HitClaims in [client, server]:
 		var root: Node = claims.get_parent()
-		var path: NodePath = root.get_path()
-		root.multiplayer.multiplayer_peer.close()
-		root.multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
 		for node: Node in claims.session.spawner.get_children():
 			if node is Zombie:
 				node.free()
@@ -117,8 +108,7 @@ func after_each() -> void:
 			if node is Player:
 				node.free()
 		claims.session.free()
-		root.free()
-		get_tree().set_multiplayer(null, path)
+		TwoPeers.close_side(root)
 	_servers.clear()
 	_clients.clear()
 
