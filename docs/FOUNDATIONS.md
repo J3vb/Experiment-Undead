@@ -102,9 +102,11 @@ in the past tense; requests are direct calls.
 
 **What works:** 24 past-tense signals, used consistently.
 
-**Gap to keep in mind:** nothing says which peer emits each event in co-op
-(for example `enemy_killed` fires where the zombie dies, the server). When you
-add or use an event in co-op code, say in the plan which peers see it.
+**Which peers hear it:** every signal in `core/events.gd` has a `## Peers:`
+line (server only, owner, every peer); `tests/unit/test_events.gd` fails if one
+is missing. Read it before co-op code listens to an event. Known gap: round
+events (`round_started`, `round_ended`, `intermission_started`) fire on the
+server only, so client HUD and music do not see rounds yet (#216).
 
 ### 5. UI screens and routing
 
@@ -242,5 +244,5 @@ tests, as usual. The issue numbers have the details.
 | 5 | Done: minimal UI router (push, pop, replace, mouse capture), current screens moved onto it ([plan](plans/ui-router.md)) | ui-hud.md | skill tree screen (#112), town hub (#131) |
 | 6 | Done: small leaks: regen in the physics tick (#144), Pack overlay input through the input layer (#146) | #144, #146 | anything touching health or the Pack |
 | 7 | Done: hot-path allocations ([plan](plans/hot-path-allocations.md)): impacts, remote tracers, chain arcs and the gravity well reuse resources; zombie separation without per-tick arrays | #139, #141, #142, #150, #151 | 4-player play-test (#127), more VFX |
-| 8 | Shared test helpers for two-peer ENet and mesh checks | #161, #164, #170 | more co-op tests |
-| 9 | Write down which peer emits each Events signal (foundation 4) | - | next co-op feature that uses Events |
+| 8 | Done: shared test helpers: `TwoPeers` for two-peer ENet tests, `MeshChecks` for model sight-line checks, `grip_checks.py` for grip tests | #161, #164, #170 | more co-op tests |
+| 9 | Done: every Events signal says which peers emit it (`## Peers:` in `core/events.gd`, checked by a test) | - | next co-op feature that uses Events |
