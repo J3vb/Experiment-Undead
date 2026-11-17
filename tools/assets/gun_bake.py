@@ -47,7 +47,11 @@ FINISHES = {"GunMetal": 0, "MatteBlack": 1, "Tan": 2, "OlivePolymer": 2, "GreyPo
 BARE_METAL = (0.258, 0.283, 0.266)  # #8A918C in linear
 GRIME = (0.106, 0.064, 0.030)  # #5A4630 in linear
 WORN_WEAR = 1.6
-WORN_GRIME = 0.8
+WORN_GRIME = 1.0
+BRASS = (0.48, 0.32, 0.10)  # linear; worn-through primer and brass under the paint (concept sheet)
+RUST = (0.20, 0.08, 0.03)
+TAN_SHADE = (0.8, 0.7, 0.56)  # concept tan is darker and browner than the shader-finish tan
+SCRATCH_STRETCH = (450.0, 12.0, 450.0)  # long scratches along the barrel (Blender +Y)
 MARKINGS_MAP = os.path.join(REPO, "assets", "textures", "gun_markings.png")
 # Files whose change means a re-bake (tools/ci/test_gun_bakes.py). Shared helpers such as
 # gun_parts.py are covered by the source fingerprint instead (tools/assets/tests/test_gun_bake.py).
@@ -207,6 +211,12 @@ def detail_material(source):
     worn = g.math("MAXIMUM", worn, flat_chips)
     color = _base_color(g, source, base)
     color, metal_out, rough_out, height = _finish(g, kind, color, metal, rough, worn, blotch, p)
+    if heavy > 0.0:
+        scratch = _scratches(g, p, heavy)
+        lines = (*BARE_METAL, 1.0) if kind < 2 else (0.32, 0.26, 0.18, 1.0)
+        color = g.mix(color, lines, g.math("MULTIPLY", scratch, 0.8))
+        rough_out = g.mix(rough_out, 0.35, scratch, "FLOAT")
+        height = g.math("SUBTRACT", height, g.math("MULTIPLY", scratch, 0.00002))
     if knurled:
         stipple = g.node("ShaderNodeTexVoronoi", Scale=900.0, Vector=p).outputs["Distance"]
         height = g.math("ADD", height, g.math("MULTIPLY", stipple, 0.00025))
@@ -221,7 +231,7 @@ def detail_material(source):
         grime,
     )
     dirt = g.math("MINIMUM", dirt, 1.0)
-    color = g.mix(color, (*tuple(c * 0.5 for c in GRIME), 1.0), g.math("MULTIPLY", dirt, 0.6))
+    color = g.mix(color, (*tuple(c * 0.5 for c in GRIME), 1.0), g.math("MULTIPLY", dirt, 0.75))
     rough_out = g.math("ADD", rough_out, g.math("MULTIPLY", dirt, 0.15))
     if source.name.startswith("Markings"):
         height = g.math("SUBTRACT", height, g.math("MULTIPLY", _markings(g, "luma"), 0.00008))
@@ -234,6 +244,8 @@ def detail_material(source):
 def _base_color(g: Nodes, source, base: tuple):
     if source.name.startswith("Markings"):
         return _markings(g, "color")
+    if finish_of(source.name)[0] == 2:
+        base = (*(c * k for c, k in zip(base[:3], TAN_SHADE, strict=True)), 1.0)
     return g.mix(base, base, 0.0)
 
 
@@ -251,6 +263,26 @@ def _markings(g: Nodes, out: str):
     return gray.outputs[0]
 
 
+def _under(g: Nodes, p) -> tuple:
+    """What shows through chipped paint: bare metal, patches of brass, spots of rust."""
+    brass = g.smooth(g.noise(p, 35.0, 11.0), 0.5, 0.62)
+    rust = g.smooth(g.noise(p, 60.0, 17.0), 0.55, 0.68)
+    color = g.mix(g.mix((*BARE_METAL, 1.0), (*BRASS, 1.0), brass), (*RUST, 1.0), rust)
+    metal = g.mix(0.9, 0.0, rust, "FLOAT")
+    rough = g.mix(g.mix(0.3, 0.38, brass, "FLOAT"), 0.9, rust, "FLOAT")
+    return color, metal, rough
+
+
+def _scratches(g: Nodes, p, heavy: float):
+    stretched = g.n.new("ShaderNodeVectorMath")
+    stretched.operation = "MULTIPLY"
+    g.link(p, stretched.inputs[0])
+    stretched.inputs[1].default_value = SCRATCH_STRETCH
+    lines = g.smooth(g.noise(stretched.outputs[0], 1.0, 23.0), 0.66, 0.68)
+    clusters = g.smooth(g.noise(p, 9.0, 29.0), 0.5, 0.62)
+    return g.math("MULTIPLY", g.math("MULTIPLY", lines, clusters), heavy)
+
+
 def _finish(g: Nodes, kind: int, color, metal: float, rough: float, worn, blotch, p) -> tuple:
     """Paint, metal, roughness and height for one finish, as in gun_finish.gdshader."""
     color = g.mix(g.mix((0, 0, 0, 1), color, 0.96), g.mix((0, 0, 0, 1), color, 1.04), blotch)
@@ -258,12 +290,14 @@ def _finish(g: Nodes, kind: int, color, metal: float, rough: float, worn, blotch
     metal_out = g.math("ADD", metal, 0.0)
     height = g.math("ADD", 0.0, 0.0)
     if kind == 0:
-        color = g.mix(color, (*BARE_METAL, 1.0), g.math("MULTIPLY", worn, 0.6))
+        under, _, _ = _under(g, p)
+        color = g.mix(color, under, g.math("MULTIPLY", worn, 0.7))
         rough_out = g.mix(rough_out, 0.28, worn, "FLOAT")
     elif kind == 1:
-        color = g.mix(color, (*tuple(c * 0.8 for c in BARE_METAL), 1.0), worn)
-        metal_out = g.mix(metal_out, 0.9, worn, "FLOAT")
-        rough_out = g.mix(rough_out, 0.32, worn, "FLOAT")
+        under, under_metal, under_rough = _under(g, p)
+        color = g.mix(color, under, worn)
+        metal_out = g.mix(metal_out, under_metal, worn, "FLOAT")
+        rough_out = g.mix(rough_out, under_rough, worn, "FLOAT")
         height = g.math("SUBTRACT", g.math("MULTIPLY", g.noise(p, 2200.0), 0.00004), g.math("MULTIPLY", worn, 0.00005))
     elif kind == 2:
         lighter = g.n.new("ShaderNodeMix")
