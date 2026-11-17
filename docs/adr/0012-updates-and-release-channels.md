@@ -20,7 +20,8 @@ read.
   `version`, `reason`, `text` and `server_version` never change. A mismatch
   always ends in a refusal that names the older side.
 - Two channels: stable (`vX.Y.Z`) and test (`vX.Y.Z-test.N`). Test, dev and
-  editor builds keep their own characters folder, copied once from stable.
+  editor builds keep their own characters folder, copied once from stable. This amends ADR 0005's folder rule for
+  non-stable builds only.
 - Clients update through a store app (itch.io first, Steam later). The game
   has no updater of its own.
 - The server image is a runner that downloads the release for its channel
