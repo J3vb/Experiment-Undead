@@ -89,3 +89,17 @@ func test_character_failed_save_needs_a_second_back() -> void:
 	screen._close()
 	assert_eq(UI.top(), &"")
 	assert_true(menu.character_button.has_focus())
+
+
+func test_pushed_screen_draws_above_the_menu_and_takes_the_mouse() -> void:
+	menu.settings_button.grab_focus()
+	menu.settings_button.pressed.emit()
+	var screen: SettingsScreen = _top_screen() as SettingsScreen
+	assert_gt((screen.get_parent() as CanvasLayer).layer, (menu.get_node("Screens") as CanvasLayer).layer)
+	await wait_process_frames(2)
+	var motion: InputEventMouseMotion = InputEventMouseMotion.new()
+	motion.position = menu.play_button.get_global_rect().get_center()
+	motion.global_position = motion.position
+	get_viewport().push_input(motion)
+	await wait_process_frames(1)
+	assert_ne(get_viewport().gui_get_hovered_control(), menu.play_button, "the menu under a screen gets no mouse")

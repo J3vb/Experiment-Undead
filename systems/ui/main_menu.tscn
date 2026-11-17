@@ -80,7 +80,7 @@ position = Vector3(24, 2, 59)
 current = true
 
 [node name="Screens" type="CanvasLayer" parent="."]
-layer = 20
+layer = 10
 
 [node name="Root" type="Control" parent="Screens"]
 anchors_preset = 15
