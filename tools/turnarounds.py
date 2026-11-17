@@ -23,6 +23,7 @@ REFERENCES = {
     "props": "style_corridor.jpg",
     "dressing": "style_corridor.jpg",
     "doors": "style_corridor.jpg",
+    "machines": "style_corridor.jpg",
     "characters": "gear_sets.jpg",
     "gear": "gear_sets.jpg",
     "town": "style_hub.jpg",

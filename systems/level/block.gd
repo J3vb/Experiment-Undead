@@ -12,7 +12,7 @@ extends StaticBody3D
 	set(value):
 		material = value
 		_rebuild()
-## Off for anything that moves or disappears (doors, wall-buys, the vault),
+## Off for any Block that moves or disappears,
 ## so the lightmap keeps no shadow of it; it is lit by the probes instead.
 @export var baked: bool = true
 

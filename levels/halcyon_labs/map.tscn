@@ -14,9 +14,10 @@
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/ambience.tscn" id="ambience"]
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/decals.tscn" id="decals"]
 [ext_resource type="Material" path="res://levels/materials/rust.tres" id="rust"]
-[ext_resource type="Material" path="res://levels/materials/wood.tres" id="wood"]
 [ext_resource type="PackedScene" path="res://systems/interactables/door.tscn" id="door"]
 [ext_resource type="PackedScene" path="res://assets/models/doors/bulkhead_door.glb" id="bulkhead_door"]
+[ext_resource type="PackedScene" path="res://assets/models/machines/weapon_rack.glb" id="weapon_rack"]
+[ext_resource type="PackedScene" path="res://assets/models/machines/weapon_rack_cold.glb" id="weapon_rack_cold"]
 [ext_resource type="PackedScene" path="res://assets/models/doors/bulkhead_door_wide.glb" id="bulkhead_door_wide"]
 [ext_resource type="PackedScene" path="res://assets/models/doors/debris_pile.glb" id="debris_pile"]
 [ext_resource type="PackedScene" path="res://assets/models/doors/roll_shutter.glb" id="roll_shutter"]
@@ -116,6 +117,9 @@ size = Vector3(0.6, 1.2, 1.2)
 
 [sub_resource type="BoxShape3D" id="wallbuy_area"]
 size = Vector3(0.6, 1.2, 2)
+
+[sub_resource type="BoxShape3D" id="wallbuy_board"]
+size = Vector3(0.1, 0.8, 1.6)
 
 [sub_resource type="BoxMesh" id="wreck_mesh"]
 size = Vector3(1.4, 0.9, 1.1)
@@ -451,10 +455,16 @@ weapon = ExtResource("brenner")
 shape = SubResource("wallbuy_area")
 
 [node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/WallBuyBrennerTrench"]
-script = ExtResource("block")
-size = Vector3(0.1, 0.8, 1.6)
-material = ExtResource("wood")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyBrennerTrench/Board"]
+shape = SubResource("wallbuy_board")
+
+[node name="Model" parent="NavigationRegion3D/Machines/WallBuyBrennerTrench/Board" instance=ExtResource("weapon_rack")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, -0.4, 0)
+
+[node name="GunMount" type="Marker3D" parent="NavigationRegion3D/Machines/WallBuyBrennerTrench/Board"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -0.09, 0.06, -0.1)
 
 [node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyBrennerTrench"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
@@ -471,10 +481,16 @@ weapon = ExtResource("kestrel")
 shape = SubResource("wallbuy_area")
 
 [node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/WallBuyKestrel"]
-script = ExtResource("block")
-size = Vector3(0.1, 0.8, 1.6)
-material = ExtResource("wood")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyKestrel/Board"]
+shape = SubResource("wallbuy_board")
+
+[node name="Model" parent="NavigationRegion3D/Machines/WallBuyKestrel/Board" instance=ExtResource("weapon_rack")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, -0.4, 0)
+
+[node name="GunMount" type="Marker3D" parent="NavigationRegion3D/Machines/WallBuyKestrel/Board"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, 0.06, 0.1)
 
 [node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyKestrel"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
@@ -491,10 +507,16 @@ weapon = ExtResource("coachman")
 shape = SubResource("wallbuy_area")
 
 [node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/WallBuyCoachman"]
-script = ExtResource("block")
-size = Vector3(0.1, 0.8, 1.6)
-material = ExtResource("wood")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyCoachman/Board"]
+shape = SubResource("wallbuy_board")
+
+[node name="Model" parent="NavigationRegion3D/Machines/WallBuyCoachman/Board" instance=ExtResource("weapon_rack")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, -0.4, 0)
+
+[node name="GunMount" type="Marker3D" parent="NavigationRegion3D/Machines/WallBuyCoachman/Board"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, 0.06, 0.1)
 
 [node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyCoachman"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
@@ -511,10 +533,16 @@ weapon = ExtResource("talon")
 shape = SubResource("wallbuy_area")
 
 [node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/WallBuyTalon"]
-script = ExtResource("block")
-size = Vector3(0.1, 0.8, 1.6)
-material = ExtResource("wood")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyTalon/Board"]
+shape = SubResource("wallbuy_board")
+
+[node name="Model" parent="NavigationRegion3D/Machines/WallBuyTalon/Board" instance=ExtResource("weapon_rack")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, -0.4, 0)
+
+[node name="GunMount" type="Marker3D" parent="NavigationRegion3D/Machines/WallBuyTalon/Board"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, 0.06, 0.1)
 
 [node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyTalon"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
@@ -549,10 +577,16 @@ weapon = ExtResource("rifle")
 shape = SubResource("wallbuy_area")
 
 [node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/WallBuyRifle"]
-script = ExtResource("block")
-size = Vector3(0.1, 0.8, 1.6)
-material = ExtResource("wood")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyRifle/Board"]
+shape = SubResource("wallbuy_board")
+
+[node name="Model" parent="NavigationRegion3D/Machines/WallBuyRifle/Board" instance=ExtResource("weapon_rack")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, -0.4, 0)
+
+[node name="GunMount" type="Marker3D" parent="NavigationRegion3D/Machines/WallBuyRifle/Board"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -0.09, 0.06, -0.1)
 
 [node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyRifle"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
@@ -570,10 +604,16 @@ once_per_player = true
 shape = SubResource("wallbuy_area")
 
 [node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/CryoRack"]
-script = ExtResource("block")
-size = Vector3(0.1, 0.8, 1.6)
-material = ExtResource("rust")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/CryoRack/Board"]
+shape = SubResource("wallbuy_board")
+
+[node name="Model" parent="NavigationRegion3D/Machines/CryoRack/Board" instance=ExtResource("weapon_rack_cold")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, -0.4, 0)
+
+[node name="GunMount" type="Marker3D" parent="NavigationRegion3D/Machines/CryoRack/Board"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, 0.06, 0.1)
 
 [node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/CryoRack"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)

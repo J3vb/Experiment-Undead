@@ -1,6 +1,6 @@
 # Plan: Halcyon Labs wall-buy racks and Specimen Vault models
 
-Status: Approved
+Status: Done
 Roadmap: F-64
 Phase: P4 (v0.1 Vertical slice)
 Size: S
@@ -189,10 +189,10 @@ Autoloads, managers or base classes added: none.
 
 ## Acceptance
 
-- [ ] No wall-buy in Halcyon Labs is a plain board, and each shows its gun (content test).
-- [ ] The Specimen Vault is a model, not a box (content test).
-- [ ] Every machine model passes `check_models.py`, the glTF validator and turnarounds.
-- [ ] Wall-buy, Vault and co-op interaction tests pass unchanged.
+- [x] No wall-buy in Halcyon Labs is a plain board, and each shows its gun (content test).
+- [x] The Specimen Vault is a model, not a box (content test).
+- [x] Every machine model passes `check_models.py`, the glTF validator and turnarounds.
+- [x] Wall-buy, Vault and co-op interaction tests pass unchanged.
 
 ## Risks
 
