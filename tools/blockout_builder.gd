@@ -1,6 +1,7 @@
 ## Turns levels/<map>/layout.json into levels/<map>/blockout.tscn: floors,
 ## ceilings, panelled walls with door and window cuts, ramps, ceiling lights and
-## box props (tables, tanks, generators) under each room's Props node.
+## props (boxes or Blender models with a box collider) under each room's Props
+## node, and visual-only dressing models under its Dressing node.
 ## Rooms with "lights": false (the small spaces behind windows) get no lights.
 ## "light_states" marks lights (by index) that flicker, or are dead: a dark
 ## housing with no light at all, so the lightmap bake gets nothing from it.
@@ -12,6 +13,8 @@ const WALL_PANEL: String = "res://assets/models/kit/wall_panel.glb"
 const CEILING_LIGHT: String = "res://levels/kit/ceiling_light.tscn"
 const DEAD_LIGHT: String = "res://levels/kit/ceiling_light_dead.tscn"
 const MATERIALS: String = "res://levels/materials/%s.tres"
+const PROP_MODEL: String = "res://assets/models/props/%s.glb"
+const DRESSING_MODEL: String = "res://assets/models/dressing/%s.glb"
 const WALL_THICKNESS: float = 0.2
 const PANEL_WIDTH: float = 2.0
 const PANEL_HEIGHT: float = 3.0
@@ -51,19 +54,64 @@ static func build(layout: Dictionary) -> Node3D:
 		_build_ramp(root, ramps, layout["ramps"][i], i)
 	for prop: Dictionary in layout.get("props", []):
 		_build_prop(root, prop)
+	for item: Dictionary in layout.get("dressing", []):
+		_build_dressing(root, item)
 	return root
 
 
 ## box = [x, bottom above the room floor, z, size x, size y, size z] in map coordinates.
+## With "model", the .glb from assets/models/props/ stands in the box (turned by
+## "turn" degrees) and the box is only its collider, so collision and navmesh match a plain box.
 static func _build_prop(root: Node3D, prop: Dictionary) -> void:
 	var room: Node3D = root.get_node(NodePath(prop["room"])) as Node3D
-	var props: Node3D = room.get_node_or_null(^"Props") as Node3D
-	if props == null:
-		props = _child(root, room, "Props")
+	var props: Node3D = _group(root, room, "Props")
 	var b: Array = prop["box"]
 	var size: Vector3 = Vector3(b[3], b[4], b[5])
 	var at: Vector3 = Vector3(b[0], room.position.y + float(b[1]) + size.y * 0.5, b[2]) - room.position
-	_block(root, props, prop["id"], size, at, prop["material"])
+	if not prop.has("model"):
+		_block(root, props, prop["id"], size, at, prop["material"])
+		return
+	var body: StaticBody3D = StaticBody3D.new()
+	body.name = prop["id"]
+	body.collision_layer = Layers.WORLD
+	body.collision_mask = 0
+	body.position = at
+	props.add_child(body)
+	body.owner = root
+	var shape: CollisionShape3D = CollisionShape3D.new()
+	shape.name = "Shape"
+	var box: BoxShape3D = BoxShape3D.new()
+	box.size = size
+	shape.shape = box
+	body.add_child(shape)
+	shape.owner = root
+	var model: Node3D = _model(root, body, PROP_MODEL % prop["model"], float(prop.get("turn", 0.0)))
+	model.position.y = -size.y * 0.5
+
+
+## Visual-only models (signs, cables, clutter): no collider, never in the navmesh.
+## at = [x, bottom above the room floor, z] in map coordinates.
+static func _build_dressing(root: Node3D, item: Dictionary) -> void:
+	var room: Node3D = root.get_node(NodePath(item["room"])) as Node3D
+	var dressing: Node3D = _group(root, room, "Dressing")
+	var a: Array = item["at"]
+	var model: Node3D = _model(root, dressing, DRESSING_MODEL % item["model"], float(item.get("turn", 0.0)))
+	model.name = item["id"]
+	model.position = Vector3(a[0], room.position.y + float(a[1]), a[2]) - room.position
+
+
+static func _model(root: Node3D, parent: Node3D, path: String, turn: float) -> Node3D:
+	var model: Node3D = (load(path) as PackedScene).instantiate() as Node3D
+	model.name = "Model"
+	model.rotation.y = deg_to_rad(turn)
+	parent.add_child(model)
+	model.owner = root
+	return model
+
+
+static func _group(root: Node3D, room: Node3D, label: String) -> Node3D:
+	var node: Node3D = room.get_node_or_null(NodePath(label)) as Node3D
+	return node if node != null else _child(root, room, label)
 
 
 ## An opening where a ramp ends gets no sill: the ramp fills the cut, and a

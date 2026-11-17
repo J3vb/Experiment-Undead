@@ -1,6 +1,6 @@
 # Plan: Halcyon Labs detail props
 
-Status: Approved
+Status: Building
 Roadmap: F-15
 Phase: P4 (v0.1 Vertical slice)
 Size: M
