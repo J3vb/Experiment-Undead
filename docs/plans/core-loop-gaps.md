@@ -83,9 +83,10 @@ Not in (and where it goes):
   (new WaveRules fields); knife in `content/weapons/knife.tres`; slide and
   swap numbers as Player/WeaponHolder exports (fixed rules stay constants).
   Code compares against a specific id anywhere: no.
-- Save: step 6 adds `best_runs` to the character file. Missing field = empty,
-  unknown keys kept; save version stays 1 (additive field with default, per
-  0005). Renames or removes a saved id: no.
+- Save: step 6 adds `best_runs` to the character file. Per ADR 0005 it bumps
+  `SaveFile.CURRENT_VERSION` 1 -> 2 with one migration step (adds
+  `best_runs: {}`) and a test that loads a version-1 sample. Renames or
+  removes a saved id: no.
 - Events and UI: new `Events.zombie_relocated(zombie)` (server only, for logs
   and tests). No new screens; the results screen gets one label.
 - Input through InputFrame, gameplay in _physics_process, randomness from the
@@ -176,7 +177,8 @@ node owns).
 - `SerumData` stat `swap_time` added to `STATS`; Quickhands multipliers
   `{reload_time: 0.6, swap_time: 0.6}`, description updated.
 - Character save: `best_runs: {<map>: {"round": int, "kills": int}}`, map key =
-  the level scene's folder name. Missing = `{}`; unknown fields kept.
+  the level scene's folder name. Save version 2; the 1 -> 2 migration adds
+  `best_runs: {}`; unknown fields kept.
 - Content checks to add: `test_content_rules.gd` speed bands sum to 1 and
   rise in first_round; knife is MELEE, not loot-eligible, not in any Vault
   pool; WaveRules reproduces `rounds.csv` counts, health and delay for rounds
@@ -229,9 +231,12 @@ measurable change at 24 zombies.
 
 ### Step 2: Relocate stuck zombies, hurry the last ones
 
-- Build: `ZombieStuckWatch` tracks "no path progress toward the target" (path
-  not finished and moved < 0.3 m per 2 s window adds up) and "over 60 m from
-  every player"; at 20 s / 15 s the zombie asks `Spawner.relocate(self)`,
+- Build: `ZombieStuckWatch` tracks "no progress": every 2 s window in which a
+  chasing zombie outside attack reach moved less than 0.3 m adds 2 s to an
+  unreachable timer (a window with progress resets it). This counts whether or
+  not the NavigationAgent says its path is finished, so a finished path that
+  ends short of the player (direct steering into a wall) still counts. It also
+  tracks "over 60 m from every player"; at 20 s / 15 s the zombie asks `Spawner.relocate(self)`,
   which picks a marker none of the players can see (one ray per player from
   the camera) and away from players (`min_spawn_distance`), moves the zombie
   there through the navmesh closest point, keeps its health, and puts it back
@@ -244,7 +249,9 @@ measurable change at 24 zombies.
   docs/LOGGING.md catalogue, tests.
 - Tests: `tests/unit/test_zombie_relocate.gd` (new): a zombie with an
   unreachable target relocates after 20 s simulated, keeps health, emits
-  `zombie_relocated`; a far zombie after 15 s; a fallen zombie at once; a
+  `zombie_relocated`; the same with the navigation path finished but the
+  zombie blocked short of the player; a zombie that keeps moving never
+  relocates; a far zombie after 15 s; a fallen zombie at once; a
   marker in a player's view is not chosen. `test_wave_rules.gd` or a director
   test: with 2 left after 30 s both run at 5.6 m/s. Fail without the step.
 - Done when: CI green incl. soak; LOGGING.md lists `zombie_relocated`.
@@ -310,17 +317,27 @@ measurable change at 24 zombies.
 
 ### Step 6: Best round per map
 
-- Build: on match end, each client with a character compares the round
-  reached and kills with `best_runs[map]` and saves the better one (same place
-  run XP is banked). Results screen shows "New best" next to the round when
-  beaten.
-- Files: systems/progression/character_profile.gd, systems/game/game_session.gd
-  (or the existing bank_run_xp path), systems/ui/results_screen.gd,
+- Build: `SaveFile.CURRENT_VERSION` 2 with a 1 -> 2 step adding
+  `best_runs: {}`; `CharacterProfile.best_runs` and
+  `record_run(map, round, kills) -> bool` (true when it is a new best).
+  Recording does not use the XP banking hook, because a client's final XP
+  grant can arrive before the results: a new `_record_best_run(stats)` runs in
+  `GameSession._receive_match_end()` (results received, on every peer with a
+  local character, skipped on a dedicated server) and uses the server's
+  `stats["round"]` and `stats["kills"]` (the squad's kills, which the server
+  already sends), then saves the profile once and sets `stats["new_best"]`.
+  Results screen shows "New best" next to the round when set. Keep the
+  game_session.gd edit to a few lines (the co-op thread also edits it).
+- Files: systems/save/save_file.gd, systems/progression/character_profile.gd,
+  systems/game/game_session.gd, systems/ui/results_screen.gd,
   results_screen.tscn, tests.
-- Tests: `test_character_profile.gd`: old save without `best_runs` loads as
-  empty and round-trips; a better round replaces, a worse one does not;
-  `test_results_screen.gd` shows the label only when beaten. Fail without the
-  step.
+- Tests: `test_save_file.gd`: a version-1 sample migrates to 2 with
+  `best_runs: {}` and keeps its other fields; `test_character_profile.gd`: a
+  better round replaces, a worse one does not, round-trips through save;
+  `test_run_end_grants.gd` (client path): the final XP grant arrives before
+  the match results and the best run is still recorded from the results;
+  `test_results_screen.gd` shows the label only when `new_best`. Fail without
+  the step.
 - Done when: CI green; roadmap F-12 Done; DECISIONS.md updated.
 
 ## Acceptance
