@@ -126,6 +126,8 @@ func _round_progress(in_round: bool) -> void:
 
 
 func check_stall(delta: float) -> void:
+	if not multiplayer.is_server():
+		return
 	_since_progress += delta
 	if _stall_reported or _since_progress < STALL_SECONDS:
 		return

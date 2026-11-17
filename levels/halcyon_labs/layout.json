@@ -24,7 +24,8 @@
 		{"id": "labs_window_1", "rect": [38.5, 7, 41.5, 10], "floor": 0, "height": 3, "lights": false},
 		{"id": "labs_window_2", "rect": [52, 10.5, 55, 13.5], "floor": 0, "height": 3, "lights": false},
 		{"id": "containment_window_1", "rect": [76, 6.5, 79, 9.5], "floor": -3, "height": 3, "lights": false},
-		{"id": "containment_window_2", "rect": [76, 26.5, 79, 29.5], "floor": -3, "height": 3, "lights": false}
+		{"id": "containment_window_2", "rect": [76, 26.5, 79, 29.5], "floor": -3, "height": 3, "lights": false},
+		{"id": "dock_truck_yard", "rect": [31, 60, 37, 64], "floor": 0, "height": 3.5, "lights": false}
 	],
 	"openings": [
 		{"at": [22, 48], "width": 2, "floor": 0},
@@ -52,10 +53,37 @@
 		{"at": [40, 10], "width": 1.8, "floor": 0},
 		{"at": [52, 12], "width": 1.8, "floor": 0},
 		{"at": [76, 8], "width": 1.8, "floor": -3},
-		{"at": [76, 28], "width": 1.8, "floor": -3}
+		{"at": [76, 28], "width": 1.8, "floor": -3},
+		{"at": [32.5, 60], "width": 1.6, "floor": 0},
+		{"at": [35.5, 60], "width": 1.6, "floor": 0}
 	],
 	"ramps": [
 		{"from": [52, 0, 18], "to": [60, -3, 18], "width": 4}
+	],
+	"props": [
+		{"id": "mess_table_north", "room": "mess_hall", "box": [48, 0, 35.5, 9, 0.8, 1.2], "material": "wood"},
+		{"id": "mess_table_south", "room": "mess_hall", "box": [48, 0, 40.5, 9, 0.8, 1.2], "material": "wood"},
+		{"id": "mess_counter", "room": "mess_hall", "box": [55.75, 0, 30.7, 3.5, 1.0, 0.8], "material": "panel_trim"},
+		{"id": "labs_bench", "room": "labs", "box": [43.5, 0, 19.5, 7, 0.9, 1], "material": "panel_paint"},
+		{"id": "labs_tank1_base", "room": "labs", "box": [37, 0, 16.6, 1.2, 0.4, 1.2], "material": "pipe"},
+		{"id": "labs_tank1_core", "room": "labs", "box": [37, 0.4, 16.6, 0.8, 2.0, 0.8], "material": "specimen_tank"},
+		{"id": "labs_tank1_cap", "room": "labs", "box": [37, 2.4, 16.6, 1.2, 0.3, 1.2], "material": "pipe"},
+		{"id": "labs_tank2_base", "room": "labs", "box": [37, 0, 18.8, 1.2, 0.4, 1.2], "material": "pipe"},
+		{"id": "labs_tank2_core", "room": "labs", "box": [37, 0.4, 18.8, 0.8, 2.0, 0.8], "material": "specimen_tank"},
+		{"id": "labs_tank2_cap", "room": "labs", "box": [37, 2.4, 18.8, 1.2, 0.3, 1.2], "material": "pipe"},
+		{"id": "labs_tank3_base", "room": "labs", "box": [49, 0, 14, 1.2, 0.4, 1.2], "material": "pipe"},
+		{"id": "labs_tank3_core", "room": "labs", "box": [49, 0.4, 14, 0.8, 2.0, 0.8], "material": "specimen_tank"},
+		{"id": "labs_tank3_cap", "room": "labs", "box": [49, 2.4, 14, 1.2, 0.3, 1.2], "material": "pipe"},
+		{"id": "labs_tank4_base", "room": "labs", "box": [49.5, 0, 22.5, 1.2, 0.4, 1.2], "material": "pipe"},
+		{"id": "labs_tank4_core", "room": "labs", "box": [49.5, 0.4, 22.5, 0.8, 2.0, 0.8], "material": "specimen_tank"},
+		{"id": "labs_tank4_cap", "room": "labs", "box": [49.5, 2.4, 22.5, 1.2, 0.3, 1.2], "material": "pipe"},
+		{"id": "generator_1", "room": "generator_hall", "box": [15, 0, 13, 4, 2.4, 2.5], "material": "rust"},
+		{"id": "generator_2", "room": "generator_hall", "box": [21, 0, 19, 4, 2.4, 2.5], "material": "rust"},
+		{"id": "guard_desk", "room": "guard_post", "box": [17, 0, 40, 2.4, 0.9, 1], "material": "panel_trim"},
+		{"id": "guard_lockers", "room": "guard_post", "box": [21.4, 0, 39, 0.6, 2, 6], "material": "panel_trim"},
+		{"id": "containment_cage_1", "room": "containment_wing", "box": [63.5, 0, 9, 2.5, 3, 2.5], "material": "rust"},
+		{"id": "containment_cage_2", "room": "containment_wing", "box": [63.5, 0, 26, 2.5, 3, 2.5], "material": "rust"},
+		{"id": "containment_cage_3", "room": "containment_wing", "box": [72.5, 0, 11, 2.5, 3, 2.5], "material": "rust"}
 	],
 	"wall_buys": [
 		{"id": "coachman_2b", "node": "WallBuyCoachman", "area": "mess_hall", "position": [38.25, 1.4, 38], "cost": 900}

@@ -33,12 +33,14 @@ func test_match_start_applies_the_saved_loadout_and_leaves_the_profile_unchanged
 	var before: String = FileAccess.get_file_as_string(PATH)
 	player.spawn(session, [])
 	for slot: StringName in CharacterLook.SLOTS:
-		var attachment: BoneAttachment3D = (
-			player.gear_rig.skeleton.get_node(String(slot).capitalize()) as BoneAttachment3D
-		)
-		assert_not_null(attachment)
-		assert_eq(attachment.bone_name, String(GearVisual.find(StringName(loadout[slot].base)).attach))
-		var piece: Node = attachment.get_child(0)
+		var holder: Node3D = player.gear_rig.skeleton.get_node(String(slot).capitalize()) as Node3D
+		assert_not_null(holder)
+		if holder is BoneAttachment3D:
+			var attach: StringName = GearVisual.find(StringName(loadout[slot].base)).attach
+			assert_eq((holder as BoneAttachment3D).bone_name, String(attach))
+		else:
+			assert_eq(slot, &"vest", "only the skinned vest sits in a plain holder")
+		var piece: Node = holder.get_child(0)
 		assert_eq(piece.scene_file_path, "res://assets/models/gear/%s.glb" % loadout[slot].base)
 		var mesh: GeometryInstance3D = (
 			piece.find_children("*", "GeometryInstance3D", true, false)[0] as GeometryInstance3D

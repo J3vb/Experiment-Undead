@@ -24,7 +24,7 @@ import bpy
 import bmesh
 import character_checks
 import zombie_checks
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -81,7 +81,18 @@ def load_glb(path: str) -> list:
     """Empties the scene, imports `path` and returns its objects."""
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=path, disable_bone_shape=True)
+    rest_pose()
     return list(bpy.context.scene.objects)
+
+
+def rest_pose() -> None:
+    """The glTF importer leaves the first clip playing; checks measure the rest pose."""
+    for obj in bpy.context.scene.objects:
+        if obj.type == "ARMATURE" and obj.animation_data:
+            obj.animation_data.action = None
+            for pbone in obj.pose.bones:
+                pbone.matrix_basis = Matrix.Identity(4)
+    bpy.context.view_layer.update()
 
 
 def world_mesh(obj) -> bmesh.types.BMesh:

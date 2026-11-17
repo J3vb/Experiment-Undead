@@ -149,6 +149,11 @@ def import_model(path):
     """Import a .glb, centred on a turntable pivot and scaled so every view fits a 1 m frame."""
     bpy.ops.import_scene.gltf(filepath=str(path), disable_bone_shape=True)
     imported = list(bpy.context.selected_objects)
+    for obj in imported:
+        if obj.type == "ARMATURE" and obj.animation_data:
+            obj.animation_data.action = None  # turnarounds show the rest pose, not the first clip
+            for pbone in obj.pose.bones:
+                pbone.matrix_basis.identity()
     pivot = bpy.data.objects.new("TurntablePivot", None)
     offset = bpy.data.objects.new("TurntableOffset", None)
     for empty in (pivot, offset):

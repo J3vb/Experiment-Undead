@@ -285,3 +285,26 @@ func _assert_attached_within(display: Node3D, skeleton: Skeleton3D, part: String
 	assert_eq(attachment.bone_name, bone)
 	var target: Vector3 = skeleton.global_transform * skeleton.get_bone_global_pose(skeleton.find_bone(bone)).origin
 	assert_lt(mesh.global_position.distance_to(target), 0.03, part + " origin sits within 3 cm of " + bone)
+
+
+func test_player_carries_every_third_person_clip_with_loops_set() -> void:
+	var model: Node3D = _character()
+	if model == null:
+		return
+	var players: Array[Node] = model.find_children("*", "AnimationPlayer", true, false)
+	assert_eq(players.size(), 1, "one AnimationPlayer holds the clips")
+	if players.size() != 1:
+		return
+	var anim: AnimationPlayer = players[0] as AnimationPlayer
+	var one_shots: Array[StringName] = [&"fire", &"reload"]
+	var expected: Array[StringName] = GEAR_IMPORTER.LOOP_CLIPS + one_shots
+	var found: Array[StringName] = []
+	for clip: StringName in anim.get_animation_list():
+		found.append(clip)
+	found.sort()
+	expected.sort()
+	assert_eq(found, expected, "player.glb has exactly the twelve clips")
+	for clip: StringName in found:
+		var looped: bool = anim.get_animation(clip).loop_mode == Animation.LOOP_LINEAR
+		assert_eq(looped, clip not in one_shots, String(clip) + " loop mode")
+		assert_gt(anim.get_animation(clip).length, 0.1, String(clip) + " has length")

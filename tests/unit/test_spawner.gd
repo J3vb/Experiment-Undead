@@ -88,3 +88,24 @@ func test_fixed_speed_enemies_keep_their_own_speed() -> void:
 	var bloater: EnemyData = load("res://content/enemies/zombie_bloater.tres") as EnemyData
 	var rules: WaveRules = RULES
 	assert_eq(spawner._speed_multiplier(bloater, 20, rules), 1.0)
+
+
+func test_coop_points_wait_for_three_players() -> void:
+	var spawner: Spawner = _spawner()
+	spawner.spawn_group = &"test_coop_spawn"
+	var point: ZombieSpawnPoint = ZombieSpawnPoint.new()
+	point.min_players = 3
+	point.add_to_group(spawner.spawn_group)
+	add_child_autofree(point)
+	var players: Array[Node3D] = []
+	for i: int in 3:
+		var player: Node3D = Node3D.new()
+		player.position = Vector3(100, 0, 0)
+		add_child_autofree(player)
+		players.append(player)
+	players[0].add_to_group(&"players")
+	assert_null(spawner._pick_marker(0.0), "1 player: the co-op point is skipped")
+	players[1].add_to_group(&"players")
+	assert_null(spawner._pick_marker(0.0), "2 players: still skipped")
+	players[2].add_to_group(&"players")
+	assert_same(spawner._pick_marker(0.0), point, "3 players: it can be picked")

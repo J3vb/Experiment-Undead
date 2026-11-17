@@ -18,6 +18,8 @@ const AREAS: Array[StringName] = [
 	&"coolant_tunnel",
 ]
 const MIN_SPAWN_DISTANCE: float = 12.0
+## Props keep this far (m) from openings, interactables and spawn points.
+const PROP_CLEARANCE: float = 1.5
 const MAX_SHADOWED_PER_ROOM: int = 2
 const LIGHTMAP_FILES: Array[String] = ["res://levels/halcyon_labs/map.exr", "res://levels/halcyon_labs/map.lmbake"]
 const MAX_LIGHTMAP_BYTES: int = 15 * 1024 * 1024
@@ -87,7 +89,11 @@ func test_spawn_points_follow_the_rules() -> void:
 	var level: Level = (load(MAP) as PackedScene).instantiate() as Level
 	add_child_autofree(level)
 	var points: Array[ZombieSpawnPoint] = _spawn_points(level)
-	assert_between(points.size(), 21, 28, "21 to 28 spawn points")
+	var coop: Array[ZombieSpawnPoint] = points.filter(func(p: ZombieSpawnPoint) -> bool: return p.min_players > 1)
+	assert_between(points.size() - coop.size(), 21, 28, "21 to 28 spawn points for any squad")
+	assert_eq(coop.size(), 4, "co-op points: 2 truck gaps, Mess Hall vent, Containment Wing vent")
+	for point: ZombieSpawnPoint in coop:
+		assert_eq(point.min_players, 3, "%s opens at 3 players" % point.name)
 	var start: Vector3 = level.get_player_spawn().origin
 	for area: StringName in AREAS:
 		var count: int = points.filter(func(p: ZombieSpawnPoint) -> bool: return p.area == area).size()
@@ -104,11 +110,11 @@ func test_only_start_area_spawn_points_are_active() -> void:
 	add_child_autofree(level)
 	assert_eq(level.open_areas, [&"loading_dock"] as Array[StringName])
 	var active: Array[Node] = get_tree().get_nodes_in_group(&"enemy_spawn")
-	assert_eq(active.size(), 4, "the four Loading Dock windows")
+	assert_eq(active.size(), 6, "the four Loading Dock windows and the two co-op truck gaps")
 	for node: Node in active:
 		assert_eq((node as ZombieSpawnPoint).area, &"loading_dock")
 	level.open_area(&"guard_post")
-	assert_eq(get_tree().get_nodes_in_group(&"enemy_spawn").size(), 6, "Guard Post windows join")
+	assert_eq(get_tree().get_nodes_in_group(&"enemy_spawn").size(), 8, "Guard Post windows join")
 
 
 func test_every_spawn_point_reaches_the_start_with_doors_open() -> void:
@@ -185,6 +191,10 @@ func test_things_that_move_or_vanish_are_not_baked() -> void:
 	for node: Node in planks:
 		var gi: int = (node as GeometryInstance3D).gi_mode
 		assert_ne(gi, GeometryInstance3D.GI_MODE_STATIC, "%s is not baked" % level.get_path_to(node))
+	var wreckage: Node = level.get_node("TruckWreckage")
+	assert_eq(wreckage.find_children("*", "CollisionObject3D", true, false).size(), 0, "wreckage is decoration only")
+	for node: Node in wreckage.find_children("*", "MeshInstance3D", true, false):
+		assert_ne((node as GeometryInstance3D).gi_mode, GeometryInstance3D.GI_MODE_STATIC, "wreckage vanishes in co-op")
 
 
 func test_ceiling_lights_stay_real_time() -> void:
@@ -214,3 +224,70 @@ func test_coachman_wall_buy_matches_the_layout_and_sells_for_900() -> void:
 	assert_eq(placement["area"], "mess_hall", "outside the Loading Dock")
 	assert_eq(placement["position"], [38.25, 1.4, 38.0])
 	assert_eq(int(placement["cost"]), wall.weapon.cost)
+
+
+func test_zombie_sized_body_walks_up_the_containment_ramp_into_the_labs() -> void:
+	var level: Level = await _load_map(true)
+	var body: CharacterBody3D = CharacterBody3D.new()
+	var shape: CollisionShape3D = CollisionShape3D.new()
+	var capsule: CapsuleShape3D = CapsuleShape3D.new()
+	capsule.radius = 0.35
+	capsule.height = 1.8
+	shape.shape = capsule
+	shape.position.y = 0.9
+	body.add_child(shape)
+	level.add_child(body)
+	body.global_position = Vector3(55.0, -1.0, 18.0)
+	for i: int in 120:
+		body.velocity = Vector3(-3.0, body.velocity.y - 0.3, 0.0)
+		body.move_and_slide()
+		await wait_physics_frames(1)
+	assert_lt(body.global_position.x, 51.0, "no lip where the ramp meets the Labs opening")
+
+
+func test_props_sit_in_their_rooms_clear_of_doors_machines_and_spawns() -> void:
+	var layout: Dictionary = (load(BUILDER) as GDScript).load_layout("halcyon_labs")
+	var rooms: Dictionary = {}
+	for room: Dictionary in layout["rooms"]:
+		rooms[room["id"]] = room["rect"]
+	var keep_clear: Array[Vector3] = []
+	for opening: Dictionary in layout["openings"]:
+		keep_clear.append(Vector3(opening["at"][0], opening["at"][1], float(opening["width"]) * 0.5))
+	var level: Level = (load(MAP) as PackedScene).instantiate() as Level
+	add_child_autofree(level)
+	for node: Node in level.find_children("*", "Node3D"):
+		if node is Interactable or node is ZombieSpawnPoint or node.is_in_group(&"vault_spot"):
+			var at: Vector3 = (node as Node3D).global_position
+			keep_clear.append(Vector3(at.x, at.z, 0.0))
+	var start: Vector3 = level.get_player_spawn().origin
+	keep_clear.append(Vector3(start.x, start.z, 0.0))
+	for prop: Dictionary in layout["props"]:
+		var b: Array = prop["box"]
+		var footprint: Rect2 = Rect2(b[0] - b[3] * 0.5, b[2] - b[5] * 0.5, b[3], b[5])
+		var r: Array = rooms[prop["room"]]
+		var inside: Rect2 = Rect2(r[0], r[1], r[2] - r[0], r[3] - r[1]).grow(-0.2)
+		assert_true(inside.encloses(footprint), "%s sits inside %s" % [prop["id"], prop["room"]])
+		for point: Vector3 in keep_clear:
+			var gap: float = _rect_distance(footprint, Vector2(point.x, point.y)) - point.z
+			assert_gte(gap, PROP_CLEARANCE, "%s is clear of %s" % [prop["id"], Vector2(point.x, point.y)])
+
+
+func _rect_distance(rect: Rect2, point: Vector2) -> float:
+	var nearest: Vector2 = point.clamp(rect.position, rect.end)
+	return nearest.distance_to(point)
+
+
+func test_mess_hall_tables_make_a_loop() -> void:
+	var level: Level = await _load_map(true)
+	var map: RID = level.get_world_3d().navigation_map
+	var across: PackedVector3Array = NavigationServer3D.map_get_path(map, Vector3(48, 0, 33), Vector3(48, 0, 43), true)
+	assert_lt(across[across.size() - 1].distance_to(Vector3(48, 0, 43)), 1.0, "a way round the tables")
+	assert_gt(_length(across), 14.0, "the tables block the straight line, so the path goes round an end")
+	assert_lt(_path_end_gap(level, Vector3(40.5, 0, 38), Vector3(55.5, 0, 38)), 1.0, "a lane between the tables")
+
+
+func _length(path: PackedVector3Array) -> float:
+	var total: float = 0.0
+	for i: int in range(1, path.size()):
+		total += path[i - 1].distance_to(path[i])
+	return total

@@ -46,7 +46,7 @@ func test_buying_a_door_opens_its_area() -> void:
 	assert_true(door.is_queued_for_deletion(), "door removed")
 	assert_null(door.get_node_or_null("Blocker"), "blocker gone at once, so the rebake does not see it")
 	assert_has(level.open_areas, &"guard_post")
-	assert_eq(get_tree().get_nodes_in_group(&"enemy_spawn").size(), 6, "Guard Post windows join")
+	assert_eq(get_tree().get_nodes_in_group(&"enemy_spawn").size(), 8, "Guard Post windows join")
 
 
 func test_door_stays_shut_without_points() -> void:
@@ -154,7 +154,11 @@ func test_everything_open_lets_every_spawn_point_reach_the_start() -> void:
 	level.turn_power_on()
 	for door: Door in _doors():
 		door.open()
-	assert_eq(get_tree().get_nodes_in_group(&"enemy_spawn").size(), 21, "every spawn point is active")
+	assert_eq(
+		get_tree().get_nodes_in_group(&"enemy_spawn").size(),
+		25,
+		"every spawn point is active (co-op ones too; the Spawner filters by squad size)"
+	)
 	var map: RID = level.get_world_3d().navigation_map
 	var start: Vector3 = level.get_player_spawn().origin
 	var far: Vector3 = Vector3(75.0, -3.0, 8.0)

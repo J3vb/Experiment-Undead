@@ -75,8 +75,9 @@ The server also prints every warning and error to stdout as
 | `level.navmesh_baked` / `navmesh_bake_slow` | info / warn | Navmesh bake time (`reason` load/rebake). Over 100 ms = visible hitch |
 | `level.navigation_ready` | info | Time from load until zombies can path |
 | `level.navigation_not_ready` | error | No usable navmesh 10 s after load: zombies will not move |
-| `enemies.zombie_stuck` | warn | A chasing zombie moved under 0.3 m in 3 s while out of reach. `at`, `next_path_point`, `path_finished`: navmesh hole, bad spawn point or geometry snag |
-| `enemies.zombie_fell_out` | warn | Zombie below y = -50: missing floor collision |
+| `enemies.zombie_stuck` | warn | A chasing zombie moved under 0.3 m in 2 s while out of reach (logged once per zombie). `at`, `next_path_point`, `path_finished`: navmesh hole, bad spawn point or geometry snag |
+| `enemies.zombie_fell_out` | warn | Zombie below y = -50: missing floor collision (it relocates at once) |
+| `enemies.zombie_relocated` | warn | A lost zombie moved to a hidden spawn: `reason` unreachable (20 s without progress), far (over 60 m for 15 s) or fell_out; `from`, `to` (spawn point). Many from one place = navmesh hole there |
 | `waves.round_started` | info | Round number, enemies this round, health snapshot |
 | `waves.round_ended` | info | Round cleared |
 | `waves.round_stalled` | warn | 90 s in a round with no kill; lists where the living zombies are |
@@ -86,6 +87,7 @@ The server also prints every warning and error to stdout as
 | `progression.profile_unreadable` | warn | Existing character is unreadable, malformed or newer; file stays untouched, this match uses a temporary character. `id`, `path`; inspect nearby engine errors |
 | `game.game_over` | info | Final stats |
 | `net.peer_connected` / `peer_disconnected` | info | Server side, peer id |
+| `net.round_state_ignored` | warn | A round message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
 | `net.interaction_rejected` | warn | Server refused a client's interact request (`peer`, `reason`, `path`): `player_not_alive`, `match_over`, `unknown_path`, `out_of_range`, `grant_pending` (last gun grant not applied yet), `bad_facts` (gun facts with wrong fields or ids). At most one per second. Many `out_of_range` = `InteractionSync.REACH_SLACK` too tight |
 | `net.hit_claim_rejected` | warn | Server refused a client's hit or gravity well claim (`peer`, `reason`): `player_not_alive`, `zombie_not_alive`, `hit_out_of_bounds`, `zone_missing`, `claims_too_fast`, `well_out_of_bounds`, `well_wrong_weapon` (well or orb request named a gun whose `effect` is not WELL: a mismatched build or a cheat). At most one per second |
 | `net.loadout_rejected` | warn | Server refused a client's equipped loadout (`peer`, `reason`): `not_a_dictionary`, `too_much_gear` (over 3 gear items), `too_many_guns` (more than the player's weapon slots), `unknown_gun` (gun base not in content). The server keeps the last good loadout; check that both builds have the same content |
