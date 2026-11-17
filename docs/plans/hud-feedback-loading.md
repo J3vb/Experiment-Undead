@@ -1,6 +1,6 @@
 # Plan: HUD feedback and loading screen
 
-Status: Approved
+Status: Building
 Roadmap: F-49 / no issue
 Phase: P4 (loading, HUD polish), with the P5 level-up burst and P6 drop feed that were left out
 Size: M
