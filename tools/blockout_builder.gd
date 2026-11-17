@@ -13,6 +13,8 @@ const WALL_PANEL: String = "res://assets/models/kit/wall_panel.glb"
 const CEILING_LIGHT: String = "res://levels/kit/ceiling_light.tscn"
 const DEAD_LIGHT: String = "res://levels/kit/ceiling_light_dead.tscn"
 const MATERIALS: String = "res://levels/materials/%s.tres"
+## Plain wall above the panels and around door cuts.
+const WALL_MATERIAL: String = "wall_paint"
 const PROP_MODEL: String = "res://assets/models/props/%s.glb"
 const DRESSING_MODEL: String = "res://assets/models/dressing/%s.glb"
 const WALL_THICKNESS: float = 0.2
@@ -230,7 +232,7 @@ static func _wall_run(root: Node3D, walls: Node3D, label: String, at: Transform3
 		var mesh: BoxMesh = BoxMesh.new()
 		mesh.size = Vector3(length, h - PANEL_HEIGHT, WALL_THICKNESS)
 		mesh.add_uv2 = true
-		mesh.material = load(MATERIALS % "panel_paint")
+		mesh.material = load(MATERIALS % WALL_MATERIAL)
 		upper.mesh = mesh
 		upper.position.y = PANEL_HEIGHT + (h - PANEL_HEIGHT) * 0.5
 		body.add_child(upper)
@@ -241,7 +243,7 @@ static func _wall_run(root: Node3D, walls: Node3D, label: String, at: Transform3
 static func _cut_piece(root: Node3D, walls: Node3D, label: String, at: Transform3D, size: Vector3) -> void:
 	if size.y < 0.05:
 		return
-	var block: Block = _block(root, walls, label, Vector3(size.x, size.y, WALL_THICKNESS), Vector3.ZERO, "panel_paint")
+	var block: Block = _block(root, walls, label, Vector3(size.x, size.y, WALL_THICKNESS), Vector3.ZERO, WALL_MATERIAL)
 	block.transform = Transform3D(at.basis, at.origin + Vector3(0, size.z + size.y * 0.5, 0))
 
 

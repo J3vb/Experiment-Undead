@@ -95,10 +95,14 @@ purpose; keep the repo values.
 ### Materials
 
 Shared materials live in `levels/materials/` (concrete, wet floor, panel
-paint and trim, pipe, rust, brick, wood, fluorescent, emergency tube,
-bio leak). Surface detail is procedural and world-space, no texture files:
-`grime.gdshader` (drips, floor dirt, ceiling stains) and `wet_tiles.gdshader`
-(tiles, grout, mirror puddles for SSR). Reuse these before making new ones.
+paint and trim, wall paint, pipe, rust, brick, wood, fluorescent, emergency
+tube, bio leak). Surface detail is world-space, so kit pieces need no UVs:
+`grime.gdshader` (drips, floor dirt, ceiling stains, plus optional texture
+sets) and `wet_tiles.gdshader` (tiles, grout, mirror puddles for SSR).
+Texture sets (albedo, normal, ORM) are made by `tools/assets/surface_textures.py`
+into `assets/textures/halcyon/`; the script is the source. Albedo maps are
+near-grey detail tinted by the material's palette colour. Reuse these before
+making new ones.
 
 ## Models built in code (`tools/assets/build_models.py`)
 

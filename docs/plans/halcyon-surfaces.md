@@ -1,6 +1,6 @@
 # Plan: Texture every surface in Halcyon Labs
 
-Status: Approved
+Status: Building
 Roadmap: F-62
 Phase: P4 (v0.1 Vertical slice)
 Size: M
