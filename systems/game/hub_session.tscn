@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://systems/game/game_session.tscn" id="session"]
+[ext_resource type="PackedScene" path="res://levels/hub_placeholder/hub_placeholder.tscn" id="level"]
+
+[node name="GameSession" instance=ExtResource("session")]
+level_scene = ExtResource("level")
+is_hub = true

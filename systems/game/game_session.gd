@@ -14,6 +14,8 @@ extends Node
 @export var profile_id: StringName = &"solo"
 ## False on a dedicated server, which has no player of its own.
 @export var has_local_player: bool = true
+## The hub: no waves start, and the deploy vote can send everyone to a match.
+@export var is_hub: bool = false
 
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var tick: int = 0
@@ -26,6 +28,7 @@ var hit_claims: HitClaims
 var interactions: InteractionSync
 var loot: LootService
 var remote_shots: RemoteShots
+var deploy_vote: DeployVote
 var is_over: bool = false
 var _kills: int = 0
 var _headshots: int = 0
@@ -126,7 +129,8 @@ func _setup_shooting() -> void:
 	remote_shots = RemoteShots.new()
 	remote_shots.name = "RemoteShots"
 	interactions = InteractionSync.new()
-	for system: Node in [hit_claims, loot, remote_shots, interactions]:
+	deploy_vote = DeployVote.new()
+	for system: Node in [hit_claims, loot, remote_shots, interactions, deploy_vote]:
 		system.set("session", self)
 		add_child(system)
 	(hud.get_node("Root/Pack") as PackOverlay).setup(loot)
@@ -173,14 +177,14 @@ func _on_player_added(player: Player) -> void:
 
 ## Waves start once the navmesh is baked and someone is playing.
 func _try_start() -> void:
-	if is_over or not multiplayer.is_server():
+	if is_over or is_hub or not multiplayer.is_server():
 		return
 	if director.phase == WaveDirector.Phase.IDLE and level.is_navigation_ready and not get_players().is_empty():
 		director.start()
 
 
 func _on_connection_lost() -> void:
-	if _connection_lost or not is_inside_tree():
+	if _connection_lost or Net.changing_place or not is_inside_tree():
 		return
 	_connection_lost = true
 	Log.warn(&"net", &"connection_lost", {})
