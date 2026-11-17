@@ -7,6 +7,8 @@ var _parent: Node3D
 func before_each() -> void:
 	Impact._ring.clear()
 	Impact._next = 0
+	Impact._sounds.clear()
+	Impact._next_sound = 0
 	_parent = Node3D.new()
 	add_child_autofree(_parent)
 
@@ -75,3 +77,40 @@ func test_impact_under_another_parent_moves_to_the_new_one() -> void:
 		Impact.spawn(other, Vector3.ZERO, Vector3.UP, Impact.Kind.SURFACE)
 	assert_same(Impact.spawn(_parent, Vector3.ZERO, Vector3.UP, Impact.Kind.SURFACE), first)
 	assert_same(first.get_parent(), _parent)
+
+
+func test_flesh_hits_play_on_at_most_four_reused_sound_players() -> void:
+	Impact.spawn(_parent, Vector3.ZERO, Vector3.UP, Impact.Kind.SURFACE)
+	assert_eq(Impact._sounds.size(), 0, "surface hits make no flesh sound")
+	for index: int in 6:
+		Impact.spawn(_parent, Vector3(index, 0, 0), Vector3.UP, Impact.Kind.FLESH)
+	assert_eq(Impact._sounds.size(), Impact.MAX_SOUNDS)
+	var players: int = 0
+	for child: Node in _parent.get_children():
+		if child is AudioStreamPlayer3D:
+			players += 1
+	assert_eq(players, Impact.MAX_SOUNDS, "the oldest player is reused")
+	assert_almost_eq(Impact._sounds[1].global_position.x, 5.0, 0.02, "sixth hit reused the second player")
+
+
+func test_head_hits_crack_and_body_hits_squelch() -> void:
+	var body: Impact = Impact.spawn(_parent, Vector3.ZERO, Vector3.UP, Impact.Kind.FLESH)
+	assert_true(Impact._sounds[0].stream in Impact.FLESH_SOUNDS)
+	assert_true(body._flesh.visible, "body hits bleed")
+	var head: Impact = Impact.spawn(_parent, Vector3.ZERO, Vector3.UP, Impact.Kind.HEAD)
+	assert_true(Impact._sounds[1].stream in Impact.HEAD_SOUNDS)
+	assert_true(head._flesh.visible, "head hits bleed")
+	assert_eq(head._flesh.amount, Impact.BLOOD_PARTICLES)
+
+
+func test_impact_kind_comes_from_the_hit_zone() -> void:
+	var zone: HitZone = HitZone.new()
+	zone.zone = DamageInfo.Zone.HEAD
+	assert_eq(Impact.kind_for(zone), Impact.Kind.HEAD)
+	zone.zone = DamageInfo.Zone.BODY
+	assert_eq(Impact.kind_for(zone), Impact.Kind.FLESH)
+	assert_eq(Impact.kind_for(null), Impact.Kind.SURFACE)
+	zone.set_enabled(false)
+	zone.zone = DamageInfo.Zone.HEAD
+	assert_eq(Impact.kind_for(zone), Impact.Kind.HEAD, "a killing head hit keeps its kind")
+	zone.free()

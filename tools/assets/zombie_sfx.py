@@ -1,4 +1,4 @@
-"""Generate the original zombie death, footstep and Bloater gurgle sounds into assets/audio.
+"""Generate the original zombie death, footstep, Bloater gurgle and flesh hit sounds into assets/audio.
 
 Run: python tools/assets/zombie_sfx.py assets/audio   (needs numpy)
 """
@@ -81,6 +81,25 @@ def bloater_step(seed: int) -> np.ndarray:
     return thud + body + splat
 
 
+def flesh_hit(seed: int) -> np.ndarray:
+    rng = np.random.default_rng(seed)
+    time = timeline(0.22)
+    smack = lowpass(rng.standard_normal(len(time)), 0.3) * np.exp(-time * 45) * 1.2
+    thump = np.sin(2 * np.pi * (120 + rng.random() * 40) * time) * np.exp(-time * 35) * 0.6
+    squelch = lowpass(bubbles(rng, time, 40), 0.5) * np.exp(-time * 18) * 0.4
+    return smack + thump + squelch
+
+
+def head_crack(seed: int) -> np.ndarray:
+    rng = np.random.default_rng(seed)
+    time = timeline(0.3)
+    snap = lowpass(rng.standard_normal(len(time)), 0.8) * np.exp(-time * 120) * 1.4
+    crunch = lowpass(rng.standard_normal(len(time)), 0.45) * np.exp(-((time - 0.02) ** 2) / 0.0004) * 0.7
+    knock = np.sin(2 * np.pi * (260 + rng.random() * 60) * time) * np.exp(-time * 50) * 0.5
+    wet = lowpass(bubbles(rng, time, 30), 0.4) * np.exp(-time * 12) * 0.35
+    return snap + crunch + knock + wet
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path)
@@ -90,9 +109,11 @@ def main() -> None:
         save_wav(output / f"bloater_gurgle_{index}.wav", bloater_gurgle(400 + index))
     for index in range(1, 3):
         save_wav(output / f"bloater_death_{index}.wav", bloater_death(500 + index))
+        save_wav(output / f"hit_head_{index}.wav", head_crack(900 + index))
     for index in range(1, 5):
         save_wav(output / f"zombie_step_{index}.wav", shambler_step(600 + index))
         save_wav(output / f"bloater_step_{index}.wav", bloater_step(700 + index))
+        save_wav(output / f"impact_flesh_{index}.wav", flesh_hit(800 + index))
 
 
 if __name__ == "__main__":
