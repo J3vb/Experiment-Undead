@@ -1,4 +1,4 @@
-## A remote player's positional gun sound, short muzzle flash and pellet tracers.
+## A remote player's positional gun sound, short muzzle flash, pellet tracers and body kick.
 class_name RemoteShotEffects
 extends Node3D
 
@@ -7,6 +7,8 @@ const TRACER_TIME: float = 0.06
 
 static var _tracer_material: StandardMaterial3D
 
+## The teammate's third-person body, which plays its fire motion on each shot.
+var body: BodyAnimator
 var _audio: AudioStreamPlayer3D
 var _flash: MeshInstance3D
 var _light: OmniLight3D
@@ -55,6 +57,8 @@ func play(data: WeaponData, origin: Vector3, points: PackedVector3Array) -> void
 		_audio.pitch_scale = randf_range(0.95, 1.05)  # cosmetic
 		_audio.play()
 	_draw_tracers(origin, points)
+	if body:
+		body.fire()
 
 
 ## One tracer node per remote player, made on its first shot and redrawn per shot.

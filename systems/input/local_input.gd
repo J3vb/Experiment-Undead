@@ -53,7 +53,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func sample(tick: int) -> InputFrame:
 	var f: InputFrame = InputFrame.new()
 	f.tick = tick
-	if not enabled:
+	if not enabled or UI.top() != &"":
 		_look_accum = Vector2.ZERO
 		_pressed = 0
 		return f

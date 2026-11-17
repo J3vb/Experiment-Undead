@@ -24,6 +24,7 @@ func watch_player(player: Player) -> void:
 	if not player.is_multiplayer_authority():
 		var effects: RemoteShotEffects = RemoteShotEffects.new()
 		effects.name = "ShotEffects"
+		effects.body = player.get_node_or_null(^"Body/BodyAnimator") as BodyAnimator
 		player.add_child(effects)
 		_effects[player] = effects
 		player.tree_exiting.connect(func() -> void: _effects.erase(player), CONNECT_ONE_SHOT)
