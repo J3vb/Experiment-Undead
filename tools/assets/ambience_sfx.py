@@ -6,23 +6,13 @@ Beds are seamless 20 s Ogg loops; one-shots are short WAVs.
 
 import argparse
 import subprocess
-import wave
 from pathlib import Path
 
 import numpy as np
+from sfx_common import SAMPLE_RATE, lowpass, save_wav
 
-SAMPLE_RATE = 44100
 LOOP_SECONDS = 20.0
 FADE_SECONDS = 2.0
-
-
-def lowpass(samples: np.ndarray, amount: float) -> np.ndarray:
-    filtered = np.zeros_like(samples)
-    value = 0.0
-    for index, sample in enumerate(samples):
-        value += amount * (sample - value)
-        filtered[index] = value
-    return filtered
 
 
 def timeline(duration: float) -> np.ndarray:
@@ -115,15 +105,6 @@ def save_ogg(path: Path, samples: np.ndarray) -> None:
     command = ["ffmpeg", "-v", "error", "-y", "-fflags", "+bitexact", "-f", "s16le", "-ar", str(SAMPLE_RATE)]
     command += ["-ac", "1", "-i", "pipe:0", "-c:a", "libvorbis", "-q:a", "4", "-flags:a", "+bitexact", str(path)]
     subprocess.run(command, input=pcm, check=True)
-
-
-def save_wav(path: Path, samples: np.ndarray) -> None:
-    normalized = samples / (np.max(np.abs(samples)) + 1e-9) * 0.9
-    with wave.open(str(path), "wb") as output:
-        output.setnchannels(1)
-        output.setsampwidth(2)
-        output.setframerate(SAMPLE_RATE)
-        output.writeframes((normalized * 32767).astype(np.int16).tobytes())
 
 
 def main() -> None:
