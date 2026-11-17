@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"accessibility"
+section = &"accessibility"
+key = &"toggle_ads"
+label = "Toggle aim"
+hint = "On: press once to aim and again to stop. Off: hold to aim."
+kind = &"toggle"
+order = 20

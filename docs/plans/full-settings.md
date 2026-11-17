@@ -325,14 +325,14 @@ prompt (after step 2) measures all four presets at the four test spots.
 
 ## Acceptance
 
-- [ ] Every graphics option in Scope is on the Graphics page and applies live (step 1-2 tests).
-- [ ] Display mode and resolution changes ask to keep, and revert after 15 s (step 2 test).
+- [x] Every graphics option in Scope is on the Graphics page and applies live (step 1-2 tests).
+- [x] Display mode and resolution changes ask to keep, and revert after 15 s (step 2 test).
 - [ ] High preset looks like today's build (look-check corridor shot).
 - [ ] GPU prompt result: High at least 120 fps at 1440p with 24 zombies; each lower preset at least as fast (recorded in the PR or issue).
-- [ ] Every row comes from a SettingData file; content checks pass (step 2-3).
-- [ ] Search, Revert and Defaults work (step 3 tests).
-- [ ] Accessibility and Comfort rows work live, also from the pause menu (step 4-5 tests).
-- [ ] Old settings.cfg files load without losing values (tests in steps 1 and 3).
+- [x] Every row comes from a SettingData file; content checks pass (step 2-3).
+- [x] Search, Revert and Defaults work (step 3 tests).
+- [x] Accessibility and Comfort rows work live, also from the pause menu (step 4-5 tests).
+- [x] Old settings.cfg files load without losing values (tests in steps 1 and 3).
 
 ## Risks
 

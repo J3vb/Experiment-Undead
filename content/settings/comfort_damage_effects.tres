@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"comfort"
+section = &"comfort"
+key = &"damage_effects"
+label = "Damage screen effects"
+hint = "Strength of the red edges when you are hurt or low on health."
+kind = &"slider"
+min_value = 0.0
+max_value = 1.0
+step = 0.05
+display_scale = 100.0
+order = 40

@@ -7,7 +7,34 @@ const DEFAULTS: Dictionary = {
 	&"aim": {&"fov": 110, &"mouse_sensitivity": 0.0022, &"ads_sensitivity_multiplier": 0.8, &"invert_y": false},
 	&"graphics": Graphics.DEFAULTS,
 	&"audio": {&"master_volume": 1.0, &"music_volume": 0.8, &"sfx_volume": 1.0},
+	&"accessibility":
+	{
+		&"text_scale": 1.0,
+		&"toggle_ads": false,
+		&"toggle_sprint": false,
+		&"toggle_crouch": true,
+		&"reduce_motion": false,
+	},
+	&"comfort":
+	{&"head_bob": 0.6, &"weapon_bob": 1.0, &"sprint_fov": true, &"damage_effects": 1.0, &"centre_dot": false},
 	&"network": {&"last_address": "", &"last_port": 7777},
+}
+## Min and max of float options that are not 0 to 1.
+const RANGES: Dictionary = {
+	&"text_scale": [0.8, 1.5],
+	&"ads_sensitivity_multiplier": [0.2, 2.0],
+	&"mouse_sensitivity": [0.0002, 0.02],
+}
+## Comfort column of docs/design/controls.md; keys other threads have not added yet are skipped by set_value.
+const COMFORT_PRESET: Dictionary = {
+	&"head_bob": 0.0,
+	&"weapon_bob": 0.5,
+	&"sprint_fov": false,
+	&"damage_effects": 0.5,
+	&"centre_dot": true,
+	&"shake_own_gun": 0.25,
+	&"shake_hits": 0.25,
+	&"flash_reduction": true,
 }
 const AUDIO_BUSES: Dictionary = {&"master_volume": &"Master", &"music_volume": &"Music", &"sfx_volume": &"SFX"}
 ## Pause is locked so a player can never lock themselves out of the menus.
@@ -87,14 +114,12 @@ func _normalize(section: StringName, key: StringName, value: Variant) -> Variant
 	var normalized: Variant = maxf(float(value), 0.0)
 	if key == &"last_port":
 		normalized = clampi(int(value), 1, 65535)
-	elif section == &"audio":
+	elif section == &"audio" or section == &"comfort":
 		normalized = clampf(float(value), 0.0, 1.0)
 	elif key == &"fov":
 		normalized = clampi(int(value), 70, 120)
-	elif key == &"ads_sensitivity_multiplier":
-		normalized = clampf(float(value), 0.2, 2.0)
-	elif key == &"mouse_sensitivity":
-		normalized = clampf(float(value), 0.0002, 0.02)
+	elif RANGES.has(key):
+		normalized = clampf(float(value), RANGES[key][0], RANGES[key][1])
 	elif section == &"graphics":
 		normalized = Graphics.normalize(key, value)
 	return normalized
@@ -248,6 +273,11 @@ func _replace_binding(action: StringName, events: Array[InputEvent]) -> void:
 		):
 			kept.append(event)
 			InputMap.action_add_event(action, event)
+
+
+func apply_comfort_preset() -> void:
+	for key: StringName in COMFORT_PRESET:
+		set_value(&"comfort", key, COMFORT_PRESET[key])
 
 
 func reset_bindings() -> void:

@@ -116,3 +116,21 @@ func test_load_rows_reads_one_page_in_order() -> void:
 	for index: int in range(1, rows.size()):
 		assert_lt(rows[index - 1].order, rows[index].order)
 		assert_eq(rows[index].page, &"graphics")
+
+
+func test_apply_on_release_waits_for_the_drag_to_end() -> void:
+	var row: SettingData = _row(&"accessibility", &"text_scale", &"slider", "hint")
+	row.min_value = 0.8
+	row.max_value = 1.5
+	row.step = 0.05
+	row.display_scale = 100.0
+	row.apply_on_release = true
+	var slider: HSlider = _page([row] as Array[SettingData]).control_for(&"text_scale") as HSlider
+	slider.drag_started.emit()
+	slider.value = 130.0
+	assert_eq(Settings.get_value(&"accessibility", &"text_scale"), 1.0, "nothing resizes mid-drag")
+	assert_eq((slider.get_node("../Number") as Label).text, "130 %")
+	slider.drag_ended.emit(true)
+	assert_almost_eq(float(Settings.get_value(&"accessibility", &"text_scale")), 1.3, 0.0001)
+	slider.value = 140.0
+	assert_almost_eq(float(Settings.get_value(&"accessibility", &"text_scale")), 1.4, 0.0001, "keys apply at once")
