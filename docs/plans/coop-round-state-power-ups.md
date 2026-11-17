@@ -116,7 +116,9 @@ built-in MultiplayerSpawner child of PowerUpDrops (Keep it simple rule 8).
     count or intermission seconds.
   - `WaveDirector._request_round_state()` any peer to server, and the reply
     `_receive_round_state(phase: int, round_number: int, time_left: float)`.
-  - Pickups: `MultiplayerSpawner` spawn data `[data_id: StringName, position: Vector3, age: float]`.
+  - Pickups: `MultiplayerSpawner` spawn data `[pickup_id: int, data_id: StringName, position: Vector3]`,
+    plus a spawn-only `MultiplayerSynchronizer` on each pickup that sends its current `age`
+    whenever the pickup is spawned on a peer (also a late joiner, which gets the age at join time).
   - `PowerUpDrops._receive_collected(data_id: StringName, collector_net_id: int, position: Vector3)` authority to all.
   - `PowerUpDrops._receive_effect(data_id: StringName)` authority to one owner.
 - Save format change: none.
@@ -136,7 +138,7 @@ built-in MultiplayerSpawner child of PowerUpDrops (Keep it simple rule 8).
   intermission blink, music changes, pickups, their blink, pick-up flash and
   sound. Only the owner: its own refilled ammo.
 - Late joiner: current phase, round and intermission time left (snapshot), and
-  every live pickup (MultiplayerSpawner does this; spawn data carries age so
+  every live pickup (MultiplayerSpawner does this; the spawn-only synchronizer sends the current age so
   the blink is in step).
 - Dedicated server: no HUD or music; relays and spawns still run. It has no
   local player, so effects only go out by RPC.
@@ -195,7 +197,8 @@ frame is allocated. No measurable cost at 24 zombies and 4 players.
   data)` that touches only that player's guns (RESUPPLY: refill all; AMMO_PACK:
   one magazine each). `PowerUpDrops` gets a MultiplayerSpawner (spawn path:
   the level node it already adds pickups to, so the path matches on every
-  peer; `spawn_function` builds a PowerUp from `[data_id, position, age]`
+  peer; `spawn_function` builds a PowerUp from `[pickup_id, data_id, position]`
+  with a spawn-only synchronizer for `age`
   through `Content`). On the server, `collect()` decides the targets
   (RESUPPLY: every player in `session.get_players()`; AMMO_PACK: the
   collector), applies to the server's own player directly, sends
@@ -218,7 +221,8 @@ frame is allocated. No measurable cost at 24 zombies and 4 players.
   Resupply, and the server's own player too; an ammo pack adds one magazine
   only to the collector; `power_up_collected` fires on both peers with the
   right collector; a pickup that times out disappears on the client; a late
-  joiner sees a live pickup with its age. Solo collect test still passes.
+  joiner who arrives when a pickup is 21 s old gets age 21 (it is already
+  blinking). Solo collect test still passes.
 - Done when: a joined client sees, collects and benefits from drops; tests
   pass; F-40 and #126 closed.
 
