@@ -9,6 +9,7 @@ var _round_tween: Tween
 var _prompt_text: String = ""
 var _player: Player
 var _hurt: float = 0.0
+var _damage_effects: float = 1.0
 var _health_ratio: float = 1.0
 var _center_time: float = 0.0
 var _delta_time: float = 0.0
@@ -54,6 +55,7 @@ func _ready() -> void:
 	round_label.text = ""
 	prompt_key.text = Settings.key_name(&"interact")
 	Settings.changed.connect(_on_setting_changed)
+	_damage_effects = Settings.get_value(&"comfort", &"damage_effects")
 	$Root.add_child(VersionLabel.new())
 	_squad = SquadCards.new()
 	$Root.add_child(_squad)
@@ -93,7 +95,7 @@ func _process(delta: float) -> void:
 	var low: float = clampf((0.6 - _health_ratio) / 0.6, 0.0, 1.0)
 	var shade: ShaderMaterial = vignette.material as ShaderMaterial
 	if shade:  # null in the dedicated server export, which strips visual resources
-		shade.set_shader_parameter("intensity", clampf(maxf(_hurt, low * 0.85), 0.0, 1.0))
+		shade.set_shader_parameter("intensity", clampf(maxf(_hurt, low * 0.85), 0.0, 1.0) * _damage_effects)
 	if _center_time > 0.0:
 		_center_time -= delta
 		center_label.modulate.a = clampf(_center_time, 0.0, 1.0)
@@ -109,7 +111,7 @@ func _process(delta: float) -> void:
 		var w: Weapon = _player.weapons.current
 		crosshair.spread_degrees = w.get_current_spread()
 		crosshair.fov_degrees = _player.camera.fov
-		crosshair.modulate.a = 0.0 if (w.ads_progress > 0.5 or _player.is_sprinting or not _player.is_alive()) else 1.0
+		crosshair.lines_alpha = 0.0 if (w.ads_progress > 0.5 or _player.is_sprinting or not _player.is_alive()) else 1.0
 
 
 func _update_exfil() -> void:
@@ -139,7 +141,9 @@ func _update_prompt(text: String) -> void:
 		prompt_label.text = text.replace("[F]", "").strip_edges()
 
 
-func _on_setting_changed(section: StringName, _key: StringName, _value: Variant) -> void:
+func _on_setting_changed(section: StringName, key: StringName, value: Variant) -> void:
+	if section == &"comfort" and key == &"damage_effects":
+		_damage_effects = value
 	if section != &"bindings":
 		return
 	prompt_key.text = Settings.key_name(&"interact")

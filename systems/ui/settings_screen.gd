@@ -27,6 +27,9 @@ func _ready() -> void:
 		for row: SettingData in page.rows:
 			_opened[row] = Settings.get_value(row.section, row.key)
 	%KeyBindings.get_parent().move_child(%KeyBindings, -1)
+	%ComfortPreset.get_parent().move_child(%ComfortPreset, -1)
+	%ComfortPresetHint.get_parent().move_child(%ComfortPresetHint, -1)
+	%ComfortPreset.pressed.connect(Settings.apply_comfort_preset)
 	%Search.text_changed.connect(search)
 	%KeepDialog.confirmed.connect(_keep)
 	%KeepDialog.canceled.connect(_revert_keep)

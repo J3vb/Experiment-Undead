@@ -40,6 +40,8 @@ func test_defaults_for_missing_file() -> void:
 		&"aim": {&"fov": 110, &"mouse_sensitivity": 0.0022, &"ads_sensitivity_multiplier": 0.8, &"invert_y": false},
 		&"graphics": Graphics.DEFAULTS,
 		&"audio": {&"master_volume": 1.0, &"music_volume": 0.8, &"sfx_volume": 1.0},
+		&"comfort":
+		{&"head_bob": 0.6, &"weapon_bob": 1.0, &"sprint_fov": true, &"damage_effects": 1.0, &"centre_dot": false},
 		&"accessibility":
 		{
 			&"text_scale": 1.0,

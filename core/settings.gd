@@ -15,7 +15,20 @@ const DEFAULTS: Dictionary = {
 		&"toggle_crouch": true,
 		&"reduce_motion": false,
 	},
+	&"comfort":
+	{&"head_bob": 0.6, &"weapon_bob": 1.0, &"sprint_fov": true, &"damage_effects": 1.0, &"centre_dot": false},
 	&"network": {&"last_address": "", &"last_port": 7777},
+}
+## Comfort column of docs/design/controls.md; keys other threads have not added yet are skipped by set_value.
+const COMFORT_PRESET: Dictionary = {
+	&"head_bob": 0.0,
+	&"weapon_bob": 0.5,
+	&"sprint_fov": false,
+	&"damage_effects": 0.5,
+	&"centre_dot": true,
+	&"shake_own_gun": 0.25,
+	&"shake_hits": 0.25,
+	&"flash_reduction": true,
 }
 const AUDIO_BUSES: Dictionary = {&"master_volume": &"Master", &"music_volume": &"Music", &"sfx_volume": &"SFX"}
 ## Pause is locked so a player can never lock themselves out of the menus.
@@ -95,7 +108,7 @@ func _normalize(section: StringName, key: StringName, value: Variant) -> Variant
 	var normalized: Variant = maxf(float(value), 0.0)
 	if key == &"last_port":
 		normalized = clampi(int(value), 1, 65535)
-	elif section == &"audio":
+	elif section == &"audio" or section == &"comfort":
 		normalized = clampf(float(value), 0.0, 1.0)
 	elif key == &"fov":
 		normalized = clampi(int(value), 70, 120)
@@ -258,6 +271,11 @@ func _replace_binding(action: StringName, events: Array[InputEvent]) -> void:
 		):
 			kept.append(event)
 			InputMap.action_add_event(action, event)
+
+
+func apply_comfort_preset() -> void:
+	for key: StringName in COMFORT_PRESET:
+		set_value(&"comfort", key, COMFORT_PRESET[key])
 
 
 func reset_bindings() -> void:
