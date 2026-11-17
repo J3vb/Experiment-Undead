@@ -24,3 +24,6 @@ const EFFECTS: Array[StringName] = [&"second_wind", &"scavenger"]
 @export var cost: int = 1000
 @export_multiline var description: String = ""
 @export var multipliers: Dictionary[StringName, float] = {}
+## Up to two letters on the HUD square while the Serum is active.
+@export var badge: String = ""
+@export var badge_colour: Color = Color("596b80")

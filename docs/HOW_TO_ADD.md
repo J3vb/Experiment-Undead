@@ -42,6 +42,8 @@ live state belongs in objects such as `WeaponInstance`.
 1. Check `design/zombie-ai.md`, `design/balance/enemies.csv` and DECISIONS.
 2. Create `content/enemies/<id>.tres` using `systems/enemies/enemy_data.gd`
     (`EnemyData`); match `id` to the filename and set stats and `scene`.
+    Loot: leave `loot_drop_chance` at -1 for the zombie round curve, or set a fixed
+    chance (0..1) and `loot_min_rarity` (for example a boss: 1.0 and `rare`).
 3. Reuse `systems/enemies/zombie.tscn` for existing behaviour. For a different
     model/collision, inherit it under `systems/enemies/`, as `bloater.tscn` does.
 4. Keep a `Zombie` root: `Spawner.spawn()` casts to `Zombie` and calls `setup()`.
@@ -62,6 +64,7 @@ live state belongs in objects such as `WeaponInstance`.
 
 1. Create `content/serums/<id>.tres` using `systems/serums/serum_data.gd`
     (`SerumData`), following `quickhands.tres`; set matching `id`, `display_name`, `cost` and `description`.
+    Set `badge` (1 or 2 unique letters) and `badge_colour` for its HUD square.
 2. Use positive `multipliers` keyed by `SerumData.STATS`. `Player.get_stat()`
     reads them; `Player.add_serum()` applies health/slots and emits `Events.serum_gained`.
 3. A new stat needs its consumer and tests. Code-only effects like Second Wind

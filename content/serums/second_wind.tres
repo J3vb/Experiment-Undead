@@ -8,3 +8,5 @@ id = &"second_wind"
 display_name = "Second Wind"
 cost = 1500
 description = "Get back up once when you go down. The dispenser runs dry after 3."
+badge = "SW"
+badge_colour = Color(0.466666667, 0.411764706, 0.317647059, 1)

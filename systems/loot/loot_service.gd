@@ -70,7 +70,7 @@ func _on_enemy_killed(enemy: Node3D, _info: DamageInfo) -> void:
 		var level: int = session.handshake.player_level(owner_id)
 		var gear_luck: float = player_luck(owner_player, 1)
 		var luck: float = clampf(gear_luck + maxf(session.director.round_number - 10, 0) * 0.02, 0, 1)
-		var item: Dictionary = roll_drop(zombie.data.id, level, luck)
+		var item: Dictionary = roll_drop(zombie.data, level, luck)
 		if not item.is_empty():
 			send_drop(owner_id, item, zombie.global_position)
 
@@ -87,13 +87,13 @@ func _round() -> int:
 	return clampi(session.director.round_number, 1, 50)
 
 
-func roll_drop(enemy_id: StringName, character_level: int, luck: float = 0.0) -> Dictionary:
-	var chance: float = drop_chance(enemy_id, session.director.round_number)
+func roll_drop(enemy: EnemyData, character_level: int, luck: float = 0.0) -> Dictionary:
+	var chance: float = drop_chance(enemy, session.director.round_number)
 	if drop_chance_override >= 0.0:
 		chance = drop_chance_override
 	if session.rng.randf() >= chance:
 		return {}
-	var rarity: StringName = _rarity(enemy_id, luck)
+	var rarity: StringName = _rarity(enemy, luck)
 	var pool: Array[Resource] = eligible_bases(character_level, rarity)
 	if pool.is_empty():
 		return {}
@@ -114,22 +114,19 @@ func roll_drop(enemy_id: StringName, character_level: int, luck: float = 0.0) ->
 	return ItemRoller.roll_weapon(session.rng, selected, rarity, _round(), character_level)
 
 
-func _rarity(enemy_id: StringName, luck: float) -> StringName:
+func _rarity(enemy: EnemyData, luck: float) -> StringName:
 	var rarity: StringName = ItemRoller.roll_rarity(session.rng, false, luck)
-	if enemy_id == &"zombie_brute":
-		while ItemRoller.RARITIES.find(rarity) < ItemRoller.RARITIES.find(&"rare"):
-			rarity = ItemRoller.roll_rarity(session.rng, false, luck)
+	var floor_rank: int = ItemRoller.RARITIES.find(enemy.loot_min_rarity)
+	while ItemRoller.RARITIES.find(rarity) < floor_rank:
+		rarity = ItemRoller.roll_rarity(session.rng, false, luck)
 	return rarity
 
 
-static func drop_chance(enemy_id: StringName, round_number: int) -> float:
-	match enemy_id:
-		&"zombie_brute":
-			return 1.0
-		&"zombie_bloater", &"zombie_stalker":
-			return 0.05
-		_:
-			return minf(0.015 + maxi(round_number, 1) * 0.001, 0.05)
+## The enemy's own chance when it sets one, else the zombie round curve.
+static func drop_chance(enemy: EnemyData, round_number: int) -> float:
+	if enemy.loot_drop_chance >= 0.0:
+		return enemy.loot_drop_chance
+	return minf(0.015 + maxi(round_number, 1) * 0.001, 0.05)
 
 
 static func eligible_bases(character_level: int, rarity: StringName) -> Array[Resource]:

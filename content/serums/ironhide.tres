@@ -9,3 +9,5 @@ display_name = "Ironhide"
 cost = 2500
 description = "Max health 100 to 250."
 multipliers = Dictionary[StringName, float]({&"max_health": 2.5})
+badge = "IH"
+badge_colour = Color(0.462745098, 0.31372549, 0.329411765, 1)

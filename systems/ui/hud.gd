@@ -4,17 +4,6 @@ extends CanvasLayer
 
 const BLOOD_RED: Color = Color("c8202a")
 const OFF_WHITE: Color = Color("f2ede0")
-const SERUM_STYLES: Dictionary = {
-	&"ironhide": ["IH", Color("765054")],
-	&"quickhands": ["QH", Color("85724c")],
-	&"overclock": ["OC", Color("4c727c")],
-	&"deadeye": ["DE", Color("75607e")],
-	&"mule": ["MU", Color("65764c")],
-	&"stride": ["ST", Color("4e7870")],
-	&"second_wind": ["SW", Color("776951")],
-	&"scavenger": ["SC", Color("596b80")],
-}
-
 var _toast_tween: Tween
 var _round_tween: Tween
 var _prompt_text: String = ""
@@ -212,17 +201,16 @@ func _on_weapon_switched(player: Player, weapon: Weapon) -> void:
 func _on_serum_gained(player: Player, _serum: SerumData) -> void:
 	if player != _player:
 		return
-	if not SERUM_STYLES.has(_serum.id):
+	if _serum.badge.is_empty():
 		return
 	for badge: Node in serums.get_children():
 		if badge.name == String(_serum.id):
 			return
-	var style: Array = SERUM_STYLES[_serum.id]
 	var square: StyleBoxFlat = StyleBoxFlat.new()
-	square.bg_color = style[1]
+	square.bg_color = _serum.badge_colour
 	var label: Label = Label.new()
 	label.name = String(_serum.id)
-	label.text = style[0]
+	label.text = _serum.badge
 	label.tooltip_text = _serum.display_name
 	label.custom_minimum_size = Vector2(44, 44)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
