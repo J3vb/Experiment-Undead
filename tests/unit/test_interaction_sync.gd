@@ -98,3 +98,12 @@ func test_late_joiner_does_not_see_an_opened_door() -> void:
 	assert_true(late.level.open_areas.has(&"east"))
 	assert_false(gone(late, "WestDoor"))
 	assert_false(late.level.power_on)
+
+
+func test_refused_request_for_a_type_without_purchase_sounds_is_silent() -> void:
+	on_server().state_sync.bleed_left = 30.0
+	on_server().is_downed = true
+	await press("PowerSwitch")
+	await wait_physics_frames(6)
+	assert_false(server.level.power_on, "downed players cannot turn on power")
+	assert_false(client.level.power_on)

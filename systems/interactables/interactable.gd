@@ -58,8 +58,11 @@ func retire() -> void:
 	queue_free()
 
 
+## Buy or denied sound; types without purchase sounds (switch, barrier, hatch) stay silent.
 func play_result(paid: bool) -> void:
-	(get_node(^"BuySound" if paid else ^"DeniedSound") as AudioStreamPlayer3D).play()
+	var sound: AudioStreamPlayer3D = get_node_or_null(^"BuySound" if paid else ^"DeniedSound") as AudioStreamPlayer3D
+	if sound:
+		sound.play()
 
 
 func _pay(player: Player, amount: int) -> bool:
