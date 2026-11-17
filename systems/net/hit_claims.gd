@@ -45,7 +45,7 @@ func _physics_process(delta: float) -> void:
 ## Called by the owning gun instead of mutating the client's health copy.
 func submit_hit(weapon: Weapon, hit_zone: HitZone, info: DamageInfo) -> void:
 	if claim_local(weapon.shooter, hit_zone, info):
-		weapon.hit_landed.emit(false, info.is_headshot())
+		weapon.hit_landed.emit(false, info, hit_zone)
 
 
 ## Sends the local owner's hit to the host. True when a claim went out (show the hit marker).

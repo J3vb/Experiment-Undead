@@ -98,7 +98,9 @@ func test_headshots_kill_and_pay() -> void:
 		shots += 1
 		await wait_physics_frames(2)
 	assert_eq(z.state, Zombie.State.DEAD, "zombie died after %d shots" % shots)
-	assert_signal_emitted_with_parameters(weapon, "hit_landed", [true, true])
+	var landed: Array = get_signal_parameters(weapon, "hit_landed")
+	assert_true(landed[0], "the last hit killed")
+	assert_true((landed[1] as DamageInfo).is_headshot(), "it was a headshot")
 	assert_signal_emitted(Events, "enemy_killed")
 	assert_gt(player.wallet.points, 500, "points paid")
 	assert_gt(session.progression.get_xp(player), 0, "xp paid")

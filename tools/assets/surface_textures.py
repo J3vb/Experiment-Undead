@@ -156,10 +156,90 @@ def raw_concrete(n: int) -> tuple:
     return albedo, height, rough, 0.0, 7.0
 
 
+def steel_plate(n: int) -> tuple:
+    """Diamond tread plate: raised lozenges in a herringbone, worn bright where boots go."""
+    u, v = coords(n)
+    k = 16.0
+    a = (u * k + v * k) % 1.0 - 0.5
+    b = (u * k - v * k) % 1.0 - 0.5
+    flip = (np.floor(u * k) + np.floor(v * k)) % 2
+    major = np.where(flip > 0, a, b)
+    minor = np.where(flip > 0, b, a)
+    lozenge = np.clip(1.0 - (np.abs(major) / 0.42) ** 2 - (np.abs(minor) / 0.12) ** 2, 0.0, 1.0)
+    wear = fbm(n, 2, 12, 41)
+    scratches = fbm(n, 90, n // 4, 42)
+    rust = np.clip((fbm(n, 3, 30, 43) - 0.68) * 8.0, 0.0, 1.0)
+    height = 0.4 + np.sqrt(lozenge) * 0.45 + scratches * 0.04
+    albedo = (0.7 + lozenge * wear * 0.3 + scratches * 0.1) * (1.0 - rust * 0.45)
+    rough = 0.55 - lozenge * wear * 0.25 + rust * 0.35 + scratches * 0.1
+    metal = 1.0 - rust
+    return albedo, height, rough, metal, 9.0
+
+
+def linoleum(n: int) -> tuple:
+    """Canteen linoleum: 30 cm checker of two greys, scuffs, lifted seams and a waxed sheen."""
+    tiles = per_cell(n, 4, 51) * 0.08
+    u, v = coords(n)
+    checker = ((np.floor(u * 4) + np.floor(v * 4)) % 2) * 0.22
+    seams = grid_lines(n, 4, 0.003)
+    scuffs = np.clip((fbm(n, 20, 120, 52) - 0.6) * 5.0, 0.0, 1.0)
+    flecks = (fbm(n, 150, n // 4, 53) > 0.7).astype(float)
+    height = 0.6 - seams * 0.3 + flecks * 0.02
+    albedo = (0.72 + checker + tiles - flecks * 0.06) * (1.0 - scuffs * 0.25) * (1.0 - seams * 0.5)
+    rough = 0.35 + scuffs * 0.35 + seams * 0.3
+    return albedo, height, rough, 0.0, 4.0
+
+
+def clinic_tile(n: int) -> tuple:
+    """Lab tiles: small 10 cm glazed squares, grey grout, a few cracked and stained tiles."""
+    lines = grid_lines(n, 12, 0.0025)
+    tint = per_cell(n, 12, 61)
+    cracked = (per_cell(n, 12, 62) > 0.94).astype(float) * (fbm(n, 30, 120, 63) > 0.62)
+    dirt = fbm(n, 2, 20, 64)
+    height = 0.7 - lines * 0.45 - cracked * 0.2
+    albedo = (0.92 + tint * 0.06) * (1.0 - lines * 0.55) * (1.0 - cracked * 0.5) * (0.9 + dirt * 0.1)
+    rough = 0.18 + lines * 0.7 + cracked * 0.5 + dirt * 0.1
+    return albedo, height, rough, 0.0, 6.0
+
+
+def grating(n: int) -> tuple:
+    """Bar grating floor: load bars one way, cross rods the other, dark pit showing through."""
+    u, v = coords(n)
+    bars = np.clip(1.0 - np.abs((u * 20.0) % 1.0 - 0.5) * 2.0 / 0.22, 0.0, 1.0)
+    rods = np.clip(1.0 - np.abs((v * 5.0) % 1.0 - 0.5) * 2.0 / 0.08, 0.0, 1.0)
+    metal_part = np.maximum(bars, rods)
+    solid = np.clip(metal_part * 3.0, 0.0, 1.0)
+    wear = fbm(n, 4, 40, 71)
+    rust = np.clip((fbm(n, 4, 40, 72) - 0.6) * 6.0, 0.0, 1.0) * solid
+    height = solid * (0.7 + rods * 0.15) + wear * 0.03
+    albedo = solid * (0.65 + wear * 0.3) * (1.0 - rust * 0.4) + (1.0 - solid) * 0.06
+    rough = 0.5 + rust * 0.4 + (1.0 - solid) * 0.4
+    return albedo, height, rough, solid * (1.0 - rust), 10.0
+
+
+def sealed_concrete(n: int) -> tuple:
+    """Dock floor: sealed concrete slabs with saw cuts, tyre marks and oil stains."""
+    u, _v = coords(n)
+    cuts = grid_lines(n, 1, 0.003)
+    cement = fbm(n, 1, 12, 81)
+    grain = fbm(n, 80, n // 4, 82)
+    tyres = np.clip(1.0 - np.abs(((u + fbm(n, 1, 3, 83) * 0.2) * 3.0) % 1.0 - 0.5) * 2.0 / 0.18, 0.0, 1.0)
+    oil = np.clip((fbm(n, 2, 14, 84) - 0.7) * 6.0, 0.0, 1.0)
+    height = 0.6 + grain * 0.08 - cuts * 0.4
+    albedo = (0.72 + cement * 0.25 - grain * 0.08) * (1.0 - tyres * 0.18) * (1.0 - oil * 0.45) * (1.0 - cuts * 0.6)
+    rough = 0.6 + grain * 0.15 - oil * 0.35 + cuts * 0.3
+    return albedo, height, rough, 0.0, 5.0
+
+
 SETS = {
     "ceiling_tile": (ceiling_tile, 1024),
     "painted_concrete": (painted_concrete, 1024),
     "raw_concrete": (raw_concrete, 1024),
+    "steel_plate": (steel_plate, 1024),
+    "linoleum": (linoleum, 1024),
+    "clinic_tile": (clinic_tile, 1024),
+    "grating": (grating, 1024),
+    "sealed_concrete": (sealed_concrete, 1024),
 }
 
 
@@ -171,7 +251,8 @@ def build(name: str) -> dict[str, np.ndarray]:
     if albedo.ndim == 2:
         albedo = np.repeat(albedo[..., None], 3, axis=-1)
     ao = occlusion(height, 3.0, 6.0)
-    orm = np.stack([ao, np.clip(np.broadcast_to(rough, height.shape), 0.0, 1.0), np.full_like(height, metal)], -1)
+    full = lambda a: np.clip(np.broadcast_to(a, height.shape), 0.0, 1.0)  # noqa: E731
+    orm = np.stack([ao, full(rough), full(metal)], -1)
     to8 = lambda a: np.round(np.clip(a, 0.0, 1.0) * 255.0).astype(np.uint8)  # noqa: E731
     return {
         "albedo": to8(albedo ** (1.0 / 2.2)),

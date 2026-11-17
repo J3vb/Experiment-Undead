@@ -5,7 +5,7 @@ extends Node3D
 signal ammo_changed(in_mag: int, reserve: int)
 signal fired
 signal reload_started(duration: float)
-signal hit_landed(is_kill: bool, is_headshot: bool)
+signal hit_landed(is_kill: bool, info: DamageInfo, zone: HitZone)
 signal traced(point: Vector3, normal: Vector3, kind: Impact.Kind)
 
 enum State { IDLE, RELOADING }
@@ -276,7 +276,7 @@ func _hit(result: Dictionary, origin: Vector3, direction: Vector3) -> void:
 			shooter.session.hit_claims.submit_hit(self, hit_zone, info)
 		return
 	HitClaims.apply_host_hit(shooter, hit_zone, info)
-	hit_landed.emit(hit_zone.health.is_dead, info.is_headshot())
+	hit_landed.emit(hit_zone.health.is_dead, info, hit_zone)
 
 
 func _on_fired() -> void:
