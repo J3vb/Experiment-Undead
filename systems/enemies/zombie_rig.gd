@@ -139,7 +139,7 @@ func follow(zombie: Zombie, delta: float) -> void:
 func fall_over() -> Tween:
 	pose_dead()
 	var scene: Node = get_tree().current_scene
-	BloodPool.spawn(scene if scene else get_parent().get_parent(), (get_parent() as Node3D).global_position)
+	BloodPool.spawn(scene if scene else get_tree().root, (get_parent() as Node3D).global_position)
 	var fall_dir: float = 1.0 if randf() < 0.5 else -1.0  # cosmetic
 	var tween: Tween = create_tween()
 	(
