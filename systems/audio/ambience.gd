@@ -11,6 +11,8 @@ extends Node3D
 @export var one_shot_distance: Vector2 = Vector2(8.0, 16.0)
 
 var area: Area3D
+## Areas the local player overlaps, newest last; doorways overlap two.
+var _inside: Array[Area3D] = []
 var _beds: Array[AudioStreamPlayer] = []
 var _fade: Tween
 
@@ -50,13 +52,19 @@ func target_volume_db(bed: AudioStreamPlayer) -> float:
 
 
 func enter(zone: Area3D) -> void:
-	area = zone
-	_crossfade()
+	_inside.erase(zone)
+	_inside.append(zone)
+	_set_area(zone)
 
 
 func leave(zone: Area3D) -> void:
-	if zone == area:
-		area = null
+	_inside.erase(zone)
+	_set_area(_inside.back() if not _inside.is_empty() else null)
+
+
+func _set_area(zone: Area3D) -> void:
+	if zone != area:
+		area = zone
 		_crossfade()
 
 

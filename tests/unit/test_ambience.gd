@@ -42,6 +42,15 @@ func test_entering_and_leaving_areas_switches_bed() -> void:
 	assert_eq(ambience.active_bed(), ambience.default_bed)
 
 
+func test_backing_out_of_a_doorway_restores_the_area_still_occupied() -> void:
+	var corridor: Area3D = ambience.get_node("MainCorridor") as Area3D
+	var hall: Area3D = ambience.get_node("MessHall") as Area3D
+	ambience.enter(corridor)
+	ambience.enter(hall)
+	ambience.leave(hall)
+	assert_eq(ambience.active_bed(), corridor.get_node("Bed"), "still in the corridor")
+
+
 func test_areas_watch_only_players() -> void:
 	for zone_name: String in ["MainCorridor", "MessHall", "Labs"]:
 		var zone: Area3D = ambience.get_node(zone_name) as Area3D
