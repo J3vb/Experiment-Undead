@@ -1,7 +1,7 @@
 # Plan: Lantern Post to the concept art
 
 Status: Building
-Roadmap: F-68 / issue none (follows F-50)
+Roadmap: F-74 / issue none (follows F-50; first numbered F-68, renumbered because F-68 was taken by the Halcyon concept pass)
 Phase: P9 (pulled forward with F-50 for the co-op week goal)
 Size: L
 Approved by: the person on decision cards (plan, stall names, aurora; 2026-11-17), plan PR #303
