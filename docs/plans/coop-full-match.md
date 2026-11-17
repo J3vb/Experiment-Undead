@@ -8,9 +8,11 @@ Approved by:
 
 ## Goal
 
-Four friends can join a dedicated server (or one of them hosts), play
-Halcyon Labs together to round 20 and past it, see each other's state, finish
-the match and play again without restarting anything. This is the P7 exit
+Four friends join a dedicated server (or one of them hosts) and land in the
+hub. From there they pick a level and deploy together, play Halcyon Labs to
+round 20 and past it, see each other's state, and return to the hub when the
+match ends, ready to deploy again without restarting anything (flow asked by
+the person, 2026-11-17). This is the P7 exit
 test in `docs/design/game-design.md` ("Four players finish a run to round 20
 with no desync"), minus the art work in F-41. Serves "The pressure always
 builds" and "Better together".
@@ -28,18 +30,28 @@ In:
 - Squad cards in the match HUD: name, health bar, down state with bleed-out
   timer (`docs/design/ui-hud.md#10-match-hud`). Revive prompt says the
   teammate's name instead of a peer number.
-- Match end and play again: after a co-op match ends, the server starts a
-  fresh match; a dedicated server also resets when the last player leaves.
-  Clients and the host can play again from the results screen.
+- Hub and deploy flow: joining a server (dedicated or Host and play) lands
+  in the hub. A deploy board per level sends the whole server into that
+  level. When the match ends, after the results screen, everyone returns to
+  the hub. A dedicated server also returns to the hub when the last player
+  leaves mid-match.
 - Close-out: MULTIPLAYER.md, a 4-player play-test checklist for F-43.
 
 Not in (non-goals, and where each one goes instead):
 
 - Round state and power-ups on clients: `docs/plans/coop-round-state-power-ups.md` (F-40), built first.
 - Losing Serums when downed in co-op: a bug fix PR with its own test, before step 1.
-- Third-person walk, run and downed animations for teammates: F-41 (art, own plan).
+- Third-person walk, run and downed animations for teammates: F-41 (art, own plan, own thread).
+- The hub scene itself (Lantern Post blockout, deploy board model and
+  Interactable): the hub thread. This plan owns the network side: the hub as
+  a place a session runs, deploy, and return.
+- Town features (stash, Workbench, Quartermaster, chat, squads inside one
+  server, two matches at once): P9 (F-45). Until then a server runs one place
+  at a time and everyone on it deploys together.
+- Play solo keeps going straight into Halcyon Labs; the hub is for servers.
 - Server Docker image, Unraid template, server.cfg: F-44.
 - Server browser, LAN discovery, town and Deploy Gate: P8 and P9.
+- A map list menu on the deploy board: one board per level for now.
 - "View squad" on the results screen and the Tab scoreboard: after F-43, if
   the play-test asks for them (new roadmap row then).
 - Voice or text chat: P9 (town).
@@ -58,13 +70,15 @@ Not in (non-goals, and where each one goes instead):
 - Co-op:
   - Who decides: server for player state, names, match end and reset; each client for its own pause menu
     and HUD.
-  - How a client triggers it: no new requests. Play again = leave and join the same address again through
-    the existing join flow and hello.
+  - How a client triggers it: deploy uses the existing InteractionSync request on the deploy board.
+    Changing place = the server tells clients the new place, then clients rejoin through the existing join
+    flow and hello (connection opens after the map exists, so spawns never arrive early).
   - What other players see: names and bleed-out time ride on the existing PlayerStateSync snapshot.
   - Works on a dedicated server with no local player: yes, the soak runs exactly that.
 - Data: no new content or numbers; colours from docs/design/look-rules.md. Code compares a specific id: no.
 - Save: no change.
 - Events and UI: no new Events. Squad cards live in the existing Hud scene; pause stays on the UI router.
+  The hub is a new root screen (content/screens/hub.tres) reached only through UI.replace.
 - Input through InputFrame, gameplay in _physics_process, randomness from the session RNG: yes.
 - Tests: two-peer ENet unit tests per step, the co-op soak, solo tests and the solo soak stay green.
 - Logging: Log.warn net.match_reset with the reason; the soak reads existing net.* warnings.
@@ -97,9 +111,12 @@ Not in (non-goals, and where each one goes instead):
 | systems/net/handshake.gd | changed | Exposes the accepted display name per peer (it already receives it) |
 | systems/net/coop_hud.gd | changed | Revive prompt uses the display name |
 | systems/ui/hud.gd / hud.tscn, systems/ui/squad_cards.gd (new) | new + changed | Squad cards |
-| systems/net/dedicated_server.gd | changed | Builds a fresh GameSession after a match ends or the server empties |
-| core/net.gd | changed | Remembers the last join target / host port for play again |
-| systems/ui/results_screen.gd | changed | "Play again" label and behaviour in co-op |
+| systems/game/hub_session.tscn | new | game_session.tscn with the hub level and `is_hub` on |
+| content/screens/hub.tres | new | Root screen id for the hub |
+| systems/net/dedicated_server.gd | changed | Starts in the hub; swaps its session on deploy, match end and when it empties |
+| core/net.gd | changed | Current place id, the "go to place" message, rejoin after a place change |
+| systems/ui/results_screen.gd | changed | In co-op the restart button reads "Back to hub" and returns with the squad |
+| systems/ui/main_menu.gd | changed | Host and play opens the hub |
 | core/build.gd | changed | PROTOCOL_VERSION +1 in step 3 (snapshot fields) |
 | docs/MULTIPLAYER.md, docs/DECISIONS.md, docs/ROADMAP.md | changed | Close-out |
 
@@ -112,6 +129,13 @@ Control script owned by the Hud (one job: draw the cards).
 - `PlayerStateSync._snapshot()` gains `"name": String` and `"bleed": float`
   (seconds left while downed). Clients read them for squad cards and prompts.
 - Soak arguments: `--clients N --rounds N --seed N --timescale N`.
+- `GameSession.is_hub: bool` (export, default false). True skips the
+  WaveDirector start, the Spawner, power-up drops, loot, points and death.
+- Network: `Net._go_to_place(place: StringName)` authority to all (reliable);
+  the handshake reply carries the server's current place so a client that
+  loaded the wrong one switches before its player spawns.
+- Content: `content/screens/hub.tres` (ScreenData, scene = hub_session.tscn).
+  Deploy boards name the screen id of their level as exported data.
 - Save format change: none.
 - Content checks to add in `tests/content/`: none.
 
@@ -124,7 +148,11 @@ Control script owned by the Hud (one job: draw the cards).
 - What a client sees that the host sees too: every teammate's card. Only the
   owner: its own results points and pause menu.
 - Late joiner: gets every player's snapshot through the existing
-  `_request_snapshot`, which now includes names and bleed.
+  `_request_snapshot`, which now includes names and bleed. A player who joins
+  during a match lands in that running match (one place per server until P9;
+  see Open decisions).
+- Place changes: the server owns the current place. Deploy and return go to
+  every peer; nobody can be left in a different place than the server.
 - Dedicated server: no HUD; it runs the reset loop and the soak's server side.
 
 ## Performance
@@ -197,36 +225,59 @@ is a test tool and never ships. No per-frame allocations.
   the HUD with two cards against the mockup (`look-check` skill).
 - Done when: teammates' names and states are on screen; tests pass.
 
-### Step 4: Match end and play again
+### Step 4: Hub as a place, and changing places
 
-- Build: Dedicated server: when its `GameSession` emits `Events.game_over`
-  (after the results delay) or the last peer disconnects mid-match, it frees
-  the session and adds a fresh one at `/root/GameSession` (same port stays
-  open, `Log.info net.match_reset` with the reason). Peers still connected
-  after game over are disconnected with the existing "host ended the match"
-  message so their results screen stays up instead of a lost-connection
-  dialog. `Net` remembers the last join address and the last host port.
-  Results screen in co-op: the restart button reads "Play again": a client
-  sets `Net.pending_join` to the last address and reloads (normal join,
-  retried for up to 6 s if the server is still resetting); the host re-hosts
-  on the same port and reloads. Solo restart is unchanged.
-- Files: systems/net/dedicated_server.gd, core/net.gd,
-  systems/game/game_session.gd, systems/ui/results_screen.gd,
-  tests/unit/test_dedicated_server.gd, tests/integration/test_net_match.gd,
-  tests/unit/test_net.gd.
-- Tests: in-process: a dedicated server with no players left mid-match
-  resets to round 0 with a fresh map; after game over it resets and a client
-  joining gets round 1 state. Integration (real processes): a client plays,
-  the squad goes down, the client presses play again and joins the fresh
-  match. Solo restart test unchanged.
-- Done when: a dedicated server runs match after match unattended; tests pass.
+- Build: `GameSession.is_hub` and `hub_session.tscn` (uses the hub thread's
+  `levels/lantern_post/lantern_post.tscn`; until it lands, the test uses a
+  small test level). `Net` holds `place` (screen id). Server side
+  `GameSession.deploy(place)` (called by the hub thread's deploy board through
+  `interact()`): refuses unless `is_hub`, then sends `_go_to_place` to all and
+  swaps the server's own session. Clients receive it, set `Net.pending_join`
+  to the same server and `UI.replace(place)`; the new session joins again in
+  `_ready()` (retrying for up to 6 s while the server swaps). The handshake
+  reply carries the server's place; a client in the wrong place switches
+  first. Dedicated server and Host and play start in the hub; a listen host
+  re-hosts on the same port after the swap. `GameSession._exit_tree` does not
+  show the lost-connection dialog for a planned place change.
+- Files: systems/game/game_session.gd, hub_session.tscn (new),
+  content/screens/hub.tres (new), core/net.gd, systems/net/handshake.gd,
+  systems/net/dedicated_server.gd, systems/ui/main_menu.gd, core/build.gd,
+  tests/unit/test_places.gd (new), tests/integration/test_net_match.gd,
+  tests/content/ screen check.
+- Tests: in-process: a hub session starts no waves and spawns no zombies;
+  `deploy()` from a client request moves the server and the client to the
+  match place, both players spawn there, round 1 starts; `deploy()` outside
+  the hub is refused. Integration (real processes): a client joins a
+  dedicated server, lands in the hub, deploys, and reaches round 1. Solo play
+  from the menu still goes straight into Halcyon Labs.
+- Done when: a squad on a dedicated server can go from the hub into a match.
 
-### Step 5: Close-out and play-test checklist
+### Step 5: Back to the hub after a match
 
-- Build: MULTIPLAYER.md build order step 9 (done) and "Running it locally"
-  with the soak command; DECISIONS.md entry; ROADMAP F-47 Done; open the
-  4-player play-test checklist on issue #127 (F-43) with exact steps; run the
-  `finish-feature` skill.
+- Build: after a co-op match ends and the results delay passes, the server
+  sends everyone to the hub with the same place change. The client's results
+  screen stays up until the player presses "Back to hub" (it reads "Back to
+  hub" in co-op; solo keeps Restart and Main menu); a client that takes longer
+  than the swap simply rejoins into the hub. Run XP and the Pack bank before
+  the change (the existing `bank_run_xp` guard). A dedicated server whose last
+  player leaves mid-match also returns to the hub (`Log.info net.match_reset`).
+  Each new session starts clean: `Net.reset_ids()`, fresh wallets, no
+  leftover zombies or pickups.
+- Files: systems/game/game_session.gd, systems/net/dedicated_server.gd,
+  systems/ui/results_screen.gd, tests/unit/test_places.gd,
+  tests/integration/test_net_match.gd.
+- Tests: in-process: after game over the server and client are back in the
+  hub with run XP banked once; an empty dedicated server mid-match returns to
+  the hub with no orphan nodes; a second deploy starts a fresh round 1.
+  Integration: client plays, squad goes down, client lands back in the hub.
+- Done when: a dedicated server runs hub, match, hub, match unattended.
+
+### Step 6: Close-out and play-test checklist
+
+- Build: MULTIPLAYER.md build order step 9 (done), the hub flow and "Running
+  it locally" with the soak command; DECISIONS.md entry; ROADMAP F-47 Done;
+  open the 4-player play-test checklist on issue #127 (F-43) with exact
+  steps; run the `finish-feature` skill.
 - Files: docs only.
 - Tests: none (docs only); the nightly co-op soak is green.
 - Done when: plan Status Done.
@@ -236,7 +287,8 @@ is a test tool and never ships. No per-frame allocations.
 - [ ] The nightly co-op soak (4 bots, dedicated server) reaches round 20 with no desync warnings or errors.
 - [ ] Pausing in co-op never stops the match (step 2 test).
 - [ ] Every player sees teammates' names, health and bleed-out (step 3 test).
-- [ ] A dedicated server runs a second match after the first ends, with no restart (step 4 tests).
+- [ ] Joining a server lands in the hub; a deploy board takes the squad into Halcyon Labs (step 4 tests).
+- [ ] After a match everyone is back in the hub and can deploy again, unattended on a dedicated server (step 5 tests).
 - [ ] Solo play, the solo soak and every existing co-op test stay green.
 
 ## Risks
@@ -249,11 +301,16 @@ is a test tool and never ships. No per-frame allocations.
 - Resetting a match on a live server could leak nodes or keep stale
   references in autoloads (`Net` ids, `Log`). Step 4 tests check orphan
   nodes after a reset and that `Net.reset_ids()` runs.
-- Reloading the client scene while connected. Play again always leaves and
-  rejoins, which reuses the tested join path instead of a new one.
+- Reloading the client scene while connected. A place change always leaves
+  and rejoins, which reuses the tested join path instead of a new one. Cost:
+  about a second of loading per change; fine behind the loading screen.
+- The hub scene comes from another thread. Step 4 tests use a small test
+  level, so the network side does not wait for the art.
 
 ## Open decisions
 
-- [ ] What should Play again do in co-op? Recommended: everyone stays on the
-  same server and rejoins a fresh match. Other option: always back to the
-  main menu, and players join again by hand.
+- [ ] Where does a player land who joins while the squad is in a match?
+  Recommended: in that running match, as a late joiner (one place per server
+  until the town in P9). Other option: alone in the hub until the match
+  ends, which needs a server to run two places at once (P9 work pulled
+  forward).
