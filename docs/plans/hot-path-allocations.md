@@ -1,10 +1,10 @@
 # Plan: Hot-path allocations (foundation fix 7)
 
-Status: Review
+Status: Approved
 Roadmap: F-00 foundation fix 7 / issues #139, #141, #142, #150, #151
 Phase: P7
 Size: S
-Approved by:
+Approved by: independent Claude plan review on PR #200 (2026-11-17, Codex out of usage): 1 blocking and 6 suggestions fixed; size S, no open decisions
 
 ## Goal
 
@@ -24,10 +24,15 @@ In:
   most 48 impact nodes reused instead of new nodes, meshes, materials and a
   timer per pellet (#141).
 - `RemoteShotEffects`: one tracer node with one `ImmediateMesh` and one
-  material, rebuilt per shot and hidden by a countdown (#142).
+  material, made on the first shot, rebuilt per shot and hidden by a
+  countdown (#142). A second shot from the same remote player within 0.06 s
+  replaces the first shot's lines instead of drawing both (accepted; the
+  lines last 0.06 s either way).
 - `Chain` arcs: one shared unit cylinder mesh and one shared material;
   segment length set by scale (#151).
-- `GravityWell`: the scene is loaded once and kept (#150).
+- `GravityWell`: the scene is loaded once and kept in a static var (#150).
+  `load()` usually returns the cached scene already, so this is a small
+  tidy-up that guarantees no re-parse, not a measured fix.
 
 Not in (non-goals, and where each one goes instead):
 
@@ -44,6 +49,10 @@ Not in (non-goals, and where each one goes instead):
 - `Frost` coating (one material per frozen zombie, made once per zombie) and
   `LootDrop` material (one per drop, rare): not per shot or per tick (never,
   unless profiling says so).
+- `PhysicsRayQueryParameters3D` made per ray in `Pierce.trace` (pierce guns
+  only) and `Zombie._can_see` (only when a zombie is in attack range): small
+  ref-counted objects, no nodes or render resources (never, unless the
+  benchmark shows them).
 - Real decals, new impact looks or more VFX (later: art pass after v0.1).
 
 ## Ready to build
@@ -112,6 +121,10 @@ Autoloads, managers or base classes added: none.
   visual only.
 - What clients send, what the server sends back: unchanged.
 - What a client sees that the host sees too: unchanged; same visuals.
+- Side effect: today `_separation()` reads the global `enemies` group, so in
+  in-process two-peer tests a server zombie is also pushed by the client's
+  copies. The per-Spawner list removes that; existing two-peer tests must
+  still pass (step 1 runs them).
 - Late joiner: nothing new; zombies a late joiner receives are created through
   `Spawner._create` and join that peer's list.
 - Dedicated server (no screen, no local player): separation runs; visuals
@@ -136,7 +149,8 @@ PR; it must not get worse.
 - Build: `Spawner.zombies` live list (add in `_create`, erase on
   `tree_exiting`), `Zombie.neighbours` set to that same array, `_separation()`
   loops `neighbours` (skips self and dead). `alive_count()` counts the list.
-- Files: systems/waves/spawner.gd, systems/enemies/zombie.gd,
+- Files: systems/waves/spawner.gd, systems/enemies/zombie.gd (349 of 350
+  lines: the new loop drops the cast line, so the field fits),
   tests/unit/test_spawner.gd.
 - Tests: spawned zombies appear in `Spawner.zombies` and leave it when
   freed; each zombie's `neighbours` is the spawner's list; two zombies 0.5 m
@@ -148,10 +162,14 @@ PR; it must not get worse.
 
 ### Step 2: Impact reuse
 
-- Build: shared static meshes and materials; static ring of up to
-  `MAX_ALIVE` impacts, the oldest reused once full (dropped from the ring if
-  freed, for example on scene change); `_process` countdown hides the node
-  (no timer, no `queue_free`); particles `restart()` on reuse.
+- Build: shared static meshes and materials; each `Impact` owns two
+  particle nodes (flesh, surface) and the mark, and shows the ones its kind
+  needs, so `amount` never changes. Static ring of up to `MAX_ALIVE`
+  impacts, the oldest reused once full; nodes that are freed or queued for
+  deletion drop out of the ring; a reused node under another parent is
+  reparented. `_process` countdown hides the node and calls
+  `set_process(false)` (no timer, no `queue_free`); particles `restart()` on
+  reuse. `spawn()` returns the `Impact` (was `void`) so tests can check it.
 - Files: systems/effects/impact.gd, tests/unit/test_impact.gd (new).
 - Tests: 60 spawns leave at most 48 `Impact` nodes; the 49th spawn returns
   the first node moved to the new point; two impacts of the same kind share
@@ -162,18 +180,22 @@ PR; it must not get worse.
 
 ### Step 3: Remote tracers, chain arcs, gravity well scene, close-out
 
-- Build: one reusable tracer node in `RemoteShotEffects`; shared unit
+- Build: one reusable tracer node in `RemoteShotEffects`, created on the
+  first shot (not in `_ready`); shared unit
   cylinder and material in `Chain`; cached scene in `GravityWell`. Update
   docs/FOUNDATIONS.md (fix 7 done, section 12 solid), docs/DECISIONS.md
   ("No Pool autoload yet" line: impacts reused in a ring of 48), roadmap row,
   plan Status: Done.
 - Files: systems/net/remote_shot_effects.gd, systems/weapons/effects/chain.gd,
   systems/weapons/gravity_well.gd, tests/unit/test_remote_shots.gd,
-  tests/unit/test_chain.gd, tests/unit/test_gravity_well.gd, docs.
-- Tests: two remote shots keep one `Tracers` child and it hides after
-  0.06 s; two chain segments share one mesh and material, and segment scale
-  matches its length; two `GravityWell` spawns use the same `PackedScene`.
-  Each fails without the step.
+  tests/unit/test_pierce_claims.gd, tests/unit/test_chain.gd,
+  tests/unit/test_gravity_well.gd, docs.
+- Tests: existing checks that use `has_node("Tracers")` as "shot drawn" or
+  "tracer expired" (test_remote_shots.gd, test_pierce_claims.gd) switch to
+  `Tracers.visible`; new: two remote shots keep one `Tracers` child and it
+  hides after 0.06 s; two chain segments share one mesh and material, and
+  segment scale matches its length; after a spawn `GravityWell` holds the
+  scene in its static var. Each fails without the step.
 - Done when: issues #139, #141, #142, #150, #151 closed by the step PRs.
 
 ## Acceptance
