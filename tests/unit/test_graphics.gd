@@ -89,3 +89,12 @@ func test_window_keys_do_nothing_on_headless() -> void:
 	for key: StringName in [&"max_fps", &"vsync", &"display_mode", &"window_size", &"ssr", &"glow"]:
 		Graphics.apply(key, _values, _viewport)
 	assert_eq(Engine.max_fps, fps)
+
+
+func test_default_window_choices_keep_the_launch_window() -> void:
+	assert_true(Graphics.uses_launch_window(_values), "command-line and editor window sizes are not overridden")
+	_values[&"window_size"] = 3
+	assert_false(Graphics.uses_launch_window(_values))
+	_values[&"window_size"] = Graphics.DEFAULTS[&"window_size"]
+	_values[&"display_mode"] = 1
+	assert_false(Graphics.uses_launch_window(_values))

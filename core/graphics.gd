@@ -141,6 +141,8 @@ static func _apply_window(key: StringName, values: Dictionary) -> void:
 
 
 static func _apply_display(values: Dictionary) -> void:
+	if uses_launch_window(values):
+		return
 	var mode: int = DISPLAY_MODES[values[&"display_mode"]]
 	if DisplayServer.window_get_mode() != mode:
 		DisplayServer.window_set_mode(mode)
@@ -158,3 +160,8 @@ static func _apply_display(values: Dictionary) -> void:
 ## The window size for a choice, shrunk to fit the screen so the window never goes off it.
 static func window_size_for(index: int, usable: Vector2i) -> Vector2i:
 	return WINDOW_SIZES[index].min(usable)
+
+
+## Default choices leave the window as launched, so --resolution, --fullscreen and the editor's run size still work.
+static func uses_launch_window(values: Dictionary) -> bool:
+	return values[&"display_mode"] == DEFAULTS[&"display_mode"] and values[&"window_size"] == DEFAULTS[&"window_size"]
