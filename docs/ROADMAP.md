@@ -30,7 +30,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-05 | Rebind controls in Settings | #105 | - | needed | M | Todo |
 | F-06 | Make the rounds 1-10 soak test a required CI check | #107 | - | issue | S | Done (branch rule: add `soak`) |
 | F-07 | Balance pass rounds 1-10 for the slice guns | #106 | F-06 | issue | S | Todo |
-| F-08 | Change log in the design doc | #110 | - | issue | S | Todo |
+| F-08 | Change log in the design doc | #110 | - | issue | S | Done |
 | F-09 | v0.1 performance check | #108 | F-01..F-07 | issue | S | Todo |
 | F-10 | First play-test (the person plays) | #109 | F-09 | issue | S | Todo |
 | F-11 | Release v0.1.0 | #111 | F-10 | issue | S | Todo |
