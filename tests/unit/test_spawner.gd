@@ -90,7 +90,6 @@ func test_fixed_speed_enemies_keep_their_own_speed() -> void:
 	assert_eq(spawner._speed_multiplier(bloater, 20, rules), 1.0)
 
 
-
 func test_coop_points_wait_for_three_players() -> void:
 	var spawner: Spawner = _spawner()
 	spawner.spawn_group = &"test_coop_spawn"
