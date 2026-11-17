@@ -31,6 +31,7 @@ func _ready() -> void:
 	_player.wallet.points_changed.connect(_points_changed)
 	Events.serum_gained.connect(_serum_gained)
 	Events.round_started.connect(_on_round_started)
+	Events.enemy_damaged.connect(_on_enemy_damaged)
 	_icon = Label3D.new()
 	_icon.text = "+"
 	_icon.modulate = Color("c3201b")
@@ -65,6 +66,14 @@ func _physics_process(delta: float) -> void:
 				Events.player_died.emit(_player)
 	if _player.is_multiplayer_authority() and _player.is_dead and is_coop():
 		_spectate()
+
+
+## Server: item on-hit effects for every hit this player lands, from any peer.
+func _on_enemy_damaged(_enemy: Node3D, info: DamageInfo) -> void:
+	if multiplayer.is_server() and info.attacker == _player and not info.item_uid.is_empty():
+		var item: ItemInstance = _player.item_guns.get(info.item_uid)
+		if item:
+			ItemLoadout.apply_hit(_player, item)
 
 
 func _points_changed(_total: int, _delta: int) -> void:

@@ -70,6 +70,18 @@ func test_pack_gun_equips_once_and_stays_available_for_stash_banking() -> void:
 	assert_eq(player.weapons.weapons.size(), 1, "reselecting equips the same run weapon")
 
 
+func test_solo_pack_leech_gun_heals_through_the_server_hit_path() -> void:
+	var item: Dictionary = {"v": 1, "uid": "pack_leech", "base": "rifle_ar", "rar": "rare", "aff": [["leech", 5, 1.0]]}
+	service.pack.add(item)
+	overlay._equip()
+	assert_true(player.item_guns.has("pack_leech"))
+	player.health.current = 50.0
+	var info: DamageInfo = DamageInfo.create(10.0, player)
+	info.item_uid = "pack_leech"
+	Events.enemy_damaged.emit(null, info)
+	assert_eq(player.health.current, 53.0)
+
+
 func test_discard_recreates_only_a_personal_drop() -> void:
 	var item: Dictionary = {"uid": "discard", "base": "vest_light", "rar": "rare"}
 	service.pack.add(item)

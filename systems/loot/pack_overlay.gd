@@ -232,4 +232,5 @@ func _equip() -> void:
 	_run_weapons[uid] = weapon.instance
 	weapon.ammo_changed.emit(weapon.instance.ammo_in_mag, weapon.instance.ammo_reserve)
 	weapon.item = instance
-	weapon.hit_landed.connect(ItemLoadout._on_hit.bind(service.player, instance))
+	service.player.item_guns[uid] = instance
+	service.player.state_sync.send_loadout()
