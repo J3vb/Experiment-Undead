@@ -1,5 +1,6 @@
 ## A torn cable that spits a burst of sparks with a short light flash every few
-## seconds. Cosmetic only: timing uses randf, so peers see different bursts.
+## seconds, with a crackle if it has a Crackle player. Cosmetic only: timing
+## uses randf, so peers see different bursts.
 class_name SparkSpot
 extends Node3D
 
@@ -13,6 +14,7 @@ var _flash_left: float = 0.0
 
 @onready var particles: GPUParticles3D = $Particles
 @onready var flash: OmniLight3D = $Flash
+@onready var crackle: AudioStreamPlayer3D = get_node_or_null(^"Crackle") as AudioStreamPlayer3D
 
 
 func _ready() -> void:
@@ -34,6 +36,8 @@ func burst() -> void:
 	particles.restart()
 	flash.visible = true
 	_flash_left = FLASH_SECONDS
+	if crackle:
+		crackle.play()
 	_schedule()
 
 

@@ -1,4 +1,4 @@
-"""Generate the original Halcyon Labs ambience beds and one-shots into assets/audio/ambience.
+"""Generate the original Halcyon Labs ambience beds, one-shots and sound-spot loops into assets/audio/ambience.
 
 Run: python tools/assets/ambience_sfx.py assets/audio/ambience   (needs numpy and ffmpeg)
 Beds are seamless 20 s Ogg loops; one-shots are short WAVs.
@@ -99,6 +99,55 @@ def distant_groan() -> np.ndarray:
     return lowpass(lowpass(voice, 0.04), 0.06)
 
 
+def highpass(samples: np.ndarray, amount: float) -> np.ndarray:
+    return samples - lowpass(samples, amount)
+
+
+def spark_crackle() -> np.ndarray:
+    rng = np.random.default_rng(31)
+    time = timeline(0.45)
+    crackle = np.zeros(len(time))
+    for start in np.sort(rng.uniform(0, 0.3, 14)):
+        index = int(start * SAMPLE_RATE)
+        snap = rng.standard_normal(int(0.02 * SAMPLE_RATE)) * np.exp(-timeline(0.02) * 300) * rng.uniform(0.3, 1)
+        crackle[index : index + len(snap)] += snap
+    buzz = np.sign(np.sin(2 * np.pi * 120 * time)) * np.exp(-time * 12) * 0.15
+    return highpass(crackle, 0.2) + buzz
+
+
+def steam_hiss() -> np.ndarray:
+    time = timeline(LOOP_SECONDS)
+    hiss = seamless(highpass(noise_bed(32, 0.9), 0.15))
+    return hiss * (1 + 0.2 * hum(0.3, time) + 0.1 * hum(1.7, time))
+
+
+def machine_hum() -> np.ndarray:
+    time = timeline(LOOP_SECONDS)
+    motor = sum(hum(50 * harmonic, time) / harmonic for harmonic in (1, 2, 3, 4, 6, 8)) * 0.3
+    rattle = seamless(noise_bed(33, 0.05)) * (1 + 0.5 * hum(25, time)) * 0.6
+    return motor * (1 + 0.05 * hum(0.5, time)) + rattle
+
+
+def klaxon() -> np.ndarray:
+    time = timeline(1.6)
+    tone = np.where((time // 0.4) % 2 == 0, 440.0, 554.0)
+    wave_ = np.sign(np.sin(2 * np.pi * np.cumsum(tone) / SAMPLE_RATE))
+    envelope = np.clip(time / 0.02, 0, 1) * np.clip((time[-1] - time) / 0.2, 0, 1)
+    return lowpass(lowpass(wave_, 0.15), 0.3) * envelope
+
+
+def drip_loop() -> np.ndarray:
+    rng = np.random.default_rng(34)
+    length = int(SAMPLE_RATE * LOOP_SECONDS)
+    loop = np.zeros(length)
+    one = drip()
+    starts = np.arange(0.4, LOOP_SECONDS - 0.6, 1.1)
+    for start in starts + rng.uniform(-0.25, 0.25, len(starts)):
+        index = int(start * SAMPLE_RATE)
+        loop[index : index + len(one)] += one[: length - index] * rng.uniform(0.5, 1.0)
+    return loop
+
+
 def save_ogg(path: Path, samples: np.ndarray) -> None:
     samples = samples / (np.max(np.abs(samples)) + 1e-9) * 0.7
     pcm = (samples * 32767).astype("<i2").tobytes()
@@ -119,6 +168,11 @@ def main() -> None:
     save_wav(output / "drip.wav", drip())
     save_wav(output / "vent_clang.wav", vent_clang())
     save_wav(output / "distant_groan.wav", distant_groan())
+    save_wav(output / "spark_crackle.wav", spark_crackle())
+    save_wav(output / "klaxon.wav", klaxon())
+    save_ogg(output / "steam_hiss.ogg", steam_hiss())
+    save_ogg(output / "machine_hum.ogg", machine_hum())
+    save_ogg(output / "drip_loop.ogg", drip_loop())
 
 
 if __name__ == "__main__":

@@ -110,7 +110,7 @@ Not in (non-goals, and where each one goes instead):
   truck, flickering teal tubes, emergency red before power, green tank glow).
 - docs/design/lore.md: Day 0 cold failure, staff turned first, the Night
   Supervisor, the Wick symbol as graffiti, "every room tells one small story".
-- Spark (3 to 9 s) and klaxon (20 to 40 s) timings are provisional feel picks,
+- Spark (3 to 9 s) and klaxon (every 30 s) timings are provisional feel picks,
   single export values; step 5 writes the final ones into look-rules.md.
 - docs/design/sound.md and F-04 (`levels/halcyon_labs/ambience.tscn`, Ambient bus).
 
@@ -227,11 +227,13 @@ Hall), checked in the step 5 fps check:
 - Build: monitor screen shader and material `systems/effects/monitor_screen.tres`
   (scanlines, slow roll, flicker; emission 1.0 max, teal text-like bars;
   static noise before power through `instance uniform float powered`, which
-  Atmosphere sets with `set_instance_shader_parameter()` on each screen in
-  the `monitor_screen` group when power comes on; no global uniform, no
+  Atmosphere sets with `set_instance_shader_parameter()` on every mesh
+  under the Level that uses `monitor_screen.tres` (found once at ready, so
+  the props' `Screen` surfaces need no group); no global uniform, no
   project.godot edit). The props thread's monitor models name their screen surface
   `Screen`; their import maps it to this material. Until those land, two
-  flat screen quads sit on the existing Guard Post desk and Labs bench. One
+  monitors sit on the existing Guard Post desk (the Labs bench model already
+  has its own `Screen`). One
   hanging fixture in the Main Corridor swinging on a looped tween with its
   own unshadowed light (bake mode 0, not the fixture default 2, because it
   moves and a baked bounce would stay behind); two loose cables swaying
@@ -249,14 +251,16 @@ Hall), checked in the step 5 fps check:
   hum loop, klaxon burst, drip loop). AudioStreamPlayer3D spots in
   atmosphere.tscn on the Ambient bus: crackle played by SparkSpot on each
   burst, hiss on steam, hums on monitors and generators (`after_power`),
-  klaxon from the alarm beacons every 20 to 40 s, drips by the drip particles.
+  klaxon from the west alarm beacon every 30 s (a plain autostart Timer wired
+  to `play` in the scene, no script), drips by the drip particles.
 - Files: tools/assets/ambience_sfx.py, assets/audio/ambience/*, atmosphere.tscn,
   systems/effects/spark_spot.gd.
 - Tests: test_spark_spot.gd: a burst plays its crackle player if it has one;
   test_halcyon_atmosphere.gd: every sound spot is on Ambient, max_distance at
   most 14 m, loops only on hum/hiss/drip streams, every referenced stream
-  file exists. A Python test in tools/ci/ checks ambience_sfx.py produces each
-  new sound name it lists (GUT cannot run Python).
+  file exists, and every new sound name appears in ambience_sfx.py (read as
+  text from GUT; no Python test needed). Loop flags are checked on the
+  import (ogg loops, wav one-shots).
 - Done when: tests pass.
 
 ### Step 5: Story moments and story decals

@@ -1,6 +1,6 @@
 # Plan: First Lantern Post hub (blockout and deploy board)
 
-Status: Approved
+Status: Done
 Roadmap: F-50 / issue #131 (first slice of F-45)
 Phase: P9 (pulled forward for the co-op week goal)
 Size: M
@@ -239,12 +239,12 @@ after step 1 merges.
 
 ## Acceptance
 
-- [ ] A player who joins a server lands in Lantern Post next to up to 7 others
+- [x] A player who joins a server lands in Lantern Post next to up to 7 others
       (co-op plan + step 1 test).
-- [ ] Pressing interact on the Deploy board readies a player; when everyone
+- [x] Pressing interact on the Deploy board readies a player; when everyone
       is ready, Halcyon Labs starts for everyone after 5 s (step 2 test + co-op plan test).
-- [ ] After the match, players are back at the town spawn (co-op plan test).
-- [ ] The town look is approved by the person (decision card, step 1).
+- [x] After the match, players are back at the town spawn (co-op plan test).
+- [x] The town look is approved by the person (decision card, step 1).
 
 ## Risks
 

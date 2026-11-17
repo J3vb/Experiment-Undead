@@ -1,23 +1,15 @@
-## In-game preferences, applied and saved immediately by Settings.
+## In-game preferences, generated from content/settings rows, applied and saved immediately by Settings.
 class_name SettingsScreen
 extends Control
 
 signal closed
 
-const SLIDERS: Dictionary = {
-	&"mouse_sensitivity": [&"controls", 1.0],
-	&"ads_sensitivity_multiplier": [&"controls", 1.0],
-	&"fov": [&"video", 1.0],
-	&"master_volume": [&"audio", 100.0],
-	&"music_volume": [&"audio", 100.0],
-	&"sfx_volume": [&"audio", 100.0],
-}
-const CHECKS: Dictionary = {&"invert_y": &"controls"}
-const CHECK_LABELS: Dictionary = {&"invert_y": "Invert Y"}
 const KEEP_SECONDS: int = 15
 
 var fade: Tween
+var pages: Array[SettingsPage] = []
 
+var _opened: Dictionary[SettingData, Variant] = {}
 var _keep_row: SettingData
 var _keep_old: Variant
 var _keep_left: int = 0
@@ -28,23 +20,23 @@ func _ready() -> void:
 	theme = preload("res://systems/ui/theme.tres").duplicate() as Theme
 	theme.merge_with(menu_theme)
 	theme.default_font_size = 24
-	for key: StringName in SLIDERS:
-		var slider: HSlider = get_node("%" + key) as HSlider
-		slider.value_changed.connect(_on_slider_changed.bind(key))
-	for key: StringName in CHECKS:
-		var check: CheckBox = get_node("%" + key) as CheckBox
-		check.toggled.connect(func(value: bool) -> void: Settings.set_value(CHECKS[key], key, value))
-	%Page.confirm_needed.connect(_ask_keep)
+	for tab: Node in %Tabs.get_children():
+		var page: SettingsPage = tab.get_node("Page") as SettingsPage
+		pages.append(page)
+		page.confirm_needed.connect(_ask_keep)
+		for row: SettingData in page.rows:
+			_opened[row] = Settings.get_value(row.section, row.key)
+	%KeyBindings.get_parent().move_child(%KeyBindings, -1)
+	%Search.text_changed.connect(search)
 	%KeepDialog.confirmed.connect(_keep)
 	%KeepDialog.canceled.connect(_revert_keep)
 	%KeepTimer.timeout.connect(_tick_keep)
-	%Reset.pressed.connect(Settings.reset_to_defaults)
+	%Revert.pressed.connect(revert)
+	%Defaults.pressed.connect(reset_page)
 	%Back.pressed.connect(_close)
-	Settings.changed.connect(_on_setting_changed)
-	_refresh()
 	if is_visible_in_tree():
 		_fade_in()
-		($Margin/Box/Tabs as TabContainer).get_tab_bar().grab_focus()
+		(%Tabs as TabContainer).get_tab_bar().grab_focus()
 
 
 func _fade_in() -> void:
@@ -79,8 +71,34 @@ func _close() -> void:
 	closed.emit()
 
 
-func _on_slider_changed(value: float, key: StringName) -> void:
-	Settings.set_value(SLIDERS[key][0], key, value / float(SLIDERS[key][1]))
+## Filters rows on every page by label and hint, and opens the first page with a match if this one has none.
+func search(text: String) -> void:
+	var tabs: TabContainer = %Tabs as TabContainer
+	var first: int = -1
+	var current: int = 0
+	for index: int in pages.size():
+		var matches: int = pages[index].filter(text.strip_edges())
+		if matches > 0 and first < 0:
+			first = index
+		if index == tabs.current_tab:
+			current = matches
+	%KeyBindings.visible = text.strip_edges().is_empty()
+	if current == 0 and first >= 0:
+		tabs.current_tab = first
+
+
+## Puts back every value from when the screen opened. Key bindings keep their own per-action Reset.
+func revert() -> void:
+	for row: SettingData in _opened:
+		Settings.set_value(row.section, row.key, _opened[row])
+
+
+## Defaults for the open page only; the Controls page resets the key bindings.
+func reset_page() -> void:
+	var page: SettingsPage = pages[(%Tabs as TabContainer).current_tab]
+	page.reset_defaults()
+	if page.is_ancestor_of(%KeyBindings):
+		Settings.reset_bindings()
 
 
 ## Display mode and resolution changes go back by themselves unless the player keeps them in time.
@@ -119,20 +137,3 @@ func _revert_keep() -> void:
 	var row: SettingData = _keep_row
 	_keep()
 	Settings.set_value(row.section, row.key, _keep_old)
-
-
-func _on_setting_changed(_section: StringName, _key: StringName, _value: Variant) -> void:
-	_refresh()
-
-
-func _refresh() -> void:
-	for key: StringName in SLIDERS:
-		var slider: HSlider = get_node("%" + key) as HSlider
-		var value: float = float(Settings.get_value(SLIDERS[key][0], key)) * float(SLIDERS[key][1])
-		slider.set_value_no_signal(value)
-		var display: Label = slider.get_node("../Number") as Label
-		display.text = ("%d %%" % roundi(value)) if SLIDERS[key][0] == &"audio" else str(value)
-	for key: StringName in CHECKS:
-		var check: CheckBox = get_node("%" + key) as CheckBox
-		check.set_pressed_no_signal(bool(Settings.get_value(CHECKS[key], key)))
-		check.text = "%s   [%s]" % [CHECK_LABELS[key], "On" if check.button_pressed else "Off"]
