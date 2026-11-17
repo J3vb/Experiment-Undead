@@ -74,6 +74,8 @@ func set_held(held: bool) -> void:
 func nearest_target() -> Player:
 	var nearest: Player
 	var distance: float = RANGE * RANGE
+	if not is_inside_tree() or not is_instance_valid(_player):
+		return null
 	for node: Node in get_tree().get_nodes_in_group(&"players"):
 		var candidate: Player = node as Player
 		if not can_revive(candidate):

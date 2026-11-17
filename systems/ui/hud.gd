@@ -99,7 +99,7 @@ func _process(delta: float) -> void:
 			_delta_sum = 0
 
 	_update_exfil()
-	_update_prompt(coop_hud.get_prompt(_player, UI.top() != &""))
+	_update_prompt(coop_hud.get_prompt(_player if is_instance_valid(_player) else null, UI.top() != &""))
 	if is_instance_valid(_player) and _player.weapons.current:
 		var w: Weapon = _player.weapons.current
 		crosshair.spread_degrees = w.get_current_spread()
