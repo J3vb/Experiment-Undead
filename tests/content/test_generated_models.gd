@@ -300,29 +300,14 @@ func test_scope_display_sits_behind_the_rebuilt_eyepiece() -> void:
 		gun.free()
 
 
-func _blocks_ray(node: Node, xform: Transform3D, from: Vector3, rear_only: bool) -> bool:
-	var here: Transform3D = xform
-	if node is Node3D:
-		here = xform * (node as Node3D).transform
-	if node is MeshInstance3D:
-		var faces: PackedVector3Array = (node as MeshInstance3D).mesh.get_faces()
-		for i: int in range(0, faces.size(), 3):
-			var hit: Variant = Geometry3D.ray_intersects_triangle(
-				from, Vector3.FORWARD, here * faces[i], here * faces[i + 1], here * faces[i + 2]
-			)
-			if hit != null and (not rear_only or (hit as Vector3).z > 0.0):
-				return true
-	for child: Node in node.get_children():
-		if _blocks_ray(child, here, from, rear_only):
-			return true
-	return false
-
-
 func test_kestrel_rear_sight_leaves_the_aiming_line_open() -> void:
 	var gun: Node3D = _load(KESTREL)
 	var ads: WeaponData = load("res://content/weapons/kestrel_smg.tres") as WeaponData
 	var eye: Vector3 = Vector3(0, -ads.ads_position.y, 0.5)
-	assert_false(_blocks_ray(gun, Transform3D.IDENTITY, eye, true), "nothing behind the receiver centre blocks the aim")
+	assert_false(
+		MeshChecks.blocks_segment(gun, eye, Vector3(eye.x, eye.y, 0.0)),
+		"nothing behind the receiver centre blocks the aim"
+	)
 	gun.free()
 
 
@@ -330,7 +315,7 @@ func test_brenner_heat_shield_stays_under_the_aiming_line() -> void:
 	var gun: Node3D = _load(SHOTGUN)
 	var ads: WeaponData = load("res://content/weapons/brenner_trench.tres") as WeaponData
 	var eye: Vector3 = Vector3(0, -ads.ads_position.y, 0.5)
-	assert_false(_blocks_ray(gun, Transform3D.IDENTITY, eye, false), "nothing blocks the bead sight line")
+	assert_false(MeshChecks.blocks_ray(gun, eye, Vector3.FORWARD), "nothing blocks the bead sight line")
 	var low: Vector3 = eye + Vector3(0, -0.005, 0)
-	assert_true(_blocks_ray(gun, Transform3D.IDENTITY, low, false), "the sight line rides just over the gun")
+	assert_true(MeshChecks.blocks_ray(gun, low, Vector3.FORWARD), "the sight line rides just over the gun")
 	gun.free()
