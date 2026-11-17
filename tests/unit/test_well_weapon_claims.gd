@@ -2,10 +2,6 @@
 extends "res://tests/unit/well_claims_fixture.gd"
 
 
-func port() -> int:
-	return 24666
-
-
 func _test_gun(id: StringName, effect: WeaponData.Effect) -> WeaponData:
 	var gun: WeaponData = Content.weapon(SIPHON).duplicate() as WeaponData
 	gun.id = id

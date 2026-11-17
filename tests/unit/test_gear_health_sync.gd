@@ -4,30 +4,26 @@ extends GutTest
 
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
 const HEALTH_AFFIX: String = "res://tests/fixtures/loot/test_max_health.tres"
-const PORT: int = 24649
 
 var server: Player
 var client: Player
-var _roots: Array[Node3D] = []
+var _port: int
+var _roots: Array[Node] = []
 var _loot_before: Dictionary
 
 
 func before_each() -> void:
+	_port = TwoPeers.next_port()
 	_loot_before = Content._by_type[&"loot"].duplicate()
 	Content._by_type[&"loot"][&"test_max_health"] = HEALTH_AFFIX
 	for index: int in 2:
-		var root: Node3D = Node3D.new()
-		root.name = "Server" if index == 0 else "Client"
-		add_child(root)
-		get_tree().set_multiplayer(SceneMultiplayer.new(), root.get_path())
-		var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-		var error: Error = peer.create_server(PORT, 1) if index == 0 else peer.create_client("127.0.0.1", PORT)
+		var root: Node = TwoPeers.make_side(self, "Server" if index == 0 else "Client")
+		var error: Error = TwoPeers.host(root, _port, 1) if index == 0 else TwoPeers.join(root, _port)
 		assert_eq(error, OK)
-		root.multiplayer.multiplayer_peer = peer
 		_roots.append(root)
 	await wait_until(func() -> bool: return _roots[0].multiplayer.get_peers().size() == 1, 3.0, "peers connected")
 	var owner_id: int = _roots[1].multiplayer.get_unique_id()
-	for root: Node3D in _roots:
+	for root: Node in _roots:
 		var player: Player = PLAYER.instantiate() as Player
 		player.name = "Player"
 		player.net_id = owner_id
@@ -42,12 +38,8 @@ func before_each() -> void:
 
 func after_each() -> void:
 	_roots.reverse()
-	for root: Node3D in _roots:
-		var path: NodePath = root.get_path()
-		root.multiplayer.multiplayer_peer.close()
-		root.multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
-		root.free()
-		get_tree().set_multiplayer(null, path)
+	for root: Node in _roots:
+		TwoPeers.close_side(root)
 	_roots.clear()
 	Content._by_type[&"loot"] = _loot_before
 

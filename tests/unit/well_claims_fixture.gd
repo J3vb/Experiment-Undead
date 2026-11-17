@@ -9,6 +9,7 @@ const RULES: WaveRules = preload("res://content/waves/default_waves.tres")
 const ECONOMY: String = "res://content/economy/default_economy.tres"
 const SIPHON: StringName = &"siphon"
 
+var _port: int
 var _server: GameSession
 var _client: GameSession
 var _server_claims: HitClaims
@@ -36,22 +37,14 @@ class RecordingClaims:
 		super(sender, reason)
 
 
-## Override in a test file to use another port.
-func port() -> int:
-	return 24665
-
-
 func before_each() -> void:
+	_port = TwoPeers.next_port()
 	_server = _make_side("WellServer")
 	_client = _make_side("WellClient")
 	_server_claims = _server.get_node("HitClaims") as HitClaims
 	_client_claims = _client.get_node("HitClaims") as HitClaims
-	var server_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(server_peer.create_server(port(), 2), OK)
-	_server.multiplayer.multiplayer_peer = server_peer
-	var client_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(client_peer.create_client("127.0.0.1", port()), OK)
-	_client.multiplayer.multiplayer_peer = client_peer
+	assert_eq(TwoPeers.host(_server, _port, 2), OK)
+	assert_eq(TwoPeers.join(_client, _port), OK)
 	await wait_until(
 		func() -> bool: return _client.multiplayer.get_unique_id() > 1 and _server.multiplayer.get_peers().size() == 1,
 		5.0,
@@ -65,19 +58,11 @@ func before_each() -> void:
 
 func after_each() -> void:
 	for session: GameSession in [_client, _server]:
-		var root: Node = session.get_parent()
-		var path: NodePath = root.get_path()
-		session.multiplayer.multiplayer_peer.close()
-		session.multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
-		root.free()
-		get_tree().set_multiplayer(null, path)
+		TwoPeers.close_side(session.get_parent())
 
 
 func _make_side(side_name: String) -> GameSession:
-	var root: Node = Node.new()
-	root.name = side_name
-	add_child(root)
-	get_tree().set_multiplayer(SceneMultiplayer.new(), root.get_path())
+	var root: Node = TwoPeers.make_side(self, side_name)
 	var session: GameSession = FixtureSession.new()
 	session.name = "GameSession"
 	session.rng.seed = 7

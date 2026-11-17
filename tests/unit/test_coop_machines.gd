@@ -4,10 +4,6 @@
 extends "res://tests/unit/coop_interaction_fixture.gd"
 
 
-func port() -> int:
-	return 24703
-
-
 func _give(id: StringName) -> Weapon:
 	return on_client().weapons.give(Content.weapon(id))
 
