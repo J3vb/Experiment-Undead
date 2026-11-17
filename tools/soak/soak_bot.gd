@@ -15,6 +15,7 @@ var hunts: int = 0
 
 var _query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.new()
 var _unseen: float = 0.0
+var _ticks: int = 0
 
 
 func setup(p_player: Player, wall_id: StringName) -> void:
@@ -32,7 +33,9 @@ func _physics_process(delta: float) -> void:
 	if player == null or not player.is_alive():
 		return
 	_shop()
+	var gun: Weapon = player.weapons.current
 	var frame: InputFrame = InputFrame.new()
+	_ticks += 1
 	var target: Vector3 = _nearest_target()
 	_unseen = 0.0 if target != Vector3.INF else _unseen + delta
 	if _unseen >= HUNT_AFTER:
@@ -42,9 +45,10 @@ func _physics_process(delta: float) -> void:
 		frame.buttons |= InputFrame.ADS
 		if player.camera.global_position.distance_to(target) < BACK_OFF:
 			frame.move = Vector2(0.0, 1.0)
-		if frame.look.length() < 0.05:
+		# Semi and burst guns fire on a fresh press, so tap the trigger every other tick.
+		var trigger_down: bool = gun.data.fire_mode == WeaponData.FireMode.AUTO or _ticks % 2 == 0
+		if frame.look.length() < 0.05 and trigger_down:
 			frame.buttons |= InputFrame.FIRE
-	var gun: Weapon = player.weapons.current
 	if gun.instance.ammo_in_mag == 0 and gun.instance.ammo_reserve > 0 and not gun.is_reloading():
 		frame.buttons |= InputFrame.RELOAD
 	player.apply_frame(frame, delta)
