@@ -228,10 +228,11 @@ func return_to_menu() -> void:
 	UI.replace(&"main_menu")
 
 
+## Solo plays again; in co-op the squad goes back to the hub.
 func restart() -> void:
 	bank_run_xp()
 	get_tree().paused = false
-	UI.reload()
+	(deploy_vote.back_to_hub if Net.is_online() or Net.changing_place else UI.reload).call()
 
 
 func quit_game() -> void:

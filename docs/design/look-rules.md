@@ -91,7 +91,8 @@ purpose; keep the repo values.
   range 30 m, at most 400 per room and 1,500 per map. Spark gap 3 to 9 s,
   klaxon every 30 s, sound spots 14 m max. Story decals fade out between 25
   and 30 m.
-  Amounts are provisional until the screenshot check on a GPU.
+  Dust specks 16 mm, alarm beacons energy 10 (amounts confirmed on a GPU
+  screenshot check, 2026-11-17).
 
 ### Materials
 

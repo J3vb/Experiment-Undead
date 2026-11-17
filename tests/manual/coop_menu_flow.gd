@@ -48,19 +48,26 @@ func _run() -> void:
 
 func _timeout_flow() -> void:
 	var started: int = Time.get_ticks_msec()
+	# The deadline is when Net gives up; loading the menu afterwards is not part of it
+	# (the hub does not load the Halcyon Labs map, so the menu loads it cold).
+	var timed_out_at: Array[int] = [-1]
+	_net.connection_error.connect(
+		func(_reason: StringName, _details: Dictionary) -> void: timed_out_at[0] = Time.get_ticks_msec(),
+		CONNECT_ONE_SHOT
+	)
 	await _start_join()
 	if current_scene.scene_file_path != SESSION_SCENE:
 		_failures.append("Join did not enter the hub scene")
 		return
 	_check_connecting()
-	while Time.get_ticks_msec() - started < 7000 and current_scene.scene_file_path == SESSION_SCENE:
+	while Time.get_ticks_msec() - started < 8000 and current_scene.scene_file_path == SESSION_SCENE:
 		await process_frame
 	await _settle()
 	if current_scene.scene_file_path != MENU_SCENE:
 		_failures.append("No menu timeout within seven seconds")
 		return
 	var menu: Control = current_scene as Control
-	_check(Time.get_ticks_msec() - started < 7000, "Timeout text arrived within seven seconds")
+	_check(timed_out_at[0] > 0 and timed_out_at[0] - started < 7000, "Timeout arrived within seven seconds")
 	_check(menu.error_dialog.visible, "Timeout dialog is visible")
 	_check(menu.error_dialog.action_button.has_focus(), "Timeout action has focus")
 	_check(

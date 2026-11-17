@@ -28,6 +28,8 @@ var _move_factor: float = 0.0
 var _bob_time: float = 0.0
 var _swap_left: float = 0.0
 var _swap_time: float = SWAP_TIME
+var _hold_left: float = 0.0
+var _held: Weapon
 
 
 func setup(player: Player, camera: Camera3D) -> void:
@@ -198,7 +200,34 @@ func get_move_speed_multiplier() -> float:
 	return current.data.move_speed_multiplier if current else 1.0
 
 
+## Hitstop: freezes the gun's look (pose, kick, sway) for seconds. Visual only;
+## tick() and firing keep running on the physics step.
+func hold(seconds: float) -> void:
+	if seconds <= _hold_left or current == null:
+		return
+	_release_hold()
+	_hold_left = seconds
+	_held = current
+	_held.set_process(false)
+
+
+func is_holding() -> bool:
+	return _hold_left > 0.0
+
+
+func _release_hold() -> void:
+	if is_instance_valid(_held):
+		_held.set_process(true)
+	_held = null
+
+
 func _process(delta: float) -> void:
+	if _hold_left > 0.0:
+		_hold_left -= delta
+		if _hold_left > 0.0:
+			return
+		_hold_left = 0.0
+		_release_hold()
 	_sway = _sway.lerp(Vector2.ZERO, clampf(sway_smoothing * delta * 0.5, 0.0, 1.0))
 	var target_rot: Vector3 = Vector3(-_sway.y, -_sway.x, -_sway.x * 0.5)
 	rotation = rotation.lerp(target_rot, clampf(sway_smoothing * delta, 0.0, 1.0))

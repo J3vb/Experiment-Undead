@@ -1,5 +1,6 @@
 ## End to end: a real dedicated server starts in the hub, a real client joins from the
-## menu, lands in the hub, the vote deploys, and the client rejoins into round 1.
+## menu, lands in the hub, the vote deploys, and the client rejoins into round 1. The
+## match then ends: the server goes back to the hub while the client keeps its results.
 extends GutTest
 
 const PORT: int = 24671
@@ -68,5 +69,11 @@ func test_a_client_joins_the_hub_deploys_and_reaches_round_one() -> void:
 	var server_events: Array[String] = _names(server)
 	assert_true(server_events.has("place_changed"), "the server changed place")
 	assert_true(server_events.has("round_started"), "the match started on the server")
+	await wait_until(func() -> bool: return _names(client).has("place_change_held"), 20.0, "match over, order held")
+	await wait_seconds(1.0)
+	assert_true(_names(client).has("place_change_held"), "the results stay up when the server returns")
+	assert_false(_names(client).has("connection_lost"), "returning is not a lost connection")
+	assert_true(_names(server).has("match_reset"), "the server went back to the hub")
+	assert_eq(_names(server).count("place_changed"), 2, "hub to match, then back to the hub")
 	assert_eq(_errors(client), [] as Array[String], "the client logs no errors")
 	assert_eq(_errors(server), [] as Array[String], "the server logs no errors")

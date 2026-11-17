@@ -319,6 +319,16 @@ is a test tool and never ships. No per-frame allocations.
   session stays until the player leaves it, the connection closes quietly),
   and "Back to hub" then joins the remembered address into the remembered
   place.
+- As built: a dedicated server returns `DedicatedServer.RESULTS_GRACE` (1 s)
+  after `Events.game_over`, and `EMPTY_GRACE` (12 s) after its last player
+  leaves a match (long enough for a squad changing place to rejoin), with
+  `net.match_reset` (`reason` game_over or empty). A server that starts in the
+  match (soak, tests) stays. A listen host decides: its own "Back to hub"
+  takes the squad along (its results stay up until then). While a results
+  screen is up (`Net.holds_place`) a client keeps the order (`place_change_held`),
+  closes the connection quietly and rejoins on "Back to hub"
+  (`DeployVote.back_to_hub()`); going to the main menu instead forgets it
+  (`Net.cancel_place_change()`).
 - Files: systems/game/game_session.gd, systems/net/dedicated_server.gd,
   systems/ui/results_screen.gd, tests/unit/test_places.gd,
   tests/integration/test_net_match.gd.
