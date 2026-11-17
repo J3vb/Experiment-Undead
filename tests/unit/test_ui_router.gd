@@ -78,6 +78,16 @@ func test_pop_gives_focus_back() -> void:
 	assert_true(button.has_focus())
 
 
+func test_pop_gives_focus_back_to_the_covered_screen() -> void:
+	var lower: Node = _push_test_screen()
+	var button: Button = Button.new()
+	lower.add_child(button)
+	button.grab_focus()
+	_push_test_screen()
+	UI.pop()
+	assert_true(button.has_focus(), "focus saved before the lower screen was hidden")
+
+
 func test_unknown_id_warns_and_returns_null() -> void:
 	var before: int = Log.event_counts.get("ui.unknown_screen", 0)
 	assert_null(UI.push(&"no_such_screen"))

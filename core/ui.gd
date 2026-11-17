@@ -85,6 +85,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _open(id: StringName, data: ScreenData) -> Node:
+	var focus: Control = get_viewport().gui_get_focus_owner()
 	var layer: CanvasLayer = CanvasLayer.new()
 	layer.process_mode = Node.PROCESS_MODE_ALWAYS
 	layer.layer = data.layer
@@ -94,7 +95,7 @@ func _open(id: StringName, data: ScreenData) -> Node:
 		_set_covered(below, true)
 	var screen: Node = (load(data.scene) as PackedScene).instantiate()
 	layer.add_child(screen)
-	_stack.append({"id": id, "layer": layer, "focus": get_viewport().gui_get_focus_owner()})
+	_stack.append({"id": id, "layer": layer, "focus": focus})
 	add_child(layer)
 	if screen.has_signal(&"closed"):
 		screen.connect(&"closed", pop)
