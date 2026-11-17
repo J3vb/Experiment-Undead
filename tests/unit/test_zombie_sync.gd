@@ -13,6 +13,8 @@ var client_spawner: Spawner
 var _port: int
 var _session: GameSession
 
+var _gore_before: Variant
+
 
 func _make_side(side_name: String) -> Spawner:
 	var root: Node = TwoPeers.make_side(self, side_name)
@@ -25,6 +27,8 @@ func _make_side(side_name: String) -> Spawner:
 
 
 func before_each() -> void:
+	_gore_before = Settings.get_value(&"graphics", &"gore")
+	Settings._values[&"graphics"][&"gore"] = Impact.Gore.FULL
 	_port = TwoPeers.next_port()
 	_session = GameSession.new()
 	_session.rng.seed = 7
@@ -47,6 +51,7 @@ func before_each() -> void:
 
 
 func after_each() -> void:
+	Settings._values[&"graphics"][&"gore"] = _gore_before
 	for root: Node in [client_root, server_root]:
 		for child: Node in (root.get_node("Enemies") as Node).get_children():
 			if child is Zombie:
@@ -123,3 +128,13 @@ func test_headshot_kill_syncs_the_head_pop() -> void:
 	assert_true(pair[1].head_popped, "the client copy knows the head popped")
 	await wait_until(func() -> bool: return pair[1].visual.head_scale() < 0.05, 3.0, "client pops the head")
 	assert_lt(pair[1].visual.head_scale(), 0.05, "the client copy shows the stump on Full gore")
+
+
+func test_copy_that_arrives_dead_is_not_a_fresh_death() -> void:
+	var zombie: Zombie = server_spawner.spawn(load(WALKER) as EnemyData, 1, load(RULES) as WaveRules)
+	zombie.set_physics_process(false)
+	zombie.state = Zombie.State.DEAD
+	var copy_path: NodePath = NodePath(String(zombie.name))
+	await wait_until(func() -> bool: return client_spawner.has_node(copy_path), 3.0, "zombie reached client")
+	var copy: Zombie = client_spawner.get_node(copy_path) as Zombie
+	assert_false((copy.get_node("Sync") as ZombieSync)._seen_alive, "a corpse a late joiner finds is not seen dying")

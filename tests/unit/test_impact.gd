@@ -7,14 +7,22 @@ const WALKER: String = "res://content/enemies/zombie_walker.tres"
 
 var _parent: Node3D
 
+var _gore_before: Variant
+
 
 func before_each() -> void:
+	_gore_before = Settings.get_value(&"graphics", &"gore")
+	Settings._values[&"graphics"][&"gore"] = Impact.Gore.FULL
 	Impact._ring.clear()
 	Impact._next = 0
 	Impact._sounds.clear()
 	Impact._next_sound = 0
 	_parent = Node3D.new()
 	add_child_autofree(_parent)
+
+
+func after_each() -> void:
+	Settings._values[&"graphics"][&"gore"] = _gore_before
 
 
 func _impacts(parent: Node) -> int:
