@@ -159,6 +159,14 @@ func add_serum(serum: SerumData) -> void:
 	Events.serum_gained.emit(self, serum)
 
 
+## Server: going down costs every Serum; a Second Wind self-revive costs only Second Wind.
+func lose_serums(only_second_wind: bool = false) -> void:
+	for index: int in range(serums.size() - 1, -1, -1):
+		if multiplayer.is_server() and (not only_second_wind or serums[index].id == &"second_wind"):
+			serums.remove_at(index)
+	_refresh_stats()
+
+
 func _refresh_stats() -> void:
 	if multiplayer.is_server():
 		var new_max: float = get_stat(&"max_health", _base_max_health)
@@ -314,13 +322,14 @@ func _on_points_changed(total: int, delta: int) -> void:
 func _on_died(_info: DamageInfo) -> void:
 	if not multiplayer.is_server():
 		return
+	var second_wind: bool = has_serum(&"second_wind")
 	if state_sync.is_coop():
-		state_sync.down_player()
+		state_sync.down_player(second_wind)
 		return
 	input_enabled = false
 	weapons.set_trigger(false)
-	if has_serum(&"second_wind"):
-		_go_down()
+	if second_wind:
+		revive.second_wind()
 		return
 	is_dead = true
 	weapons.visible = false
@@ -328,22 +337,3 @@ func _on_died(_info: DamageInfo) -> void:
 	tween.tween_property(camera_rig, "position:y", 0.3, 0.8).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 	tween.tween_property(camera_rig, "rotation:z", deg_to_rad(70.0), 0.8)
 	Events.player_died.emit(self)
-
-
-## Second Wind: stay down for second_wind_time, then get up with full health.
-## Uses up Second Wind; the other Serums stay.
-func _go_down() -> void:
-	is_downed = true
-	is_crouching = true
-	create_tween().tween_property(camera_rig, "rotation:z", deg_to_rad(25.0), 0.4)
-	await get_tree().create_timer(second_wind_time, false, true).timeout
-	for serum: SerumData in serums:
-		if serum.id == &"second_wind":
-			serums.erase(serum)
-			break
-	is_downed = false
-	is_crouching = false
-	input_enabled = true
-	health.reset(health.max_health)
-	create_tween().tween_property(camera_rig, "rotation:z", 0.0, 0.4)
-	Events.player_revived.emit(self)

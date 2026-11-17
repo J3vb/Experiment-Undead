@@ -161,6 +161,7 @@ func _on_health_changed(player: Player, current: float, maximum: float) -> void:
 		_health_ratio = clampf(current / maxf(maximum, 1.0), 0.0, 1.0)
 		health_bar.value = _health_ratio
 		health_bar.modulate = BLOOD_RED if _health_ratio < 0.3 else OFF_WHITE
+		_drop_lost_serums(player)
 
 
 func _on_player_damaged(player: Player, _info: DamageInfo) -> void:
@@ -234,10 +235,14 @@ func _on_power_up_collected(_collector: Player, power_up: PowerUpData) -> void:
 func _on_player_revived(player: Player) -> void:
 	if player == _player:
 		_flash_center("REVIVED" if Net.is_online() else "SECOND WIND", 2.0)
-		for badge: Node in serums.get_children():
-			if not player.has_serum(StringName(badge.name)):
-				serums.remove_child(badge)
-				badge.queue_free()
+		_drop_lost_serums(player)
+
+
+func _drop_lost_serums(player: Player) -> void:
+	for badge: Node in serums.get_children():
+		if not player.has_serum(StringName(badge.name)):
+			serums.remove_child(badge)
+			badge.queue_free()
 
 
 func _on_round_started(round_number: int, _count: int) -> void:

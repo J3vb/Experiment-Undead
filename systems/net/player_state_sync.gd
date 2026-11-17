@@ -202,6 +202,9 @@ func _apply_loadout(new_gear: Array[Dictionary], guns: Array[Dictionary]) -> voi
 
 
 func _sync_serums(ids: Array) -> void:
+	for index: int in range(_player.serums.size() - 1, -1, -1):
+		if not ids.has(_player.serums[index].id):
+			_player.serums.remove_at(index)
 	for id: StringName in ids:
 		var serum: SerumData = Content.get_item(&"serums", id) as SerumData
 		if serum and not _player.serums.has(serum):
@@ -210,15 +213,19 @@ func _sync_serums(ids: Array) -> void:
 	_player.weapons.max_slots = roundi(2 * _player.get_stat(&"weapon_slots"))
 
 
-func down_player() -> void:
+## Server: down in co-op. Second Wind gets the player up after second_wind_time.
+func down_player(second_wind: bool = false) -> void:
 	if not multiplayer.is_server() or not is_coop():
 		return
 	_player.is_downed = true
 	_player.is_dead = false
 	bleed_left = BLEED_OUT_TIME
+	_player.lose_serums(second_wind)
 	_present()
 	publish()
-	if _player.session and _player.session.is_inside_tree():
+	if second_wind:
+		_player.revive.second_wind()
+	elif _player.session and _player.session.is_inside_tree():
 		_player.session.check_squad()
 
 

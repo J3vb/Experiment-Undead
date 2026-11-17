@@ -23,6 +23,29 @@ func _ready() -> void:
 	_player = get_parent() as Player
 
 
+## Server: Second Wind keeps the player down for second_wind_time, then gets them up.
+## It uses up Second Wind only. In co-op the player is already downed by PlayerStateSync.
+func second_wind() -> void:
+	var coop: bool = _player.state_sync.is_coop()
+	if not coop:
+		_player.is_downed = true
+		_player.is_crouching = true
+		create_tween().tween_property(_player.camera_rig, "rotation:z", deg_to_rad(25.0), 0.4)
+	await get_tree().create_timer(_player.second_wind_time, false, true).timeout
+	if not _player.is_downed or _player.is_dead:
+		return
+	_player.lose_serums(true)
+	if coop:
+		_player.state_sync.revive_player()
+		return
+	_player.is_downed = false
+	_player.is_crouching = false
+	_player.input_enabled = true
+	_player.health.reset(_player.health.max_health)
+	create_tween().tween_property(_player.camera_rig, "rotation:z", 0.0, 0.4)
+	Events.player_revived.emit(_player)
+
+
 ## The HUD supplies held interact intent through the existing InputFrame seam.
 func apply_frame(frame: InputFrame, delta: float) -> void:
 	set_held(frame.has(InputFrame.INTERACT))
