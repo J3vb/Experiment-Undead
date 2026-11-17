@@ -106,6 +106,8 @@ func test_sold_out_dispenser_is_gone_for_everyone_and_late_joiners() -> void:
 	await press("LastDispenser")
 	await wait_until(func() -> bool: return gone(client, "LastDispenser"), 3.0, "sold out on the client")
 	assert_true(gone(server, "LastDispenser"))
+	var chime: AudioStreamPlayer3D = client.level.get_node_or_null("BuySound") as AudioStreamPlayer3D
+	assert_true(chime != null and chime.playing, "the buyer's last chime outlives the dispenser")
 	late = make_side("InteractLate")
 	add_player(late, client_id)
 	await join(late)
