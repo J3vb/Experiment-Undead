@@ -1,10 +1,10 @@
 # Plan: Your own world, open to friends, and a server browser
 
-Status: Review
+Status: Approved
 Roadmap: F-66
 Phase: P7
 Size: L
-Approved by:
+Approved by: the person (decision card, 2026-11-17), after two independent Claude review-plan passes on PR #300 (Codex at its usage limit), all findings fixed
 
 ## Goal
 
