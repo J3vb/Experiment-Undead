@@ -1,12 +1,18 @@
 ## Impacts reuse the oldest of at most 48 nodes and share their meshes and materials.
 extends GutTest
 
+const WEAPON: String = "res://systems/weapons/weapon.tscn"
+const RIFLE: String = "res://content/weapons/rifle_ar.tres"
+const WALKER: String = "res://content/enemies/zombie_walker.tres"
+
 var _parent: Node3D
 
 
 func before_each() -> void:
 	Impact._ring.clear()
 	Impact._next = 0
+	Impact._sounds.clear()
+	Impact._next_sound = 0
 	_parent = Node3D.new()
 	add_child_autofree(_parent)
 
@@ -75,3 +81,68 @@ func test_impact_under_another_parent_moves_to_the_new_one() -> void:
 		Impact.spawn(other, Vector3.ZERO, Vector3.UP, Impact.Kind.SURFACE)
 	assert_same(Impact.spawn(_parent, Vector3.ZERO, Vector3.UP, Impact.Kind.SURFACE), first)
 	assert_same(first.get_parent(), _parent)
+
+
+func test_flesh_hits_play_on_at_most_four_reused_sound_players() -> void:
+	Impact.spawn(_parent, Vector3.ZERO, Vector3.UP, Impact.Kind.SURFACE)
+	assert_eq(Impact._sounds.size(), 0, "surface hits make no flesh sound")
+	for index: int in 6:
+		Impact.spawn(_parent, Vector3(index, 0, 0), Vector3.UP, Impact.Kind.FLESH)
+	assert_eq(Impact._sounds.size(), Impact.MAX_SOUNDS)
+	var players: int = 0
+	for child: Node in _parent.get_children():
+		if child is AudioStreamPlayer3D:
+			players += 1
+	assert_eq(players, Impact.MAX_SOUNDS, "the oldest player is reused")
+	assert_almost_eq(Impact._sounds[1].global_position.x, 5.0, 0.02, "sixth hit reused the second player")
+
+
+func test_head_hits_crack_and_body_hits_squelch() -> void:
+	var body: Impact = Impact.spawn(_parent, Vector3.ZERO, Vector3.UP, Impact.Kind.FLESH)
+	assert_true(Impact._sounds[0].stream in Impact.FLESH_SOUNDS)
+	assert_true(body._flesh.visible, "body hits bleed")
+	var head: Impact = Impact.spawn(_parent, Vector3.ZERO, Vector3.UP, Impact.Kind.HEAD)
+	assert_true(Impact._sounds[1].stream in Impact.HEAD_SOUNDS)
+	assert_true(head._flesh.visible, "head hits bleed")
+	assert_eq(head._flesh.amount, Impact.BLOOD_PARTICLES)
+
+
+func test_impact_kind_comes_from_the_hit_zone() -> void:
+	var zone: HitZone = HitZone.new()
+	zone.zone = DamageInfo.Zone.HEAD
+	assert_eq(Impact.kind_for(zone), Impact.Kind.HEAD)
+	zone.zone = DamageInfo.Zone.BODY
+	assert_eq(Impact.kind_for(zone), Impact.Kind.FLESH)
+	assert_eq(Impact.kind_for(null), Impact.Kind.SURFACE)
+	zone.set_enabled(false)
+	zone.zone = DamageInfo.Zone.HEAD
+	assert_eq(Impact.kind_for(zone), Impact.Kind.HEAD, "a killing head hit keeps its kind")
+	zone.free()
+
+
+func _trace_kinds(zone_name: String, health: float) -> Array[Impact.Kind]:
+	var camera: Camera3D = Camera3D.new()
+	add_child_autofree(camera)
+	var weapon: Weapon = (load(WEAPON) as PackedScene).instantiate() as Weapon
+	weapon.setup(WeaponInstance.new(load(RIFLE) as WeaponData), null, camera)
+	camera.add_child(weapon)
+	var data: EnemyData = load(WALKER) as EnemyData
+	var zombie: Zombie = data.scene.instantiate() as Zombie
+	zombie.setup(data, 1, 1.0, 1.0, 1.0, RandomNumberGenerator.new())
+	add_child_autofree(zombie)
+	zombie.health.reset(health)
+	var zone: HitZone = zombie.head_zone if zone_name == "head" else zombie.hit_zones[-1]
+	var kinds: Array[Impact.Kind] = []
+	weapon.traced.connect(func(_point: Vector3, _normal: Vector3, kind: Impact.Kind) -> void: kinds.append(kind))
+	var hit: Dictionary = {"position": Vector3.ZERO, "normal": Vector3.BACK, "collider": zone, "damage_scale": 1.0}
+	weapon._hit(hit, Vector3(0, 0, 5), Vector3.FORWARD)
+	return kinds
+
+
+func test_weapon_trace_sends_head_for_a_head_hit_even_when_it_kills() -> void:
+	assert_eq(_trace_kinds("head", 1000.0), [Impact.Kind.HEAD] as Array[Impact.Kind])
+	assert_eq(_trace_kinds("head", 1.0), [Impact.Kind.HEAD] as Array[Impact.Kind], "lethal head hit stays HEAD")
+
+
+func test_weapon_trace_sends_flesh_for_a_body_hit() -> void:
+	assert_eq(_trace_kinds("body", 1000.0), [Impact.Kind.FLESH] as Array[Impact.Kind])

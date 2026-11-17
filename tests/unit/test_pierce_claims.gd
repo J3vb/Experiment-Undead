@@ -208,7 +208,7 @@ func test_remote_shot_uses_one_final_endpoint_for_the_piercing_pellet() -> void:
 	await _line()
 	var points: Array[Vector3] = []
 	mine.weapons.current.traced.connect(
-		func(point: Vector3, _normal: Vector3, _flesh: bool) -> void: points.append(point)
+		func(point: Vector3, _normal: Vector3, _kind: Impact.Kind) -> void: points.append(point)
 	)
 	var effects: RemoteShotEffects = claimant.get_node("ShotEffects") as RemoteShotEffects
 	_fire_as_client()

@@ -6,7 +6,7 @@ signal ammo_changed(in_mag: int, reserve: int)
 signal fired
 signal reload_started(duration: float)
 signal hit_landed(is_kill: bool, is_headshot: bool)
-signal traced(point: Vector3, normal: Vector3, hit_flesh: bool)
+signal traced(point: Vector3, normal: Vector3, kind: Impact.Kind)
 
 enum State { IDLE, RELOADING }
 
@@ -258,7 +258,7 @@ func _hit(result: Dictionary, origin: Vector3, direction: Vector3) -> void:
 	var point: Vector3 = result.position
 	var normal: Vector3 = result.normal
 	var hit_zone: HitZone = result.collider as HitZone
-	traced.emit(point, normal, hit_zone != null)
+	traced.emit(point, normal, Impact.kind_for(hit_zone))
 	if hit_zone == null:
 		return
 	var info: DamageInfo = DamageInfo.create(data.get_damage_at(origin.distance_to(point)), shooter)
@@ -288,8 +288,8 @@ func _on_fired() -> void:
 		_fire_audio.play()
 
 
-func _on_traced(point: Vector3, normal: Vector3, hit_flesh: bool) -> void:
-	Impact.spawn(get_tree().current_scene, point, normal, Impact.Kind.FLESH if hit_flesh else Impact.Kind.SURFACE)
+func _on_traced(point: Vector3, normal: Vector3, kind: Impact.Kind) -> void:
+	Impact.spawn(get_tree().current_scene, point, normal, kind)
 
 
 func _finish_reload() -> void:

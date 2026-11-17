@@ -48,7 +48,7 @@ func _gun(pellets: int, double_barrel: bool = true) -> void:
 	weapon.setup(WeaponInstance.new(data), player, player.camera)
 	player.camera.add_child(weapon)
 	weapon.set_active(true)
-	weapon.traced.connect(func(point: Vector3, _normal: Vector3, _flesh: bool) -> void: hits.append(point))
+	weapon.traced.connect(func(point: Vector3, _normal: Vector3, _kind: Impact.Kind) -> void: hits.append(point))
 	watch_signals(weapon)
 
 
