@@ -19,7 +19,6 @@ extends CharacterBody3D
 @export var sprint_cooldown: float = 3.0
 @export var jump_velocity: float = 4.8
 @export var gravity_multiplier: float = 1.3
-
 ## Seconds spent down before Second Wind gets the player back up.
 @export var second_wind_time: float = 3.0
 
@@ -60,6 +59,8 @@ var _base_max_health: float = 100.0
 var _base_regen_delay: float = 0.0
 var _base_slots: int = 2
 var _sprint_cooldown_left: float = 0.0
+var _teleport_to: Transform3D
+var _teleport_pending: bool = false
 
 @onready var camera_rig: PlayerCamera = $Head
 @onready var camera: Camera3D = $Head/RecoilPivot/Camera3D
@@ -190,12 +191,24 @@ func get_rng() -> RandomNumberGenerator:
 	return session.rng if session else _fallback_rng
 
 
+## RPC moves land outside the physics tick; the owner waits for its next tick (interpolated camera).
+func teleport(to: Transform3D) -> void:
+	_teleport_to = to
+	_teleport_pending = is_physics_processing() and not Engine.is_in_physics_frame()
+	if not _teleport_pending:
+		global_transform = to
+		velocity = Vector3.ZERO
+		reset_physics_interpolation()
+
+
 func look(delta_radians: Vector2) -> void:
 	rotate_y(-delta_radians.x)
 	camera_rig.add_pitch(-delta_radians.y)
 
 
 func _physics_process(delta: float) -> void:
+	if _teleport_pending:
+		teleport(_teleport_to)
 	local_input.enabled = input_enabled
 	local_input.sensitivity_scale = lerpf(1.0, ads_sensitivity_multiplier, weapons.get_ads_progress())
 	var tick: int = session.tick if session else 0
@@ -220,14 +233,8 @@ func apply_frame(frame: InputFrame, delta: float) -> void:
 			session.interactions.request(self, focus)
 	_move(delta, frame)
 	weapons.tick(delta)
-	camera_rig.update_feel(
-		delta,
-		is_crouching,
-		is_sprinting,
-		weapons.get_ads_progress(),
-		weapons.get_ads_fov(camera_rig.base_fov),
-		walk_speed
-	)
+	var fov: float = weapons.get_ads_fov(camera_rig.base_fov)
+	camera_rig.update_feel(delta, is_crouching, is_sprinting, weapons.get_ads_progress(), fov, walk_speed)
 
 
 func _update_focus() -> void:
@@ -335,7 +342,6 @@ func _on_died(_info: DamageInfo) -> void:
 		return
 	is_dead = true
 	weapons.visible = false
-	var tween: Tween = create_tween().set_parallel()
+	var tween: Tween = camera_rig.tilt(70.0, 0.8).parallel()
 	tween.tween_property(camera_rig, "position:y", 0.3, 0.8).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
-	tween.tween_property(camera_rig, "rotation:z", deg_to_rad(70.0), 0.8)
 	Events.player_died.emit(self)
