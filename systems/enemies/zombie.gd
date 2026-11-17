@@ -84,12 +84,13 @@ func _ready() -> void:
 	if data:
 		health.reset(_max_health)
 		visual.scale = Vector3.ONE * data.body_scale
-		voice.groans = data.groan_sounds
+		voice.setup(data)
 	# The head zone rides on the model's head so headshots follow the animation.
 	head_zone.reparent(visual.head, false)
 	head_zone.position = Vector3.ZERO
 	health.damaged.connect(_on_damaged)
 	health.died.connect(_on_died)
+	visual.stepped.connect(voice.step)
 	_repath_timer = _rng.randf() * 0.25
 	visual.position.y = -1.8
 	_enter(State.SPAWNING)
@@ -148,7 +149,6 @@ func _tick_chasing(delta: float) -> void:
 	_stuck_watch.tick(self, delta, distance)
 	if distance <= data.attack_range * 0.85 and _attack_cooldown <= 0.0 and _can_see(target):
 		_enter(State.ATTACKING)
-		voice.say(data.attack_sound)
 		return
 
 	_repath_timer -= delta
@@ -199,7 +199,6 @@ func _tick_entering(delta: float) -> void:
 		and _can_see(target)
 	):
 		_enter(State.ATTACKING)
-		voice.say(data.attack_sound)
 		return
 	_tear_timer -= delta
 	if _tear_timer <= 0.0:
@@ -337,12 +336,12 @@ func _on_died(info: DamageInfo) -> void:
 	collision_layer = 0
 	for zone: HitZone in hit_zones:
 		zone.set_enabled(false)
-	voice.silence()
 	Events.enemy_killed.emit(self, info)
 	visual.fall_over().tween_callback(queue_free)
 
 
 func _process(delta: float) -> void:
+	voice.show_state(state)
 	if frozen and state != State.DEAD:
 		Frost.initialize_pose(self)
 	else:

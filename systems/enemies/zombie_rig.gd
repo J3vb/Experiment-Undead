@@ -3,6 +3,9 @@
 class_name ZombieRig
 extends Node3D
 
+## A foot came down in the walk cycle (twice per cycle).
+signal stepped
+
 const PARTS: Dictionary[StringName, StringName] = {
 	&"Hips": &"pelvis",
 	&"Torso": &"spine_02",
@@ -20,6 +23,8 @@ const REACH_DISTANCE: float = 3.0
 const CORPSE_TIME: float = 5.0
 ## How high the body hops at the middle of a window vault.
 const VAULT_HEIGHT: float = 0.45
+## Below this stride (a shuffle on the spot) no footsteps play.
+const STEP_MIN_STRIDE: float = 0.2
 
 ## A skinned .glb from tools/assets/zombie_model.py, facing +Z.
 @export var model: PackedScene
@@ -160,8 +165,11 @@ func pose_walk(speed: float, reach: float, delta: float) -> void:
 	if _crawler:
 		_pose_crawl(speed, reach, delta)
 		return
+	var before: float = sin(_phase)
 	_phase += delta * (1.5 + speed * 2.5)
 	var stride: float = clampf(speed / 2.0, 0.0, 1.0)
+	if stride > STEP_MIN_STRIDE and signf(sin(_phase)) != signf(before):
+		stepped.emit()
 	var swing: float = sin(_phase) * stride
 	_pose_part(&"LegL", Vector3(swing * 0.55, 0.0, 0.0))
 	_pose_part(&"LegR", Vector3(-swing * 0.55, 0.0, 0.0))

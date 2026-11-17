@@ -99,6 +99,44 @@ func test_death_disables_hit_zones_and_goes_limp() -> void:
 	assert_false(zombie.voice.is_processing(), "dead zombies stop groaning")
 
 
+func test_walk_cycle_steps_twice_per_cycle() -> void:
+	var zombie: Zombie = _spawn(WALKER)
+	zombie.set_process(false)
+	var rig: ZombieRig = zombie.visual
+	var steps: Array[int] = [0]
+	rig.stepped.connect(func() -> void: steps[0] += 1)
+	var speed: float = 2.0
+	var cycle: float = TAU / (1.5 + speed * 2.5)
+	for i: int in 300:
+		rig.pose_walk(speed, 0.0, cycle * 3.0 / 300.0)
+	assert_between(steps[0], 5, 7, "two footsteps per walk cycle")
+	steps[0] = 0
+	for i: int in 300:
+		rig.pose_walk(0.1, 0.0, 0.01)
+	assert_eq(steps[0], 0, "no footsteps while shuffling on the spot")
+
+
+func test_dying_zombie_says_a_death_sound_once() -> void:
+	var zombie: Zombie = _spawn(WALKER)
+	await wait_process_frames(1)
+	zombie.health.take_damage(DamageInfo.create(99999.0, null))
+	await wait_process_frames(2)
+	assert_true(zombie.voice.stream in zombie.data.death_sounds, "death sound plays")
+	zombie.voice.stream = null
+	zombie.voice.show_state(Zombie.State.DEAD)
+	assert_null(zombie.voice.stream, "the death plays only once")
+
+
+func test_corpse_seen_first_plays_no_death() -> void:
+	var data: EnemyData = load(WALKER) as EnemyData
+	var zombie: Zombie = data.scene.instantiate() as Zombie
+	zombie.setup(data, 1, 1.0, 1.0, 1.0, RandomNumberGenerator.new())
+	zombie.state = Zombie.State.DEAD
+	add_child_autofree(zombie)
+	await wait_process_frames(2)
+	assert_null(zombie.voice.stream, "a late joiner hears no death for an old corpse")
+
+
 func test_rising_zombie_climbs_out_of_the_floor() -> void:
 	var zombie: Zombie = _spawn(WALKER)
 	zombie.state_time = 0.0
@@ -112,6 +150,8 @@ func test_rising_zombie_climbs_out_of_the_floor() -> void:
 func test_voice_gets_the_enemy_groans() -> void:
 	var zombie: Zombie = _spawn(WALKER)
 	assert_eq(zombie.voice.groans, zombie.data.groan_sounds)
+	assert_eq(zombie.voice.deaths, zombie.data.death_sounds)
+	assert_eq(zombie.voice.footsteps, zombie.data.footstep_sounds)
 
 
 func test_bloater_has_its_own_model_and_wider_body() -> void:

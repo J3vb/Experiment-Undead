@@ -2,10 +2,16 @@
 
 [ext_resource type="Script" path="res://systems/enemies/enemy_data.gd" id="1"]
 [ext_resource type="PackedScene" path="res://systems/enemies/bloater.tscn" id="2"]
-[ext_resource type="AudioStream" path="res://assets/audio/zombie_groan_1.wav" id="3"]
-[ext_resource type="AudioStream" path="res://assets/audio/zombie_groan_2.wav" id="4"]
-[ext_resource type="AudioStream" path="res://assets/audio/zombie_groan_3.wav" id="5"]
 [ext_resource type="AudioStream" path="res://assets/audio/zombie_attack.wav" id="6"]
+[ext_resource type="AudioStream" path="res://assets/audio/bloater_death_1.wav" id="20"]
+[ext_resource type="AudioStream" path="res://assets/audio/bloater_death_2.wav" id="21"]
+[ext_resource type="AudioStream" path="res://assets/audio/bloater_step_1.wav" id="22"]
+[ext_resource type="AudioStream" path="res://assets/audio/bloater_step_2.wav" id="23"]
+[ext_resource type="AudioStream" path="res://assets/audio/bloater_step_3.wav" id="24"]
+[ext_resource type="AudioStream" path="res://assets/audio/bloater_step_4.wav" id="25"]
+[ext_resource type="AudioStream" path="res://assets/audio/bloater_gurgle_1.wav" id="26"]
+[ext_resource type="AudioStream" path="res://assets/audio/bloater_gurgle_2.wav" id="27"]
+[ext_resource type="AudioStream" path="res://assets/audio/bloater_gurgle_3.wav" id="28"]
 
 [resource]
 script = ExtResource("1")
@@ -22,5 +28,7 @@ attack_windup = 0.6
 attack_cooldown = 1.6
 loot_drop_chance = 0.05
 scene = ExtResource("2")
-groan_sounds = Array[AudioStream]([ExtResource("3"), ExtResource("4"), ExtResource("5")])
+groan_sounds = Array[AudioStream]([ExtResource("26"), ExtResource("27"), ExtResource("28")])
 attack_sound = ExtResource("6")
+death_sounds = Array[AudioStream]([ExtResource("20"), ExtResource("21")])
+footstep_sounds = Array[AudioStream]([ExtResource("22"), ExtResource("23"), ExtResource("24"), ExtResource("25")])
