@@ -1,10 +1,10 @@
 # Plan: Zombie sounds and gore
 
-Status: Review
+Status: Approved
 Roadmap: F-14
 Phase: P4
 Size: M
-Approved by:
+Approved by: Codex plan review on PR #241, 2026-11-17 (size M, no open decisions)
 
 ## Goal
 
@@ -291,5 +291,7 @@ feel systems; F-09 measures it.
 
 ## Open decisions
 
-- none (the gore strength is a look check on renders after step 2; the design
-  doc's Full numbers are the starting point)
+- none
+
+The gore strength is a look check on renders after step 2, sent to the person
+as a decision card; the design doc's Full numbers are the starting point.
