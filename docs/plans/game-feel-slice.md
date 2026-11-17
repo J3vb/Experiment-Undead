@@ -1,10 +1,10 @@
 # Plan: Game feel and death screen
 
-Status: Review
+Status: Approved
 Roadmap: F-14 / no issue (audit of the v0.1 slice against docs/design/game-feel.md)
 Phase: P1 + P4 (feel layer the slice still misses)
 Size: M
-Approved by:
+Approved by: plan review on PR #242 (Codex, 2 rounds, then a separate Claude reviewer when Codex hit its limit, 2026-11-17), no open decisions
 
 ## Goal
 
@@ -268,8 +268,10 @@ budget.
     the 25° in those calls to `downed_roll_deg`. Step 4 waits for that PR.
     The drop is not a separate `position.y` write: `update_feel()` already
     lerps the rig to stand/crouch height every tick and would undo it, so
-    `update_feel()` subtracts `downed_drop_m` from its target height while the
-    player is downed or dead. Saturation and vignette fade in over at least
+    while the player is downed or dead `update_feel()` targets
+    `stand_height - downed_drop_m` (0.7 m) instead of stand or crouch height,
+    so it is a 0.9 m drop from standing in both states (downed players also
+    crouch, so subtracting from crouch height would drop 1.45 m). Saturation and vignette fade in over at least
     0.2 s (controls.md: screen-wide colour changes never pop).
   - Revived: colour returns, 8% white flash for 0.15 s. The only screen
     change faster than 0.2 s; flash_reduction skips it.
@@ -285,8 +287,9 @@ budget.
     Music stays.
   - Solo death camera: `Player._on_died()` today tweens the camera rig to a
     70° roll over 0.8 s outside the physics tick. It switches to the same
-    `PlayerCamera.tilt()` drop and roll as downed (6°, 0.9 m), so there is one
-    camera writer, and the fade covers the rest.
+    `PlayerCamera.tilt()` roll as downed (6°), and the drop comes from
+    `update_feel()` as above, so there is one camera writer, and the fade
+    covers the rest.
   - Solo: the results screen follows after the existing restart delay and
     shows a "Gear kept" banner when the run did not exfil. Co-op: fade back in
     on the spectate camera, prompt reads "Spectating · Gear kept · Respawn next
@@ -303,8 +306,9 @@ budget.
   targets; died fades to black and drops the SFX amplifier while UI (now sent
   to Master) and Music stay at 0 dB; a door sound on SFX is attenuated; the
   solo death and solo Second Wind use tilt() and no other camera tween; the
-  rig ends 0.9 m lower after 0.3 s of physics ticks while downed and comes
-  back after revive; co-op world sound returns when spectating starts; a squad wipe (downed + session over) fades too;
+  rig height is 0.7 m (±0.05, the 10/s lerp is ~96% there after 0.3 s) after
+  0.3 s of physics ticks while downed and while solo-dead, and returns to
+  stand height after revive; co-op world sound returns when spectating starts; a squad wipe (downed + session over) fades too;
   an exfil (standing + session over) does not; respawn and `_exit_tree`
   restore 0 dB; flash_reduction skips the flash; no local player does
   nothing. Results test: "Gear kept" banner visible on death, hidden on exfil.
@@ -356,5 +360,7 @@ budget.
 
 ## Open decisions
 
-- none (all numbers come from game-feel.md; feel tuning happens in the
-  person's play-test after merge)
+- none
+
+Feel tuning happens in the person's play-test after merge; all numbers come
+from game-feel.md.
