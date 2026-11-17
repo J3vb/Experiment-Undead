@@ -1,10 +1,10 @@
 # Plan: Core loop gaps
 
-Status: Review
+Status: Approved
 Roadmap: F-12 / no issue (audit of the v0.1 slice against the design docs)
 Phase: P2-P4
 Size: M
-Approved by:
+Approved by: Codex plan review on PR #215 (2026-11-17), no open decisions
 
 ## Goal
 
@@ -371,5 +371,6 @@ measurable change at 24 zombies.
 
 ## Open decisions
 
-- none (all numbers come from the design doc; feel checks go to the person's
-  playtest after steps 3-5)
+- none
+
+Feel checks (slide, jump, speeds, swap, melee) go to the person's playtest after steps 3-5.
