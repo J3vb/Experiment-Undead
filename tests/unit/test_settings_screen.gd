@@ -20,6 +20,8 @@ func before_each() -> void:
 
 
 func after_each() -> void:
+	while UI.top() != &"":
+		UI.pop()
 	get_tree().paused = false
 	Settings._values = _old_values
 	Settings._apply_all()
@@ -125,15 +127,18 @@ func test_pause_settings_back_escape_and_resume() -> void:
 	pause.pressed = true
 	session._unhandled_input(pause)
 	assert_true(get_tree().paused)
-	var hud: Hud = session.hud
-	assert_true(hud.resume_button.has_focus())
-	hud.settings_button.pressed.emit()
-	assert_true(hud.settings_screen.is_visible_in_tree())
-	assert_true(hud.settings_screen.can_process())
-	assert_false(hud.pause_menu.visible)
-	var tabs: TabContainer = hud.settings_screen.get_node("Margin/Box/Tabs") as TabContainer
+	var menu: PauseScreen = _top_screen() as PauseScreen
+	assert_true(menu.resume_button.has_focus())
+	menu.settings_button.grab_focus()
+	menu.settings_button.pressed.emit()
+	var settings: SettingsScreen = _top_screen() as SettingsScreen
+	assert_eq(UI.top(), &"settings")
+	assert_true(settings.is_visible_in_tree())
+	assert_true(settings.can_process())
+	assert_false(menu.is_visible_in_tree())
+	var tabs: TabContainer = settings.get_node("Margin/Box/Tabs") as TabContainer
 	tabs.current_tab = 1
-	var slider: HSlider = hud.settings_screen.get_node("%fov") as HSlider
+	var slider: HSlider = settings.get_node("%fov") as HSlider
 	slider.grab_focus()
 	var right: InputEventKey = InputEventKey.new()
 	right.keycode = KEY_RIGHT
@@ -142,17 +147,22 @@ func test_pause_settings_back_escape_and_resume() -> void:
 	await wait_process_frames(2)
 	assert_eq(Settings.get_value(&"video", &"fov"), 111, "keyboard control works while paused")
 	assert_almost_eq(session.get_players()[0].camera_rig.base_fov, 78.53, 0.2)
-	(hud.settings_screen.get_node("%Back") as Button).pressed.emit()
-	assert_false(hud.settings_screen.visible)
+	(settings.get_node("%Back") as Button).pressed.emit()
+	assert_eq(UI.top(), &"pause")
 	assert_true(get_tree().paused)
-	assert_true(hud.settings_button.has_focus())
-	hud.settings_button.pressed.emit()
-	hud.settings_screen._input(pause)
-	assert_false(hud.settings_screen.visible)
+	assert_true(menu.settings_button.has_focus())
+	menu.settings_button.pressed.emit()
+	(_top_screen() as SettingsScreen)._input(pause)
+	assert_eq(UI.top(), &"pause")
 	assert_true(get_tree().paused)
-	hud.resume_button.pressed.emit()
+	menu.resume_button.pressed.emit()
+	assert_eq(UI.top(), &"")
+	await wait_process_frames(1)
 	assert_false(get_tree().paused)
-	assert_false(hud.pause_panel.visible)
+
+
+func _top_screen() -> Node:
+	return UI._stack.back()["layer"].get_child(0) if not UI._stack.is_empty() else null
 
 
 func test_show_fps_is_only_a_hud_line() -> void:

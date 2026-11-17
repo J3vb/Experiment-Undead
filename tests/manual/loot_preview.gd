@@ -40,7 +40,9 @@ func _render() -> void:
 	await RenderingServer.frame_post_draw
 	window.get_texture().get_image().save_png("res://screenshots/loot_pack.png")
 	overlay.set_open(false)
-	hud.results_screen.show_results({"round": 17, "loot": service.pack.items, "loot_lost": 2}, 1140)
+	var results: ResultsScreen = load("res://systems/ui/results_screen.tscn").instantiate() as ResultsScreen
+	add_child(results)
+	results.show_results({"round": 17, "loot": service.pack.items, "loot_lost": 2}, 1140)
 	await get_tree().create_timer(0.3).timeout
 	await RenderingServer.frame_post_draw
 	window.get_texture().get_image().save_png("res://screenshots/loot_results.png")

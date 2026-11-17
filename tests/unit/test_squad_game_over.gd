@@ -95,8 +95,14 @@ func test_squad_wipe_freezes_both_peers_and_shows_identical_results() -> void:
 	assert_eq(client._match_stats["points"], 1234)
 	assert_eq(server.level.process_mode, Node.PROCESS_MODE_DISABLED)
 	assert_eq(client.level.process_mode, Node.PROCESS_MODE_DISABLED)
-	await wait_until(func() -> bool: return client.hud.results_screen.visible, 3.0, "client sees results")
-	assert_true(server.hud.results_screen.visible)
+	await wait_until(func() -> bool: return _results_count() == 2, 3.0, "host and client both push results")
+
+
+func _results_count() -> int:
+	var count: int = 0
+	for entry: Dictionary in UI._stack:
+		count += 1 if entry["id"] == &"results" else 0
+	return count
 
 
 func test_squad_results_show_each_players_own_xp_and_totals() -> void:
