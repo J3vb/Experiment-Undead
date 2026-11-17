@@ -95,8 +95,18 @@ already reads `InputFrame`s, so the server could replay them.
    open/hold reach every client; late joiners get one snapshot. Bought guns,
    ammo and Reforges reach the buyer as grants that name the gun they are for.
 
-After step 7, P7 continues with power-ups, round state on clients and the rest
-of #126, then a 4-player play-test to round 20 (the P7 exit test).
+8. **Round state and power-ups (done, plan `docs/plans/coop-round-state-power-ups.md`,
+   PRs #227 and this one):** the server relays round start, end and intermission
+   to every client as the same `Events`; late joiners ask once for phase, round
+   and time left. Clients never run the round loop. Power-up drops spawn through
+   a `MultiplayerSpawner` under the level (late joiners get the age); only the
+   server watches touches, picks the collector and frees the pickup. Resupply
+   and ammo packs run `PowerUp.apply_effect()` on the PC that owns the guns.
+   Protocol 11.
+
+After step 8, P7 finishes with `docs/plans/coop-full-match.md` (F-47): co-op
+soak, pause, squad cards, the hub and deploy flow, then a 4-player play-test to
+round 20 (the P7 exit test).
 
 ## Running it locally
 
