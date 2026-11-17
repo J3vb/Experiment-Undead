@@ -11,6 +11,8 @@ var _holders: Array[Node] = []
 ## Scene path of the root being loaded behind a loading screen, or empty.
 var _loading_path: String = ""
 var _loading_layer: CanvasLayer
+## Threaded loads that were cancelled; collected once done so ResourceLoader lets go of them.
+var _dropped_paths: Array[String] = []
 
 
 func _ready() -> void:
@@ -24,16 +26,19 @@ func _ready() -> void:
 ## A root that names a loading screen loads on a thread behind it.
 func replace(id: StringName) -> void:
 	var data: ScreenData = _screen(id)
-	if data == null:
+	if data == null or _loading_path == data.scene:
 		return
 	_clear()
 	_end_loading()
 	get_tree().paused = false
 	var loading: ScreenData = null if data.loading_screen.is_empty() else _screen(data.loading_screen)
-	if loading == null or ResourceLoader.load_threaded_request(data.scene) != OK:
+	if loading == null or not _request(data.scene):
 		get_tree().change_scene_to_file(data.scene)
 		return
 	_loading_path = data.scene
+	get_viewport().gui_release_focus()
+	if get_tree().current_scene:
+		get_tree().current_scene.process_mode = Node.PROCESS_MODE_DISABLED
 	_loading_layer = CanvasLayer.new()
 	_loading_layer.process_mode = Node.PROCESS_MODE_ALWAYS
 	_loading_layer.layer = loading.layer
@@ -43,6 +48,14 @@ func replace(id: StringName) -> void:
 	if screen.has_method(&"setup"):
 		screen.call(&"setup", data.title, data.tips)
 	set_process(true)
+
+
+## A load cancelled earlier is still in ResourceLoader, so it is picked up again instead of requested twice.
+func _request(path: String) -> bool:
+	if _dropped_paths.has(path):
+		_dropped_paths.erase(path)
+		return true
+	return ResourceLoader.load_threaded_request(path) == OK
 
 
 func is_loading() -> bool:
@@ -94,8 +107,9 @@ func hold_mouse(node: Node, held: bool) -> void:
 
 
 func _process(_delta: float) -> void:
+	_collect_dropped()
 	if _loading_path.is_empty():
-		set_process(false)
+		set_process(not _dropped_paths.is_empty())
 		return
 	var progress: Array = []
 	var status: ResourceLoader.ThreadLoadStatus = ResourceLoader.load_threaded_get_status(_loading_path, progress)
@@ -112,13 +126,21 @@ func _process(_delta: float) -> void:
 ## Swaps in the loaded scene; a failed load falls back to a plain scene change.
 func _finish_loading(path: String, scene: PackedScene) -> void:
 	_loading_path = ""
-	set_process(false)
+	set_process(not _dropped_paths.is_empty())
 	if scene == null:
 		Log.warn(&"ui", &"loading_failed", {"scene": path})
 		get_tree().change_scene_to_file(path)
 		return
 	_show_progress(1.0)
 	get_tree().change_scene_to_packed(scene)
+
+
+func _collect_dropped() -> void:
+	for index: int in range(_dropped_paths.size() - 1, -1, -1):
+		var path: String = _dropped_paths[index]
+		if ResourceLoader.load_threaded_get_status(path) != ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+			ResourceLoader.load_threaded_get(path)
+			_dropped_paths.remove_at(index)
 
 
 func _show_progress(value: float) -> void:
@@ -129,8 +151,10 @@ func _show_progress(value: float) -> void:
 
 
 func _end_loading() -> void:
+	if not _loading_path.is_empty():
+		_dropped_paths.append(_loading_path)
 	_loading_path = ""
-	set_process(false)
+	set_process(not _dropped_paths.is_empty())
 	if is_instance_valid(_loading_layer):
 		_loading_layer.queue_free()
 	_loading_layer = null

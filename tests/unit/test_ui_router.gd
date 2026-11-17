@@ -232,3 +232,47 @@ func test_loading_screen_shows_progress_and_handles_no_tips() -> void:
 	assert_almost_eq(screen.progress_bar.value, 0.4, 0.001)
 	screen.set_progress(3.0)
 	assert_almost_eq(screen.progress_bar.value, 1.0, 0.001, "clamped to full")
+
+
+func test_while_loading_the_old_scene_stops_and_a_repeat_press_is_ignored() -> void:
+	var runner_scene: Node = get_tree().current_scene
+	var stand_in: Node = Node.new()
+	get_tree().root.add_child(stand_in)
+	get_tree().current_scene = stand_in
+	var menu_data: ScreenData = _menu_with_loading()
+	UI.replace(&"main_menu")
+	var layer: CanvasLayer = UI._loading_layer
+	UI.replace(&"main_menu")
+	_restore_menu(menu_data)
+	assert_eq(UI._loading_layer, layer, "a second press during the load starts nothing new")
+	assert_eq(stand_in.process_mode, Node.PROCESS_MODE_DISABLED, "the old scene takes no input while loading")
+	var waited: int = 0
+	while UI.is_loading() and waited < 600:
+		await wait_process_frames(1)
+		waited += 1
+	await wait_process_frames(3)
+	var menu: Node = get_tree().current_scene
+	get_tree().current_scene = runner_scene
+	menu.free()
+	if is_instance_valid(stand_in):
+		stand_in.free()
+
+
+func test_a_cancelled_load_is_collected_once_it_finishes() -> void:
+	var runner_scene: Node = get_tree().current_scene
+	var stand_in: Node = Node.new()
+	get_tree().root.add_child(stand_in)
+	get_tree().current_scene = stand_in
+	UI._dropped_paths.clear()
+	var menu_data: ScreenData = _menu_with_loading()
+	UI.replace(&"main_menu")
+	_restore_menu(menu_data)
+	UI._end_loading()
+	assert_eq(UI._dropped_paths, ["res://systems/ui/main_menu.tscn"] as Array[String], "the cancelled load is kept")
+	var waited: int = 0
+	while not UI._dropped_paths.is_empty() and waited < 600:
+		await wait_process_frames(1)
+		waited += 1
+	assert_true(UI._dropped_paths.is_empty(), "and collected when done")
+	get_tree().current_scene = runner_scene
+	stand_in.free()
