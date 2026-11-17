@@ -19,6 +19,7 @@ var server: GameSession
 var client: GameSession
 var late: GameSession
 var client_id: int
+var _port: int
 var _sessions: Array[GameSession] = []
 
 
@@ -32,19 +33,13 @@ class FixtureSession:
 		pass
 
 
-## Override in a test file to use another port.
-func port() -> int:
-	return 24701
-
-
 func before_each() -> void:
+	_port = TwoPeers.next_port()
 	_sessions.clear()
 	late = null
 	server = make_side("InteractServer")
 	client = make_side("InteractClient")
-	var server_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(server_peer.create_server(port(), 3), OK)
-	server.multiplayer.multiplayer_peer = server_peer
+	assert_eq(TwoPeers.host(server, _port, 3), OK)
 	await join(client)
 	client_id = client.multiplayer.get_unique_id()
 	add_player(server, client_id)
@@ -54,18 +49,11 @@ func before_each() -> void:
 
 func after_each() -> void:
 	for session: GameSession in _sessions:
-		var root: Node = session.get_parent()
-		var path: NodePath = root.get_path()
-		session.multiplayer.multiplayer_peer.close()
-		session.multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
-		root.free()
-		get_tree().set_multiplayer(null, path)
+		TwoPeers.close_side(session.get_parent())
 
 
 func join(session: GameSession) -> void:
-	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(peer.create_client("127.0.0.1", port()), OK)
-	session.multiplayer.multiplayer_peer = peer
+	assert_eq(TwoPeers.join(session, _port), OK)
 	var peers: int = server.multiplayer.get_peers().size() + 1
 	await wait_until(
 		func() -> bool:
@@ -76,10 +64,7 @@ func join(session: GameSession) -> void:
 
 
 func make_side(side_name: String) -> GameSession:
-	var root: Node = Node.new()
-	root.name = side_name
-	add_child(root)
-	get_tree().set_multiplayer(SceneMultiplayer.new(), root.get_path())
+	var root: Node = TwoPeers.make_side(self, side_name)
 	var session: GameSession = FixtureSession.new()
 	session.name = "GameSession"
 	var economy: Economy = Economy.new()

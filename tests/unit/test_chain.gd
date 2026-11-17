@@ -4,14 +4,15 @@ extends GutTest
 
 const WALKER: String = "res://content/enemies/zombie_walker.tres"
 const RULES: String = "res://content/waves/default_waves.tres"
-const PORT: int = 24669
 
+var _port: int
 var _session: GameSession
 var _spawner: Spawner
 var _chain: Chain
 
 
 func before_each() -> void:
+	_port = TwoPeers.next_port()
 	_session = GameSession.new()
 	_session.rng.seed = 17
 	_spawner = Spawner.new()
@@ -109,12 +110,8 @@ func test_two_peers_receive_cosmetic_arcs_without_client_damage() -> void:
 	var client_root: Node = _side("Client")
 	var server_chain: Chain = server_root.get_node("Chain") as Chain
 	var client_chain: Chain = client_root.get_node("Chain") as Chain
-	var server_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(server_peer.create_server(PORT, 2), OK)
-	server_root.multiplayer.multiplayer_peer = server_peer
-	var client_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(client_peer.create_client("127.0.0.1", PORT), OK)
-	client_root.multiplayer.multiplayer_peer = client_peer
+	assert_eq(TwoPeers.host(server_root, _port, 2), OK)
+	assert_eq(TwoPeers.join(client_root, _port), OK)
 	await wait_until(
 		func() -> bool:
 			return client_root.multiplayer.get_unique_id() > 1 and server_root.multiplayer.get_peers().size() == 1,
@@ -130,25 +127,14 @@ func test_two_peers_receive_cosmetic_arcs_without_client_damage() -> void:
 	assert_eq(target.health.current, 980.0, "only the server applied one half-damage hit")
 	assert_eq(client_chain.get_child_count(), 1)
 	assert_eq((client_chain.get_child(0) as Node3D).global_position, Vector3.UP)
-	_close_side(client_root)
-	_close_side(server_root)
+	TwoPeers.close_side(client_root)
+	TwoPeers.close_side(server_root)
 
 
 func _side(side_name: String) -> Node:
-	var root: Node = Node.new()
-	root.name = side_name
-	add_child(root)
-	get_tree().set_multiplayer(SceneMultiplayer.new(), root.get_path())
+	var root: Node = TwoPeers.make_side(self, side_name)
 	root.add_child(Chain.new())
 	return root
-
-
-func _close_side(root: Node) -> void:
-	var path: NodePath = root.get_path()
-	root.multiplayer.multiplayer_peer.close()
-	root.multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
-	root.free()
-	get_tree().set_multiplayer(null, path)
 
 
 func test_arc_segments_share_one_mesh_scaled_to_length() -> void:
