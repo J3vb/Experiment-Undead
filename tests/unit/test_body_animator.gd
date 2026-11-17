@@ -38,11 +38,12 @@ func test_standing_still_plays_idle() -> void:
 
 
 func test_walk_directions_pick_their_clip() -> void:
+	var walk: float = player.walk_speed
 	var cases: Dictionary[String, Vector3] = {
-		"forward": Vector3(0.0, 0.0, -5.0),
-		"back": Vector3(0.0, 0.0, 5.0),
-		"right": Vector3(5.0, 0.0, 0.0),
-		"left": Vector3(-5.0, 0.0, 0.0),
+		"forward": Vector3(0.0, 0.0, -walk),
+		"back": Vector3(0.0, 0.0, walk),
+		"right": Vector3(walk, 0.0, 0.0),
+		"left": Vector3(-walk, 0.0, 0.0),
 	}
 	var expected: Dictionary[String, Vector2] = {
 		"forward": Vector2(0.0, 1.0), "back": Vector2(0.0, -1.0), "right": Vector2(1.0, 0.0), "left": Vector2(-1.0, 0.0)
@@ -54,7 +55,7 @@ func test_walk_directions_pick_their_clip() -> void:
 
 func test_moves_are_measured_in_the_body_frame_after_turning() -> void:
 	player.rotation.y = PI / 2.0
-	await _move(Vector3(-5.0, 0.0, 0.0))
+	await _move(Vector3(-player.walk_speed, 0.0, 0.0))
 	assert_almost_eq(_ground().distance_to(Vector2(0.0, 1.0)), 0.0, 0.05, "walking where the body faces is forward")
 
 

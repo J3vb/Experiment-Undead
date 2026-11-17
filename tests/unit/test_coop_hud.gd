@@ -18,6 +18,7 @@ func before_each() -> void:
 	hud.coop_hud.set_physics_process(false)
 	player = _make_player("Local")
 	teammate = _make_player("Rook")
+	teammate.display_name = "Rook"
 	teammate.position.x = 1.0
 	Events.player_spawned.emit(player)
 

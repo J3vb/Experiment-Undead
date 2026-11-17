@@ -15,6 +15,8 @@ var _recoil_current: Vector2 = Vector2.ZERO
 var _recovery: float = 9.0
 var _bob_time: float = 0.0
 var _body: CharacterBody3D
+var _tilt: Tween
+var _tilt_degrees: float = 0.0
 
 @onready var recoil_pivot: Node3D = $RecoilPivot
 @onready var camera: Camera3D = $RecoilPivot/Camera3D
@@ -38,6 +40,19 @@ func add_recoil(kick: Vector2, recovery: float, permanent_ratio: float) -> void:
 	_recoil_target += rad * (1.0 - permanent_ratio)
 	add_pitch(rad.x * permanent_ratio)
 	_body.rotate_y(rad.y * permanent_ratio)
+
+
+## Down and death roll. Steps on the physics tick so the interpolated camera stays
+## smooth; asking for the roll it already has or is heading to does nothing.
+func tilt(degrees: float, time: float) -> Tween:
+	if _tilt and _tilt.is_valid() and is_equal_approx(_tilt_degrees, degrees):
+		return _tilt
+	if _tilt:
+		_tilt.kill()
+	_tilt_degrees = degrees
+	_tilt = create_tween().set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	_tilt.tween_property(self, "rotation:z", deg_to_rad(degrees), time)
+	return _tilt
 
 
 func add_flinch(strength_degrees: float, sideways: float) -> void:

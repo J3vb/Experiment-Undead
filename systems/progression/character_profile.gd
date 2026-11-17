@@ -12,6 +12,8 @@ var total_xp: int = 0
 var skill_ranks: Dictionary = {}
 var stash: Array[Dictionary] = []
 var loadout: Dictionary = {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}}
+## Best run per map (the level folder name): {"round": int, "kills": int}.
+var best_runs: Dictionary = {}
 var level: int:
 	get:
 		return XP_RULES.level_for_total_xp(total_xp)
@@ -33,6 +35,7 @@ func to_dict() -> Dictionary:
 	data["skill_ranks"] = skill_ranks.duplicate(true)
 	data["stash"] = stash.duplicate(true)
 	data["loadout"] = loadout.duplicate(true)
+	data["best_runs"] = best_runs.duplicate(true)
 	return data
 
 
@@ -51,8 +54,11 @@ static func from_dict(data: Dictionary) -> CharacterProfile:
 		for slot: String in profile.loadout:
 			if saved_loadout.get(slot) is Dictionary:
 				profile.loadout[slot] = saved_loadout[slot].duplicate(true)
+	var saved_best: Variant = data.get("best_runs", {})
+	if saved_best is Dictionary:
+		profile.best_runs = saved_best.duplicate(true)
 	profile._unknown = data.duplicate(true)
-	for key: String in ["id", "display_name", "total_xp", "skill_ranks", "stash", "loadout"]:
+	for key: String in ["id", "display_name", "total_xp", "skill_ranks", "stash", "loadout", "best_runs"]:
 		profile._unknown.erase(key)
 	return profile
 
@@ -100,6 +106,21 @@ static func _valid_inventory(data: Dictionary) -> bool:
 		var item: Variant = saved_loadout.get(slot)
 		if item != null and not item is Dictionary:
 			return false
+	return true
+
+
+## Keeps the highest round per map (more kills breaks a tie). Saves and
+## returns true when this run is a new best.
+func record_run(map: String, stats: Dictionary) -> bool:
+	var run_round: int = int(stats.get("round", 0))
+	var run_kills: int = int(stats.get("kills", 0))
+	var best: Variant = best_runs.get(map, {})
+	var best_round: int = int(best.get("round", 0)) if best is Dictionary else 0
+	var best_kills: int = int(best.get("kills", 0)) if best is Dictionary else 0
+	if run_round < best_round or (run_round == best_round and run_kills <= best_kills):
+		return false
+	best_runs[map] = {"round": run_round, "kills": run_kills}
+	save()
 	return true
 
 

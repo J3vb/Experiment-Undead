@@ -18,6 +18,7 @@ var _scene: SceneMultiplayer
 var _display_name: String = "Survivor"
 var _level: int = 1
 var _levels: Dictionary[int, int] = {}
+var _names: Dictionary[int, String] = {}
 var _accepted: Dictionary[int, bool] = {}
 var _rejected: Dictionary[int, bool] = {}
 
@@ -100,6 +101,9 @@ func _receive_hello(peer_id: int, data: Array) -> void:
 		if not data[4] is float or not is_finite(data[4]):
 			return
 		_levels[peer_id] = clampi(int(data[4]), 1, 50)
+		_names[peer_id] = (
+			str(data[3]).strip_edges().left(24) if not str(data[3]).strip_edges().is_empty() else "Survivor"
+		)
 		_accepted[peer_id] = true
 		_send(peer_id, ["accepted"])
 		_scene.complete_auth(peer_id)
@@ -180,7 +184,13 @@ func player_level(peer_id: int) -> int:
 	return _level if peer_id == multiplayer.get_unique_id() else _levels.get(peer_id, 1)
 
 
+## The name a player chose for their character, as accepted in the hello.
+func player_name(peer_id: int) -> String:
+	return _display_name if peer_id == multiplayer.get_unique_id() else _names.get(peer_id, "Survivor")
+
+
 func _forget_peer(peer_id: int) -> void:
 	_levels.erase(peer_id)
+	_names.erase(peer_id)
 	_accepted.erase(peer_id)
 	_rejected.erase(peer_id)
