@@ -18,7 +18,7 @@ const GUNS: Array[String] = [
 const SHADER: String = "res://assets/materials/gun_finish.gdshader"
 const IMPORTER: GDScript = preload("res://tools/assets/gun_finish_import.gd")
 const KNURLED: Dictionary[String, String] = {
-	"rifle_ar": "GunMetalKnurled",
+	"rifle_ar": "GunMetalKnurledWorn",
 	"kestrel_smg": "MatteBlackKnurled",
 	"talon_dmr": "GunMetalKnurled",
 	"hollis_44": "WoodKnurled",
@@ -42,7 +42,7 @@ func test_every_gun_surface_uses_the_finish_shader() -> void:
 		var materials: Dictionary[String, Material] = _materials(id)
 		for mat_name: String in materials:
 			var material: Material = materials[mat_name]
-			if mat_name == "OpticGlass":
+			if mat_name in IMPORTER.STANDARD:
 				assert_true(material is BaseMaterial3D, id + " optic glass keeps its standard material")
 				continue
 			assert_true(material is ShaderMaterial, "%s %s uses the finish shader" % [id, mat_name])
@@ -62,15 +62,39 @@ func test_finish_follows_the_material_name() -> void:
 		assert_true(materials.has(KNURLED[id]), id + " has knurled parts")
 		if materials.has(KNURLED[id]):
 			assert_true(_param(materials[KNURLED[id]], "knurled"), id + " knurl pattern is on")
-		assert_false(_param(materials["GunMetal"], "knurled"), id + " plain metal stays smooth")
+		var plain: String = "GunMetalWorn" if materials.has("GunMetalWorn") else "GunMetal"
+		assert_false(_param(materials[plain], "knurled"), id + " plain metal stays smooth")
 
 
 func test_colour_metal_and_roughness_come_from_blender() -> void:
 	var rifle: Dictionary[String, Material] = _materials("rifle_ar")
-	var tan_color: Color = _param(rifle["Tan"], "albedo")
+	var tan_color: Color = _param(rifle["TanWorn"], "albedo")
 	assert_gt(tan_color.r, tan_color.b, "tan stays warm")
-	assert_almost_eq(_param(rifle["GunMetal"], "metallic"), 0.8, 0.01, "gunmetal stays metallic")
-	assert_almost_eq(_param(rifle["MatteBlack"], "roughness"), 0.75, 0.01, "black stays matte")
+	assert_almost_eq(_param(rifle["GunMetalWorn"], "metallic"), 0.8, 0.01, "gunmetal stays metallic")
+	assert_almost_eq(_param(rifle["MatteBlackWorn"], "roughness"), 0.75, 0.01, "black stays matte")
+
+
+func test_worn_suffix_adds_heavy_wear_and_grime_only_to_concept_guns() -> void:
+	var rifle: Dictionary[String, Material] = _materials("rifle_ar")
+	assert_eq(_param(rifle["MatteBlackWorn"], "finish"), 1, "worn black is still a coating")
+	assert_gt(_param(rifle["MatteBlackWorn"], "wear"), 1.0, "worn paint chips past the edges")
+	assert_gt(_param(rifle["MatteBlackWorn"], "grime"), 0.0, "worn guns collect grime")
+	assert_true(_param(rifle["GunMetalKnurledWorn"], "knurled"), "Knurled still works before Worn")
+	var hollis: Dictionary[String, Material] = _materials("hollis_44")
+	for mat_name: String in hollis:
+		if hollis[mat_name] is ShaderMaterial:
+			assert_null(_param(hollis[mat_name], "wear"), "other guns keep the shader's default wear")
+			assert_null(_param(hollis[mat_name], "grime"), "other guns stay clean")
+
+
+func test_markings_print_the_shared_atlas() -> void:
+	var markings: Material = _materials("rifle_ar")["Markings"]
+	assert_true(_param(markings, "marked"), "markings read the atlas")
+	var atlas: Texture2D = _param(markings, "markings_map")
+	assert_not_null(atlas, "atlas is set")
+	if atlas:
+		assert_eq(atlas.resource_path, IMPORTER.MARKINGS_MAP, "the one shared atlas")
+	assert_string_contains((load(SHADER) as Shader).code, "texture(markings_map, UV2)")
 
 
 func test_unknown_material_keeps_its_standard_material() -> void:
@@ -115,8 +139,15 @@ func test_imported_rarity_masks_cover_only_a_thin_inlay() -> void:
 		gun.free()
 
 
+func test_red_dot_glass_is_see_through_and_non_emissive() -> void:
+	var glass: BaseMaterial3D = _materials("rifle_ar")["SightGlass"] as BaseMaterial3D
+	assert_false(glass.emission_enabled, "red dot glass does not glow")
+	assert_eq(glass.transparency, BaseMaterial3D.TRANSPARENCY_ALPHA, "you aim through the red dot glass")
+	assert_lt(glass.albedo_color.a, 0.5, "the glass is mostly clear")
+
+
 func test_optic_glass_stays_opaque_and_non_emissive() -> void:
-	for id: String in ["rifle_ar", "talon_dmr", "corvid_338"]:
+	for id: String in ["talon_dmr", "corvid_338"]:
 		var materials: Dictionary[String, Material] = _materials(id)
 		var glass: BaseMaterial3D = materials["OpticGlass"] as BaseMaterial3D
 		assert_false(glass.emission_enabled, id + " optic does not glow")

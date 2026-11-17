@@ -474,7 +474,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
 billboard = 1
 pixel_size = 0.004
 font_size = 40
-text = "Brenner Trench 750"
+text = "BR-12 750"
 
 [node name="WallBuyKestrel" parent="NavigationRegion3D/Machines" instance=ExtResource("wallbuy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.25, 1.4, 32)
@@ -500,7 +500,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
 billboard = 1
 pixel_size = 0.004
 font_size = 40
-text = "Kestrel SMG 1000"
+text = "VX-9 1000"
 
 [node name="WallBuyCoachman" parent="NavigationRegion3D/Machines" instance=ExtResource("wallbuy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.25, 1.4, 38)
@@ -552,7 +552,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
 billboard = 1
 pixel_size = 0.004
 font_size = 40
-text = "Talon DMR 1500"
+text = "MR-28 1500"
 
 [node name="PowerSwitch" parent="NavigationRegion3D/Machines" instance=ExtResource("power")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 1.3, 16)
@@ -596,7 +596,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
 billboard = 1
 pixel_size = 0.004
 font_size = 40
-text = "AR-7 Rifle 1200"
+text = "AR-17 1200"
 
 [node name="CryoRack" parent="NavigationRegion3D/Machines" instance=ExtResource("wallbuy")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 53.5, 1.4, 50.75)

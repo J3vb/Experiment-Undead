@@ -24,7 +24,7 @@ from mathutils import Vector
 
 REPO = Path(__file__).resolve().parents[1]
 GUNS = (
-    ("rifle_ar", "rifle_ar", "AR-7 / RIFLE"),
+    ("rifle_ar", "rifle_ar", "AR-17 / RIFLE"),
     ("shotgun_brenner", "brenner_trench", "BRENNER / SHOTGUN"),
     ("kestrel_smg", "kestrel_smg", "KESTREL / SMG"),
     ("talon_dmr", "talon_dmr", "TALON / DMR"),

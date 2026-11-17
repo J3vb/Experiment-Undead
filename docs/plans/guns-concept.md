@@ -1,6 +1,6 @@
 # Plan: The four starter guns to the concept art
 
-Status: Approved
+Status: Building
 Roadmap: F-72
 Phase: P4 (v0.1 Vertical slice, look pass on built guns)
 Size: M

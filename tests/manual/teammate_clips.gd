@@ -1,5 +1,5 @@
 ## Renders frames of every third-person player clip on the geared body, holding a gun the way
-## BodyAnimator mounts it (default the AR-7).
+## BodyAnimator mounts it (default the AR-17).
 ## xvfb-run godot --path . --rendering-driver opengl3 res://tests/manual/teammate_clips.tscn -- --gun=kestrel_smg
 extends Node3D
 

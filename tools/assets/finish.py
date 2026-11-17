@@ -94,6 +94,10 @@ def fix_normals(obj) -> None:
 
 
 def unwrap(obj) -> None:
+    """Smart-projects the first UV map. A second map (gun `Markings`) is authored and kept."""
+    layers = obj.data.uv_layers
+    if len(layers) > 1:
+        layers.active_index = 0
     _select_only(obj)
     bpy.ops.object.mode_set(mode="EDIT")
     bpy.ops.mesh.select_all(action="SELECT")
@@ -166,7 +170,7 @@ def cavity(mesh) -> list:
 
 def _unshaded(obj) -> bool:
     for mat in obj.data.materials:
-        if mat and mat.name == "OpticGlass":
+        if mat and mat.name in ("OpticGlass", "SightGlass"):
             continue
         bsdf = mat.node_tree.nodes.get("Principled BSDF") if mat and mat.node_tree else None
         if bsdf is None or bsdf.inputs["Emission Strength"].default_value <= 0.0:

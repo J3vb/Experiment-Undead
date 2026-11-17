@@ -57,7 +57,10 @@ Bloater skin `#4A5446`.
 5. **Inside cold, outside warm.** Colour temperature tells you where you are.
 6. Guns: matte black and gunmetal, polymer, one secondary colour (tan, olive
    or grey). Rarity shows only as a thin inlay strip and optic glass colour; no
-   full-gun recolours. Original designs, no real brand marks.
+   full-gun recolours. Original designs, no real brand marks. Small accents are
+   fine: yellow mag tape, brass, and Oriel Biotechnic marks (our own company).
+   The four wall guns are heavily worn, chipped and grimy, like the concept
+   sheet [images/guns_concept.jpg](images/guns_concept.jpg).
 
 ## Godot settings (what the repo uses)
 
