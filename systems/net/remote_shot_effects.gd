@@ -1,4 +1,5 @@
-## A remote player's positional gun sound, short muzzle flash, pellet tracers and body kick.
+## A remote player's positional gun sound, short muzzle flash, pellet tracers, body kick
+## and the impacts where its bullets hit.
 class_name RemoteShotEffects
 extends Node3D
 
@@ -59,6 +60,14 @@ func play(data: WeaponData, origin: Vector3, points: PackedVector3Array) -> void
 	_draw_tracers(origin, points)
 	if body:
 		body.fire()
+
+
+## Blood or dust where a remote player's bullets really landed (sent with the shot).
+func show_hits(origin: Vector3, hits: PackedVector3Array, kinds: PackedByteArray) -> void:
+	var parent: Node = get_tree().current_scene if get_tree().current_scene else get_parent()
+	for index: int in hits.size():
+		var normal: Vector3 = (origin - hits[index]).normalized()
+		Impact.spawn(parent, hits[index], normal, kinds[index] as Impact.Kind)
 
 
 ## One tracer node per remote player, made on its first shot and redrawn per shot.
