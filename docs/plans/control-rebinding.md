@@ -142,8 +142,18 @@ change. The rows (about 18) are built once in `_ready` of the bindings scene.
   keyboard/mouse events). `reset_to_defaults()` also resets bindings.
   Each change saves and emits `changed(&"bindings", action, null)`.
   `pause` and `ui_*` actions are refused. Keys are stored as
-  `physical_keycode` with `keycode` 0. Pack overlay `key_name()` uses
-  `event_label()`.
+  `physical_keycode` with `keycode` 0.
+  Pack overlay: `_input()` dispatches Pack actions for mouse button presses
+  as well as keys (today it only reads `InputEventKey`, so a Pack action
+  rebound to a mouse button would do nothing); the Pack count and button
+  labels refresh on `Settings.changed` with section `bindings`.
+  `PackOverlay.key_name()` moves to `Settings.key_name(action)` (main key or
+  mouse button via `event_label()`), because the HUD becomes its third user.
+  HUD: interaction prompts keep their `[F]` marker (it means "the interact
+  key"), but the badge shows `Settings.key_name(&"interact")`; the low-ammo
+  hint shows `RELOAD [<reload key>]`; both refresh on a bindings change even
+  while a prompt is already visible. The co-op revive prompt becomes
+  "Hold to revive <name> [F]" so it uses the same badge.
 - Files: core/settings.gd, systems/ui/pack_overlay.gd, systems/ui/hud.gd, systems/net/coop_hud.gd, tests/unit/test_settings_bindings.gd (new), tests/unit/test_pack_overlay.gd, tests/unit/test_hud.gd, tests/unit/test_coop_hud.gd, docs/LOGGING.md (new warn lines).
 - Tests: `test_settings_bindings.gd`: round trip survives reload; saved key
   uses physical_keycode; only changed actions are written; a key bound to two
