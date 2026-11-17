@@ -232,8 +232,10 @@ feel systems; F-09 measures it.
   (the `HeadCenter` marker) cannot be hidden. Instead `ZombieRig.pop_head()`
   sets the `head` bone's pose scale to 0.01: every vertex skinned to the head
   bone, including the face details, collapses into the neck top, which reads
-  as a stump. No model change. On every peer, a zombie seen dying with
-  `head_popped` calls `pop_head()` and plays a `HeadPop` from a ring of 8
+  as a stump. No model change. The missing head is persistent and the effect
+  is one-shot: whenever a zombie copy is DEAD with `head_popped` (including a
+  late joiner's first sync of an existing corpse) it calls `pop_head()`; only
+  a seen change from a live state to DEAD also plays a `HeadPop` from a ring of 8
   (3 chunk RigidBody3D + mist particles at the head marker, freeze after
   1.5 s, hide after 10 s). Settings `video.gore` with a row in the settings
   screen; Impact, BloodPool and HeadPop read it (Reduced: half particles,
@@ -244,7 +246,9 @@ feel systems; F-09 measures it.
 - Tests: test_head_pop.gd (ring of 8, chunks frozen after 1.5 s),
   test_zombie_rig.gd (`pop_head()` leaves the head bone's global scale under
   0.05 for both Shambler and Bloater models), test_zombie_sync.gd
-  (`head_popped` is in SYNCED and a client copy pops the head),
+  (`head_popped` is in SYNCED and a client copy pops the head; a late-joined
+  copy that is already DEAD with `head_popped` collapses the head but plays no
+  HeadPop or sound),
   test_settings.gd (gore default 2, clamps 0-2), gore Off spawns no pool.
   Visual check (look-check skill): a headless render before and after
   `pop_head()` shows no head or face left; the render goes in the PR.
