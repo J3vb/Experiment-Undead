@@ -39,7 +39,7 @@ In:
   friends cannot (no router answer, provider NAT).
 - **Server info and LAN discovery.** Every server (an open world and a
   dedicated server) answers a small UDP info query on its info port (game
-  port + 1) with name, players, max players, what it is playing, version and
+  port + 1000) with name, players, max players, what it is playing, version and
   protocol. The browser broadcasts that query on the local network to find
   games there with no typing.
 - **Server browser** ("Play online", `docs/design/ui-hud.md` screen 2 and its
@@ -48,8 +48,8 @@ In:
   and port) adds and joins. Favourite, rename, remove. Refresh. Errors in
   plain words, reusing `NetErrorDialog`.
 - **Settings.** A Network page: "Let friends join my world" (on), "Open
-  router port automatically" (on), "World name" (default: the computer name,
-  like the mockup's "LAN: DESKTOP-K2"), port.
+  router port automatically" (on), "World name" (default "Lantern Post": the
+  computer name would be visible to the internet once the port is open), port.
 
 Not in (non-goals, and where each one goes instead):
 
@@ -117,8 +117,8 @@ Not in (non-goals, and where each one goes instead):
   `docs/design/images/ui_server_browser.jpg`: title "Play online", columns,
   Direct connect panel, detail card, footer keys (Join, Favourite, Refresh,
   Back). This plan follows it except the password field (P8) and the fixed
-  broadcast port (see Data: info port = game port + 1, because two servers on
-  one PC cannot share one port).
+  broadcast port (see Data: info port = game port + 1000, because two servers on
+  one PC cannot share one port and + 1 would hit the next server's game port).
 - `docs/design/game-design.md` P8 row (password, name, admin belong to P8)
   and hosting line ("Friends connect by address and port").
 - `docs/MULTIPLAYER.md`: one code path, port 7777 UDP, joiners land where the
@@ -141,8 +141,9 @@ Not in (non-goals, and where each one goes instead):
 | `systems/net/remote_shots.gd`, `systems/weapons/effects/chain.gd`, `systems/net/hit_claims.gd` | changed | relay only when peers exist |
 | `systems/ui/main_menu.gd`, `.tscn` | changed | Enter world + Play online; host and join panels removed |
 | `systems/net/port_opener.gd` | new | UPnP in a `Thread`, once per game run, lease 3600 s |
-| `systems/net/server_info.gd` | new | UDP info responder (server) and query/parse helpers (browser) |
-| `systems/net/dedicated_server.gd` | changed | starts `ServerInfo` with its name and port |
+| `systems/net/server_info.gd` | new | `Node`, child of Net, `PROCESS_MODE_ALWAYS`: UDP info responder; reply/parse helpers shared with the browser |
+| `systems/net/dedicated_server.gd` | changed | names its world for `ServerInfo` |
+| `deploy/server/Dockerfile`, `docs/RELEASING.md` | changed | expose and map the info port (8777/udp) |
 | `systems/ui/server_browser.gd`, `.tscn` | new | the Play online screen |
 | `systems/ui/server_list.gd` | new | saved and recent servers in `user://servers.cfg` |
 | `content/screens/server_browser.tres` | new | router entry |
@@ -156,22 +157,26 @@ info socket, which nothing else owns). `ServerList` owns the saved list.
 ## Data
 
 - Settings (`user://settings.cfg`, section `network`): `open_to_friends` bool
-  `true`; `upnp` bool `true`; `world_name` String `""` (empty shows
-  `OS.get_environment("COMPUTERNAME")` or `HOSTNAME`, else "Lantern Post");
-  `last_port` int 7777 (exists). `last_address` stays for Direct connect.
+  `true`; `upnp` bool `true`; `world_name` String `"Lantern Post"` (cut to 32
+  characters); `last_port` int 7777 (exists; now 1 to 64535 so the info port
+  fits). `last_address` stays for Direct connect.
   Old files load with the defaults.
 - `user://servers.cfg` (ConfigFile, new): one section per `address:port`
   with `name` String, `favourite` bool, `last_joined` int (unix time). Recent
   list keeps the newest 20 non-favourites. Unknown keys are kept.
-- Info packet (UDP, game port + 1; not an ENet message): query is the 4 bytes
-  `EUQ1`. Reply is `EUR1` plus UTF-8 JSON with frozen keys
-  `{"name", "players", "max", "playing", "version", "protocol"}`; at most 512
-  bytes; unknown keys ignored, so later versions can add fields. `playing` is
-  "Lantern Post", "Halcyon Labs, round 12" or "Starting". The server answers
-  at most 20 queries per second in total and never more than one reply per
-  query, so it cannot be used to flood someone.
-- LAN discovery: broadcast `EUQ1` to 255.255.255.255 on info ports 7778 to
-  7785 (game ports 7777 to 7784), collect replies for 1 s.
+- Info packet (UDP, game port + 1000; not an ENet message): the query is
+  64 bytes: `EUQ1`, an 8-byte random nonce, zero padding (so a reply is never
+  much larger than the query). The reply is `EUR1`, the same nonce, then UTF-8
+  JSON with frozen keys `{"name", "players", "max", "playing", "version",
+  "protocol"}`, at most 512 bytes; unknown keys ignored, so later versions can
+  add fields. `playing` is "Lantern Post", "Halcyon Labs, round 12" or
+  "Starting". The server answers at most 2 queries per second per source
+  address and 20 per second in total, one reply per query. The browser drops
+  replies over 512 bytes or with a wrong nonce before `JSON.parse`, type-checks
+  every field, cuts `name` to 32 characters and shows it as plain text.
+- LAN discovery: broadcast the query to 255.255.255.255 on info ports 8777 to
+  8784 (game ports 7777 to 7784); rows are keyed by the reply's source IP and
+  port, so one server found twice shows once.
 - `Net.open_state` (not saved, not sent): `{"status": open|offline_busy|
   offline_off, "port", "router": pending|opened|no_router|failed|cgnat|off,
   "address"}`.
@@ -270,7 +275,7 @@ frame.
   `content/settings/network_port.tres` (new), `tests/unit/test_net.gd`,
   `tests/unit/test_main_menu.gd`, `tests/unit/test_main_menu_screens.gd`,
   `tests/unit/test_settings.gd`, `tests/integration/test_net_match.gd`.
-- Tests (ports 24645+, never 7777): Enter world leaves Net listening and
+- Tests (ports 24680 and up, never 7777 or ports other tests use): Enter world leaves Net listening and
   routes to the hub (fails today: no such button); setting off stays offline;
   port held by another `ENetMultiplayerPeer` falls back to offline with
   `offline_busy`; restart alone keeps the port. Integration: a world started
@@ -313,45 +318,60 @@ frame.
 
 ### Step 4: Server info and LAN discovery
 
-- Build: `ServerInfo` (new, owned by `Net`): on the server, binds a
-  `PacketPeerUDP` to game port + 1 when the world opens (and in
-  `DedicatedServer`), polls it in `Net._physics_process`, and answers `EUQ1`
-  with the `EUR1` JSON reply (name, players, max, playing, version,
-  protocol), capped at 20 replies per second. A busy info port only logs
-  `net.info_port_busy`; joining still works. Browser side: static
-  `ServerInfo.query(address, port)` and `ServerInfo.discover()` (broadcast to
-  info ports 7778 to 7785) send and collect replies for 1 s on a client
-  socket, with ping from send to reply. Settings: "World name".
+- Build: `ServerInfo` (new, `extends Node`): a child of Net with
+  `PROCESS_MODE_ALWAYS`, so a paused solo world still answers. Net only calls
+  `start(port, name)` in `open_world` and `stop()` in `leave`; the dedicated
+  server calls the same. While bound to game port + 1000 it polls its
+  `PacketPeerUDP` in its own `_physics_process` (off while unbound), answers
+  queries with the reply above under the per-source and total caps, and builds
+  `playing` from `Net.place` and `Events.round_started`. A busy info port only
+  logs `net.info_port_busy`; joining still works. Shared static helpers build
+  the query, check a reply against its nonce and parse it; the browser (step
+  5) owns its own socket, so nothing here blocks. `discover()` style sending
+  takes `ports: PackedInt32Array` and a broadcast address so tests can use
+  free ports. Docker image exposes 8777/udp; run lines in
+  `docs/MULTIPLAYER.md` and `docs/RELEASING.md` map it. Settings: "World
+  name".
 - Files: `systems/net/server_info.gd` (new), `core/net.gd`,
   `systems/net/dedicated_server.gd`, `core/settings.gd`,
   `content/settings/network_world_name.tres` (new),
+  `deploy/server/Dockerfile`, `docs/RELEASING.md`, `docs/MULTIPLAYER.md`,
   `tests/unit/test_server_info.gd` (new),
   `tests/integration/test_net_match.gd`.
-- Tests: reply builder gives the frozen keys and stays under 512 bytes with a
-  long name; parser ignores unknown keys and rejects bad packets; the rate cap
-  answers 20 and drops the rest; a world on port 24645 answers a query on
-  24646 with its name and player count (fails without the step). Integration:
-  a second process queries a dedicated server on loopback and then joins it.
+- Tests: query and reply builders (64-byte query, frozen keys, under 512
+  bytes with a long name); parser drops a wrong nonce, an oversize packet,
+  wrong field types and unknown keys; the caps answer 2 per source and 20 in
+  total; a world on 24680 answers on 25680 with its name and player count,
+  also while the tree is paused (fails without the step). Broadcast: a
+  responder bound to `0.0.0.0` on a free port is found by a broadcast query
+  (if the CI box has no route for broadcast, the test calls `pending()` with
+  the reason instead of failing). Integration: a second process queries a
+  dedicated server and then joins it.
 - Done when: a query to any running world or dedicated server returns its
-  name, players and what it is playing.
+  name, players and what it is playing, paused or not.
 
 ### Step 5: The server browser
 
-- Build: `server_browser` router screen ("Play online", the mockup): list from
+- Build: `server_browser` screen pushed through the router ("Play online",
+  the mockup; not a root screen, it emits `closed`): list from
   `ServerList` (favourites first, then recent) plus `ServerInfo.discover()`
-  finds tagged LAN; each row queried on open and on Refresh (R); columns name,
+  finds tagged LAN; each row queried on open and on Refresh (R) through one
+  `PacketPeerUDP` the browser owns and polls in `_process` (UI only, never
+  blocking), with host names resolved by `IP.resolve_hostname_queue_item`; columns name,
   players, now playing, ping (colours from `look-rules.md`), tags LAN / Full /
   Version mismatch / Not responding. Detail card for the selected row. Direct
   connect (address and port) adds the server to recent and joins through the
-  existing `Net.pending_join` path and `NetErrorDialog`. Favourite (F),
+  existing `Net.pending_join` path, with the browser's own `NetErrorDialog`
+  (the menu's is reparented on join). `normalized_address` and its helpers
+  move from `main_menu.gd` into the browser, with their tests. Favourite (F),
   rename, remove, Join (Enter), Back (Esc), with gamepad focus. A version
   mismatch row says "Version mismatch: server X, you Y" before joining.
   `ServerList` saves `user://servers.cfg` and records every successful join.
   The old Join panel goes.
 - Files: `systems/ui/server_browser.gd`, `.tscn` (new),
   `systems/ui/server_list.gd` (new), `content/screens/server_browser.tres`
-  (new), `systems/ui/main_menu.gd`, `.tscn`,
-  `tests/unit/test_server_list.gd` (new),
+  (new), `systems/ui/main_menu.gd`, `.tscn`, `tests/unit/test_main_menu.gd`,
+  `tests/content/test_screens.gd`, `tests/unit/test_server_list.gd` (new),
   `tests/unit/test_server_browser.gd` (new),
   `tests/unit/test_main_menu_screens.gd`.
 - Tests: `ServerList` add, favourite, rename, remove, recent cap of 20,
@@ -398,10 +418,13 @@ frame.
 - **Strangers join.** No password until P8. LAN finds only reach your own
   network; over the internet a stranger needs your address. The setting
   turns the world private. A crash leaves at most a 1-hour lease.
-- **Info port busy** (two worlds on one PC): joining still works; only the
+- **Info port busy** (two worlds on one PC with ports 1000 apart): joining still works; only the
   browser cannot see that world. Logged.
 - **Losing the quick solo start.** Every game now goes through the hub and
   the Deploy board; the soak and tests keep using `--host` / scene flags.
+- **Soak plays offline** (`tools/soak/soak_run.gd` builds the session
+  directly) while real games are listen servers. Step 1 tests cover a lone
+  listen server; a follow-up issue makes the soak run through `open_world`.
 - **Merge order with F-65 (PR #299).** Both add a roadmap row and an ADR; the
   second to merge renumbers. The info reply carries `version` and `protocol`
   so the browser can warn before F-65's handshake refuses.
