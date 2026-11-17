@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"graphics"
+section = &"graphics"
+key = &"gore"
+label = "Gore"
+hint = "Blood bursts, floor pools and head pops. Reduced shows less blood and no head pops; Off shows dust instead."
+kind = &"choice"
+options = PackedStringArray("Off", "Reduced", "Full")
+order = 190

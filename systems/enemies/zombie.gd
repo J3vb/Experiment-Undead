@@ -28,6 +28,7 @@ var frozen: bool = false:
 			Frost.show_frozen(self, value)
 ## Seconds since the current state began.
 var state_time: float = 0.0
+var head_popped: bool = false
 var target: Player
 ## The window this zombie climbs through; set by the Spawner, cleared once inside.
 var barrier: Barrier
@@ -330,6 +331,7 @@ func _on_damaged(info: DamageInfo) -> void:
 
 
 func _on_died(info: DamageInfo) -> void:
+	head_popped = info.is_headshot()
 	_enter(State.DEAD)
 	if barrier:
 		barrier.release(self)
@@ -337,7 +339,7 @@ func _on_died(info: DamageInfo) -> void:
 	for zone: HitZone in hit_zones:
 		zone.set_enabled(false)
 	Events.enemy_killed.emit(self, info)
-	visual.fall_over().tween_callback(queue_free)
+	visual.fall_over(head_popped).tween_callback(queue_free)
 
 
 func _process(delta: float) -> void:

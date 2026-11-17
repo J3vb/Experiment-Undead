@@ -26,6 +26,8 @@ const DEFAULTS: Dictionary = {
 	&"vsync": false,
 	&"max_fps": 0,
 	&"show_fps": false,
+	## Blood and head pops: 0 Off, 1 Reduced, 2 Full (Impact.Gore).
+	&"gore": 2,
 }
 const PRESETS: Array[Dictionary] = [
 	{&"shadows": 0, &"aa": Aa.FXAA, &"ssao": 0, &"ssil": 0, &"ssr": false, &"fog": 0, &"anisotropic": 1},
@@ -56,6 +58,7 @@ const CHOICE_COUNTS: Dictionary = {
 	&"ssil": 4,
 	&"fog": 4,
 	&"anisotropic": 5,
+	&"gore": 3,
 }
 
 ## True until the player picks a display mode or size, so a later pick of the defaults still applies.

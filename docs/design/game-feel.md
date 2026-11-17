@@ -138,11 +138,11 @@ Budgets: 64 world decals (oldest fades first), 40 active impact emitters, all fr
 
 | Gore setting | Blood | Head pop | Limb loss | Floor decals |
 | --- | --- | --- | --- | --- |
-| Full (default) | dark red #5A0F0F with bio-green tint #8DFF3A at 15% on mutated types | yes, on headshot kill | yes, limb hit dealing > 60% of max health | 24 pooled blood pools, 45 s |
+| Full (default) | dark red #5A0F0F with bio-green tint #8DFF3A at 15% on mutated types | yes, on headshot kill | yes, limb hit dealing > 60% of max health | 24 pooled blood pools, 45 s; each death lays a 1.6x pool and 2 small splats |
 | Reduced | darker, half particles | no, head slumps | no | 8 pools, 20 s |
 | Off | grey dust puff | no | no | none |
 
-Gore rules: blood burst = 12 particles, 0.4 s, gravity on. Head pop = 3 chunk meshes + mist, physics off after 1.5 s. Limb loss swaps the limb to a stump mesh and spawns the limb as a pooled rigid body (max 16 alive, despawn after 8 s). A zombie that loses a leg crawls (behaviour thread decides speed).
+Gore rules: blood burst = 24 particles on Full (12 on Reduced), 0.4 s, gravity on. Head pop = 3 chunk meshes + mist, physics off after 1.5 s. Limb loss swaps the limb to a stump mesh and spawns the limb as a pooled rigid body (max 16 alive, despawn after 8 s). A zombie that loses a leg crawls (behaviour thread decides speed).
 
 ### Death and ragdoll
 

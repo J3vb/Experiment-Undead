@@ -4,13 +4,21 @@ class_name ZombieSync
 extends MultiplayerSynchronizer
 
 const SYNCED: Array[NodePath] = [
-	^".:position", ^".:rotation", ^".:velocity", ^".:state", ^".:state_time", ^".:_vault_time", ^".:frozen"
+	^".:position",
+	^".:rotation",
+	^".:velocity",
+	^".:state",
+	^".:state_time",
+	^".:_vault_time",
+	^".:frozen",
+	^".:head_popped"
 ]
 ## Seconds between updates; the visual rig smooths the gaps.
 const INTERVAL: float = 1.0 / 30.0
 
 var _zombie: Zombie
 var _shown_dead: bool = false
+var _seen_alive: bool = false
 
 
 func _init() -> void:
@@ -41,15 +49,20 @@ func _wait_for_first_sync() -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	if _zombie.state == Zombie.State.DEAD and not _shown_dead:
-		_shown_dead = true
-		show_death(_zombie)
+	if _zombie.voice.waiting_for_sync or _shown_dead:
+		return
+	if _zombie.state != Zombie.State.DEAD:
+		_seen_alive = true
+		return
+	_shown_dead = true
+	show_death(_zombie, _seen_alive)
 
 
 ## The client half of Zombie._on_died: no events, no freeing (the server
-## despawns the zombie once its corpse has sunk).
-static func show_death(zombie: Zombie) -> void:
+## despawns the zombie once its corpse has sunk). `fresh` is false for a corpse
+## that was already down when this peer first saw it.
+static func show_death(zombie: Zombie, fresh: bool = true) -> void:
 	zombie.collision_layer = 0
 	for zone: HitZone in zombie.hit_zones:
 		zone.set_enabled(false)
-	zombie.visual.fall_over()
+	zombie.visual.fall_over(zombie.head_popped, fresh)

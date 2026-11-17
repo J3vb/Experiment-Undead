@@ -1,6 +1,6 @@
 # Plan: Zombie sounds and gore
 
-Status: Approved
+Status: Done
 Roadmap: F-14
 Phase: P4
 Size: M
@@ -114,8 +114,7 @@ Not in (non-goals, and where each one goes instead):
 | systems/net/zombie_sync.gd | changed | One synced property `head_popped` (agreed with the co-op thread) |
 | systems/net/remote_shots.gd | changed | `shot`/`play_shot` carry hit points + hit kinds, validated by the server |
 | systems/net/remote_shot_effects.gd | changed | Spawns impacts at the relayed hit points |
-| core/settings.gd | changed | `video.gore` default 2 (Full) |
-| systems/ui/settings_screen.* | changed | Gore option row |
+| core/graphics.gd, content/settings/graphics_gore.tres | changed / new | `graphics.gore` default 2 (Full), a row on the Graphics page (F-48 merged video into graphics and builds rows from data) |
 | content/enemies/*.tres | changed | New sound fields filled |
 
 Autoloads, managers or base classes added: none.
@@ -128,7 +127,7 @@ Autoloads, managers or base classes added: none.
   the new gurgle files.
 - `Zombie.head_popped: bool = false`, set by the server in `_on_died` when
   `info.is_headshot()`, synced by ZombieSync.
-- Settings `video.gore: int` 0 Off, 1 Reduced, 2 Full, default 2.
+- Settings `graphics.gore: int` 0 Off, 1 Reduced, 2 Full, default 2.
 - Save format change: none.
 - Network messages: no new RPCs. Step 3 adds two arguments to
   `RemoteShots.shot` and `play_shot`: `hits: PackedVector3Array` (each real
@@ -249,12 +248,12 @@ feel systems; F-09 measures it.
   next deaths and existing corpses are not restored; only
   a seen change from a live state to DEAD also plays a `HeadPop` from a ring of 8
   (3 chunk RigidBody3D + mist particles at the head marker, freeze after
-  1.5 s, hide after 10 s). Settings `video.gore` with a row in the settings
-  screen; Impact, BloodPool and HeadPop read it (Reduced: half particles,
+  1.5 s, hide after 10 s). Settings `graphics.gore` with a row on the
+  Graphics page (a `content/settings` row); Impact, BloodPool and HeadPop read it (Reduced: half particles,
   darker, 8 pools / 20 s, no head pop; Off: grey dust, no pools, no head pop).
 - Files: systems/effects/head_pop.gd, systems/enemies/{zombie,zombie_rig}.gd,
-  systems/net/zombie_sync.gd, core/settings.gd, core/build.gd,
-  systems/ui/settings_screen.{gd,tscn}, systems/effects/{impact,blood_pool}.gd.
+  systems/net/zombie_sync.gd, core/graphics.gd, core/build.gd,
+  content/settings/graphics_gore.tres, systems/effects/{impact,blood_pool}.gd.
 - Tests: test_head_pop.gd (ring of 8, chunks frozen after 1.5 s),
   test_zombie_rig.gd (`pop_head()` leaves the head bone's global scale under
   0.05 for both Shambler and Bloater models), test_zombie_sync.gd
@@ -269,15 +268,16 @@ feel systems; F-09 measures it.
 
 ## Acceptance
 
-- [ ] Every zombie type has death and footstep sounds (content test).
-- [ ] No more than 8 zombie vocals, 6 steps, 4 gore sounds at once (unit tests).
+- [x] Every zombie type has death and footstep sounds (content test). `tests/content/test_content.gd`
+- [x] No more than 8 zombie vocals, 6 steps, 4 gore sounds at once (unit tests). `test_zombie_voice.gd`, `test_impact.gd`
 - [ ] A client hears attacks and deaths and sees pools and head pops (unit tests on
-      the client path + co-op play-test #191).
-- [ ] Reduced and Off never decapitate a corpse (unit test).
-- [ ] Teammates' hits show impacts on every client, with the head crack on
-      headshots (unit test).
-- [ ] Gore setting Off shows no blood (unit test).
-- [ ] Soak rounds 1-10 still pass.
+      the client path + co-op play-test #191). Unit tests pass (`test_zombie_sync.gd`,
+      `test_blood_pool.gd`, `test_head_pop.gd`); the co-op play-test is still open in #191.
+- [x] Reduced and Off never decapitate a corpse (unit test). `test_head_pop.gd` test_reduced_and_off_never_decapitate
+- [x] Teammates' hits show impacts on every client, with the head crack on
+      headshots (unit test). `test_remote_impacts.gd`
+- [x] Gore setting Off shows no blood (unit test). `test_head_pop.gd` test_off_lays_no_pool_and_hits_make_dust
+- [x] Soak rounds 1-10 still pass. `soak` check green on every step PR
 
 ## Risks
 
