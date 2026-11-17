@@ -102,3 +102,22 @@ func test_power_ups_are_valid() -> void:
 		assert_not_null(power_up, path + " is PowerUpData")
 		if power_up:
 			assert_eq(String(power_up.id), path.get_file().get_basename(), path + " id matches file name")
+
+
+func test_enemy_loot_fields_are_valid() -> void:
+	for path: String in _files("enemies"):
+		var enemy: EnemyData = load(path) as EnemyData
+		var chance: float = enemy.loot_drop_chance
+		assert_true(chance == -1.0 or (chance >= 0.0 and chance <= 1.0), path + " loot chance is -1 or 0..1")
+		assert_has(ItemRoller.RARITIES, enemy.loot_min_rarity, path + " loot floor is a rarity")
+	assert_eq((load("res://content/enemies/zombie_bloater.tres") as EnemyData).loot_drop_chance, 0.05)
+
+
+func test_serum_badges_are_short_and_unique() -> void:
+	var badges: Array[String] = []
+	for path: String in _files("serums"):
+		var serum: SerumData = load(path) as SerumData
+		assert_between(serum.badge.length(), 1, 2, path + " badge is 1 or 2 letters")
+		assert_false(badges.has(serum.badge), path + " badge is unique")
+		badges.append(serum.badge)
+	assert_eq(badges.size(), 8)

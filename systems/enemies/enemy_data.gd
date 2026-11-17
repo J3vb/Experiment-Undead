@@ -23,6 +23,12 @@ extends Resource
 ## Seconds to tear one plank off a window barrier.
 @export var plank_time: float = 1.5
 
+@export_group("Loot")
+## Chance this enemy drops loot on each kill. Below 0 = the zombie round curve in LootService.
+@export var loot_drop_chance: float = -1.0
+## Lowest rarity it drops; lower rolls are rerolled.
+@export var loot_min_rarity: StringName = &"common"
+
 @export_group("Look")
 @export var body_scale: float = 1.0
 @export var groan_sounds: Array[AudioStream] = []

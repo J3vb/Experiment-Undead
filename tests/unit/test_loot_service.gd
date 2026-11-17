@@ -3,6 +3,9 @@ extends GutTest
 
 const PORT: int = 24665
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
+const WALKER: EnemyData = preload("res://content/enemies/zombie_walker.tres")
+const RUNNER: EnemyData = preload("res://content/enemies/zombie_runner.tres")
+const BLOATER: EnemyData = preload("res://content/enemies/zombie_bloater.tres")
 
 var session: GameSession
 var service: LootService
@@ -40,10 +43,10 @@ func test_fixed_seed_repeats_the_complete_drop_stream() -> void:
 	service.drop_chance_override = 1.0
 	var expected: Array[Dictionary] = []
 	for index: int in 100:
-		expected.append(service.roll_drop(&"zombie_walker", 50, 0.2))
+		expected.append(service.roll_drop(WALKER, 50, 0.2))
 	session.rng.seed = 73
 	for index: int in expected.size():
-		assert_eq(service.roll_drop(&"zombie_walker", 50, 0.2), expected[index])
+		assert_eq(service.roll_drop(WALKER, 50, 0.2), expected[index])
 
 
 func test_unlock_level_gates_weapon_and_gear_pool() -> void:
@@ -69,18 +72,29 @@ func test_round_sets_item_level_and_caps_at_fifty() -> void:
 	for round_number: int in [1, 17, 50, 83]:
 		session.director.round_number = round_number
 		for index: int in 20:
-			assert_eq(service.roll_drop(&"zombie_walker", 1).get("ilvl"), mini(round_number, 50))
+			assert_eq(service.roll_drop(WALKER, 1).get("ilvl"), mini(round_number, 50))
 
 
-func test_source_chances_and_brute_floor() -> void:
-	assert_almost_eq(LootService.drop_chance(&"zombie_walker", 1), 0.016, 0.0001)
-	assert_almost_eq(LootService.drop_chance(&"zombie_runner", 100), 0.05, 0.0001)
-	assert_eq(LootService.drop_chance(&"zombie_bloater", 1), 0.05)
-	assert_eq(LootService.drop_chance(&"zombie_brute", 1), 1.0)
+func test_source_chances_follow_enemy_data() -> void:
+	for round_number: int in [1, 10, 40]:
+		var curve: float = minf(0.015 + round_number * 0.001, 0.05)
+		assert_almost_eq(LootService.drop_chance(WALKER, round_number), curve, 0.0001, "walker round curve")
+	assert_almost_eq(LootService.drop_chance(WALKER, 1), 0.016, 0.0001)
+	assert_almost_eq(LootService.drop_chance(RUNNER, 100), 0.05, 0.0001)
+	assert_eq(LootService.drop_chance(BLOATER, 1), 0.05)
+	assert_eq(LootService.drop_chance(BLOATER, 40), 0.05)
+
+
+func test_enemy_with_unknown_id_uses_its_own_chance_and_rarity_floor() -> void:
+	var boss: EnemyData = EnemyData.new()
+	boss.id = &"test_boss"
+	boss.loot_drop_chance = 1.0
+	boss.loot_min_rarity = &"rare"
+	assert_eq(LootService.drop_chance(boss, 1), 1.0)
 	for index: int in 100:
-		var drop: Dictionary = service.roll_drop(&"zombie_brute", 50)
-		assert_false(drop.is_empty())
-		assert_gte(ItemRoller.RARITIES.find(StringName(drop.rar)), 2)
+		var drop: Dictionary = service.roll_drop(boss, 50)
+		assert_false(drop.is_empty(), "always drops")
+		assert_gte(ItemRoller.RARITIES.find(StringName(drop.get("rar", ""))), ItemRoller.RARITIES.find(&"rare"))
 
 
 func test_prototypes_are_fixed_and_only_in_their_rarity_pool() -> void:
@@ -143,7 +157,7 @@ func test_drop_reaches_only_its_owner_and_pickup_only_changes_their_pack() -> vo
 	)
 
 	service.drop_chance_override = 1.0
-	var item: Dictionary = service.roll_drop(&"zombie_walker", 1)
+	var item: Dictionary = service.roll_drop(WALKER, 1)
 	server.send_drop(client_player.get_multiplayer_authority(), item, Vector3.ZERO)
 	await wait_until(func() -> bool: return client.get_child_count() == 1, 3.0, "owner received drop")
 	assert_eq(server.get_child_count(), 0, "host cannot see the client's drop")

@@ -72,16 +72,28 @@ func test_ammo_threshold_and_hints() -> void:
 	assert_eq(hud.weapon_label.text, player.weapons.current.data.display_name)
 
 
-func test_serum_codes_are_unique_coloured_squares() -> void:
-	for id: StringName in Hud.SERUM_STYLES:
-		var serum: SerumData = SerumData.new()
-		serum.id = id
+func test_serum_badges_come_from_the_serum_files() -> void:
+	for id: StringName in Content.ids(&"serums"):
+		var serum: SerumData = Content.get_item(&"serums", id) as SerumData
 		Events.serum_gained.emit(player, serum)
 		Events.serum_gained.emit(player, serum)
 		var badge: Label = hud.serums.get_node(NodePath(id)) as Label
-		assert_eq(badge.text, Hud.SERUM_STYLES[id][0])
-		assert_eq((badge.get_theme_stylebox("normal") as StyleBoxFlat).bg_color, Hud.SERUM_STYLES[id][1])
+		assert_eq(badge.text, serum.badge)
+		assert_eq((badge.get_theme_stylebox("normal") as StyleBoxFlat).bg_color, serum.badge_colour)
 	assert_eq(hud.serums.get_child_count(), 8)
+
+
+func test_serum_with_an_unknown_id_shows_its_badge() -> void:
+	var serum: SerumData = SerumData.new()
+	serum.id = &"test_serum"
+	serum.badge = "XX"
+	serum.badge_colour = Color("123456")
+	Events.serum_gained.emit(player, serum)
+	var badge: Label = hud.serums.get_node(NodePath("test_serum")) as Label
+	assert_not_null(badge)
+	if badge:
+		assert_eq(badge.text, "XX")
+		assert_eq((badge.get_theme_stylebox("normal") as StyleBoxFlat).bg_color, Color("123456"))
 
 
 func test_exfil_shows_when_open_counts_hold_and_hides_when_closed() -> void:

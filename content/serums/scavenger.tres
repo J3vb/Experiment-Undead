@@ -8,3 +8,5 @@ id = &"scavenger"
 display_name = "Scavenger"
 cost = 1500
 description = "Your kills sometimes drop a small ammo pack."
+badge = "SC"
+badge_colour = Color(0.349019608, 0.419607843, 0.501960784, 1)

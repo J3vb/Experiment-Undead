@@ -140,4 +140,9 @@ func _check_resource_numbers(resource: Resource, field: String, visited: Array[R
 		if resource is EnemySpawnEntry and name == "weight_per_round":
 			assert_true(is_finite(float(resource.get(name))), field + "." + name + " must be finite")
 			continue
+		# -1 means "use the zombie round curve"; any set chance is 0..1.
+		if resource is EnemyData and name == "loot_drop_chance":
+			var chance: float = resource.get(name)
+			assert_true(chance == -1.0 or (chance >= 0.0 and chance <= 1.0), field + "." + name + " is -1 or 0..1")
+			continue
 		_check_numbers(resource.get(name), field + "." + name, visited)
