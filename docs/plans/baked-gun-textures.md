@@ -1,6 +1,6 @@
 # Plan: Baked texture maps for the four concept guns
 
-Status: Approved
+Status: Building
 Roadmap: F-75
 Phase: P4 (v0.1 Vertical slice, look pass on built guns)
 Size: L
@@ -119,7 +119,7 @@ Not in (and where each goes):
 |---|---|---|
 | `docs/adr/0014-baked-gun-textures.md`, `docs/adr/README.md` | new / changed | The decision record |
 | `tools/assets/check_models.py` | changed | `weapons` budget 30,000 |
-| `tools/gun_showcase.gd` (+ `.tscn`) | new | Forward+ lit renders: first person in a Halcyon-lit room, studio turntable |
+| `tools/weapon_review.gd` | changed | `--guns` filter; run in Forward+ for lit renders |
 | `.claude/hooks/session-start.sh` | changed | Install Mesa's software Vulkan (lavapipe) so cloud threads render Forward+ |
 | `tools/assets/gun_bake.py` | new | High-detail pass, chamfer, UVs, per-part bake, map packing, bake record |
 | `tools/assets/build_models.py` | changed | Baked guns run the bake after their script |
@@ -193,23 +193,21 @@ gun script at once.
 ### Step 1: ADR, budget and lit previews
 
 - Build: ADR 0014 (accepted, decided by the person 2026-11-17); weapons budget
-  30,000; Mesa lavapipe in the session-start hook; `tools/gun_showcase.gd` that
-  renders in Forward+ (Vulkan) a first-person shot of each gun in a
-  Halcyon-lit room (corridor light colours from look-rules) and a 4-angle studio
-  turntable. Baseline renders of today's four guns go to project files as the
-  "before". If lavapipe cannot run Forward+ in the container, the fallback is a
-  paste-ready prompt for the local GPU agent in project files (it renders
-  the same scene on the RTX 4080 Super), and cloud threads keep OpenGL for
-  shape checks only.
+  30,000; Mesa lavapipe and xvfb in the session-start hook, so cloud threads
+  render in Forward+ (Vulkan, with SSAO, glow, tonemapping, shadows). The
+  existing weapon review booth (`tools/weapon_review.gd`: booth, 10 m, hip and
+  ADS views under the Halcyon interior look) already shows what we need, so
+  it gets a `--guns` filter instead of a new showcase scene. Baseline
+  Forward+ renders of today's AR-17 go to project files as the "before".
+  Checked 2026-11-17: Forward+ runs on lavapipe in the container (about 45 s
+  per gun).
 - Files: `docs/adr/0014-baked-gun-textures.md`, `docs/adr/README.md`,
   `tools/assets/check_models.py`, `.claude/hooks/session-start.sh`,
-  `tools/gun_showcase.gd`, `tools/gun_showcase.tscn`, `.claude/skills/look-check/SKILL.md`
-  (edited in `.agents/skills/`, then mirrored).
-- Tests: `tools/assets/tests` budget test reads 30,000 (fails at 8,000);
-  `tests/unit/test_gun_showcase.gd` builds the showcase scene headless and
-  checks one camera, the gun and the light rig are placed.
-- Done when: a Forward+ render of today's AR-17 is posted, or the GPU agent
-  prompt is in project files and the reason is written in the PR.
+  `tools/weapon_review.gd`, `.agents/skills/look-check/SKILL.md` (mirrored).
+- Tests: `tools/assets/tests/test_check_models.py` checks the weapons budget is
+  30,000 (fails at 8,000); `tests/unit/test_weapon_review.gd` checks `--guns`
+  picks only the named guns.
+- Done when: a Forward+ render of today's AR-17 is posted.
 
 ### Step 2: Bake pipeline on the AR-17 (the risky step)
 
@@ -328,9 +326,9 @@ Can run any time after step 2.
 
 ## Risks
 
-- **Forward+ does not run in the cloud container** (no GPU): step 1 tries
-  lavapipe first; the fallback is the local GPU agent prompt. Found in step
-  1, before any bake work.
+- **Forward+ does not run in the cloud container** (no GPU): checked
+  2026-11-17, it runs on lavapipe. Fallback if a later Mesa breaks it: the
+  local GPU agent prompt.
 - **Bake artefacts** (moving parts baking onto each other, seams, skewed
   normals): per-part baking with a cage, tested on a two-part test gun in
   step 2 before the four guns.

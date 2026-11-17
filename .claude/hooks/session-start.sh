@@ -31,4 +31,11 @@ if ! sha256sum --check --status "$pyhashes" 2>/dev/null; then
   sha256sum .claude/hooks/session-start.sh > "$pyhashes" || rm -f "$pyhashes"
 fi
 
+# Software Vulkan (lavapipe) and a virtual display, so cloud renders use Forward+ (real lighting).
+if [ ! -f /usr/share/vulkan/icd.d/lvp_icd.json ] || ! command -v xvfb-run >/dev/null; then
+  { apt-get install -y -q mesa-vulkan-drivers xvfb >/dev/null 2>&1 \
+    || { apt-get update -q >/dev/null 2>&1 && apt-get install -y -q mesa-vulkan-drivers xvfb >/dev/null 2>&1; }; } \
+    || echo "session-start: could not install lavapipe/xvfb; renders fall back to opengl3" >&2
+fi
+
 echo "export PATH=\"$BIN:\$PATH\"" >> "${CLAUDE_ENV_FILE:-/dev/null}"
