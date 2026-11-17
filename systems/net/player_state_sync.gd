@@ -96,7 +96,7 @@ func queue_publish() -> void:
 
 func publish() -> void:
 	_publish_queued = false
-	if multiplayer.is_server() and is_coop():
+	if is_inside_tree() and multiplayer.is_server() and is_coop():
 		_receive_state.rpc(_snapshot())
 
 

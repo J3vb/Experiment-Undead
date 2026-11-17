@@ -17,6 +17,7 @@ var _froze: bool = false
 @onready var main_menu_button: Button = $Menu/MainMenu
 @onready var quit_button: Button = $Menu/QuitGame
 @onready var banner: Label = $Menu/Banner
+@onready var world_line: Label = $Menu/World
 
 
 func _ready() -> void:
@@ -33,6 +34,18 @@ func _ready() -> void:
 		_froze = true
 		get_tree().paused = true
 	Net.coop_changed.connect(_on_coop_changed)
+	world_line.text = world_text(Net.world.state)
+	world_line.visible = not world_line.text.is_empty()
+
+
+## Only the world's owner sees whether friends can join, and on which port.
+static func world_text(state: Dictionary) -> String:
+	match state.get("status", &""):
+		&"open":
+			return "Friends can join on port %d" % state.port
+		&"offline_busy":
+			return "Port %d is in use, friends can't join" % state.port
+	return ""
 
 
 func _exit_tree() -> void:

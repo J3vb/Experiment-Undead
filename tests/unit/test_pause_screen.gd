@@ -184,7 +184,7 @@ func test_solo_pause_freezes_the_game_and_hides_the_banner() -> void:
 	assert_false(get_tree().paused, "closing pause unfreezes")
 
 
-func test_a_lone_listen_host_match_ends_like_solo() -> void:
+func test_a_lone_listen_host_match_ends_like_solo_and_restart_keeps_the_port() -> void:
 	assert_eq(Net.host(24717, 2), OK)
 	var session: GameSession = _start_match()
 	session.get_players()[0].take_damage(DamageInfo.create(10000.0, null))
@@ -192,4 +192,11 @@ func test_a_lone_listen_host_match_ends_like_solo() -> void:
 	assert_true(session.get_players()[0].is_dead, "solo rule: no bleed-out without friends")
 	assert_ne(session.level.process_mode, Node.PROCESS_MODE_DISABLED, "the level is not frozen at match end")
 	assert_eq((_top_screen() as ResultsScreen).restart_button.text, "Restart")
+	(_top_screen() as ResultsScreen).restart_button.pressed.emit()
+	await wait_process_frames(2)
+	var fresh: GameSession = get_tree().current_scene as GameSession
+	assert_not_null(fresh, "Restart alone plays the match again")
+	assert_ne(fresh, session)
+	assert_true(Net.is_online(), "the world's port stays open through the restart")
+	assert_false(Net.changing_place, "the new match took the open port over")
 	Net.leave()

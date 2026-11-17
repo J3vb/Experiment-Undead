@@ -73,7 +73,7 @@ func deploy(target: StringName) -> bool:
 
 
 func _on_peers_changed() -> void:
-	if multiplayer.is_server() and not place.is_empty():
+	if is_inside_tree() and multiplayer.is_server() and not place.is_empty():
 		_recheck()
 
 

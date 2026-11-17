@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://systems/ui/main_menu.gd" id="1"]
 [ext_resource type="Theme" path="res://systems/ui/theme.tres" id="2"]
@@ -25,6 +25,46 @@ border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.498, 0.839, 0.878, 1)
+
+[sub_resource type="StyleBoxFlat" id="Main"]
+bg_color = Color(0.553, 1, 0.227, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+shadow_color = Color(0.553, 1, 0.227, 0.25)
+shadow_size = 10
+content_margin_left = 22.0
+content_margin_top = 12.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="MainHover"]
+bg_color = Color(0.651, 1, 0.4, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+shadow_color = Color(0.553, 1, 0.227, 0.4)
+shadow_size = 14
+content_margin_left = 22.0
+content_margin_top = 12.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="MainFocus"]
+draw_center = false
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.902, 0.925, 0.925, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+expand_margin_left = 3.0
+expand_margin_top = 3.0
+expand_margin_right = 3.0
+expand_margin_bottom = 3.0
 
 [sub_resource type="StyleBoxFlat" id="Panel"]
 bg_color = Color(0.043, 0.059, 0.063, 0.85)
@@ -128,54 +168,52 @@ anchor_right = 0.29
 anchor_bottom = 0.44
 theme_override_constants/separation = 8
 
-[node name="Play" type="Button" parent="Screens/Root/Menu"]
+[node name="EnterWorld" type="Button" parent="Screens/Root/Menu"]
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-text = "Play solo"
+text = "Enter World"
 alignment = 0
 focus_neighbor_top = NodePath("../Quit")
-focus_neighbor_bottom = NodePath("../Host")
-focus_next = NodePath("../Host")
+focus_neighbor_bottom = NodePath("../Servers")
+focus_next = NodePath("../Servers")
 focus_previous = NodePath("../Quit")
+theme_override_colors/font_color = Color(0.043, 0.063, 0.078, 1)
+theme_override_colors/font_hover_color = Color(0.043, 0.063, 0.078, 1)
+theme_override_colors/font_pressed_color = Color(0.043, 0.063, 0.078, 1)
+theme_override_colors/font_focus_color = Color(0.043, 0.063, 0.078, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("Main")
+theme_override_styles/hover = SubResource("MainHover")
+theme_override_styles/pressed = SubResource("MainHover")
+theme_override_styles/focus = SubResource("MainFocus")
+
+[node name="Gap" type="Control" parent="Screens/Root/Menu"]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Servers" type="Button" parent="Screens/Root/Menu"]
+layout_mode = 2
+text = "Servers"
+alignment = 0
+focus_neighbor_top = NodePath("../EnterWorld")
+focus_neighbor_bottom = NodePath("../Loadout")
+focus_next = NodePath("../Loadout")
+focus_previous = NodePath("../EnterWorld")
 theme_override_colors/font_color = Color(0.91, 0.925, 0.902, 1)
 theme_override_styles/normal = SubResource("Normal")
 theme_override_styles/hover = SubResource("Hover")
 theme_override_styles/pressed = SubResource("Hover")
 theme_override_styles/focus = SubResource("Focus")
 
-[node name="Host" type="Button" parent="Screens/Root/Menu"]
+[node name="Loadout" type="Button" parent="Screens/Root/Menu"]
 layout_mode = 2
-text = "Host and play"
+text = "Loadout"
 alignment = 0
-focus_neighbor_top = NodePath("../Play")
-focus_neighbor_bottom = NodePath("../Join")
-focus_next = NodePath("../Join")
-focus_previous = NodePath("../Play")
-theme_override_styles/normal = SubResource("Normal")
-theme_override_styles/hover = SubResource("Hover")
-theme_override_styles/pressed = SubResource("Hover")
-theme_override_styles/focus = SubResource("Focus")
-
-[node name="Join" type="Button" parent="Screens/Root/Menu"]
-layout_mode = 2
-text = "Join"
-alignment = 0
-focus_neighbor_top = NodePath("../Host")
-focus_neighbor_bottom = NodePath("../Character")
-focus_next = NodePath("../Character")
-focus_previous = NodePath("../Host")
-theme_override_styles/normal = SubResource("Normal")
-theme_override_styles/hover = SubResource("Hover")
-theme_override_styles/pressed = SubResource("Hover")
-theme_override_styles/focus = SubResource("Focus")
-
-[node name="Character" type="Button" parent="Screens/Root/Menu"]
-layout_mode = 2
-text = "Character"
-alignment = 0
-focus_neighbor_top = NodePath("../Join")
+focus_neighbor_top = NodePath("../Servers")
 focus_neighbor_bottom = NodePath("../Settings")
 focus_next = NodePath("../Settings")
-focus_previous = NodePath("../Join")
+focus_previous = NodePath("../Servers")
 theme_override_colors/font_color = Color(0.91, 0.925, 0.902, 1)
 theme_override_styles/normal = SubResource("Normal")
 theme_override_styles/hover = SubResource("Hover")
@@ -186,10 +224,10 @@ theme_override_styles/focus = SubResource("Focus")
 layout_mode = 2
 text = "Settings"
 alignment = 0
-focus_neighbor_top = NodePath("../Character")
+focus_neighbor_top = NodePath("../Loadout")
 focus_neighbor_bottom = NodePath("../Credits")
 focus_next = NodePath("../Credits")
-focus_previous = NodePath("../Character")
+focus_previous = NodePath("../Loadout")
 theme_override_colors/font_color = Color(0.91, 0.925, 0.902, 1)
 theme_override_styles/normal = SubResource("Normal")
 theme_override_styles/hover = SubResource("Hover")
@@ -212,85 +250,17 @@ theme_override_styles/focus = SubResource("Focus")
 
 [node name="Quit" type="Button" parent="Screens/Root/Menu"]
 layout_mode = 2
-text = "Quit"
+text = "Exit"
 alignment = 0
 focus_neighbor_top = NodePath("../Credits")
-focus_neighbor_bottom = NodePath("../Play")
-focus_next = NodePath("../Play")
+focus_neighbor_bottom = NodePath("../EnterWorld")
+focus_next = NodePath("../EnterWorld")
 focus_previous = NodePath("../Credits")
 theme_override_colors/font_color = Color(0.91, 0.925, 0.902, 1)
 theme_override_styles/normal = SubResource("Normal")
 theme_override_styles/hover = SubResource("Hover")
 theme_override_styles/pressed = SubResource("Hover")
 theme_override_styles/focus = SubResource("Focus")
-
-[node name="HostPanel" type="PanelContainer" parent="Screens/Root"]
-visible = false
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -200.0
-offset_right = 320.0
-offset_bottom = 200.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_styles/panel = SubResource("CoopPanel")
-
-[node name="Box" type="VBoxContainer" parent="Screens/Root/HostPanel"]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="Title" type="Label" parent="Screens/Root/HostPanel/Box"]
-layout_mode = 2
-text = "Host and play"
-theme_override_font_sizes/font_size = 36
-
-[node name="PortLabel" type="Label" parent="Screens/Root/HostPanel/Box"]
-layout_mode = 2
-text = "Port"
-
-[node name="Port" type="LineEdit" parent="Screens/Root/HostPanel/Box"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.91, 0.925, 0.902, 1)
-theme_override_colors/caret_color = Color(0.498, 0.839, 0.878, 1)
-theme_override_colors/selection_color = Color(0.173, 0.231, 0.267, 1)
-theme_override_styles/normal = SubResource("Field")
-theme_override_styles/focus = SubResource("Focus")
-text = "7777"
-max_length = 5
-focus_neighbor_top = NodePath("../Back")
-focus_neighbor_bottom = NodePath("../Start")
-focus_next = NodePath("../Start")
-focus_previous = NodePath("../Back")
-
-[node name="Start" type="Button" parent="Screens/Root/HostPanel/Box"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.91, 0.925, 0.902, 1)
-theme_override_styles/normal = SubResource("Normal")
-theme_override_styles/hover = SubResource("Hover")
-theme_override_styles/pressed = SubResource("Hover")
-theme_override_styles/focus = SubResource("Focus")
-text = "Host and play"
-focus_neighbor_top = NodePath("../Port")
-focus_neighbor_bottom = NodePath("../Back")
-focus_next = NodePath("../Back")
-focus_previous = NodePath("../Port")
-
-[node name="Back" type="Button" parent="Screens/Root/HostPanel/Box"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.91, 0.925, 0.902, 1)
-theme_override_styles/normal = SubResource("Normal")
-theme_override_styles/hover = SubResource("Hover")
-theme_override_styles/pressed = SubResource("Hover")
-theme_override_styles/focus = SubResource("Focus")
-text = "Back"
-focus_neighbor_top = NodePath("../Start")
-focus_neighbor_bottom = NodePath("../Port")
-focus_next = NodePath("../Port")
-focus_previous = NodePath("../Start")
 
 [node name="JoinPanel" type="PanelContainer" parent="Screens/Root"]
 visible = false
@@ -313,7 +283,7 @@ theme_override_constants/separation = 16
 
 [node name="Title" type="Label" parent="Screens/Root/JoinPanel/Box"]
 layout_mode = 2
-text = "Join"
+text = "Direct connect"
 theme_override_font_sizes/font_size = 36
 
 [node name="AddressLabel" type="Label" parent="Screens/Root/JoinPanel/Box"]
