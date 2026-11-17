@@ -1,10 +1,10 @@
 # Plan: HUD feedback and loading screen
 
-Status: Review
+Status: Approved
 Roadmap: F-48 / no issue
 Phase: P4 (loading, HUD polish), with the P5 level-up burst and P6 drop feed that were left out
 Size: M
-Approved by:
+Approved by: Codex plan review on PR #243 (2026-11-17), one finding fixed (Siphon scoped out); look picks provisional per the person's working mode
 
 ## Goal
 
