@@ -19,6 +19,12 @@ const DEFAULTS: Dictionary = {
 	{&"head_bob": 0.6, &"weapon_bob": 1.0, &"sprint_fov": true, &"damage_effects": 1.0, &"centre_dot": false},
 	&"network": {&"last_address": "", &"last_port": 7777},
 }
+## Min and max of float options that are not 0 to 1.
+const RANGES: Dictionary = {
+	&"text_scale": [0.8, 1.5],
+	&"ads_sensitivity_multiplier": [0.2, 2.0],
+	&"mouse_sensitivity": [0.0002, 0.02],
+}
 ## Comfort column of docs/design/controls.md; keys other threads have not added yet are skipped by set_value.
 const COMFORT_PRESET: Dictionary = {
 	&"head_bob": 0.0,
@@ -112,12 +118,8 @@ func _normalize(section: StringName, key: StringName, value: Variant) -> Variant
 		normalized = clampf(float(value), 0.0, 1.0)
 	elif key == &"fov":
 		normalized = clampi(int(value), 70, 120)
-	elif key == &"text_scale":
-		normalized = clampf(float(value), 0.8, 1.5)
-	elif key == &"ads_sensitivity_multiplier":
-		normalized = clampf(float(value), 0.2, 2.0)
-	elif key == &"mouse_sensitivity":
-		normalized = clampf(float(value), 0.0002, 0.02)
+	elif RANGES.has(key):
+		normalized = clampf(float(value), RANGES[key][0], RANGES[key][1])
 	elif section == &"graphics":
 		normalized = Graphics.normalize(key, value)
 	return normalized
