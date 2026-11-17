@@ -1,6 +1,6 @@
 # Plan: Client and server updates
 
-Status: Approved
+Status: Building
 Roadmap: F-65
 Phase: P8 (steps 1-5 land before Release v0.1.0, F-11)
 Size: L

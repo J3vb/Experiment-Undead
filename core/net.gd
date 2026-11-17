@@ -8,6 +8,7 @@ signal join_succeeded
 ## Server only: the session must change to this place (the dedicated server swaps its session).
 signal place_changed(place: StringName)
 
+## Sent on the wire as ints: append only, never reorder.
 enum RefusalReason { WRONG_VERSION, CONTENT_MISMATCH, SERVER_FULL }
 
 const DEFAULT_PORT: int = 7777
@@ -233,12 +234,20 @@ func _configure() -> void:
 
 
 ## Handshake owns admission. Keep its reason while the refusal ACK reaches the server.
-func report_refusal(reason: RefusalReason, details: Dictionary) -> void:
+## A code from a newer server that this build does not know is reported as &"refused".
+func report_refusal(reason: int, details: Dictionary) -> void:
 	if not joining:
 		return
 	refusal_reason = reason
 	_deadline.stop()
-	_record_error(StringName(RefusalReason.keys()[reason].to_lower()), details)
+	_record_error(StringName(refusal_key(reason).to_lower()), details)
+
+
+## The RefusalReason name for a wire code, or "REFUSED" for a code this build does not know.
+static func refusal_key(code: int) -> String:
+	if code < 0 or code >= RefusalReason.size():
+		return "REFUSED"
+	return RefusalReason.keys()[code]
 
 
 func _on_authentication_failed(_peer_id: int) -> void:

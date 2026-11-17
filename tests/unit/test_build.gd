@@ -65,3 +65,24 @@ func test_startup_hash_contains_every_content_category() -> void:
 
 func test_server_port_falls_back() -> void:
 	assert_eq(DedicatedServer.read_int_setting("no-such-arg", "EU_NO_SUCH_ENV", 7777), 7777)
+
+
+func test_compare_versions_orders_numbers_and_pre_releases() -> void:
+	var cases: Array[Array] = [
+		["0.10.0", "0.9.0", 1],
+		["0.1.10", "0.1.9", 1],
+		["1.0.0", "0.99.99", 1],
+		["0.2.0-test.3", "0.2.0", -1],
+		["0.2.0", "0.2.1", -1],
+		["0.2.0-test.3", "0.2.1", -1],
+		["0.2.0-test.10", "0.2.0-test.9", 1],
+		["0.2.0", "v0.2.0", 0],
+		["0.2.0-dev.10+abc1234", "0.2.0-dev.9+def5678", 1],
+		["0.2.0-dev.3+abc1234", "0.2.0-dev.3+def5678", 0],
+		["0.2.0-dev.3+abc1234", "0.2.0", -1],
+		["0.2.0-dev.3", "0.2.0-test.1", -1],
+		["0.2", "0.2.0", 0],
+	]
+	for row: Array in cases:
+		assert_eq(Build.compare_versions(row[0], row[1]), row[2], "%s vs %s" % [row[0], row[1]])
+		assert_eq(Build.compare_versions(row[1], row[0]), -int(row[2]), "%s vs %s" % [row[1], row[0]])

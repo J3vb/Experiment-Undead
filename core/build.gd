@@ -3,7 +3,7 @@
 extends Node
 
 ## Bump when client/server messages change. Mismatched peers are refused.
-const PROTOCOL_VERSION: int = 16
+const PROTOCOL_VERSION: int = 17
 const VERSION_FILE: String = "res://version.json"
 const CRASH_MARKER: String = "user://running.lock"
 
@@ -55,6 +55,42 @@ func is_server() -> bool:
 
 func is_protocol_compatible(remote_protocol: int) -> bool:
 	return remote_protocol == PROTOCOL_VERSION
+
+
+## -1, 0 or 1. Numeric parts compare by value; a pre-release sorts before its release
+## (0.2.0-test.3 < 0.2.0 < 0.2.1). A leading "v" and build metadata after "+" are ignored.
+static func compare_versions(a: String, b: String) -> int:
+	var left: PackedStringArray = a.trim_prefix("v").get_slice("+", 0).split("-", true, 1)
+	var right: PackedStringArray = b.trim_prefix("v").get_slice("+", 0).split("-", true, 1)
+	var order: int = _compare_parts(left[0].split("."), right[0].split("."), true)
+	if order != 0:
+		return order
+	if left.size() != right.size():
+		return 1 if left.size() < right.size() else -1
+	if left.size() == 1:
+		return 0
+	return _compare_parts(left[1].split("."), right[1].split("."), false)
+
+
+## Missing release parts count as 0; with more pre-release parts the version is newer.
+static func _compare_parts(left: PackedStringArray, right: PackedStringArray, pad_zero: bool) -> int:
+	for index: int in range(maxi(left.size(), right.size())):
+		if not pad_zero and (index >= left.size() or index >= right.size()):
+			return -1 if index >= left.size() else 1
+		var order: int = _compare_part(
+			left[index] if index < left.size() else "0", right[index] if index < right.size() else "0"
+		)
+		if order != 0:
+			return order
+	return 0
+
+
+static func _compare_part(left: String, right: String) -> int:
+	if left.is_valid_int() and right.is_valid_int():
+		return signi(left.to_int() - right.to_int())
+	if left.is_valid_int() != right.is_valid_int():
+		return -1 if left.is_valid_int() else 1
+	return signi(left.casecmp_to(right))
 
 
 func calculate_content_hash() -> String:
