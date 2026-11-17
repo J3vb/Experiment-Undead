@@ -17,7 +17,7 @@ func test_known_affix_uses_rolled_value_and_full_content_range() -> void:
 	var line: RichTextLabel = tooltip.affixes.get_child(0) as RichTextLabel
 	assert_eq(line.get_parsed_text(), "+12% reload speed (8-20)")
 	assert_string_contains(line.text, "[color=#8fa3a8](8-20)[/color]")
-	assert_eq(tooltip.item_name.text, "AR-7 Rifle")
+	assert_eq(tooltip.item_name.text, "AR-17")
 	assert_eq(tooltip.level_label.text, "Item level 17")
 	assert_string_contains(tooltip.rarity_label.text, "Rare")
 	assert_eq(tooltip.rarity_label.text.count("•"), 3)
@@ -44,7 +44,7 @@ func test_compare_marks_better_and_worse_base_stats_and_lower_ads_is_better() ->
 	assert_string_contains(_stat_value(1).text, "↑")
 	assert_eq(_stat_value(1).get_theme_color("font_color"), ItemTooltip.BETTER)
 	assert_string_contains(_stat_value(3).text, "↑")
-	assert_string_contains(tooltip.comparison.text, "Talon DMR (equipped)")
+	assert_string_contains(tooltip.comparison.text, "MR-28 (equipped)")
 	tooltip.set_comparing(false)
 	assert_false(_stat_value(0).text.contains("↓"))
 	assert_eq(tooltip.comparison.text, "Hold Shift / X to compare")

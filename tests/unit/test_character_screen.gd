@@ -92,7 +92,7 @@ func test_vest_charm_and_implant_equip_and_unequip_through_inventory_and_rig() -
 func test_double_click_equips_and_hover_inspects_item() -> void:
 	var button: Button = _stash_button(9)
 	button.mouse_entered.emit()
-	assert_eq((screen.get_node("%ItemTooltip") as ItemTooltip).item_name.text, "Talon DMR")
+	assert_eq((screen.get_node("%ItemTooltip") as ItemTooltip).item_name.text, "MR-28")
 	var double_click: InputEventMouseButton = InputEventMouseButton.new()
 	double_click.button_index = MOUSE_BUTTON_LEFT
 	double_click.pressed = true

@@ -15,6 +15,7 @@
 [ext_resource type="Material" path="res://levels/materials/town_dark_wood.tres" id="town_dark_wood"]
 [ext_resource type="Material" path="res://levels/materials/town_slate.tres" id="town_slate"]
 [ext_resource type="Material" path="res://levels/materials/town_cobbles.tres" id="town_cobbles"]
+[ext_resource type="Material" path="res://levels/materials/town_mud.tres" id="town_mud"]
 [ext_resource type="Material" path="res://levels/materials/town_snow.tres" id="town_snow"]
 [ext_resource type="Material" path="res://levels/materials/rust.tres" id="rust"]
 [ext_resource type="Material" path="res://levels/materials/bio_leak.tres" id="bio_leak"]
@@ -22,8 +23,14 @@
 [ext_resource type="Material" path="res://levels/materials/lit_window.tres" id="lit_window"]
 [ext_resource type="Material" path="res://levels/materials/pine.tres" id="pine"]
 [ext_resource type="Material" path="res://levels/materials/iron.tres" id="iron"]
+[ext_resource type="Material" path="res://levels/materials/beacon_red.tres" id="beacon_red"]
 [ext_resource type="PackedScene" path="res://systems/hub/deploy_board.tscn" id="deploy_board"]
 [ext_resource type="PackedScene" path="res://systems/hub/deploy_vote_panel.tscn" id="deploy_vote_panel"]
+[ext_resource type="PackedScene" path="res://levels/lantern_post/snowfall.tscn" id="snowfall"]
+[ext_resource type="PackedScene" path="res://levels/lantern_post/chimney_smoke.tscn" id="chimney_smoke"]
+
+[sub_resource type="BoxMesh" id="box_beacon_red"]
+material = ExtResource("beacon_red")
 
 [sub_resource type="BoxMesh" id="box_bio_leak"]
 material = ExtResource("bio_leak")
@@ -79,13 +86,13 @@ material = ExtResource("town_snow")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, -14)
 script = ExtResource("block")
 size = Vector3(8, 0.04, 44)
-material = ExtResource("town_cobbles")
+material = ExtResource("town_mud")
 
 [node name="Plaza" type="StaticBody3D" parent="Ground"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 6)
 script = ExtResource("block")
 size = Vector3(22, 0.04, 14)
-material = ExtResource("town_cobbles")
+material = ExtResource("town_mud")
 
 [node name="SnowBanks" type="Node3D" parent="."]
 
@@ -567,6 +574,9 @@ material = ExtResource("town_stone")
 transform = Transform3D(0.9, 0, 0, 0, 0.12, 0, 0, 0, 0.9, -10.61, 9.287, -27.28)
 mesh = SubResource("box_town_slate")
 
+[node name="House0Smoke" parent="Houses" instance=ExtResource("chimney_smoke")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.61, 9.437, -27.28)
+
 [node name="House0DoorFrame" type="MeshInstance3D" parent="Houses"]
 transform = Transform3D(0.14, 0, 0, 0, 2.45, 0, 0, 0, 1.45, -5.45, 1.2, -25.85)
 mesh = SubResource("box_town_dark_wood")
@@ -804,6 +814,9 @@ material = ExtResource("town_stone")
 [node name="House2ChimneyCap" type="MeshInstance3D" parent="Houses"]
 transform = Transform3D(0.9, 0, 0, 0, 0.12, 0, 0, 0, 0.9, -10.7, 9.799, -7.813)
 mesh = SubResource("box_town_slate")
+
+[node name="House2Smoke" parent="Houses" instance=ExtResource("chimney_smoke")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.7, 9.949, -7.813)
 
 [node name="House2DoorFrame" type="MeshInstance3D" parent="Houses"]
 transform = Transform3D(0.14, 0, 0, 0, 2.45, 0, 0, 0, 1.45, -5.45, 1.2, -6.676)
@@ -1052,6 +1065,9 @@ material = ExtResource("town_stone")
 [node name="House4ChimneyCap" type="MeshInstance3D" parent="Houses"]
 transform = Transform3D(0.9, 0, 0, 0, 0.12, 0, 0, 0, 0.9, 10.62, 8.92, -27.48)
 mesh = SubResource("box_town_slate")
+
+[node name="House4Smoke" parent="Houses" instance=ExtResource("chimney_smoke")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.62, 9.07, -27.48)
 
 [node name="House4DoorFrame" type="MeshInstance3D" parent="Houses"]
 transform = Transform3D(0.14, 0, 0, 0, 2.45, 0, 0, 0, 1.45, 5.45, 1.2, -25.33)
@@ -1314,6 +1330,9 @@ material = ExtResource("town_stone")
 [node name="House6ChimneyCap" type="MeshInstance3D" parent="Houses"]
 transform = Transform3D(0.9, 0, 0, 0, 0.12, 0, 0, 0, 0.9, 10.08, 9.649, -4.984)
 mesh = SubResource("box_town_slate")
+
+[node name="House6Smoke" parent="Houses" instance=ExtResource("chimney_smoke")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.08, 9.799, -4.984)
 
 [node name="House6DoorFrame" type="MeshInstance3D" parent="Houses"]
 transform = Transform3D(0.14, 0, 0, 0, 2.45, 0, 0, 0, 1.45, 5.45, 1.2, -5.387)
@@ -3119,6 +3138,79 @@ mesh = SubResource("pine_tree")
 [node name="Pine111" type="MeshInstance3D" parent="Pines"]
 transform = Transform3D(1.25, 0, 0, 0, 1.25, 0, 0, 0, 1.25, 4.74, 6.25, -58)
 mesh = SubResource("pine_tree")
+
+[node name="Ridge" type="Node3D" parent="."]
+
+[node name="Knoll" type="MeshInstance3D" parent="Ridge"]
+transform = Transform3D(12.89, 0, 4.673, 0, 3, 0, -5.452, 0, 11.05, 21, 0.5, -55)
+mesh = SubResource("box_town_snow")
+
+[node name="MastLeg0" type="MeshInstance3D" parent="Ridge"]
+transform = Transform3D(0.1399, -0.8814, 0.0001389, 0.004409, 27.97, -0.004407, 0, 0.8819, 0.1399, 20.55, 14, -54.55)
+mesh = SubResource("box_iron")
+
+[node name="MastLeg1" type="MeshInstance3D" parent="Ridge"]
+transform = Transform3D(0.1399, -0.8814, -0.0001389, 0.004409, 27.97, 0.004407, 0, -0.8819, 0.1399, 20.55, 14, -55.45)
+mesh = SubResource("box_iron")
+
+[node name="MastLeg2" type="MeshInstance3D" parent="Ridge"]
+transform = Transform3D(0.1399, 0.8814, -0.0001389, -0.004409, 27.97, -0.004407, 0, 0.8819, 0.1399, 21.45, 14, -54.55)
+mesh = SubResource("box_iron")
+
+[node name="MastLeg3" type="MeshInstance3D" parent="Ridge"]
+transform = Transform3D(0.1399, 0.8814, 0.0001389, -0.004409, 27.97, 0.004407, 0, -0.8819, 0.1399, 21.45, 14, -55.45)
+mesh = SubResource("box_iron")
+
+[node name="MastRung0" type="MeshInstance3D" parent="Ridge"]
+transform = Transform3D(1.736, 0, 0, 0, 0.08, 0, 0, 0, 1.736, 21, 2, -55)
+mesh = SubResource("box_iron")
+
+[node name="MastRung1" type="MeshInstance3D" parent="Ridge"]
+transform = Transform3D(1.64, 0, 0, 0, 0.08, 0, 0, 0, 1.64, 21, 5, -55)
+mesh = SubResource("box_iron")
+
+[node name="MastRung2" type="MeshInstance3D" parent="Ridge"]
+transform = Transform3D(1.544, 0, 0, 0, 0.08, 0, 0, 0, 1.544, 21, 8, -55)
+mesh = SubResource("box_iron")
+
+[node name="MastRung3" type="MeshInstance3D" parent="Ridge"]
+transform = Transform3D(1.448, 0, 0, 0, 0.08, 0, 0, 0, 1.448, 21, 11, -55)
+mesh = SubResource("box_iron")
+
+[node name="MastRung4" type="MeshInstance3D" parent="Ridge"]
+transform = Transform3D(1.352, 0, 0, 0, 0.08, 0, 0, 0, 1.352, 21, 14, -55)
+mesh = SubResource("box_iron")
+
+[node name="MastRung5" type="MeshInstance3D" parent="Ridge"]
+transform = Transform3D(1.256, 0, 0, 0, 0.08, 0, 0, 0, 1.256, 21, 17, -55)
+mesh = SubResource("box_iron")
+
+[node name="MastRung6" type="MeshInstance3D" parent="Ridge"]
+transform = Transform3D(1.16, 0, 0, 0, 0.08, 0, 0, 0, 1.16, 21, 20, -55)
+mesh = SubResource("box_iron")
+
+[node name="MastRung7" type="MeshInstance3D" parent="Ridge"]
+transform = Transform3D(1.064, 0, 0, 0, 0.08, 0, 0, 0, 1.064, 21, 23, -55)
+mesh = SubResource("box_iron")
+
+[node name="MastRung8" type="MeshInstance3D" parent="Ridge"]
+transform = Transform3D(0.968, 0, 0, 0, 0.08, 0, 0, 0, 0.968, 21, 26, -55)
+mesh = SubResource("box_iron")
+
+[node name="MastBeacon0" type="MeshInstance3D" parent="Ridge"]
+transform = Transform3D(0.35, 0, 0, 0, 0.35, 0, 0, 0, 0.35, 21, 9.5, -55)
+mesh = SubResource("box_beacon_red")
+
+[node name="MastBeacon1" type="MeshInstance3D" parent="Ridge"]
+transform = Transform3D(0.35, 0, 0, 0, 0.35, 0, 0, 0, 0.35, 21, 19, -55)
+mesh = SubResource("box_beacon_red")
+
+[node name="MastBeacon2" type="MeshInstance3D" parent="Ridge"]
+transform = Transform3D(0.35, 0, 0, 0, 0.35, 0, 0, 0, 0.35, 21, 28.2, -55)
+mesh = SubResource("box_beacon_red")
+
+[node name="Snowfall" parent="." instance=ExtResource("snowfall")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 18, -12)
 
 [node name="PlayerSpawn" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.1, 4)

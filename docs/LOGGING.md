@@ -93,11 +93,19 @@ The server also prints every warning and error to stdout as
 | `settings.row_unknown_key` | warn | A `content/settings/*.tres` row names a `section`/`key` that `Settings.DEFAULTS` does not have; the row is left off the settings screen. Fix the row or add the key |
 | `game.game_over` | info | Final stats |
 | `net.peer_connected` / `peer_disconnected` | info | Server side, peer id |
+| `net.join_refused` | info | Client side: the server refused the hello (`reason`: `WRONG_VERSION`, `CONTENT_MISMATCH`, `SERVER_FULL`, or `REFUSED` for a code from a newer server; `older`: `client`, `server` or empty for dev builds; `message`, `client_protocol`, `server_protocol`). `older` says which side to update |
 | `net.round_state_ignored` | warn | A round message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
 | `net.interaction_rejected` | warn | Server refused a client's interact request (`peer`, `reason`, `path`): `player_not_alive`, `match_over`, `unknown_path`, `out_of_range`, `grant_pending` (last gun grant not applied yet), `bad_facts` (gun facts with wrong fields or ids). At most one per second. Many `out_of_range` = `InteractionSync.REACH_SLACK` too tight |
 | `net.deploy_refused` | warn | The hub's deploy vote or `deploy()` was refused (`place`, `reason` or `hub`): an unknown place id on a deploy board, or a deploy outside the hub. A board with a typo in `place` |
 | `net.place_change_kicked` | warn | A client was sent to another place but had not left after `Net.CONNECT_TIMEOUT`, so the server dropped it (`peer`). It never got the order: check the network |
 | `net.place_changed` | info | The server changed place (`place`, `players` sent along) |
+| `net.port_busy` | warn | Enter world could not open the world's port (`port`), so the world runs offline and friends cannot join. Another game or server holds it: change the port in Settings > Network |
+| `net.upnp_opened` | info | The router opened the world's game and info ports (`port`) for an hour; renewed every 50 minutes while the game runs |
+| `net.upnp_failed` | warn | The router could not open the world's ports (`port`, `reason`: `no_router` = no UPnP router answered, `failed` = it refused the mapping). Friends on the same network can still join; internet friends need the ports opened by hand |
+| `net.upnp_cgnat` | warn | The router opened the ports but its internet address is private or provider-shared (100.64.0.0/10): internet friends cannot reach this world (`port`) |
+| `net.info_port_busy` | warn | The server browser info port (game port + 1000) is taken by another program: the world runs but browsers cannot see it (`port`) |
+| `net.info_bad_packet` | warn | A packet on the info port was not a server browser query; at most one line a second (`source`) |
+| `net.coop_started` / `coop_ended` | info | The first friend joined this world, or the last one left (`peers`): the solo or co-op rules now apply (`Net.is_coop()`) |
 | `net.go_to_place` | info | This peer loads another place (`place`, `online`) |
 | `net.join_switches_place` | info | A joining client loaded another place than the server's and switches before spawning (`from`, `to`) |
 | `net.hit_claim_rejected` | warn | Server refused a client's hit or gravity well claim (`peer`, `reason`): `player_not_alive`, `zombie_not_alive`, `hit_out_of_bounds`, `zone_missing`, `claims_too_fast`, `well_out_of_bounds`, `well_wrong_weapon` (well or orb request named a gun whose `effect` is not WELL: a mismatched build or a cheat). At most one per second |

@@ -26,7 +26,7 @@ ENV EU_PORT=7777 \
 USER server
 WORKDIR /opt/server
 VOLUME ["/data"]
-EXPOSE 7777/udp
+EXPOSE 7777/udp 8777/udp
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
     CMD test -f /tmp/eu_ready

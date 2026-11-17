@@ -22,6 +22,8 @@ in your PR.
 | [gun-roster.md](gun-roster.md) | All 22 base guns: niches, wall/loot sources, unlock levels, Legendary traits, build order (numbers in `balance/roster.csv`) |
 | [affixes.md](affixes.md) | Loot affixes, rarity rules, sets, Legendaries |
 | [gear-visuals.md](gear-visuals.md) | How equipped gear shows on characters (vertex-colour zones, dyes) |
+| [lantern-post-assets.md](lantern-post-assets.md) | Every Blender model for the Lantern Post town (buildings, market, gate, props), budgets, material slots, layout map |
+| [concepts/](concepts/README.md) | Concept art for areas not built yet: Act I map key shots and boss Sublevel renders |
 | [lore.md](lore.md) | Story, factions, map stories, names. Use these names in text and data |
 | [balance/](balance/) | CSV export of the balance sheet (weapons, enemies, rounds, economy, prices, TTK, XP, loot). Damage in the game is sheet damage x 0.57 for now (provisional, see `DECISIONS.md`) |
 
@@ -39,8 +41,9 @@ in your PR.
 ## Images
 
 `images/` holds compressed copies (1280 px JPEG): `style_*` are the
-style-guide renders, `ui_*` the UI mockups, `gear_*` the gear visuals. They
-are references, not game assets: never load them from game code.
+style-guide renders, `ui_*` the UI mockups, `gear_*` the gear visuals and
+`guns_concept.jpg` the weapon concept sheet (look target for F-72). They are
+references, not game assets: never load them from game code.
 
 ## Turnarounds
 

@@ -31,7 +31,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 # Per folder: triangle budget, material budget.
 BUDGETS = {
     "kit": (2_000, 4),
-    "weapons": (8_000, 6),
+    "weapons": (30_000, 6),
     "zombies": (9_000, 8),
     "props": (2_000, 4),
     "dressing": (1_000, 4),

@@ -81,6 +81,12 @@ unique_name_in_owner = true
 theme_type_variation = &"LabelDim"
 text = "Sets every row here for the least motion: no head bob, half weapon bob, no sprint widening, softer damage effects, centre dot on."
 autowrap_mode = 3
+[node name="Network" type="ScrollContainer" parent="Margin/Box/Tabs"]
+follow_focus = true
+horizontal_scroll_mode = 0
+[node name="Page" type="VBoxContainer" parent="Margin/Box/Tabs/Network"]
+script = ExtResource("settings_page")
+page = &"network"
 [node name="Buttons" type="HBoxContainer" parent="Margin/Box"]
 theme_override_constants/separation = 24
 [node name="Revert" type="Button" parent="Margin/Box/Buttons"]

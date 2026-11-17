@@ -17,6 +17,7 @@ from mathutils import Vector
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import build_models as bm
 import check_models
+import gun_markings
 import gun_parts as g
 
 GUNS = (
@@ -81,6 +82,48 @@ class ShapeToolTest(unittest.TestCase):
             self.assertAlmostEqual(shells[0], math.pi * 0.01**2 * 0.1, delta=0.01 * shells[0])
             size = part.dimensions
             self.assertAlmostEqual(size["xyz".index(axis)], 0.1, places=5)
+
+    def test_closed_lathe_makes_an_open_hood_with_a_clear_window(self) -> None:
+        profile = [(0.015, 0.0), (0.019, 0.0), (0.019, 0.03), (0.015, 0.03)]
+        hood = g.lathe("Hood", profile, (0, 0, 0), self.mat, 8, closed=True)
+        shells = volumes(hood)
+        self.assertEqual(len(shells), 1)
+        self.assertGreater(shells[0], 0.0)
+        self.assertFalse(hood.ray_cast(Vector((0, -0.1, 0)), Vector((0, 1, 0)))[0], "you see through the window")
+        self.assertTrue(hood.ray_cast(Vector((0, -0.1, 0.017)), Vector((0, 1, 0)))[0], "the wall is solid")
+
+    def test_marking_maps_its_outer_face_to_the_atlas_region_from_its_side(self) -> None:
+        u0, v0, u1, v1 = gun_markings.uv_rect("logo")
+        for side in (-1, 1):
+            plate = g.marking(f"Logo{side}", (0.0, 0.0, 0.07, 0.025), side * 0.02, side, "logo", self.mat)
+            self.assertEqual(len(volumes(plate)), 1)
+            self.assertGreater(volumes(plate)[0], 0.0)
+            uv = plate.data.uv_layers[g.MARKINGS_UV].data
+            face = next(p for p in plate.data.polygons if p.normal.x * side > 0.9)
+            loops = [plate.data.loops[i] for i in face.loop_indices]
+            front = [uv[loop.index].uv for loop in loops if plate.data.vertices[loop.vertex_index].co.y > 0.06]
+            self.assertTrue(front)
+            for u, v in front:
+                self.assertAlmostEqual(u, u1 if side > 0 else u0, places=5, msg="text reads towards the viewer's right")
+                self.assertTrue(v0 - 1e-6 <= v <= v1 + 1e-6)
+            self.assertEqual(plate.data.uv_layers[0].name, "UVMap", "the finishing pass unwraps the first map")
+
+    def test_red_dot_puts_the_reticle_on_the_eye_line_behind_clear_glass(self) -> None:
+        black = bm.material("MatteBlackWorn", bm.MATTE_BLACK)
+        glass = bm.material("SightGlass", bm.LENS)
+        receiver = g.slab("Receiver", [(-0.1, 0.0), (0.1, 0.0), (0.1, 0.05), (-0.1, 0.05)], 0.04, black)
+        parts = g.red_dot(bm, 0.0, 0.05, 0.08, black, glass, self.mat, receiver)
+        bm.join_into(receiver, parts)
+        bpy.context.view_layer.update()
+        mount = bpy.data.objects["ReticleMount"]
+        self.assertAlmostEqual(mount.matrix_world.translation.z, 0.08, places=5)
+        self.assertAlmostEqual(mount.matrix_world.translation.x, 0.0, places=5)
+        glass_y = bpy.data.objects["SightGlass"].matrix_world.translation.y
+        self.assertLess(mount.matrix_world.translation.y, glass_y + 0.0035, "the dot sits just behind the glass")
+        eye = Vector((0, -0.3, 0.08))
+        self.assertFalse(receiver.ray_cast(eye, Vector((0, 1, 0)))[0], "the window is open along the eye line")
+        tris = sum(len(p.vertices) - 2 for p in receiver.data.polygons) - 12
+        self.assertLess(tris, 400, "a red dot stays cheap")
 
     def test_rounded_drops_duplicate_points_when_the_slot_is_two_radii_tall(self) -> None:
         points = g.rounded(0.0, 0.0, 0.03, 0.012, 0.006)

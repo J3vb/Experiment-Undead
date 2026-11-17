@@ -1,6 +1,6 @@
 # Plan: Your own world, open to friends, and a server browser
 
-Status: Approved
+Status: Done
 Roadmap: F-66
 Phase: P7
 Size: L
@@ -396,12 +396,12 @@ frame.
 
 ## Acceptance
 
-- [ ] Alone, a world plays like solo; a joining friend switches it to co-op and back (unit tests).
-- [ ] Enter world opens the port and lands in Lantern Post; busy port or setting off starts offline and says why (unit tests).
-- [ ] A second process joins a world started with Enter world (integration test).
-- [ ] UPnP results are sorted into opened, no router, failed and provider NAT, mapped once per run (unit tests, stand-in router).
-- [ ] A query returns name, players and what a world or dedicated server is playing; LAN discovery finds it (unit and integration tests).
-- [ ] The browser lists saved, recent and LAN servers with ping and tags, and joins from a row or Direct connect (unit tests).
+- [x] Alone, a world plays like solo; a joining friend switches it to co-op and back (unit tests).
+- [x] Enter world opens the port and lands in Lantern Post; busy port or setting off starts offline and says why (unit tests).
+- [x] A second process joins a world started with Enter world (integration test).
+- [x] UPnP results are sorted into opened, no router, failed and provider NAT, mapped once per run (unit tests, stand-in router).
+- [x] A query returns name, players and what a world or dedicated server is playing; LAN discovery finds it (unit and integration tests).
+- [x] The browser lists saved, recent and LAN servers with ping and tags, and joins from a row or Direct connect (unit tests).
 - [ ] Two PCs on different home networks: one enters their world, the other adds it by address in the browser and joins (play-test, #191).
 
 ## Risks

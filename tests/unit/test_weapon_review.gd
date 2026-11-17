@@ -15,6 +15,12 @@ func test_review_includes_every_exported_weapon() -> void:
 			)
 
 
+func test_guns_argument_picks_only_the_named_guns() -> void:
+	var picked: Array[String] = BOOTH.selected_models(PackedStringArray(["--guns", "rifle_ar,talon_dmr"]))
+	assert_eq(picked, ["rifle_ar", "talon_dmr"] as Array[String])
+	assert_eq(BOOTH.selected_models(PackedStringArray()).size(), BOOTH.GUNS.size(), "no argument: every gun")
+
+
 func test_review_poses_match_content_and_player_camera() -> void:
 	for content: String in BOOTH.GUNS.values():
 		var camera: Camera3D = Camera3D.new()

@@ -1,5 +1,6 @@
 ## Renders Lantern Post from the player spawn and from above the street.
-## Saves screenshots/hub_street.png, hub_overview.png and hub_gate.png (the Deploy board):
+## Saves screenshots/hub_street.png, hub_overview.png, hub_gate.png (the Deploy board) and hub_concept.png
+## (the camera spot of docs/design/images/lantern_post_concept.jpg):
 ##   xvfb-run -s "-screen 0 1600x900x24" godot --path . --rendering-driver vulkan -s res://tools/hub_shot.gd
 extends SceneTree
 
@@ -28,6 +29,9 @@ func _run(hub: Node3D, camera: Camera3D) -> void:
 	camera.global_position = Vector3(1.2, EYE_HEIGHT, -31.5)
 	camera.look_at(Vector3(0, 1.6, -35.5))
 	await _shot("res://screenshots/hub_gate.png")
+	camera.global_position = Vector3(-3.0, 2.2, 6.0)
+	camera.look_at(Vector3(2.0, 5.0, -36.0))
+	await _shot("res://screenshots/hub_concept.png")
 	quit()
 
 

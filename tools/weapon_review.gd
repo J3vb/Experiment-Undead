@@ -1,5 +1,7 @@
 ## Weapon review booth: fixed Common/Legendary close-ups, 10 m reads and live hip/ADS viewmodels.
-## godot --path . res://tools/weapon_review.tscn -- --out /tmp/weapon-review/before
+## godot --path . res://tools/weapon_review.tscn -- --out /tmp/weapon-review/before [--guns rifle_ar,talon_dmr]
+## Real lighting in a cloud container (software Vulkan, see the look-check skill):
+## xvfb-run -a godot --path . --rendering-driver vulkan --rendering-method forward_plus res://tools/weapon_review.tscn
 extends Node3D
 
 const GUNS: Dictionary[String, String] = {
@@ -60,12 +62,13 @@ func _run() -> void:
 		get_tree().quit(1)
 		return
 	_setup()
+	var models: Array[String] = selected_models(arguments)
 	if "--silhouettes-only" in arguments:
-		for model: String in GUNS:
+		for model: String in models:
 			await _capture_silhouette(model)
 		get_tree().quit()
 		return
-	for model: String in GUNS:
+	for model: String in models:
 		for rarity: String in RARITIES:
 			await _capture_model(model, rarity)
 	get_tree().quit()
@@ -155,6 +158,21 @@ func _capture_silhouette(model: String) -> void:
 	_caption.add_theme_color_override("font_color", Color.BLACK)
 	await _save(model, "shape", "silhouette", "Black only / fixed side camera / same metre scale")
 	gun.free()
+
+
+## Models named after --guns (comma separated), or every gun.
+static func selected_models(arguments: PackedStringArray) -> Array[String]:
+	var models: Array[String] = []
+	var index: int = arguments.find("--guns")
+	if index < 0 or index + 1 >= arguments.size():
+		models.assign(GUNS.keys())
+		return models
+	for model: String in arguments[index + 1].split(","):
+		if GUNS.has(model):
+			models.append(model)
+		else:
+			push_error("Weapon review: unknown gun '%s'" % model)
+	return models
 
 
 static func hip_fov() -> float:

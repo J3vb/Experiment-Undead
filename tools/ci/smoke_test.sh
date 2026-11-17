@@ -81,5 +81,72 @@ if grep -qE "$errors" server.log join.log 2>/dev/null; then
   fail=1
 fi
 
+# The newest stable release that is not this build must be refused cleanly by
+# this build's server (F-65 step 3). Releases before the JSON handshake
+# (protocol 17) cannot read the refusal, so they are skipped.
+old_client_check() {
+  local own tag old_dir data_dir stop2 pid2 protocol refused=0
+  own="v$(sed -n 's/.*"version": "\(.*\)".*/\1/p' ../version.json)"
+  if ! command -v gh > /dev/null || [ -z "${GH_TOKEN:-}" ]; then
+    echo "Old client check skipped: no older release (gh or GH_TOKEN missing)"
+    return 0
+  fi
+  tag=""
+  for candidate in $(gh release list --exclude-drafts --exclude-pre-releases --limit 20 \
+      --json tagName -q '.[].tagName' 2>/dev/null); do
+    [ "$candidate" = "$own" ] && continue
+    if gh release view "$candidate" --json assets -q '.assets[].name' | grep -q -- '-linux\.zip$'; then
+      tag="$candidate"
+      break
+    fi
+  done
+  if [ -z "$tag" ]; then
+    echo "Old client check skipped: no older release"
+    return 0
+  fi
+  old_dir="$(mktemp -d)"
+  data_dir="$(mktemp -d)"
+  gh release download "$tag" -p '*-linux.zip' -D "$old_dir" || { echo "::error::Could not download $tag"; return 1; }
+  unzip -q "$old_dir"/*-linux.zip -d "$old_dir/client"
+  chmod +x "$old_dir"/client/*.x86_64
+  stop2="$(mktemp -u)"
+  EU_STOP_FILE="$stop2" server/ExperimentUndead-server.x86_64 --headless > old_server.log 2>&1 &
+  pid2=$!
+  for _ in $(seq 1 60); do
+    grep -q "Server ready" old_server.log && break
+    sleep 0.5
+  done
+  XDG_DATA_HOME="$data_dir" timeout 20 "$old_dir"/client/*.x86_64 --headless --quit-after 1200 \
+    -- --join=127.0.0.1:7777 > old_client.log 2>&1 &
+  local client_pid=$!
+  for _ in $(seq 1 30); do
+    if grep -h '"join_refused"' "$data_dir"/godot/app_userdata/*/logs/*.jsonl 2>/dev/null | grep -q WRONG_VERSION; then
+      refused=1
+      break
+    fi
+    sleep 0.5
+  done
+  kill "$client_pid" 2>/dev/null
+  touch "$stop2"
+  timeout 15 tail --pid="$pid2" -f /dev/null || kill -9 "$pid2" 2>/dev/null
+  protocol="$(sed -n 's/.*protocol \([0-9]*\)).*/\1/p' old_client.log | head -1)"
+  echo "--- old client $tag (protocol ${protocol:-unknown})"
+  cat old_client.log
+  rm -rf "$old_dir" "$data_dir" old_server.log old_client.log "$stop2"
+  if [ -n "$protocol" ] && [ "$protocol" -lt 17 ]; then
+    echo "Old client check skipped: $tag predates the JSON handshake"
+    return 0
+  fi
+  if [ "$refused" -ne 1 ]; then
+    echo "::error::Old client $tag was not refused with WRONG_VERSION within 15 s"
+    return 1
+  fi
+  echo "Old client $tag was refused with WRONG_VERSION"
+}
+
+echo "::group::Old release client is refused"
+old_client_check || fail=1
+echo "::endgroup::"
+
 rm -f client.log server.log join.log "$stop"
 exit "$fail"

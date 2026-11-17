@@ -12,13 +12,22 @@ var _port: int
 var _sides: Array[Node] = []
 
 
-func _make_side(side_name: String) -> Node:
+## A client from some future or broken build: protocol 99, unknown keys, no name or content.
+class OddHello:
+	extends Handshake
+
+	func hello() -> Dictionary:
+		return {"t": "hello", "protocol": 99, "version": "9.9.9", "colour": "green", "perks": [1, 2]}
+
+
+func _make_side(side_name: String, handshake: Handshake = null) -> Node:
+	if handshake == null:
+		handshake = Handshake.new()
 	var root: Node = TwoPeers.make_side(self, side_name)
 	_sides.append(root)
 	var world: Node3D = Node3D.new()
 	world.name = "World"
 	root.add_child(world)
-	var handshake: Handshake = Handshake.new()
 	handshake.name = "Handshake"
 	root.add_child(handshake)
 	var spawner: PlayerSpawner = PlayerSpawner.new()
@@ -166,3 +175,51 @@ func test_ninth_player_gets_server_full_without_receiving_players() -> void:
 	assert_signal_emitted(ninth_handshake, "refused")
 	assert_eq(_player_count(ninth), 0)
 	assert_eq(_player_count(server_root), Net.MAX_PLAYERS)
+
+
+func test_any_hello_with_another_protocol_gets_wrong_version_not_silence() -> void:
+	var odd: Node = _make_side("OddClient", OddHello.new())
+	var odd_handshake: Handshake = odd.get_node("Handshake") as Handshake
+	watch_signals(odd_handshake)
+	_join(odd)
+	await wait_until(
+		func() -> bool: return odd_handshake.refusal_reason == Net.RefusalReason.WRONG_VERSION, 5.0, "odd hello refused"
+	)
+	assert_eq(odd_handshake.refusal_reason, Net.RefusalReason.WRONG_VERSION)
+	assert_signal_emitted(odd_handshake, "refused")
+	assert_eq(_player_count(odd), 0)
+	assert_signal_not_emitted(server_handshake, "accepted")
+
+
+func test_hello_keeps_the_frozen_keys() -> void:
+	var hello: Dictionary = client_handshake.hello()
+	for key: String in ["t", "protocol", "version"]:
+		assert_true(hello.has(key), "hello key %s is frozen" % key)
+	assert_eq(hello["t"], "hello")
+	assert_eq(hello["protocol"], client_handshake.protocol_version)
+	assert_eq(hello["version"], client_handshake.game_version)
+
+
+func test_older_side_names_the_release_that_needs_an_update() -> void:
+	assert_eq(Handshake.older_side("0.1.0", "0.1.1"), "client")
+	assert_eq(Handshake.older_side("0.1.1", "0.1.0"), "server")
+	assert_eq(Handshake.older_side("0.2.0-test.3", "0.2.0"), "client")
+	assert_eq(Handshake.older_side("0.1.10", "0.1.9"), "server")
+	assert_eq(Handshake.older_side("0.1.0", "0.1.0"), "")
+	assert_eq(Handshake.older_side("dev", "0.1.0"), "", "the editor has no order")
+	assert_eq(Handshake.older_side("0.1.0-dev.4+abc1234", "0.1.0-dev.5+def5678"), "", "main builds have no order")
+
+
+func test_older_client_release_is_refused_with_both_versions() -> void:
+	client_handshake.game_version = "0.1.0"
+	server_handshake.game_version = "0.1.1"
+	_join(client_root)
+	await _assert_refused(Net.RefusalReason.WRONG_VERSION)
+	assert_true(client_handshake.refusal_message.contains("0.1.0"))
+	assert_true(client_handshake.refusal_message.contains("0.1.1"))
+
+
+func test_reason_key_survives_codes_from_newer_servers() -> void:
+	assert_eq(Handshake.reason_key(Net.RefusalReason.WRONG_VERSION), "WRONG_VERSION")
+	assert_eq(Handshake.reason_key(99), "REFUSED")
+	assert_eq(Handshake.reason_key(-1), "REFUSED")

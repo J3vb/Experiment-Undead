@@ -84,6 +84,10 @@ def test_triangle_budget(tmp_path):
     assert has(broken(tmp_path, "wall_panel", add_dense_sphere), "budget for kit is 2000")
 
 
+def test_guns_have_the_baked_gun_budget():
+    assert check_models.BUDGETS["weapons"] == (30_000, 6), "ADR 0014: 30,000 triangles, 6 materials"
+
+
 def test_material_budget(tmp_path):
     def many_materials(objects):
         for i, obj in enumerate(o for o in objects if o.type == "MESH"):

@@ -37,11 +37,23 @@ static func message_for(reason: StringName, details: Dictionary = {}) -> String:
 		&"server_full":
 			return "The server is full (%d of %d players)." % [details.get("players", 8), details.get("max_players", 8)]
 		&"wrong_version":
-			return (
-				"Different game version. Server: %s, you: %s. Update the game to join."
-				% [details.get("server_version", ""), details.get("client_version", "")]
-			)
+			return _version_text(details)
+		&"refused":
+			var text: String = str(details.get("text", ""))
+			return text if not text.is_empty() else "The server refused to let you join."
 	return MESSAGES.get(reason, "Couldn't connect to the server. Try again.")
+
+
+## Names the side to update; dev builds have no order, so they only hear "different builds".
+static func _version_text(details: Dictionary) -> String:
+	var client: String = str(details.get("client_version", ""))
+	var server: String = str(details.get("server_version", ""))
+	match details.get("older", ""):
+		"client":
+			return "Your game is v%s, the server runs v%s. Update your game, then join again." % [client, server]
+		"server":
+			return "The server runs v%s, your game is v%s. The host needs to update the server." % [server, client]
+	return "Your game and the server are different builds. Use the same build on both."
 
 
 func show_error(reason: StringName, details: Dictionary = {}) -> void:

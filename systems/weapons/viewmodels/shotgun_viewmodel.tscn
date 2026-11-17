@@ -1,12 +1,16 @@
 [gd_scene format=3]
 
 [ext_resource type="PackedScene" path="res://assets/models/weapons/shotgun_brenner.glb" id="1"]
+[ext_resource type="Material" path="res://systems/weapons/viewmodels/reticle.tres" id="reticle"]
 
 [ext_resource type="QuadMesh" path="res://systems/weapons/viewmodels/shotgun_flash_quad.tres" id="flash_quad"]
 [ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/hand_right.tscn" id="hand_right"]
 [ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/sleeve_right.tscn" id="sleeve_right"]
 [ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/hand_left.tscn" id="hand_left"]
 [ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/sleeve_left.tscn" id="sleeve_left"]
+
+[sub_resource type="QuadMesh" id="reticle_quad"]
+size = Vector2(0.0016, 0.0016)
 
 [node name="Viewmodel" type="Node3D"]
 
@@ -39,6 +43,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.01, -0.037, 0)
 
 [node name="SleeveLeft" parent="Shotgun/Receiver/Bolt" instance=ExtResource("sleeve_left")]
 transform = Transform3D(1, 0, 0, 0, 0.9063, 0.4226, 0, -0.4226, 0.9063, -0.11, -0.137, 0.17)
+
+[node name="Reticle" type="MeshInstance3D" parent="Shotgun/Receiver/ReticleMount"]
+cast_shadow = 0
+material_override = ExtResource("reticle")
+mesh = SubResource("reticle_quad")
 
 [node name="HandRight" parent="." instance=ExtResource("hand_right")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.015, -0.04, 0.12)

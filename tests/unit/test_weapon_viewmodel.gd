@@ -1,5 +1,5 @@
 ## Code-built gun parts share recoil and reload poses; scope lenses render only
-## while aiming and shotgun shots fire every pellet.
+## while aiming, red dots show a reticle, and shotgun shots fire every pellet.
 extends GutTest
 
 const RIFLE: String = "res://content/weapons/rifle_ar.tres"
@@ -106,9 +106,9 @@ func test_empty_reload_holds_the_bolt_open_then_resets() -> void:
 
 
 func test_scope_renders_zoomed_view_only_while_aiming() -> void:
-	var weapon: Weapon = _gun()
+	var weapon: Weapon = _gun(TALON)
 	var lens: ScopeLens = _part(weapon, "ScopeLens") as ScopeLens
-	assert_not_null(lens, "rifle has a scope lens")
+	assert_not_null(lens, "Talon has a scope lens")
 	if lens == null:
 		return
 	lens._process(0.016)
@@ -126,12 +126,23 @@ func test_scope_renders_zoomed_view_only_while_aiming() -> void:
 		assert_eq((mesh as MeshInstance3D).layers, ScopeLens.VIEWMODEL_LAYER, mesh.name + " is on the viewmodel layer")
 
 
-func test_each_rifle_has_its_own_scope_picture() -> void:
-	var first: ScopeLens = _part(_gun(), "ScopeLens") as ScopeLens
-	var second: ScopeLens = _part(_gun(), "ScopeLens") as ScopeLens
+func test_each_scoped_gun_has_its_own_scope_picture() -> void:
+	var first: ScopeLens = _part(_gun(TALON), "ScopeLens") as ScopeLens
+	var second: ScopeLens = _part(_gun(TALON), "ScopeLens") as ScopeLens
 	assert_ne(first.material_override, second.material_override, "lens materials are not shared")
 	var view: Texture2D = (first.material_override as ShaderMaterial).get_shader_parameter(&"view")
-	assert_eq(view, first.viewport.get_texture(), "first rifle still shows its own scope camera")
+	assert_eq(view, first.viewport.get_texture(), "first Talon still shows its own scope camera")
+
+
+func test_rifle_red_dot_has_a_reticle_and_no_scope_camera() -> void:
+	var weapon: Weapon = _gun()
+	assert_null(_part(weapon, "ScopeLens"), "the AR-17 aims through a red dot, not a zoomed scope")
+	var reticle: MeshInstance3D = _part(weapon, "Reticle") as MeshInstance3D
+	assert_not_null(reticle, "the red dot shows a reticle")
+	if reticle == null:
+		return
+	assert_eq(reticle.get_parent().name, &"ReticleMount", "reticle sits on the model's mount")
+	assert_eq(reticle.layers, ScopeLens.VIEWMODEL_LAYER, "reticle is a viewmodel mesh")
 
 
 func test_shotgun_pump_racks_with_the_left_hand_on_it() -> void:
@@ -167,7 +178,7 @@ func test_shotgun_fires_every_pellet() -> void:
 
 
 func test_scope_camera_follows_main_camera_each_frame_without_interpolation() -> void:
-	var weapon: Weapon = _gun()
+	var weapon: Weapon = _gun(TALON)
 	var lens: ScopeLens = _part(weapon, "ScopeLens") as ScopeLens
 	var mode: Node.PhysicsInterpolationMode = lens.camera.physics_interpolation_mode
 	assert_eq(mode, Node.PHYSICS_INTERPOLATION_MODE_OFF, "scope camera is moved in _process")

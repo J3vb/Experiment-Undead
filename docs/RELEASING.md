@@ -39,6 +39,23 @@ Tags with a dash (`v0.2.0-rc.1`) become pre-releases and do not move `latest`.
 - `SaveFile.CURRENT_VERSION`: bump when save fields change, and add an
   upgrade step plus a test (see `systems/save/save_file.gd`).
 
+## Guards that keep old versions working
+
+- **Saved ids are permanent.** Every weapon, gear, affix, rarity and skill
+  file and every map folder can be in a player's save, so each is listed in
+  `tools/ci/saved_ids.txt`. The `quality` check fails when a listed id
+  disappears (also when its line is deleted with it) or a new one is not
+  listed. Add new ids with `python tools/ci/check_saved_ids.py --fix`. To
+  rename one, add a `SaveFile` migration and keep the old line.
+- **Save versions never go down.** `quality` fails when
+  `SaveFile.CURRENT_VERSION` is lower than at the newest stable `v*` tag.
+- **Old clients get a clear refusal.** Every Build downloads the newest
+  stable release that is not its own version, joins this build's exported
+  server with that old client and requires a `join_refused` with
+  `WRONG_VERSION` within 15 s. Releases from before the JSON handshake
+  (protocol below 17), or no release at all, print "skipped".
+- **Frozen handshake keys.** See `docs/MULTIPLAYER.md` (The handshake).
+
 ## Crash logs
 
 - Logs: `%APPDATA%\Godot\app_userdata\Experiment Undead\logs` on Windows,
@@ -56,12 +73,12 @@ Tags with a dash (`v0.2.0-rc.1`) become pre-releases and do not move `latest`.
 3. Copy `deploy/unraid/experiment-undead-server.xml` to
    `/boot/config/plugins/dockerMan/templates-user/` and add the container from
    **Docker**, **Add Container**, template `experiment-undead-server`.
-4. It runs as `99:100` (nobody:users) so it can write to appdata. Port 7777/udp.
+4. It runs as `99:100` (nobody:users) so it can write to appdata. Ports 7777/udp (game) and 8777/udp (server browser info; set `EU_SERVER_NAME` to name the server).
 
 Run it anywhere else:
 
 ```bash
-docker run -d --name eu-server -p 7777:7777/udp -v eu-data:/data \
+docker run -d --name eu-server -p 7777:7777/udp -p 8777:8777/udp -v eu-data:/data \
   ghcr.io/j3vb/experiment-undead-server:latest
 ```
 

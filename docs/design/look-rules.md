@@ -57,7 +57,10 @@ Bloater skin `#4A5446`.
 5. **Inside cold, outside warm.** Colour temperature tells you where you are.
 6. Guns: matte black and gunmetal, polymer, one secondary colour (tan, olive
    or grey). Rarity shows only as a thin inlay strip and optic glass colour; no
-   full-gun recolours. Original designs, no real brand marks.
+   full-gun recolours. Original designs, no real brand marks. Small accents are
+   fine: yellow mag tape, brass, and Oriel Biotechnic marks (our own company).
+   The four wall guns are heavily worn, chipped and grimy, like the concept
+   sheet [images/guns_concept.jpg](images/guns_concept.jpg).
 
 ## Godot settings (what the repo uses)
 
@@ -179,7 +182,8 @@ Panels: square corners, thin borders, coloured top edge for rarity or category.
 | Prototype | `#8DFF3A` | 3 m + pulse | 5 |
 
 Colour is never the only cue: pips and beam height carry rarity too.
-Gear on characters: [gear-visuals.md](gear-visuals.md).
+Gear on characters: [gear-visuals.md](gear-visuals.md). Player and gear look target:
+[player_gear_concept.jpg](images/player_gear_concept.jpg) (plan: F-70).
 
 ## Lantern Post (town)
 
