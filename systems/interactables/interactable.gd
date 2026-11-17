@@ -43,6 +43,11 @@ func owner_facts(_player: Player) -> Dictionary:
 	return {}
 
 
+## Server side: a remote client's facts have the right fields and ids for this interactable.
+func check_facts(_facts: Dictionary) -> bool:
+	return true
+
+
 ## State every client must see. Empty means nothing to sync.
 func net_state() -> Dictionary:
 	return {}
@@ -73,6 +78,11 @@ func _pay(player: Player, amount: int) -> bool:
 	else:
 		play_result(paid)
 	return paid
+
+
+## Gives the owner a gun or ammo after paying; the owner's PC changes its own guns.
+func _grant(player: Player, kind: InteractionSync.Grant, data: WeaponData, from_id: StringName, from_slot: int) -> void:
+	player.session.interactions.grant(player, kind, data, from_id, from_slot)
 
 
 func _level() -> Level:

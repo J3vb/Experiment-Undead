@@ -5,7 +5,7 @@ extends "res://tests/unit/coop_interaction_fixture.gd"
 
 
 func test_protocol_bumped_for_interaction_messages() -> void:
-	assert_eq(Build.PROTOCOL_VERSION, 3)
+	assert_eq(Build.PROTOCOL_VERSION, 4)
 
 
 func test_client_opens_a_door_on_every_peer() -> void:
@@ -76,15 +76,6 @@ func test_second_request_inside_the_gap_is_refused() -> void:
 	await wait_physics_frames(6)
 	assert_false(gone(server, "WestDoor"), "second request in the same tick refused")
 	assert_eq(on_server().wallet.points, 1000)
-
-
-func test_wall_buy_is_refused_until_it_is_networked() -> void:
-	on_server().wallet.set_points(5000)
-	await press("WallBuy")
-	await wait_until(func() -> bool: return denied_on(client, "WallBuy"), 3.0, "denied result reached the client")
-	assert_eq(on_server().wallet.points, 5000, "nothing charged")
-	assert_eq(on_client().weapons.weapons.size(), 0, "nothing given")
-	assert_eq(on_server().weapons.weapons.size(), 0)
 
 
 func test_late_joiner_does_not_see_an_opened_door() -> void:

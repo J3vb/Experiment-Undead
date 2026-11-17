@@ -1,9 +1,12 @@
 ## Co-op interact requests and world state. A client asks to use an
 ## interactable; the server checks the request and runs the same interact()
 ## as solo. Interactable and Level state changes go to every client, and a
-## late joiner gets them all once in a snapshot.
+## late joiner gets them all once in a snapshot. Guns stay on their owner's
+## PC: after paying, the server sends the owner a grant naming the gun it is for.
 class_name InteractionSync
 extends Node
+
+enum Grant { GIVE, UPGRADE, REFILL }
 
 ## Pose lag plus large interactable areas, on top of the player's reach.
 const REACH_SLACK: float = 2.0
@@ -15,11 +18,13 @@ var session: GameSession
 var _time: float = 0.0
 var _next_warning: float = 0.0
 var _last_request: Dictionary[int, float] = {}
+## Peers whose last grant is not applied yet; their facts may be out of date.
+var _pending: Dictionary[int, bool] = {}
 
 
 func _ready() -> void:
 	name = "InteractionSync"
-	multiplayer.peer_disconnected.connect(func(peer_id: int) -> void: _last_request.erase(peer_id))
+	multiplayer.peer_disconnected.connect(_forget_peer)
 	multiplayer.connected_to_server.connect(func() -> void: _request_snapshot.rpc_id(1))
 	var level: Level = session.level
 	level.area_opened.connect(func(_area: StringName) -> void: _send_level())
@@ -48,6 +53,8 @@ func request_interact(path: NodePath, facts: Dictionary) -> void:
 	var player: Player = session.players.find_player(sender)
 	var target: Interactable = _find(path)
 	var reason: StringName = _check(sender, player, target)
+	if reason == &"":
+		reason = _check_facts(sender, target, facts)
 	if reason != &"":
 		_reject(sender, path, reason)
 		return
@@ -67,6 +74,17 @@ func _check(sender: int, player: Player, target: Interactable) -> StringName:
 	if not target.accepts_requests():
 		return &"not_networked_yet"
 	return &"rate_limited" if _time - _last_request.get(sender, -INF) < REQUEST_GAP else &""
+
+
+func _check_facts(sender: int, target: Interactable, facts: Dictionary) -> StringName:
+	if _pending.has(sender) and not facts.is_empty():
+		return &"grant_pending"
+	return &"" if target.check_facts(facts) else &"bad_facts"
+
+
+func _forget_peer(peer_id: int) -> void:
+	_last_request.erase(peer_id)
+	_pending.erase(peer_id)
 
 
 func _find(path: NodePath) -> Interactable:
@@ -143,3 +161,50 @@ func _request_snapshot() -> void:
 func _receive_snapshot(states: Dictionary) -> void:
 	for key: String in states:
 		_receive_state(NodePath(key), states[key])
+
+
+## Server side: hand the owner what it paid for. from_id and from_slot name the gun the purchase was for.
+func grant(player: Player, kind: Grant, data: WeaponData, from_id: StringName, from_slot: int) -> void:
+	if player.net_id == multiplayer.get_unique_id():
+		apply_grant(player, kind, data, from_id, from_slot)
+	elif multiplayer.get_peers().has(player.net_id):
+		_pending[player.net_id] = true
+		_receive_grant.rpc_id(player.net_id, kind, data.id, from_id, from_slot)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _receive_grant(kind: int, weapon_id: StringName, from_id: StringName, from_slot: int) -> void:
+	var player: Player = session.players.find_player(multiplayer.get_unique_id())
+	if player and Content.ids(&"weapons").has(weapon_id):
+		apply_grant(player, kind as Grant, Content.weapon(weapon_id), from_id, from_slot)
+	_grant_applied.rpc_id(1)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _grant_applied() -> void:
+	if multiplayer.is_server():
+		_pending.erase(multiplayer.get_remote_sender_id())
+
+
+## Owner side. Never "the gun in hand now": the gun is found by slot, then by id.
+static func apply_grant(player: Player, kind: Grant, data: WeaponData, from_id: StringName, from_slot: int) -> void:
+	var holder: WeaponHolder = player.weapons
+	var in_range: bool = from_slot >= 0 and from_slot < holder.weapons.size()
+	if kind == Grant.GIVE:
+		if holder.weapons.size() < holder.max_slots or holder.current == null:
+			holder.give(data)
+		else:
+			holder.replace(holder.weapons[from_slot] if in_range else holder.current, data)
+		return
+	var held: Weapon = holder.weapons[from_slot] if in_range and holder.weapons[from_slot].data.id == from_id else null
+	for weapon: Weapon in holder.weapons:
+		if held == null and weapon.data.id == from_id:
+			held = weapon
+	if kind == Grant.UPGRADE:
+		if held:
+			holder.replace(held, data)
+		else:
+			holder.give(data)
+	elif held:
+		held.instance.refill_all()
+		held.ammo_changed.emit(held.instance.ammo_in_mag, held.instance.ammo_reserve)

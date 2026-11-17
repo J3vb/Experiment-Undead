@@ -1,4 +1,5 @@
 ## Sells one Serum. Needs power. A player can hold each Serum once per run.
+## Sales reach clients; a sold-out dispenser retires on every peer.
 class_name MedDispenser
 extends Interactable
 
@@ -7,6 +8,8 @@ extends Interactable
 @export var max_sales: int = 0
 
 var sales: int = 0
+## This peer played a buy chime here, so it must outlive the sold-out dispenser.
+var _chimed: bool = false
 
 
 func _ready() -> void:
@@ -31,12 +34,37 @@ func interact(player: Player, _facts: Dictionary = {}) -> void:
 		player.add_serum(serum)
 		sales += 1
 		if sales == max_sales:
-			var sound: AudioStreamPlayer3D = $BuySound
-			sound.stop()
-			sound.reparent(_level())
-			sound.finished.connect(sound.queue_free)
-			sound.play()
-			queue_free()
+			retire()
+		else:
+			state_changed.emit()
+
+
+func play_result(paid: bool) -> void:
+	super(paid)
+	_chimed = _chimed or paid
+
+
+## Sold out. The buyer's chime keeps playing after the dispenser is gone, also on a client.
+func retire() -> void:
+	if _chimed:
+		var sound: AudioStreamPlayer3D = $BuySound
+		sound.stop()
+		sound.reparent(_level())
+		sound.finished.connect(sound.queue_free)
+		sound.play()
+	super()
+
+
+func accepts_requests() -> bool:
+	return true
+
+
+func net_state() -> Dictionary:
+	return {"sales": sales}
+
+
+func apply_net_state(state: Dictionary) -> void:
+	sales = state.get("sales", sales)
 
 
 func _light_up() -> void:

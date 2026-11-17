@@ -46,6 +46,12 @@ func give(data: WeaponData) -> Weapon:
 
 ## Swaps the gun in hand for a new one in the same slot (full ammo).
 func replace_current(data: WeaponData) -> Weapon:
+	return replace(current, data)
+
+
+## Swaps old for a new gun in old's slot (full ammo). Stays in hand only if old was.
+func replace(old: Weapon, data: WeaponData) -> Weapon:
+	var was_current: bool = old == current
 	var weapon: Weapon = WEAPON_SCENE.instantiate()
 	weapon.setup(WeaponInstance.new(data), _player, _camera)
 	add_child(weapon)
@@ -54,11 +60,12 @@ func replace_current(data: WeaponData) -> Weapon:
 	weapon.fired.connect(_on_fired.bind(weapon))
 	weapon.reload_started.connect(_on_reload_started.bind(weapon))
 	weapon.hit_landed.connect(_on_hit_landed)
-	weapons[weapons.find(current)] = weapon
-	current.queue_free()
-	current = null
+	weapons[weapons.find(old)] = weapon
+	old.queue_free()
 	Events.weapon_acquired.emit(_player, data.id)
-	equip(weapons.find(weapon))
+	if was_current:
+		current = null
+		equip(weapons.find(weapon))
 	return weapon
 
 
