@@ -5,6 +5,10 @@
 [ext_resource type="PackedScene" path="res://systems/effects/spark_spot.tscn" id="spark"]
 [ext_resource type="Material" path="res://systems/effects/monitor_screen.tres" id="screen"]
 [ext_resource type="Material" path="res://levels/materials/fluorescent.tres" id="tube"]
+[ext_resource type="AudioStream" path="res://assets/audio/ambience/steam_hiss.ogg" id="hiss"]
+[ext_resource type="AudioStream" path="res://assets/audio/ambience/machine_hum.ogg" id="hum"]
+[ext_resource type="AudioStream" path="res://assets/audio/ambience/drip_loop.ogg" id="drips"]
+[ext_resource type="AudioStream" path="res://assets/audio/ambience/klaxon.wav" id="klaxon"]
 
 [sub_resource type="CylinderMesh" id="base_mesh"]
 material = ExtResource("pipe")
@@ -589,3 +593,84 @@ libraries = {
 &"": SubResource("sway_anims")
 }
 autoplay = &"sway"
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="Steam/GeneratorWest"]
+stream = ExtResource("hiss")
+volume_db = -14.0
+unit_size = 3.0
+max_distance = 14.0
+bus = &"Ambient"
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="Steam/GeneratorEast"]
+stream = ExtResource("hiss")
+volume_db = -14.0
+unit_size = 3.0
+max_distance = 14.0
+bus = &"Ambient"
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="Steam/CoolantTunnel"]
+stream = ExtResource("hiss")
+volume_db = -14.0
+unit_size = 3.0
+max_distance = 14.0
+bus = &"Ambient"
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="Drips/CoolantTunnel"]
+stream = ExtResource("drips")
+volume_db = -12.0
+unit_size = 3.0
+max_distance = 14.0
+autoplay = true
+bus = &"Ambient"
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="Drips/ContainmentNorth"]
+stream = ExtResource("drips")
+volume_db = -12.0
+unit_size = 3.0
+max_distance = 14.0
+autoplay = true
+bus = &"Ambient"
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="Drips/ContainmentSouth"]
+stream = ExtResource("drips")
+volume_db = -12.0
+unit_size = 3.0
+max_distance = 14.0
+autoplay = true
+bus = &"Ambient"
+
+[node name="Hums" type="Node3D" parent="."]
+
+[node name="Generators" type="Node3D" parent="Hums" groups=["after_power"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 1.2, 16)
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="Hums/Generators"]
+stream = ExtResource("hum")
+volume_db = -10.0
+unit_size = 3.0
+max_distance = 14.0
+bus = &"Ambient"
+
+[node name="GuardMonitors" type="Node3D" parent="Hums" groups=["after_power"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 1.1, 40)
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="Hums/GuardMonitors"]
+stream = ExtResource("hum")
+volume_db = -20.0
+unit_size = 3.0
+max_distance = 6.0
+pitch_scale = 3.0
+bus = &"Ambient"
+
+[node name="Klaxon" type="AudioStreamPlayer3D" parent="Beacons/BeaconWest"]
+stream = ExtResource("klaxon")
+volume_db = -10.0
+unit_size = 3.0
+max_distance = 14.0
+bus = &"Ambient"
+
+[node name="Timer" type="Timer" parent="Beacons/BeaconWest/Klaxon"]
+wait_time = 30.0
+autostart = true
+
+[connection signal="timeout" from="Beacons/BeaconWest/Klaxon/Timer" to="Beacons/BeaconWest/Klaxon" method="play"]
