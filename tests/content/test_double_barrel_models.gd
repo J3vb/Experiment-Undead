@@ -23,22 +23,6 @@ func _bounds(node: Node, transform: Transform3D, out: Array[AABB]) -> void:
 		_bounds(child, here, out)
 
 
-func _blocks_segment(node: Node, transform: Transform3D, start: Vector3, end: Vector3) -> bool:
-	var here: Transform3D = transform * (node as Node3D).transform if node is Node3D else transform
-	if node is MeshInstance3D:
-		var faces: PackedVector3Array = (node as MeshInstance3D).mesh.get_faces()
-		for index: int in range(0, faces.size(), 3):
-			var hit: Variant = Geometry3D.segment_intersects_triangle(
-				start, end, here * faces[index], here * faces[index + 1], here * faces[index + 2]
-			)
-			if hit != null:
-				return true
-	for child: Node in node.get_children():
-		if _blocks_segment(child, here, start, end):
-			return true
-	return false
-
-
 func test_models_have_two_barrels_and_independent_action_parts() -> void:
 	for id: StringName in GUNS:
 		var gun: Node3D = _load_gun(id)
@@ -68,7 +52,7 @@ func test_both_muzzles_are_open_bores() -> void:
 		for side: float in [-1.0, 1.0]:
 			var start: Vector3 = Vector3(side * GUNS[id][6], GUNS[id][3], GUNS[id][4])
 			var end: Vector3 = Vector3(start.x, start.y, GUNS[id][5])
-			assert_false(_blocks_segment(gun, Transform3D.IDENTITY, start, end), "%s barrel %s is hollow" % [id, side])
+			assert_false(MeshChecks.blocks_segment(gun, start, end), "%s barrel %s is hollow" % [id, side])
 		gun.free()
 
 
@@ -105,12 +89,11 @@ func test_bead_sight_lines_are_clear_at_the_content_ads_height() -> void:
 		var height: float = -Content.weapon(id).ads_position.y
 		var eye: Vector3 = Vector3(0, height + 0.003, 0.6)
 		assert_false(
-			_blocks_segment(gun, Transform3D.IDENTITY, eye, Vector3(0, eye.y, -0.8)),
-			String(id) + " bead sight picture stays open"
+			MeshChecks.blocks_segment(gun, eye, Vector3(0, eye.y, -0.8)), String(id) + " bead sight picture stays open"
 		)
 		eye.y = height - 0.004
 		assert_true(
-			_blocks_segment(gun, Transform3D.IDENTITY, eye, Vector3(0, eye.y, -0.8)),
+			MeshChecks.blocks_segment(gun, eye, Vector3(0, eye.y, -0.8)),
 			String(id) + " bead sits just below the aiming line"
 		)
 		gun.free()

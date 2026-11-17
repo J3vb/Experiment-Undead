@@ -3,21 +3,13 @@
 extends GutTest
 
 const SESSION: PackedScene = preload("res://systems/game/game_session.tscn")
-const PORT: int = 24645
 
 var server_root: Node
 var client_root: Node
 var server: GameSession
 var client: GameSession
 var late_root: Node
-
-
-func _make_side(side_name: String) -> Node:
-	var root: Node = Node.new()
-	root.name = side_name
-	add_child(root)
-	get_tree().set_multiplayer(SceneMultiplayer.new(), root.get_path())
-	return root
+var _port: int
 
 
 func _make_session(root: Node) -> GameSession:
@@ -38,14 +30,11 @@ func _make_session(root: Node) -> GameSession:
 
 
 func before_each() -> void:
-	server_root = _make_side("Server")
-	client_root = _make_side("Client")
-	var server_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(server_peer.create_server(PORT, 2), OK)
-	server_root.multiplayer.multiplayer_peer = server_peer
-	var client_peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(client_peer.create_client("127.0.0.1", PORT), OK)
-	client_root.multiplayer.multiplayer_peer = client_peer
+	_port = TwoPeers.next_port()
+	server_root = TwoPeers.make_side(self, "Server")
+	client_root = TwoPeers.make_side(self, "Client")
+	assert_eq(TwoPeers.host(server_root, _port, 2), OK)
+	assert_eq(TwoPeers.join(client_root, _port), OK)
 	client = _make_session(client_root)
 	server = _make_session(server_root)
 	var joined: Callable = func() -> bool: return server.get_players().size() == 2 and client.get_players().size() == 2
@@ -60,11 +49,7 @@ func after_each() -> void:
 	if is_instance_valid(late_root):
 		roots.push_front(late_root)
 	for root: Node in roots:
-		var path: NodePath = root.get_path()
-		root.multiplayer.multiplayer_peer.close()
-		root.multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
-		root.free()
-		get_tree().set_multiplayer(null, path)
+		TwoPeers.close_side(root)
 	get_tree().paused = false
 
 
@@ -171,10 +156,8 @@ func test_late_joiner_receives_an_ended_match() -> void:
 	_down(server.players.find_player(1))
 	_down(server.players.find_player(client.multiplayer.get_unique_id()))
 	assert_true(server.is_over)
-	late_root = _make_side("LateClient")
-	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(peer.create_client("127.0.0.1", PORT), OK)
-	late_root.multiplayer.multiplayer_peer = peer
+	late_root = TwoPeers.make_side(self, "LateClient")
+	assert_eq(TwoPeers.join(late_root, _port), OK)
 	var late_session: GameSession = _make_session(late_root)
 	await wait_until(func() -> bool: return late_session.is_over, 5.0, "late join receives match results")
 	assert_eq(late_session._match_stats, server._match_stats)

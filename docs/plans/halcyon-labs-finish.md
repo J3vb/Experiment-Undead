@@ -1,7 +1,7 @@
 # Plan: Finish Halcyon Labs
 
 Status: Approved
-Roadmap: F-12
+Roadmap: F-13
 Phase: P4 (v0.1 Vertical slice), co-op points for P7
 Size: M
 Approved by: Codex plan review on PR #212 (2026-11-17, five findings fixed), size M, no open decisions

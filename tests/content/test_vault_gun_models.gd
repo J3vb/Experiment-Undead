@@ -30,23 +30,6 @@ func _bounds(node: Node, xform: Transform3D, out: Array[AABB]) -> void:
 		_bounds(child, here, out)
 
 
-func _blocks_ray(node: Node, xform: Transform3D, from: Vector3) -> bool:
-	var here: Transform3D = xform * (node as Node3D).transform if node is Node3D else xform
-	if node is MeshInstance3D:
-		var faces: PackedVector3Array = (node as MeshInstance3D).mesh.get_faces()
-		for i: int in range(0, faces.size(), 3):
-			var a: Vector3 = here * faces[i]
-			var hit: Variant = Geometry3D.ray_intersects_triangle(
-				from, Vector3.FORWARD, a, here * faces[i + 1], here * faces[i + 2]
-			)
-			if hit != null:
-				return true
-	for child: Node in node.get_children():
-		if _blocks_ray(child, here, from):
-			return true
-	return false
-
-
 func test_models_have_their_parts_and_point_forward() -> void:
 	for id: StringName in GUNS:
 		var gun: Node3D = _load(id)
@@ -78,9 +61,9 @@ func test_iron_sight_line_is_open_at_the_ads_height() -> void:
 		var gun: Node3D = _load(id)
 		var ads: Vector3 = Content.weapon(id).ads_position
 		var eye: Vector3 = Vector3(0, -ads.y + 0.003, 0.6)
-		assert_false(_blocks_ray(gun, Transform3D.IDENTITY, eye), String(id) + " nothing blocks the sight picture")
+		assert_false(MeshChecks.blocks_ray(gun, eye, Vector3.FORWARD), String(id) + " nothing blocks the sight picture")
 		assert_true(
-			_blocks_ray(gun, Transform3D.IDENTITY, Vector3(0, -ads.y - 0.004, 0.6)),
+			MeshChecks.blocks_ray(gun, Vector3(0, -ads.y - 0.004, 0.6), Vector3.FORWARD),
 			String(id) + " a front post sits on the aiming line"
 		)
 		gun.free()

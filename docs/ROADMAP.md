@@ -26,13 +26,14 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-01 | First-person arms on the guns | #102 | - | issue | S | Done (PR #136 fitted arms, sleeve fix) |
 | F-02 | Co-op clients can use doors, wall-buys and machines | #138 | F-00 | [done](plans/coop-interactions.md) | M | Done (play-test: #191) |
 | F-03 | Player footsteps and landing sounds | #103 | - | issue | S | Done |
-| F-04 | Halcyon Labs ambience | #104 | - | issue | S | Todo |
+| F-04 | Halcyon Labs ambience | #104 | - | issue | S | Done |
 | F-05 | Rebind controls in Settings | #105 | - | needed | M | Todo |
 | F-06 | Make the rounds 1-10 soak test a required CI check | #107 | - | issue | S | Done (branch rule: add `soak`) |
 | F-07 | Balance pass rounds 1-10 for the slice guns | #106 | F-06 | issue | S | Todo |
-| F-08 | Change log in the design doc | #110 | - | issue | S | Todo |
-| F-12 | Finish Halcyon Labs: props, co-op spawn points, vent route, secret | - | - | [needed](plans/halcyon-labs-finish.md) | M | Ready |
-| F-09 | v0.1 performance check | #108 | F-01..F-07, F-12 | issue | S | Todo |
+| F-08 | Change log in the design doc | #110 | - | issue | S | Done |
+| F-12 | Core loop gaps: round scaling, stuck zombies, swap, melee, slide, best round | - | - | [needed](plans/core-loop-gaps.md) | M | Building |
+| F-13 | Finish Halcyon Labs: props, co-op spawn points, vent route, secret | - | - | [needed](plans/halcyon-labs-finish.md) | M | Ready |
+| F-09 | v0.1 performance check | #108 | F-01..F-07, F-12, F-13 | issue | S | Todo |
 | F-10 | First play-test (the person plays) | #109 | F-09 | issue | S | Todo |
 | F-11 | Release v0.1.0 | #111 | F-10 | issue | S | Todo |
 

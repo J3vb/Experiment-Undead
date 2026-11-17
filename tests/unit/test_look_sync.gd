@@ -2,7 +2,6 @@
 extends GutTest
 
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
-const PORT: int = 24670
 const MIXED: Dictionary = {
 	"vest": {"base": "vest_heavy", "rar": "rare"},
 	"charm": {"base": "charm_vial", "rar": "epic"},
@@ -10,22 +9,20 @@ const MIXED: Dictionary = {
 }
 const HOST_LOOK: Dictionary = {"vest": {"base": "vest_light", "rar": "uncommon"}}
 
+var _port: int
 var _codec: LookCodec
 var _sides: Array[Node] = []
 
 
 func before_each() -> void:
+	_port = TwoPeers.next_port()
 	_codec = LookCodec.new()
 
 
 func after_each() -> void:
 	_sides.reverse()
 	for root: Node in _sides:
-		var path: NodePath = root.get_path()
-		root.multiplayer.multiplayer_peer.close()
-		root.multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
-		root.free()
-		get_tree().set_multiplayer(null, path)
+		TwoPeers.close_side(root)
 	_sides.clear()
 
 
@@ -193,10 +190,7 @@ func test_rejected_hello_never_publishes_a_look_or_spawns_a_player() -> void:
 
 
 func _make_side(side_name: String, loadout: Dictionary) -> Node:
-	var root: Node = Node.new()
-	root.name = side_name
-	add_child(root)
-	get_tree().set_multiplayer(SceneMultiplayer.new(), root.get_path())
+	var root: Node = TwoPeers.make_side(self, side_name)
 	_sides.append(root)
 	var world: Node3D = Node3D.new()
 	world.name = "World"
@@ -225,9 +219,7 @@ func _on_player_added(player: Player, loadout: Dictionary) -> void:
 
 func _listen() -> Node:
 	var root: Node = _make_side("LookServer", HOST_LOOK)
-	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(peer.create_server(PORT, 3), OK)
-	root.multiplayer.multiplayer_peer = peer
+	assert_eq(TwoPeers.host(root, _port, 3), OK)
 	(root.get_node("Handshake") as Handshake).setup()
 	_spawner(root).setup(root.get_node("World") as Node3D, Transform3D.IDENTITY)
 	return root
@@ -240,9 +232,7 @@ func _join(side_name: String, loadout: Dictionary) -> Node:
 
 
 func _connect(root: Node) -> void:
-	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(peer.create_client("127.0.0.1", PORT), OK)
-	root.multiplayer.multiplayer_peer = peer
+	assert_eq(TwoPeers.join(root, _port), OK)
 	(root.get_node("Handshake") as Handshake).setup()
 	_spawner(root).setup(root.get_node("World") as Node3D, Transform3D.IDENTITY)
 

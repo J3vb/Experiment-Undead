@@ -2,21 +2,18 @@
 extends GutTest
 
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
-const PORT: int = 24662
 
 var server_root: Node
 var client_root: Node
 var server_handshake: Handshake
 var client_handshake: Handshake
 var server_spawner: PlayerSpawner
+var _port: int
 var _sides: Array[Node] = []
 
 
 func _make_side(side_name: String) -> Node:
-	var root: Node = Node.new()
-	root.name = side_name
-	add_child(root)
-	get_tree().set_multiplayer(SceneMultiplayer.new(), root.get_path())
+	var root: Node = TwoPeers.make_side(self, side_name)
 	_sides.append(root)
 	var world: Node3D = Node3D.new()
 	world.name = "World"
@@ -33,14 +30,13 @@ func _make_side(side_name: String) -> Node:
 
 
 func before_each() -> void:
+	_port = TwoPeers.next_port()
 	server_root = _make_side("HandshakeServer")
 	client_root = _make_side("HandshakeClient")
 	server_handshake = server_root.get_node("Handshake") as Handshake
 	client_handshake = client_root.get_node("Handshake") as Handshake
 	server_spawner = server_root.get_node("PlayerSpawner") as PlayerSpawner
-	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(peer.create_server(PORT, Net.MAX_PLAYERS + 1), OK)
-	server_root.multiplayer.multiplayer_peer = peer
+	assert_eq(TwoPeers.host(server_root, _port, Net.MAX_PLAYERS + 1), OK)
 	server_handshake.setup("Host", 12)
 	server_spawner.setup(server_root.get_node("World") as Node3D, Transform3D.IDENTITY)
 	watch_signals(server_handshake)
@@ -50,18 +46,12 @@ func before_each() -> void:
 func after_each() -> void:
 	_sides.reverse()
 	for root: Node in _sides:
-		var path: NodePath = root.get_path()
-		root.multiplayer.multiplayer_peer.close()
-		root.multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
-		root.free()
-		get_tree().set_multiplayer(null, path)
+		TwoPeers.close_side(root)
 	_sides.clear()
 
 
 func _join(root: Node) -> void:
-	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	assert_eq(peer.create_client("127.0.0.1", PORT), OK)
-	root.multiplayer.multiplayer_peer = peer
+	assert_eq(TwoPeers.join(root, _port), OK)
 	var handshake: Handshake = root.get_node("Handshake") as Handshake
 	handshake.setup("Client", 7)
 	var spawner: PlayerSpawner = root.get_node("PlayerSpawner") as PlayerSpawner

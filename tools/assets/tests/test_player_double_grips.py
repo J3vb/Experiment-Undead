@@ -4,7 +4,6 @@ import importlib
 import math
 import os
 import sys
-from itertools import pairwise
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -12,6 +11,7 @@ import bpy
 
 # isort: split
 import build_models
+import grip_checks
 import player_double_grips as double
 import player_grip_model as grip
 import player_lever_grip as lever
@@ -29,15 +29,9 @@ def _path(profile, index):
 
 @pytest.mark.parametrize("profile", ["coachman_2b", "grubber_sawnoff"])
 def test_break_action_index_starts_forward_without_dorsal_extension(profile):
-    across, along, inward = grip._frame(-1)
     points = _path(profile, 0)
-    for station in (1, 2, 3):
-        direction = (points[station] - points[0]).normalized()
-        extension = math.degrees(math.atan2(-direction.dot(inward), direction.dot(along)))
-        abduction = math.degrees(math.atan2(direction.dot(across), direction.dot(along)))
-        assert -30 < extension < 30
-        assert abs(abduction) < 30
-    assert sum((a - b).length for a, b in pairwise(points)) < 0.110
+    grip_checks.assert_index_reach(points, extension=(-30, 30))
+    assert grip_checks.path_length(points) < 0.110
 
 
 @pytest.mark.parametrize(

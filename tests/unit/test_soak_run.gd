@@ -1,7 +1,8 @@
-## Checks soak argument validation without starting real waves.
+## Checks soak argument validation and the fight bot's aim maths without starting real waves.
 extends GutTest
 
 const SOAK_RUN: GDScript = preload("res://tools/soak/soak_run.gd")
+const SOAK_BOT: GDScript = preload("res://tools/soak/soak_bot.gd")
 
 var runner: Node
 
@@ -42,3 +43,23 @@ func test_unknown_argument_preserves_settings() -> void:
 	assert_eq(runner._rounds, 10)
 	assert_eq(runner._seed, 1)
 	assert_eq(runner._timescale, 4.0)
+
+
+func test_fight_and_wall_arguments() -> void:
+	assert_true(runner._parse_argument("--fight", "1"))
+	assert_true(runner._fight)
+	assert_true(runner._parse_argument("--fight", "0"))
+	assert_false(runner._fight)
+	assert_false(runner._parse_argument("--fight", "yes"))
+	assert_true(runner._parse_argument("--wall", "some_gun"))
+	assert_eq(runner._wall, &"some_gun")
+
+
+func test_bot_turns_the_short_way_and_caps_the_turn() -> void:
+	var right: Vector3 = Vector3(1.0, 0.0, 0.0)
+	var turn: Vector2 = SOAK_BOT.turn_toward(Vector3.FORWARD, right, 10.0)
+	assert_almost_eq(turn.x, PI / 2.0, 0.001, "positive look.x turns right")
+	assert_almost_eq(turn.y, 0.0, 0.001)
+	assert_almost_eq(SOAK_BOT.turn_toward(Vector3.FORWARD, right, 0.1).length(), 0.1, 0.001)
+	var up: Vector3 = Vector3(0.0, 1.0, -1.0).normalized()
+	assert_lt(SOAK_BOT.turn_toward(Vector3.FORWARD, up, 10.0).y, 0.0, "negative look.y pitches up")

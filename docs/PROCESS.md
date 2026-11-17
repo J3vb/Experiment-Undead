@@ -72,6 +72,8 @@ Once a week, play 15 minutes on the latest build and fill in a
 - Big changes (a pillar, scope, a whole system, the roadmap): add an entry to
   `docs/DECISIONS.md` first (what, why, what it replaces).
 - New ideas: an **Idea** issue, not straight into the game.
+- Every design change (a rule, a number players feel, content scope): add one dated row to the
+  [Change log](design/game-design.md#change-log) in `docs/design/game-design.md` in the same PR.
 
 ## Labels and milestones
 
