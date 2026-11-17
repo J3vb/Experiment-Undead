@@ -151,6 +151,11 @@ func has_serum(id: StringName) -> bool:
 	return false
 
 
+## Down with Second Wind still waiting to get them up: the squad is not out yet.
+func can_self_revive() -> bool:
+	return is_downed and not is_dead and has_serum(&"second_wind")
+
+
 func add_serum(serum: SerumData) -> void:
 	if not multiplayer.is_server() or serums.has(serum):
 		return

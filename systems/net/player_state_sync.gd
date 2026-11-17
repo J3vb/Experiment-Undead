@@ -220,7 +220,8 @@ func down_player(second_wind: bool = false) -> void:
 	_player.is_downed = true
 	_player.is_dead = false
 	bleed_left = BLEED_OUT_TIME
-	_player.lose_serums(second_wind)
+	if not second_wind:
+		_player.lose_serums()
 	_present()
 	publish()
 	if second_wind:

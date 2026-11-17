@@ -46,3 +46,16 @@ func test_second_wind_gets_a_coop_player_up_and_keeps_other_serums() -> void:
 	assert_eq(_serum_ids(on_server()), [&"ironhide"] as Array[StringName])
 	await wait_until(func() -> bool: return _serum_ids(on_client()) == [&"ironhide"], 3.0, "only Second Wind used up")
 	assert_eq(on_client().health.current, 250.0)
+
+
+func test_teammate_going_down_during_second_wind_does_not_end_the_match() -> void:
+	await _give_serums([&"second_wind"])
+	add_player(client, 1)
+	var teammate: Player = add_player(server, 1)
+	on_server().second_wind_time = 0.3
+	on_server().take_damage(DamageInfo.create(10000.0, null))
+	teammate.take_damage(DamageInfo.create(10000.0, null))
+	assert_true(teammate.is_downed)
+	assert_false(server.is_over, "Second Wind can still get a player up")
+	await wait_until(func() -> bool: return on_server().is_alive(), 3.0, "second wind got the player up")
+	assert_false(server.is_over)
