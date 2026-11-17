@@ -101,7 +101,7 @@ def build_hanging_strip() -> None:
     limb("Cable", (0.55, 0.0, 4.0), (0.5, 0.0, 1.05), 0.012, m["dark"])
     strip = box("Housing", (0.14, 0.12, 1.25), (0.25, 0.0, 0.6), m["steel"], bevel=0.01)
     strip.rotation_euler = (0, math.radians(-22), 0)
-    tube = box("Tube", (0.05, 0.05, 1.1), (0.25, -0.07, 0.6), m["paper"])
+    tube = box("Tube", (0.05, 0.05, 1.1), (0.25, -0.07, 0.6), m["steel"])
     tube.rotation_euler = (0, math.radians(-22), 0)
     limb("LooseWire", (0.02, 0.0, 0.08), (-0.1, -0.05, 0.0), 0.006, m["dark"])
     p._merge("HangingStrip")

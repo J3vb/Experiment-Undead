@@ -151,7 +151,6 @@
 		{"id": "corridor_vine", "room": "main_corridor", "at": [31, 0, 26.25], "model": "vine_wall_small", "turn": 0},
 		{"id": "generator_vine", "room": "generator_hall", "at": [26, 0, 6.25], "model": "vine_wall_small", "turn": 0},
 		{"id": "mess_strip_west", "room": "mess_hall", "at": [44.5, 2, 37.5], "model": "hanging_strip", "turn": 30},
-		{"id": "mess_strip_east", "room": "mess_hall", "at": [53.5, 2, 36.2], "model": "hanging_strip", "turn": -60},
 		{"id": "mess_spill_west", "room": "mess_hall", "at": [41.5, 0, 36.5], "model": "mess_spill", "turn": 60}
 	],
 	"light_states": {
