@@ -13,6 +13,9 @@ const WALL_PANEL: String = "res://assets/models/kit/wall_panel.glb"
 const CEILING_LIGHT: String = "res://levels/kit/ceiling_light.tscn"
 const DEAD_LIGHT: String = "res://levels/kit/ceiling_light_dead.tscn"
 const MATERIALS: String = "res://levels/materials/%s.tres"
+## Room defaults when layout.json names no material.
+const FLOOR_MATERIAL: String = "tiled_wet_floor"
+const CEILING_MATERIAL: String = "ceiling_stained"
 ## Plain wall above the panels and around door cuts.
 const WALL_MATERIAL: String = "wall_paint"
 const PROP_MODEL: String = "res://assets/models/props/%s.glb"
@@ -139,10 +142,13 @@ static func _build_room(root: Node3D, room: Dictionary, openings: Array, light_s
 	var centre: Vector3 = Vector3((r[0] + r[2]) * 0.5, y, (r[1] + r[3]) * 0.5)
 	var node: Node3D = _child(root, root, room["id"])
 	node.position = centre
-	var floor_mat: String = room.get("floor_material", "tiled_wet_floor")
+	var floor_mat: String = room.get("floor_material", FLOOR_MATERIAL)
 	_block(root, node, "Floor", Vector3(size.x, 0.5, size.y), Vector3(0, -0.25, 0), floor_mat)
-	_block(root, node, "Ceiling", Vector3(size.x, 0.5, size.y), Vector3(0, h + 0.25, 0), "ceiling_stained")
+	var ceiling_mat: String = room.get("ceiling_material", CEILING_MATERIAL)
+	_block(root, node, "Ceiling", Vector3(size.x, 0.5, size.y), Vector3(0, h + 0.25, 0), ceiling_mat)
 	var walls: Node3D = _child(root, node, "Walls")
+	# Read by _wall_run and _cut_piece, removed again so it is not saved.
+	walls.set_meta(&"material", room.get("wall_material", WALL_MATERIAL))
 	# Each edge: start corner, inward normal, length, height. The wall runs along the rotated +X.
 	var edges: Array[Array] = [
 		[Vector3(r[0], y, r[1]), Vector3.BACK, size.x, h],
@@ -152,6 +158,7 @@ static func _build_room(root: Node3D, room: Dictionary, openings: Array, light_s
 	]
 	for i: int in edges.size():
 		_build_wall(root, walls, "Edge%d" % i, edges[i], openings, centre)
+	walls.remove_meta(&"material")
 	if room.get("lights", true):
 		_build_lights(root, node, size, minf(h, LIGHT_HANG) - 0.03, light_state)
 
@@ -232,7 +239,7 @@ static func _wall_run(root: Node3D, walls: Node3D, label: String, at: Transform3
 		var mesh: BoxMesh = BoxMesh.new()
 		mesh.size = Vector3(length, h - PANEL_HEIGHT, WALL_THICKNESS)
 		mesh.add_uv2 = true
-		mesh.material = load(MATERIALS % WALL_MATERIAL)
+		mesh.material = load(MATERIALS % walls.get_meta(&"material"))
 		upper.mesh = mesh
 		upper.position.y = PANEL_HEIGHT + (h - PANEL_HEIGHT) * 0.5
 		body.add_child(upper)
@@ -243,7 +250,9 @@ static func _wall_run(root: Node3D, walls: Node3D, label: String, at: Transform3
 static func _cut_piece(root: Node3D, walls: Node3D, label: String, at: Transform3D, size: Vector3) -> void:
 	if size.y < 0.05:
 		return
-	var block: Block = _block(root, walls, label, Vector3(size.x, size.y, WALL_THICKNESS), Vector3.ZERO, WALL_MATERIAL)
+	var block: Block = _block(
+		root, walls, label, Vector3(size.x, size.y, WALL_THICKNESS), Vector3.ZERO, walls.get_meta(&"material")
+	)
 	block.transform = Transform3D(at.basis, at.origin + Vector3(0, size.z + size.y * 0.5, 0))
 
 
@@ -286,7 +295,8 @@ static func _build_ramp(root: Node3D, parent: Node3D, ramp: Dictionary, index: i
 	var side: Vector3 = forward.cross(Vector3.UP).normalized()
 	var up: Vector3 = side.cross(forward).normalized()
 	var size: Vector3 = Vector3(start.distance_to(end), 0.4, float(ramp["width"]))
-	var block: Block = _block(root, parent, "Ramp%d" % index, size, Vector3.ZERO, "tiled_wet_floor")
+	var mat: String = ramp.get("material", FLOOR_MATERIAL)
+	var block: Block = _block(root, parent, "Ramp%d" % index, size, Vector3.ZERO, mat)
 	block.transform = Transform3D(Basis(forward, up, side), (start + end) * 0.5 - up * 0.2)
 
 

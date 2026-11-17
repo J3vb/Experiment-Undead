@@ -8,6 +8,17 @@ const SCENES: Array[String] = [
 	"res://levels/halcyon_labs/blockout.tscn",
 	"res://levels/halcyon_labs/map.tscn",
 ]
+const BUILDER: String = "res://tools/blockout_builder.gd"
+const TEXTURED: Array[String] = [
+	"ceiling_stained",
+	"wall_paint",
+	"raw_concrete",
+	"steel_plate",
+	"linoleum",
+	"clinic_tile",
+	"grating",
+	"sealed_concrete"
+]
 ## Look rule 3: only fixtures and gameplay objects glow above 1.0, so a weak glow
 ## is a flat surface, not a light.
 const GLOW_ENERGY: float = 1.0
@@ -47,7 +58,7 @@ func test_the_list_only_names_surfaces_that_are_still_flat() -> void:
 
 
 func test_new_texture_materials_use_the_halcyon_sets() -> void:
-	for name: String in ["ceiling_stained", "wall_paint", "raw_concrete"]:
+	for name: String in TEXTURED:
 		var material: ShaderMaterial = load("res://levels/materials/%s.tres" % name) as ShaderMaterial
 		assert_not_null(material, name)
 		if material == null:
@@ -57,6 +68,36 @@ func test_new_texture_materials_use_the_halcyon_sets() -> void:
 			assert_not_null(texture, "%s %s" % [name, slot])
 			if texture:
 				assert_string_starts_with(texture.resource_path, "res://assets/textures/halcyon/", name)
+
+
+func test_rooms_take_their_materials_from_the_layout() -> void:
+	var plain: Dictionary = {"id": "plain", "rect": [0, 0, 4, 4], "floor": 0, "height": 4, "lights": false}
+	var dressed: Dictionary = plain.duplicate()
+	dressed["id"] = "dressed"
+	dressed["rect"] = [10, 0, 14, 4]
+	dressed["floor_material"] = "steel_plate"
+	dressed["ceiling_material"] = "raw_concrete"
+	dressed["wall_material"] = "raw_concrete"
+	var builder: GDScript = load(BUILDER) as GDScript
+	var built: Node3D = builder.build({"rooms": [plain, dressed]})
+	var expect: Dictionary = {
+		"plain/Floor": "tiled_wet_floor",
+		"plain/Ceiling": "ceiling_stained",
+		"plain/Walls/Edge0Run0": "wall_paint",
+		"dressed/Floor": "steel_plate",
+		"dressed/Ceiling": "raw_concrete",
+		"dressed/Walls/Edge0Run0": "raw_concrete",
+	}
+	for path: String in expect:
+		var node: Node = built.get_node(path)
+		var material: Material = (node as Block).material if node is Block else _upper_material(node)
+		assert_eq(material.resource_path, "res://levels/materials/%s.tres" % expect[path], path)
+	assert_false(built.get_node("plain/Walls").has_meta(&"material"), "the build-time wall material is not saved")
+	built.free()
+
+
+func _upper_material(run: Node) -> Material:
+	return ((run.get_node("Upper") as MeshInstance3D).mesh as BoxMesh).material
 
 
 ## Flat surfaces as key -> example node path.
