@@ -6,16 +6,16 @@ const BODY: PackedScene = preload("res://assets/models/characters/player.glb")
 
 func test_apply_attaches_one_piece_per_slot_on_the_expected_body_bones() -> void:
 	var rig: GearRig = _rig()
-	var bones: Dictionary[StringName, StringName] = {
-		&"vest": &"spine_02", &"charm": &"spine_03", &"implant": &"forearm_L"
-	}
+	var bones: Dictionary[StringName, StringName] = {&"charm": &"spine_03", &"implant": &"forearm_L"}
 	rig.apply(_mixed_look())
 	for slot: StringName in CharacterLook.SLOTS:
-		var attachment: BoneAttachment3D = rig.skeleton.get_node(String(slot).capitalize()) as BoneAttachment3D
-		assert_not_null(attachment, String(slot) + " has a body attachment")
-		assert_eq(attachment.bone_name, bones[slot])
-		assert_eq(attachment.get_child_count(), 1, "one equipped scene per filled slot")
-		assert_same(attachment.get_parent(), rig.skeleton)
+		var holder: Node3D = rig.skeleton.get_node(String(slot).capitalize()) as Node3D
+		assert_eq(holder.get_child_count(), 1, "one equipped scene per filled slot")
+		assert_same(holder.get_parent(), rig.skeleton)
+		if bones.has(slot):
+			assert_eq((holder as BoneAttachment3D).bone_name, bones[slot], String(slot) + " follows its body bone")
+		else:
+			assert_false(holder is BoneAttachment3D, "the skinned vest is not moved by a bone a second time")
 	assert_eq(_equipped_count(rig), 3)
 
 
@@ -75,6 +75,11 @@ func test_vest_uses_body_skin_without_socket_offset_or_first_person_cuff_duplica
 	var shell: MeshInstance3D = vest.find_child("Shell", true, false) as MeshInstance3D
 	assert_same(shell.get_node(shell.skeleton), rig.skeleton, "vest bends on the body's skeleton")
 	assert_true(shell.global_transform.is_equal_approx(rig.skeleton.global_transform), "skin stays in body space")
+	var spine: int = rig.skeleton.find_bone("spine_02")
+	rig.skeleton.set_bone_pose_position(spine, rig.skeleton.get_bone_pose_position(spine) + Vector3(0.0, -0.3, 0.1))
+	rig.skeleton.set_bone_pose_rotation(spine, Quaternion(Vector3.RIGHT, 0.6))
+	await wait_process_frames(1)
+	assert_true(shell.global_transform.is_equal_approx(rig.skeleton.global_transform), "posed body moves the skin once")
 	assert_null(vest.find_child("CuffFP_L", true, false))
 	assert_null(vest.find_child("CuffFP_R", true, false))
 	for node: Node in vest.find_children("*", "BoneAttachment3D", true, false):
