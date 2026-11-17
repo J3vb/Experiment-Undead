@@ -105,8 +105,18 @@ func test_full_and_other_version_rows_are_tagged_and_say_why_before_joining() ->
 	browser.take_reply(SAVED, _info(3, "0.0.1-old"), 20, false)
 	assert_eq(_item(0).get_text(5), "v0.0.1-old")
 	browser.join_selected()
-	assert_string_contains(browser.error_dialog.message_label.text, "Server: 0.0.1-old, you: %s" % Build.version)
+	assert_string_contains(browser.error_dialog.message_label.text, "different builds", "dev builds have no order")
 	assert_eq(Net.pending_join, "")
+
+
+func test_other_version_names_the_side_to_update() -> void:
+	assert_eq(ServerBrowser.version_details("0.1.0")["server_version"], "0.1.0")
+	assert_eq(ServerBrowser.version_details("0.1.0")["client_version"], Build.version)
+	var text: String = NetErrorDialog.message_for(
+		&"wrong_version",
+		{"server_version": "0.1.1", "client_version": "0.1.0", "older": Handshake.older_side("0.1.0", "0.1.1")}
+	)
+	assert_string_contains(text, "Update your game")
 
 
 func test_a_bad_address_shows_the_error_and_joins_nothing() -> void:

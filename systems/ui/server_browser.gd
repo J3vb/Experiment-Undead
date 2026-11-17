@@ -220,7 +220,7 @@ func join_selected(_unused: Variant = null) -> void:
 		return
 	var info: Dictionary = row.info
 	if is_other_version(info):
-		_show_error(&"wrong_version", {"server_version": info.version, "client_version": Build.version})
+		_show_error(&"wrong_version", version_details(str(info.version)))
 	elif not info.is_empty() and info.players >= info.max:
 		_show_error(&"server_full", {"players": info.players, "max_players": info.max})
 	else:
@@ -309,3 +309,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	else:
 		return
 	get_viewport().set_input_as_handled()
+
+
+## Same details as a handshake refusal, so the dialog names the side to update.
+static func version_details(server_version: String) -> Dictionary:
+	return {
+		"server_version": server_version,
+		"client_version": Build.version,
+		"older": Handshake.older_side(Build.version, server_version),
+	}
