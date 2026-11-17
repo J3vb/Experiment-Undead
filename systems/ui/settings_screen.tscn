@@ -59,6 +59,28 @@ horizontal_scroll_mode = 0
 [node name="Page" type="VBoxContainer" parent="Margin/Box/Tabs/Audio"]
 script = ExtResource("settings_page")
 page = &"audio"
+[node name="Accessibility" type="ScrollContainer" parent="Margin/Box/Tabs"]
+follow_focus = true
+horizontal_scroll_mode = 0
+[node name="Page" type="VBoxContainer" parent="Margin/Box/Tabs/Accessibility"]
+script = ExtResource("settings_page")
+page = &"accessibility"
+[node name="Comfort" type="ScrollContainer" parent="Margin/Box/Tabs"]
+follow_focus = true
+horizontal_scroll_mode = 0
+[node name="Page" type="VBoxContainer" parent="Margin/Box/Tabs/Comfort"]
+script = ExtResource("settings_page")
+page = &"comfort"
+[node name="ComfortPreset" type="Button" parent="Margin/Box/Tabs/Comfort/Page"]
+unique_name_in_owner = true
+text = "Comfort preset"
+size_flags_horizontal = 0
+theme_override_font_sizes/font_size = 24
+[node name="ComfortPresetHint" type="Label" parent="Margin/Box/Tabs/Comfort/Page"]
+unique_name_in_owner = true
+theme_type_variation = &"LabelDim"
+text = "Sets every row here for the least motion: no head bob, half weapon bob, no sprint widening, softer damage effects, centre dot on."
+autowrap_mode = 3
 [node name="Buttons" type="HBoxContainer" parent="Margin/Box"]
 theme_override_constants/separation = 24
 [node name="Revert" type="Button" parent="Margin/Box/Buttons"]

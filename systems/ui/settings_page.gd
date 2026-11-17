@@ -11,6 +11,7 @@ signal confirm_needed(row: SettingData, old_value: Variant)
 var rows: Array[SettingData] = []
 var _controls: Dictionary[SettingData, Control] = {}
 var _lines: Dictionary[SettingData, Array] = {}
+var _dragging: HSlider
 
 
 ## Rows of one page from content/settings, in their order.
@@ -96,7 +97,9 @@ func _make_control(row: SettingData) -> Control:
 		slider.step = row.step * row.display_scale
 		slider.custom_minimum_size = Vector2(220, 40)
 		slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		slider.value_changed.connect(func(value: float) -> void: _write(row, value / row.display_scale))
+		slider.value_changed.connect(_on_slider_moved.bind(row, slider))
+		slider.drag_started.connect(func() -> void: _dragging = slider)
+		slider.drag_ended.connect(_on_slider_released.bind(row, slider))
 		return slider
 	if row.kind == &"choice":
 		var option: OptionButton = OptionButton.new()
@@ -109,6 +112,18 @@ func _make_control(row: SettingData) -> Control:
 	var check: CheckBox = CheckBox.new()
 	check.toggled.connect(func(value: bool) -> void: _write(row, value))
 	return check
+
+
+func _on_slider_moved(value: float, row: SettingData, slider: HSlider) -> void:
+	if row.apply_on_release and _dragging == slider:
+		(slider.get_node("../Number") as Label).text = _number_text(row, value)
+	else:
+		_write(row, value / row.display_scale)
+
+
+func _on_slider_released(_changed: bool, row: SettingData, slider: HSlider) -> void:
+	_dragging = null
+	_write(row, slider.value / row.display_scale)
 
 
 func _write(row: SettingData, value: Variant) -> void:

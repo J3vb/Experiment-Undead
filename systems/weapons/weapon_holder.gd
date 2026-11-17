@@ -19,6 +19,8 @@ var weapons: Array[Weapon] = []
 var current: Weapon
 var arm_view: PlayerArmView
 var melee: Melee = Melee.new()
+## Comfort setting: scales viewmodel bob and sway (visual only).
+var weapon_bob: float = 1.0
 var _player: Player
 var _camera: Camera3D
 var _sway: Vector2 = Vector2.ZERO
@@ -29,6 +31,8 @@ var _swap_time: float = SWAP_TIME
 
 
 func setup(player: Player, camera: Camera3D) -> void:
+	weapon_bob = Settings.get_value(&"comfort", &"weapon_bob")
+	Settings.changed.connect(_on_setting_changed)
 	_player = player
 	_camera = camera
 	melee.shooter = player
@@ -170,7 +174,7 @@ func set_state(aiming: bool, sprinting: bool, move_factor: float) -> void:
 
 func add_sway(look_delta: Vector2) -> void:
 	var scale_factor: float = lerpf(1.0, 0.25, get_ads_progress())
-	_sway = (_sway + look_delta * sway_amount * scale_factor).limit_length(sway_max)
+	_sway = (_sway + look_delta * sway_amount * scale_factor * weapon_bob).limit_length(sway_max)
 
 
 ## Simulation step for the active weapon. Called from the player's physics tick.
@@ -199,9 +203,14 @@ func _process(delta: float) -> void:
 	var target_rot: Vector3 = Vector3(-_sway.y, -_sway.x, -_sway.x * 0.5)
 	rotation = rotation.lerp(target_rot, clampf(sway_smoothing * delta, 0.0, 1.0))
 	_bob_time += delta * (6.0 + 4.0 * _move_factor)
-	var bob: float = 0.012 * _move_factor * (1.0 - get_ads_progress() * 0.9)
+	var bob: float = 0.012 * weapon_bob * _move_factor * (1.0 - get_ads_progress() * 0.9)
 	var dip: float = SWAP_DIP * _swap_left / maxf(_swap_time, 0.001)
 	position = Vector3(cos(_bob_time * 0.5) * bob, -absf(sin(_bob_time)) * bob - dip, 0.0)
+
+
+func _on_setting_changed(section: StringName, key: StringName, value: Variant) -> void:
+	if section == &"comfort" and key == &"weapon_bob":
+		weapon_bob = value
 
 
 func _on_ammo_changed(in_mag: int, reserve: int, weapon: Weapon) -> void:

@@ -2,6 +2,8 @@
 extends GutTest
 
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
+const _NO_HITS: PackedVector3Array = []
+const _NO_KINDS: PackedByteArray = []
 
 var _port: int
 var _roots: Array[Node] = []
@@ -94,6 +96,7 @@ func test_client_shot_reaches_host_and_other_client_with_all_missed_pellets() ->
 	assert_eq(server_copy.weapons.current.instance.ammo_in_mag, weapon.data.magazine_size)
 	assert_eq(weapon.instance.ammo_in_mag, weapon.data.magazine_size - 1, "one shell for all pellets")
 	assert_true(_sessions[1].remote_shots._points.is_empty(), "shot flushes its endpoints")
+	assert_true(_sessions[1].remote_shots._hits.is_empty(), "pellets that hit nothing relay no impacts")
 
 
 func test_host_shot_reaches_both_clients_without_echo() -> void:
@@ -122,8 +125,8 @@ func test_replacement_weapon_is_watched() -> void:
 func test_bad_cosmetic_packets_are_dropped() -> void:
 	var peer_id: int = _roots[1].multiplayer.get_unique_id()
 	var shots: RemoteShots = _sessions[1].remote_shots
-	shots.shot.rpc_id(1, &"missing", Vector3.ZERO, PackedVector3Array([Vector3.ONE]))
-	shots.shot.rpc_id(1, &"brenner_trench", Vector3.ZERO, PackedVector3Array([Vector3.ONE]))
+	shots.shot.rpc_id(1, &"missing", Vector3.ZERO, PackedVector3Array([Vector3.ONE]), _NO_HITS, _NO_KINDS)
+	shots.shot.rpc_id(1, &"brenner_trench", Vector3.ZERO, PackedVector3Array([Vector3.ONE]), _NO_HITS, _NO_KINDS)
 	await wait_physics_frames(8)
 	assert_false(_drawn(_effects(0, peer_id)))
 	assert_false(_drawn(_effects(2, peer_id)))
@@ -247,7 +250,7 @@ func test_wrong_pellet_counts_are_dropped_for_double_and_normal_guns() -> void:
 			var points: PackedVector3Array = PackedVector3Array()
 			points.resize(count)
 			points.fill(Vector3.FORWARD * 50.0)
-			shots.shot.rpc_id(1, weapon_id, Vector3.ZERO, points)
+			shots.shot.rpc_id(1, weapon_id, Vector3.ZERO, points, _NO_HITS, _NO_KINDS)
 	await wait_physics_frames(8)
 	assert_false(_drawn(_effects(0, peer_id)), "host rejected all malformed pellet counts")
 	assert_false(_drawn(_effects(2, peer_id)), "observer received no rejected packets")
@@ -296,13 +299,13 @@ func test_downed_rifle_and_dead_sidearm_cosmetic_requests_are_refused() -> void:
 	var points: PackedVector3Array = PackedVector3Array([Vector3.FORWARD * 100.0])
 	server_copy.take_damage(DamageInfo.create(1000.0, null))
 	await wait_until(func() -> bool: return shooter.is_downed, 3.0, "owner sees downed state")
-	shots.shot.rpc_id(1, &"rifle_ar", Vector3.ZERO, points)
+	shots.shot.rpc_id(1, &"rifle_ar", Vector3.ZERO, points, _NO_HITS, _NO_KINDS)
 	await wait_physics_frames(8)
 	assert_null(_effects(0, peer_id)._audio.stream, "downed rifle shot is not relayed to host")
 	assert_null(_effects(2, peer_id)._audio.stream, "downed rifle shot is not relayed to observer")
 	server_copy.state_sync._physics_process(30.0)
 	assert_true(server_copy.is_dead)
-	shots.shot.rpc_id(1, &"pistol_service", Vector3.ZERO, points)
+	shots.shot.rpc_id(1, &"pistol_service", Vector3.ZERO, points, _NO_HITS, _NO_KINDS)
 	await wait_physics_frames(8)
 	assert_null(_effects(0, peer_id)._audio.stream, "dead sidearm shot is not relayed to host")
 	assert_null(_effects(2, peer_id)._audio.stream, "dead sidearm shot is not relayed to observer")
@@ -311,7 +314,9 @@ func test_downed_rifle_and_dead_sidearm_cosmetic_requests_are_refused() -> void:
 func test_finished_match_refuses_cosmetic_requests() -> void:
 	var peer_id: int = _roots[1].multiplayer.get_unique_id()
 	_sessions[0].is_over = true
-	_sessions[1].remote_shots.shot.rpc_id(1, &"rifle_ar", Vector3.ZERO, PackedVector3Array([Vector3.FORWARD * 100.0]))
+	_sessions[1].remote_shots.shot.rpc_id(
+		1, &"rifle_ar", Vector3.ZERO, PackedVector3Array([Vector3.FORWARD * 100.0]), _NO_HITS, _NO_KINDS
+	)
 	await wait_physics_frames(8)
 	assert_null(_effects(0, peer_id)._audio.stream)
 	assert_null(_effects(2, peer_id)._audio.stream)

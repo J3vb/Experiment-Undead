@@ -85,14 +85,24 @@ purpose; keep the repo values.
   black.
 - Muzzle flash light colour `#FFD9A0`, tracers `#FFE6B0` (Prototype guns
   `#8DFF3A`).
+- Atmosphere effect lights (alarm beacons `#C3201B`, sparks, swinging lamp):
+  no shadow, bake mode 0, distance fade 20 m. Particles: GI off, visibility
+  range 30 m, at most 400 per room and 1,500 per map. Spark gap 3 to 9 s,
+  klaxon every 30 s, sound spots 14 m max. Story decals fade out between 25
+  and 30 m.
+  Amounts are provisional until the screenshot check on a GPU.
 
 ### Materials
 
 Shared materials live in `levels/materials/` (concrete, wet floor, panel
-paint and trim, pipe, rust, brick, wood, fluorescent, emergency tube,
-bio leak). Surface detail is procedural and world-space, no texture files:
-`grime.gdshader` (drips, floor dirt, ceiling stains) and `wet_tiles.gdshader`
-(tiles, grout, mirror puddles for SSR). Reuse these before making new ones.
+paint and trim, wall paint, pipe, rust, brick, wood, fluorescent, emergency
+tube, bio leak). Surface detail is world-space, so kit pieces need no UVs:
+`grime.gdshader` (drips, floor dirt, ceiling stains, plus optional texture
+sets) and `wet_tiles.gdshader` (tiles, grout, mirror puddles for SSR).
+Texture sets (albedo, normal, ORM) are made by `tools/assets/surface_textures.py`
+into `assets/textures/halcyon/`; the script is the source. Albedo maps are
+near-grey detail tinted by the material's palette colour. Reuse these before
+making new ones.
 
 ## Models built in code (`tools/assets/build_models.py`)
 

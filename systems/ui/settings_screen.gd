@@ -27,6 +27,9 @@ func _ready() -> void:
 		for row: SettingData in page.rows:
 			_opened[row] = Settings.get_value(row.section, row.key)
 	%KeyBindings.get_parent().move_child(%KeyBindings, -1)
+	%ComfortPreset.get_parent().move_child(%ComfortPreset, -1)
+	%ComfortPresetHint.get_parent().move_child(%ComfortPresetHint, -1)
+	%ComfortPreset.pressed.connect(Settings.apply_comfort_preset)
 	%Search.text_changed.connect(search)
 	%KeepDialog.confirmed.connect(_keep)
 	%KeepDialog.canceled.connect(_revert_keep)
@@ -39,12 +42,14 @@ func _ready() -> void:
 		(%Tabs as TabContainer).get_tab_bar().grab_focus()
 
 
+## Fades in with a 12 px slide; reduce motion keeps only the fade.
 func _fade_in() -> void:
 	modulate.a = 0.0
-	position.x = 12.0
 	fade = create_tween().set_parallel(true)
 	fade.tween_property(self, "modulate:a", 1.0, 0.12)
-	fade.tween_property(self, "position:x", 0.0, 0.12)
+	if not Settings.get_value(&"accessibility", &"reduce_motion"):
+		position.x = 12.0
+		fade.tween_property(self, "position:x", 0.0, 0.12)
 
 
 func _input(event: InputEvent) -> void:
@@ -82,7 +87,8 @@ func search(text: String) -> void:
 			first = index
 		if index == tabs.current_tab:
 			current = matches
-	%KeyBindings.visible = text.strip_edges().is_empty()
+	for extra: Control in [%KeyBindings, %ComfortPreset, %ComfortPresetHint]:
+		extra.visible = text.strip_edges().is_empty()
 	if current == 0 and first >= 0:
 		tabs.current_tab = first
 
