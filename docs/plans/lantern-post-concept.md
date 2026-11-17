@@ -1,6 +1,6 @@
 # Plan: Lantern Post to the concept art
 
-Status: Approved
+Status: Building
 Roadmap: F-68 / issue none (follows F-50)
 Phase: P9 (pulled forward with F-50 for the co-op week goal)
 Size: L

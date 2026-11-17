@@ -19,6 +19,7 @@ MATS = [
     "town_dark_wood",
     "town_slate",
     "town_cobbles",
+    "town_mud",
     "town_snow",
     "rust",
     "bio_leak",
@@ -26,6 +27,7 @@ MATS = [
     "lit_window",
     "pine",
     "iron",
+    "beacon_red",
 ]
 SCENES = ["street_lamp", "wall_lantern", "window_lit", "window_dark", "fence", "signpost"]
 SODIUM = "1, 0.58, 0.25, 1"
@@ -134,8 +136,8 @@ def pine(name, parent, x, z, h) -> None:
 def build_ground() -> None:
     group("Ground")
     block("Snow", "Ground", (0, -0.25, -12), (90, 0.5, 100), "town_snow")
-    block("Street", "Ground", (0, 0.01, -14), (8, 0.04, 44), "town_cobbles")
-    block("Plaza", "Ground", (0, 0.01, 6), (22, 0.04, 14), "town_cobbles")
+    block("Street", "Ground", (0, 0.01, -14), (8, 0.04, 44), "town_mud")
+    block("Plaza", "Ground", (0, 0.01, 6), (22, 0.04, 14), "town_mud")
     group("SnowBanks")
     for k in range(18):
         side = -1 if k % 2 == 0 else 1
@@ -234,6 +236,11 @@ def _house(i, side, z) -> float:
     chim_size = (0.7, gable_h * 1.1 + 1.2, 0.7)
     block(f"{name}Chimney", "Houses", (chim_x, h + gable_h * 0.7, chim_z), chim_size, "town_stone")
     deco(f"{name}ChimneyCap", "Houses", (chim_x, h + gable_h * 1.25 + 0.65, chim_z), (0.9, 0.12, 0.9), "town_slate")
+    if i % 2 == 0:
+        smoke = xform((chim_x, h + gable_h * 1.25 + 0.8, chim_z))
+        nodes.append(
+            f'[node name="{name}Smoke" parent="Houses" instance=ExtResource("chimney_smoke")]\ntransform = {smoke}\n'
+        )
     door_z = cz + random.choice((-1, 1)) * width * 0.12
     _house_front(name, i, x - side * depth / 2, -side, side, cz, width, h, door_z)
     return width
@@ -428,6 +435,27 @@ def build_yards_and_pines() -> None:
     counts["pines"] = pk
 
 
+def build_ridge() -> None:
+    """Radio mast with red beacons on a snowy knoll north-east of the gate, and the falling snow."""
+    group("Ridge")
+    mx, mz = 21.0, -55.0
+    deco("Knoll", "Ridge", (mx, 0.5, mz), (14, 3, 12), "town_snow", basis_rot(0.4))
+    for leg in range(4):
+        lx = (-1 if leg < 2 else 1) * 0.9
+        lz = (-1 if leg % 2 else 1) * 0.9
+        lean = basis_rot(roll=-lx * 0.035, pitch=lz * 0.035)
+        deco(f"MastLeg{leg}", "Ridge", (mx + lx * 0.5, 14.0, mz + lz * 0.5), (0.14, 28.0, 0.14), "iron", lean)
+    for rung in range(9):
+        y = 2.0 + rung * 3.0
+        width = 1.8 - y * 0.032
+        deco(f"MastRung{rung}", "Ridge", (mx, y, mz), (width, 0.08, width), "iron")
+    for bk, y in enumerate((9.5, 19.0, 28.2)):
+        deco(f"MastBeacon{bk}", "Ridge", (mx, y, mz), (0.35, 0.35, 0.35), "beacon_red")
+    nodes.append(
+        '[node name="Snowfall" parent="." instance=ExtResource("snowfall")]\ntransform = ' + xform((0, 18, -12)) + "\n"
+    )
+
+
 def build_spawn_and_moon() -> None:
     nodes.append('[node name="PlayerSpawn" type="Marker3D" parent="."]\ntransform = ' + xform((-5.0, 0.1, 4)) + "\n")
     nodes.append(
@@ -449,6 +477,8 @@ def header() -> str:
     ext.append(
         '[ext_resource type="PackedScene" path="res://systems/hub/deploy_vote_panel.tscn" id="deploy_vote_panel"]'
     )
+    for fx in ("snowfall", "chimney_smoke"):
+        ext.append(f'[ext_resource type="PackedScene" path="res://levels/lantern_post/{fx}.tscn" id="{fx}"]')
     subs = [
         f'[sub_resource type="BoxMesh" id="{mesh}_{mat}"]\nmaterial = ExtResource("{mat}")\n'
         for mesh, mat in sorted(used)
@@ -484,6 +514,7 @@ def build() -> str:
     build_fences_and_signs()
     build_stall()
     build_yards_and_pines()
+    build_ridge()
     build_spawn_and_moon()
     return header() + "\n".join(nodes)
 

@@ -51,7 +51,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-50 | First Lantern Post hub: town blockout, Deploy board and ready-up vote (first slice of F-45, pulled forward for the co-op week goal) | #131 | F-02, F-47 step 4 (#255), co-op #256 | [done](plans/lantern-post-hub.md) | M | Done |
 | F-66 | Your own world, open to friends: Enter world into your own Lantern Post (listen server, UPnP), server browser with add by address and LAN discovery, no master server | - | F-02, F-50 | [ready](plans/join-any-game.md) | L | Ready |
 | F-67 | Character select and create before Enter world (ui-hud screen 3: slots, create, delete) | - | F-66 step 2 | needed | M | Todo |
-| F-68 | Lantern Post to the concept art: ridge sky, timber lodges, market stalls, concrete Deploy gate, props | - | F-50 | [ready](plans/lantern-post-concept.md) | L | Ready |
+| F-68 | Lantern Post to the concept art: ridge sky, timber lodges, market stalls, concrete Deploy gate, props | - | F-50 | [ready](plans/lantern-post-concept.md) | L | Building |
 
 ## Next: v0.2 Progression and loot
 
