@@ -88,20 +88,13 @@ func test_vest_uses_body_skin_without_socket_offset_or_first_person_cuff_duplica
 		assert_same(attachment.get_node(attachment.external_skeleton), rig.skeleton)
 
 
-func test_arms_are_lowered_and_head_pitch_follows_yaw_rotated_body() -> void:
+func test_arms_are_lowered_for_previews_without_a_body_animator() -> void:
 	var rig: GearRig = _rig()
 	for side: String in ["L", "R"]:
 		var shoulder: Vector3 = rig.skeleton.get_bone_global_pose(rig.skeleton.find_bone("upperarm_" + side)).origin
 		var hand: Vector3 = rig.skeleton.get_bone_global_pose(rig.skeleton.find_bone("hand_" + side)).origin
 		assert_lt(hand.y, shoulder.y - 0.55, "arms hang down")
 		assert_almost_eq(hand.x, shoulder.x, 0.001, "hands are under the shoulders")
-	rig.body.rotation.y = PI + 0.8
-	rig.pitch_source.rotation.x = 0.4
-	rig._process(0.0)
-	var head: Transform3D = rig.skeleton.get_bone_global_pose(rig.skeleton.find_bone("head"))
-	var forward: Vector3 = (rig.skeleton.global_basis * head.basis.z).normalized()
-	var expected: Vector3 = Basis(Vector3.UP, 0.8) * Basis(Vector3.RIGHT, 0.4) * Vector3.FORWARD
-	assert_almost_eq(forward.distance_to(expected), 0.0, 0.001, "head follows synced yaw and pitch")
 
 
 func test_owner_body_and_new_pieces_cast_shadows_without_drawing_in_first_person() -> void:
@@ -181,11 +174,8 @@ func test_implant_module_follows_forearm_and_port_follows_neck_independently() -
 func _rig() -> GearRig:
 	var body: Node3D = BODY.instantiate() as Node3D
 	body.rotation.y = PI
-	var pitch: Node3D = Node3D.new()
-	body.add_child(pitch)
 	var rig: GearRig = GearRig.new()
 	rig.body = body
-	rig.pitch_source = pitch
 	body.add_child(rig)
 	add_child_autofree(body)
 	return rig

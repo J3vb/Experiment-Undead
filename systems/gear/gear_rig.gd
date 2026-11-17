@@ -5,25 +5,17 @@ extends Node3D
 signal look_changed(look: CharacterLook)
 
 @export var body: Node3D
-@export var pitch_source: Node3D
 
 var skeleton: Skeleton3D
 var _attachments: Array[Node3D] = []
 var _owner_view: bool = false
-var _head: int = -1
-var _head_rest: Quaternion
-var _head_axis: Quaternion
 
 
 func _ready() -> void:
 	skeleton = body.find_children("*", "Skeleton3D", true, false)[0] as Skeleton3D
-	_head = skeleton.find_bone("head")
-	_head_rest = skeleton.get_bone_pose_rotation(_head)
-	_head_axis = skeleton.get_bone_global_rest(_head).basis.get_rotation_quaternion()
-	# The source rig has no idle clip. Lower its A-pose arms to a relaxed stance.
+	# Relaxed arms for previews without a BodyAnimator (character screen); a playing body tree overrides them.
 	_lower_arm(&"upperarm_L", -PI / 4.0)
 	_lower_arm(&"upperarm_R", PI / 4.0)
-	set_process(pitch_source != null)
 
 
 func _lower_arm(bone_name: StringName, angle: float) -> void:
@@ -31,11 +23,6 @@ func _lower_arm(bone_name: StringName, angle: float) -> void:
 	var axis: Quaternion = skeleton.get_bone_global_rest(bone).basis.get_rotation_quaternion()
 	var turn: Quaternion = axis.inverse() * Quaternion(Vector3.BACK, angle) * axis
 	skeleton.set_bone_pose_rotation(bone, skeleton.get_bone_pose_rotation(bone) * turn)
-
-
-func _process(_delta: float) -> void:
-	var turn: Quaternion = _head_axis.inverse() * Quaternion(Vector3.RIGHT, -pitch_source.rotation.x) * _head_axis
-	skeleton.set_bone_pose_rotation(_head, _head_rest * turn)
 
 
 func set_owner_view(value: bool) -> void:
