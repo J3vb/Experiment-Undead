@@ -102,7 +102,7 @@ already reads `InputFrame`s, so the server could replay them.
    a `MultiplayerSpawner` under the level (late joiners get the age); only the
    server watches touches, picks the collector and frees the pickup. Resupply
    and ammo packs run `PowerUp.apply_effect()` on the PC that owns the guns.
-   Protocol 10.
+   Protocol 11.
 
 After step 8, P7 finishes with `docs/plans/coop-full-match.md` (F-47): co-op
 soak, pause, squad cards, the hub and deploy flow, then a 4-player play-test to
