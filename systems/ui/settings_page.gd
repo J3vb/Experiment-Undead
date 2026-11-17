@@ -83,6 +83,8 @@ func _make_control(row: SettingData) -> Control:
 		var option: OptionButton = OptionButton.new()
 		for text: String in row.options:
 			option.add_item(text)
+		for index: int in row.locked_options:
+			option.set_item_disabled(index, true)
 		option.item_selected.connect(func(index: int) -> void: _write(row, _choice_value(row, index)))
 		return option
 	var check: CheckBox = CheckBox.new()
@@ -128,7 +130,11 @@ func refresh() -> void:
 			var shown: float = float(value) * row.display_scale
 			(control as HSlider).set_value_no_signal(shown)
 			var number: Label = control.get_node("../Number") as Label
-			number.text = "%d %%" % roundi(shown) if row.display_scale == 100.0 else str(snappedf(shown, row.step))
+			number.text = (
+				"%d %%" % roundi(shown)
+				if row.display_scale == 100.0
+				else str(snappedf(shown, row.step * row.display_scale))
+			)
 		elif control is OptionButton:
 			(control as OptionButton).select(_choice_index(row, value))
 		else:

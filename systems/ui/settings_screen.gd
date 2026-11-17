@@ -68,6 +68,11 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
+## Freed with the whole stack (a co-op match ending) while asking: an unconfirmed display change goes back.
+func _exit_tree() -> void:
+	_revert_keep()
+
+
 func _close() -> void:
 	_revert_keep()
 	hide()
@@ -84,7 +89,7 @@ func _ask_keep(row: SettingData, old_value: Variant) -> void:
 	_keep_row = row
 	_keep_left = KEEP_SECONDS
 	_show_keep_text()
-	%KeepDialog.popup_centered(Vector2i(640, 0))
+	%KeepDialog.popup_centered.call_deferred(Vector2i(640, 0))
 	%KeepTimer.start(1.0)
 
 

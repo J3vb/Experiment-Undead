@@ -20,6 +20,8 @@ extends Resource
 @export var options: PackedStringArray = []
 ## Saved value for each option, converted to the type of the key's default (int or String).
 @export var option_values: PackedStringArray = []
+## Options that can be shown but not picked, like the preset's Custom.
+@export var locked_options: PackedInt32Array = []
 @export var order: int = 0
 ## Display mode and resolution ask "Keep these settings?" after a change.
 @export var needs_confirm: bool = false

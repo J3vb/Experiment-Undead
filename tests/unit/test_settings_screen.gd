@@ -233,6 +233,7 @@ func test_display_change_reverts_after_the_countdown() -> void:
 	var dialog: ConfirmationDialog = _screen.get_node("%KeepDialog") as ConfirmationDialog
 	(page.control_for(&"display_mode") as OptionButton).item_selected.emit(2)
 	assert_eq(Settings.get_value(&"graphics", &"display_mode"), 2)
+	await wait_process_frames(1)
 	assert_true(dialog.visible, "a display mode change asks to keep it")
 	assert_true(dialog.dialog_text.contains("15 s"))
 	for second: int in range(SettingsScreen.KEEP_SECONDS - 1):
@@ -263,6 +264,20 @@ func test_display_change_kept_on_confirm_and_reverted_on_escape() -> void:
 	assert_eq(Settings.get_value(&"graphics", &"window_size"), 3, "Esc goes back")
 	assert_signal_not_emitted(_screen, "closed", "the first Esc only closes the prompt")
 	assert_true(_screen.visible)
+
+
+func test_unconfirmed_display_change_reverts_when_the_screen_is_freed() -> void:
+	var page: SettingsPage = _screen.get_node("%Page") as SettingsPage
+	(page.control_for(&"display_mode") as OptionButton).item_selected.emit(1)
+	remove_child(_screen)
+	assert_eq(Settings.get_value(&"graphics", &"display_mode"), 0)
+	add_child(_screen)
+
+
+func test_custom_preset_shows_but_cannot_be_picked() -> void:
+	var option: OptionButton = (_screen.get_node("%Page") as SettingsPage).control_for(&"preset") as OptionButton
+	assert_true(option.is_item_disabled(Graphics.Preset.CUSTOM))
+	assert_false(option.is_item_disabled(Graphics.Preset.HIGH))
 
 
 func test_non_display_rows_apply_without_asking() -> void:
