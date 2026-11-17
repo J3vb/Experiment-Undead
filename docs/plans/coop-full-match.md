@@ -272,7 +272,7 @@ is a test tool and never ships. No per-frame allocations.
   another place switches before it completes auth (tools and tests that start
   a session directly have no place and stay). Main menu: Host and play and
   Join land in the hub; Play solo goes straight to the match.
-  PROTOCOL_VERSION 13.
+  PROTOCOL_VERSION 14.
 - Files: systems/game/game_session.gd, deploy_vote.gd (new),
   hub_session.tscn (new), content/screens/hub.tres (new),
   levels/hub_placeholder/hub_placeholder.tscn (new, removed by the hub town
