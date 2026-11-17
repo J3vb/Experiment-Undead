@@ -79,6 +79,9 @@ signal hit_confirmed(player: Player, is_kill: bool, is_headshot: bool)
 ## A player's own shot or swing hit an enemy; info.amount is the zone-scaled damage.
 ## Peers: the shooter's owner only (on clients from its hit prediction, like hit markers).
 signal damage_dealt(player: Player, target: Node3D, info: DamageInfo)
+## A personal loot drop appeared in the world for this player (item is the item dict).
+## Peers: the drop's owner only (LootService receives it from the server).
+signal loot_dropped(player: Player, item: Dictionary)
 
 ## The exfil hatch opened for this round.
 ## Peers: every peer (clients from the synced hatch state).

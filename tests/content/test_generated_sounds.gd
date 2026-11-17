@@ -4,7 +4,7 @@ extends GutTest
 
 func test_machine_sounds_load() -> void:
 	for name: String in [
-		"buy", "denied", "door_open", "power_on", "plank_tear", "plank_repair", "power_up", "round_end"
+		"buy", "denied", "door_open", "power_on", "plank_tear", "plank_repair", "power_up", "round_end", "level_up"
 	]:
 		var sound: AudioStreamWAV = load("res://assets/audio/%s.wav" % name) as AudioStreamWAV
 		assert_not_null(sound, name)

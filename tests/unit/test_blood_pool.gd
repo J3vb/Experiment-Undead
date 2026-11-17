@@ -5,9 +5,12 @@ extends GutTest
 const WALKER: String = "res://content/enemies/zombie_walker.tres"
 
 var _parent: Node3D
+var _gore_before: Variant
 
 
 func before_each() -> void:
+	_gore_before = Settings.get_value(&"graphics", &"gore")
+	Settings._values[&"graphics"][&"gore"] = Impact.Gore.FULL
 	BloodPool._ring.clear()
 	BloodPool._next = 0
 	_parent = Node3D.new()
@@ -15,6 +18,7 @@ func before_each() -> void:
 
 
 func after_each() -> void:
+	Settings._values[&"graphics"][&"gore"] = _gore_before
 	for pool: BloodPool in BloodPool._ring:
 		if is_instance_valid(pool):
 			pool.free()
@@ -52,12 +56,13 @@ func test_pool_fades_and_hides_after_its_lifetime() -> void:
 	assert_false(pool.is_processing())
 
 
-func test_falling_zombie_leaves_one_pool() -> void:
+func test_falling_zombie_leaves_a_big_pool_and_splats_on_full() -> void:
 	var zombie: Zombie = _zombie()
 	var before: int = BloodPool._ring.size()
 	zombie.visual.fall_over()
-	assert_eq(BloodPool._ring.size(), before + 1, "one pool per fallen zombie")
-	assert_almost_eq(BloodPool._ring[-1].global_position.x, 3.0, 0.01)
+	assert_eq(BloodPool._ring.size(), before + 1 + BloodPool.SPLATS, "one pool and its splats per fallen zombie")
+	assert_almost_eq(BloodPool._ring[before].global_position.x, 3.0, 0.01)
+	assert_gt(BloodPool._ring[before].scale.x, 1.2, "Full pools are the bigger Stronger size")
 	zombie.free()
 
 
@@ -65,5 +70,5 @@ func test_client_copy_lays_one_pool_from_the_synced_death() -> void:
 	var zombie: Zombie = _zombie()
 	var before: int = BloodPool._ring.size()
 	ZombieSync.show_death(zombie)
-	assert_eq(BloodPool._ring.size(), before + 1, "a client copy that turns DEAD lays one pool")
+	assert_eq(BloodPool._ring.size(), before + 1 + BloodPool.SPLATS, "a client copy that turns DEAD lays its pools")
 	zombie.free()

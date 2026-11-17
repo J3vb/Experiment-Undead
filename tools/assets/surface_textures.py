@@ -49,6 +49,14 @@ def blur(a: np.ndarray, sigma: float) -> np.ndarray:
     return np.real(np.fft.ifft2(np.fft.fft2(a) * g))
 
 
+def streaks(n: int, low: float, high: float, seed: int, stretch: float) -> np.ndarray:
+    """Noise smeared along u (rows of fine lines), scaled 0..1. Periodic."""
+    f = np.fft.fftfreq(n)
+    smear = np.exp(-2.0 * (np.pi * stretch) ** 2 * f[None, :] ** 2)
+    out = np.real(np.fft.ifft2(np.fft.fft2(fbm(n, low, high, seed)) * smear))
+    return (out - out.min()) / (out.max() - out.min() + 1e-9)
+
+
 def coords(n: int) -> tuple[np.ndarray, np.ndarray]:
     """u (columns) and v (rows) in 0..1, pixel centres."""
     t = (np.arange(n) + 0.5) / n
@@ -231,6 +239,57 @@ def sealed_concrete(n: int) -> tuple:
     return albedo, height, rough, 0.0, 5.0
 
 
+def painted_metal(n: int) -> tuple:
+    """Painted steel sheet: orange-peel paint, scratches and chips down to bare metal."""
+    peel = fbm(n, 60, n // 4, 91)
+    mottle = fbm(n, 2, 12, 92)
+    scratch = np.clip((streaks(n, 20, n // 4, 93, 12.0) - 0.8) * 10.0, 0.0, 1.0)
+    chips = np.clip((fbm(n, 3, 24, 94) - 0.76) * 10.0, 0.0, 1.0)
+    bare = np.maximum(chips, scratch * 0.6)
+    height = 0.7 + peel * 0.05 - chips * 0.15 - scratch * 0.05
+    albedo = (0.85 + mottle * 0.15 - peel * 0.05) * (1.0 - bare * 0.3)
+    rough = 0.55 + peel * 0.1 + mottle * 0.1 - bare * 0.2
+    return albedo, height, rough, bare, 5.0
+
+
+def brushed_steel(n: int) -> tuple:
+    """Brushed steel: fine grain along one direction, light smudges."""
+    grain = streaks(n, 30, n // 4, 101, 40.0)
+    smudge = fbm(n, 2, 10, 102)
+    height = 0.5 + grain * 0.1
+    albedo = 0.8 + grain * 0.15 + smudge * 0.05
+    rough = 0.35 + grain * 0.15 + smudge * 0.2
+    return albedo, height, rough, 1.0, 3.0
+
+
+def rubber(n: int) -> tuple:
+    """Rubber matting and hoses: dense stipple, dusty dips."""
+    stipple = fbm(n, 40, n // 4, 111)
+    dust = fbm(n, 2, 16, 112)
+    height = stipple
+    albedo = 0.8 + dust * 0.2 - stipple * 0.1
+    rough = 0.85 + (1.0 - stipple) * 0.1
+    return albedo, height, rough, 0.0, 4.0
+
+
+def smudge(n: int) -> tuple:
+    """Glass grime: fingerprints and dried drips, mostly clear."""
+    marks = np.clip((fbm(n, 3, 40, 121) - 0.55) * 3.0, 0.0, 1.0)
+    height = np.full((n, n), 0.5)
+    albedo = 1.0 - marks * 0.35
+    rough = 0.05 + marks * 0.5
+    return albedo, height, rough, 0.0, 0.0
+
+
+def specimen_fluid(n: int) -> tuple:
+    """Tank fluid: murky swirls and bubbles, used as both colour and glow."""
+    murk = fbm(n, 2, 20, 131)
+    bubbles = spots(n, 24, 0.02, 132)
+    height = np.full((n, n), 0.5)
+    albedo = 0.45 + murk * 0.4 + bubbles * 0.15
+    return albedo, height, 0.1, 0.0, 0.0
+
+
 SETS = {
     "ceiling_tile": (ceiling_tile, 1024),
     "painted_concrete": (painted_concrete, 1024),
@@ -240,6 +299,11 @@ SETS = {
     "clinic_tile": (clinic_tile, 1024),
     "grating": (grating, 1024),
     "sealed_concrete": (sealed_concrete, 1024),
+    "painted_metal": (painted_metal, 512),
+    "brushed_steel": (brushed_steel, 512),
+    "rubber": (rubber, 512),
+    "smudge": (smudge, 256),
+    "specimen_fluid": (specimen_fluid, 256),
 }
 
 

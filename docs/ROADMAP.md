@@ -34,7 +34,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-12 | Core loop gaps: round scaling, stuck zombies, swap, melee, slide, best round | - | - | [needed](plans/core-loop-gaps.md) | M | Done |
 | F-13 | Finish Halcyon Labs: props, co-op spawn points, vent route, secret | - | - | [needed](plans/halcyon-labs-finish.md) | M | Ready |
 | F-62 | Texture every surface in Halcyon Labs: textured sets, a floor per room, decals | - | - | [ready](plans/halcyon-surfaces.md) | M | Building |
-| F-14 | Zombie sounds and gore: steps, deaths, voice caps, blood, head pops | - | - | [ready](plans/zombie-sounds-gore.md) | M | Ready |
+| F-14 | Zombie sounds and gore: steps, deaths, voice caps, blood, head pops | - | - | [done](plans/zombie-sounds-gore.md) | M | Done (play-test: #191) |
 | F-15 | Halcyon Labs detail props: Blender models for every room prop, story clutter, barricades | - | - | [ready](plans/halcyon-labs-props.md) | M | Done |
 | F-61 | Halcyon Labs atmosphere: dead and flickering lights, particles, fog, beacons, screens, sound spots, story decals | - | - | [ready](plans/halcyon-labs-atmosphere.md) | M | Building |
 | F-16 | Game feel: camera punch, hitstop, downed and death screen | - | - | [ready](plans/game-feel-slice.md) | M | Building |
@@ -44,7 +44,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-40 | Round state and power-ups in co-op (rest of #126 after F-02) | #126 | F-02 | [done](plans/coop-round-state-power-ups.md) | M | Done |
 | F-47 | A full co-op match: co-op soak, pause, squad cards, hub and deploy flow | #213 | F-40 | [plan](plans/coop-full-match.md) | L | Building |
 | F-48 | Full settings screen: Graphics page with presets, then Accessibility and Comfort | - | F-05 | [ready](plans/full-settings.md) | L | Building |
-| F-49 | HUD feedback and loading: loading screen, damage numbers, level-up burst, drop feed | - | - | [plan](plans/hud-feedback-loading.md) | M | Building |
+| F-49 | HUD feedback and loading: loading screen, damage numbers, level-up burst, drop feed | - | - | [done](plans/hud-feedback-loading.md) | M | Done |
 | F-50 | First Lantern Post hub: town blockout, Deploy board and ready-up vote (first slice of F-45, pulled forward for the co-op week goal) | #131 | F-02, F-47 step 4 (#255), co-op #256 | [done](plans/lantern-post-hub.md) | M | Done |
 
 ## Next: v0.2 Progression and loot

@@ -299,3 +299,15 @@ save("radio_tone.wav", (np.sin(2 * np.pi * 660 * tt) + 0.2 * np.sin(2 * np.pi * 
 tt = t(0.45)
 burst = lowpass(rng.standard_normal(len(tt)), 0.45) * np.exp(-tt * 6) * (0.7 + 0.3 * np.sin(2 * np.pi * 31 * tt))
 save("radio_static.wav", burst, peak=0.45)
+
+# Level up: warm rising major chord (notes enter one after another) plus a soft bell on top
+tt = t(1.6)
+chord = np.zeros(len(tt))
+for i, f in enumerate([261.6, 329.6, 392.0, 523.3]):
+    start = i * 0.09
+    on = np.clip((tt - start) * 25, 0, 1)
+    tone = sum(np.sin(2 * np.pi * f * h * tt) / h**1.5 for h in range(1, 5))
+    chord += tone * on * np.exp(-np.maximum(tt - start, 0) * 1.6)
+bell_t = np.maximum(tt - 0.32, 0)
+bell = (np.sin(2 * np.pi * 1046.5 * tt) + 0.4 * np.sin(2 * np.pi * 2793 * tt)) * np.exp(-bell_t * 3.5) * (tt > 0.32)
+save("level_up.wav", lowpass(chord, 0.2) * 0.8 + bell * 0.35, peak=0.7)

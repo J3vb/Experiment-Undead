@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"comfort"
+section = &"comfort"
+key = &"flash_reduction"
+label = "Flash reduction"
+hint = "Skips bright screen flashes, such as the white flash when you are revived."
+kind = &"toggle"
+order = 80

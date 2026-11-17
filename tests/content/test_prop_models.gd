@@ -39,7 +39,7 @@ func test_every_model_is_one_static_lightmapped_mesh() -> void:
 		assert_eq(
 			settings.get_value("params", "import_script/path"),
 			"res://tools/assets/prop_import.gd",
-			path + " uses the prop import (AO shading, shared materials)"
+			path + " uses its baked AO shading"
 		)
 
 

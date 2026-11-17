@@ -33,6 +33,7 @@ size = Vector2(0.015, 0.09)
 script = ExtResource("script")
 
 [node name="Particles" type="GPUParticles3D" parent="."]
+cast_shadow = 0
 gi_mode = 0
 emitting = false
 amount = 24

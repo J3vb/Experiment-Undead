@@ -3,5 +3,6 @@
 [ext_resource type="Shader" path="res://systems/effects/monitor_screen.gdshader" id="shader"]
 
 [resource]
+resource_name = "Screen"
 render_priority = 0
 shader = ExtResource("shader")

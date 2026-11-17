@@ -136,10 +136,18 @@ func follow(zombie: Zombie, delta: float) -> void:
 
 ## Limbs go slack, the body tips over onto a blood pool, lies for a while and
 ## sinks. Runs on every peer. Connect to the returned tween to free the zombie at the end.
-func fall_over() -> Tween:
+## `popped`: killed by a headshot. `fresh`: seen dying, not a corpse a late joiner found,
+## which gets the missing head but no pool or flying chunks.
+func fall_over(popped: bool = false, fresh: bool = true) -> Tween:
 	pose_dead()
 	var scene: Node = get_tree().current_scene
-	BloodPool.spawn(scene if scene else get_tree().root, (get_parent() as Node3D).global_position)
+	var parent: Node = scene if scene else get_tree().root
+	if fresh:
+		BloodPool.lay_death(parent, (get_parent() as Node3D).global_position)
+	if popped and Impact.gore() == Impact.Gore.FULL and not Build.is_server():
+		pop_head()
+		if fresh:
+			HeadPop.spawn(parent, head.global_position)
 	var fall_dir: float = 1.0 if randf() < 0.5 else -1.0  # cosmetic
 	var tween: Tween = create_tween()
 	(
@@ -151,6 +159,16 @@ func fall_over() -> Tween:
 	tween.tween_interval(CORPSE_TIME)
 	tween.tween_property(self, "position:y", -1.0, 1.5)
 	return tween
+
+
+## Collapses the head bone: the head and face skinned to it shrink into the neck, leaving a stump.
+func pop_head() -> void:
+	_skeleton.set_bone_pose_scale(_bones[&"Head"], Vector3.ONE * 0.01)
+
+
+## The head bone's scale in skeleton space (1 normally, near 0 after pop_head).
+func head_scale() -> float:
+	return _skeleton.get_bone_global_pose(_bones[&"Head"]).basis.get_scale().x
 
 
 func has_part(part_name: StringName) -> bool:

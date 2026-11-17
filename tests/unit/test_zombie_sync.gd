@@ -13,6 +13,8 @@ var client_spawner: Spawner
 var _port: int
 var _session: GameSession
 
+var _gore_before: Variant
+
 
 func _make_side(side_name: String) -> Spawner:
 	var root: Node = TwoPeers.make_side(self, side_name)
@@ -25,6 +27,8 @@ func _make_side(side_name: String) -> Spawner:
 
 
 func before_each() -> void:
+	_gore_before = Settings.get_value(&"graphics", &"gore")
+	Settings._values[&"graphics"][&"gore"] = Impact.Gore.FULL
 	_port = TwoPeers.next_port()
 	_session = GameSession.new()
 	_session.rng.seed = 7
@@ -47,6 +51,7 @@ func before_each() -> void:
 
 
 func after_each() -> void:
+	Settings._values[&"graphics"][&"gore"] = _gore_before
 	for root: Node in [client_root, server_root]:
 		for child: Node in (root.get_node("Enemies") as Node).get_children():
 			if child is Zombie:
@@ -100,6 +105,7 @@ func test_death_shows_on_client_and_free_despawns() -> void:
 	await wait_until(func() -> bool: return copy.collision_layer == 0, 3.0, "client shows the death")
 	assert_eq(copy.state, Zombie.State.DEAD)
 	assert_eq(copy.head_zone.collision_layer, 0, "dead zombies cannot be shot on the client")
+	assert_false(copy.head_popped, "a body kill keeps the head")
 	await wait_until(func() -> bool: return copy.voice.stream in copy.data.death_sounds, 3.0, "death heard")
 	assert_true(copy.voice.stream in copy.data.death_sounds, "the client hears the death sound")
 	await wait_physics_frames(3)
@@ -108,3 +114,27 @@ func test_death_shows_on_client_and_free_despawns() -> void:
 	zombie.queue_free()
 	await wait_until(func() -> bool: return not client_spawner.has_node(NodePath(String(copy_name))), 3.0, "despawned")
 	assert_false(client_spawner.has_node(NodePath(String(copy_name))))
+
+
+func test_headshot_kill_syncs_the_head_pop() -> void:
+	assert_true(^".:head_popped" in ZombieSync.SYNCED)
+	var pair: Array[Zombie] = await _spawn_on_server()
+	var info: DamageInfo = DamageInfo.new()
+	info.amount = 100000.0
+	info.hit_zone = DamageInfo.Zone.HEAD
+	pair[0].health.take_damage(info)
+	assert_true(pair[0].head_popped)
+	await wait_until(func() -> bool: return pair[1].head_popped, 3.0, "head pop synced")
+	assert_true(pair[1].head_popped, "the client copy knows the head popped")
+	await wait_until(func() -> bool: return pair[1].visual.head_scale() < 0.05, 3.0, "client pops the head")
+	assert_lt(pair[1].visual.head_scale(), 0.05, "the client copy shows the stump on Full gore")
+
+
+func test_copy_that_arrives_dead_is_not_a_fresh_death() -> void:
+	var zombie: Zombie = server_spawner.spawn(load(WALKER) as EnemyData, 1, load(RULES) as WaveRules)
+	zombie.set_physics_process(false)
+	zombie.state = Zombie.State.DEAD
+	var copy_path: NodePath = NodePath(String(zombie.name))
+	await wait_until(func() -> bool: return client_spawner.has_node(copy_path), 3.0, "zombie reached client")
+	var copy: Zombie = client_spawner.get_node(copy_path) as Zombie
+	assert_false((copy.get_node("Sync") as ZombieSync)._seen_alive, "a corpse a late joiner finds is not seen dying")

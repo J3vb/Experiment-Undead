@@ -77,7 +77,7 @@ func test_firing_siphon_does_not_apply_instant_hitscan_damage() -> void:
 	zombie.set_physics_process(false)
 	zombie.global_position = Vector3(0.0, 0.0, -8.0)
 	zombie.health.reset(1000.0)
-	_attacker.camera.look_at(zombie.hit_zones[1].global_position)
+	_attacker.camera_rig.recoil_pivot.look_at(zombie.hit_zones[1].global_position)
 	await wait_physics_frames(1)
 	var weapon: Weapon = _attacker.weapons.give(Content.weapon(&"siphon"))
 	var ray: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(

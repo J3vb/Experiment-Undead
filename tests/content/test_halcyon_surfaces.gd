@@ -1,7 +1,5 @@
 ## Every visible surface in Halcyon Labs has a textured material: a procedural
 ## shader, an albedo texture or a real glow (light fixture or experiment).
-## FLAT_TODAY lists what is still flat; steps of docs/plans/halcyon-surfaces.md
-## shrink it to empty, and the test fails when an entry is fixed but still listed.
 extends GutTest
 
 const SCENES: Array[String] = [
@@ -17,63 +15,37 @@ const TEXTURED: Array[String] = [
 	"linoleum",
 	"clinic_tile",
 	"grating",
-	"sealed_concrete"
+	"sealed_concrete",
+	"panel_paint",
+	"panel_trim",
+	"pipe",
+	"steel",
+	"rubber",
+	"paper",
+	"alarm_paint",
+	"sodium_paint",
 ]
 ## Look rule 3: only fixtures and gameplay objects glow above 1.0, so a weak glow
 ## is a flat surface, not a light.
 const GLOW_ENERGY: float = 1.0
-## Material resource paths ("scene::id" for materials saved inside a scene).
-const FLAT_TODAY: Array[String] = [
-	"res://levels/halcyon_labs/map.tscn::door_dev",
-	"res://levels/halcyon_labs/map.tscn::machine_dev",
-	"res://levels/materials/pipe.tres",
-]
-## Prop models whose built-in slots still need the remap to levels/materials (step 3).
-const FLAT_MODELS_TODAY: Array[String] = [
-	"res://assets/models/dressing/body_bag.glb",
-	"res://assets/models/dressing/hazard_sign.glb",
-	"res://assets/models/dressing/lab_papers.glb",
-	"res://assets/models/dressing/mess_spill.glb",
-	"res://assets/models/dressing/pipe_run_3.glb",
-	"res://assets/models/dressing/pipe_run_6.glb",
-	"res://assets/models/props/barricade.glb",
-	"res://assets/models/props/covered_gurney.glb",
-	"res://assets/models/props/crate_large.glb",
-	"res://assets/models/props/crate_long.glb",
-	"res://assets/models/props/crate_stack.glb",
-	"res://assets/models/props/filing_cabinets.glb",
-	"res://assets/models/props/forklift.glb",
-	"res://assets/models/props/fuel_drum.glb",
-	"res://assets/models/props/generator.glb",
-	"res://assets/models/props/guard_desk.glb",
-	"res://assets/models/props/holding_cell.glb",
-	"res://assets/models/props/jar_shelf.glb",
-	"res://assets/models/props/lab_bench.glb",
-	"res://assets/models/props/locker_row.glb",
-	"res://assets/models/props/mess_table.glb",
-	"res://assets/models/props/serving_counter.glb",
-	"res://assets/models/props/specimen_tank.glb",
-	"res://assets/models/props/supply_truck.glb",
-]
+const MONITOR_SCREEN: String = "res://systems/effects/monitor_screen.tres"
 
 
-func test_no_flat_surfaces_outside_the_list() -> void:
+func test_no_flat_surfaces() -> void:
 	var flat: Dictionary = _flat_surfaces()
-	for key: String in flat:
-		if FLAT_MODELS_TODAY.has(key.get_slice("::", 0)):
-			continue
-		assert_has(FLAT_TODAY, key, "flat surface, give it a textured material: %s (%s)" % [key, flat[key]])
+	assert_eq(flat.size(), 0, "flat surfaces (material: example node), give them a textured material: %s" % flat)
 
 
-func test_the_list_only_names_surfaces_that_are_still_flat() -> void:
-	var flat: Dictionary = _flat_surfaces()
-	for key: String in FLAT_TODAY:
-		assert_true(flat.has(key), "%s is textured now, remove it from FLAT_TODAY" % key)
-	var flat_models: Array[String] = []
-	for key: String in flat:
-		flat_models.append(key.get_slice("::", 0))
-	for model: String in FLAT_MODELS_TODAY:
-		assert_has(flat_models, model, "%s is textured now, remove it from FLAT_MODELS_TODAY" % model)
+func test_prop_screens_use_the_monitor_material() -> void:
+	var bench: Node = (load("res://assets/models/props/lab_bench.glb") as PackedScene).instantiate()
+	var screens: int = 0
+	for node: Node in bench.find_children("*", "MeshInstance3D", true, false):
+		var mesh: Mesh = (node as MeshInstance3D).mesh
+		for i: int in mesh.get_surface_count():
+			if mesh.surface_get_material(i).resource_path == MONITOR_SCREEN:
+				screens += 1
+	bench.free()
+	assert_gt(screens, 0, "the lab bench Screen slot maps to the atmosphere's monitor material")
 
 
 func test_new_texture_materials_use_the_halcyon_sets() -> void:

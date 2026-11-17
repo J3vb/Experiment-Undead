@@ -147,9 +147,12 @@ func test_drop_reaches_only_its_owner_and_pickup_only_changes_their_pack() -> vo
 
 	service.drop_chance_override = 1.0
 	var item: Dictionary = service.roll_drop(WALKER, 1)
+	watch_signals(Events)
 	server.send_drop(client_player.get_multiplayer_authority(), item, Vector3.ZERO)
 	await wait_until(func() -> bool: return client.get_child_count() == 1, 3.0, "owner received drop")
 	assert_eq(server.get_child_count(), 0, "host cannot see the client's drop")
+	assert_signal_emit_count(Events, "loot_dropped", 1, "only the owner announces the drop")
+	assert_eq(get_signal_parameters(Events, "loot_dropped"), [client_player, item])
 	var drop: LootDrop = client.get_child(0) as LootDrop
 	drop.interact(host_player)
 	assert_true(client.pack.items.is_empty(), "other owner cannot take the item")
@@ -162,6 +165,9 @@ func test_drop_reaches_only_its_owner_and_pickup_only_changes_their_pack() -> vo
 	server.send_drop(1, item, Vector3.ZERO)
 	assert_eq(server.get_child_count(), 1, "host uses the same local receiver")
 	assert_eq(client.get_child_count(), 0, "host drop is private too")
+	server._banked = true
+	server.send_drop(1, item, Vector3.ZERO)
+	assert_signal_emit_count(Events, "loot_dropped", 2, "no drop and no feed row after banking")
 
 
 func test_luck_combines_gear_and_rounds_and_caps_at_one() -> void:

@@ -5,15 +5,19 @@ class_name Impact
 extends Node3D
 
 enum Kind { SURFACE, FLESH, HEAD }
+## The player's Gore setting (graphics.gore).
+enum Gore { OFF, REDUCED, FULL }
 
 const MAX_ALIVE: int = 48
 const LIFETIME: float = 6.0
 const FLESH_LIFETIME: float = 1.0
 ## Impacts and gore voice cap from sound.md; the oldest sound is stolen.
 const MAX_SOUNDS: int = 4
-## Blood from game-feel.md "Blood and gore": 12 particles, 0.4 s, gravity on.
+## Blood from game-feel.md "Blood and gore", 0.4 s, gravity on. Full uses the
+## owner's "Stronger" pick (24 flecks, a touch lighter); Reduced has half, darker.
 const BLOOD_COLOR: Color = Color("5a0f0f")
-const BLOOD_PARTICLES: int = 12
+const BLOOD_PARTICLES: int = 24
+const REDUCED_PARTICLES: int = 12
 const BLOOD_TIME: float = 0.4
 const FLESH_SOUNDS: Array[AudioStream] = [
 	preload("res://assets/audio/impact_flesh_1.wav"),
@@ -31,6 +35,7 @@ static var _next: int = 0
 static var _sounds: Array[AudioStreamPlayer3D] = []
 static var _next_sound: int = 0
 static var _flesh_mesh: QuadMesh
+static var _reduced_mesh: QuadMesh
 static var _surface_mesh: QuadMesh
 static var _mark_mesh: QuadMesh
 
@@ -113,11 +118,22 @@ static func _take(parent: Node) -> Impact:
 static func _shared_meshes() -> void:
 	if _mark_mesh:
 		return
-	_flesh_mesh = _quad(0.04, BLOOD_COLOR, true)
-	# Lit, so blood stays dark red-brown under bright lights (look-rules: never bright red).
-	(_flesh_mesh.material as StandardMaterial3D).shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	_flesh_mesh = _blood_quad(BLOOD_COLOR.lightened(0.15))
+	_reduced_mesh = _blood_quad(BLOOD_COLOR.darkened(0.35))
 	_surface_mesh = _quad(0.04, Color(0.55, 0.5, 0.45), true)
 	_mark_mesh = _quad(0.07, Color(0.03, 0.03, 0.03), false)
+
+
+## Lit, so blood stays dark red-brown under bright lights (look-rules: never bright red).
+static func _blood_quad(color: Color) -> QuadMesh:
+	var mesh: QuadMesh = _quad(0.04, color, true)
+	(mesh.material as StandardMaterial3D).shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	return mesh
+
+
+## This peer's Gore setting; each player picks their own.
+static func gore() -> Gore:
+	return Settings.get_value(&"graphics", &"gore") as Gore
 
 
 static func _quad(size: float, color: Color, particle: bool) -> QuadMesh:
@@ -165,7 +181,13 @@ func _particles(mesh: QuadMesh, amount: int) -> CPUParticles3D:
 
 
 func _show(normal: Vector3, kind: Kind) -> void:
-	var flesh: bool = kind != Kind.SURFACE
+	var level: Gore = gore()
+	var flesh: bool = kind != Kind.SURFACE and level != Gore.OFF
+	if flesh:
+		var amount: int = BLOOD_PARTICLES if level == Gore.FULL else REDUCED_PARTICLES
+		if _flesh.amount != amount:
+			_flesh.amount = amount
+			_flesh.mesh = _flesh_mesh if level == Gore.FULL else _reduced_mesh
 	var particles: CPUParticles3D = _flesh if flesh else _surface
 	_flesh.visible = flesh
 	_surface.visible = not flesh
