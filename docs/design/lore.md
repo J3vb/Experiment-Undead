@@ -90,7 +90,7 @@ A 1920s tuberculosis sanatorium on the fen edge, built for cold-air cures. In 19
 
 The story is built to run for many maps, like the acts of a classic loot game. Players gather in Lantern Post, squad up, and deploy into maps full of the Lit and bosses. Each act answers one big question and ends with a boss. Adding story means adding an act or a chapter, never rewriting the ones before.
 
-Provisional picks (2026-11-17, waiting on the person's decision cards): acts of 4 maps with a boss on every map, bosses reached by a mid-run descent, and bosses that are named Lit with a human story. If a pick changes, update this section first.
+Decided by the person (2026-11-17): acts of 4 maps with a boss on every map, bosses reached by a mid-run descent, and bosses that are named Lit with a human story. Act II and III map and boss names are outlines and can change.
 
 ### How it is shaped
 
