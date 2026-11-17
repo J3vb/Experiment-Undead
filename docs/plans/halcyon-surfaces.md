@@ -1,10 +1,10 @@
 # Plan: Texture every surface in Halcyon Labs
 
-Status: Review
+Status: Approved
 Roadmap: F-61
 Phase: P4 (v0.1 Vertical slice)
 Size: M
-Approved by:
+Approved by: the person on a decision card (2026-11-17, look approved as rendered), plan PR #253
 
 ## Goal
 
@@ -231,4 +231,4 @@ Autoloads, managers or base classes added: none.
 
 ## Open decisions
 
-- [ ] Look of the textured surfaces (per-room floors, detail strength): decision card with before/after renders after step 1. Provisional: build on as planned.
+- [x] Look of the textured surfaces (per-room floors, detail strength): approved as rendered in the step 1 before/after (2026-11-17).
