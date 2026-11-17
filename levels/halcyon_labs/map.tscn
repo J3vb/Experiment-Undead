@@ -16,6 +16,8 @@
 [ext_resource type="Material" path="res://levels/materials/rust.tres" id="rust"]
 [ext_resource type="Material" path="res://levels/materials/wood.tres" id="wood"]
 [ext_resource type="PackedScene" path="res://systems/interactables/door.tscn" id="door"]
+[ext_resource type="PackedScene" path="res://assets/models/doors/bulkhead_door.glb" id="bulkhead_door"]
+[ext_resource type="PackedScene" path="res://assets/models/doors/bulkhead_door_wide.glb" id="bulkhead_door_wide"]
 [ext_resource type="PackedScene" path="res://systems/interactables/power_switch.tscn" id="power"]
 [ext_resource type="PackedScene" path="res://systems/interactables/wall_buy.tscn" id="wallbuy"]
 [ext_resource type="Resource" path="res://content/weapons/rifle_ar.tres" id="rifle"]
@@ -92,6 +94,12 @@ normal_texture = ExtResource("painted_metal_normal")
 uv1_triplanar = true
 uv1_world_triplanar = true
 
+[sub_resource type="BoxShape3D" id="door_block_2"]
+size = Vector3(2, 2.6, 0.5)
+
+[sub_resource type="BoxShape3D" id="door_block_4"]
+size = Vector3(4, 2.6, 0.5)
+
 [sub_resource type="BoxShape3D" id="door_area_2"]
 size = Vector3(2, 2.6, 0.8)
 
@@ -143,15 +151,19 @@ opens_area = &"guard_post"
 cost = 750
 needs_power = false
 label = "door"
+slide_up = 2.6
 
 [node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/GuardPostDoor"]
 shape = SubResource("door_area_2")
 
 [node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/GuardPostDoor"]
-script = ExtResource("block")
-size = Vector3(2, 2.6, 0.5)
-material = SubResource("door_dev")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/GuardPostDoor/Blocker"]
+shape = SubResource("door_block_2")
+
+[node name="Model" parent="NavigationRegion3D/Doors/GuardPostDoor/Blocker" instance=ExtResource("bulkhead_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, 0)
 
 [node name="MessHallDebris" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 1.3, 46)
@@ -175,15 +187,19 @@ opens_area = &"main_corridor"
 cost = 1000
 needs_power = false
 label = "door"
+slide_up = 2.6
 
 [node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/CorridorDoorGuardPost"]
 shape = SubResource("door_area_2")
 
 [node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/CorridorDoorGuardPost"]
-script = ExtResource("block")
-size = Vector3(2, 2.6, 0.5)
-material = SubResource("door_dev")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/CorridorDoorGuardPost/Blocker"]
+shape = SubResource("door_block_2")
+
+[node name="Model" parent="NavigationRegion3D/Doors/CorridorDoorGuardPost/Blocker" instance=ExtResource("bulkhead_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, 0)
 
 [node name="CorridorDoorMessHall" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 1.3, 30)
@@ -191,15 +207,19 @@ opens_area = &"main_corridor"
 cost = 1000
 needs_power = false
 label = "door"
+slide_up = 2.6
 
 [node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/CorridorDoorMessHall"]
 shape = SubResource("door_area_2")
 
 [node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/CorridorDoorMessHall"]
-script = ExtResource("block")
-size = Vector3(2, 2.6, 0.5)
-material = SubResource("door_dev")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/CorridorDoorMessHall/Blocker"]
+shape = SubResource("door_block_2")
+
+[node name="Model" parent="NavigationRegion3D/Doors/CorridorDoorMessHall/Blocker" instance=ExtResource("bulkhead_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, 0)
 
 [node name="GeneratorHallDoor" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 1.3, 26)
@@ -207,15 +227,19 @@ opens_area = &"generator_hall"
 cost = 1250
 needs_power = false
 label = "door"
+slide_up = 2.6
 
 [node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/GeneratorHallDoor"]
 shape = SubResource("door_area_2")
 
 [node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/GeneratorHallDoor"]
-script = ExtResource("block")
-size = Vector3(2, 2.6, 0.5)
-material = SubResource("door_dev")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/GeneratorHallDoor/Blocker"]
+shape = SubResource("door_block_2")
+
+[node name="Model" parent="NavigationRegion3D/Doors/GeneratorHallDoor/Blocker" instance=ExtResource("bulkhead_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, 0)
 
 [node name="LabsDebris" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 1.3, 26)
@@ -271,15 +295,19 @@ opens_area = &"containment_wing"
 cost = 1500
 needs_power = true
 label = "door"
+slide_up = 2.6
 
 [node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/ContainmentDoor"]
 shape = SubResource("door_area_4")
 
 [node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/ContainmentDoor"]
-script = ExtResource("block")
-size = Vector3(4, 2.6, 0.5)
-material = SubResource("door_dev")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/ContainmentDoor/Blocker"]
+shape = SubResource("door_block_4")
+
+[node name="Model" parent="NavigationRegion3D/Doors/ContainmentDoor/Blocker" instance=ExtResource("bulkhead_door_wide")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, 0)
 
 [node name="VentGrateMessHall" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 58, 2.7, 45)

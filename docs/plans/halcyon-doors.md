@@ -1,6 +1,6 @@
 # Plan: Halcyon Labs door models
 
-Status: Approved
+Status: Building
 Roadmap: F-63
 Phase: P4 (v0.1 Vertical slice)
 Size: S

@@ -22,6 +22,7 @@ import bpy
 # bpy must load before bmesh.
 import bmesh
 import character_models
+import door_models
 import finish
 import prop_models
 import town_props
@@ -249,6 +250,7 @@ MODELS = {
 MODELS.update(character_models.MODELS)
 MODELS.update(prop_models.MODELS)
 MODELS.update(town_props.MODELS)
+MODELS.update(door_models.MODELS)
 
 
 def export(path: str) -> None:
