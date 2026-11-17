@@ -98,3 +98,12 @@ func test_no_fire_path_shoots_while_raising() -> void:
 	assert_signal_not_emitted(gun, "fired", "buffered or held shots wait for the raise")
 	_tick(0.15)
 	assert_signal_emitted(gun, "fired")
+
+
+func test_a_gun_put_away_while_aiming_comes_back_unaimed() -> void:
+	var rifle: Weapon = player.weapons.current
+	rifle.ads_progress = 1.0
+	player.weapons.equip(0)
+	_tick(0.5)
+	player.weapons.equip(1)
+	assert_eq(rifle.ads_progress, 0.0, "no aimed zoom or slow walk during the raise")

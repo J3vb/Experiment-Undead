@@ -83,6 +83,8 @@ func equip(index: int) -> void:
 	if current:
 		current.set_active(false)
 		current.trigger_held = false
+		current.aiming = false
+		current.ads_progress = 0.0
 		_swap_time = SWAP_TIME * (_player.get_stat(&"swap_time") if _player else 1.0)
 		_swap_left = _swap_time
 	current = weapons[index]
