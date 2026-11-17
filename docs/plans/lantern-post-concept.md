@@ -251,9 +251,10 @@ target), and the Low preset must stay playable.
 
 ## Open decisions
 
-- [ ] Stall names on the signs: the concept's Trader, Gunsmith, Technician,
-      Missions and Common Room, or the design doc's Quartermaster, Workbench,
-      Trainer and Contract Board. Decision card.
+- [x] Stall names on the signs: the concept's names (the person, 2026-11-17).
+      Signs say Missions, Trader, Gunsmith, Technician ("Serums / Gear", never
+      "Perks") and Common Room. Step 3 adds a line to game-design.md mapping
+      each sign to its town job and a Change log row.
 - [ ] Aurora colour: green as in the concept breaks "the only green in town is
       the Deploy Gate". Decision card.
 - [x] Plan as a whole, including restyling the houses as timber lodges and
