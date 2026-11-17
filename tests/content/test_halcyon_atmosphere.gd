@@ -168,3 +168,40 @@ func test_story_decals_use_story_textures_and_one_green_leak() -> void:
 			leaks += 1
 	assert_eq(leaks, 1, "bio-green only on the one tank leak")
 	scene.free()
+
+
+func test_atmosphere_casts_no_shadows() -> void:
+	# Moving particles and meshes that cast shadows make every shadowed light redraw its map each frame.
+	var scene: Node = (load(ATMOSPHERE) as PackedScene).instantiate()
+	var meshes: Array[Node] = scene.find_children("*", "GeometryInstance3D", true, false)
+	assert_gt(meshes.size(), 0, "atmosphere has meshes and particles")
+	for node: Node in meshes:
+		var mesh: GeometryInstance3D = node as GeometryInstance3D
+		assert_eq(mesh.cast_shadow, GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, "%s casts no shadow" % mesh.name)
+	scene.free()
+
+
+func test_story_decals_stay_clear_of_props_and_machines() -> void:
+	var level: Level = (load(MAP) as PackedScene).instantiate() as Level
+	add_child_autofree(level)
+	var props: Array[Rect2] = []
+	for prop: Dictionary in (load(BUILDER) as GDScript).load_layout("halcyon_labs")["props"]:
+		var box: Array = prop["box"]
+		props.append(Rect2(box[0] - box[3] / 2.0, box[2] - box[5] / 2.0, box[3], box[5]))
+	var machines: Array[Node] = level.get_node("NavigationRegion3D/Machines").get_children()
+	for node: Node in level.get_node("Atmosphere/Story").find_children("*", "Decal", true, false):
+		var decal: Decal = node as Decal
+		var box: AABB = decal.global_transform * decal.get_aabb()
+		var area: Rect2 = Rect2(box.position.x, box.position.z, box.size.x, box.size.z)
+		for prop: Rect2 in props:
+			assert_false(area.intersects(prop), "%s does not paint a prop" % decal.name)
+		for machine: Node in machines:
+			var at: Vector3 = (machine as Node3D).global_position
+			assert_false(area.grow(0.5).has_point(Vector2(at.x, at.z)), "%s not behind %s" % [decal.name, machine.name])
+
+
+func test_leak_glow_is_masked() -> void:
+	# Decal emission ignores alpha, so the glow needs its own map that is black outside the pool.
+	var glow: Image = (load(LEAK.replace("leak_pool", "leak_glow")) as Texture2D).get_image()
+	glow.decompress()
+	assert_lt(glow.get_pixel(0, 0).v, 0.05, "glow map is black outside the pool")
