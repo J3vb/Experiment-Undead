@@ -42,10 +42,6 @@ func interact(player: Player, _facts: Dictionary = {}) -> void:
 			state_changed.emit()
 
 
-func accepts_requests() -> bool:
-	return true
-
-
 func net_state() -> Dictionary:
 	return {"sales": sales}
 

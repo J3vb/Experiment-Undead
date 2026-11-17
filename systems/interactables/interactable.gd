@@ -33,11 +33,6 @@ func is_local() -> bool:
 	return false
 
 
-## False until this type's state and grants reach clients; the server refuses client requests.
-func accepts_requests() -> bool:
-	return false
-
-
 ## Sent with a client's request: facts about the client's own guns.
 func owner_facts(_player: Player) -> Dictionary:
 	return {}

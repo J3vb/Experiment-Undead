@@ -71,8 +71,6 @@ func _check(sender: int, player: Player, target: Interactable) -> StringName:
 		return &"unknown_path"
 	if player.global_position.distance_to(target.global_position) > player.interact_range + REACH_SLACK:
 		return &"out_of_range"
-	if not target.accepts_requests():
-		return &"not_networked_yet"
 	return &"rate_limited" if _time - _last_request.get(sender, -INF) < REQUEST_GAP else &""
 
 
