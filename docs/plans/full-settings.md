@@ -38,8 +38,8 @@ In:
 - **Accessibility:** text size 80 to 150% (scales all UI), hold or toggle
   for aim, sprint and crouch, reduce motion (UI slides become fades).
 - **Comfort:** head bob, weapon bob and sway, FOV change while sprinting,
-  damage screen effects, flash reduction (caps muzzle flash light), centre
-  dot always on, and a "Comfort preset" button that sets the doc's Comfort
+  damage screen effects, centre dot always on, rows for the game feel
+  thread's shake and flash reduction keys, and a "Comfort preset" button that sets the doc's Comfort
   column.
 - Settings split by job so `core/settings.gd` stays under the 350-line limit.
 - A paste-ready prompt for the person's local GPU agent to measure each
@@ -55,8 +55,10 @@ Not in (non-goals, and where each one goes instead):
 - A separate gamma slider: Godot has no gamma control in the Environment;
   one Brightness slider (Environment `adjustment_brightness`) with a
   calibration hint covers it.
-- Screen shake sliders and reduce-motion for the camera: owned by the screen
-  shake thread, which sends its keys to this plan's `SettingData` format.
+- Screen shake and flash reduction effects: owned by the game feel thread,
+  which adds `comfort/shake_own_gun`, `comfort/shake_hits` and
+  `comfort/flash_reduction` (names from docs/design/controls.md). This plan
+  only adds their SettingData rows and puts them in the Comfort preset.
 - Damage numbers setting (Off, Crits only, All): owned by the damage numbers
   thread, same way.
 - Subtitles, captions, sound visualizer: no subtitle system exists yet (with
@@ -135,7 +137,7 @@ Not in (non-goals, and where each one goes instead):
 | systems/ui/settings_screen.gd, .tscn | changed | Tabs from data, search box, Revert, Defaults, keep-settings dialog; KeyBindings placed on Controls |
 | content/settings/*.tres | new | One per row |
 | systems/input/local_input.gd | changed | Hold or toggle for aim, sprint, crouch |
-| systems/player/player_camera.gd, systems/weapons/weapon_holder.gd, systems/weapons/weapon.gd, systems/ui/hud.gd, systems/ui/crosshair.gd | changed | Comfort scales (bob, sway, sprint FOV, flash, damage effect, centre dot) |
+| systems/player/player_camera.gd, systems/weapons/weapon_holder.gd, systems/ui/hud.gd, systems/ui/crosshair.gd | changed | Comfort scales (bob, sway, sprint FOV, damage effect, centre dot) |
 | core/ui.gd | changed | Text size sets the root window `content_scale_factor` (stretch mode is canvas_items, so all UI scales and 3D does not) |
 
 Autoloads, managers or base classes added: none. `core/graphics.gd` is a
@@ -165,7 +167,8 @@ Settings is at its size limit and applying render options is its own job.
   - accessibility / text_scale / 1.0 ; toggle_ads / false ;
     toggle_sprint / false ; toggle_crouch / false ; reduce_motion / false.
   - comfort / head_bob / 0.6 ; weapon_bob / 1.0 ; sprint_fov / true ;
-    damage_effects / 1.0 ; flash_reduction / false ; centre_dot / false.
+    damage_effects / 1.0 ; centre_dot / false. (shake_own_gun, shake_hits,
+    flash_reduction come from the game feel thread.)
   - aim / fov (moved from video), mouse_sensitivity, ads_sensitivity_multiplier,
     invert_y (moved from controls in step 3).
 - High preset = today's look exactly: shadows High (directional atlas 4096,
@@ -290,12 +293,13 @@ prompt (after step 2) measures all four presets at the four test spots.
 ### Step 5: Comfort page
 
 - Build: head bob and weapon bob and sway scale the camera and viewmodel
-  bob; sprint FOV toggle; damage effects scale the damage vignette; flash
-  reduction caps the muzzle flash light energy and length; centre dot shows
-  a dot in the crosshair; "Comfort preset" button writes the doc's Comfort
-  column. Visual only: bullet direction never changes (test).
+  bob; sprint FOV toggle; damage effects scale the damage vignette; centre
+  dot shows a dot in the crosshair; rows for the game feel thread's shake
+  and flash reduction keys; "Comfort preset" button writes the doc's Comfort
+  column (shake 25%, head bob 0, weapon bob 50%, sprint FOV off, damage 50%,
+  flash reduction on, centre dot on). Visual only: bullet direction never changes (test).
 - Files: systems/player/player_camera.gd, systems/weapons/weapon_holder.gd,
-  systems/weapons/weapon.gd, systems/ui/hud.gd, systems/ui/crosshair.gd,
+  systems/ui/hud.gd, systems/ui/crosshair.gd,
   core/settings.gd (comfort preset values), content/settings/*.tres,
   tests for each touched script, docs/DECISIONS.md, docs/ROADMAP.md (Done).
 - Tests: head bob 0 keeps the camera still while walking; sprint FOV off
