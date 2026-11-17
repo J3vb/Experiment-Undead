@@ -23,5 +23,7 @@ extends Resource
 ## Options that can be shown but not picked, like the preset's Custom.
 @export var locked_options: PackedInt32Array = []
 @export var order: int = 0
+## Applies when a mouse drag ends, for options that resize the screen under the cursor (text size).
+@export var apply_on_release: bool = false
 ## Display mode and resolution ask "Keep these settings?" after a change.
 @export var needs_confirm: bool = false

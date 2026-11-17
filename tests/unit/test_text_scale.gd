@@ -57,3 +57,12 @@ func test_accessibility_page_has_its_rows() -> void:
 	assert_eq(page.page, &"accessibility")
 	for key: StringName in [&"text_scale", &"toggle_ads", &"toggle_sprint", &"toggle_crouch", &"reduce_motion"]:
 		assert_not_null(page.control_for(key), "%s row" % key)
+
+
+func test_reduce_motion_keeps_results_panels_in_place() -> void:
+	Settings.set_value(&"accessibility", &"reduce_motion", true)
+	var results: Control = preload("res://systems/ui/results_screen.tscn").instantiate() as Control
+	add_child_autofree(results)
+	results._animate_panels()
+	var panel: Control = results.get_node("StatsPanel") as Control
+	assert_almost_eq(panel.position.y, results.size.y * 0.25, 0.01)

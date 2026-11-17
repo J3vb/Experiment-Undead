@@ -111,7 +111,8 @@ func _process(delta: float) -> void:
 		var w: Weapon = _player.weapons.current
 		crosshair.spread_degrees = w.get_current_spread()
 		crosshair.fov_degrees = _player.camera.fov
-		crosshair.lines_alpha = 0.0 if (w.ads_progress > 0.5 or _player.is_sprinting or not _player.is_alive()) else 1.0
+		crosshair.lines_alpha = 0.0 if (w.ads_progress > 0.5 or _player.is_sprinting) else 1.0
+		crosshair.visible = _player.is_alive()
 
 
 func _update_exfil() -> void:

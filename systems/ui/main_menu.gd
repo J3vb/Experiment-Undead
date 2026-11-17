@@ -253,10 +253,11 @@ func _open_credits() -> void:
 		_panel_tween.kill()
 	credits_panel.show()
 	credits_panel.modulate.a = 0.0
-	credits_panel.position.x = 12.0
 	_panel_tween = create_tween().set_parallel(true)
 	_panel_tween.tween_property(credits_panel, "modulate:a", 1.0, 0.12)
-	_panel_tween.tween_property(credits_panel, "position:x", 0.0, 0.12)
+	if not Settings.get_value(&"accessibility", &"reduce_motion"):
+		credits_panel.position.x = 12.0
+		_panel_tween.tween_property(credits_panel, "position:x", 0.0, 0.12)
 	($Screens/Root/CreditsPanel/Box/Back as Button).grab_focus()
 
 

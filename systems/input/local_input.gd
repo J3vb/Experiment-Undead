@@ -74,9 +74,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			_pressed |= PRESS_BITS[action]
 	if event.is_action_pressed(&"ads"):
 		_ads_on = not _ads_on
+		_sprint_on = false
 	if event.is_action_pressed(&"sprint"):
 		_sprint_on = not _sprint_on
 	if event.is_action_pressed(&"crouch"):
+		_sprint_on = false
 		_crouch_on = not _crouch_on
 	elif event.is_action_pressed(&"sprint") or event.is_action_pressed(&"jump"):
 		_crouch_on = false
@@ -92,6 +94,8 @@ func sample(tick: int) -> InputFrame:
 		_clear_toggles()
 		return f
 	f.move = Input.get_vector(&"move_left", &"move_right", &"move_forward", &"move_back")
+	if f.move.y > -0.4:  # Toggle sprint ends when the player stops running forward.
+		_sprint_on = false
 	f.look = _look_accum * mouse_sensitivity * sensitivity_scale
 	if invert_y:
 		f.look.y = -f.look.y

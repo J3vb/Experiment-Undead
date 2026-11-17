@@ -18,7 +18,7 @@ func before_each() -> void:
 
 
 func after_each() -> void:
-	for action: StringName in [&"ads", &"sprint", &"crouch"]:
+	for action: StringName in [&"ads", &"sprint", &"crouch", &"move_forward"]:
 		Input.action_release(action)
 	Settings._values = _old_values
 	Settings._apply_all()
@@ -56,6 +56,7 @@ func test_hold_aim_is_unchanged() -> void:
 func test_toggle_sprint_and_hold_crouch() -> void:
 	Settings.set_value(&"accessibility", &"toggle_sprint", true)
 	Settings.set_value(&"accessibility", &"toggle_crouch", false)
+	Input.action_press(&"move_forward")
 	_press(&"sprint")
 	Input.action_release(&"sprint")
 	assert_true(_local.sample(1).has(InputFrame.SPRINT))
@@ -82,3 +83,20 @@ func test_toggles_clear_when_input_is_disabled() -> void:
 	_local.sample(1)
 	_local.enabled = true
 	assert_false(_local.sample(2).has(InputFrame.ADS), "death or match end drops a toggled aim")
+
+
+func test_toggle_sprint_ends_when_running_stops_or_aiming() -> void:
+	Settings.set_value(&"accessibility", &"toggle_sprint", true)
+	Input.action_press(&"move_forward")
+	_press(&"sprint")
+	Input.action_release(&"sprint")
+	assert_true(_local.sample(1).has(InputFrame.SPRINT))
+	Input.action_release(&"move_forward")
+	assert_false(_local.sample(2).has(InputFrame.SPRINT), "stopping ends the sprint")
+	Input.action_press(&"move_forward")
+	assert_false(_local.sample(3).has(InputFrame.SPRINT), "walking again does not sprint by itself")
+	_press(&"sprint")
+	assert_true(_local.sample(4).has(InputFrame.SPRINT))
+	_press(&"ads")
+	assert_false(_local.sample(5).has(InputFrame.SPRINT), "aiming ends the sprint")
+	Input.action_release(&"move_forward")

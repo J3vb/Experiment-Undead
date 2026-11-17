@@ -87,7 +87,8 @@ func search(text: String) -> void:
 			first = index
 		if index == tabs.current_tab:
 			current = matches
-	%KeyBindings.visible = text.strip_edges().is_empty()
+	for extra: Control in [%KeyBindings, %ComfortPreset, %ComfortPresetHint]:
+		extra.visible = text.strip_edges().is_empty()
 	if current == 0 and first >= 0:
 		tabs.current_tab = first
 
