@@ -118,7 +118,7 @@ Not in (and where it goes instead):
 | systems/weapons/weapon.gd, gravity_well.gd | changed | aim from `camera_rig.aim_basis()` (one line each) |
 | systems/weapons/weapon_holder.gd | changed | `hold(seconds)`: pauses the gun's visual `_process` |
 | core/settings.gd | changed | `comfort` section, three keys, 0-1 clamp |
-| systems/net/player_state_sync.gd | changed | downed roll: tween to 6° instead of instant 25° (one line) |
+| systems/net/player_state_sync.gd | changed | downed roll number in the co-op thread's `tilt()` call: 25° to 6° (one line) |
 | systems/ui/hud.tscn | changed | DownScreen overlay node (no hud.gd change) |
 | systems/ui/results_screen.gd/.tscn | changed | "Gear kept" banner when not exfil |
 | systems/net/coop_hud.gd | changed | spectate prompt "Gear kept · Respawn next round" |
@@ -220,7 +220,9 @@ budget.
   `Events.weapon_fired` (local player only: view kick, fire trauma capped at
   0.35, FOV punch), `Events.player_damaged` (local: 0.25 trauma) and
   `Events.round_started` (0.15). ADS halves trauma and scales view kick by
-  0.6. Own-gun effects scale by `comfort/shake_own_gun`, the rest by
+  0.6. All camera transform and FOV writes happen inside `update_feel()`,
+  which the player calls on the physics tick (physics interpolation warns
+  when a Camera3D moves from `_process`). Own-gun effects scale by `comfort/shake_own_gun`, the rest by
   `comfort/shake_hits`. Weapon traces and Gravity Well aim from
   `aim_basis()`, so cosmetic camera motion never moves bullets. Settings gets
   the comfort section.
@@ -256,9 +258,10 @@ budget.
 - Build: DownScreen (Control + canvas shader) in hud.tscn. It watches the
   local player's `is_downed` / `is_dead` in `_process` (two bool reads; no new
   Events, no net code). Downed: saturation tween to 0.2, vignette 0.5, camera
-  rig drops 0.9 m over 0.3 s (solo Second Wind and co-op), roll 6°
-  (`player_state_sync._present` tweens to `downed_roll_deg` instead of setting
-  25°). Revived: colour returns, 8% white flash for 0.15 s (skipped with
+  rig drops 0.9 m over 0.3 s (solo Second Wind and co-op), roll 6°. Drop and
+  roll go through `PlayerCamera.tilt()` from the co-op thread's next PR (a
+  physics-tick tween); this step only changes the 25.0 in that call to
+  `downed_roll_deg` and adds the drop next to it. Step 4 waits for that PR. Revived: colour returns, 8% white flash for 0.15 s (skipped with
   flash_reduction). Died: 0.6 s fade to black, and an AudioEffectAmplify on
   the SFX bus (added to default_bus_layout.tres) tweens to −60 dB; Music and
   UI stay. Solo: the results screen follows after the existing restart delay
@@ -309,6 +312,11 @@ budget.
   catches the main path; interact focus may follow shake (harmless).
 - The SFX bus left muted after a crash in the death fade: `_exit_tree` and
   respawn both reset it, and the test covers both.
+- Camera writes outside physics: every camera change goes through
+  `update_feel()` or `tilt()` on the physics tick; the boot test and soak
+  fail on the interpolation warning.
+- core/settings.gd is near 350 lines after PR #237: step 2 adds only three
+  DEFAULTS entries and one clamp branch.
 - File-size limits: weapon.gd is at 350 lines, so it gets one-line swaps only;
   feel code lives in PlayerCamera, WeaponHolder and DownScreen.
 - Other threads edit player_state_sync.gd, hud.tscn and weapon_holder.gd;
