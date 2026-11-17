@@ -187,22 +187,22 @@ func binding_owner(event: InputEvent, except_action: StringName = &"") -> String
 
 ## Binds the event and gives its current owner this slot's old key (or nothing if the slot was empty).
 func swap_binding(action: StringName, slot: int, event: InputEvent) -> bool:
-	var owner: StringName = binding_owner(event, action)
-	if not can_rebind(action) or (owner != &"" and not can_rebind(owner)):
+	var taken_by: StringName = binding_owner(event, action)
+	if not can_rebind(action) or (taken_by != &"" and not can_rebind(taken_by)):
 		return false
 	var mine: Array[InputEvent] = get_binding(action)
 	var old: InputEvent = mine[slot] if slot >= 0 and slot < mine.size() else null
 	if not set_binding(action, slot, event):
 		return false
-	if owner != &"":
-		var theirs: Array[InputEvent] = get_binding(owner)
+	if taken_by != &"":
+		var theirs: Array[InputEvent] = get_binding(taken_by)
 		var index: int = theirs.find_custom(_same_event.bind(event))
 		if old:
 			theirs[index] = old
 		else:
 			theirs.remove_at(index)
-		_replace_binding(owner, theirs)
-		_binding_changed(owner)
+		_replace_binding(taken_by, theirs)
+		_binding_changed(taken_by)
 	return true
 
 
