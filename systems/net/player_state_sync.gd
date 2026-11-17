@@ -45,7 +45,7 @@ func _ready() -> void:
 
 
 func is_coop() -> bool:
-	return not multiplayer.multiplayer_peer is OfflineMultiplayerPeer
+	return Net.is_coop(multiplayer)
 
 
 func _physics_process(delta: float) -> void:
@@ -54,7 +54,9 @@ func _physics_process(delta: float) -> void:
 	if _player.session and _player.session.is_over:
 		return
 	if multiplayer.is_server():
-		if _player.is_downed and is_coop():
+		# Only a co-op down bleeds out: a solo Second Wind down (no bleed time) keeps the solo
+		# rule even if a friend joins during it.
+		if _player.is_downed and bleed_left > 0.0:
 			bleed_left = maxf(bleed_left - delta, 0.0)
 			if bleed_left <= 0.0:
 				_player.is_downed = false
