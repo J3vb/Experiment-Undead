@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 [ext_resource type="Script" path="res://systems/ui/settings_screen.gd" id="1"]
 
 [ext_resource type="Theme" path="res://systems/ui/menu_theme.tres" id="menu_theme"]
+[ext_resource type="Script" path="res://systems/ui/key_bindings.gd" id="key_bindings"]
 
 [node name="SettingsScreen" type="PanelContainer"]
 process_mode = 3
@@ -23,15 +24,19 @@ theme_override_font_sizes/font_size = 36
 [node name="Tabs" type="TabContainer" parent="Margin/Box"]
 size_flags_vertical = 3
 theme_override_font_sizes/font_size = 24
-[node name="Controls" type="VBoxContainer" parent="Margin/Box/Tabs"]
+[node name="Controls" type="ScrollContainer" parent="Margin/Box/Tabs"]
+follow_focus = true
+horizontal_scroll_mode = 0
+[node name="Box" type="VBoxContainer" parent="Margin/Box/Tabs/Controls"]
+size_flags_horizontal = 3
 theme_override_constants/separation = 16
-[node name="mouse_sensitivityRow" type="HBoxContainer" parent="Margin/Box/Tabs/Controls"]
+[node name="mouse_sensitivityRow" type="HBoxContainer" parent="Margin/Box/Tabs/Controls/Box"]
 theme_override_constants/separation = 16
-[node name="Label" type="Label" parent="Margin/Box/Tabs/Controls/mouse_sensitivityRow"]
+[node name="Label" type="Label" parent="Margin/Box/Tabs/Controls/Box/mouse_sensitivityRow"]
 text = "Mouse sensitivity"
 custom_minimum_size = Vector2(450, 40)
 theme_override_font_sizes/font_size = 24
-[node name="mouse_sensitivity" type="HSlider" parent="Margin/Box/Tabs/Controls/mouse_sensitivityRow"]
+[node name="mouse_sensitivity" type="HSlider" parent="Margin/Box/Tabs/Controls/Box/mouse_sensitivityRow"]
 unique_name_in_owner = true
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -39,19 +44,19 @@ custom_minimum_size = Vector2(220, 40)
 min_value = 0
 max_value = 0.02
 step = 0.0001
-[node name="Number" type="Label" parent="Margin/Box/Tabs/Controls/mouse_sensitivityRow"]
+[node name="Number" type="Label" parent="Margin/Box/Tabs/Controls/Box/mouse_sensitivityRow"]
 custom_minimum_size = Vector2(110, 40)
 theme_override_font_sizes/font_size = 24
-[node name="mouse_sensitivityHint" type="Label" parent="Margin/Box/Tabs/Controls"]
+[node name="mouse_sensitivityHint" type="Label" parent="Margin/Box/Tabs/Controls/Box"]
 theme_type_variation = &"LabelDim"
 text = "How quickly the view turns when you move the mouse."
-[node name="ads_sensitivity_multiplierRow" type="HBoxContainer" parent="Margin/Box/Tabs/Controls"]
+[node name="ads_sensitivity_multiplierRow" type="HBoxContainer" parent="Margin/Box/Tabs/Controls/Box"]
 theme_override_constants/separation = 16
-[node name="Label" type="Label" parent="Margin/Box/Tabs/Controls/ads_sensitivity_multiplierRow"]
+[node name="Label" type="Label" parent="Margin/Box/Tabs/Controls/Box/ads_sensitivity_multiplierRow"]
 text = "ADS sensitivity multiplier"
 custom_minimum_size = Vector2(450, 40)
 theme_override_font_sizes/font_size = 24
-[node name="ads_sensitivity_multiplier" type="HSlider" parent="Margin/Box/Tabs/Controls/ads_sensitivity_multiplierRow"]
+[node name="ads_sensitivity_multiplier" type="HSlider" parent="Margin/Box/Tabs/Controls/Box/ads_sensitivity_multiplierRow"]
 unique_name_in_owner = true
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -59,21 +64,50 @@ custom_minimum_size = Vector2(220, 40)
 min_value = 0
 max_value = 3
 step = 0.01
-[node name="Number" type="Label" parent="Margin/Box/Tabs/Controls/ads_sensitivity_multiplierRow"]
+[node name="Number" type="Label" parent="Margin/Box/Tabs/Controls/Box/ads_sensitivity_multiplierRow"]
 custom_minimum_size = Vector2(110, 40)
 theme_override_font_sizes/font_size = 24
-[node name="ads_sensitivity_multiplierHint" type="Label" parent="Margin/Box/Tabs/Controls"]
+[node name="ads_sensitivity_multiplierHint" type="Label" parent="Margin/Box/Tabs/Controls/Box"]
 theme_type_variation = &"LabelDim"
 text = "Scales mouse sensitivity while aiming down sights."
-[node name="invert_y" type="CheckBox" parent="Margin/Box/Tabs/Controls"]
+[node name="invert_y" type="CheckBox" parent="Margin/Box/Tabs/Controls/Box"]
 unique_name_in_owner = true
 text = "Invert Y"
 theme_override_font_sizes/font_size = 24
-[node name="invert_yHint" type="Label" parent="Margin/Box/Tabs/Controls"]
+[node name="invert_yHint" type="Label" parent="Margin/Box/Tabs/Controls/Box"]
 theme_type_variation = &"LabelDim"
 text = "Move the mouse up to look down."
+[node name="KeyBindings" type="VBoxContainer" parent="Margin/Box/Tabs/Controls/Box"]
+unique_name_in_owner = true
+script = ExtResource("key_bindings")
+theme_override_constants/separation = 12
 [node name="Video" type="VBoxContainer" parent="Margin/Box/Tabs"]
 theme_override_constants/separation = 16
+[node name="presetRow" type="HBoxContainer" parent="Margin/Box/Tabs/Video"]
+theme_override_constants/separation = 16
+[node name="Label" type="Label" parent="Margin/Box/Tabs/Video/presetRow"]
+text = "Graphics quality"
+custom_minimum_size = Vector2(450, 40)
+theme_override_font_sizes/font_size = 24
+[node name="preset" type="OptionButton" parent="Margin/Box/Tabs/Video/presetRow"]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+item_count = 5
+popup/item_0/text = "Low"
+popup/item_0/id = 0
+popup/item_1/text = "Medium"
+popup/item_1/id = 1
+popup/item_2/text = "High"
+popup/item_2/id = 2
+popup/item_3/text = "Ultra"
+popup/item_3/id = 3
+popup/item_4/text = "Custom"
+popup/item_4/id = 4
+popup/item_4/disabled = true
+[node name="presetHint" type="Label" parent="Margin/Box/Tabs/Video"]
+theme_type_variation = &"LabelDim"
+text = "Sets shadows, anti-aliasing, ambient occlusion, reflections and fog together. High is the intended look."
 [node name="fovRow" type="HBoxContainer" parent="Margin/Box/Tabs/Video"]
 theme_override_constants/separation = 16
 [node name="Label" type="Label" parent="Margin/Box/Tabs/Video/fovRow"]

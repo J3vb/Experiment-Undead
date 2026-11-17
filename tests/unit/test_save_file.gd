@@ -4,7 +4,7 @@ const PATH: String = "user://test_save.json"
 
 
 func after_each() -> void:
-	for p: String in [PATH, PATH + ".tmp", PATH + ".v0.bak"]:
+	for p: String in [PATH, PATH + ".tmp", PATH + ".v0.bak", PATH + ".v1.bak"]:
 		if FileAccess.file_exists(p):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(p))
 
@@ -67,3 +67,12 @@ func _step_add_a(d: Dictionary) -> Dictionary:
 func _step_add_b(d: Dictionary) -> Dictionary:
 	d["b"] = int(d["a"]) + 1
 	return d
+
+
+func test_version_1_save_gains_empty_best_runs_and_keeps_its_fields() -> void:
+	_write_raw('{"save_version": 1, "id": "old", "total_xp": 400, "loadout": {}}')
+	var data: Dictionary = SaveFile.read(PATH)
+	assert_eq(int(data[SaveFile.VERSION_KEY]), 2)
+	assert_eq(data["best_runs"], {})
+	assert_eq(int(data["total_xp"]), 400)
+	assert_true(FileAccess.file_exists(PATH + ".v1.bak"))

@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://systems/level/level.gd" id="level"]
+[ext_resource type="Script" path="res://systems/effects/environment_quality.gd" id="env_quality"]
 [ext_resource type="Script" path="res://systems/level/block.gd" id="block"]
 [ext_resource type="Script" path="res://systems/waves/zombie_spawn_point.gd" id="spawn"]
 [ext_resource type="Script" path="res://systems/level/coop_wreckage.gd" id="wreckage"]
@@ -51,6 +52,7 @@
 [ext_resource type="Resource" path="res://content/serums/second_wind.tres" id="serum_second_wind"]
 [ext_resource type="Resource" path="res://content/serums/scavenger.tres" id="serum_scavenger"]
 [ext_resource type="LightmapGIData" uid="uid://bbbon50dn5n3m" path="res://levels/halcyon_labs/map.lmbake" id="lightmap"]
+[ext_resource type="PackedScene" path="res://levels/halcyon_labs/atmosphere.tscn" id="atmosphere"]
 
 [sub_resource type="NavigationMesh" id="navmesh"]
 resource_local_to_scene = true
@@ -103,6 +105,7 @@ player_spawn = NodePath("PlayerSpawn")
 start_area = &"loading_dock"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+script = ExtResource("env_quality")
 environment = ExtResource("look")
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
@@ -794,6 +797,8 @@ light_bake_mode = 0
 omni_range = 5.0
 
 [node name="FilmPost" parent="." instance=ExtResource("film")]
+
+[node name="Atmosphere" parent="." instance=ExtResource("atmosphere")]
 
 [node name="LightmapGI" type="LightmapGI" parent="."]
 quality = 2

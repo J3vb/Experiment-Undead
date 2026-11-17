@@ -1,7 +1,7 @@
 # Plan: First Lantern Post hub (blockout and deploy board)
 
 Status: Approved
-Roadmap: F-48 / issue #131 (first slice of F-45)
+Roadmap: F-50 / issue #131 (first slice of F-45)
 Phase: P9 (pulled forward for the co-op week goal)
 Size: M
 Approved by: Codex plan review on PR #222 (no findings, 2026-11-17); the person approved the town look and asked for a ready-up vote (2026-11-17); vote section re-reviewed by a Claude plan review (2026-11-17), its findings fixed. Step 2 also needs the same interface text in `coop-full-match.md` (co-op thread adds it with its vote step).

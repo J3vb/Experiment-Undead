@@ -50,7 +50,7 @@ func test_sliders_save_every_preference() -> void:
 
 
 func test_checkboxes_and_all_fps_options() -> void:
-	for entry: Array in [[&"invert_y", &"controls"], [&"vsync", &"video"], [&"show_fps", &"video"]]:
+	for entry: Array in [[&"invert_y", &"controls"], [&"vsync", &"graphics"], [&"show_fps", &"graphics"]]:
 		var check: CheckBox = _screen.get_node("%" + entry[0]) as CheckBox
 		check.button_pressed = true
 		assert_eq(Settings.get_value(entry[1], entry[0]), true)
@@ -62,7 +62,7 @@ func test_checkboxes_and_all_fps_options() -> void:
 	var expected: Array[int] = [60, 120, 144, 165, 240, 0]
 	for index: int in range(expected.size()):
 		option.item_selected.emit(index)
-		assert_eq(Settings.get_value(&"video", &"max_fps"), expected[index])
+		assert_eq(Settings.get_value(&"graphics", &"max_fps"), expected[index])
 		assert_eq(option.selected, index)
 
 
@@ -70,9 +70,9 @@ func test_start_values_external_changes_and_reset() -> void:
 	Settings.set_value(&"controls", &"mouse_sensitivity", 0.006)
 	Settings.set_value(&"controls", &"invert_y", true)
 	Settings.set_value(&"video", &"fov", 75)
-	Settings.set_value(&"video", &"max_fps", 144)
-	Settings.set_value(&"video", &"vsync", true)
-	Settings.set_value(&"video", &"show_fps", true)
+	Settings.set_value(&"graphics", &"max_fps", 144)
+	Settings.set_value(&"graphics", &"vsync", true)
+	Settings.set_value(&"graphics", &"show_fps", true)
 	Settings.set_value(&"audio", &"music_volume", 0.2)
 	var reopened: SettingsScreen = SCREEN.instantiate() as SettingsScreen
 	add_child_autofree(reopened)
@@ -170,7 +170,7 @@ func test_show_fps_is_only_a_hud_line() -> void:
 	add_child_autofree(hud)
 	hud._process(0.0)
 	assert_false(hud._fps_label.visible)
-	Settings.set_value(&"video", &"show_fps", true)
+	Settings.set_value(&"graphics", &"show_fps", true)
 	hud._process(0.0)
 	assert_true(hud._fps_label.visible)
 	assert_true(hud._fps_label.text.begins_with("FPS: "))
@@ -182,7 +182,8 @@ func test_standalone_screen_has_keyboard_focus_and_readable_hints() -> void:
 	assert_true(tabs.get_tab_bar().has_focus(), "a standalone settings screen starts with keyboard focus")
 	for tab: Control in tabs.get_children():
 		var hints: int = 0
-		for child: Node in tab.get_children():
+		var rows: Node = tab.get_child(0) if tab is ScrollContainer else tab
+		for child: Node in rows.get_children():
 			var label: Label = child as Label
 			if label:
 				hints += 1
@@ -204,3 +205,13 @@ func test_controller_back_closes_the_screen_and_emits_closed() -> void:
 	_screen._input(cancel)
 	assert_signal_emitted(_screen, "closed")
 	assert_false(_screen.visible)
+
+
+func test_preset_dropdown_sets_and_follows_quality() -> void:
+	var option: OptionButton = _screen.get_node("%preset") as OptionButton
+	assert_eq(option.selected, Graphics.Preset.HIGH)
+	option.item_selected.emit(Graphics.Preset.LOW)
+	assert_eq(Settings.get_value(&"graphics", &"preset"), Graphics.Preset.LOW)
+	assert_eq(Settings.get_value(&"graphics", &"shadows"), 0)
+	Settings.set_value(&"graphics", &"shadows", 3)
+	assert_eq(option.selected, Graphics.Preset.CUSTOM, "a hand change shows Custom")

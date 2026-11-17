@@ -16,7 +16,7 @@ func after_each() -> void:
 
 
 func _remove_files() -> void:
-	for path: String in [PATH, PATH + ".tmp", PATH + ".v0.bak"]:
+	for path: String in [PATH, PATH + ".tmp", PATH + ".v0.bak", PATH + ".v1.bak"]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
@@ -36,6 +36,7 @@ func test_dictionary_round_trip() -> void:
 	var saved: Dictionary = profile.to_dict()
 	saved.erase("stash")
 	saved.erase("loadout")
+	saved.erase("best_runs")
 	assert_eq(saved, data)
 
 
@@ -85,8 +86,9 @@ func test_old_v1_save_defaults_to_empty_inventory_without_migration() -> void:
 	for item: Dictionary in profile.stash:
 		assert_eq(item, {})
 	assert_eq(profile.loadout, {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}})
+	assert_eq(profile.best_runs, {})
 	assert_eq(profile.save(), OK)
-	assert_eq(int(SaveFile.read(PATH)["save_version"]), 1)
+	assert_eq(int(SaveFile.read(PATH)["save_version"]), SaveFile.CURRENT_VERSION)
 
 
 func test_legacy_empty_array_loadout_deserializes_without_changing_input() -> void:
@@ -122,7 +124,7 @@ func test_legacy_empty_array_save_keeps_xp_items_unknown_fields_and_can_save() -
 	assert_true(saved["future_flag"])
 	assert_eq(saved["stash"][0], before["stash"][0])
 	assert_eq(saved["loadout"], {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}})
-	assert_eq(int(saved["save_version"]), 1)
+	assert_eq(int(saved["save_version"]), SaveFile.CURRENT_VERSION)
 
 
 func test_legacy_v1_empty_loadout_array_keeps_xp_and_remains_saveable() -> void:
@@ -141,7 +143,7 @@ func test_legacy_v1_empty_loadout_array_keeps_xp_and_remains_saveable() -> void:
 	assert_true(saved["loadout"] is Dictionary)
 	assert_eq(saved["loadout"], empty_loadout)
 	assert_eq(int(saved["total_xp"]), 400)
-	assert_eq(int(saved["save_version"]), 1)
+	assert_eq(int(saved["save_version"]), SaveFile.CURRENT_VERSION)
 
 
 func test_unknown_fields_survive_load_and_save() -> void:
@@ -265,3 +267,22 @@ func _write_raw(raw: String) -> void:
 	var file: FileAccess = FileAccess.open(PATH, FileAccess.WRITE)
 	file.store_string(raw)
 	file.close()
+
+
+func test_best_run_per_map_keeps_highest_round_then_kills_and_saves() -> void:
+	var profile: CharacterProfile = CharacterProfile.load_or_create(ID)
+	assert_true(profile.record_run("halcyon_labs", {"round": 7, "kills": 80}), "first run is a best")
+	assert_false(profile.record_run("halcyon_labs", {"round": 6, "kills": 200}), "lower round")
+	assert_false(profile.record_run("halcyon_labs", {"round": 7, "kills": 80}), "a tie is not new")
+	assert_true(profile.record_run("halcyon_labs", {"round": 7, "kills": 81}), "more kills breaks a tie")
+	assert_true(profile.record_run("other_map", {"round": 2, "kills": 5}), "maps are separate")
+	var loaded: CharacterProfile = CharacterProfile.load_or_create(ID)
+	assert_eq(int(loaded.best_runs["halcyon_labs"]["round"]), 7)
+	assert_eq(int(loaded.best_runs["halcyon_labs"]["kills"]), 81)
+	assert_eq(int(loaded.best_runs["other_map"]["round"]), 2)
+
+
+func test_round_zero_run_is_not_a_best() -> void:
+	var profile: CharacterProfile = CharacterProfile.load_or_create(ID)
+	assert_false(profile.record_run("halcyon_labs", {"round": 0, "kills": 0}))
+	assert_false(FileAccess.file_exists(PATH), "nothing to save")

@@ -18,6 +18,7 @@ var _scene: SceneMultiplayer
 var _display_name: String = "Survivor"
 var _level: int = 1
 var _levels: Dictionary[int, int] = {}
+var _names: Dictionary[int, String] = {}
 var _accepted: Dictionary[int, bool] = {}
 var _rejected: Dictionary[int, bool] = {}
 
@@ -43,13 +44,18 @@ func _exit_tree() -> void:
 	if _scene == null:
 		return
 	if _scene.auth_callback == _receive_auth:
-		_scene.auth_callback = Callable()
+		# Never an empty callback: that would admit a peer with no hello while sessions swap.
+		_scene.auth_callback = Handshake._ignore_auth
 	if _scene.peer_authenticating.is_connected(_on_peer_authenticating):
 		_scene.peer_authenticating.disconnect(_on_peer_authenticating)
 	if _scene.peer_disconnected.is_connected(_forget_peer):
 		_scene.peer_disconnected.disconnect(_forget_peer)
 	if _scene.peer_authentication_failed.is_connected(_forget_peer):
 		_scene.peer_authentication_failed.disconnect(_forget_peer)
+
+
+static func _ignore_auth(_peer_id: int, _packet: PackedByteArray) -> void:
+	pass
 
 
 func _on_peer_authenticating(peer_id: int) -> void:
@@ -100,8 +106,11 @@ func _receive_hello(peer_id: int, data: Array) -> void:
 		if not data[4] is float or not is_finite(data[4]):
 			return
 		_levels[peer_id] = clampi(int(data[4]), 1, 50)
+		_names[peer_id] = (
+			str(data[3]).strip_edges().left(24) if not str(data[3]).strip_edges().is_empty() else "Survivor"
+		)
 		_accepted[peer_id] = true
-		_send(peer_id, ["accepted"])
+		_send(peer_id, ["accepted", String(Net.place)])
 		_scene.complete_auth(peer_id)
 		accepted.emit(peer_id)
 
@@ -112,8 +121,8 @@ func _reject(peer_id: int, reason: Net.RefusalReason, remote_protocol: int, deta
 
 
 func _receive_reply(data: Array) -> void:
-	if data == ["accepted"]:
-		_scene.complete_auth(1)
+	if data.size() == 2 and data[0] == "accepted":
+		_accept_place(StringName(str(data[1])))
 		return
 	if data.size() != 5 or data[0] != "refused":
 		return
@@ -172,6 +181,17 @@ func _refusal_text(client_protocol: int, server_protocol: int, details: Dictiona
 	return "Cannot join this server."
 
 
+## A client that loaded another place than the server's switches before its player spawns.
+## Peers started outside the menu (tools, tests) have no place and always stay.
+func _accept_place(server_place: StringName) -> void:
+	var local: bool = multiplayer == Net.multiplayer
+	if local and Net.place != &"" and server_place != &"" and server_place != Net.place:
+		Log.info(&"net", &"join_switches_place", {"from": String(Net.place), "to": String(server_place)})
+		Net.go_to(server_place)
+		return
+	_scene.complete_auth(1)
+
+
 func _send(peer_id: int, data: Array) -> void:
 	_scene.send_auth(peer_id, JSON.stringify(data).to_utf8_buffer())
 
@@ -180,7 +200,13 @@ func player_level(peer_id: int) -> int:
 	return _level if peer_id == multiplayer.get_unique_id() else _levels.get(peer_id, 1)
 
 
+## The name a player chose for their character, as accepted in the hello.
+func player_name(peer_id: int) -> String:
+	return _display_name if peer_id == multiplayer.get_unique_id() else _names.get(peer_id, "Survivor")
+
+
 func _forget_peer(peer_id: int) -> void:
 	_levels.erase(peer_id)
+	_names.erase(peer_id)
 	_accepted.erase(peer_id)
 	_rejected.erase(peer_id)
