@@ -302,7 +302,7 @@ func check_squad() -> void:
 	if squad.is_empty():
 		return
 	for player: Player in squad:
-		if player.is_alive():
+		if player.is_alive() or player.can_self_revive():
 			return
 	_end_match(false)
 
