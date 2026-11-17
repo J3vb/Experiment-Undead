@@ -12,6 +12,7 @@ func after_each() -> void:
 
 func test_downed_controls_and_dead_movement() -> void:
 	assert_eq(Net.host(24647), OK)
+	var friend: Node = await TwoPeers.add_friend(self, 24647)
 	var player: Player = PLAYER.instantiate() as Player
 	add_child_autofree(player)
 	player.set_physics_process(false)
@@ -39,3 +40,4 @@ func test_downed_controls_and_dead_movement() -> void:
 	player.apply_frame(player.local_input.sample(1), 1.0)
 	assert_eq(player.position, dead_position)
 	assert_false(player.visible)
+	TwoPeers.remove_friend(friend)

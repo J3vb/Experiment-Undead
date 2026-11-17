@@ -152,3 +152,12 @@ func test_a_client_cannot_deploy() -> void:
 func test_the_hub_never_starts_waves() -> void:
 	server._try_start()
 	assert_eq(server.director.phase, WaveDirector.Phase.IDLE)
+
+
+func test_a_peer_change_that_lands_after_the_hub_closed_does_nothing() -> void:
+	var vote: DeployVote = server.deploy_vote
+	vote.place = &"match"
+	server.remove_child(vote)
+	vote._on_peers_changed()
+	assert_engine_error_count(0, "a hub closing under a deferred peer change raises no script error")
+	vote.free()

@@ -74,6 +74,18 @@ func test_slider_writes_the_scaled_value_and_shows_a_percent() -> void:
 	assert_eq((slider.get_node("../Number") as Label).text, "75 %")
 
 
+func test_number_row_saves_a_whole_number() -> void:
+	var row: SettingData = _row(&"network", &"last_port", &"number", "hint")
+	row.min_value = 1.0
+	row.max_value = 64535.0
+	row.step = 1.0
+	var spin: SpinBox = _page([row] as Array[SettingData]).control_for(&"last_port") as SpinBox
+	assert_eq(spin.value, float(Settings.get_value(&"network", &"last_port")))
+	spin.value = 24690.0
+	assert_eq(Settings.get_value(&"network", &"last_port"), 24690)
+	assert_true(Settings.get_value(&"network", &"last_port") is int)
+
+
 func test_option_values_save_typed_values() -> void:
 	var row: SettingData = _row(&"graphics", &"max_fps", &"choice", "hint")
 	row.options = PackedStringArray(["60", "Unlimited"])

@@ -109,6 +109,13 @@ func _make_control(row: SettingData) -> Control:
 			option.set_item_disabled(index, true)
 		option.item_selected.connect(func(index: int) -> void: _write(row, _choice_value(row, index)))
 		return option
+	if row.kind == &"number":
+		var spin: SpinBox = SpinBox.new()
+		spin.min_value = row.min_value
+		spin.max_value = row.max_value
+		spin.step = maxf(row.step, 1.0)
+		spin.value_changed.connect(func(value: float) -> void: _write(row, int(value)))
+		return spin
 	var check: CheckBox = CheckBox.new()
 	check.toggled.connect(func(value: bool) -> void: _write(row, value))
 	return check
@@ -167,6 +174,8 @@ func refresh() -> void:
 			number.text = _number_text(row, shown)
 		elif control is OptionButton:
 			(control as OptionButton).select(_choice_index(row, value))
+		elif control is SpinBox:
+			(control as SpinBox).set_value_no_signal(float(value))
 		else:
 			var check: CheckBox = control as CheckBox
 			check.set_pressed_no_signal(bool(value))

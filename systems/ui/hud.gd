@@ -253,7 +253,7 @@ func _on_power_up_collected(_collector: Player, power_up: PowerUpData) -> void:
 
 func _on_player_revived(player: Player) -> void:
 	if player == _player:
-		_flash_center("REVIVED" if Net.is_online() else "SECOND WIND", 2.0)
+		_flash_center("REVIVED" if Net.is_coop() else "SECOND WIND", 2.0)
 		_drop_lost_serums(player)
 
 

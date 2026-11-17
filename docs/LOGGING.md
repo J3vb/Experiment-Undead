@@ -98,6 +98,11 @@ The server also prints every warning and error to stdout as
 | `net.deploy_refused` | warn | The hub's deploy vote or `deploy()` was refused (`place`, `reason` or `hub`): an unknown place id on a deploy board, or a deploy outside the hub. A board with a typo in `place` |
 | `net.place_change_kicked` | warn | A client was sent to another place but had not left after `Net.CONNECT_TIMEOUT`, so the server dropped it (`peer`). It never got the order: check the network |
 | `net.place_changed` | info | The server changed place (`place`, `players` sent along) |
+| `net.port_busy` | warn | Enter world could not open the world's port (`port`), so the world runs offline and friends cannot join. Another game or server holds it: change the port in Settings > Network |
+| `net.upnp_opened` | info | The router opened the world's game and info ports (`port`) for an hour; renewed every 50 minutes while the game runs |
+| `net.upnp_failed` | warn | The router could not open the world's ports (`port`, `reason`: `no_router` = no UPnP router answered, `failed` = it refused the mapping). Friends on the same network can still join; internet friends need the ports opened by hand |
+| `net.upnp_cgnat` | warn | The router opened the ports but its internet address is private or provider-shared (100.64.0.0/10): internet friends cannot reach this world (`port`) |
+| `net.coop_started` / `coop_ended` | info | The first friend joined this world, or the last one left (`peers`): the solo or co-op rules now apply (`Net.is_coop()`) |
 | `net.go_to_place` | info | This peer loads another place (`place`, `online`) |
 | `net.join_switches_place` | info | A joining client loaded another place than the server's and switches before spawning (`from`, `to`) |
 | `net.hit_claim_rejected` | warn | Server refused a client's hit or gravity well claim (`peer`, `reason`): `player_not_alive`, `zombie_not_alive`, `hit_out_of_bounds`, `zone_missing`, `claims_too_fast`, `well_out_of_bounds`, `well_wrong_weapon` (well or orb request named a gun whose `effect` is not WELL: a mismatched build or a cheat). At most one per second |

@@ -54,13 +54,13 @@ func _watch_weapon(weapon: Weapon) -> void:
 
 ## Called from the trace so misses also produce a tracer out to maximum range.
 func record_trace(weapon: Weapon, point: Vector3) -> void:
-	if weapon.shooter.is_multiplayer_authority() and not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
+	if weapon.shooter.is_multiplayer_authority() and Net.is_coop(multiplayer):
 		_points.append(point)
 
 
 ## Each real hit of the trace (misses emit nothing), with its kind decided by the shooter.
 func _on_traced(point: Vector3, _normal: Vector3, kind: Impact.Kind) -> void:
-	if not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
+	if Net.is_coop(multiplayer):
 		_hits.append(point)
 		_kinds.append(kind)
 
@@ -72,7 +72,7 @@ func _on_fired(weapon: Weapon) -> void:
 	_points = PackedVector3Array()
 	_hits = PackedVector3Array()
 	_kinds = PackedByteArray()
-	if multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
+	if not Net.is_coop(multiplayer):
 		return
 	var muzzle: Node3D = _muzzles.get(weapon)
 	var origin: Vector3 = muzzle.global_position if muzzle else weapon.camera.global_position

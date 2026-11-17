@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"network"
+section = &"network"
+key = &"last_port"
+label = "World port"
+hint = "The port friends join on. Change it only if 7777 is taken. The next port 1000 higher is used for the server list."
+kind = &"number"
+min_value = 1.0
+max_value = 64535.0
+step = 1.0
+order = 20

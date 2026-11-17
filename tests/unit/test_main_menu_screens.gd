@@ -52,9 +52,9 @@ func test_settings_opens_through_the_router_with_fade_and_back_restores_focus() 
 	assert_true(menu.settings_button.has_focus())
 
 
-func test_character_opens_solo_profile_and_close_restores_menu_focus() -> void:
-	menu.character_button.grab_focus()
-	menu.character_button.pressed.emit()
+func test_loadout_opens_solo_profile_and_close_restores_menu_focus() -> void:
+	menu.loadout_button.grab_focus()
+	menu.loadout_button.pressed.emit()
 	assert_eq(UI.top(), &"character")
 	var screen: CharacterScreen = _top_screen() as CharacterScreen
 	assert_eq(screen.profile.id, &"solo")
@@ -62,15 +62,15 @@ func test_character_opens_solo_profile_and_close_restores_menu_focus() -> void:
 	assert_true(screen.is_ancestor_of(get_viewport().gui_get_focus_owner()))
 	screen.closed.emit()
 	assert_eq(UI.top(), &"")
-	assert_true(menu.character_button.has_focus())
+	assert_true(menu.loadout_button.has_focus())
 	assert_true(screen.get_parent().is_queued_for_deletion())
 
 
-func test_character_owns_cancel_and_only_one_screen_opens() -> void:
-	menu.character_button.grab_focus()
-	menu.character_button.pressed.emit()
+func test_loadout_owns_cancel_and_only_one_screen_opens() -> void:
+	menu.loadout_button.grab_focus()
+	menu.loadout_button.pressed.emit()
 	var screen: CharacterScreen = _top_screen() as CharacterScreen
-	menu.character_button.pressed.emit()
+	menu.loadout_button.pressed.emit()
 	assert_eq(UI._stack.size(), 1, "a second press opens nothing")
 	var cancel: InputEventAction = InputEventAction.new()
 	cancel.action = &"ui_cancel"
@@ -79,16 +79,16 @@ func test_character_owns_cancel_and_only_one_screen_opens() -> void:
 	assert_eq(_top_screen(), screen, "Character screen receives its own back input")
 
 
-func test_character_failed_save_needs_a_second_back() -> void:
-	menu.character_button.grab_focus()
-	menu.character_button.pressed.emit()
+func test_loadout_failed_save_needs_a_second_back() -> void:
+	menu.loadout_button.grab_focus()
+	menu.loadout_button.pressed.emit()
 	var screen: CharacterScreen = _top_screen() as CharacterScreen
 	screen.profile.id = &"test_main_menu_missing/profile"
 	screen._close()
 	assert_eq(UI.top(), &"character", "a failed save keeps the screen open")
 	screen._close()
 	assert_eq(UI.top(), &"")
-	assert_true(menu.character_button.has_focus())
+	assert_true(menu.loadout_button.has_focus())
 
 
 func test_pushed_screen_draws_above_the_menu_and_takes_the_mouse() -> void:
@@ -98,8 +98,8 @@ func test_pushed_screen_draws_above_the_menu_and_takes_the_mouse() -> void:
 	assert_gt((screen.get_parent() as CanvasLayer).layer, (menu.get_node("Screens") as CanvasLayer).layer)
 	await wait_process_frames(2)
 	var motion: InputEventMouseMotion = InputEventMouseMotion.new()
-	motion.position = menu.play_button.get_global_rect().get_center()
+	motion.position = menu.enter_button.get_global_rect().get_center()
 	motion.global_position = motion.position
 	get_viewport().push_input(motion)
 	await wait_process_frames(1)
-	assert_ne(get_viewport().gui_get_hovered_control(), menu.play_button, "the menu under a screen gets no mouse")
+	assert_ne(get_viewport().gui_get_hovered_control(), menu.enter_button, "the menu under a screen gets no mouse")

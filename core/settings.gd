@@ -27,7 +27,7 @@ const DEFAULTS: Dictionary = {
 		&"shake_hits": 1.0,
 		&"flash_reduction": false,
 	},
-	&"network": {&"last_address": "", &"last_port": 7777},
+	&"network": {&"last_address": "", &"last_port": 7777, &"open_to_friends": true, &"upnp": true},
 }
 ## Min and max of float options that are not 0 to 1.
 const RANGES: Dictionary = {
@@ -123,7 +123,8 @@ func _normalize(section: StringName, key: StringName, value: Variant) -> Variant
 		return fallback
 	var normalized: Variant = maxf(float(value), 0.0)
 	if key == &"last_port":
-		normalized = clampi(int(value), 1, 65535)
+		# The info port (game port + 1000) must fit too.
+		normalized = clampi(int(value), 1, 64535)
 	elif section == &"audio" or section == &"comfort":
 		normalized = clampf(float(value), 0.0, 1.0)
 	elif key == &"fov":

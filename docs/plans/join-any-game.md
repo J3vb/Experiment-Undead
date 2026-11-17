@@ -1,6 +1,6 @@
 # Plan: Your own world, open to friends, and a server browser
 
-Status: Approved
+Status: Building
 Roadmap: F-66
 Phase: P7
 Size: L
