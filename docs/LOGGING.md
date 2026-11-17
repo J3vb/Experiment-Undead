@@ -102,6 +102,8 @@ The server also prints every warning and error to stdout as
 | `net.upnp_opened` | info | The router opened the world's game and info ports (`port`) for an hour; renewed every 50 minutes while the game runs |
 | `net.upnp_failed` | warn | The router could not open the world's ports (`port`, `reason`: `no_router` = no UPnP router answered, `failed` = it refused the mapping). Friends on the same network can still join; internet friends need the ports opened by hand |
 | `net.upnp_cgnat` | warn | The router opened the ports but its internet address is private or provider-shared (100.64.0.0/10): internet friends cannot reach this world (`port`) |
+| `net.info_port_busy` | warn | The server browser info port (game port + 1000) is taken by another program: the world runs but browsers cannot see it (`port`) |
+| `net.info_bad_packet` | warn | A packet on the info port was not a server browser query; at most one line a second (`source`) |
 | `net.coop_started` / `coop_ended` | info | The first friend joined this world, or the last one left (`peers`): the solo or co-op rules now apply (`Net.is_coop()`) |
 | `net.go_to_place` | info | This peer loads another place (`place`, `online`) |
 | `net.join_switches_place` | info | A joining client loaded another place than the server's and switches before spawning (`from`, `to`) |

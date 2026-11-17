@@ -9,7 +9,7 @@ extends Resource
 @export var label: String = ""
 ## One line under the row that says what the option does.
 @export var hint: String = ""
-## toggle, slider, choice or number (a whole number typed or stepped, like a port).
+## toggle, slider, choice, number (a whole number typed or stepped, like a port) or text.
 @export var kind: StringName = &"toggle"
 @export var min_value: float = 0.0
 @export var max_value: float = 1.0

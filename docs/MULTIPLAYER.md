@@ -32,7 +32,7 @@ already reads `InputFrame`s, so the server could replay them.
   (clients change scene to it; the dedicated server adds it next to itself).
 - **Joining.** The client opens its connection inside `GameSession._ready()`,
   after the map exists, so spawns from the server never arrive early.
-- **One match per server** until the town (P9). Port 7777 UDP.
+- **One match per server** until the town (P9). Port 7777 UDP, plus the server browser info port (game port + 1000, so 8777 UDP).
 - **No interpolation buffer yet.** Positions sync at the physics rate (60 Hz)
   and physics interpolation smooths the rest. Add a buffer only if remote
   players look jittery in a play-test.
@@ -112,7 +112,7 @@ round 20 (the P7 exit test).
 ## Running it locally
 
 ```bash
-# Dedicated server on port 7777
+# Dedicated server on port 7777 (browsers ask it on 8777; EU_SERVER_NAME names it)
 godot --headless --path . res://systems/net/dedicated_server.tscn -- --port=7777
 # A client that joins it (or start the game and pass the same argument)
 godot --path . -- --join=127.0.0.1:7777

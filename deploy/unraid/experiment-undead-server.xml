@@ -14,6 +14,8 @@
   <ExtraParams>--user 99:100 --stop-timeout=30</ExtraParams>
   <PostArgs/>
   <Config Name="Game port" Target="7777" Default="7777" Mode="udp" Description="UDP port players connect to. Forward it on your router for players outside your network." Type="Port" Display="always" Required="true" Mask="false">7777</Config>
+  <Config Name="Server browser port" Target="8777" Default="8777" Mode="udp" Description="UDP port the in-game server browser asks for the name and player count. Always the game port + 1000. Forward it next to the game port." Type="Port" Display="always" Required="false" Mask="false">8777</Config>
   <Config Name="Data" Target="/data" Default="/mnt/user/appdata/experiment-undead-server" Mode="rw" Description="Server saves, config and logs." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/experiment-undead-server</Config>
   <Config Name="Max players" Target="EU_MAX_PLAYERS" Default="8" Mode="" Description="1 to 8." Type="Variable" Display="always" Required="false" Mask="false">8</Config>
+  <Config Name="Server name" Target="EU_SERVER_NAME" Default="Dedicated server" Mode="" Description="The name players see in the server browser. Up to 32 letters." Type="Variable" Display="always" Required="false" Mask="false">Dedicated server</Config>
 </Container>

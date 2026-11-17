@@ -116,6 +116,12 @@ func _make_control(row: SettingData) -> Control:
 		spin.step = maxf(row.step, 1.0)
 		spin.value_changed.connect(func(value: float) -> void: _write(row, int(value)))
 		return spin
+	if row.kind == &"text":
+		var field: LineEdit = LineEdit.new()
+		field.max_length = int(row.max_value)
+		field.text_submitted.connect(func(text: String) -> void: _write(row, text))
+		field.focus_exited.connect(func() -> void: _write(row, field.text))
+		return field
 	var check: CheckBox = CheckBox.new()
 	check.toggled.connect(func(value: bool) -> void: _write(row, value))
 	return check
@@ -176,6 +182,9 @@ func refresh() -> void:
 			(control as OptionButton).select(_choice_index(row, value))
 		elif control is SpinBox:
 			(control as SpinBox).set_value_no_signal(float(value))
+		elif control is LineEdit:
+			if not control.has_focus():
+				(control as LineEdit).text = str(value)
 		else:
 			var check: CheckBox = control as CheckBox
 			check.set_pressed_no_signal(bool(value))

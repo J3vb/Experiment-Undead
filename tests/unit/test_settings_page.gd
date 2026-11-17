@@ -86,6 +86,17 @@ func test_number_row_saves_a_whole_number() -> void:
 	assert_true(Settings.get_value(&"network", &"last_port") is int)
 
 
+func test_text_row_saves_on_enter_and_caps_the_length() -> void:
+	var row: SettingData = _row(&"network", &"world_name", &"text", "hint")
+	row.max_value = 32.0
+	var field: LineEdit = _page([row] as Array[SettingData]).control_for(&"world_name") as LineEdit
+	assert_eq(field.text, "Lantern Post")
+	assert_eq(field.max_length, 32)
+	field.text = "Night shift"
+	field.text_submitted.emit(field.text)
+	assert_eq(Settings.get_value(&"network", &"world_name"), "Night shift")
+
+
 func test_option_values_save_typed_values() -> void:
 	var row: SettingData = _row(&"graphics", &"max_fps", &"choice", "hint")
 	row.options = PackedStringArray(["60", "Unlimited"])

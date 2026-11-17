@@ -29,6 +29,8 @@ func _ready() -> void:
 		push_error("Could not open UDP port %d: %s" % [port, error_string(err)])
 		get_tree().quit(1)
 		return
+	var shown_name: String = OS.get_environment("EU_SERVER_NAME")
+	Net.info.start(port, shown_name if not shown_name.is_empty() else "Dedicated server")
 	multiplayer.peer_connected.connect(func(id: int) -> void: print("Player connected: %d" % id))
 	multiplayer.peer_disconnected.connect(func(id: int) -> void: print("Player left: %d" % id))
 	Net.place = start_place
