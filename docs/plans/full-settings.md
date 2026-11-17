@@ -286,9 +286,12 @@ prompt (after step 2) measures all four presets at the four test spots.
 - Build: text size (root `content_scale_factor`, 0.8 to 1.5, applied by the
   UI autoload); hold or toggle for aim, sprint and crouch in LocalInput
   (toggle flips on press, clears on death and when the match ends); reduce
-  motion (settings and pause fades skip the 12 px slide). Row for the HUD
-  thread's `accessibility/damage_numbers` ("off", "crits", "all"; labels
-  Off, Crits only, All; that thread adds the DEFAULTS key).
+  motion (settings and pause fades skip the 12 px slide). Row for
+  `accessibility/damage_numbers` ("off", "crits", "all"; labels Off, Crits
+  only, All) only if that key is already in Settings.DEFAULTS on main; it
+  is supplied by the damage numbers work (step 2 of the "level-up, damage
+  numbers and loading" thread). If it has not merged yet, the row is left
+  out and that work adds its own .tres file when it lands.
 - Files: core/ui.gd, systems/input/local_input.gd, systems/ui/settings_screen.gd,
   systems/ui/pause_screen.gd, content/settings/*.tres,
   tests/unit/test_local_input.gd, tests/unit/test_ui.gd (or the router test file).
@@ -301,10 +304,15 @@ prompt (after step 2) measures all four presets at the four test spots.
 
 - Build: head bob and weapon bob and sway scale the camera and viewmodel
   bob; sprint FOV toggle; damage effects scale the damage vignette; centre
-  dot shows a dot in the crosshair; rows for the game feel thread's shake
-  and flash reduction keys; "Comfort preset" button writes the doc's Comfort
+  dot shows a dot in the crosshair; rows for `comfort/shake_own_gun`,
+  `comfort/shake_hits` and `comfort/flash_reduction` only if those keys are
+  already in Settings.DEFAULTS on main (supplied by step 2 of the "game feel
+  and death screen" thread; if not merged yet, that work adds the rows when
+  it lands); "Comfort preset" button writes the doc's Comfort
   column (shake 25%, head bob 0, weapon bob 50%, sprint FOV off, damage 50%,
-  flash reduction on, centre dot on). Visual only: bullet direction never changes (test).
+  flash reduction on, centre dot on); preset entries for keys not yet in
+  DEFAULTS are skipped, because `Settings.set_value()` ignores unknown keys
+  (tested). Visual only: bullet direction never changes (test).
 - Files: systems/player/player_camera.gd, systems/weapons/weapon_holder.gd,
   systems/ui/hud.gd, systems/ui/crosshair.gd,
   core/settings.gd (comfort preset values), content/settings/*.tres,
