@@ -114,6 +114,8 @@ static func _shared_meshes() -> void:
 	if _mark_mesh:
 		return
 	_flesh_mesh = _quad(0.04, BLOOD_COLOR, true)
+	# Lit, so blood stays dark red-brown under bright lights (look-rules: never bright red).
+	(_flesh_mesh.material as StandardMaterial3D).shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
 	_surface_mesh = _quad(0.04, Color(0.55, 0.5, 0.45), true)
 	_mark_mesh = _quad(0.07, Color(0.03, 0.03, 0.03), false)
 

@@ -1,4 +1,4 @@
-## Blood pools reuse the oldest of at most 24 decals, share one texture,
+## Blood pools reuse the oldest of at most 24 quads, share one mesh,
 ## fade out over their last seconds and appear under every falling zombie.
 extends GutTest
 
@@ -23,14 +23,14 @@ func test_twenty_fifth_pool_reuses_the_oldest() -> void:
 	assert_same(reused, first)
 	assert_eq(_parent.get_child_count(), BloodPool.MAX_ALIVE)
 	assert_almost_eq(reused.global_position.z, 9.0, 0.001)
-	assert_same(reused.texture_albedo, (_parent.get_child(1) as BloodPool).texture_albedo, "texture is shared")
+	assert_same(reused.mesh, (_parent.get_child(1) as BloodPool).mesh, "mesh and material are shared")
 
 
 func test_pool_fades_and_hides_after_its_lifetime() -> void:
 	var pool: BloodPool = BloodPool.spawn(_parent, Vector3.ZERO)
 	pool._process(BloodPool.LIFETIME - BloodPool.FADE_TIME * 0.5)
 	assert_true(pool.visible)
-	assert_almost_eq(pool.modulate.a, 0.5, 0.01, "half faded in the last seconds")
+	assert_almost_eq(pool.transparency, 0.5, 0.01, "half faded in the last seconds")
 	pool._process(BloodPool.FADE_TIME)
 	assert_false(pool.visible)
 	assert_false(pool.is_processing())
