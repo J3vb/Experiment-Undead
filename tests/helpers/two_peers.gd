@@ -8,6 +8,7 @@ const FIRST_PORT: int = 24800
 const PORT_COUNT: int = 200
 
 static var _next: int = 0
+static var _admit: Callable
 
 
 ## A fresh localhost port, different from the last PORT_COUNT - 1 calls in this run.
@@ -71,3 +72,29 @@ static func players(root: Node) -> Array[Player]:
 		if child is Player:
 			out.append(child as Player)
 	return out
+
+
+## Connects a friend side to the server already on the root multiplayer (Net.host), so the root
+## plays by the co-op rules. Both sides admit without a Handshake. Undo with remove_friend().
+static func add_friend(parent: Node, port: int) -> Node:
+	var api: SceneMultiplayer = parent.get_tree().get_multiplayer() as SceneMultiplayer
+	_admit = func(peer_id: int) -> void: api.complete_auth(peer_id)
+	api.auth_callback = func(_peer_id: int, _data: PackedByteArray) -> void: pass
+	api.peer_authenticating.connect(_admit)
+	var friend: Node = make_side(parent, "Friend")
+	var friend_api: SceneMultiplayer = friend.multiplayer as SceneMultiplayer
+	friend_api.auth_callback = func(_peer_id: int, _data: PackedByteArray) -> void: pass
+	friend_api.peer_authenticating.connect(func(peer_id: int) -> void: friend_api.complete_auth(peer_id))
+	join(friend, port)
+	var until: int = Time.get_ticks_msec() + 5000
+	while api.get_peers().is_empty() and Time.get_ticks_msec() < until:
+		await parent.get_tree().process_frame
+	return friend
+
+
+static func remove_friend(friend: Node) -> void:
+	var api: SceneMultiplayer = friend.get_tree().get_multiplayer() as SceneMultiplayer
+	close_side(friend)
+	if api.peer_authenticating.is_connected(_admit):
+		api.peer_authenticating.disconnect(_admit)
+	api.auth_callback = Callable()

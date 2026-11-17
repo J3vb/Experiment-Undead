@@ -108,6 +108,10 @@ func _set_local(local: bool) -> void:
 
 func spawn(p_session: GameSession, loadout: Array[WeaponData]) -> void:
 	session = p_session
+	if multiplayer.multiplayer_peer is OfflineMultiplayerPeer and not session.profile_id.is_empty():
+		var profile: CharacterProfile = CharacterProfile.load_or_create(session.profile_id)
+		var equipped: Variant = profile.to_dict().get("loadout", {})
+		gear_rig.apply(LookBuilder.from_equipped(equipped if equipped is Dictionary else {}))
 	Events.player_spawned.emit(self)
 	for data: WeaponData in loadout:
 		weapons.give(data)
