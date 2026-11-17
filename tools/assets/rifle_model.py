@@ -1,4 +1,4 @@
-"""AR-17 rifle: shaped upper and lower receiver, free-float handguard, curved taped magazine, Oriel red dot.
+"""AR-17 rifle: tan skeleton stock and grip, black quad-rail handguard, birdcage hider, taped mag, Oriel red dot.
 
 Static parts join into `Receiver`. `Magazine`, `Bolt`, `Barrel` (with `MuzzleBrake`),
 `SightGlass` and the `ReticleMount` marker stay separate nodes for code. Gun forward is Blender +Y.
@@ -20,10 +20,10 @@ def upper(m, metal, black):
         "Receiver",
         [(-0.17, -0.004), (0.17, -0.004), (0.17, 0.046), (-0.152, 0.046), (-0.17, 0.034)],
         0.05,
-        metal,
+        black,
         bevel=0.002,
     )
-    g.cut(receiver, [g.slab("PortCut", g.rounded(-0.03, 0.002, 0.065, 0.034, 0.004), 0.018, metal, x=0.028)])
+    g.cut(receiver, [g.slab("PortCut", g.rounded(-0.03, 0.002, 0.065, 0.034, 0.004), 0.018, black, x=0.028)])
     parts = [
         g.slab("RailBase", [(-0.168, 0.046), (0.475, 0.046), (0.475, 0.051), (-0.168, 0.051)], 0.024, black),
         g.slab("RailTeeth", g.teeth(-0.165, 0.47, 0.051, 0.059), 0.021, black),
@@ -59,19 +59,22 @@ def upper(m, metal, black):
     return receiver
 
 
-def lower(m, metal, black):
-    """Lower with flared mag well, trigger guard, trigger, pistol grip, selector and pins."""
+def lower(m, metal, black, tan):
+    """Lower with flared mag well, trigger guard, trigger, tan finger-groove grip, selector and pins."""
     grip = [
         (-0.09, -0.048),
-        (-0.122, -0.048),
-        (-0.168, -0.152),
-        (-0.164, -0.166),
-        (-0.128, -0.166),
-        (-0.118, -0.152),
-        (-0.113, -0.13),
-        (-0.104, -0.114),
-        (-0.1, -0.094),
-        (-0.092, -0.078),
+        (-0.124, -0.048),
+        (-0.134, -0.06),
+        (-0.17, -0.152),
+        (-0.166, -0.168),
+        (-0.128, -0.168),
+        (-0.119, -0.154),
+        (-0.118, -0.136),
+        (-0.109, -0.126),
+        (-0.108, -0.106),
+        (-0.099, -0.096),
+        (-0.098, -0.08),
+        (-0.091, -0.07),
     ]
     guard = [
         (0.016, -0.05),
@@ -103,7 +106,7 @@ def lower(m, metal, black):
         g.slab(
             "WellFlare", [(0.018, -0.084), (0.118, -0.084), (0.12, -0.094), (0.016, -0.094)], 0.05, black, bevel=0.002
         ),
-        g.slab("Grip", grip, 0.032, black, bevel=0.005),
+        g.slab("Grip", grip, 0.032, tan, bevel=0.005),
         g.slab("TriggerGuard", guard, 0.012, black, bevel=0.0015),
         g.slab(
             "Trigger",
@@ -117,9 +120,9 @@ def lower(m, metal, black):
         parts.append(
             g.slab(
                 f"GripPanel{side}",
-                [(-0.118, -0.06), (-0.152, -0.14), (-0.135, -0.155), (-0.112, -0.1), (-0.104, -0.07)],
+                [(-0.122, -0.064), (-0.156, -0.144), (-0.14, -0.158), (-0.114, -0.1), (-0.106, -0.074)],
                 0.002,
-                m.material("GunMetalKnurledWorn", m.GUN_METAL, metallic=0.8, roughness=0.45),
+                m.material("TanKnurledWorn", m.TAN, roughness=0.85),
                 x=side * 0.0165,
             )
         )
@@ -140,62 +143,98 @@ def lower(m, metal, black):
     return parts
 
 
-def handguard(m, black, tan):
-    """Eight-sided free-float handguard with M-slots, a front sight and the exposed barrel."""
+def rail(name: str, y0: float, y1: float, angle: float, black):
+    """A toothed rail section on one flat of the handguard, turned `angle` about the barrel axis."""
+    part = g.slab(name, g.teeth(y0, y1, 0.0295, 0.04), 0.021, black)
+    part.rotation_euler = (0.0, angle, 0.0)
+    part.location = (0.0, 0.0, AXIS_Z)
+    return part
+
+
+def handguard(m, black):
+    """Black quad-rail handguard: long side slots, rail sections at the front, flip-up front sight."""
     flat = math.pi / 8
+    guard = g.lathe(
+        "Handguard",
+        [(0.03, 0.17), (0.033, 0.175), (0.033, 0.465), (0.03, 0.475)],
+        (0, 0, AXIS_Z),
+        black,
+        8,
+        turn=flat,
+    )
+    cuts = [g.lathe("GuardCore", [(0.025, 0.165), (0.025, 0.48)], (0, 0, AXIS_Z), black, 8, turn=flat)]
+    for i in range(3):
+        y = 0.2 + i * 0.062
+        cuts.append(g.slab(f"SlotCut{i}", g.rounded(y, 0.008, y + 0.05, 0.024, 0.006), 0.08, black))
+    g.cut(guard, cuts)
+    sight = g.slab("FrontSight", [(0.432, 0.059), (0.472, 0.059), (0.47, 0.068), (0.436, 0.068)], 0.018, black)
+    ears = []
+    for side in (-1, 1):
+        ear = g.slab(
+            f"SightEar{side}",
+            [(0.437, 0.066), (0.469, 0.066), (0.464, 0.104), (0.444, 0.104)],
+            0.003,
+            black,
+            x=side * 0.0065,
+        )
+        g.cut(ear, [g.slab("EarWindow", g.rounded(0.447, 0.071, 0.461, 0.098, 0.004), 0.04, black)])
+        ears.append(ear)
     parts = [
-        g.lathe(
-            "Handguard",
-            [(0.03, 0.17), (0.033, 0.175), (0.033, 0.465), (0.03, 0.475)],
-            (0, 0, AXIS_Z),
-            tan,
-            8,
-            turn=flat,
-        ),
+        guard,
+        rail("RailBottom", 0.38, 0.46, math.pi, black),
+        rail("RailLeft", 0.385, 0.46, -math.pi / 2, black),
+        rail("RailRight", 0.385, 0.46, math.pi / 2, black),
         g.lathe("BarrelNut", [(0.026, 0.165), (0.026, 0.172)], (0, 0, AXIS_Z), black, 16),
-        g.slab("FrontSight", [(0.44, 0.059), (0.47, 0.059), (0.47, 0.068), (0.445, 0.068)], 0.02, black, bevel=0.001),
+        sight,
+        *ears,
+        g.lathe("SightPost", [(0.0016, 0.066), (0.0012, 0.084)], (0, 0.454, 0), black, 6, axis="z"),
+        g.slab("SightHinge", [(0.462, 0.059), (0.474, 0.059), (0.474, 0.066), (0.462, 0.066)], 0.024, black),
         g.slab(
             "RearSight", [(-0.15, 0.059), (-0.12, 0.059), (-0.125, 0.068), (-0.15, 0.068)], 0.02, black, bevel=0.001
         ),
+        g.lathe("InnerBarrel", [(0.009, 0.17), (0.009, 0.475)], (0, 0, AXIS_Z), black, 12),
     ]
-    cuts = [g.lathe("GuardCore", [(0.025, 0.165), (0.025, 0.48)], (0, 0, AXIS_Z), tan, 8, turn=flat)]
-    for i in range(4):
-        y = 0.215 + i * 0.062
-        cuts.append(g.slab(f"SlotCut{i}", g.rounded(y, 0.009, y + 0.032, 0.023, 0.006), 0.08, tan))
-    g.cut(parts[0], cuts)
-    parts.append(g.lathe("InnerBarrel", [(0.009, 0.17), (0.009, 0.475)], (0, 0, AXIS_Z), black, 12))
     return parts
 
 
 def stock(m, metal, black, tan):
-    """Buffer tube, castle nut, six-position stock with cheek line, lever and rubber pad."""
+    """Buffer tube, castle nut, tan skeleton stock with an open triangle, lever and rubber pad."""
+    frame = g.slab(
+        "Stock",
+        [
+            (-0.25, 0.038),
+            (-0.3, 0.046),
+            (-0.398, 0.048),
+            (-0.402, -0.074),
+            (-0.386, -0.084),
+            (-0.372, -0.074),
+            (-0.26, -0.008),
+            (-0.25, 0.0),
+        ],
+        0.042,
+        tan,
+        bevel=0.004,
+    )
+    g.cut(
+        frame,
+        [
+            g.slab("StockWindow", [(-0.29, -0.006), (-0.383, -0.006), (-0.383, -0.06)], 0.06, tan),
+            g.slab("SlingSlot", g.rounded(-0.392, -0.06, -0.384, -0.03, 0.003), 0.06, tan),
+        ],
+    )
     return [
         g.lathe("BufferTube", [(0.0155, -0.17), (0.0155, -0.39)], (0, 0, 0.018), metal, 20),
         g.lathe("CastleNut", [(0.02, -0.175), (0.02, -0.188)], (0, 0, 0.018), black, 12),
-        g.slab(
-            "Stock",
-            [
-                (-0.255, 0.04),
-                (-0.395, 0.044),
-                (-0.4, -0.072),
-                (-0.385, -0.08),
-                (-0.35, -0.035),
-                (-0.3, -0.01),
-                (-0.255, -0.004),
-            ],
-            0.042,
-            tan,
-            bevel=0.004,
-        ),
-        g.slab("StockLever", [(-0.33, -0.02), (-0.27, -0.008), (-0.27, -0.002), (-0.33, -0.012)], 0.012, black),
+        frame,
+        g.slab("StockLever", [(-0.288, -0.014), (-0.262, -0.009), (-0.262, -0.003), (-0.288, -0.008)], 0.046, black),
         g.slab(
             "ButtPad",
-            [(-0.398, 0.046), (-0.414, 0.046), (-0.418, -0.075), (-0.403, -0.084), (-0.386, -0.08)],
+            [(-0.4, 0.05), (-0.414, 0.05), (-0.418, -0.075), (-0.403, -0.088), (-0.388, -0.084)],
             0.046,
             black,
             bevel=0.004,
         ),
-        g.lathe("SlingCup", [(0.007, 0.0), (0.007, 0.004)], (0.022, -0.29, 0.015), metal, 12, axis="x"),
+        g.lathe("SlingCup", [(0.007, 0.0), (0.007, 0.004)], (0.022, -0.22, 0.018), metal, 12, axis="x"),
     ]
 
 
@@ -216,19 +255,19 @@ def magazine(m, black, markings, receiver):
 
 
 def barrel(m, metal, black, receiver):
-    """Barrel node with a gas block step and a slotted flash hider as `MuzzleBrake`."""
+    """Barrel node with a gas block step and a birdcage flash hider as `MuzzleBrake`."""
     run = [(0.0095, 0.0), (0.0095, 0.03), (0.0105, 0.03), (0.0105, 0.05), (0.008, 0.055), (0.008, 0.11)]
     pipe = g.lathe("Barrel", run, (0, 0.475, AXIS_Z), metal, 16)
     m.attach(pipe, (0, 0.475, AXIS_Z), receiver)
-    hider = [(0.01, 0.108), (0.011, 0.112), (0.011, 0.145), (0.0095, 0.15)]
+    hider = [(0.0095, 0.108), (0.0115, 0.112), (0.0115, 0.148), (0.0105, 0.152)]
     brake = g.lathe("MuzzleBrake", hider, (0, 0.475, AXIS_Z), black, 16)
-    g.cut(
-        brake,
-        [
-            g.lathe("BoreCut", [(0.0045, 0.575), (0.0045, 0.635)], (0, 0, AXIS_Z), black, 16),
-            g.slab("BrakePorts", g.rounded(0.594, AXIS_Z - 0.003, 0.615, AXIS_Z + 0.003, 0.002), 0.03, black),
-        ],
-    )
+    ports = []
+    for i in range(3):
+        port = g.slab(f"CagePort{i}", g.rounded(0.592, -0.0025, 0.62, 0.0025, 0.002), 0.03, black)
+        port.rotation_euler = (0.0, math.pi / 3 * i, 0.0)
+        port.location = (0.0, 0.0, AXIS_Z)
+        ports.append(port)
+    g.cut(brake, [g.lathe("BoreCut", [(0.0055, 0.575), (0.0055, 0.635)], (0, 0, AXIS_Z), black, 16), *ports])
     m.attach(brake, (0, 0.583, AXIS_Z), pipe)
 
 
@@ -240,7 +279,7 @@ def build(m) -> None:
     markings = m.material("Markings", m.MATTE_BLACK, roughness=0.7)
     receiver = upper(m, metal, black)
     logos = [g.marking(f"Logo{s}", (0.03, -0.074, 0.098, -0.05), s * 0.023, s, "logo", markings) for s in (-1, 1)]
-    m.join_into(receiver, lower(m, metal, black) + handguard(m, black, tan) + stock(m, metal, black, tan) + logos)
+    m.join_into(receiver, lower(m, metal, black, tan) + handguard(m, black) + stock(m, metal, black, tan) + logos)
     m.join_into(receiver, g.red_dot(m, -0.01, RAIL_TOP, EYE_Z, black, glass, markings, receiver))
     magazine(m, black, markings, receiver)
     barrel(m, metal, black, receiver)

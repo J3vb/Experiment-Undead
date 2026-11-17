@@ -85,3 +85,17 @@ def test_corvid_thumbhole_and_flutes_are_carved():
     shoulder = hit("Barrel", (0.08, 0.22, 0.018), (-1, 0, 0))
     assert flute is not None and shoulder is not None
     assert flute.x < shoulder.x - 0.001
+
+
+def test_ar17_concept_shapes_skeleton_stock_quad_rail_and_open_front_sight():
+    models.reset_scene()
+    models.MODELS["rifle_ar"][1]()
+    bpy.context.view_layer.update()
+    assert hit("Receiver", (0.08, -0.36, -0.03), (-1, 0, 0)) is None, "skeleton stock has an open triangle"
+    assert hit("Receiver", (0.08, -0.36, 0.03), (-1, 0, 0)) is not None, "stock top bar stays solid"
+    for direction in ((0, 0, 1), (1, 0, 0), (-1, 0, 0)):
+        origin = Vector((0, 0.42, 0.016)) - Vector(direction) * 0.1
+        surface = hit("Receiver", origin, direction)
+        assert surface is not None and (surface - Vector((0, 0.42, 0.016))).length > 0.036, direction
+    assert hit("Receiver", (0, 0.4, 0.09), (0, 1, 0)) is None, "front sight window leaves the eye line open"
+    assert hit("Receiver", (0, 0.4, 0.075), (0, 1, 0)) is not None, "front sight post rises into the window"
