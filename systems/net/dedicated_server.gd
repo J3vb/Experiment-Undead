@@ -33,7 +33,7 @@ func _ready() -> void:
 	multiplayer.peer_disconnected.connect(func(id: int) -> void: print("Player left: %d" % id))
 	Net.place = start_place
 	Net.place_changed.connect(_swap_session, CONNECT_DEFERRED)
-	Events.game_over.connect(func(_stats: Dictionary) -> void: _return_later(&"game_over", RESULTS_GRACE))
+	Events.game_over.connect(_on_game_over)
 	multiplayer.peer_disconnected.connect(_on_peer_left)
 	session = _make_session(start_place)
 	get_tree().root.add_child.call_deferred(session)
@@ -62,10 +62,10 @@ func _exit_tree() -> void:
 
 func _make_session(place: StringName) -> GameSession:
 	var data: ScreenData = Content.get_item(UI.TYPE, place) as ScreenData
-	var next: GameSession = (load(data.scene) as PackedScene).instantiate() as GameSession
-	next.has_local_player = false
-	next.profile_id = &""
-	return next
+	var fresh: GameSession = (load(data.scene) as PackedScene).instantiate() as GameSession
+	fresh.has_local_player = false
+	fresh.profile_id = &""
+	return fresh
 
 
 ## Clients were already sent away, so the new session starts empty. Old and new
@@ -79,6 +79,10 @@ func _swap_session(place: StringName) -> void:
 	get_tree().root.add_child(session)
 
 
+func _on_game_over(_stats: Dictionary) -> void:
+	_return_later(&"game_over", RESULTS_GRACE)
+
+
 func _on_peer_left(_peer_id: int) -> void:
 	if multiplayer.get_peers().is_empty():
 		_return_later(&"empty", EMPTY_GRACE)
@@ -87,9 +91,9 @@ func _on_peer_left(_peer_id: int) -> void:
 ## Back to the start place with a fresh session, unless the place changed meanwhile or
 ## (for an empty server) someone came back. A server that starts in the match stays.
 func _return_later(reason: StringName, delay: float) -> void:
-	var from: int = session.get_instance_id()
+	var old_id: int = session.get_instance_id()
 	await get_tree().create_timer(delay).timeout
-	if session.get_instance_id() != from or Net.place == start_place:
+	if session.get_instance_id() != old_id or Net.place == start_place:
 		return
 	if reason == &"empty" and not multiplayer.get_peers().is_empty():
 		return
