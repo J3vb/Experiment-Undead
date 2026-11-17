@@ -214,3 +214,22 @@ func test_coachman_wall_buy_matches_the_layout_and_sells_for_900() -> void:
 	assert_eq(placement["area"], "mess_hall", "outside the Loading Dock")
 	assert_eq(placement["position"], [38.25, 1.4, 38.0])
 	assert_eq(int(placement["cost"]), wall.weapon.cost)
+
+
+func test_zombie_sized_body_walks_up_the_containment_ramp_into_the_labs() -> void:
+	var level: Level = await _load_map(true)
+	var body: CharacterBody3D = CharacterBody3D.new()
+	var shape: CollisionShape3D = CollisionShape3D.new()
+	var capsule: CapsuleShape3D = CapsuleShape3D.new()
+	capsule.radius = 0.35
+	capsule.height = 1.8
+	shape.shape = capsule
+	shape.position.y = 0.9
+	body.add_child(shape)
+	level.add_child(body)
+	body.global_position = Vector3(55.0, -1.0, 18.0)
+	for i: int in 120:
+		body.velocity = Vector3(-3.0, body.velocity.y - 0.3, 0.0)
+		body.move_and_slide()
+		await wait_physics_frames(1)
+	assert_lt(body.global_position.x, 51.0, "no lip where the ramp meets the Labs opening")
