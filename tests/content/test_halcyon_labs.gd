@@ -89,7 +89,11 @@ func test_spawn_points_follow_the_rules() -> void:
 	var level: Level = (load(MAP) as PackedScene).instantiate() as Level
 	add_child_autofree(level)
 	var points: Array[ZombieSpawnPoint] = _spawn_points(level)
-	assert_between(points.size(), 21, 28, "21 to 28 spawn points")
+	var coop: Array[ZombieSpawnPoint] = points.filter(func(p: ZombieSpawnPoint) -> bool: return p.min_players > 1)
+	assert_between(points.size() - coop.size(), 21, 28, "21 to 28 spawn points for any squad")
+	assert_eq(coop.size(), 4, "co-op points: 2 truck gaps, Mess Hall vent, Containment Wing vent")
+	for point: ZombieSpawnPoint in coop:
+		assert_eq(point.min_players, 3, "%s opens at 3 players" % point.name)
 	var start: Vector3 = level.get_player_spawn().origin
 	for area: StringName in AREAS:
 		var count: int = points.filter(func(p: ZombieSpawnPoint) -> bool: return p.area == area).size()
@@ -106,11 +110,11 @@ func test_only_start_area_spawn_points_are_active() -> void:
 	add_child_autofree(level)
 	assert_eq(level.open_areas, [&"loading_dock"] as Array[StringName])
 	var active: Array[Node] = get_tree().get_nodes_in_group(&"enemy_spawn")
-	assert_eq(active.size(), 4, "the four Loading Dock windows")
+	assert_eq(active.size(), 6, "the four Loading Dock windows and the two co-op truck gaps")
 	for node: Node in active:
 		assert_eq((node as ZombieSpawnPoint).area, &"loading_dock")
 	level.open_area(&"guard_post")
-	assert_eq(get_tree().get_nodes_in_group(&"enemy_spawn").size(), 6, "Guard Post windows join")
+	assert_eq(get_tree().get_nodes_in_group(&"enemy_spawn").size(), 8, "Guard Post windows join")
 
 
 func test_every_spawn_point_reaches_the_start_with_doors_open() -> void:
@@ -187,6 +191,10 @@ func test_things_that_move_or_vanish_are_not_baked() -> void:
 	for node: Node in planks:
 		var gi: int = (node as GeometryInstance3D).gi_mode
 		assert_ne(gi, GeometryInstance3D.GI_MODE_STATIC, "%s is not baked" % level.get_path_to(node))
+	var wreckage: Node = level.get_node("TruckWreckage")
+	assert_eq(wreckage.find_children("*", "CollisionObject3D", true, false).size(), 0, "wreckage is decoration only")
+	for node: Node in wreckage.find_children("*", "MeshInstance3D", true, false):
+		assert_ne((node as GeometryInstance3D).gi_mode, GeometryInstance3D.GI_MODE_STATIC, "wreckage vanishes in co-op")
 
 
 func test_ceiling_lights_stay_real_time() -> void:

@@ -157,6 +157,14 @@ func _wall() -> void:
 	wall.global_position = Vector3(-10, 0, 0)
 
 
+func test_coop_point_is_not_used_below_three_players() -> void:
+	var coop: ZombieSpawnPoint = _point(Vector3(40, 0, 0))
+	coop.min_players = 3
+	var normal: ZombieSpawnPoint = _point(Vector3(-40, 0, 0))
+	for i: int in 10:
+		assert_eq(spawner._pick_hidden_spot(10.0).get("marker", &""), normal.name)
+
+
 func test_no_hidden_spawn_means_retry() -> void:
 	var zombie: Zombie = _zombie(Vector3.ZERO)
 	assert_false(spawner.relocate(zombie, &"unreachable"), "no spawn points: no relocate")

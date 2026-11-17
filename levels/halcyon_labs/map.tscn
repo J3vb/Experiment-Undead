@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://systems/level/level.gd" id="level"]
 [ext_resource type="Script" path="res://systems/level/block.gd" id="block"]
 [ext_resource type="Script" path="res://systems/waves/zombie_spawn_point.gd" id="spawn"]
+[ext_resource type="Script" path="res://systems/level/coop_wreckage.gd" id="wreckage"]
 [ext_resource type="Environment" path="res://levels/looks/halcyon_interior.tres" id="look"]
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/blockout.tscn" id="blockout"]
 [ext_resource type="PackedScene" path="res://systems/effects/film_post.tscn" id="film"]
@@ -87,6 +88,10 @@ size = Vector3(0.6, 1.2, 1.2)
 
 [sub_resource type="BoxShape3D" id="wallbuy_area"]
 size = Vector3(0.6, 1.2, 2)
+
+[sub_resource type="BoxMesh" id="wreck_mesh"]
+size = Vector3(1.4, 0.9, 1.1)
+material = ExtResource("rust")
 
 [node name="HalcyonLabs" type="Node3D" node_paths=PackedStringArray("navigation_region", "player_spawn")]
 script = ExtResource("level")
@@ -651,6 +656,50 @@ script = ExtResource("spawn")
 area = &"coolant_tunnel"
 
 [node name="Ambience" parent="." instance=ExtResource("ambience")]
+
+[node name="CoopTruckGap1" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.5, 0.1, 62)
+script = ExtResource("spawn")
+area = &"loading_dock"
+min_players = 3
+
+[node name="CoopTruckGap2" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.5, 0.1, 62)
+script = ExtResource("spawn")
+area = &"loading_dock"
+min_players = 3
+
+[node name="CoopMessHallVent" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.1, 33)
+script = ExtResource("spawn")
+area = &"mess_hall"
+min_players = 3
+
+[node name="CoopContainmentVent" type="Marker3D" parent="ZombieSpawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68, -2.9, 24)
+script = ExtResource("spawn")
+area = &"containment_wing"
+min_players = 3
+
+[node name="TruckWreckage" type="Node3D" parent="."]
+script = ExtResource("wreckage")
+
+[node name="WreckWest" type="MeshInstance3D" parent="TruckWreckage"]
+transform = Transform3D(0.94, 0, 0.34, 0, 1, 0, -0.34, 0, 0.94, 31.9, 0.45, 61.2)
+mesh = SubResource("wreck_mesh")
+gi_mode = 2
+
+[node name="WreckEast" type="MeshInstance3D" parent="TruckWreckage"]
+transform = Transform3D(0.87, 0, -0.5, 0, 1, 0, 0.5, 0, 0.87, 36.1, 0.45, 61.3)
+mesh = SubResource("wreck_mesh")
+gi_mode = 2
+
+[node name="Fire" type="OmniLight3D" parent="TruckWreckage"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 1.4, 61.5)
+light_color = Color(1, 0.55, 0.2, 1)
+light_energy = 1.5
+light_bake_mode = 0
+omni_range = 5.0
 
 [node name="FilmPost" parent="." instance=ExtResource("film")]
 
