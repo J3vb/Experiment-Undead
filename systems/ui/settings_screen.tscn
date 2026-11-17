@@ -59,6 +59,12 @@ horizontal_scroll_mode = 0
 [node name="Page" type="VBoxContainer" parent="Margin/Box/Tabs/Audio"]
 script = ExtResource("settings_page")
 page = &"audio"
+[node name="Accessibility" type="ScrollContainer" parent="Margin/Box/Tabs"]
+follow_focus = true
+horizontal_scroll_mode = 0
+[node name="Page" type="VBoxContainer" parent="Margin/Box/Tabs/Accessibility"]
+script = ExtResource("settings_page")
+page = &"accessibility"
 [node name="Buttons" type="HBoxContainer" parent="Margin/Box"]
 theme_override_constants/separation = 24
 [node name="Revert" type="Button" parent="Margin/Box/Buttons"]

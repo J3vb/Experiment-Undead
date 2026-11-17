@@ -7,6 +7,14 @@ const DEFAULTS: Dictionary = {
 	&"aim": {&"fov": 110, &"mouse_sensitivity": 0.0022, &"ads_sensitivity_multiplier": 0.8, &"invert_y": false},
 	&"graphics": Graphics.DEFAULTS,
 	&"audio": {&"master_volume": 1.0, &"music_volume": 0.8, &"sfx_volume": 1.0},
+	&"accessibility":
+	{
+		&"text_scale": 1.0,
+		&"toggle_ads": false,
+		&"toggle_sprint": false,
+		&"toggle_crouch": true,
+		&"reduce_motion": false,
+	},
 	&"network": {&"last_address": "", &"last_port": 7777},
 }
 const AUDIO_BUSES: Dictionary = {&"master_volume": &"Master", &"music_volume": &"Music", &"sfx_volume": &"SFX"}
@@ -91,6 +99,8 @@ func _normalize(section: StringName, key: StringName, value: Variant) -> Variant
 		normalized = clampf(float(value), 0.0, 1.0)
 	elif key == &"fov":
 		normalized = clampi(int(value), 70, 120)
+	elif key == &"text_scale":
+		normalized = clampf(float(value), 0.8, 1.5)
 	elif key == &"ads_sensitivity_multiplier":
 		normalized = clampf(float(value), 0.2, 2.0)
 	elif key == &"mouse_sensitivity":

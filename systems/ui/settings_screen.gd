@@ -39,12 +39,14 @@ func _ready() -> void:
 		(%Tabs as TabContainer).get_tab_bar().grab_focus()
 
 
+## Fades in with a 12 px slide; reduce motion keeps only the fade.
 func _fade_in() -> void:
 	modulate.a = 0.0
-	position.x = 12.0
 	fade = create_tween().set_parallel(true)
 	fade.tween_property(self, "modulate:a", 1.0, 0.12)
-	fade.tween_property(self, "position:x", 0.0, 0.12)
+	if not Settings.get_value(&"accessibility", &"reduce_motion"):
+		position.x = 12.0
+		fade.tween_property(self, "position:x", 0.0, 0.12)
 
 
 func _input(event: InputEvent) -> void:

@@ -40,6 +40,14 @@ func test_defaults_for_missing_file() -> void:
 		&"aim": {&"fov": 110, &"mouse_sensitivity": 0.0022, &"ads_sensitivity_multiplier": 0.8, &"invert_y": false},
 		&"graphics": Graphics.DEFAULTS,
 		&"audio": {&"master_volume": 1.0, &"music_volume": 0.8, &"sfx_volume": 1.0},
+		&"accessibility":
+		{
+			&"text_scale": 1.0,
+			&"toggle_ads": false,
+			&"toggle_sprint": false,
+			&"toggle_crouch": true,
+			&"reduce_motion": false,
+		},
 		&"network": {&"last_address": "", &"last_port": 7777},
 	}
 	for section: StringName in expected:
