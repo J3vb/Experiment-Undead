@@ -121,3 +121,17 @@ and `perf.long_frames` only warn (exit 0); other warning lines are also listed.
 The event lists are constants at the top of `tools/soak/soak.gd`.
 The separate PR/manual Soak workflow writes the table to the job summary and
 uploads `user://logs/` on failure. It is a required check (`soak`).
+
+**Fight mode (balance runs, not in CI).** Add `--fight 1 --wall <gun id>`, for
+example `--rounds 16 --fight 1 --wall kestrel_smg`. The player is mortal and a
+bot (`tools/soak/soak_bot.gd`) plays: it turns toward the nearest zombie it can
+see at a human-like turn rate, aims down sights at the chest (no headshots),
+holds fire, reloads when empty, walks backwards when a zombie is within 4 m,
+buys the named wall gun the moment it can pay (from anywhere, no walking), and
+rebuys its ammo when dry. A zombie it cannot see for 10 s is killed outright,
+standing in for the player walking over to it. The run ends when the player
+dies; the last table line says `died in round N` (or `survived`), how many
+zombies were hunted that way and the gun in hand. A death is not a failure, but
+log errors still are. Run several seeds and use the median death round. It is
+a rough stand-in for a player: it never trains zombies or picks a spot, so read
+it as a trend between two sets of numbers, not as how a human will do.
