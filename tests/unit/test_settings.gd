@@ -240,3 +240,13 @@ func test_graphics_values_clamp() -> void:
 	assert_eq(_settings.get_value(&"graphics", &"render_scale"), 0.5)
 	_settings.set_value(&"graphics", &"brightness", 9.0)
 	assert_eq(_settings.get_value(&"graphics", &"brightness"), 1.5)
+
+
+func test_gore_defaults_to_full_clamps_and_stays_out_of_presets() -> void:
+	assert_eq(_settings.get_value(&"graphics", &"gore"), Impact.Gore.FULL)
+	_settings.set_value(&"graphics", &"gore", 7)
+	assert_eq(_settings.get_value(&"graphics", &"gore"), Impact.Gore.FULL)
+	_settings.set_value(&"graphics", &"gore", -3)
+	assert_eq(_settings.get_value(&"graphics", &"gore"), Impact.Gore.OFF)
+	_settings.set_value(&"graphics", &"preset", Graphics.Preset.LOW)
+	assert_eq(_settings.get_value(&"graphics", &"gore"), Impact.Gore.OFF, "a preset leaves gore alone")

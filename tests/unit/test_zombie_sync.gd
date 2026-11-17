@@ -100,6 +100,7 @@ func test_death_shows_on_client_and_free_despawns() -> void:
 	await wait_until(func() -> bool: return copy.collision_layer == 0, 3.0, "client shows the death")
 	assert_eq(copy.state, Zombie.State.DEAD)
 	assert_eq(copy.head_zone.collision_layer, 0, "dead zombies cannot be shot on the client")
+	assert_false(copy.head_popped, "a body kill keeps the head")
 	await wait_until(func() -> bool: return copy.voice.stream in copy.data.death_sounds, 3.0, "death heard")
 	assert_true(copy.voice.stream in copy.data.death_sounds, "the client hears the death sound")
 	await wait_physics_frames(3)
@@ -108,3 +109,17 @@ func test_death_shows_on_client_and_free_despawns() -> void:
 	zombie.queue_free()
 	await wait_until(func() -> bool: return not client_spawner.has_node(NodePath(String(copy_name))), 3.0, "despawned")
 	assert_false(client_spawner.has_node(NodePath(String(copy_name))))
+
+
+func test_headshot_kill_syncs_the_head_pop() -> void:
+	assert_true(^".:head_popped" in ZombieSync.SYNCED)
+	var pair: Array[Zombie] = await _spawn_on_server()
+	var info: DamageInfo = DamageInfo.new()
+	info.amount = 100000.0
+	info.hit_zone = DamageInfo.Zone.HEAD
+	pair[0].health.take_damage(info)
+	assert_true(pair[0].head_popped)
+	await wait_until(func() -> bool: return pair[1].head_popped, 3.0, "head pop synced")
+	assert_true(pair[1].head_popped, "the client copy knows the head popped")
+	await wait_until(func() -> bool: return pair[1].visual.head_scale() < 0.05, 3.0, "client pops the head")
+	assert_lt(pair[1].visual.head_scale(), 0.05, "the client copy shows the stump on Full gore")

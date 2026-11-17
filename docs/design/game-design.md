@@ -506,6 +506,7 @@ Design changes since the Nov 14, 2026 copy, newest first. Add one row in the sam
 
 | Date | Area | Change | Detail |
 | --- | --- | --- | --- |
+| 2026-11-17 | Gore | Full gore is stronger, picked from renders: blood bursts have 24 flecks (was 12) and each death lays a 1.6x pool plus 2 small splats. Head pops on headshot kills; Gore setting Full / Reduced / Off on the Graphics page. | [game-feel.md](game-feel.md) Blood and gore, plan zombie-sounds-gore step 4 |
 | 2026-11-17 | Campaign | Long campaign: maps come in acts of four (Act I = the first four maps), each map has a boss reached through a mid-run Sublevel descent, Lantern Post grows per act, and endgame hooks are named. | [lore.md](lore.md), PR #201, roadmap F-60 |
 | 2026-11-16 | Process | Plan first: a feature whose roadmap row says "needed" gets an approved plan in `docs/plans/` before any code. `docs/ROADMAP.md` is the build order. | [PROCESS.md](../PROCESS.md), PR #172 |
 | 2026-11-15 | Loot | Zombie loot is personal: each player only sees and picks up their own drops. Every run exit, including death and co-op disconnects, banks the Pack into the stash. | [ADR 0010](../adr/0010-personal-loot-kept-on-death.md), PR #135 |
