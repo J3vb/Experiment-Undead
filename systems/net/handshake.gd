@@ -167,7 +167,7 @@ func _receive_refusal(reply: Dictionary) -> void:
 			&"net",
 			&"join_refused",
 			{
-				"reason": Net.refusal_key(refusal_reason),
+				"reason": reason_key(refusal_reason),
 				"older": details.get("older", ""),
 				"message": refusal_message,
 				"client_protocol": protocol_version,
@@ -178,7 +178,7 @@ func _receive_refusal(reply: Dictionary) -> void:
 	# Acknowledge before the server disconnects, so the explanation reaches the client first.
 	_send(1, {"t": "refused_ack"})
 	if multiplayer == Net.multiplayer:
-		Net.report_refusal(refusal_reason, details)
+		Net.report_refusal(refusal_reason, StringName(reason_key(refusal_reason).to_lower()), details)
 	refused.emit(refusal_reason, protocol_version, server_protocol)
 
 
@@ -228,6 +228,13 @@ static func older_side(client_version: String, server_version: String) -> String
 		1:
 			return "server"
 	return ""
+
+
+## The RefusalReason name for a wire code, or "REFUSED" for a code this build does not know.
+static func reason_key(code: int) -> String:
+	if code < 0 or code >= Net.RefusalReason.size():
+		return "REFUSED"
+	return Net.RefusalReason.keys()[code]
 
 
 static func _int_field(message: Dictionary, key: String, fallback: int) -> int:

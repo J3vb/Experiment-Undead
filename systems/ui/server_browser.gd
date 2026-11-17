@@ -220,7 +220,9 @@ func join_selected(_unused: Variant = null) -> void:
 		return
 	var info: Dictionary = row.info
 	if is_other_version(info):
-		_show_error(&"wrong_version", {"server_version": info.version, "client_version": Build.version})
+		var server: String = str(info.version)
+		var older: String = Handshake.older_side(Build.version, server)
+		_show_error(&"wrong_version", {"server_version": server, "client_version": Build.version, "older": older})
 	elif not info.is_empty() and info.players >= info.max:
 		_show_error(&"server_full", {"players": info.players, "max_players": info.max})
 	else:

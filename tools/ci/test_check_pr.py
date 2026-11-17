@@ -130,6 +130,7 @@ class RepositoryScopeTests(unittest.TestCase):
             [
                 call([check_pr.sys.executable, str(here.with_name("check_rules.py"))]),
                 call([check_pr.sys.executable, str(here.with_name("check_plans.py"))]),
+                call([check_pr.sys.executable, str(here.with_name("check_saved_ids.py")), "origin/main"]),
             ],
         )
 
