@@ -66,7 +66,7 @@ billboard_mode = 1
 
 [sub_resource type="QuadMesh" id="dust_mesh"]
 material = SubResource("dust_mat")
-size = Vector2(0.008, 0.008)
+size = Vector2(0.016, 0.016)
 
 [sub_resource type="ParticleProcessMaterial" id="dust_big_hall"]
 emission_shape = 3
@@ -182,7 +182,7 @@ color_ramp = SubResource("fade_tex")
 [sub_resource type="StandardMaterial3D" id="smoke_mat"]
 transparency = 1
 vertex_color_use_as_albedo = true
-albedo_color = Color(0.09, 0.09, 0.09, 0.55)
+albedo_color = Color(0.09, 0.09, 0.09, 0.7)
 billboard_mode = 3
 particles_anim_h_frames = 1
 particles_anim_v_frames = 1
@@ -190,7 +190,7 @@ particles_anim_loop = false
 
 [sub_resource type="QuadMesh" id="smoke_mesh"]
 material = SubResource("smoke_mat")
-size = Vector2(2.2, 2.2)
+size = Vector2(3, 3)
 
 [sub_resource type="ParticleProcessMaterial" id="ember_process"]
 emission_shape = 3
@@ -229,7 +229,7 @@ size = Vector2(0.44, 0.3)
 
 [sub_resource type="BoxMesh" id="cable_mesh"]
 material = ExtResource("pipe")
-size = Vector3(0.025, 1.0, 0.025)
+size = Vector3(0.04, 1.0, 0.04)
 
 [sub_resource type="BoxMesh" id="lamp_housing"]
 material = ExtResource("pipe")
@@ -318,8 +318,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.16, 0)
 [node name="Light" type="SpotLight3D" parent="Beacons/BeaconWest/Spin"]
 transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 0, 0)
 light_color = Color(0.765, 0.125, 0.106, 1)
-light_energy = 6.0
-light_volumetric_fog_energy = 2.0
+light_energy = 10.0
+light_volumetric_fog_energy = 3.0
 light_bake_mode = 0
 distance_fade_enabled = true
 distance_fade_begin = 20.0
@@ -353,8 +353,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.16, 0)
 [node name="Light" type="SpotLight3D" parent="Beacons/BeaconEast/Spin"]
 transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 0, 0)
 light_color = Color(0.765, 0.125, 0.106, 1)
-light_energy = 6.0
-light_volumetric_fog_energy = 2.0
+light_energy = 10.0
+light_volumetric_fog_energy = 3.0
 light_bake_mode = 0
 distance_fade_enabled = true
 distance_fade_begin = 20.0
@@ -374,7 +374,7 @@ autoplay = &"spin"
 cast_shadow = 0
 gi_mode = 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 2.5, 38)
-amount = 120
+amount = 180
 lifetime = 12.0
 preprocess = 12.0
 visibility_range_end = 30.0
@@ -386,7 +386,7 @@ draw_pass_1 = SubResource("dust_mesh")
 cast_shadow = 0
 gi_mode = 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 2.5, 16)
-amount = 120
+amount = 180
 lifetime = 12.0
 preprocess = 12.0
 visibility_range_end = 30.0
@@ -398,7 +398,7 @@ draw_pass_1 = SubResource("dust_mesh")
 cast_shadow = 0
 gi_mode = 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 1.7, 18)
-amount = 80
+amount = 120
 lifetime = 12.0
 preprocess = 12.0
 visibility_range_end = 30.0
@@ -410,7 +410,7 @@ draw_pass_1 = SubResource("dust_mesh")
 cast_shadow = 0
 gi_mode = 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 1.7, 28)
-amount = 80
+amount = 120
 lifetime = 12.0
 preprocess = 12.0
 visibility_range_end = 30.0
@@ -494,7 +494,7 @@ draw_pass_1 = SubResource("drip_mesh")
 cast_shadow = 0
 gi_mode = 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 3.0, 53)
-amount = 60
+amount = 100
 lifetime = 6.0
 preprocess = 6.0
 visibility_range_end = 30.0
