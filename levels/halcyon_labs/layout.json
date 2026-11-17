@@ -27,7 +27,8 @@
 		{"id": "containment_window_2", "rect": [76, 26.5, 79, 29.5], "floor": -3, "height": 3, "lights": false},
 		{"id": "dock_truck_yard", "rect": [31, 60, 37, 64], "floor": 0, "height": 3.5, "lights": false},
 		{"id": "vent_duct", "rect": [61, 32, 64, 44], "floor": -3, "height": 6.5},
-		{"id": "vent_ledge", "rect": [58, 44, 64, 47], "floor": 1.4, "height": 2.4}
+		{"id": "vent_ledge", "rect": [58, 44, 64, 47], "floor": 1.4, "height": 2.4},
+		{"id": "cold_room", "rect": [50, 46, 57, 51], "floor": 0, "height": 3}
 	],
 	"openings": [
 		{"at": [22, 48], "width": 2, "floor": 0},
@@ -60,7 +61,8 @@
 		{"at": [35.5, 60], "width": 1.6, "floor": 0},
 		{"at": [62.5, 32], "width": 3, "floor": -3},
 		{"at": [62.5, 44], "width": 3, "floor": 1.4},
-		{"at": [58, 45], "width": 1.6, "floor": 1.4}
+		{"at": [58, 45], "width": 1.6, "floor": 1.4},
+		{"at": [53.5, 46], "width": 2, "floor": 0}
 	],
 	"ramps": [
 		{"from": [52, 0, 18], "to": [60, -3, 18], "width": 4},

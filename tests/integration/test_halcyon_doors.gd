@@ -92,7 +92,7 @@ func test_door_costs_match_the_maps_doc() -> void:
 	for cost: int in by_area.values():
 		total += cost
 	assert_eq(total, DOORS_TOTAL, "cost to open everything")
-	assert_eq(by_area.size(), 7, "every area but the start has a door")
+	assert_eq(by_area.size(), 8, "every area but the start has a door, plus the secret Cold Room")
 
 
 func test_machines_are_placed() -> void:
@@ -102,7 +102,7 @@ func test_machines_are_placed() -> void:
 	assert_eq(get_tree().get_nodes_in_group(&"exfil").size(), 1, "1 exfil point")
 	assert_not_null(level.find_child("PowerSwitch", true, false), "1 power switch")
 	var wall_buys: int = level.find_children("*", "Area3D").filter(func(n: Node) -> bool: return n is WallBuy).size()
-	assert_eq(wall_buys, 5, "four shared wall guns and the signature Coachman")
+	assert_eq(wall_buys, 6, "four shared wall guns, the signature Coachman and the Cryo Lance rack")
 	assert_eq(get_tree().get_nodes_in_group(&"wall_buy_spot").size(), 0, "no wall-gun placeholders remain")
 
 

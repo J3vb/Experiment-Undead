@@ -1,0 +1,45 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://systems/interactables/wall_radio.gd" id="1"]
+[ext_resource type="AudioStream" path="res://assets/audio/radio_tone.wav" id="sfx_tone"]
+[ext_resource type="AudioStream" path="res://assets/audio/radio_static.wav" id="sfx_static"]
+[ext_resource type="Material" path="res://levels/materials/panel_trim.tres" id="trim"]
+[ext_resource type="Material" path="res://levels/materials/fluorescent.tres" id="lamp"]
+
+[sub_resource type="BoxShape3D" id="area"]
+size = Vector3(0.9, 1.2, 0.5)
+
+[sub_resource type="BoxMesh" id="body"]
+size = Vector3(0.55, 0.35, 0.2)
+material = ExtResource("trim")
+
+[sub_resource type="BoxMesh" id="lamp_mesh"]
+size = Vector3(0.08, 0.08, 0.04)
+material = ExtResource("lamp")
+
+[node name="WallRadio" type="Area3D"]
+script = ExtResource("1")
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+shape = SubResource("area")
+
+[node name="Body" type="MeshInstance3D" parent="."]
+mesh = SubResource("body")
+gi_mode = 2
+
+[node name="Lamp" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.18, 0.08, 0.11)
+visible = false
+mesh = SubResource("lamp_mesh")
+gi_mode = 2
+
+[node name="Idle" type="Timer" parent="."]
+one_shot = true
+
+[node name="Tone" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("sfx_tone")
+bus = &"SFX"
+
+[node name="Static" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("sfx_static")
+bus = &"SFX"
