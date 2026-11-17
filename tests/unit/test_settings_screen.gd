@@ -182,7 +182,8 @@ func test_standalone_screen_has_keyboard_focus_and_readable_hints() -> void:
 	assert_true(tabs.get_tab_bar().has_focus(), "a standalone settings screen starts with keyboard focus")
 	for tab: Control in tabs.get_children():
 		var hints: int = 0
-		for child: Node in tab.get_children():
+		var rows: Node = tab.get_child(0) if tab is ScrollContainer else tab
+		for child: Node in rows.get_children():
 			var label: Label = child as Label
 			if label:
 				hints += 1
