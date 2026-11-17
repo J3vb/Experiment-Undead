@@ -27,7 +27,7 @@ pattern. **Missing** = needed soon, not built.
 | # | Foundation | Status | Rule lives in |
 |---|---|---|---|
 | 1 | [Co-op authority: who decides what](#1-co-op-authority) | shaky | [ADR 0003](adr/0003-trusted-client-co-op.md), `docs/MULTIPLAYER.md` |
-| 2 | [Content and ids in data](#2-content-and-ids-in-data) | shaky | [ADR 0002](adr/0002-content-as-resources.md), `docs/HOW_TO_ADD.md` |
+| 2 | [Content and ids in data](#2-content-and-ids-in-data) | solid | [ADR 0002](adr/0002-content-as-resources.md), `docs/HOW_TO_ADD.md` |
 | 3 | [Save format](#3-save-format) | solid | [ADR 0005](adr/0005-local-versioned-saves.md) |
 | 4 | [Events and signals](#4-events-and-signals) | solid | [ADR 0007](adr/0007-signals-and-events.md) |
 | 5 | [UI screens and routing](#5-ui-screens-and-routing) | solid | [ADR 0011](adr/0011-one-ui-router.md), `docs/design/ui-hud.md` |
@@ -71,23 +71,17 @@ server checks sender, range and state, then calls the same `interact()`)~~
 ### 2. Content and ids in data
 
 **Rule:** a new gun, zombie, serum or power-up is a new `.tres` file, not new
-code. The file name is the id. Code never compares against a specific id.
+code. The file name is the id. Code never compares against a specific id: the
+behaviour is a field on the data type (`WeaponData.effect` and `grip`,
+`EnemyData.loot_drop_chance` and `loot_min_rarity`, `SerumData.badge`). CI
+checks it (`no-content-id-literals`). `Content` keeps each loaded resource.
+Built in [plans/ids-into-data.md](plans/ids-into-data.md).
 
-**What works:** the `Content` autoload, id = file name, duplicate-id check,
-content tests per type, `docs/HOW_TO_ADD.md` recipes.
-
-**Why shaky:** code picks behaviour by comparing ids, so a new `.tres` silently
-does nothing until someone edits code:
-- weapon on-hit effects by id: `synapse`, `cryo_lance`, `siphon` (#143)
-- arm grip profiles for every gun in `player_arm_profiles.gd` (#149)
-- which guns get a shot-peak export (#163)
-- drop chance and rarity floor per enemy id in `LootService` (#148)
-- serum badge text and colour per serum id in the HUD (#154)
-- ~~`Content.get_item()` reloads from disk on every call (#140)~~ fixed: Content keeps loaded resources
-
-**Fixed when:** each of these is a field on the matching data type, and CI
-fails when a content id literal appears in `core/` or `systems/` (with a
-shrinking baseline, like `tested-scripts`).
+**Known leftovers** (in `tools/ci/content_id_baseline.txt`, which may only
+shrink): serum and power-up effects that are code anyway (`second_wind`,
+`scavenger`, `resupply`, `ammo_pack`), gear visual fallbacks and the starting
+sidearm. They move when More power-ups (F-26), Gear in first person (F-42) or
+Dyes (F-46) touch them.
 
 ### 3. Save format
 
@@ -238,7 +232,7 @@ tests, as usual. The issue numbers have the details.
 | 1 | Green Build: exported server boots, smoke test checks exit codes and a real join | #156 | any server or export work |
 | 2 | **Done (F-02).** One interaction request path for co-op (client asks, server checks sender, range, state, then runs `interact()`), with a client-side test for every interactable | #138, #126 | new machines, doors, power-ups, the 4-player play-test (#127) |
 | 3 | Done: item effects run where the server applies the hit; one public equip function in `ItemLoadout`, called from a physics tick ([plan](plans/item-effects-server.md)) | #145, #147 | Legendaries (#116), sets (#117), skill effects (#113) |
-| 4 | Ids into data: on-hit effect field on `WeaponData`, grip profile data, shot-peak flag, drop chance and rarity floor on `EnemyData`, badge on `SerumData`; cache loaded content; CI rule against content id literals in code | #143, #149, #163, #148, #154, #140 | new guns or zombies (Crawler #121, Stalker #123, Brute #124) |
+| 4 | Done: ids into data ([plan](plans/ids-into-data.md)): on-hit effect field on `WeaponData`, grip profile data, shot-peak flag, drop chance and rarity floor on `EnemyData`, badge on `SerumData`; cache loaded content; CI rule against content id literals in code | #143, #149, #163, #148, #154, #140 | new guns or zombies (Crawler #121, Stalker #123, Brute #124) |
 | 5 | Done: minimal UI router (push, pop, replace, mouse capture), current screens moved onto it ([plan](plans/ui-router.md)) | ui-hud.md | skill tree screen (#112), town hub (#131) |
 | 6 | Small leaks: regen in the physics tick (#144), Pack overlay input through the input layer (#146) | #144, #146 | anything touching health or the Pack |
 | 7 | Hot-path allocations: preload or pool shot, impact and effect visuals; zombie separation without per-tick arrays | #139, #141, #142, #150, #151 | 4-player play-test (#127), more VFX |

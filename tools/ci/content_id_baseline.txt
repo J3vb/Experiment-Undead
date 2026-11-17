@@ -1,0 +1,24 @@
+# Known content id literals in core/ and systems/ (path: id). This list may only shrink; see docs/CODE_RULES.md.
+systems/gear/gear_visual.gd: charm_dog_tags
+systems/gear/gear_visual.gd: implant_reflex
+systems/gear/gear_visual.gd: vest_medium
+systems/gear/look_builder.gd: charm_coin
+systems/gear/look_builder.gd: charm_dog_tags
+systems/gear/look_builder.gd: charm_dosimeter
+systems/gear/look_builder.gd: charm_keycard
+systems/gear/look_builder.gd: charm_vial
+systems/gear/look_builder.gd: implant_lung
+systems/gear/look_builder.gd: implant_ocular
+systems/gear/look_builder.gd: implant_reflex
+systems/gear/look_builder.gd: implant_relay
+systems/gear/look_builder.gd: implant_spine
+systems/gear/look_builder.gd: vest_heavy
+systems/gear/look_builder.gd: vest_light
+systems/gear/look_builder.gd: vest_medium
+systems/net/player_state_sync.gd: pistol_service
+systems/player/player.gd: second_wind
+systems/power_ups/power_up.gd: ammo_pack
+systems/power_ups/power_up.gd: resupply
+systems/power_ups/power_up_drops.gd: scavenger
+systems/serums/serum_data.gd: scavenger
+systems/serums/serum_data.gd: second_wind

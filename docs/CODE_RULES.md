@@ -203,3 +203,23 @@ checked.
 Open a screen with `UI.push` (a scene with `signal closed` plus one
 `content/screens/<id>.tres`), go to a root place with `UI.replace`, and let a
 panel that is not a screen ask for the mouse with `UI.hold_mouse`.
+
+## 17. no-content-id-literals
+
+Code picks behaviour from a field on the data, never from a content id, so a
+new `.tres` works without a code edit (foundation 2). Any string or
+`StringName` literal in `core/` or `systems/` that equals the file name of a
+weapon, enemy, serum, power-up, gear visual, loot gear base, grip, skill or
+wave file fails. Comments are ignored. Left out on purpose: affixes (their ids
+are also stat keys code must name), rarities and rarity looks (a fixed ordered
+rule), singletons loaded by one name (economy, progression, stat caps) and UI
+screens (screen flow is code).
+
+- Good: `if data.effect == WeaponData.Effect.WELL:`
+- Bad: `if data.id == &"siphon":`
+
+Known leftovers live in `tools/ci/content_id_baseline.txt` as `path: id`
+lines. The checker also holds the first list, so no new pair can be added, and
+a pair that no longer appears must be deleted from the file. Fix a finding by
+adding a field to the data type (see `docs/HOW_TO_ADD.md`), not by adding a
+baseline line.

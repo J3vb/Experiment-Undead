@@ -1,6 +1,6 @@
 # Plan: Ids into data (foundation fix 4)
 
-Status: Approved
+Status: Done
 Roadmap: F-00 foundation fix 4 / issues #140, #143, #148, #149, #154, #163
 Phase: P7
 Size: M
@@ -330,13 +330,13 @@ use). Budget: no new per-frame work.
 
 ## Acceptance
 
-- [ ] `Content.get_item()` returns one kept instance per id (test_content_cache.gd).
-- [ ] A gun with a `GripData` and an unknown id gets arms; all 22 guns' arm profiles match the old numbers (test_player_arm_profiles.gd).
-- [ ] A gun with `effect = CHAIN` or `FROST` and an unknown id chains or freezes; a well opens only for a WELL gun, from a client too (test_hit_claims.gd, test_well_claims.gd).
-- [ ] An enemy with drop fields and an unknown id follows them (test_loot_service.gd).
-- [ ] A serum with an unknown id shows its badge (test_hud.gd).
-- [ ] CI fails on a new content id literal in `core/` or `systems/` (test_check_rules.py).
-- [ ] Loot-drop hitch re-checked after step 1, result written in the step 1 PR.
+- [x] `Content.get_item()` returns one kept instance per id (test_content_cache.gd).
+- [x] A gun with a `GripData` and an unknown id gets arms; all 22 guns' arm profiles match the old numbers (test_player_arm_profiles.gd).
+- [x] A gun with `effect = CHAIN` or `FROST` and an unknown id chains or freezes; a well opens only for a WELL gun, from a client too (test_weapon_effects.gd, test_well_weapon_claims.gd).
+- [x] An enemy with drop fields and an unknown id follows them (test_loot_service.gd).
+- [x] A serum with an unknown id shows its badge (test_hud.gd).
+- [x] CI fails on a new content id literal in `core/` or `systems/` (test_check_rules.py).
+- [x] Loot-drop hitch re-checked after step 1, result written in the step 1 PR (#179; in-game HealthWatch check rides on the next play-test).
 
 ## Risks
 

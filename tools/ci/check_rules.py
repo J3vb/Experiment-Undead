@@ -41,6 +41,46 @@ INITIAL_UNTESTED_BASELINE = frozenset(
     }
 )
 BASELINE = "tools/ci/untested_baseline.txt"
+ID_FOLDERS = (
+    "content/weapons/",
+    "content/enemies/",
+    "content/serums/",
+    "content/power_ups/",
+    "content/gear_visuals/",
+    "content/loot/gear/",
+    "content/grips/",
+    "content/skills/",
+    "content/waves/",
+)
+ID_BASELINE = "tools/ci/content_id_baseline.txt"
+INITIAL_CONTENT_ID_BASELINE = frozenset(
+    {
+        "systems/gear/gear_visual.gd: charm_dog_tags",
+        "systems/gear/gear_visual.gd: implant_reflex",
+        "systems/gear/gear_visual.gd: vest_medium",
+        "systems/gear/look_builder.gd: charm_coin",
+        "systems/gear/look_builder.gd: charm_dog_tags",
+        "systems/gear/look_builder.gd: charm_dosimeter",
+        "systems/gear/look_builder.gd: charm_keycard",
+        "systems/gear/look_builder.gd: charm_vial",
+        "systems/gear/look_builder.gd: implant_lung",
+        "systems/gear/look_builder.gd: implant_ocular",
+        "systems/gear/look_builder.gd: implant_reflex",
+        "systems/gear/look_builder.gd: implant_relay",
+        "systems/gear/look_builder.gd: implant_spine",
+        "systems/gear/look_builder.gd: vest_heavy",
+        "systems/gear/look_builder.gd: vest_light",
+        "systems/gear/look_builder.gd: vest_medium",
+        "systems/net/player_state_sync.gd: pistol_service",
+        "systems/player/player.gd: second_wind",
+        "systems/power_ups/power_up.gd: ammo_pack",
+        "systems/power_ups/power_up.gd: resupply",
+        "systems/power_ups/power_up_drops.gd: scavenger",
+        "systems/serums/serum_data.gd: scavenger",
+        "systems/serums/serum_data.gd: second_wind",
+    }
+)
+LITERALS = re.compile(r""""((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'|#.*""")
 STRINGS = re.compile(r""""(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|#.*""")
 
 
@@ -324,6 +364,49 @@ def check_tested_scripts(root: Path) -> list[str]:
     return errors
 
 
+def content_id_literals(root: Path) -> set[tuple[str, str, int]]:
+    ids = {Path(path).stem for path in scanned_paths(root) if path.startswith(ID_FOLDERS) and path.endswith(".tres")}
+    found = set()
+    for path, lines in text_files(root, ("core/", "systems/"), (".gd",)):
+        for number, line in enumerate(lines, 1):
+            for match in LITERALS.finditer(line):
+                text = match[1] if match[1] is not None else match[2]
+                if text in ids:
+                    found.add((path, text, number))
+    return found
+
+
+def check_no_content_id_literals(root: Path) -> list[str]:
+    """Code must not name content by id; the behaviour belongs in a field on the data type.
+
+    Checked: weapons, enemies, serums, power-ups, gear visuals, loot gear bases, grips, skills, waves.
+    Left out on purpose: affixes (their ids are also stat keys code must name), rarities and rarity
+    looks (a fixed ordered rule), singletons loaded by one name (economy, progression, stat caps)
+    and UI screens (screen flow is code). Known leftovers sit in the baseline, which may only shrink.
+    """
+    found = content_id_literals(root)
+    pairs = {(path, text) for path, text, _ in found}
+    baseline_path = root / ID_BASELINE
+    baseline = baseline_path.read_text().splitlines() if baseline_path.is_file() else []
+    allowed = set()
+    errors = []
+    for number, line in enumerate(baseline, 1):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        path, _, text = line.partition(": ")
+        if line not in INITIAL_CONTENT_ID_BASELINE or (path, text) not in pairs:
+            errors.append(
+                problem(ID_BASELINE, number, "no-content-id-literals", f"{line}: remove it from the baseline")
+            )
+        allowed.add((path, text))
+    errors.extend(
+        problem(path, number, "no-content-id-literals", f"'{text}' is a content id; add a data field instead")
+        for path, text, number in sorted(found)
+        if (path, text) not in allowed
+    )
+    return errors
+
+
 RULES = [
     check_core_no_features,
     check_content_is_data,
@@ -341,6 +424,7 @@ RULES = [
     check_doc_comment,
     check_no_triple_copy,
     check_tested_scripts,
+    check_no_content_id_literals,
 ]
 
 
