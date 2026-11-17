@@ -51,5 +51,38 @@ class BuildWorkflowTests(unittest.TestCase):
         self.assertIn("if: github.ref == 'refs/heads/main'", job)
 
 
+class CoopSoakWorkflowTests(unittest.TestCase):
+    """Short co-op soak on pull requests, 4 bots to round 20 nightly and on demand, fails on errors."""
+
+    def setUp(self):
+        self.text = (WORKFLOWS / "coop-soak.yml").read_text(encoding="utf-8")
+
+    def test_runs_on_pull_requests_nightly_and_by_hand(self):
+        triggers = re.search(r"^on:\n(.*?)^\S", self.text, re.S | re.M).group(1)
+        self.assertRegex(triggers, r"(?m)^  pull_request:")
+        self.assertRegex(triggers, r"(?m)^  schedule:\n    - cron: ")
+        self.assertRegex(triggers, r"(?m)^  workflow_dispatch:")
+        self.assertIn('- "tools/soak/**"', triggers)
+
+    def test_short_run_on_pull_requests_and_full_run_otherwise(self):
+        self.assertIn("CLIENTS: ${{ github.event_name == 'pull_request' && '2' || inputs.clients || '4' }}", self.text)
+        self.assertIn("ROUNDS: ${{ github.event_name == 'pull_request' && '5' || inputs.rounds || '20' }}", self.text)
+
+    def test_runs_the_coop_soak_and_fails_on_errors(self):
+        self.assertIn("--script res://tools/soak/coop_soak.gd", self.text)
+        self.assertIn("grep -E 'SCRIPT ERROR|Parse Error' coop-soak.log", self.text)
+        self.assertIn("grep -q '^| PASS | co-op soak' coop-soak.log", self.text)
+
+    def test_inputs_reach_the_shell_through_env_only(self):
+        run_blocks = re.findall(r"(?m)^        run: \|\n(.*?)(?=^      - |\Z)", self.text, re.S)
+        self.assertTrue(run_blocks)
+        for block in run_blocks:
+            self.assertNotIn("${{", block)
+
+    def test_failed_runs_keep_every_process_log(self):
+        self.assertIn("coop-soak/*.json", self.text)
+        self.assertIn("coop-soak/*/godot/app_userdata/Experiment Undead/logs/", self.text)
+
+
 if __name__ == "__main__":
     unittest.main()
