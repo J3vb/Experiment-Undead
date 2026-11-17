@@ -12,8 +12,9 @@ address and port, with no separate host step.
 
 ## Decision
 
-Every game a player starts opens its port (default 7777) as a listen server,
-unless the player turns "Let friends join my game" off or the port is taken;
+Every player's own world (Enter world, into their Lantern Post) opens its
+port (default 7777) as a listen server, unless the player turns "Let friends
+join my world" off or the port is taken;
 then it runs offline as before. UPnP opens the router port where it can.
 Solo or co-op behaviour follows one rule, `Net.is_coop()`: co-op when this
 peer is a client or when anyone else is connected, solo otherwise. It is read
@@ -32,6 +33,9 @@ code path, gameplay checks `Net.is_authority()`, the match is always
 - No central service: players behind carrier-grade NAT host from the launcher
   or a rented box (ADR 0006).
 - No password until P8; the setting is the off switch.
+- Nothing joins a player straight into someone else's game: joining goes
+  through the server browser (saved servers, add by address, LAN discovery).
+  No master server (the person, 2026-11-17).
 
 ## Links
 
