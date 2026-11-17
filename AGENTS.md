@@ -298,7 +298,7 @@ lines for its early warning signs and list them in that doc's catalogue.
   after each push with changes, comment `@codex review` on the PR once.
 - You may merge your PR yourself (squash merge), no human approval needed,
   when all of these hold for the current head commit:
-  1. `quality` and `test` checks are green.
+  1. `quality`, `test` and `soak` checks are green.
   2. The Codex review for that commit is finished: its "Codex Review
      Summary" comment shows ✅ Completed for that commit (or a 👍 reaction).
   3. Every review comment is fixed, or answered with a reason if it is a
