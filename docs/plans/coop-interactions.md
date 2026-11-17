@@ -365,12 +365,12 @@ the server with 4 players).
 
 ## Acceptance
 
-- [ ] A client opens a door and turns on power; both peers see it (step 1 test).
-- [ ] Every interactable has a two-peer test that runs it from a client (steps 1-3).
-- [ ] Clients pay the same prices as solo; forged or out-of-range requests are rejected and logged.
-- [ ] A late joiner sees open doors, power, planks, Vault and exfil state.
-- [ ] Everything works on a dedicated server with no local player.
-- [ ] All solo interactable tests pass unchanged.
+- [x] A client opens a door and turns on power; both peers see it (step 1 test).
+- [x] Every interactable has a two-peer test that runs it from a client (steps 1-3).
+- [x] Clients pay the same prices as solo; forged or out-of-range requests are rejected and logged.
+- [x] A late joiner sees open doors, power, planks, Vault and exfil state.
+- [x] Everything works on a dedicated server with no local player.
+- [x] All solo interactable tests pass unchanged.
 - [ ] Two-instance play-test on the person's PC recorded in the step 4 PR.
 
 ## Risks

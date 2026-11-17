@@ -48,13 +48,12 @@ doors and machines. A client never changes shared state itself; it sends a
 request and the server runs the same code it runs in solo.
 
 **What works:** movement sync, hit claims (`HitClaims`), health/downed/revive
-(`PlayerStateSync`), XP grants and loot drops all follow the rule, with
-two-peer ENet tests.
+(`PlayerStateSync`), XP grants, loot drops and every interactable
+(`InteractionSync`: doors, power, barriers, wall-buys, Reforger, Med
+Dispenser, Specimen Vault, exfil) follow the rule, with two-peer ENet tests
+(`test_interaction_sync`, `test_coop_machines`, `test_coop_world_state`).
 
 **Why shaky:**
-- Interactables only run where `Net.is_authority()` is true, and there is no
-  client request path. Co-op clients cannot use doors, wall-buys or machines,
-  and on a dedicated server nobody can (#138, also #126).
 - Equipped item effects (leech, points per hit) are wired on the owning
   client only, so they never apply for clients (#145). Equipping from the Pack
   runs inside a UI key handler (#147).
@@ -62,10 +61,10 @@ two-peer ENet tests.
   write their own `@rpc` with their own checks, so every new feature
   re-invents it.
 
-**Fixed when:** one request path for interactions (client sends the request,
-server checks sender, range and state, then calls the same `interact()`), item
-effects run where the server applies the hit, and a test runs each
-interactable from a client.
+**Fixed when:** ~~one request path for interactions (client sends the request,
+server checks sender, range and state, then calls the same `interact()`)~~
+(done, F-02), ~~a test runs each interactable from a client~~ (done), and item
+effects run where the server applies the hit (#145, still open).
 
 ### 2. Content and ids in data
 
@@ -241,7 +240,7 @@ tests, as usual. The issue numbers have the details.
 | Order | Fix | Issues | Must land before |
 |---|---|---|---|
 | 1 | Green Build: exported server boots, smoke test checks exit codes and a real join | #156 | any server or export work |
-| 2 | One interaction request path for co-op (client asks, server checks sender, range, state, then runs `interact()`), with a client-side test for every interactable | #138, #126 | new machines, doors, power-ups, the 4-player play-test (#127) |
+| 2 | **Done (F-02).** One interaction request path for co-op (client asks, server checks sender, range, state, then runs `interact()`), with a client-side test for every interactable | #138, #126 | new machines, doors, power-ups, the 4-player play-test (#127) |
 | 3 | Item effects run where the server applies the hit; one public equip function in `ItemLoadout`, called from the player's tick | #145, #147 | Legendaries (#116), sets (#117), skill effects (#113) |
 | 4 | Ids into data: on-hit effect field on `WeaponData`, grip profile data, shot-peak flag, drop chance and rarity floor on `EnemyData`, badge on `SerumData`; cache loaded content; CI rule against content id literals in code | #143, #149, #163, #148, #154, #140 | new guns or zombies (Crawler #121, Stalker #123, Brute #124) |
 | 5 | Minimal UI router (push, pop, replace, mouse capture), current screens moved onto it | ui-hud.md | skill tree screen (#112), town hub (#131) |

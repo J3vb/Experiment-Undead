@@ -44,7 +44,7 @@ already reads `InputFrame`s, so the server could replay them.
 | Hits on zombies | Owning client claims, server applies | RPC `claim_hit(zombie net_id, zone, damage info)`; server checks range and that the zombie lives |
 | Zombies (spawn, AI, death) | Server | `MultiplayerSpawner` + synchronizer (position, yaw, state) |
 | Player health, downed, death | Server | Synced to all (HUD, revive prompts) |
-| Points, wall buys, machines, doors | Server | Client sends a request RPC; server runs the same `Economy.try_spend()` |
+| Points, wall buys, machines, doors | Server | Client sends a request to `InteractionSync`; server checks sender, range, rate and gun facts, then runs the same `interact()`. World state goes to all (late joiners get a snapshot); guns and ammo reach the buyer as grants |
 | Waves, round number, power-ups | Server | Synced to all |
 | Run XP and loot rolls | Server (`ProgressionService`) | Grant RPC to the owning client, which saves it |
 | Cosmetics (muzzle flash, impacts, sounds) | Each peer | Local reaction to synced facts |
@@ -84,8 +84,17 @@ already reads `InputFrame`s, so the server could replay them.
    Menu buttons and fields support keyboard and gamepad focus. Server browser
    and LAN discovery come with P8.
 
-After step 6, P7 continues with machines, doors and power-ups in co-op, then
-a 4-player play-test to round 20 (the P7 exit test).
+7. **Interactions (done, plan `docs/plans/coop-interactions.md`, PRs #182,
+   #183, #185):** one request path (`InteractionSync.request()` →
+   `request_interact`); the server checks a living, standing sender, match not
+   over, a path under the `Level`, reach + 2 m, one request per 0.1 s and the
+   type's gun facts, then runs the same `interact()` as solo. Doors, power,
+   barrier planks, Med Dispenser sales, Specimen Vault state and spot, and exfil
+   open/hold reach every client; late joiners get one snapshot. Bought guns,
+   ammo and Reforges reach the buyer as grants that name the gun they are for.
+
+After step 7, P7 continues with power-ups, round state on clients and the rest
+of #126, then a 4-player play-test to round 20 (the P7 exit test).
 
 ## Running it locally
 
