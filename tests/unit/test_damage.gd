@@ -34,6 +34,43 @@ func test_health_component_dies_once() -> void:
 	assert_signal_emit_count(h, "died", 1)
 
 
+func test_health_regen_runs_in_the_physics_tick_on_the_authority() -> void:
+	var h: HealthComponent = _regen_health()
+	add_child_autofree(h)
+	h.set_physics_process(false)
+	h.take_damage(DamageInfo.create(50.0, null))
+	h._physics_process(1.0)
+	assert_eq(h.current, 50.0, "no regen before the delay")
+	h._physics_process(1.0)
+	assert_almost_eq(h.current, 60.0, 0.001)
+	assert_false(h.has_method("_process"), "regen is gameplay, not a render-frame visual")
+
+
+func test_health_regen_does_not_run_on_a_client_copy() -> void:
+	var root: Node = Node.new()
+	add_child_autofree(root)
+	get_tree().set_multiplayer(SceneMultiplayer.new(), root.get_path())
+	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
+	assert_eq(peer.create_client("127.0.0.1", 24651), OK)
+	root.multiplayer.multiplayer_peer = peer
+	var h: HealthComponent = _regen_health()
+	root.add_child(h)
+	h.set_physics_process(false)
+	h.take_damage(DamageInfo.create(50.0, null))
+	h._physics_process(5.0)
+	assert_eq(h.current, 50.0, "only the server heals; clients get the value from snapshots")
+	peer.close()
+	get_tree().set_multiplayer(null, root.get_path())
+
+
+func _regen_health() -> HealthComponent:
+	var h: HealthComponent = HealthComponent.new()
+	h.regen_delay = 2.0
+	h.regen_per_second = 10.0
+	h.max_health = 100.0
+	return h
+
+
 func test_hit_zone_applies_zone() -> void:
 	var h: HealthComponent = HealthComponent.new()
 	add_child_autofree(h)

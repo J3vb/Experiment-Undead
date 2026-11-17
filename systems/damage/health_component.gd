@@ -54,8 +54,11 @@ func get_ratio() -> float:
 	return current / max_health if max_health > 0.0 else 0.0
 
 
-func _process(delta: float) -> void:
+## Regen is gameplay: it runs in the physics tick and only where this peer owns health.
+func _physics_process(delta: float) -> void:
 	if is_dead or regen_delay <= 0.0 or current >= max_health:
+		return
+	if not Net.is_authority() or not multiplayer.is_server():
 		return
 	_since_damage += delta
 	if _since_damage >= regen_delay:

@@ -49,7 +49,7 @@ func before_each() -> void:
 	for root: Node in [server_root, client_root]:
 		for player: Player in _players(root):
 			player.set_physics_process(false)
-			player.health.set_process(false)
+			player.health.set_physics_process(false)
 			player.health.regen_delay = 0.0
 
 
