@@ -109,6 +109,8 @@ gameplay system, only the player body, its sync and the gun data.
 | systems/player/player.tscn | changed | BodyAnimator under Body; PoseSync gets three more properties (step 2, 3) |
 | systems/player/player.gd | changed | Owner fills `held_weapon` and `is_reloading` each physics tick (step 3) |
 | systems/gear/gear_rig.gd | changed | Arm lowering and head pitch removed (clips and AimPitch own them) |
+| systems/ui/character_screen.gd | changed | Plays the `idle` clip so the preview is not in A-pose (step 2) |
+| systems/net/player_state_sync.gd | changed | `_present()` stops overwriting `is_crouching` (step 2) |
 | systems/weapons/weapon_data.gd | changed | New `world_model: PackedScene` |
 | content/weapons/*.tres | changed | `world_model` set to each gun's .glb |
 | systems/net/remote_shot_effects.gd | changed | One call to the animator's `fire()` when a shot packet arrives |
@@ -192,17 +194,27 @@ the soak machine; step 2 measures it with the existing `--print-fps` run.
   from position change in `_physics_process` (works for owner and remote
   alike), smooths it, and travels between states from `is_crouching` and
   `is_downed`. `AimPitch` (new) replaces GearRig's head pitch; GearRig's
-  arm lowering is deleted. PoseSync adds `is_crouching`; protocol bump.
-  Headless: tree inactive.
+  arm lowering is deleted. The character screen (`systems/ui/character_screen.gd`,
+  which uses `player.glb` and GearRig without the Player scene) plays the
+  `idle` clip on the model's AnimationPlayer instead, so it does not fall back
+  to the A-pose. PoseSync adds `is_crouching`; protocol bump. Remove the
+  second crouch writer: `PlayerStateSync._present()` sets
+  `_player.is_crouching = _player.is_downed` on every snapshot, which would
+  clear a teammate's synced crouch whenever their health or points change.
+  The owner already crouches while downed (`Player._read_input`), so that line
+  goes; the co-op thread is told before the PR. Headless: tree inactive.
 - Files: systems/player/body_animator.gd (new), systems/player/aim_pitch.gd
-  (new), systems/player/player.tscn, systems/gear/gear_rig.gd, core/build.gd,
-  docs/DECISIONS.md (GearRig line).
+  (new), systems/player/player.tscn, systems/gear/gear_rig.gd,
+  systems/ui/character_screen.gd, systems/net/player_state_sync.gd,
+  core/build.gd, docs/DECISIONS.md (GearRig line).
 - Tests: `tests/unit/test_body_animator.gd`: for still, walk forward, walk
   back, strafe, sprint speed, crouch, crouch walk, downed and downed crawl,
   the tree's current state and blend position pick the right clip; headless
   leaves the tree inactive. `test_gear_rig.gd` updated (no arm lowering,
-  pitch through AimPitch). Two-peer test: a client's `is_crouching` reaches
-  the server's copy and a third peer. Fails without the step: no BodyAnimator.
+  pitch through AimPitch). `test_character_screen.gd`: the preview plays
+  `idle`. Two-peer test: a client's `is_crouching` reaches the server's copy
+  and a third peer, and stays true after a health or points snapshot arrives.
+  Fails without the step: no BodyAnimator.
 - Done when: CI and soak green; a two-instance run shows a teammate walking,
   running, crouching and crawling.
 
