@@ -51,12 +51,16 @@ replaced by these models. The generator only places them.
 | `Paper` | Off-white notes and maps | Missions board |
 | `Screen` | Blue-green monitor glow | Technician monitors |
 
-`prop_import.gd` maps each slot to its material. Mapped now (step 2): `Logs`
+`prop_import.gd` maps each slot to its material. Mapped in step 2: `Logs`
 (`town_logs.tres`, round-log grain), `Planks`, `DarkWood`, `RoofSnow`
 (`town_slate.tres`), `Snow`, `Iron`, `WindowGlow` (`lit_window.tres`), plus the
 Halcyon slots the town reuses as they are (`Concrete`, `Hazard`, `Fluid`,
-`Paper`, `Screen`, `SodiumPaint`). `Canvas`, `Banner` and `SignPaint` get their
-materials in the step whose models first use them (3 and 4).
+`Paper`, `Screen`, `SodiumPaint`, and `Olive` for the ammo tins). Step 3 adds
+`Canvas` (`town_canvas.tres`) and `SignPaint` (`town_sign_paint.tres`). `Banner`
+gets its material in step 4 with the banner model, the first model that uses it.
+
+Built so far: B1-B2 in `tools/assets/town_buildings.py`, B3-B6 in
+`tools/assets/town_cabins.py` (same helpers), S1-S7 in `tools/assets/town_market.py`.
 
 ## 1. Buildings (`town_large`)
 

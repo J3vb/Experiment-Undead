@@ -29,12 +29,42 @@ MATS = [
     "iron",
     "beacon_red",
 ]
-SCENES = ["street_lamp", "wall_lantern", "window_lit", "window_dark", "fence", "signpost"]
-LODGES = ["lodge_lantern_post", "lodge_common_room"]
+SCENES = ["street_lamp", "wall_lantern", "fence", "signpost"]
+MARKET = ["stall_frame", "stall_sign", "missions_board", "trader_goods", "gun_wall", "workbench", "tech_desk"]
+LARGE = ["lodge_lantern_post", "lodge_common_room", "cabin_small", "cabin_two_storey", "shed_lean_to", "watchtower"]
 LODGE_YAW = math.pi / 2  # model fronts (+Z) face the street (+X)
+EAST_YAW = -math.pi / 2  # east-side model fronts face the street (-X)
+# Stall sign -> (subtitle, [(dressing model, spot in the stall's own space, extra yaw)]), north to south.
+STALLS = {
+    "TECHNICIAN": ("Serums / Gear", [("tech_desk", (0, 0, -0.85), 0.0)]),
+    "GUNSMITH": ("Upgrades / Mods", [("gun_wall", (0, 0, -1.2), 0.0), ("workbench", (0.5, 0, 0.28), math.pi)]),
+    "TRADER": ("Buy / Sell", [("trader_goods", (0, 1.03, 1.0), 0.0)]),
+    "MISSIONS": ("", [("missions_board", (0, 0, -0.95), 0.0)]),
+}
+STALL_X = -6.1
+STALL_PITCH = 4.4
+STALL_SOUTH_Z = -13.8
+# Colliders in a model's own space (front +Z): (centre, size).
+STALL_BLOCKS = [((0, 0.5, 1.05), (3.9, 1.0, 0.76)), ((0, 1.3, -1.31), (3.9, 2.6, 0.12))]
+CABIN_BLOCKS = {
+    "cabin_small": [((0, 2.5, -0.57), (6.34, 5.0, 4.14)), ((0, 0.15, 2.19), (6.3, 0.3, 1.38))],
+    "cabin_two_storey": [
+        ((-0.104, 3.0, -0.425), (5.54, 6.0, 4.74)),
+        ((3.25, 1.5, -0.45), (1.0, 3.0, 3.75)),
+        ((-0.904, 0.2, 2.625), (1.6, 0.35, 1.3)),
+    ],
+}
+# East-side cabins north to south: model, (x, z), mirrored, porch lantern spot, stove smoke spot (model space).
+CABINS = [
+    ("cabin_two_storey", (8.5, -30.0), False, (0.1, 2.2, 2.0), None),
+    ("cabin_small", (8.6, -21.5), False, (0.0, 2.2, 1.52), (1.9, 5.5, -1.77)),
+    ("cabin_two_storey", (8.5, -12.5), True, (0.1, 2.2, 2.0), None),
+    ("cabin_small", (8.6, -3.5), True, (0.0, 2.2, 1.52), (1.9, 5.5, -1.77)),
+]
+TOWER = (8.0, -35.6)
+SHEDS = [(-20.0, -23.0), (-20.0, -11.0), (20.0, -23.0), (20.0, -11.0)]
 SODIUM = "1, 0.58, 0.25, 1"
 WALL_H = 3.6
-SIGNS = {0: "INFIRMARY", 2: "RADIO", 4: "SUPPLY", 5: "WORKSHOP"}
 
 nodes: list[str] = []
 used: set[tuple[str, str]] = set()
@@ -97,10 +127,10 @@ def deco(name, parent, pos, size, mat, rot=None, mesh="box") -> None:
     used.add((mesh, mat))
 
 
-def inst(name, parent, pos, scene, yaw=0.0) -> None:
+def inst(name, parent, pos, scene, yaw=0.0, scale=(1, 1, 1)) -> None:
     nodes.append(
         f'[node name="{name}" parent="{parent}" instance=ExtResource("{scene}")]\n'
-        f"transform = {xform(pos, basis_rot(yaw))}\n"
+        f"transform = {xform(pos, basis_rot(yaw), scale)}\n"
     )
 
 
@@ -183,96 +213,6 @@ def build_walls() -> None:
         deco(f"{name}Cap", "Walls", (pos[0], WALL_H + 0.05, pos[2]), (size[0] + 0.1, 0.1, size[2] + 0.3), "town_snow")
 
 
-def _house_roof(name, x, cz, depth, width, h, upper) -> float:
-    pitch = 0.62
-    slab = depth / 2 / math.cos(pitch) + 0.45
-    for k, sd in enumerate((-1, 1)):
-        rx = x + sd * depth / 4
-        ry = h + math.tan(pitch) * depth / 4 + 0.12
-        block(
-            f"{name}Roof{k}",
-            "Houses",
-            (rx, ry, cz),
-            (slab, 0.22, width + 0.7),
-            "town_slate",
-            basis_rot(roll=-sd * pitch),
-        )
-    gable_h = math.tan(pitch) * depth / 2
-    for k, gz in enumerate((cz - width / 2 + 0.12, cz + width / 2 - 0.12)):
-        for step in range(4):
-            fh = gable_h / 4
-            wdt = depth * (1 - (step + 0.5) / 4)
-            deco(f"{name}Gable{k}_{step}", "Houses", (x, h + fh * (step + 0.5), gz), (wdt, fh, 0.24), upper)
-    deco(f"{name}Ridge", "Houses", (x, h + gable_h + 0.18, cz), (0.3, 0.16, width + 0.75), "town_dark_wood")
-    return gable_h
-
-
-def _house_front(name, i, front, out, side, cz, width, h, door_z) -> None:
-    deco(f"{name}DoorFrame", "Houses", (front + out * 0.05, 1.2, door_z), (0.14, 2.45, 1.45), "town_dark_wood")
-    deco(f"{name}Door", "Houses", (front + out * 0.09, 1.1, door_z), (0.08, 2.15, 1.1), "town_planks")
-    deco(f"{name}Step", "Houses", (front + out * 0.4, 0.1, door_z), (0.7, 0.2, 1.6), "town_stone")
-    awning = basis_rot(roll=side * 0.25)
-    deco(f"{name}Awning", "Houses", (front + out * 0.45, 2.55, door_z), (0.9, 0.08, 1.8), "town_slate", awning)
-    spots = [(1.55, wz) for wz in (cz - width * 0.32, cz + width * 0.32) if abs(wz - door_z) > 1.3]
-    spots += [(3.7, wz) for wz in (cz - width * 0.25, cz + width * 0.25) if h > 4.5]
-    face_yaw = math.pi / 2 if out > 0 else -math.pi / 2
-    for wi, (wy, wz) in enumerate(spots):
-        scene = "window_lit" if random.random() < 0.8 else "window_dark"
-        inst(f"{name}W{wi}", "Windows", (front + out * (0.02 if wy < 3 else 0.12), wy - 0.705, wz), scene, face_yaw)
-    lz = door_z + 1.0
-    inst(f"{name}LanternModel", "Houses", (front + out * 0.22, 2.25, lz), "wall_lantern", face_yaw)
-    lit(f"{name}Lantern", "Houses", (front + out * 0.5, 2.45, lz), 2.4, 8.0)
-    if i in SIGNS:
-        sz = door_z - 1.0
-        deco(f"{name}SignArm", "Houses", (front + out * 0.45, 3.05, sz), (0.9, 0.05, 0.05), "iron")
-        deco(f"{name}SignBoard", "Houses", (front + out * 0.75, 2.75, sz), (0.05, 0.45, 0.7), "town_planks")
-        for sgn in (-1, 1):
-            pos = (front + out * 0.75 + sgn * 0.03, 2.75, sz)
-            label(f"{name}SignText{sgn + 1}", "Houses", pos, sgn * math.pi / 2, SIGNS[i], 28)
-
-
-def _house(i, side, z) -> float:
-    depth = random.uniform(6, 7.5)
-    width = random.uniform(6, 8.5)
-    h = random.uniform(4.8, 6.2)
-    x = side * (4 + 1.5 + depth / 2)
-    cz = z + width / 2
-    name = f"House{i}"
-    stone_h = 2.6 if i % 3 != 2 else h
-    upper = "town_plaster" if i % 3 != 1 else "town_planks"
-    block(name, "Houses", (x, stone_h / 2, cz), (depth, stone_h, width), "town_stone")
-    if stone_h < h:
-        upper_size = (depth + 0.2, h - stone_h, width + 0.2)
-        block(f"{name}Upper", "Houses", (x, stone_h + (h - stone_h) / 2, cz), upper_size, upper)
-        deco(f"{name}Beam", "Houses", (x, stone_h, cz), (depth + 0.35, 0.2, width + 0.35), "town_dark_wood")
-    gable_h = _house_roof(name, x, cz, depth, width, h, upper)
-    chim_z = cz + random.uniform(-width / 3, width / 3)
-    chim_x = x + side * depth * 0.2
-    chim_size = (0.7, gable_h * 1.1 + 1.2, 0.7)
-    block(f"{name}Chimney", "Houses", (chim_x, h + gable_h * 0.7, chim_z), chim_size, "town_stone")
-    deco(f"{name}ChimneyCap", "Houses", (chim_x, h + gable_h * 1.25 + 0.65, chim_z), (0.9, 0.12, 0.9), "town_slate")
-    if i % 2 == 0:
-        smoke = xform((chim_x, h + gable_h * 1.25 + 0.8, chim_z))
-        nodes.append(
-            f'[node name="{name}Smoke" parent="Houses" instance=ExtResource("chimney_smoke")]\ntransform = {smoke}\n'
-        )
-    door_z = cz + random.choice((-1, 1)) * width * 0.12
-    _house_front(name, i, x - side * depth / 2, -side, side, cz, width, h, door_z)
-    return width
-
-
-def build_houses() -> None:
-    """Grey-box houses on the east side, until step 3 replaces them with cabins."""
-    group("Houses")
-    group("Windows")
-    i = 0
-    z = -30.0
-    while z < -2:
-        z += _house(i, 1, z) + random.uniform(1.5, 2.8)
-        i += 1
-    counts["houses"] = i
-
-
 def _on_lodge(centre, local) -> tuple:
     """A point given in a lodge model's own space (front +Z) to world space, lodge turned by LODGE_YAW."""
     return (centre[0] + local[2], local[1], centre[1] - local[0])
@@ -320,6 +260,9 @@ def build_lamps() -> None:
     for z in range(-31, 13, 7):
         side = -1 if k % 2 == 0 else 1
         x = side * 4.5
+        if side < 0 and STALL_SOUTH_Z - len(STALLS) * STALL_PITCH < z < STALL_SOUTH_Z + 2.5:
+            k += 1
+            continue  # the market stalls stand there and bring their own lights
         block(f"Post{k}", "Lamps", (x, 2.3, z), (0.14, 4.6, 0.14), "iron")
         inst(f"Lamp{k}", "Lamps", (x - 0.3 * side, 0, z), "street_lamp", -side * math.pi / 2)
         lit(f"Light{k}", "Lamps", (x - 0.3 * side - side * 0.4, 3.95, z), 3.2, 13.0, want_shadow=(k % 2 == 0))
@@ -388,7 +331,7 @@ def _plaza_well() -> None:
 
 
 def _barrels_and_crates() -> None:
-    for bk, (x, z) in enumerate([(-8, 4), (8.5, 4.5), (-3.0, -24), (3.0, -14)]):
+    for bk, (x, z) in enumerate([(-8, 4), (8.5, 4.5), (-2.4, -24), (3.0, -14)]):
         block(f"Barrel{bk}", "Props", (x, 0.45, z), (0.62, 0.9, 0.62), "rust")
         deco(f"BarrelRim{bk}", "Props", (x, 0.88, z), (0.68, 0.06, 0.68), "iron")
         deco(f"Fire{bk}", "Props", (x, 0.98, z), (0.42, 0.14, 0.42), "sodium_lamp")
@@ -439,48 +382,83 @@ def build_fences_and_signs() -> None:
     label("SignInfirmary", "Signs", (-3.42, 1.85, -0.87), 0.0, "INFIRMARY", 26)
 
 
-def build_stall() -> None:
-    group("Stall")
-    for s2 in (-1, 1):
-        for s3 in (-1, 1):
-            pos = (8 + s2 * 1.1, 1.2, -0.5 + s3 * 0.7)
-            deco(f"StallPost{s2 + 1}{s3 + 1}", "Stall", pos, (0.1, 2.4, 0.1), "town_dark_wood")
-    block("StallCounter", "Stall", (8, 0.5, -0.5), (2.2, 1.0, 1.2), "town_planks")
-    deco("StallRoof", "Stall", (8, 2.5, -0.5), (2.6, 0.08, 1.8), "town_slate", basis_rot(pitch=0.15))
-    deco("StallRoofSnow", "Stall", (8, 2.56, -0.5), (2.4, 0.05, 1.6), "town_snow", basis_rot(pitch=0.15))
-    for ci in range(4):
-        deco(f"StallCrate{ci}", "Stall", (7.3 + ci * 0.45, 1.12, -0.6), (0.35, 0.25, 0.35), "town_planks")
-    lit("StallLight", "Stall", (8, 2.1, 0.4), 1.8, 6.0)
-    deco("StallLamp", "Stall", (8, 2.25, 0.35), (0.18, 0.25, 0.18), "sodium_lamp")
+def _sacks() -> None:
     group("Sacks")
-    for sk, (x, z) in enumerate([(-9.6, 1.6), (-9.2, 2.2), (9.6, 6.4), (9.9, 7.1), (-3.6, -27.2), (3.7, -28.0)]):
+    for sk, (x, z) in enumerate([(-9.6, 1.6), (-9.2, 2.2), (9.6, 6.4), (9.9, 7.1), (-3.6, -32.2), (3.7, -33.0)]):
         deco(f"Sack{sk}", "Sacks", (x, 0.25, z), (0.55, 0.5, 0.4), "town_plaster", basis_rot(random.uniform(0, 3)))
         body(f"SackBody{sk}", "Sacks", (x, 0.25, z), "0.5, 0.5, 0.4", "town_plaster")
 
 
-def _shed(yk, sx, x, z) -> None:
-    block(f"Shed{yk}", "Yards", (x, 1.1, z), (2.6, 2.2, 3.2), "town_planks")
-    block(f"ShedRoof{yk}", "Yards", (x, 2.3, z), (3.0, 0.2, 3.6), "town_slate", basis_rot(roll=sx * 0.18))
-    deco(f"ShedRoofSnow{yk}", "Yards", (x, 2.42, z), (2.8, 0.06, 3.4), "town_snow", basis_rot(roll=sx * 0.18))
-    deco(f"ShedDoor{yk}", "Yards", (x - sx * 1.31, 0.95, z), (0.06, 1.9, 1.0), "town_dark_wood")
-    for lg in range(4):
-        pos = (x - sx * 1.6, 0.13 + (lg % 2) * 0.25, z + 1.0 + (lg // 2) * 0.3)
-        deco(f"ShedLog{yk}_{lg}", "Yards", pos, (0.26, 0.26, 1.2), "town_dark_wood")
+def _stall(k: int, name: str) -> None:
+    """One market stall facing the street: frame, sign board with its name, dressing, light and colliders."""
+    subtitle, dressing = STALLS[name]
+    at = (STALL_X, STALL_SOUTH_Z - (len(STALLS) - 1 - k) * STALL_PITCH)
+    tag = name.capitalize()
+    inst(f"{tag}Stall", "Market", (at[0], 0, at[1]), "stall_frame", LODGE_YAW)
+    inst(f"{tag}Sign", "Market", _on_lodge(at, (0, 2.45, 1.75)), "stall_sign", LODGE_YAW)
+    label(f"{tag}SignName", "Market", _on_lodge(at, (0, 2.98 if subtitle else 2.86, 1.83)), LODGE_YAW, name, 80)
+    if subtitle:
+        label(f"{tag}SignSub", "Market", _on_lodge(at, (0, 2.66, 1.83)), LODGE_YAW, subtitle, 40)
+    for model, spot, yaw in dressing:
+        inst(f"{tag}{model.title().replace('_', '')}", "Market", _on_lodge(at, spot), model, LODGE_YAW + yaw)
+    for b, (centre, size) in enumerate(STALL_BLOCKS):
+        collider(f"{tag}Block{b}", "Market", _on_lodge(at, centre), size, LODGE_YAW)
+    lit(f"{tag}Light", "Market", _on_lodge(at, (0, 2.3, 0.2)), 1.8, 6.0)
+
+
+def build_market() -> None:
+    """The market row S1-S7 on the west side between the two lodges (asset list, layout map)."""
+    group("Market")
+    for k, name in enumerate(STALLS):
+        _stall(k, name)
+    _sacks()
+
+
+def _on_east(centre, local, mirror=False) -> tuple:
+    """A point in an east-side model's own space (front +Z) to world space, turned by EAST_YAW."""
+    lx = -local[0] if mirror else local[0]
+    return (centre[0] - local[2], local[1], centre[1] + lx)
+
+
+def _cabin(k: int, model: str, at: tuple, mirror: bool, lantern: tuple, smoke) -> None:
+    scale = (-1, 1, 1) if mirror else (1, 1, 1)
+    inst(f"Cabin{k}", "Cabins", (at[0], 0, at[1]), model, EAST_YAW, scale)
+    for b, (centre, size) in enumerate(CABIN_BLOCKS[model]):
+        collider(f"Cabin{k}Block{b}", "Cabins", _on_east(at, centre, mirror), size, EAST_YAW)
+    inst(f"Cabin{k}Lantern", "Cabins", _on_east(at, lantern, mirror), "wall_lantern", EAST_YAW)
+    light = (lantern[0], lantern[1] + 0.2, lantern[2] + 0.6)
+    lit(f"Cabin{k}LanternLight", "Cabins", _on_east(at, light, mirror), 2.2, 8.0)
+    if smoke:
+        nodes.append(
+            f'[node name="Cabin{k}Smoke" parent="Cabins" instance=ExtResource("chimney_smoke")]\n'
+            f"transform = {xform(_on_east(at, smoke, mirror))}\n"
+        )
+
+
+def build_east_side() -> None:
+    """Cabins B3/B4 along the east of the street, the watchtower by the gate and the four yard sheds."""
+    group("Cabins")
+    for k, cabin in enumerate(CABINS):
+        _cabin(k, *cabin)
+    inst("Watchtower", "Cabins", (TOWER[0], 0, TOWER[1]), "watchtower", EAST_YAW)
+    for k, (sx, sz) in enumerate(((-1, -1), (1, -1), (-1, 1), (1, 1))):
+        leg = _on_east(TOWER, (sx * 1.55, 4.3, sz * 1.55 - 0.028))
+        collider(f"WatchtowerLeg{k}", "Cabins", leg, (0.3, 8.6, 0.3), EAST_YAW)
+    lit("WatchtowerFlood", "Cabins", _on_east(TOWER, (1.3, 10.0, 3.2)), 3.0, 14.0)
+    group("Yards")
+    for k, (x, z) in enumerate(SHEDS):
+        yaw = LODGE_YAW if x < 0 else EAST_YAW
+        inst(f"Shed{k}", "Yards", (x, 0, z), "shed_lean_to", yaw)
+        collider(f"Shed{k}Block", "Yards", (x, 1.3, z), (3.9, 2.6, 2.6), yaw)
 
 
 def build_yards_and_pines() -> None:
-    group("Yards")
-    yk = 0
-    for sx in (-1, 1):
-        for yz in (-29, -19, -9):
-            x = sx * random.uniform(17.5 if sx > 0 else 18.5, 22.5)
-            z = yz + random.uniform(-2, 2)
-            _shed(yk, sx, x, z)
-            yk += 1
+    for k, sx in enumerate((-1, 1)):
         for t in range(5):
             x = sx * random.uniform(16.5 if sx > 0 else 18.5, 24.5)
             z = random.uniform(-34, 12)
-            pine(f"YardPine{yk}_{t}", "Yards", x, z, random.uniform(0.55, 0.85))
+            if min(math.dist((x, z), shed) for shed in SHEDS) > 3.5:
+                pine(f"YardPine{k}_{t}", "Yards", x, z, random.uniform(0.55, 0.85))
     group("Pines")
     pk = 0
     for _ in range(170):
@@ -530,8 +508,9 @@ def header() -> str:
         '[ext_resource type="Environment" path="res://levels/looks/lantern_post_night.tres" id="look"]',
     ]
     ext += [f'[ext_resource type="PackedScene" path="res://assets/models/town/{sc}.glb" id="{sc}"]' for sc in SCENES]
+    ext += [f'[ext_resource type="PackedScene" path="res://assets/models/town/{sc}.glb" id="{sc}"]' for sc in MARKET]
     ext += [
-        f'[ext_resource type="PackedScene" path="res://assets/models/town_large/{sc}.glb" id="{sc}"]' for sc in LODGES
+        f'[ext_resource type="PackedScene" path="res://assets/models/town_large/{sc}.glb" id="{sc}"]' for sc in LARGE
     ]
     ext += [f'[ext_resource type="Material" path="res://levels/materials/{m}.tres" id="{m}"]' for m in MATS]
     ext.append('[ext_resource type="PackedScene" path="res://systems/hub/deploy_board.tscn" id="deploy_board"]')
@@ -570,13 +549,13 @@ def build() -> str:
     random.seed(7)
     build_ground()
     build_walls()
-    build_houses()
     build_lodges()
+    build_market()
+    build_east_side()
     build_lamps()
     build_gate()
     build_props()
     build_fences_and_signs()
-    build_stall()
     build_yards_and_pines()
     build_ridge()
     build_spawn_and_moon()

@@ -5,10 +5,14 @@ extends GutTest
 
 const FOLDER: String = "res://assets/models/town_large/%s.glb"
 const MATERIALS: String = "res://levels/materials/"
-## Model id -> [size from the asset list (width, height, depth), material that sits on the front].
+## Model id -> [size from the asset list (width, height, depth), material that sits on the front, has glow].
 const BUILDINGS: Dictionary = {
-	"lodge_lantern_post": [Vector3(12, 11, 9), "town_planks.tres"],
-	"lodge_common_room": [Vector3(14, 10, 9), "town_dark_wood.tres"],
+	"lodge_lantern_post": [Vector3(12, 11, 9), "town_planks.tres", true],
+	"lodge_common_room": [Vector3(14, 10, 9), "town_dark_wood.tres", true],
+	"cabin_small": [Vector3(7, 6, 6), "town_planks.tres", true],
+	"cabin_two_storey": [Vector3(7, 9, 7), "town_planks.tres", true],
+	"shed_lean_to": [Vector3(4, 3, 3), "town_dark_wood.tres", false],
+	"watchtower": [Vector3(4, 13, 4), "lit_window.tres", true],
 }
 const SIZE_TOLERANCE: float = 0.2
 
@@ -46,7 +50,7 @@ func test_buildings_stand_on_the_origin_at_their_listed_size() -> void:
 			assert_between(ratio, 1.0 - SIZE_TOLERANCE, 1.0 + SIZE_TOLERANCE, "%s axis %d size" % [id, axis])
 
 
-func test_porch_and_balcony_face_plus_z() -> void:
+func test_fronts_face_plus_z() -> void:
 	for id: String in BUILDINGS:
 		var mesh: Mesh = _mesh(id).mesh
 		var front_z: float = 0.0
@@ -58,11 +62,13 @@ func test_porch_and_balcony_face_plus_z() -> void:
 				front_z += vertex.z
 				count += 1
 		assert_gt(count, 0, id + " has its front material")
-		assert_gt(front_z / maxf(count, 1), 0.3, id + " porch or balcony is on the +Z (front) side")
+		assert_gt(front_z / maxf(count, 1), 0.3, id + " porch, balcony or lamp is on the +Z (front) side")
 
 
 func test_windows_glow() -> void:
 	for id: String in BUILDINGS:
+		if not BUILDINGS[id][2]:
+			continue
 		var mesh: Mesh = _mesh(id).mesh
 		var glowing: bool = false
 		for i: int in mesh.get_surface_count():

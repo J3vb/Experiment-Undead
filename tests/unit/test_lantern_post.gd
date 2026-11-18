@@ -10,6 +10,14 @@ const BOARD_CLEARANCE: float = 1.0
 const MAX_SHADOWED_LIGHTS: int = 6
 const MAX_LOCAL_LIGHTS: int = 30
 const STREET_HALF_WIDTH: float = 4.0
+const STALLS: Array[String] = ["Missions", "Trader", "Gunsmith", "Technician"]
+const SIGN_TEXTS: Array[String] = [
+	"MISSIONS", "TRADER", "Buy / Sell", "GUNSMITH", "Upgrades / Mods", "TECHNICIAN", "Serums / Gear"
+]
+## A stall's counter front, measured from the stall's middle along its front (+Z) axis.
+const COUNTER_FRONT: float = 1.45
+const LANE_DEPTH: float = 1.5
+const LANE_WIDTH: float = 3.6
 
 var _hub: Level
 
@@ -90,3 +98,52 @@ func test_hero_lodges_stand_west_of_the_street_and_block_players() -> void:
 			Vector3(0, CHEST_HEIGHT, into.z), into, Layers.WORLD
 		)
 		assert_false(space.intersect_ray(ray).is_empty(), lodge_name + " walls stop a player from the street")
+
+
+func test_every_stall_leaves_a_lane_to_the_street() -> void:
+	await wait_physics_frames(2)
+	var space: PhysicsDirectSpaceState3D = _hub.get_world_3d().direct_space_state
+	var lane: BoxShape3D = BoxShape3D.new()
+	lane.size = Vector3(LANE_WIDTH, CAPSULE_HEIGHT, LANE_DEPTH)
+	var query: PhysicsShapeQueryParameters3D = PhysicsShapeQueryParameters3D.new()
+	query.shape = lane
+	query.collision_mask = Layers.WORLD
+	for stall_name: String in STALLS:
+		var stall: Node3D = _hub.get_node_or_null("Market/%sStall" % stall_name) as Node3D
+		assert_not_null(stall, stall_name + " stall is placed")
+		if stall == null:
+			continue
+		var front: Vector3 = stall.global_basis.z.normalized()
+		var centre: Vector3 = stall.global_position + front * (COUNTER_FRONT + LANE_DEPTH * 0.5)
+		query.transform = Transform3D(stall.global_basis, centre + Vector3.UP * (CAPSULE_HEIGHT * 0.5 + 0.1))
+		var hits: Array[Dictionary] = space.intersect_shape(query)
+		assert_eq(
+			hits.size(),
+			0,
+			"%s lane is clear: %s" % [stall_name, hits.map(func(h: Dictionary) -> Object: return h.collider)]
+		)
+		var lane_end: Vector3 = stall.global_position + front * (COUNTER_FRONT + LANE_DEPTH)
+		assert_lt(absf(lane_end.x), STREET_HALF_WIDTH, stall_name + " lane reaches the street")
+
+
+func test_stall_signs_carry_the_stall_names() -> void:
+	var texts: Array[String] = []
+	for node: Node in _hub.get_node("Market").find_children("*", "Label3D", true, false):
+		texts.append((node as Label3D).text)
+	for text: String in SIGN_TEXTS:
+		assert_has(texts, text, "a stall sign reads " + text)
+
+
+func test_cabins_stand_east_of_the_street_and_block_players() -> void:
+	await wait_physics_frames(2)
+	var space: PhysicsDirectSpaceState3D = _hub.get_world_3d().direct_space_state
+	var cabins: Array[Node] = _hub.get_node("Cabins").find_children("Cabin?", "", false, false)
+	assert_eq(cabins.size(), 4, "two small and two two-storey cabins")
+	for node: Node in cabins:
+		var cabin: Node3D = node as Node3D
+		assert_gt(cabin.global_position.x, STREET_HALF_WIDTH, cabin.name + " stands east of the street")
+		var into: Vector3 = cabin.global_position + Vector3.UP * CHEST_HEIGHT
+		var ray: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
+			Vector3(0, CHEST_HEIGHT, into.z), into, Layers.WORLD
+		)
+		assert_false(space.intersect_ray(ray).is_empty(), cabin.name + " walls stop a player from the street")

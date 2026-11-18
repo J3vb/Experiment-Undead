@@ -27,6 +27,8 @@ import finish
 import machine_models
 import prop_models
 import town_buildings
+import town_cabins
+import town_market
 import town_props
 import zombie_model
 from mathutils import Vector
@@ -255,6 +257,8 @@ MODELS.update(character_models.MODELS)
 MODELS.update(prop_models.MODELS)
 MODELS.update(town_props.MODELS)
 MODELS.update(town_buildings.MODELS)
+MODELS.update(town_cabins.MODELS)
+MODELS.update(town_market.MODELS)
 MODELS.update(door_models.MODELS)
 MODELS.update(machine_models.MODELS)
 

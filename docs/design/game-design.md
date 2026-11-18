@@ -386,6 +386,8 @@ Lantern Post is a walled survivor outpost in a ruined Ardennes village, a short 
 | Deploy Gate | Pick a map, go solo or with your squad, or join a public match |
 | Hall of Records | Leaderboards: best round per map, weekly and all-time |
 
+Market row signs (plan F-74): the four stalls on the main street carry the concept-art names, each fronting a town job. MISSIONS = Contract Board, TRADER "Buy / Sell" = Quartermaster, GUNSMITH "Upgrades / Mods" = Workbench, TECHNICIAN "Serums / Gear" = serum and gear seller (a new town job, not yet in the table; never called "Perks"). The stall jobs themselves come with F-45.
+
 Social basics: see other players' equipped gear (rarity glows on guns and vests), inspect a player, invite to squad, emotes and text chat. No trading in version 1, which keeps loot fair and avoids scams and bots.
 
 ### How multiplayer works (design view)
@@ -507,6 +509,7 @@ Design changes since the Nov 14, 2026 copy, newest first. Add one row in the sam
 
 | Date | Area | Change | Detail |
 | --- | --- | --- | --- |
+| 2026-11-18 | Town | Lantern Post market row: four stalls between the lodges named MISSIONS, TRADER "Buy / Sell", GUNSMITH "Upgrades / Mods" and TECHNICIAN "Serums / Gear", mapped to the Contract Board, Quartermaster, Workbench and serum and gear jobs. East side gets log cabins, a watchtower by the gate and lean-to sheds. | [Town hub](#town-hub-lantern-post), [lantern-post-assets.md](lantern-post-assets.md), plan lantern-post-concept step 3 |
 | 2026-11-17 | UI | Screens follow the person's concept art: the one main action button per screen is bio-green (Enter World, Join Server, Select Character); main menu gets Enter World, Servers, Character, Loadout, Progression, Settings, Exit, a profile card and a news card. | [ui-hud.md](ui-hud.md) UI style, screens 1 and 2 |
 | 2026-11-17 | Characters | Character select picks a preset survivor (name, role, bio, 3 small traits) instead of making your own; progress is per survivor (provisional). | [ui-hud.md](ui-hud.md) screen 3, roadmap F-67 |
 | 2026-11-17 | HUD | Match HUD gets an always-on health panel (number and bar), an objective list top right, the area name under the round, and grenade and tactical slots by the ammo. No minimap, armour or medkits. | [ui-hud.md](ui-hud.md) screen 10 |

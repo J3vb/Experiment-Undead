@@ -64,10 +64,10 @@ jobs:
           for name in charm_dog_tags charm_vial charm_keycard charm_dosimeter charm_coin implant_reflex implant_lung implant_spine implant_ocular implant_relay; do
             test -s "$RUNNER_TEMP/models/gear/$name.glb" || { echo "missing gear/$name.glb"; exit 1; }
           done
-          for name in street_lamp wall_lantern window_lit window_dark fence signpost; do
+          for name in street_lamp wall_lantern window_lit window_dark fence signpost stall_frame stall_sign missions_board trader_goods gun_wall workbench tech_desk; do
             test -s "$RUNNER_TEMP/models/town/$name.glb" || { echo "missing town/$name.glb"; exit 1; }
           done
-          for name in lodge_lantern_post lodge_common_room; do
+          for name in lodge_lantern_post lodge_common_room cabin_small cabin_two_storey shed_lean_to watchtower; do
             test -s "$RUNNER_TEMP/models/town_large/$name.glb" || { echo "missing town_large/$name.glb"; exit 1; }
           done
           for f in gear/vest_light.glb gear/vest_medium.glb gear/vest_heavy.glb; do
