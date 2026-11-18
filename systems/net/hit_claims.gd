@@ -6,15 +6,12 @@ extends Node
 const KILL_WINDOW: float = 0.5
 const SLACK: float = 1.5
 const MAX_IMPULSE: float = 12.0
-const WELL_FLIGHT_TIME: float = GravityWell.ORB_RANGE / GravityWell.ORB_SPEED + 1.0
 
 var session: GameSession
 
 var _time: float = 0.0
 var _next_warning: float = 0.0
 var _claims: Dictionary[int, Dictionary] = {}
-var _orb_claims: Dictionary[int, Array] = {}
-var _well_launches: Dictionary[int, Array] = {}
 var _recent_hits: Array[Dictionary] = []
 var _weapons: Dictionary[StringName, WeaponData] = {}
 var _chain: Chain = Chain.new()
@@ -96,7 +93,7 @@ func claim_hit(
 		or session.is_over
 		or (player.is_downed and weapon_id != PlayerStateSync.PISTOL)
 	):
-		_reject(sender, &"player_not_alive")
+		reject(sender, &"player_not_alive")
 		return
 	var zombie: Zombie = session.spawner.get_node_or_null(NodePath(String(zombie_name))) as Zombie
 	if (
@@ -105,21 +102,21 @@ func claim_hit(
 		or zombie.health.is_dead
 		or zombie.state == Zombie.State.DEAD
 	):
-		_reject(sender, &"zombie_not_alive")
+		reject(sender, &"zombie_not_alive")
 		return
 	var item: ItemInstance = player.item_guns.get(item_uid) if not item_uid.is_empty() else null
 	var weapon: WeaponData = _weapons.get(weapon_id)
 	if item and weapon:
 		weapon = item.weapon_data(weapon, player.stats)
 	if not _valid_hit(player, weapon, amount, point, impulse):
-		_reject(sender, &"hit_out_of_bounds")
+		reject(sender, &"hit_out_of_bounds")
 		return
 	var hit_zone: HitZone = _find_zone(zombie, zone)
 	if hit_zone == null:
-		_reject(sender, &"zone_missing")
+		reject(sender, &"zone_missing")
 		return
-	if not _take_claim(sender, weapon):
-		_reject(sender, &"claims_too_fast")
+	if not take_claim(sender, weapon):
+		reject(sender, &"claims_too_fast")
 		return
 	var info: DamageInfo = DamageInfo.create(amount, player)
 	info.weapon_id = weapon_id
@@ -179,6 +176,11 @@ func _valid_hit(player: Player, weapon: WeaponData, amount: float, point: Vector
 	return amount <= maximum
 
 
+## The server's cached copy of a gun or melee weapon, or null for an unknown id.
+func cached_weapon(id: StringName) -> WeaponData:
+	return _weapons.get(id)
+
+
 func _find_zone(zombie: Zombie, zone: int) -> HitZone:
 	for hit_zone: HitZone in zombie.hit_zones:
 		if hit_zone.zone == zone:
@@ -186,7 +188,8 @@ func _find_zone(zombie: Zombie, zone: int) -> HitZone:
 	return null
 
 
-func _take_claim(sender: int, weapon: WeaponData) -> bool:
+## Per-gun claim window shared with WellClaims: false once a sender claims faster than the gun fires.
+func take_claim(sender: int, weapon: WeaponData) -> bool:
 	if not _claims.has(sender):
 		_claims[sender] = {}
 	var per_weapon: Dictionary = _claims[sender]
@@ -202,7 +205,8 @@ func _take_claim(sender: int, weapon: WeaponData) -> bool:
 	return true
 
 
-func _reject(sender: int, reason: StringName) -> void:
+## Logs a refused claim, at most once a second.
+func reject(sender: int, reason: StringName) -> void:
 	if _time < _next_warning:
 		return
 	_next_warning = _time + 1.0
@@ -211,102 +215,6 @@ func _reject(sender: int, reason: StringName) -> void:
 
 func _forget_peer(peer_id: int) -> void:
 	_claims.erase(peer_id)
-	_orb_claims.erase(peer_id)
-	_well_launches.erase(peer_id)
-
-
-func request_well(point: Vector3, weapon_id: StringName) -> void:
-	if multiplayer.is_server():
-		_accept_well(multiplayer.get_unique_id(), point, weapon_id)
-	else:
-		well_at.rpc_id(1, point, weapon_id)
-
-
-@rpc("any_peer", "call_remote", "reliable")
-func well_at(point: Vector3, weapon_id: StringName) -> void:
-	if multiplayer.is_server():
-		_accept_well(multiplayer.get_remote_sender_id(), point, weapon_id)
-
-
-## The server's own copy of a WELL gun, or null when the id names any other gun.
-func _well_weapon(weapon_id: StringName) -> WeaponData:
-	var data: WeaponData = _weapons.get(weapon_id)
-	return data if data and data.effect == WeaponData.Effect.WELL else null
-
-
-func _accept_well(peer_id: int, point: Vector3, weapon_id: StringName) -> void:
-	if not multiplayer.is_server():
-		return
-	var data: WeaponData = _well_weapon(weapon_id)
-	if data == null:
-		_reject(peer_id, &"well_wrong_weapon")
-		return
-	var player: Player = session.players.find_player(peer_id)
-	if player == null or not player.is_alive() or not point.is_finite():
-		_reject(peer_id, &"well_out_of_bounds")
-		return
-	if not _well_in_range(peer_id, player, data, point) or not _take_claim(peer_id, data):
-		_reject(peer_id, &"well_out_of_bounds")
-		return
-	var well: GravityWell = GravityWell.open(session, player, point, data, false, self)
-	if well == null:
-		_reject(peer_id, &"well_out_of_bounds")
-		return
-	if Net.is_coop(multiplayer):
-		show_well.rpc(peer_id, point)
-
-
-@rpc("authority", "call_remote", "reliable")
-func show_well(peer_id: int, point: Vector3) -> void:
-	var player: Player = session.players.find_player(peer_id)
-	if player:
-		GravityWell.open(session, player, point, null, true)
-
-
-func send_well_orb(origin: Vector3, direction: Vector3, weapon_id: StringName) -> void:
-	if multiplayer.is_server():
-		_remember_well_launch(multiplayer.get_unique_id(), origin)
-		if Net.is_coop(multiplayer):
-			_relay_well_orb(multiplayer.get_unique_id(), origin, direction)
-	elif Net.is_coop(multiplayer):
-		well_orb.rpc_id(1, origin, direction, weapon_id)
-
-
-@rpc("any_peer", "call_remote", "reliable")
-func well_orb(origin: Vector3, direction: Vector3, weapon_id: StringName) -> void:
-	if not multiplayer.is_server() or not origin.is_finite() or not direction.is_finite():
-		return
-	var sender: int = multiplayer.get_remote_sender_id()
-	var player: Player = session.players.find_player(sender)
-	var data: WeaponData = _well_weapon(weapon_id)
-	if data == null:
-		_reject(sender, &"well_wrong_weapon")
-		return
-	if player == null or not player.is_alive() or data == null or direction.is_zero_approx():
-		return
-	if player.camera.global_position.distance_to(origin) > 2.0 or not _take_orb_claim(sender, data):
-		return
-	_remember_well_launch(sender, origin)
-	_relay_well_orb(sender, origin, direction)
-
-
-func _remember_well_launch(peer_id: int, origin: Vector3) -> void:
-	var launches: Array = _well_launches.get(peer_id, [])
-	while not launches.is_empty() and float(launches[0].time) < _time - WELL_FLIGHT_TIME:
-		launches.pop_front()
-	launches.append({"origin": origin, "time": _time})
-	_well_launches[peer_id] = launches
-
-
-func _well_in_range(peer_id: int, player: Player, data: WeaponData, point: Vector3) -> bool:
-	if player.camera.global_position.distance_to(point) <= data.max_range + 2.0:
-		return true
-	for launch: Dictionary in _well_launches.get(peer_id, []):
-		if _time - float(launch.time) <= WELL_FLIGHT_TIME:
-			var origin: Vector3 = launch.origin
-			if origin.distance_to(point) <= data.max_range + 2.0:
-				return true
-	return false
 
 
 func confirm_well_hit(player: Player, killed: bool) -> void:
@@ -322,29 +230,3 @@ func well_hit(killed: bool) -> void:
 	var player: Player = session.players.find_player(multiplayer.get_unique_id())
 	if player:
 		Events.hit_confirmed.emit(player, killed, false)
-
-
-func _relay_well_orb(peer_id: int, origin: Vector3, direction: Vector3) -> void:
-	if peer_id != multiplayer.get_unique_id():
-		show_well_orb(peer_id, origin, direction)
-	for recipient: int in multiplayer.get_peers():
-		if recipient != peer_id:
-			show_well_orb.rpc_id(recipient, peer_id, origin, direction)
-
-
-@rpc("authority", "call_remote", "unreliable")
-func show_well_orb(peer_id: int, origin: Vector3, direction: Vector3) -> void:
-	var player: Player = session.players.find_player(peer_id)
-	if player:
-		GravityWell.spawn_orb(session, player, origin, direction, null, false)
-
-
-func _take_orb_claim(peer_id: int, data: WeaponData) -> bool:
-	var recent: Array = _orb_claims.get(peer_id, [])
-	while not recent.is_empty() and float(recent[0]) <= _time - 1.0:
-		recent.pop_front()
-	_orb_claims[peer_id] = recent
-	if recent.size() + 1 > data.rounds_per_minute / 60.0 * SLACK + 2.0:
-		return false
-	recent.append(_time)
-	return true

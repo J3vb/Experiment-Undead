@@ -1,5 +1,5 @@
 ## Shared two-peer fixture for gravity well claim tests: a server and a client,
-## each with its own GameSession, HitClaims and both players.
+## each with its own GameSession, HitClaims, WellClaims and both players.
 extends GutTest
 
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
@@ -14,6 +14,8 @@ var _server: GameSession
 var _client: GameSession
 var _server_claims: HitClaims
 var _client_claims: HitClaims
+var _server_wells: WellClaims
+var _client_wells: WellClaims
 var _peer_id: int
 
 
@@ -32,7 +34,7 @@ class RecordingClaims:
 
 	var reasons: Array[StringName] = []
 
-	func _reject(sender: int, reason: StringName) -> void:
+	func reject(sender: int, reason: StringName) -> void:
 		reasons.append(reason)
 		super(sender, reason)
 
@@ -43,6 +45,8 @@ func before_each() -> void:
 	_client = _make_side("WellClient")
 	_server_claims = _server.get_node("HitClaims") as HitClaims
 	_client_claims = _client.get_node("HitClaims") as HitClaims
+	_server_wells = _server.get_node("WellClaims") as WellClaims
+	_client_wells = _client.get_node("WellClaims") as WellClaims
 	assert_eq(TwoPeers.host(_server, _port, 2), OK)
 	assert_eq(TwoPeers.join(_client, _port), OK)
 	await wait_until(
@@ -94,11 +98,16 @@ func _make_side(side_name: String) -> GameSession:
 	var claims: HitClaims = RecordingClaims.new()
 	claims.name = "HitClaims"
 	claims.session = session
+	session.hit_claims = claims
 	session.add_child(claims)
+	var wells: WellClaims = WellClaims.new()
+	wells.session = session
+	session.add_child(wells)
 	root.add_child(session)
 	session.set_physics_process(false)
 	session.set_process_unhandled_input(false)
 	claims.set_physics_process(false)
+	wells.set_physics_process(false)
 	return session
 
 
