@@ -28,6 +28,8 @@ const SHARED: Dictionary = {
 	"Snow": "res://levels/materials/town_snow.tres",
 	"Iron": "res://levels/materials/iron.tres",
 	"WindowGlow": "res://levels/materials/lit_window.tres",
+	"Canvas": "res://levels/materials/town_canvas.tres",
+	"SignPaint": "res://levels/materials/town_sign_paint.tres",
 }
 
 
