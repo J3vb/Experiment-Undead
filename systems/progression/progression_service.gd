@@ -79,7 +79,7 @@ func wait_for_run_grants() -> void:
 
 @rpc("any_peer", "call_remote", "reliable")
 func _acknowledge_run_xp() -> void:
-	if _is_authority():
+	if multiplayer.is_server():
 		_pending_grants.erase(multiplayer.get_remote_sender_id())
 
 

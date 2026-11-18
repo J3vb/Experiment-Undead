@@ -26,7 +26,7 @@ pattern. **Missing** = needed soon, not built.
 
 | # | Foundation | Status | Rule lives in |
 |---|---|---|---|
-| 1 | [Co-op authority: who decides what](#1-co-op-authority) | shaky | [ADR 0003](adr/0003-trusted-client-co-op.md), `docs/MULTIPLAYER.md` |
+| 1 | [Co-op authority: who decides what](#1-co-op-authority) | solid | [ADR 0003](adr/0003-trusted-client-co-op.md), `docs/MULTIPLAYER.md` |
 | 2 | [Content and ids in data](#2-content-and-ids-in-data) | solid | [ADR 0002](adr/0002-content-as-resources.md), `docs/HOW_TO_ADD.md` |
 | 3 | [Save format](#3-save-format) | solid | [ADR 0005](adr/0005-local-versioned-saves.md) |
 | 4 | [Events and signals](#4-events-and-signals) | solid | [ADR 0007](adr/0007-signals-and-events.md) |
@@ -58,14 +58,13 @@ its own copy, and leech / points per hit run where the server applies the hit
 (`ItemLoadout.apply_hit`). Pack equips run in `LootService`'s physics tick
 (plans/item-effects-server.md).
 
-**Why shaky:**
-- There is no standard "client asks the server" pattern. Eleven scripts each
-  write their own `@rpc` with their own checks, so every new feature
-  re-invents it.
-
-**Being fixed:** F-79, [plans/easy-changes.md](plans/easy-changes.md) steps 1-3
-(the written co-op patterns, one server check for new code, a CI rule for
-every RPC, then the two 350-line co-op scripts split by job).
+**Why solid now:** the six co-op message patterns are written down with a
+reference file each (`docs/MULTIPLAYER.md` "Writing co-op code"), new node
+code has one server check (`multiplayer.is_server()`), `docs/HOW_TO_ADD.md`
+has a co-op recipe, and CI rule `rpc-rules` checks every `@rpc` names its
+transfer mode and every `any_peer` handler starts with the server check
+(F-79 step 1, [plans/easy-changes.md](plans/easy-changes.md)). Steps 2 and 3
+split the two co-op scripts at the 350-line cap by job.
 
 **Fixed when:** ~~one request path for interactions (client sends the request,
 server checks sender, range and state, then calls the same `interact()`)~~
