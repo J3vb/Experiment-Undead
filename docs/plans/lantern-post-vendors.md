@@ -293,8 +293,8 @@ survivor pipeline. If it fails the look card, steps 2-5 change, not throw away.
 
 ## Open decisions
 
-- [ ] Who runs which stall: the lore cast (Odile Brandt at TRADER, Teun Maes at
-      GUNSMITH, Dr. Lien Corvelyn at TECHNICIAN, Lt. Raes at MISSIONS), or swap
-      to match the people drawn in the concept art. Recommended: the lore cast.
+- [x] Who runs which stall: the lore cast (Odile Brandt at TRADER, Teun Maes
+      at GUNSMITH, Dr. Lien Corvelyn at TECHNICIAN, Lt. Raes at MISSIONS),
+      the person, 2026-11-18.
 - [ ] Plan approval: the five steps, people and talk now, shop screens later
       in F-45.

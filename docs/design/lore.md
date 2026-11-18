@@ -223,8 +223,8 @@ The NPC jobs are suggestions to match the town systems in the design doc. Swap n
 ### The stall keepers
 
 Four of the six run the market stalls on the main street (plan
-`docs/plans/lantern-post-vendors.md`, provisional until the cast card is
-answered). They all wear heavy winter clothes, lit warm from the stall lamp
+`docs/plans/lantern-post-vendors.md`; cast picked by the person on
+2026-11-18). They all wear heavy winter clothes, lit warm from the stall lamp
 above. No rarity colours on their clothes, and bio-green only where Fenlight is.
 
 | Stall | Who | Look | Will do (F-45) |
