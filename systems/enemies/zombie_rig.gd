@@ -113,7 +113,7 @@ func follow(zombie: Zombie, delta: float) -> void:
 		return
 	if zombie.state == Zombie.State.DEAD:
 		return
-	var vault: float = zombie.vault_progress()
+	var vault: float = zombie.entry.vault_progress()
 	if vault >= 0.0:
 		pose_vault(vault)
 		return

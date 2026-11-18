@@ -219,7 +219,7 @@ func test_vault_pose_hops_and_reaches_forward() -> void:
 	assert_lt(rig.get_offset(&"LegL").x, -0.5, "legs tuck")
 	rig.pose_vault(1.0)
 	assert_almost_eq(rig.position.y, 0.0, 0.001, "lands")
-	assert_eq(zombie.vault_progress(), -1.0, "not vaulting outside a window")
+	assert_eq(zombie.entry.vault_progress(), -1.0, "not vaulting outside a window")
 
 
 func test_walk_and_vault_bend_the_new_elbows_and_knees() -> void:

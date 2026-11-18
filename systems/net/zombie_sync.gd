@@ -9,7 +9,7 @@ const SYNCED: Array[NodePath] = [
 	^".:velocity",
 	^".:state",
 	^".:state_time",
-	^".:_vault_time",
+	^".:entry:vault_time",
 	^".:frozen",
 	^".:head_popped"
 ]
