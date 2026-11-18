@@ -6,7 +6,6 @@ const FINISHES: Dictionary[String, int] = {
 	"BodySuit": 0,
 	"BodyKnit": 5,
 	"BodyRubber": 4,
-	"BodyLens": 6,
 	"GearFabric": 0,
 	"GearWebbing": 1,
 	"GearPlate": 2,
@@ -30,6 +29,25 @@ func test_supported_materials_keep_their_colour_and_select_the_expected_finish()
 		assert_eq(material.get_shader_parameter(&"finish"), FINISHES[mat_name])
 		assert_eq(material.get_shader_parameter(&"albedo"), source.albedo_color)
 	assert_push_error_count(0)
+
+
+func test_player_body_keeps_its_baked_maps() -> void:
+	var model: Node3D = (load("res://assets/models/characters/player.glb") as PackedScene).instantiate() as Node3D
+	autofree(model)
+	var names: Array[String] = []
+	for node: Node in model.find_children("*", "MeshInstance3D", true, false):
+		var mesh: Mesh = (node as MeshInstance3D).mesh
+		for surface: int in mesh.get_surface_count():
+			var material: BaseMaterial3D = mesh.surface_get_material(surface) as BaseMaterial3D
+			assert_not_null(material, "body surfaces keep their baked standard material")
+			if material == null:
+				continue
+			assert_not_null(material.albedo_texture, material.resource_name + " has its colour map")
+			assert_not_null(material.normal_texture, material.resource_name + " has its normal map")
+			assert_false(material.vertex_color_use_as_albedo, "vertex colour holds AO and zones, not colour")
+			names.append(material.resource_name)
+	names.sort()
+	assert_eq(names, ["BodyCloth", "BodyHair", "BodyRubber", "BodySkin"])
 
 
 func test_unknown_material_reports_the_name_and_uses_fabric() -> void:

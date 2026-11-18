@@ -43,3 +43,4 @@ change it), **replaced** (see the newer record).
 | [0012](0012-updates-and-release-channels.md) | Exact versions, a built-in launcher, self-updating servers | proposed |
 | [0013](0013-every-game-joinable.md) | Every game is joinable; alone means solo | proposed |
 | [0014](0014-baked-gun-textures.md) | Guns may use baked texture maps, 30,000-triangle budget | accepted |
+| [0015](0015-baked-player-body.md) | The player body may use baked texture maps | accepted |

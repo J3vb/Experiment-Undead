@@ -16,9 +16,9 @@ from mathutils.bvhtree import BVHTree
 
 
 def _body_surfaces():
-    from player_body_model import build_player
+    from player_body.build import build_player
 
-    build_player()
+    build_player(clips=False)
     bpy.context.view_layer.update()
     surfaces = []
     for obj in list(bpy.context.scene.objects):
@@ -37,7 +37,7 @@ def _body_surfaces():
 
 
 def _clearance(obj, surfaces):
-    """Tailor against all undersuit details, leaving four millimetres of air."""
+    """Tailor against all body details, leaving four millimetres of air."""
     bpy.context.view_layer.update()
     inverse = obj.matrix_world.inverted()
     for vertex in obj.data.vertices:
@@ -52,6 +52,44 @@ def _clearance(obj, surfaces):
                     moved = True
             if not moved:
                 break
+        vertex.co = inverse @ point
+    obj.data.update()
+    for _round in range(12):
+        if not _lift_crossing_faces(obj, surfaces):
+            break
+
+
+def _lift_crossing_faces(obj, surfaces):
+    """Thin body details (placket, snaps, yoke) can poke between a part's vertices; move those faces out 2 mm."""
+    obj.data.calc_loop_triangles()
+    world = [obj.matrix_world @ vertex.co for vertex in obj.data.vertices]
+    triangles = [tuple(triangle.vertices) for triangle in obj.data.loop_triangles]
+    tree = BVHTree.FromPolygons(world, triangles, all_triangles=True)
+    crossing = {index for surface in surfaces for index, _other in tree.overlap(surface)}
+    if not crossing:
+        return False
+    inverse = obj.matrix_world.inverted()
+    for index in {vertex for triangle in crossing for vertex in triangles[triangle]}:
+        hits = [surface.find_nearest(world[index]) for surface in surfaces]
+        normal = min(hits, key=lambda hit: hit[3])[1]
+        obj.data.vertices[index].co = inverse @ (world[index] + normal * 0.002)
+    obj.data.update()
+    return True
+
+
+# The survivor's field jacket is deeper than the old undersuit the vest shapes were drawn on:
+# front and back scale per side (y < 0 is the chest), a little wider, before tailoring.
+JACKET_FIT = (1.04, 1.36, 1.22)
+
+
+def _fit_to_jacket(obj):
+    bpy.context.view_layer.update()
+    inverse = obj.matrix_world.inverted()
+    across, front, back = JACKET_FIT
+    for vertex in obj.data.vertices:
+        point = obj.matrix_world @ vertex.co
+        point.x *= across
+        point.y *= front if point.y < 0 else back
         vertex.co = inverse @ point
     obj.data.update()
 
@@ -282,6 +320,8 @@ def _finish(objects, armature, surfaces):
     from build_models import attach, join_into
 
     for obj in objects:
+        if not obj.get("rigid_bone"):
+            _fit_to_jacket(obj)
         _clearance(obj, surfaces)
         if obj.name.startswith("WorldCuff"):
             duplicate = obj.copy()

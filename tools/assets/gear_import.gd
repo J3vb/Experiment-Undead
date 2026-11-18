@@ -1,5 +1,6 @@
 ## Replaces character and gear materials with the shared procedural finish,
 ## preserving the Blender colour and selecting the finish by material name.
+## Materials that carry baked maps (the player body, ADR 0015) keep them.
 @tool
 extends EditorScenePostImport
 
@@ -9,7 +10,6 @@ const FINISHES: Dictionary[String, int] = {
 	"BodySuit": 0,
 	"BodyKnit": 5,
 	"BodyRubber": 4,
-	"BodyLens": 6,
 	"GearFabric": 0,
 	"GearWebbing": 1,
 	"GearPlate": 2,
@@ -50,6 +50,9 @@ func _post_import(scene: Node) -> Object:
 			if current is ShaderMaterial and (current as ShaderMaterial).shader in [SHADER, GLASS_SHADER]:
 				continue
 			var source: BaseMaterial3D = current as BaseMaterial3D
+			if source != null and source.albedo_texture != null:
+				source.vertex_color_use_as_albedo = false  # vertex colour holds AO and paint zones, not colour
+				continue
 			if not materials.has(source):
 				materials[source] = finish_material(source)
 			mesh.surface_set_material(surface, materials[source])

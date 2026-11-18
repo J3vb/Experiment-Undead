@@ -1,6 +1,6 @@
 # Plan: Player and gear to the concept art
 
-Status: Approved
+Status: Building
 Roadmap: F-70 / issue none (follows the gear look work in DECISIONS.md)
 Phase: P6 (pulled forward with the concept-art passes, 2026-11-17)
 Size: L
@@ -176,6 +176,10 @@ the 120 fps target on the RTX 4080 Super. Gloves, boots and headgear hide past
   does not read, stop and show the person before step 2.
 - Files: player_body_model.py (split head into player_head_model.py if needed),
   character_checks.py, assets/models/characters/player.glb, turnaround.
+- As built (2026-11-18): the person picked the separate Fable trial body over
+  the first step 1 build. It lives in `tools/assets/player_body/` (MakeHuman CC0
+  head, baked colour/normal/roughness maps in the .glb, ADR 0015); the old
+  module became `player_arm_shapes.py` for the first-person arms until step 6.
 - Tests: tools/assets/tests: player has the four materials and 22 named bones,
   stays under 16,000 tris; tests/unit/test_gear_rig.gd still binds every vest.
 - Done when: turnaround and booth render beside the concept, sent to the person.
