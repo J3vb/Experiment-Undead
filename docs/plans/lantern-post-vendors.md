@@ -1,10 +1,10 @@
 # Plan: Lantern Post vendors
 
-Status: Review
+Status: Approved
 Roadmap: F-76 / issue none (a slice of F-45 pulled forward, like F-50)
 Phase: P9 (town hub), pulled forward with the concept-art passes
 Size: L
-Approved by:
+Approved by: the person on decision cards (cast, plan; 2026-11-18), plan PR #339
 
 ## Goal
 
@@ -296,5 +296,5 @@ survivor pipeline. If it fails the look card, steps 2-5 change, not throw away.
 - [x] Who runs which stall: the lore cast (Odile Brandt at TRADER, Teun Maes
       at GUNSMITH, Dr. Lien Corvelyn at TECHNICIAN, Lt. Raes at MISSIONS),
       the person, 2026-11-18.
-- [ ] Plan approval: the five steps, people and talk now, shop screens later
-      in F-45.
+- [x] Plan approval: all five steps, people and talk now, shop screens
+      later in F-45 (the person, 2026-11-18).
