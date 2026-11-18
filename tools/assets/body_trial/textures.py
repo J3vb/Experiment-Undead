@@ -105,11 +105,11 @@ def _skin_tint(colours, points, mask):
     """Lips, shadowed eye sockets and a flush on the nose and cheeks."""
     ax, y, z = np.abs(points[:, 0]), points[:, 1], points[:, 2]
     face = step(-y, 0.06, 0.02) * mask
-    lips = bump(z, 1.6225, 0.0045) * bump(ax, 0, 0.020) + bump(z, 1.6105, 0.005) * bump(ax, 0, 0.017)
+    lips = bump(z, 1.6170, 0.0040) * bump(ax, 0, 0.022) + bump(z, 1.6075, 0.0045) * bump(ax, 0, 0.018)
     colours = _mix(colours, _linear("#6E4038"), np.clip(lips, 0, 1) * 0.8 * face)
-    flush = bump(ax, 0, 0.015) * bump(z, 1.648, 0.012) + bump(ax, 0.05, 0.02) * bump(z, 1.655, 0.015)
+    flush = bump(ax, 0, 0.015) * bump(z, 1.644, 0.012) + bump(ax, 0.05, 0.02) * bump(z, 1.655, 0.015)
     colours = _mix(colours, _linear("#9A5F4E"), np.clip(flush, 0, 1) * 0.35 * face)
-    return colours * (1 - 0.3 * bump(ax, 0.031, 0.02) * bump(z, 1.692, 0.012) * face)[:, None]
+    return colours * (1 - 0.3 * bump(ax, 0.030, 0.02) * bump(z, 1.684, 0.012) * face)[:, None]
 
 
 def paint_tint(obj) -> None:

@@ -1,176 +1,182 @@
-"""Survivor head: shaped face, short hair, full beard, brows, ears and eyes on the head bone."""
+"""Survivor head: a CC0 base head (MakeHuman) cut down to budget, with hair, beard and brows grown on it."""
 
-import math
+import os
 
+import bpy
 import numpy as np
 import surface as surf
 from surface import bump, step
 
-# z, side shift, front shift, half width, front depth, back depth, squareness
-HEAD_KEYS = (
-    (1.545, 0, 0, 0.030, 0.035, 0.045, 2.0),
-    (1.560, 0, 0, 0.043, 0.074, 0.050, 2.0),
-    (1.572, 0, 0, 0.051, 0.088, 0.055, 2.1),
-    (1.590, 0, 0, 0.060, 0.095, 0.062, 2.2),
-    (1.610, 0, 0, 0.066, 0.097, 0.076, 2.3),
-    (1.630, 0, 0, 0.070, 0.096, 0.088, 2.3),
-    (1.650, 0, 0, 0.073, 0.094, 0.096, 2.3),
-    (1.670, 0, 0, 0.075, 0.093, 0.100, 2.3),
-    (1.690, 0, 0, 0.076, 0.092, 0.102, 2.3),
-    (1.710, 0, 0, 0.077, 0.097, 0.102, 2.3),
-    (1.730, 0, 0, 0.077, 0.097, 0.100, 2.2),
-    (1.750, 0, 0, 0.074, 0.090, 0.094, 2.1),
-    (1.770, 0, 0, 0.066, 0.075, 0.082, 2.0),
-    (1.785, 0, 0, 0.052, 0.055, 0.062, 2.0),
-    (1.795, 0, 0, 0.032, 0.030, 0.038, 2.0),
-    (1.800, 0, 0, 0.012, 0.010, 0.012, 2.0),
-)
+BASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "base_head.obj")
+SCALE = 0.098  # base mesh decimetres to our metres, sized so the crown sits at 1.80 m
+BASE_EYE = (0.31, 7.285, 1.245)  # eye centre in the base mesh (x right, y up, z front)
+BASE_EAR_Z = 0.477  # base depth that lands on our y = 0
+EYE = (BASE_EYE[0] * SCALE, 1.682)
+EYE_Y = -(BASE_EYE[2] - BASE_EAR_Z) * SCALE
+EYE_RADIUS = 0.0134
+SKIN_TRIANGLES = 3600
 NECK_KEYS = (
     (1.46, 0, -0.016, 0.060, 0.058, 0.060, 2.0),
     (1.53, 0, -0.008, 0.055, 0.054, 0.056, 2.0),
     (1.60, 0, 0.004, 0.054, 0.056, 0.056, 2.0),
 )
-FACE_X = (0, 0.005, 0.010, 0.015, 0.0205, 0.025, 0.0295, 0.034, 0.0385, 0.043, 0.048, 0.055, 0.063)
-SIDE_ANGLES = (68, 80, 95, 115, 145, 180)
-FACE_Z = (
-    *(1.545, 1.558, 1.571, 1.584, 1.596, 1.606, 1.613, 1.6165, 1.620, 1.624, 1.629, 1.634),
-    *(1.639, 1.644, 1.649, 1.656, 1.664, 1.672, 1.679, 1.684, 1.688, 1.692, 1.6955, 1.700, 1.705),
-    *(1.710, 1.716, 1.726, 1.742, 1.760, 1.776, 1.789, 1.797, 1.800),
-)
-EYE = (0.031, 1.6895)
-EYE_RADIUS = 0.0125
-HIDDEN = 0.012  # hair shells sink this far under the skin where no hair grows
-NOSE_Z = (1.626, 1.633, 1.640, 1.647, 1.660, 1.680, 1.700, 1.712)
-NOSE_OUT = (0.0, 0.006, 0.019, 0.024, 0.017, 0.009, 0.003, 0.0)
-NOSE_WIDE = (0.013, 0.013, 0.0125, 0.011, 0.008, 0.0065, 0.007, 0.009)
-
-
-def head_tube() -> surf.Tube:
-    return surf.Tube((0, 0, 0), (0, 0, 1), (1, 0, 0), HEAD_KEYS)
-
-
-def _around(half: list) -> np.ndarray:
-    """Mirror a list of half-ring angles (turns, 0 to 0.5) into a full ring."""
-    half = np.asarray(half)
-    return np.concatenate([half, 1.0 - half[-2:0:-1]])
-
-
-def face_columns() -> np.ndarray:
-    """Columns packed on the face, where the nose, eyes and mouth need them."""
-    front = [math.asin(x / 0.0765) / math.tau for x in FACE_X]
-    return _around(front + [angle / 360 for angle in SIDE_ANGLES])
-
-
-def _nose(ax, z):
-    profile = surf.spline(NOSE_Z, np.stack([NOSE_OUT, NOSE_WIDE], axis=1), z)
-    ridge = profile[..., 0] * np.exp(-((ax / profile[..., 1]) ** 2))
-    return ridge + 0.007 * bump(ax, 0.0135, 0.006) * bump(z, 1.6415, 0.0065)
-
-
-def _eyes(ax, z):
-    socket = -0.009 * bump(ax, EYE[0], 0.017) * bump(z, EYE[1] + 0.0005, 0.0105)
-    almond = ((ax - EYE[0]) / 0.0170) ** 2 + ((z - EYE[1]) / 0.0070) ** 2
-    brow = 0.005 * bump(z, 1.708, 0.0075) * (1 - 0.5 * bump(ax, 0, 0.008)) * step(0.062 - ax, 0, 0.02)
-    return socket - 0.0080 * (1 - step(almond, 1.0, 0.5)) + brow
-
-
-def _mouth(ax, z):
-    lips = 0.003 * bump(z, 1.6225, 0.004) * bump(ax, 0, 0.020) + 0.0035 * bump(z, 1.6105, 0.0045) * bump(ax, 0, 0.017)
-    return lips - 0.0035 * bump(z, 1.6165, 0.0017) * step(0.024 - ax, 0, 0.006)
-
-
-def face(points, _u, _s):
-    """Lift in metres that turns the plain skull into a face; only the front is touched."""
-    ax, y, z = np.abs(points[..., 0]), points[..., 1], points[..., 2]
-    cheeks = 0.004 * bump(ax, 0.052, 0.016) * bump(z, 1.667, 0.012) - 0.004 * bump(ax, 0.047, 0.016) * bump(
-        z, 1.630, 0.018
-    )
-    chin = 0.004 * bump(ax, 0, 0.018) * bump(z, 1.582, 0.012)
-    return step(-y, 0.03, 0.04) * (_nose(ax, z) + _eyes(ax, z) + _mouth(ax, z) + cheeks + chin)
-
-
 HAIRLINE_Y = (-0.11, -0.085, -0.06, -0.045, -0.03, -0.018, -0.008, 0.022, 0.035, 0.06, 0.11)
-HAIRLINE_Z = (1.756, 1.754, 1.738, 1.700, 1.655, 1.655, 1.700, 1.705, 1.660, 1.615, 1.605)
-
-
-def hair(points, u, s):
-    """Short cropped hair: thickness above the hairline, sunk under the skin below it."""
-    y, z = points[..., 1], points[..., 2]
-    line = surf.spline(HAIRLINE_Y, np.asarray(HAIRLINE_Z)[:, None], y)[..., 0]
-    cover = step(z - line, 0.0, 0.008)
-    strands = 0.0012 * np.sin(math.tau * (u * 13 + 0.35 * np.sin(z * 55)))
-    tuft = 0.005 * bump(y, -0.055, 0.04) * step(z - 1.745, 0, 0.02)
-    strands *= 1 - step(z, 1.775, 0.02)
-    return face(points, u, s) - HIDDEN + cover * (0.011 + tuft + strands + HIDDEN)
-
-
+HAIRLINE_Z = (1.772, 1.770, 1.752, 1.712, 1.662, 1.662, 1.700, 1.702, 1.660, 1.600, 1.600)
 CHEEK_X = (0.0, 0.018, 0.030, 0.042, 0.055, 0.066, 0.080)
-CHEEK_Z = (1.6375, 1.636, 1.630, 1.632, 1.650, 1.670, 1.678)
+CHEEK_Z = (1.637, 1.635, 1.625, 1.627, 1.645, 1.665, 1.673)
 JAW_BACK_Z = (1.545, 1.57, 1.60, 1.63, 1.68)
 JAW_BACK_Y = (0.040, 0.038, 0.022, 0.004, -0.006)
 
 
-def beard(points, u, s):
-    """Full beard and moustache with a gap for the lower lip."""
-    ax, y, z = np.abs(points[..., 0]), points[..., 1], points[..., 2]
-    cover = step(surf.spline(CHEEK_X, np.asarray(CHEEK_Z)[:, None], ax)[..., 0] - z, 0.0, 0.006)
-    cover *= 1 - step(0.016 - ax, 0, 0.006) * step(z - 1.6075, 0, 0.003) * step(1.6190 - z, 0, 0.003)
-    cover *= step(surf.spline(JAW_BACK_Z, np.asarray(JAW_BACK_Y)[:, None], z)[..., 0] - y, 0.0, 0.010)
-    thick = 0.006 + 0.006 * step(1.60 - z, 0, 0.03) + 0.006 * bump(ax, 0, 0.03) * step(1.585 - z, 0, 0.02)
-    thick += 0.003 * bump(z, 1.629, 0.006) * step(0.034 - ax, 0, 0.01)
-    strands = 0.0010 * np.sin(math.tau * (ax * 45 + z * 20))
-    return face(points, u, s) - HIDDEN + cover * (thick + strands + HIDDEN)
+def _load_base() -> tuple:
+    """Base head vertices in our space (metres, facing -Y) and its faces."""
+    vertices, faces = [], []
+    with open(BASE, encoding="utf-8") as lines:
+        for line in lines:
+            kind, *values = line.split() or ["#"]
+            if kind == "v":
+                vertices.append([float(value) for value in values])
+            elif kind == "f":
+                faces.append([int(value) - 1 for value in values])
+    base = np.asarray(vertices)
+    points = np.stack(
+        [base[:, 0] * SCALE, -(base[:, 2] - BASE_EAR_Z) * SCALE, EYE[1] + (base[:, 1] - BASE_EYE[1]) * SCALE], axis=1
+    )
+    return points, faces
 
 
-def _eye_depth(tube) -> float:
-    """Blender y of the skin at the middle of the eye opening."""
-    u = np.linspace(0.0, 0.2, 400)
-    points = tube.surface(u, np.full_like(u, EYE[1]), face)
-    return float(points[np.argmin(np.abs(points[:, 0] - EYE[0])), 1])
+def _rugged(points: np.ndarray) -> np.ndarray:
+    """The base head is a neutral average: give it a heavier brow and a wider jaw."""
+    ax, y, z = np.abs(points[:, 0]), points[:, 1], points[:, 2]
+    front = step(-y, 0.0, 0.05)
+    points = points.copy()
+    points[:, 0] *= 1 + 0.07 * front * bump(z, 1.60, 0.035)
+    points[:, 1] -= 0.0035 * front * bump(z, 1.703, 0.008) * step(0.055 - ax, 0, 0.015)
+    points[:, 1] -= 0.004 * front * bump(z, 1.578, 0.016) * bump(ax, 0, 0.03)
+    return points
 
 
-def _ear(mat, sign):
-    ear = surf.ball("Ear", (0, 0, 0), (0.0065, 0.016, 0.030), mat, (8, 6))
-    turn, lean = sign * math.radians(-22), sign * math.radians(-7)
-    for vertex in ear.data.vertices:
-        x, y, z = vertex.co
-        if x * sign > 0:
-            x -= sign * 0.004 * bump(y, -0.002, 0.008) * bump(z, 0.002, 0.014)
-        x, y = x * math.cos(turn) - y * math.sin(turn), x * math.sin(turn) + y * math.cos(turn)
-        x, z = x * math.cos(lean) - z * math.sin(lean), x * math.sin(lean) + z * math.cos(lean)
-        vertex.co = (x + sign * 0.079, y + 0.010, z + 1.677)
-    return ear
+def _decimate(obj, triangles: int) -> None:
+    """Collapse to a triangle count, mirrored left to right."""
+    now = sum(len(face.vertices) - 2 for face in obj.data.polygons)
+    modifier = obj.modifiers.new("Decimate", "DECIMATE")
+    modifier.ratio, modifier.use_symmetry, modifier.symmetry_axis = triangles / now, True, "X"
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.modifier_apply(modifier=modifier.name)
 
 
-def _brow(tube, mat, sign):
-    low, high = (math.asin(x / 0.0765) / math.tau for x in (0.010, 0.050))
-    span = (sign * low, sign * high, 1.7050, 1.7115)
+def neck_cover(points: np.ndarray) -> np.ndarray:
+    """Above one half where the head is kept; the neck tube takes over below."""
+    return step(points[:, 2] - 1.572 - 0.040 * step(points[:, 1], 0.0, 0.05), 0.0, 0.004)
 
-    def arch(un):
-        return -0.0035 * un + 0.0025 * bump(un, 0.45, 0.3)
 
-    return surf.patch("Brow", tube, span, 0.0026, mat, (4, 2), face, arch)
+def hair_cover(points: np.ndarray) -> np.ndarray:
+    """0 to 1: how much short cropped hair grows at each point."""
+    ax, y, z = np.abs(points[:, 0]), points[:, 1], points[:, 2]
+    line = surf.spline(HAIRLINE_Y, np.asarray(HAIRLINE_Z)[:, None], y)[..., 0]
+    return step(z - line, 0.0, 0.010) * step(0.079 - ax, 0, 0.004)
+
+
+def beard_cover(points: np.ndarray) -> np.ndarray:
+    """0 to 1: full beard and moustache with a gap for the lips."""
+    ax, y, z = np.abs(points[:, 0]), points[:, 1], points[:, 2]
+    cover = step(surf.spline(CHEEK_X, np.asarray(CHEEK_Z)[:, None], ax)[..., 0] - z, 0.0, 0.008)
+    cover *= 1 - step(0.020 - ax, 0, 0.006) * step(z - 1.603, 0, 0.003) * step(1.6165 - z, 0, 0.002)
+    cover *= step(surf.spline(JAW_BACK_Z, np.asarray(JAW_BACK_Y)[:, None], z)[..., 0] - y, 0.0, 0.012)
+    return cover * step(z, 1.555, 0.006) * step(0.071 - ax, 0, 0.003)
+
+
+def brow_cover(points: np.ndarray) -> np.ndarray:
+    ax, y, z = np.abs(points[:, 0]), points[:, 1], points[:, 2]
+    arch = 1.7035 - 0.004 * (ax - 0.012) / 0.04 + 0.003 * bump(ax, 0.03, 0.012)
+    return bump(z, arch, 0.0034) * step(ax, 0.009, 0.004) * step(0.054 - ax, 0, 0.005) * step(-y, 0.03, 0.02)
+
+
+def _hair_thick(points: np.ndarray) -> np.ndarray:
+    y, z = points[:, 1], points[:, 2]
+    return 0.010 + 0.005 * bump(y, -0.055, 0.04) * step(z, 1.745, 0.02)
+
+
+def _beard_thick(points: np.ndarray) -> np.ndarray:
+    ax, z = np.abs(points[:, 0]), points[:, 2]
+    return 0.006 + 0.006 * step(1.60 - z, 0, 0.03) + 0.006 * bump(ax, 0, 0.03) * step(1.585 - z, 0, 0.02)
+
+
+def _cut(mesh, cover: np.ndarray) -> tuple:
+    """The part of a mesh where cover is above one half: points, normals, cover and faces."""
+    points = [np.asarray(vertex.co[:]) for vertex in mesh.vertices]
+    normals = [np.asarray(vertex.normal[:]) for vertex in mesh.vertices]
+    covers = list(cover)
+    cuts: dict = {}
+
+    def cross(inside: int, outside: int) -> int:
+        key = (inside, outside)
+        if key not in cuts:
+            at = (cover[inside] - 0.5) / (cover[inside] - cover[outside])
+            points.append(points[inside] + (points[outside] - points[inside]) * at)
+            normals.append(surf.unit(normals[inside] + (normals[outside] - normals[inside]) * at))
+            covers.append(0.5)
+            cuts[key] = len(points) - 1
+        return cuts[key]
+
+    faces = []
+    for face in mesh.polygons:
+        ring = []
+        for here, after in zip(face.vertices, [*face.vertices[1:], face.vertices[0]], strict=True):
+            if cover[here] > 0.5:
+                ring.append(here)
+            if (cover[here] > 0.5) != (cover[after] > 0.5):
+                ring.append(cross(here, after) if cover[here] > 0.5 else cross(after, here))
+        if len(ring) >= 3:
+            faces.append(ring)
+    return np.asarray(points), np.asarray(normals), np.asarray(covers), faces
+
+
+def _grow(name, skin, cover: np.ndarray, thick, mat):
+    """A shell of hair lifted off the skin, thinning out to a clean edge."""
+    points, normals, covers, faces = _cut(skin.data, cover)
+    lift = 0.0008 + np.resize(thick, len(points)) * np.clip(covers * 2 - 1, 0, 1)
+    return surf._object(name, points + normals * lift[:, None], faces, mat)
+
+
+def _points_of(obj) -> np.ndarray:
+    return np.asarray([vertex.co[:] for vertex in obj.data.vertices])
+
+
+def _bare(skin, covers: list) -> None:
+    """Drop the skin triangles that sit fully under hair."""
+    import bmesh
+
+    hidden = np.max(covers, axis=0) > 0.75
+    mesh = bmesh.new()
+    mesh.from_mesh(skin.data)
+    doomed = [face for face in mesh.faces if all(hidden[vertex.index] for vertex in face.verts)]
+    bmesh.ops.delete(mesh, geom=doomed, context="FACES")
+    mesh.to_mesh(skin.data)
+    mesh.free()
 
 
 def build_head(mats: dict) -> dict:
     """Returns {"skin": [...], "hair": [...], "eyes": [...]}: every part rides the head bone."""
-    tube = head_tube()
-    skin = [surf.shell("Head", tube.grid(face_columns(), FACE_Z, face), mats["skin"])]
-    hair_z = (1.59, 1.615, 1.64, 1.665, 1.69, 1.71, 1.73, 1.75, 1.768, 1.782, 1.792, 1.798, 1.80)
-    hairs = [surf.shell("Hair", tube.grid(surf.turns(26), hair_z, hair), mats["hair"])]
-    beard_z = (1.545, 1.558, 1.574, 1.592, 1.606, 1.613, 1.620, 1.626, 1.632, 1.638, 1.648, 1.662, 1.676)
-    beard_u = _around(
-        [0, 0.009, 0.018, 0.028, 0.039, 0.051, 0.064, 0.078, 0.096, 0.116, 0.14, 0.17, 0.205, 0.25, 0.32, 0.5]
-    )
-    hairs.append(surf.shell("Beard", tube.grid(beard_u, beard_z, beard), mats["hair"]))
-    depth = _eye_depth(tube)
-    eyes = []
-    for sign in (1, -1):
-        skin.append(_ear(mats["skin"], sign))
-        hairs.append(_brow(tube, mats["hair"], sign))
-        centre = (sign * EYE[0], depth + EYE_RADIUS - 0.0035, EYE[1])
-        eyes.append(surf.ball("Eyeball", centre, (EYE_RADIUS,) * 3, mats["rubber"], (8, 5)))
-    return {"skin": skin, "hair": hairs, "eyes": eyes}
+    points, faces = _load_base()
+    skin = surf._object("Head", _rugged(points), faces, mats["skin"])
+    _decimate(skin, SKIN_TRIANGLES)
+    points, _normals, _covers, faces = _cut(skin.data, neck_cover(_points_of(skin)))
+    bpy.data.objects.remove(skin)
+    skin = surf._object("Head", points, faces, mats["skin"])
+    points = _points_of(skin)
+    hair, beard, brow = hair_cover(points), beard_cover(points), brow_cover(points)
+    hairs = [
+        _grow("Hair", skin, hair, _hair_thick(points), mats["hair"]),
+        _grow("Beard", skin, beard, _beard_thick(points), mats["hair"]),
+        _grow("Brow", skin, brow, 0.0022, mats["hair"]),
+    ]
+    _bare(skin, [hair, beard])
+    eyes = [
+        surf.ball("Eyeball", (sign * EYE[0], EYE_Y, EYE[1]), (EYE_RADIUS,) * 3, mats["rubber"], (8, 5))
+        for sign in (1, -1)
+    ]
+    return {"skin": [skin], "hair": hairs, "eyes": eyes}
 
 
 def build_neck(mats: dict):
