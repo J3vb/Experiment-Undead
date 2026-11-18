@@ -27,7 +27,7 @@ All written into lore.md, "Story links for game content", unless noted.
 | --- | --- |
 | Zombie types had no story (why Bloaters burst, Stalkers climb, Brutes have a head plate, Glowers come in the dark) | One line each. Brute = riot troops whose helmet fused into a bone plate; Stalkers follow warm air under ceilings. |
 | Guns had no origin, and the name styles were mixed (codes vs names) | Three sources: army and Cordon issue, Oriel security, valley civilians, plus Oriel prototypes. The source sets the name style. |
-| Power-ups, points and wall buys had no reason | Recommended pick written, waiting on the person (decision card). |
+| Power-ups, points and wall buys had no reason | Decided by the person: what you see gets a reason (drops are kit the Lit carry), points stay a game score. |
 | Vests, charms, implants, abilities, skill branches and Scrap had no reason | One line each. Implants = HALCYON's soldier program, fitted by Dr. Corvelyn. |
 | Fenlight vines, pods and spill pools in Halcyon were not in the lore (it only lived in bodies) | Fenlight grows outside bodies where it is warm and damp. |
 | Army trucks, cases and checkpoints inside the zone (props, F-77) had no owner: the Cordon only exists from Day 9 | The Cordon is the army force that ran the evacuation, then pulled back to seal the zone. |

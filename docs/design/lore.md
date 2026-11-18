@@ -304,9 +304,9 @@ some guns have codes and some have names.
 
 ### Power-ups, points and buying from walls
 
-These are the arcade rules of the wave game. *(Provisional, waiting on the
-person's pick, see open questions.)* Recommended: things the player sees in
-the world get a reason; points stay a plain game score.
+These are the arcade rules of the wave game. Decided by the person
+(2026-11-18): things the player sees in the world get a story reason; points
+stay a plain game score. The drop reasons below are provisional picks.
 
 | Thing | Story reason |
 | --- | --- |
@@ -395,7 +395,6 @@ No cutscenes and nothing that stops play. Story is optional: a player who ignore
 - [ ] Provisional (2026-11-17): the Wick stay off-screen. Players only fight the infected; Wick believers can appear as Lit (The Choir).
 - [ ] Who are the Act II and Act III newcomers in town, and which town jobs do they take? Decide when those acts are planned.
 - [ ] Should the town NPC jobs match the hub design 1:1? Check when the town hub (P9) is planned.
-- [ ] How far do the arcade rules (points, power-up drops, wall buys) get a story reason? Recommended pick written in Story links; waiting on the person (2026-11-18).
 - [ ] Who are the playable survivors (F-67 character select)? Write them as Lantern Post salvagers when F-67 is planned.
 - [ ] Who runs the Trainer (skill respec)? Provisional: Dr. Corvelyn. Decide with F-45.
 - [ ] The TECHNICIAN stall says "Serums / Gear", but Serums are run items bought from Med Dispensers in maps. Decide with F-45 what the town sells (implants and gear fit; Serums would break the run layer).
