@@ -110,7 +110,10 @@ Edit skills in `.agents/skills/` only, then run
 4. **No global player.** Loop over the `players` group.
 5. **Multiplayer rules:**
    - The player reads `InputFrame`s, never the keyboard directly.
-   - Damage, spawns, points and XP only change where `Net.is_authority()` is true.
+   - Damage, spawns, points and XP only change on the server. Node code asks
+     `multiplayer.is_server()` (true in solo); `Net.is_authority()` is only for code
+     with no node; never both. Co-op messages follow `docs/MULTIPLAYER.md`
+     "Writing co-op code" (CI rule `rpc-rules`).
    - Gameplay runs in `_physics_process`. `_process` is for visuals only.
    - All enemies come from `Spawner`.
    - Gameplay randomness uses `GameSession.rng`, never `randf()`.
@@ -158,6 +161,8 @@ Examples and fixes: [docs/CODE_RULES.md](docs/CODE_RULES.md).
 - `no-triple-copy`: extract a shared operation when an eight-line block has a third copy.
 - `tested-scripts`: core and systems scripts need test references; the baseline only shrinks.
 - `no-content-id-literals`: core and systems code never names a content id; add a data field instead. The baseline only shrinks.
+- `rpc-rules`: every `@rpc` names its mode and transfer mode; an `any_peer` RPC starts with `multiplayer.is_server()`.
+- `log-catalogue`: every literal `Log.warn` event has a row in `docs/LOGGING.md`.
 - `decisions-short`: every entry in `docs/DECISIONS.md` is one line of at most 300 characters.
 
 ## Keep it simple
@@ -198,7 +203,7 @@ things to build only when needed: `docs/KEEP_IT_SIMPLE.md`.
    No custom event bus, state-machine framework, dependency injection,
    object factory, plugin system or service locator.
 9. **Multiplayer: only the seams the architecture already reserves.** They are
-   listed in code rule 5 above (InputFrame, `Net.is_authority()`,
+   listed in code rule 5 above (InputFrame, the server check,
    physics ticks, one Spawner with net ids, `GameSession.rng`,
    ProgressionService, items as dicts, no global player). P7 co-op is being
    built now: follow `docs/MULTIPLAYER.md` and `docs/adr/0003-trusted-client-co-op.md`

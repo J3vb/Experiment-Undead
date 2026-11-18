@@ -114,7 +114,7 @@ func setup(player: Player, point: Vector3, data: WeaponData) -> void:
 func _ready() -> void:
 	if not _orb:
 		add_to_group(&"gravity_wells")
-		if gameplay and Net.is_authority() and multiplayer.is_server():
+		if gameplay and multiplayer.is_server():
 			for node: Node in get_tree().get_nodes_in_group(&"enemies"):
 				_track_enemy(node as Node3D)
 			Events.enemy_spawned.connect(_track_enemy)
@@ -141,7 +141,7 @@ func tick(delta: float) -> void:
 		return
 	var step: float = minf(delta, DURATION - elapsed)
 	elapsed = minf(elapsed + step, DURATION)
-	if gameplay and Net.is_authority() and multiplayer.is_server():
+	if gameplay and multiplayer.is_server():
 		_select_targets()
 		_pull(step)
 		_pulse_time += step
@@ -215,7 +215,7 @@ func _land() -> void:
 	if _claim and weapon_data:
 		if is_instance_valid(_claims):
 			_claims.call("request_well", global_position, weapon_data.id)
-		elif Net.is_authority() and multiplayer.is_server():
+		elif multiplayer.is_server():
 			open(get_parent(), attacker, global_position, weapon_data)
 	collapse()
 

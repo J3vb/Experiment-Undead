@@ -366,6 +366,49 @@ class CheckRulesTests(unittest.TestCase):
         )
         self.assertIn("remove", problems[0].lower())
 
+    def test_melee_ids_are_content_ids(self):
+        knife = {"content/melee/test_knife.tres": "[resource]\n"}
+        self.check("no-content-id-literals", {**knife, "systems/a.gd": 'if id == &"test_knife":\n'}, 1)
+
+    def test_rpc_names_mode_and_transfer(self):
+        body = "func f() -> void:\n\tpass\n"
+        self.check("rpc-rules", {"systems/a.gd": '@rpc("authority", "call_remote", "reliable")\n' + body})
+        self.check("rpc-rules", {"core/a.gd": '@rpc("authority", "unreliable_ordered")\n' + body})
+        self.check("rpc-rules", {"systems/a.gd": '@rpc("authority", "call_local")\n' + body}, 1)
+        self.check("rpc-rules", {"systems/a.gd": '@rpc("reliable")\n' + body}, 1)
+        self.check("rpc-rules", {"levels/a.gd": "@rpc\n" + body}, 1)
+
+    def test_any_peer_rpc_starts_with_server_check(self):
+        rpc = '@rpc("any_peer", "call_remote", "reliable")\n'
+        good = "func f(x: int) -> void:\n\tif not multiplayer.is_server():\n\t\treturn\n"
+        self.check("rpc-rules", {"systems/a.gd": rpc + good})
+        multi_line = (
+            "# gdlint:ignore = function-arguments-number\n"
+            "func f(\n\ta: int,\n\tb: Vector3 = Vector3(0, 0, 0)\n) -> void:\n"
+            "\n\t# Only the server takes requests.\n"
+            "\tif multiplayer.is_server():\n\t\tpass\n"
+        )
+        self.check("rpc-rules", {"systems/a.gd": rpc + multi_line})
+        bad = "func f() -> void:\n\tvar sender: int = multiplayer.get_remote_sender_id()\n"
+        bad += "\tif not multiplayer.is_server():\n\t\treturn\n"
+        problems = self.check("rpc-rules", {"systems/a.gd": rpc + bad}, 1)
+        self.assertTrue(problems[0].startswith("systems/a.gd:3:"))
+        authority = '@rpc("authority", "call_remote", "reliable")\n'
+        self.check("rpc-rules", {"systems/a.gd": authority + "func f() -> void:\n\tpass\n"})
+        self.check("rpc-rules", {"systems/a.gd": rpc + "func f() -> void:\n\t# multiplayer.is_server()\n\tpass\n"}, 1)
+
+    def test_log_catalogue(self):
+        doc = {"docs/LOGGING.md": "| `net.join_failed` | warn | Client could not join |\n"}
+        warn = 'Log.warn(&"net", &"join_failed", {})\n'
+        self.check("log-catalogue", {**doc, "systems/a.gd": warn})
+        self.check("log-catalogue", {**doc, "core/a.gd": 'Log.warn(\n\t&"net",\n\t&"join_failed", {}\n)\n'})
+        problems = self.check("log-catalogue", {**doc, "systems/a.gd": 'pass\nLog.warn(&"net", &"port_lost", {})\n'}, 1)
+        self.assertTrue(problems[0].startswith("systems/a.gd:2:"))
+        self.assertIn("net.port_lost", problems[0])
+        self.check("log-catalogue", {**doc, "systems/a.gd": 'Log.warn(&"net", &"join_failed_twice", {})\n'}, 1)
+        self.check("log-catalogue", {**doc, "systems/a.gd": 'Log.warn(&"net", event, {})\n'})
+        self.check("log-catalogue", {**doc, "tools/a.gd": 'Log.warn(&"net", &"port_lost", {})\n'})
+
     def test_decisions_short(self):
         name = "docs/DECISIONS.md"
         short = "# Decisions\n\nIntro text\nover two lines.\n\n## List\n\n- **A:** one line.\n- **B:** another.\n"
