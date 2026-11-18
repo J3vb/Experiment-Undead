@@ -159,7 +159,15 @@
 		{"id": "labs_screen_pair", "room": "labs", "at": [50.2, 1.5, 25.78], "model": "screen_pair", "turn": 180},
 		{"id": "labs_floor_wreck", "room": "labs", "at": [40.5, 0, 18], "model": "lab_floor_wreck", "turn": 25},
 		{"id": "containment_cables", "room": "containment_wing", "at": [66, 0, 16.5], "model": "floor_cables", "turn": 90},
-		{"id": "containment_catwalk", "room": "containment_wing", "at": [71.6, 1.4, 5.7], "model": "catwalk_office", "turn": 0}
+		{"id": "containment_catwalk", "room": "containment_wing", "at": [71.6, 1.4, 5.7], "model": "catwalk_office", "turn": 0},
+		{"id": "dock_ceiling", "room": "loading_dock", "at": [34, 3.3, 53], "model": "ceiling_loading_dock", "turn": 0},
+		{"id": "guard_ceiling", "room": "guard_post", "at": [16, 2.7, 40], "model": "ceiling_guard_post", "turn": 0},
+		{"id": "mess_ceiling", "room": "mess_hall", "at": [48, 3.9, 38], "model": "ceiling_mess_hall", "turn": 0},
+		{"id": "corridor_ceiling", "room": "main_corridor", "at": [33, 2.7, 28], "model": "ceiling_main_corridor", "turn": 0},
+		{"id": "generator_ceiling", "room": "generator_hall", "at": [18, 3.9, 16], "model": "ceiling_generator_hall", "turn": 0},
+		{"id": "labs_ceiling", "room": "labs", "at": [44, 2.7, 18], "model": "ceiling_labs", "turn": 0},
+		{"id": "tunnel_ceiling", "room": "coolant_tunnel", "at": [32, 2.3, 12.5], "model": "ceiling_coolant_tunnel", "turn": 0},
+		{"id": "containment_ceiling", "room": "containment_wing", "at": [68, 4.3, 18], "model": "ceiling_containment_wing", "turn": 0}
 	],
 	"light_states": {
 		"guard_post": {"flicker": [1, 4], "dead": [5]},

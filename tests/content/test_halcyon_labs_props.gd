@@ -1,6 +1,7 @@
 ## Checks the Halcyon Labs prop models and dressing (plan F-15): model props keep a
 ## plain box collider of their layout box and fit inside it, dressing never collides
 ## and stays clear of doors, machines and spawns, and the map stays under its prop caps.
+## Each main room has one ceiling model (plan F-68 step 6) above head height.
 extends GutTest
 
 const MAP: String = "res://levels/halcyon_labs/map.tscn"
@@ -11,6 +12,18 @@ const MAX_DRESSING: int = 80
 const DRESSING_CLEARANCE: float = 1.0
 ## A model may poke this far (m) out of its box (bevels, rounding).
 const BOX_SLACK: float = 0.05
+## Dressing whose lowest point is this high (m) above its floor cannot block or hide anything.
+const HEAD_HEIGHT: float = 2.2
+const CEILING_ROOMS: Array[String] = [
+	"loading_dock",
+	"guard_post",
+	"mess_hall",
+	"main_corridor",
+	"generator_hall",
+	"labs",
+	"coolant_tunnel",
+	"containment_wing",
+]
 
 var _layout: Dictionary
 var _built: Node3D
@@ -126,6 +139,8 @@ func test_dressing_stays_clear_of_doors_machines_and_spawns() -> void:
 	for item: Dictionary in _layout.get("dressing", []):
 		var node: Node3D = _built.get_node(NodePath("%s/Dressing/%s" % [item["room"], item["id"]])) as Node3D
 		var bounds: AABB = _bounds(node, node.get_parent() as Node3D)
+		if bounds.position.y >= HEAD_HEIGHT:
+			continue
 		var room: Node3D = node.get_parent().get_parent() as Node3D
 		var footprint: Rect2 = Rect2(
 			bounds.position.x + room.position.x, bounds.position.z + room.position.z, bounds.size.x, bounds.size.z
@@ -134,3 +149,20 @@ func test_dressing_stays_clear_of_doors_machines_and_spawns() -> void:
 			var nearest: Vector2 = Vector2(point.x, point.y).clamp(footprint.position, footprint.end)
 			var gap: float = nearest.distance_to(Vector2(point.x, point.y)) - point.z
 			assert_gte(gap, DRESSING_CLEARANCE, "%s is clear of %s" % [item["id"], Vector2(point.x, point.y)])
+
+
+func test_each_main_room_has_one_ceiling_model_above_head_height() -> void:
+	var heights: Dictionary = {}
+	for room: Dictionary in _layout["rooms"]:
+		heights[room["id"]] = float(room["height"])
+	var found: Dictionary = {}
+	for item: Dictionary in _layout.get("dressing", []):
+		if not String(item["model"]).begins_with("ceiling_"):
+			continue
+		found[item["room"]] = int(found.get(item["room"], 0)) + 1
+		var node: Node3D = _built.get_node(NodePath("%s/Dressing/%s" % [item["room"], item["id"]])) as Node3D
+		var bounds: AABB = _bounds(node, node.get_parent() as Node3D)
+		assert_gte(bounds.position.y, HEAD_HEIGHT, "%s hangs above head height" % item["id"])
+		assert_lte(bounds.end.y, float(heights[item["room"]]), "%s stays under the ceiling" % item["id"])
+	for room_id: String in CEILING_ROOMS:
+		assert_eq(int(found.get(room_id, 0)), 1, "%s has one ceiling model" % room_id)

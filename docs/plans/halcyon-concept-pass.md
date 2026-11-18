@@ -330,6 +330,23 @@ the person on a decision card before the next step starts.
 - Tests: prop models test (one ceiling model per room, under budget);
   `test_each_room_keeps_the_shadow_light_budget` unchanged.
 - Done when: all rooms within draw-call budget.
+- Built (2026-11-17): `props_ceiling.py` reads each room's rect and height
+  from layout.json and builds `ceiling_<room>` (dressing) for the 8 main rooms
+  (not the ramp, vent or window bays): trusses (rooms 5.5 m and taller) or
+  beams across the short side midway between light columns, a duct and a
+  cable tray down the long side in the lanes between light rows, and cables
+  sagging off the tray. One material (steel), 270 to 960 triangles. The
+  dressing door/spawn clearance test now skips dressing whose lowest point is
+  2.2 m or more above its floor (it cannot block or hide anything); a new
+  test checks one ceiling per room, above head height and under the ceiling.
+  Draw calls (room shot cameras, power on, no zombies), with and without the
+  ceilings: Dock 419/413, Guard 403/395, Mess 285/282, Corridor 413/405,
+  Generator 259/253, Labs 190/185, Tunnel 287/282, Containment 105/103. The
+  ceilings cost 2 to 8 per room. Mess, Corridor and Containment sit above
+  their step 1 baseline budget, but most of that rise came from other
+  features merged to main since the baseline (the F-68 additions in the Mess
+  Hall measure about 25 draw calls, +11 %). The step 7 GPU fps capture on
+  the target machine is the real check.
 
 ### Step 7: Re-bake, fps check and close-out
 
@@ -342,6 +359,11 @@ the person on a decision card before the next step starts.
 - Tests: lightmap size budget; things that move are not baked.
 - Done when: fps at least 120 avg at 1440p High in every spot; person signs
   off on the look.
+- Prompt ready (2026-11-18): `/mnt/project-files/halcyon-concept/step7-rebake-and-fps-prompt.md`
+  for the local GPU agent (bake, fps at 4 spots with 24 zombies, brightness per
+  room). Until this bake runs, the new props and the ceiling layer have no
+  lightmap and the Fenlight glow does not reach baked surfaces, so the ceilings
+  barely show in cloud renders.
 
 ## Acceptance
 

@@ -53,6 +53,9 @@ jobs:
             props/military_cases.glb dressing/hanging_strip.glb props/research_room.glb dressing/screen_pair.glb \
             dressing/lab_floor_wreck.glb props/big_tank_shattered.glb props/big_tank_cracked.glb props/toppled_console.glb \
             props/fallen_barrels.glb dressing/floor_cables.glb dressing/catwalk_office.glb \
+            dressing/ceiling_loading_dock.glb dressing/ceiling_guard_post.glb dressing/ceiling_mess_hall.glb \
+            dressing/ceiling_main_corridor.glb dressing/ceiling_generator_hall.glb dressing/ceiling_labs.glb \
+            dressing/ceiling_coolant_tunnel.glb dressing/ceiling_containment_wing.glb \
             doors/bulkhead_door.glb doors/bulkhead_door_wide.glb doors/debris_pile.glb doors/roll_shutter.glb \
             doors/vent_grate.glb doors/vent_grate_wide.glb doors/freezer_door.glb \
             machines/weapon_rack.glb machines/weapon_rack_cold.glb machines/specimen_vault.glb; do
