@@ -1,10 +1,10 @@
 # Plan: Tripo model trial
 
-Status: Review
+Status: Approved
 Roadmap: F-78 (trial, decides how F-76 and F-77 models are made)
 Phase: P5 (art)
 Size: M
-Approved by:
+Approved by: review PR #345, 2026-11-18 (trial, tools only, no open decisions)
 
 ## Goal
 
@@ -140,7 +140,7 @@ the same. Maps at 1024 for props, 2048 for characters, like the player body.
   recommendation for F-76 and F-77. A decision card to the person.
 - Files: docs/design/reviews/tripo-trial/.
 - Tests: none (docs only).
-- Done when: the person has picked on the card.
+- Done when: the person has picked on the card (switch F-76 / F-77 to Tripo or not).
 
 ## Acceptance
 
@@ -163,4 +163,4 @@ the same. Maps at 1024 for props, 2048 for characters, like the player body.
 
 ## Open decisions
 
-- none (the switch to Tripo for F-76 / F-77 is decided after the report)
+- none
