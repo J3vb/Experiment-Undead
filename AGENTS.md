@@ -12,8 +12,8 @@ written in **typed GDScript**. It will get RPG progression and self-hosted
 8-player servers later, so code must stay multiplayer-ready from day one.
 
 Read `docs/PROCESS.md` (pillars, milestones, how work flows) and
-`docs/DECISIONS.md` before you start. DECISIONS.md lists what is built, what is
-simplified on purpose, and what is not started.
+the entries in `docs/DECISIONS.md` for the systems you touch (not the whole
+file): one-line lists of design differences, simplifications and provisional picks.
 
 **Before you build a feature:** check `docs/FOUNDATIONS.md` (which core systems
 are solid, shaky or missing) and fill in its **Ready to build** checklist in
@@ -163,6 +163,7 @@ Examples and fixes: [docs/CODE_RULES.md](docs/CODE_RULES.md).
 - `no-content-id-literals`: core and systems code never names a content id; add a data field instead. The baseline only shrinks.
 - `rpc-rules`: every `@rpc` names its mode and transfer mode; an `any_peer` RPC starts with `multiplayer.is_server()`.
 - `log-catalogue`: every literal `Log.warn` event has a row in `docs/LOGGING.md`.
+- `decisions-short`: every entry in `docs/DECISIONS.md` is one line of at most 300 characters.
 
 ## Keep it simple
 
@@ -327,6 +328,7 @@ lines for its early warning signs and list them in that doc's catalogue.
 - Adding an autoload: add exactly one line to the `[autoload]` block in
   `project.godot`, at the end.
 - Add or update tests for everything you build.
-- Add a short entry to `docs/DECISIONS.md` under the right heading when you
-  build something listed there as "not started" or "simplified".
+- Add one line to `docs/DECISIONS.md` (at most 300 characters, with a link) for
+  each design difference, simplification or provisional pick; remove the line
+  when you fix it.
 - Open the PR as a **draft** and fill in the PR template.

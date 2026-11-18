@@ -8,7 +8,8 @@ description: Change a game rule or number (gun damage, prices, round health, spa
 ## Where the truth lives (in this order)
 
 1. **Code and `content/*.tres`**: what the game does now.
-2. **`docs/DECISIONS.md`**: what was built, simplified or changed on purpose.
+2. **`docs/DECISIONS.md`**: one-line lists of what differs from the design on
+   purpose, what is simplified and which picks are provisional.
 3. **`docs/design/*.md`**: the design targets (game-design, maps, zombie-ai,
    game-feel, affixes, ...). Start at `docs/design/README.md`.
 4. **`docs/design/balance/*.csv`**: export of the balance sheet. `weapons.csv`,
@@ -36,8 +37,9 @@ If two of them disagree, follow the higher one and say so in the PR.
    `Reforger`, `WeaponData`, `WaveRules`, ...) and the names in
    `docs/design/lore.md` for anything players read.
 7. **Record it.** Different from the doc or sheet on purpose? Add one line to
-   `docs/DECISIONS.md` under the right heading: what, why, what it replaces,
-   and mark it *provisional* if it still needs a play-test.
+   `docs/DECISIONS.md` under **Differs from the design on purpose** (or
+   **Provisional picks** if it still needs a play-test): what, why, what it
+   replaces, one line of at most 300 characters (CI rule `decisions-short`).
 8. **Test it.** Add or update a test in `tests/content/` that locks the new
    number (see `test_kestrel_smg.gd`, `test_talon_dmr.gd`). The test checks the
    value and, where it matters, the result (e.g. a headshot still kills a
@@ -45,8 +47,8 @@ If two of them disagree, follow the higher one and say so in the PR.
 
 ## Bigger changes
 
-A change to a pillar, the scope, a whole system or the roadmap: write the
-`DECISIONS.md` entry first and ask the person before building (`docs/PROCESS.md`,
+A change to a pillar, the scope, a whole system or the roadmap: write a
+decision record in `docs/adr/` first and ask the person before building (`docs/PROCESS.md`,
 Change control). New ideas go in an **Idea** issue, not straight into the game.
 
 ## Updating the design copies

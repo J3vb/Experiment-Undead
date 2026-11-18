@@ -391,7 +391,7 @@ Social basics: see other players' equipped gear (rarity glows on guns and vests)
 
 ### How multiplayer works (design view)
 
-This matches the architecture doc ([Technical Architecture](../DECISIONS.md)).
+This matches the architecture doc ([Technical Architecture](https://claude.ai/artifact/XNJ12WAbMJAy2mRNPd5PCx)).
 
 - **Godot can do this.** Godot 4 exports a headless dedicated server build (no window, no graphics) from the same project, and its built-in multiplayer (ENet over UDP) handles 8 players easily. No separate server language or engine is needed.
 - **One server for town and matches.** One server process holds the town plus up to 2 matches running side by side. Solo play runs the same server code as a private local server in the background, so there is only one code path to build and test. A "host and play" button lets a player host from their own game too.
@@ -474,7 +474,7 @@ Every number in this doc lives in a Godot Resource file (.tres), not in code. Co
 
 ## Build roadmap
 
-Build in three stages, in this order: a fun solo wave game, then progression and loot offline, then multiplayer and the town. Each stage ends in something you can play and show. The phase numbers are shared with the [Technical Architecture](../DECISIONS.md) doc, so both docs talk about the same steps.
+Build in three stages, in this order: a fun solo wave game, then progression and loot offline, then multiplayer and the town. Each stage ends in something you can play and show. The phase numbers are shared with the [Technical Architecture](https://claude.ai/artifact/XNJ12WAbMJAy2mRNPd5PCx) doc, so both docs talk about the same steps.
 
 _(Diagram not copied: build roadmap · 11 phases in 3 stages.)_
 

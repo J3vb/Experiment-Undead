@@ -409,6 +409,18 @@ class CheckRulesTests(unittest.TestCase):
         self.check("log-catalogue", {**doc, "systems/a.gd": 'Log.warn(&"net", event, {})\n'})
         self.check("log-catalogue", {**doc, "tools/a.gd": 'Log.warn(&"net", &"port_lost", {})\n'})
 
+    def test_decisions_short(self):
+        name = "docs/DECISIONS.md"
+        short = "# Decisions\n\nIntro text\nover two lines.\n\n## List\n\n- **A:** one line.\n- **B:** another.\n"
+        self.check("decisions-short", {name: short})
+        self.check("decisions-short", {name: "- " + "x" * 298 + "\n"})
+        problems = self.check("decisions-short", {name: "## List\n- " + "x" * 299 + "\n"}, 1)
+        self.assertIn(":2:", problems[0])
+        problems = self.check("decisions-short", {name: "- **A:** starts here\n  and wraps.\n- **B:** fine.\n"}, 1)
+        self.assertIn(":2:", problems[0])
+        self.check("decisions-short", {name: "- **A:** item\n  - nested item\n"}, 1)
+        self.check("decisions-short", {})
+
     def test_scope_uses_tracked_files_and_excludes_vendor_and_cache(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

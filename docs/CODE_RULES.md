@@ -224,7 +224,19 @@ a pair that no longer appears must be deleted from the file. Fix a finding by
 adding a field to the data type (see `docs/HOW_TO_ADD.md`), not by adding a
 baseline line.
 
-## 18. rpc-rules
+## 18. decisions-short
+
+Every list entry in `docs/DECISIONS.md` is one line of at most 300 characters,
+so agents can read the entries for their systems without wading through build
+notes. Detail goes in the linked plan, ADR or doc. A line that does not start
+with `- ` directly under an entry (a wrapped or nested line) fails.
+
+- Good: `- **Range falloff** uses start and end distances, not a Curve. Fix when: a gun needs a curve.`
+- Bad: an entry that wraps onto a second line, or a paragraph of build notes.
+
+Cut the entry to what a future agent must not undo, and link the plan for the rest.
+
+## 19. rpc-rules
 
 Co-op messages keep one shape (foundation 1; patterns in `docs/MULTIPLAYER.md`
 "Writing co-op code"). In game code:
@@ -248,7 +260,7 @@ Co-op messages keep one shape (foundation 1; patterns in `docs/MULTIPLAYER.md`
 - Bad: `@rpc("any_peer")`, or a handler that starts with
   `var sender: int = multiplayer.get_remote_sender_id()`.
 
-## 19. log-catalogue
+## 20. log-catalogue
 
 Every `Log.warn(&"<system>", &"<event>", ...)` in `core/` and `systems/` whose
 event is written as a literal must have its event name in `docs/LOGGING.md`

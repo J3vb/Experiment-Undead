@@ -57,7 +57,7 @@ A **feature** is done when all of these hold:
       per-frame allocations in hot paths).
 - [ ] New early warnings are in the `docs/LOGGING.md` catalogue.
 - [ ] New content types or recipes are in `docs/HOW_TO_ADD.md`.
-- [ ] `docs/DECISIONS.md` says what was built and what was simplified.
+- [ ] `docs/DECISIONS.md` has one line per simplification or design difference.
 - [ ] The plan says `Status: Done`, the roadmap row says Done, the issue is
       closed.
 
@@ -69,8 +69,9 @@ Once a week, play 15 minutes on the latest build and fill in a
 ## Change control
 
 - Small changes: just do them.
-- Big changes (a pillar, scope, a whole system, the roadmap): add an entry to
-  `docs/DECISIONS.md` first (what, why, what it replaces).
+- Big changes (a pillar, scope, a whole system, the roadmap): write a decision
+  record in `docs/adr/` first (what, why, what it replaces); a change to the
+  design gets one line in `docs/DECISIONS.md`.
 - New ideas: an **Idea** issue, not straight into the game.
 - Every design change (a rule, a number players feel, content scope): add one dated row to the
   [Change log](design/game-design.md#change-log) in `docs/design/game-design.md` in the same PR.
