@@ -200,3 +200,39 @@ func test_watchtower_spotlight_sweeps() -> void:
 	var start: float = sweep.rotation.y
 	await wait_seconds(0.5)
 	assert_ne(sweep.rotation.y, start, "the beam moves")
+
+
+func test_fire_barrels_burn_and_flicker() -> void:
+	var fires: Array[Node] = _hub.get_node("Props").find_children("FireBarrel?", "", false, false)
+	assert_eq(fires.size(), 4, "four fire barrels")
+	for fire: Node in fires:
+		assert_eq(fire.find_children("*", "GPUParticles3D", true, false).size(), 1, fire.name + " has flames")
+		var light: OmniLight3D = fire.get_node("Light") as OmniLight3D
+		assert_false(light.shadow_enabled, fire.name + " light casts no shadow (shadow budget)")
+		var flicker: AnimationPlayer = fire.get_node("Flicker") as AnimationPlayer
+		assert_eq(flicker.autoplay, &"flicker", fire.name + " flickers on its own")
+		assert_eq(flicker.get_animation(&"flicker").loop_mode, Animation.LOOP_LINEAR, fire.name + " keeps flickering")
+	var light: OmniLight3D = (fires[0] as Node).get_node("Light") as OmniLight3D
+	var start: float = light.light_energy
+	await wait_seconds(0.3)
+	assert_ne(light.light_energy, start, "the fire light changes")
+
+
+func test_camp_props_block_players() -> void:
+	await wait_physics_frames(2)
+	var space: PhysicsDirectSpaceState3D = _hub.get_world_3d().direct_space_state
+	for path: String in ["Props/FireBarrel0", "Props/Bench0", "Props/Crate0", "Props/Firewood0", "Props/FenlightBase0"]:
+		var prop: Node3D = _hub.get_node(path) as Node3D
+		var top: Vector3 = prop.global_position + Vector3.UP * 3.0
+		var ray: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
+			top, prop.global_position + Vector3.UP * 0.05, Layers.WORLD
+		)
+		assert_false(space.intersect_ray(ray).is_empty(), path + " has a collider")
+
+
+func test_fenlight_crates_carry_their_stencil() -> void:
+	var texts: Array[String] = []
+	for node: Node in _hub.get_node("Props").find_children("FenlightStencil*", "Label3D", false, false):
+		texts.append((node as Label3D).text)
+	assert_eq(texts.size(), 2, "two Fenlight sample crates")
+	assert_has(texts, "FENLIGHT\nSAMPLES", "the crates read FENLIGHT SAMPLES")

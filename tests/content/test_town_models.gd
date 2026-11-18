@@ -1,8 +1,9 @@
-## Lantern Post props from tools/assets/town_props.py: they import, stand on the ground and face +Z.
+## Lantern Post props from tools/assets/town_props.py: they import, stand on the ground and face +Z. The street
+## lamp and wall lantern use the shared Iron material (asset list P9).
 extends GutTest
 
 const MODELS: String = "res://assets/models/town/%s.glb"
-const IDS: Array[String] = ["street_lamp", "wall_lantern", "window_lit", "window_dark", "fence", "signpost"]
+const IDS: Array[String] = ["street_lamp", "wall_lantern", "window_lit", "window_dark", "signpost"]
 
 
 func _extent(scene: Node3D) -> AABB:
@@ -58,3 +59,13 @@ func test_windows_open_shutters_towards_the_front() -> void:
 		assert_gt(shutter.global_position.z, glass.global_position.z, "shutters sit in front of the glass")
 	assert_true(_has_glow(lit), "lit window glows")
 	assert_false(_has_glow(_place("window_dark")), "dark window does not glow")
+
+
+func test_street_lamp_and_wall_lantern_use_shared_iron() -> void:
+	for id: String in ["street_lamp", "wall_lantern"]:
+		var used: Array[String] = []
+		for node: Node in _place(id).find_children("*", "MeshInstance3D", true, false):
+			var mesh: Mesh = (node as MeshInstance3D).mesh
+			for i: int in mesh.get_surface_count():
+				used.append(mesh.surface_get_material(i).resource_path)
+		assert_has(used, "res://levels/materials/iron.tres", id + " iron parts use the shared Iron material")

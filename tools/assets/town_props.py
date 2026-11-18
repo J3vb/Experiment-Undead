@@ -1,4 +1,7 @@
-"""Lantern Post props built in code: street lamp, wall lantern, windows, fence and signpost.
+"""Lantern Post props built in code: street lamp, wall lantern, windows and signpost.
+
+The camp props P1-P13 of the asset list (fire barrel, benches, crates, lanterns, pines, ...) live in
+town_camp.py.
 
 Built through build_models.py (MODELS has one line per prop). Blender +Z is up and
 fronts face Blender -Y (Godot +Z). Every prop stands on the origin.
@@ -137,20 +140,6 @@ def build_window_dark() -> None:
     _window(False)
 
 
-def build_fence() -> None:
-    """Picket fence section, 2 m wide along X, 1.1 m high."""
-    wood = material("FenceWood", SHUTTER_WOOD, roughness=0.9)
-    dark = material("FencePost", DARK_WOOD, roughness=0.85)
-    for i, x in enumerate((-0.95, 0.95)):
-        box(f"Post{i}", (0.12, 0.12, 1.2), (x, 0, 0.6), dark, bevel=0.012)
-    for i, z in enumerate((0.3, 0.85)):
-        box(f"Rail{i}", (1.8, 0.05, 0.08), (0, 0.06, z), dark)
-    for i in range(9):
-        x = -0.8 + i * 0.2
-        box(f"Picket{i}", (0.09, 0.03, 0.95), (x, -0.0, 0.5), wood, bevel=0.008)
-        _tube(f"PicketTip{i}", 0.0, 0.064, 0.1, (x, 0.0, 1.03), wood, vertices=4).rotation_euler = (0, 0, math.pi / 4)
-
-
 def build_signpost() -> None:
     """Signpost, 2.6 m: post with two arrow boards (text is a Label3D in the scene)."""
     wood = material("SignWood", SHUTTER_WOOD, roughness=0.85)
@@ -169,6 +158,5 @@ MODELS = {
     "wall_lantern": ("town/wall_lantern.glb", build_wall_lantern),
     "window_lit": ("town/window_lit.glb", build_window_lit),
     "window_dark": ("town/window_dark.glb", build_window_dark),
-    "fence": ("town/fence.glb", build_fence),
     "signpost": ("town/signpost.glb", build_signpost),
 }

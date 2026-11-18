@@ -1,0 +1,105 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/town/fire_barrel.glb" id="model"]
+
+[sub_resource type="Gradient" id="flame_colors"]
+offsets = PackedFloat32Array(0, 0.2, 0.6, 1)
+colors = PackedColorArray(1, 0.85, 0.45, 0, 1, 0.7, 0.25, 1, 1, 0.35, 0.08, 0.7, 0.4, 0.1, 0.03, 0)
+
+[sub_resource type="GradientTexture1D" id="flame_ramp"]
+gradient = SubResource("flame_colors")
+
+[sub_resource type="Curve" id="shrink"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.25), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="shrink_texture"]
+curve = SubResource("shrink")
+
+[sub_resource type="ParticleProcessMaterial" id="process"]
+emission_shape = 1
+emission_sphere_radius = 0.17
+direction = Vector3(0, 1, 0)
+spread = 12.0
+initial_velocity_min = 0.6
+initial_velocity_max = 1.1
+gravity = Vector3(0, 0.6, 0)
+scale_min = 0.7
+scale_max = 1.2
+scale_curve = SubResource("shrink_texture")
+color_ramp = SubResource("flame_ramp")
+
+[sub_resource type="Gradient" id="blob"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="blob_texture"]
+gradient = SubResource("blob")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="flame"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_texture = SubResource("blob_texture")
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="quad"]
+material = SubResource("flame")
+size = Vector2(0.45, 0.6)
+
+[sub_resource type="Animation" id="flicker"]
+resource_name = "flicker"
+length = 1.6
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Light:light_energy")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.45, 0.6, 0.9, 1.15, 1.35, 1.6),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [2.6, 2.1, 2.9, 2.3, 2.7, 1.9, 2.5, 2.6]
+}
+
+[sub_resource type="AnimationLibrary" id="flicker_library"]
+_data = {
+&"flicker": SubResource("flicker")
+}
+
+[node name="FireBarrel" type="Node3D"]
+
+[node name="Model" parent="." instance=ExtResource("model")]
+
+[node name="Flames" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+cast_shadow = 0
+amount = 28
+lifetime = 0.8
+preprocess = 1.0
+visibility_aabb = AABB(-0.6, -0.2, -0.6, 1.2, 1.6, 1.2)
+process_material = SubResource("process")
+draw_pass_1 = SubResource("quad")
+
+[node name="Light" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+light_color = Color(1, 0.5, 0.18, 1)
+light_energy = 2.6
+light_bake_mode = 0
+omni_range = 7.0
+omni_attenuation = 1.2
+
+[node name="Flicker" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("flicker_library")
+}
+autoplay = &"flicker"
