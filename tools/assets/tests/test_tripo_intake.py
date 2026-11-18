@@ -235,3 +235,36 @@ def test_embedded_jpegs_have_no_icc_profile(prop):
         view = document["bufferViews"][image["bufferView"]]
         jpeg = binary[view.get("byteOffset", 0) : view.get("byteOffset", 0) + view["byteLength"]]
         assert b"ICC_PROFILE" not in jpeg
+
+
+def test_forearm_twist_turns_the_thumb_like_our_player_rest_hand():
+    """Tripo's T-pose palms face down; after the swing the thumb must point where our rest hand's does
+    (up and out, a little forward), or every clip turns her hands the wrong way."""
+    import tripo_rig
+
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    arm = bpy.data.objects.new("Armature", bpy.data.armatures.new("Armature"))
+    bpy.context.collection.objects.link(arm)
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.mode_set(mode="EDIT")
+    rest = tripo_rig.character_rig.BONES["upperarm_L"]
+    direction = (Vector(rest[2]) - Vector(rest[1])).normalized()
+    parts = {}
+    for name, head, tail in (
+        ("LeftForeArm", (0.0, 0.0, 0.0), direction * 0.25),
+        ("LeftHand", direction * 0.25, direction * 0.35),
+        ("LeftHandThumb2", direction * 0.27 + Vector((0.0, -0.04, 0.0)), direction * 0.27 + Vector((0.0, -0.08, 0.0))),
+    ):
+        bone = arm.data.edit_bones.new(f"mixamorig:{name}")
+        bone.head, bone.tail = head, tail
+        parts[name] = bone
+    parts["LeftHand"].parent = parts["LeftForeArm"]
+    parts["LeftHandThumb2"].parent = parts["LeftHand"]
+    bpy.ops.object.mode_set(mode="POSE")
+    bones = {tripo_rig._plain(b.name): b for b in arm.pose.bones}
+    tripo_rig._turn_thumb_up(arm, bones, "left", direction)
+    thumb = (bones["lefthandthumb2"].head - bones["lefthand"].head).normalized()
+    up = Vector((0.0, 0.0, 1.0))
+    want = (up - direction * up.dot(direction)).normalized() * 0.86 + Vector((0.0, -0.51, 0.0))
+    assert (thumb - direction * thumb.dot(direction)).normalized().dot(want.normalized()) > 0.99
+    bpy.ops.object.mode_set(mode="OBJECT")
