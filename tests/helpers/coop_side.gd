@@ -23,7 +23,7 @@ class Session:
 
 
 ## Adds a side named side_name under parent holding a GameSession with the scene's children
-## (WaveDirector, Economy, Progression, PowerUpDrops, Hud), a Level with the "Enemies" Spawner,
+## (WaveDirector, Economy, Progression, PowerUpDrops, Hud), MatchEnd, a Level with the "Enemies" Spawner,
 ## a PlayerSpawner, and the parts asked for: hit_claims, well_claims, loot, remote_shots,
 ## interactions, deploy_vote. level replaces the empty Level; claims replaces the plain HitClaims.
 static func make(
@@ -34,6 +34,9 @@ static func make(
 	session.name = "GameSession"
 	session.rng.seed = SEED
 	_add_scene_children(session)
+	session.match_end = MatchEnd.new()
+	session.match_end.session = session
+	session.add_child(session.match_end)
 	session.level = level if level else Level.new()
 	session.level.name = "Level"
 	session.add_child(session.level)
@@ -52,6 +55,7 @@ static func make(
 	root.add_child(session)
 	session.set_physics_process(false)
 	session.set_process_unhandled_input(false)
+	session.match_end.setup()
 	if session.loot:
 		(session.hud.get_node("Root/Pack") as PackOverlay).setup(session.loot)
 	return session

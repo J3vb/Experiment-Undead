@@ -52,7 +52,7 @@ func join(session: GameSession) -> void:
 
 
 func make_side(side_name: String) -> GameSession:
-	var session: GameSession = CoopSide.make(self, side_name, [&"interactions"], build_level())
+	var session: GameSession = CoopSide.make(self, side_name, [&"interactions", &"loot"], build_level())
 	_sessions.append(session)
 	return session
 

@@ -56,7 +56,7 @@ func _results_flow() -> void:
 	await process_frame
 	await process_frame
 	current_scene.set("restart_delay", 0.0)
-	current_scene.call("_receive_match_end", {"round": 1})
+	current_scene.get_node("MatchEnd").call("_receive_match_end", {"round": 1})
 	await process_frame
 	await process_frame
 	var restart_key: InputEventKey = InputEventKey.new()
@@ -69,7 +69,7 @@ func _results_flow() -> void:
 	restart_key.pressed = false
 	Input.parse_input_event(restart_key)
 	current_scene.set("restart_delay", 0.0)
-	current_scene.call("_receive_match_end", {"round": 1})
+	current_scene.get_node("MatchEnd").call("_receive_match_end", {"round": 1})
 	await process_frame
 	await process_frame
 	await _press_action(&"ui_cancel")

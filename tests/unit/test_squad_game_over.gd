@@ -67,8 +67,8 @@ func test_one_downed_player_keeps_the_match_running() -> void:
 
 func test_squad_wipe_freezes_both_peers_and_shows_identical_results() -> void:
 	server.director.round_number = 4
-	server._kills = 7
-	server._headshots = 3
+	server.match_end.kills = 7
+	server.match_end.headshots = 3
 	server.players.find_player(1).wallet.set_points(1234)
 	server.players.find_player(client.multiplayer.get_unique_id()).wallet.set_points(555)
 	_down(server.players.find_player(1))
@@ -76,12 +76,12 @@ func test_squad_wipe_freezes_both_peers_and_shows_identical_results() -> void:
 	assert_true(server.is_over)
 	await wait_until(func() -> bool: return client.is_over, 3.0, "server ended the client's match")
 	for key: String in ["round", "kills", "headshots", "exfil"]:
-		assert_eq(client._match_stats[key], server._match_stats[key], "shared results stay identical")
-	assert_eq(client._match_stats["round"], 4)
-	assert_eq(client._match_stats["kills"], 7)
-	assert_eq(client._match_stats["headshots"], 3)
-	assert_eq(server._match_stats["points"], 1234, "the host sees its own points")
-	assert_eq(client._match_stats["points"], 555, "the client sees its own points, not the host's")
+		assert_eq(client.match_end.stats[key], server.match_end.stats[key], "shared results stay identical")
+	assert_eq(client.match_end.stats["round"], 4)
+	assert_eq(client.match_end.stats["kills"], 7)
+	assert_eq(client.match_end.stats["headshots"], 3)
+	assert_eq(server.match_end.stats["points"], 1234, "the host sees its own points")
+	assert_eq(client.match_end.stats["points"], 555, "the client sees its own points, not the host's")
 	assert_eq(server.level.process_mode, Node.PROCESS_MODE_DISABLED)
 	assert_eq(client.level.process_mode, Node.PROCESS_MODE_DISABLED)
 	await wait_until(func() -> bool: return _results_count() == 2, 3.0, "host and client both push results")
@@ -98,28 +98,28 @@ func test_squad_results_show_each_players_own_xp_and_totals() -> void:
 	var host: Player = server.players.find_player(1)
 	var client_id: int = client.multiplayer.get_unique_id()
 	var owner: Player = client.players.find_player(client_id)
-	server._start_total_xp = 100
-	client._start_total_xp = 200
+	server.start_total_xp = 100
+	client.start_total_xp = 200
 	server.progression.set_start_total(host, 100)
 	client.progression.set_start_total(owner, 200)
 	server.director.round_number = 4
-	server._kills = 7
+	server.match_end.kills = 7
 	server.progression.add_xp(host, 75)
 	server.progression.add_xp(server.players.find_player(client_id), 25)
 	_down(host)
 	_down(server.players.find_player(client_id))
 	await wait_until(func() -> bool: return client.is_over, 3.0, "client received its final results")
-	assert_eq(server._match_stats["xp"], 75)
-	assert_eq(server._match_stats["start_total_xp"], 100)
-	assert_eq(server._match_stats["total_xp"], 175)
-	assert_eq(client._match_stats["xp"], 25)
-	assert_eq(client._match_stats["start_total_xp"], 200)
-	assert_eq(client._match_stats["total_xp"], 225)
-	assert_eq(client._match_stats["round"], 4)
-	assert_eq(client._match_stats["kills"], 7)
-	assert_false(client._match_stats["exfil"])
+	assert_eq(server.match_end.stats["xp"], 75)
+	assert_eq(server.match_end.stats["start_total_xp"], 100)
+	assert_eq(server.match_end.stats["total_xp"], 175)
+	assert_eq(client.match_end.stats["xp"], 25)
+	assert_eq(client.match_end.stats["start_total_xp"], 200)
+	assert_eq(client.match_end.stats["total_xp"], 225)
+	assert_eq(client.match_end.stats["round"], 4)
+	assert_eq(client.match_end.stats["kills"], 7)
+	assert_false(client.match_end.stats["exfil"])
 	for key: String in ["round", "kills", "exfil"]:
-		assert_eq(client._match_stats[key], server._match_stats[key], "shared results stay identical")
+		assert_eq(client.match_end.stats[key], server.match_end.stats[key], "shared results stay identical")
 
 
 func test_leaving_standing_teammate_does_not_prevent_game_over() -> void:
@@ -132,9 +132,16 @@ func test_leaving_standing_teammate_does_not_prevent_game_over() -> void:
 	assert_eq(server.get_players().size(), 1)
 
 
+func test_every_peer_has_match_end_at_the_same_path() -> void:
+	for session: GameSession in [server, client]:
+		var ending: MatchEnd = session.get_node("MatchEnd") as MatchEnd
+		assert_eq(ending, session.match_end, "the results RPC needs one node path on every peer")
+		assert_eq(ending.session, session)
+
+
 func test_client_cannot_end_the_match_or_decide_a_wipe() -> void:
-	client._end_match(false)
-	client.check_squad()
+	client.match_end._end_match(false)
+	client.match_end.check_squad()
 	assert_false(client.is_over)
 	assert_false(server.is_over)
 
@@ -142,7 +149,7 @@ func test_client_cannot_end_the_match_or_decide_a_wipe() -> void:
 func test_empty_dedicated_server_keeps_waiting() -> void:
 	for player: Player in server.get_players():
 		player.session = null
-	server.check_squad()
+	server.match_end.check_squad()
 	assert_false(server.is_over)
 
 
@@ -164,7 +171,7 @@ func test_late_joiner_receives_an_ended_match() -> void:
 	assert_eq(TwoPeers.join(late_root, _port), OK)
 	var late_session: GameSession = _make_session(late_root)
 	await wait_until(func() -> bool: return late_session.is_over, 5.0, "late join receives match results")
-	assert_eq(late_session._match_stats, server._match_stats)
+	assert_eq(late_session.match_end.stats, server.match_end.stats)
 	assert_eq(late_session.level.process_mode, Node.PROCESS_MODE_DISABLED)
 
 
