@@ -1,9 +1,14 @@
-## Checks the code-built prop and dressing models (plan F-15): each loads as one
-## mesh, imports as a static lightmapped piece with baked AO shading, and monitor
-## screens use the shared monitor screen material.
+## Checks the code-built prop, dressing and large prop models (plans F-15, F-77): each
+## loads as one mesh, imports as a static lightmapped piece with baked AO shading, every
+## surface uses a shared prop_import.gd slot material, and monitors use the shared screen.
 extends GutTest
 
-const FOLDERS: Array[String] = ["res://assets/models/props/", "res://assets/models/dressing/"]
+const FOLDERS: Array[String] = [
+	"res://assets/models/props/",
+	"res://assets/models/dressing/",
+	"res://assets/models/props_large/",
+]
+const IMPORTER: GDScript = preload("res://tools/assets/prop_import.gd")
 const SCREEN: String = "res://systems/effects/monitor_screen.tres"
 const WITH_SCREEN: Array[String] = [
 	"res://assets/models/props/lab_bench.glb",
@@ -15,6 +20,8 @@ const WITH_SCREEN: Array[String] = [
 func _models() -> Array[String]:
 	var out: Array[String] = []
 	for folder: String in FOLDERS:
+		if not DirAccess.dir_exists_absolute(folder):
+			continue
 		for file: String in DirAccess.get_files_at(folder):
 			if file.ends_with(".glb"):
 				out.append(folder + file)
@@ -52,3 +59,19 @@ func test_monitors_keep_a_screen_surface() -> void:
 				var mat: Material = mesh.mesh.surface_get_material(i)
 				paths.append(mat.resource_path if mat else "")
 		assert_has(paths, SCREEN, path + " shows the shared monitor screen")
+
+
+func test_every_surface_uses_a_shared_slot() -> void:
+	var shared: Array = IMPORTER.SHARED.values()
+	for path: String in _models():
+		for mesh: MeshInstance3D in _meshes(path):
+			for i: int in mesh.mesh.get_surface_count():
+				var mat: Material = mesh.mesh.surface_get_material(i)
+				var where: String = mat.resource_path if mat else "no material"
+				assert_has(shared, where, "%s surface %d uses a prop_import.gd SHARED slot" % [path, i])
+
+
+func test_library_slots_load() -> void:
+	for slot: String in ["Stone", "Tile", "Enamel", "Ice", "Beacon"]:
+		assert_true(IMPORTER.SHARED.has(slot), slot + " is a shared slot")
+		assert_true(load(IMPORTER.SHARED[slot]) is Material, slot + " loads as a material")

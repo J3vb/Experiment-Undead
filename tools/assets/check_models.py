@@ -39,6 +39,7 @@ BUDGETS = {
     "machines": (2_000, 4),
     "town": (2_500, 4),
     "town_large": (12_000, 6),
+    "props_large": (12_000, 6),
 }
 BUDGETS.update(character_checks.BUDGETS)
 
