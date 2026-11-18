@@ -129,6 +129,15 @@ func test_malformed_loadouts_are_rejected_logged_and_change_nothing() -> void:
 	assert_true(server.item_guns.is_empty())
 
 
+func test_loadout_handler_on_a_client_returns_before_anything_else() -> void:
+	var before: int = Log.event_counts.get("net.loadout_rejected", 0)
+	client.state_sync.submit_loadout([_vest()], [_gun()])
+	await wait_physics_frames(3)
+	assert_eq(client.health.max_health, 100.0, "only the server applies a loadout")
+	assert_true(client.item_guns.is_empty())
+	assert_eq(Log.event_counts.get("net.loadout_rejected", 0), before, "a client never logs a refusal")
+
+
 func test_host_loadout_applies_once_on_its_own_player() -> void:
 	var host: Player = PLAYER.instantiate() as Player
 	add_child_autofree(host)
