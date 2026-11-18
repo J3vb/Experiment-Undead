@@ -58,7 +58,10 @@ jobs:
             dressing/ceiling_coolant_tunnel.glb dressing/ceiling_containment_wing.glb \
             doors/bulkhead_door.glb doors/bulkhead_door_wide.glb doors/debris_pile.glb doors/roll_shutter.glb \
             doors/vent_grate.glb doors/vent_grate_wide.glb doors/freezer_door.glb \
-            machines/weapon_rack.glb machines/weapon_rack_cold.glb machines/specimen_vault.glb; do
+            machines/weapon_rack.glb machines/weapon_rack_cold.glb machines/specimen_vault.glb \
+            props/jersey_barrier.glb props/concrete_block.glb props/sandbag_wall.glb props/sandbag_corner.glb \
+            props/boom_barrier.glb props/chain_link_fence.glb props/chain_link_gate.glb props/razor_wire_fence.glb \
+            props/hard_case.glb dressing/jerrycan_pair.glb props/pallet_stack.glb; do
             test -s "$RUNNER_TEMP/models/$f" || { echo "missing $f"; exit 1; }
           done
           for name in charm_dog_tags charm_vial charm_keycard charm_dosimeter charm_coin implant_reflex implant_lung implant_spine implant_ocular implant_relay; do

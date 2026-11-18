@@ -44,8 +44,8 @@ after a shared slot, and import swaps in the shared material from
 Wood, Glass, Fluid, JarFluid, Paper, Alarm, SodiumPaint, Hazard, Concrete, Vine,
 Screen, Logs, Planks, DarkWood, RoofSnow, Snow, Iron, WindowGlow, Canvas,
 SignPaint, TownHazard, Banner, Beacon, Bulb, Pine, and for the library Stone (clean dressed
-stone and rock), Tile (`clinic_tile`), Enamel (off-white hospital metal) and Ice.
-Red signal and tail lamps use Beacon. "(own)" marks town models that keep their
+stone and rock), Tile (`clinic_tile`), Enamel (off-white hospital metal), Ice and
+Burlap (sandbags, step 2). Red signal and tail lamps use Beacon. "(own)" marks town models that keep their
 embedded colours (`vertex_shading_import.gd`).
 
 ## Models
@@ -57,6 +57,10 @@ embedded colours (`vertex_shading_import.gd`).
 | `barricade` | props | 2.4 x 0.8 x 1.3 | Halcyon, Barriers | Halcyon Labs, Kessel Dam, Marrow Junction | Paint, Steel, Wood, Dark |
 | `big_tank_cracked` | props | 2.9 x 2.7 x 4.5 | Halcyon | Halcyon Labs | Steel, Glass, Fluid, Hazard |
 | `big_tank_shattered` | props | 2.9 x 2.7 x 4.5 | Halcyon | Halcyon Labs | Steel, Glass, Hazard |
+| `boom_barrier` | props | 4.6 x 0.6 x 1.1 | Barriers | Kessel Dam, Marrow Junction | Paint, TownHazard, Dark, Beacon |
+| `chain_link_fence` | props | 3.1 x 0.1 x 2.0 | Barriers, Industrial | Kessel Dam, Marrow Junction, towns, Halcyon Labs dock | Steel, Dark |
+| `chain_link_gate` | props | 2.3 x 0.1 x 2.1 | Barriers, Industrial | Kessel Dam, Marrow Junction, towns, Halcyon Labs dock | Steel, Dark |
+| `concrete_block` | props | 1.7 x 0.8 x 0.9 | Barriers | Kessel Dam, Marrow Junction, towns | Concrete, Iron, Olive |
 | `covered_gurney` | props | 2.0 x 0.7 x 0.9 | Halcyon, Hospital | Halcyon Labs, Grauwald Sanatorium | Steel, Dark, Paper |
 | `crate_large` | props | 1.2 x 1.2 x 1.2 | Halcyon | Halcyon Labs | Wood, Steel, Paper |
 | `crate_long` | props | 0.9 x 1.2 x 0.9 | Halcyon | Halcyon Labs | Wood, Steel, Paper |
@@ -67,15 +71,21 @@ embedded colours (`vertex_shading_import.gd`).
 | `fuel_drum` | props | 0.6 x 0.6 x 0.9 | Halcyon, Military | Halcyon Labs, Kessel Dam, Marrow Junction | Olive, Dark, Steel |
 | `generator` | props | 4.0 x 2.4 x 2.4 | Halcyon | Halcyon Labs | Dark, Olive, Steel |
 | `guard_desk` | props | 2.4 x 1.0 x 1.3 | Halcyon | Halcyon Labs | Paint, Steel, Dark, Screen |
+| `hard_case` | props | 0.9 x 0.6 x 0.4 | Barriers, Military | Kessel Dam, Marrow Junction, Halcyon Labs dock, towns | TownHazard, Dark |
 | `holding_cell` | props | 2.5 x 2.5 x 3.0 | Halcyon | Halcyon Labs | Dark, Olive, Steel, Alarm |
 | `jar_shelf` | props | 2.0 x 0.5 x 2.0 | Halcyon | Halcyon Labs | Steel, JarFluid, Dark, Fluid |
+| `jersey_barrier` | props | 2.0 x 0.6 x 0.8 | Barriers | Kessel Dam, Marrow Junction, towns, Halcyon Labs dock | Concrete, TownHazard, Dark |
 | `kitchen_line` | props | 3.4 x 1.3 x 2.4 | Halcyon | Halcyon Labs | Steel, Paint, Dark, Glass |
 | `lab_bench` | props | 7.0 x 1.0 x 1.5 | Halcyon | Halcyon Labs | Dark, Paint, Steel, Screen |
 | `locker_row` | props | 6.0 x 0.6 x 2.0 | Halcyon | Halcyon Labs | Dark, Paint, Steel |
 | `mess_table` | props | 9.0 x 2.2 x 0.9 | Halcyon | Halcyon Labs | Laminate, Steel, Dark, Paper |
 | `military_cases` | props | 1.3 x 0.6 x 0.7 | Halcyon, Barriers, Military | Halcyon Labs, Kessel Dam, Marrow Junction | Paint, Steel, Dark |
 | `overturned_table` | props | 2.4 x 0.9 x 1.0 | Halcyon | Halcyon Labs | Laminate, Steel |
+| `pallet_stack` | props | 1.3 x 0.9 x 0.6 | Barriers, Industrial | Kessel Dam, Marrow Junction, towns, Halcyon Labs dock | Wood |
+| `razor_wire_fence` | props | 3.1 x 0.5 x 2.3 | Barriers, Military | Kessel Dam, Marrow Junction | Steel |
 | `research_room` | props | 4.0 x 1.1 x 2.8 | Halcyon | Halcyon Labs | Steel, Glass, Vine, Fluid |
+| `sandbag_corner` | props | 1.5 x 1.5 x 0.9 | Barriers, Military | Kessel Dam, Marrow Junction, towns | Burlap |
+| `sandbag_wall` | props | 2.1 x 0.5 x 0.9 | Barriers, Military | Kessel Dam, Marrow Junction, towns | Burlap |
 | `serving_counter` | props | 3.5 x 0.8 x 1.4 | Halcyon | Halcyon Labs | Paint, Steel, Dark, Glass |
 | `specimen_tank` | props | 1.2 x 1.2 x 2.7 | Halcyon | Halcyon Labs | Steel, Dark, Glass, Fluid |
 | `supply_truck` | props | 2.6 x 7.1 x 2.8 | Halcyon, Military | Halcyon Labs, Kessel Dam, Marrow Junction | Dark, Olive, Steel |
@@ -100,6 +110,7 @@ embedded colours (`vertex_shading_import.gd`).
 | `floor_cables` | dressing | 4.0 x 1.3 x 0.1 | Halcyon | Halcyon Labs | Dark |
 | `hanging_strip` | dressing | 0.7 x 0.2 x 4.0 | Halcyon | Halcyon Labs | Dark, Steel |
 | `hazard_sign` | dressing | 0.6 x 0.0 x 0.4 | Halcyon | Halcyon Labs | Paper, Alarm, Dark |
+| `jerrycan_pair` | dressing | 0.8 x 0.3 x 0.5 | Barriers, Military | Kessel Dam, Marrow Junction, towns | Paint, Dark |
 | `lab_floor_wreck` | dressing | 1.5 x 1.1 x 0.3 | Halcyon | Halcyon Labs | Dark, Steel, Fluid, Paper |
 | `lab_papers` | dressing | 1.5 x 0.9 x 0.0 | Halcyon | Halcyon Labs | Paper, Dark |
 | `mess_spill` | dressing | 2.2 x 1.8 x 0.4 | Halcyon | Halcyon Labs | Laminate, Steel, Dark, Paper |

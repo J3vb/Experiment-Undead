@@ -14,6 +14,10 @@ const MIN_ROW_WIDTH: float = 8.0
 const ROWS: float = 3.0
 const GAP: float = 0.6
 const FOV: float = 40.0
+## Camera pitch (up per metre back) and how much of the bounding sphere distance to keep: the wide frame fits
+## the rows closer than the sphere.
+const CAMERA_RISE: float = 0.8
+const FRAMING: float = 0.65
 
 
 func _initialize() -> void:
@@ -41,8 +45,8 @@ func _initialize() -> void:
 	var camera: Camera3D = STAGE.camera(stage)
 	camera.fov = FOV
 	root.add_child(stage)
-	var distance: float = extent.size.length() * 0.5 / sin(deg_to_rad(FOV * 0.5))
-	camera.look_at_from_position(centre + Vector3(0, 0.4, 1).normalized() * distance, centre)
+	var distance: float = extent.size.length() * 0.5 / sin(deg_to_rad(FOV * 0.5)) * FRAMING
+	camera.look_at_from_position(centre + Vector3(0, CAMERA_RISE, 1).normalized() * distance, centre)
 	_run.call_deferred("res://screenshots/prop_lineup_%s.png" % family.to_snake_case())
 
 
