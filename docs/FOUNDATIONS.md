@@ -64,7 +64,8 @@ its own copy, and leech / points per hit run where the server applies the hit
   re-invents it.
 
 **Being fixed:** F-79, [plans/easy-changes.md](plans/easy-changes.md) steps 1-3
-(`RequestGate`, one server check, the written patterns and a CI rule).
+(the written co-op patterns, one server check for new code, a CI rule for
+every RPC, then the two 350-line co-op scripts split by job).
 
 **Fixed when:** ~~one request path for interactions (client sends the request,
 server checks sender, range and state, then calls the same `interact()`)~~
@@ -252,4 +253,4 @@ tests, as usual. The issue numbers have the details.
 | 7 | Done: hot-path allocations ([plan](plans/hot-path-allocations.md)): impacts, remote tracers, chain arcs and the gravity well reuse resources; zombie separation without per-tick arrays | #139, #141, #142, #150, #151 | 4-player play-test (#127), more VFX |
 | 8 | Done: shared test helpers: `TwoPeers` for two-peer ENet tests, `MeshChecks` for model sight-line checks, `grip_checks.py` for grip tests | #161, #164, #170 | more co-op tests |
 | 9 | Done: every Events signal says which peers emit it (`## Peers:` in `core/events.gd`, checked by a test) | - | next co-op feature that uses Events |
-| 10 | F-79 ([plan](plans/easy-changes.md)): one client request pattern (`RequestGate`) with a CI rule, then short agent docs (foundations 1 and 13) | - | next co-op feature (skills, abilities, grenades) |
+| 10 | F-79 ([plan](plans/easy-changes.md)): written co-op patterns with a CI rule for every RPC, then short agent docs (foundations 1 and 13) | - | next co-op feature (skills, abilities, grenades) |
