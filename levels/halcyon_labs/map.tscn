@@ -16,6 +16,9 @@
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/signs.tscn" id="signs"]
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/fenlight.tscn" id="fenlight"]
 [ext_resource type="PackedScene" path="res://systems/effects/fire_spot.tscn" id="fire"]
+[ext_resource type="Texture2D" path="res://assets/textures/signs/tank_c01.png" id="tank_c01"]
+[ext_resource type="Texture2D" path="res://assets/textures/signs/tank_c02.png" id="tank_c02"]
+[ext_resource type="Texture2D" path="res://assets/textures/signs/tank_c03.png" id="tank_c03"]
 [ext_resource type="Material" path="res://levels/materials/rust.tres" id="rust"]
 [ext_resource type="PackedScene" path="res://systems/interactables/door.tscn" id="door"]
 [ext_resource type="PackedScene" path="res://assets/models/doors/bulkhead_door.glb" id="bulkhead_door"]
@@ -811,6 +814,35 @@ area = &"coolant_tunnel"
 [node name="Signs" parent="." instance=ExtResource("signs")]
 
 [node name="Fenlight" parent="." instance=ExtResource("fenlight")]
+
+[node name="TankCodes" type="Node3D" parent="."]
+
+[node name="C01" type="Decal" parent="TankCodes"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 68, -2.7, 11.35)
+size = Vector3(0.9, 0.4, 0.4)
+texture_albedo = ExtResource("tank_c01")
+modulate = Color(1, 1, 1, 0.85)
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
+[node name="C02" type="Decal" parent="TankCodes"]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 72.3, -2.7, 24.05)
+size = Vector3(0.9, 0.4, 0.4)
+texture_albedo = ExtResource("tank_c02")
+modulate = Color(1, 1, 1, 0.8)
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
+[node name="C03" type="Decal" parent="TankCodes"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 64, -2.7, 14.65)
+size = Vector3(0.9, 0.4, 0.4)
+texture_albedo = ExtResource("tank_c03")
+modulate = Color(1, 1, 1, 0.75)
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
 
 [node name="CoopTruckGap1" type="Marker3D" parent="ZombieSpawns"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.5, 0.1, 62)

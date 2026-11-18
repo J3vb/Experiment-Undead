@@ -17,6 +17,7 @@ LETTER_H = 6.0
 GAP = 1.6
 
 GLYPHS = {
+    "0": [((0, 0), (4, 0)), ((4, 0), (4, 6)), ((4, 6), (0, 6)), ((0, 6), (0, 0)), ((0.6, 5.2), (3.4, 0.8))],
     "A": [((0, 6), (0, 1.5)), ((0, 1.5), (2, 0)), ((2, 0), (4, 1.5)), ((4, 1.5), (4, 6)), ((0, 3.4), (4, 3.4))],
     "B": [
         ((0, 0), (0, 6)),
@@ -252,6 +253,9 @@ def build(out_dir: Path) -> list:
     jobs = [("oriel_logo", (640, 256), oriel_logo(), PAINT, 41, False)]
     jobs.append(("lane_line", (256, 32), lane_line(), HAZARD, 43, False))
     jobs.append(("halcyon_research", (512, 192), research_sign(), PAINT, 45, False))
+    for index, code in enumerate(("C-01", "C-02", "C-03")):
+        strokes = text_strokes(code, 16, 28, 72, 7.0)
+        jobs.append(("tank_" + code.replace("-", "").lower(), (288, 128), strokes, PAINT, 47 + index, index == 0))
     for index, (room, (code, name, sector)) in enumerate(ROOMS.items()):
         jobs.append(("sign_" + room, SIGN_SIZE, room_sign(code, name, sector), PAINT, 50 + index, room in BLOODIED))
     written = []
