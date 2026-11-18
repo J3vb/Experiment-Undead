@@ -9,3 +9,4 @@ trim_color = Color(1.000000000, 0.541176471, 0.109803922, 1)
 glow_strength = 2.0
 pulse_seconds = 4.0
 flicker = false
+tier = 2

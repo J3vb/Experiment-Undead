@@ -43,18 +43,18 @@ func apply(look: CharacterLook) -> void:
 		if visual == null or visual.slot != slot:
 			visual = GearVisual.fallback(slot)
 			rarity = &"common"
-		var piece: Node3D = _attach(visual)
 		if not Content.has(&"looks", rarity):
 			rarity = &"common"
 		var finish: RarityLook = Content.get_item(&"looks", rarity) as RarityLook
+		var piece: Node3D = _attach(visual, finish.tier)
 		var dyes: Array = entry.get("dyes", [CharacterLook.DEFAULT_DYE_MAIN, CharacterLook.DEFAULT_DYE_ACCENT])
 		GearLook.apply(piece, finish, dyes[0], dyes[1])
 		_set_geometry(piece)
 	look_changed.emit(look)
 
 
-func _attach(visual: GearVisual) -> Node3D:
-	var piece: Node3D = visual.scene.instantiate() as Node3D
+func _attach(visual: GearVisual, tier: int) -> Node3D:
+	var piece: Node3D = visual.scene_for(tier).instantiate() as Node3D
 	if visual.slot == &"vest":
 		_bind_vest(piece)
 		return piece
