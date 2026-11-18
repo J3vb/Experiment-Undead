@@ -67,6 +67,9 @@ jobs:
           for name in street_lamp wall_lantern window_lit window_dark fence signpost; do
             test -s "$RUNNER_TEMP/models/town/$name.glb" || { echo "missing town/$name.glb"; exit 1; }
           done
+          for name in lodge_lantern_post lodge_common_room; do
+            test -s "$RUNNER_TEMP/models/town_large/$name.glb" || { echo "missing town_large/$name.glb"; exit 1; }
+          done
           for f in gear/vest_light.glb gear/vest_medium.glb gear/vest_heavy.glb; do
             test -s "$RUNNER_TEMP/models/$f" || { echo "missing $f"; exit 1; }
           done

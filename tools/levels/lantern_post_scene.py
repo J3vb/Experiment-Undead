@@ -30,6 +30,8 @@ MATS = [
     "beacon_red",
 ]
 SCENES = ["street_lamp", "wall_lantern", "window_lit", "window_dark", "fence", "signpost"]
+LODGES = ["lodge_lantern_post", "lodge_common_room"]
+LODGE_YAW = math.pi / 2  # model fronts (+Z) face the street (+X)
 SODIUM = "1, 0.58, 0.25, 1"
 WALL_H = 3.6
 SIGNS = {0: "INFIRMARY", 2: "RADIO", 4: "SUPPLY", 5: "WORKSHOP"}
@@ -38,6 +40,7 @@ nodes: list[str] = []
 used: set[tuple[str, str]] = set()
 shadow_budget = [6]
 counts: dict[str, int] = {}
+shapes: dict[str, str] = {}
 
 
 def fmt(v: float) -> str:
@@ -71,6 +74,18 @@ def block(name, parent, pos, size, mat, rot=None) -> None:
     nodes.append(
         f'[node name="{name}" type="StaticBody3D" parent="{parent}"]\ntransform = {xform(pos, rot)}\n'
         f'script = ExtResource("block")\nsize = {size_text}\nmaterial = ExtResource("{mat}")\n'
+    )
+
+
+def collider(name, parent, pos, size, yaw=0.0) -> None:
+    """Invisible box collider for a building model (the model itself has no collision)."""
+    key = "shape_" + "x".join(fmt(v) for v in size).replace(".", "p")
+    shapes[key] = f"Vector3({fmt(size[0])}, {fmt(size[1])}, {fmt(size[2])})"
+    nodes.append(
+        f'[node name="{name}" type="StaticBody3D" parent="{parent}"]\ntransform = {xform(pos, basis_rot(yaw))}\n'
+    )
+    nodes.append(
+        f'[node name="Shape" type="CollisionShape3D" parent="{parent}/{name}"]\nshape = SubResource("{key}")\n'
     )
 
 
@@ -247,15 +262,56 @@ def _house(i, side, z) -> float:
 
 
 def build_houses() -> None:
+    """Grey-box houses on the east side, until step 3 replaces them with cabins."""
     group("Houses")
     group("Windows")
     i = 0
-    for side in (-1, 1):
-        z = -30.0
-        while z < -2:
-            z += _house(i, side, z) + random.uniform(1.5, 2.8)
-            i += 1
+    z = -30.0
+    while z < -2:
+        z += _house(i, 1, z) + random.uniform(1.5, 2.8)
+        i += 1
     counts["houses"] = i
+
+
+def _on_lodge(centre, local) -> tuple:
+    """A point given in a lodge model's own space (front +Z) to world space, lodge turned by LODGE_YAW."""
+    return (centre[0] + local[2], local[1], centre[1] - local[0])
+
+
+def _lantern_post_lodge() -> None:
+    """B1 by the plaza: gable sign, hanging lantern, porch light, colliders for the walls and the porch deck."""
+    at = (-9.6, -5.0)
+    inst("LodgeLanternPost", "Lodges", (at[0], 0, at[1]), "lodge_lantern_post", LODGE_YAW)
+    collider("LanternPostWalls", "Lodges", _on_lodge(at, (0, 3.5, -0.925)), (12.34, 7, 6.64), LODGE_YAW)
+    collider("LanternPostPorch", "Lodges", _on_lodge(at, (0, 0.15, 3.36)), (12.4, 0.3, 1.93), LODGE_YAW)
+    sign = _on_lodge(at, (0.3, 8.05, 2.44))
+    label("LanternPostSign", "Lodges", sign, LODGE_YAW, "LANTERN\\nPOST", 190, "0.8, 0.78, 0.72, 1")
+    inst("LanternPostLantern", "Lodges", _on_lodge(at, (-2.9, 6.35, 2.2)), "wall_lantern", LODGE_YAW)
+    lit("LanternPostLanternLight", "Lodges", _on_lodge(at, (-2.9, 6.8, 3.0)), 2.6, 9.0)
+    lit("LanternPostPorchLight", "Lodges", _on_lodge(at, (0, 2.8, 3.4)), 1.6, 8.0)
+
+
+def _common_room_lodge() -> None:
+    """B2 at the north end: COMMON ROOM board on the balcony, stove-pipe smoke, posts and walls collide."""
+    at = (-11.8, -29.0)
+    inst("LodgeCommonRoom", "Lodges", (at[0], 0, at[1]), "lodge_common_room", LODGE_YAW)
+    collider("CommonRoomWalls", "Lodges", _on_lodge(at, (0, 3.5, -1.112)), (14.34, 7, 5.94), LODGE_YAW)
+    for k, x in enumerate((-7.0, -3.5, 0.0, 3.5, 7.0)):
+        collider(f"CommonRoomPost{k}", "Lodges", _on_lodge(at, (x, 1.6, 3.918)), (0.26, 3.2, 0.26), LODGE_YAW)
+    label("CommonRoomSign", "Lodges", _on_lodge(at, (0, 5.76, 4.11)), LODGE_YAW, "COMMON ROOM", 130)
+    smoke = xform(_on_lodge(at, (4.4, 9.95, -2.21)))
+    nodes.append(
+        f'[node name="CommonRoomSmoke" parent="Lodges" instance=ExtResource("chimney_smoke")]\ntransform = {smoke}\n'
+    )
+    lit("CommonRoomPorchLight", "Lodges", _on_lodge(at, (0, 2.6, 3.0)), 2.4, 9.0)
+    lit("CommonRoomBalconyLight", "Lodges", _on_lodge(at, (0, 5.2, 3.2)), 2.4, 9.0)
+
+
+def build_lodges() -> None:
+    """The two hero lodges on the west side of the street (asset list B1, B2; layout map)."""
+    group("Lodges")
+    _lantern_post_lodge()
+    _common_room_lodge()
 
 
 def build_lamps() -> None:
@@ -342,7 +398,7 @@ def _barrels_and_crates() -> None:
         y = s / 2 if ck != 2 else 1.0 + s / 2
         block(f"Crate{ck}", "Props", (x, y, z), (s, s, s), "town_planks")
         deco(f"CrateSnow{ck}", "Props", (x, y + s / 2 + 0.03, z), (s * 0.9, 0.05, s * 0.9), "town_snow")
-    for lk, (x, z) in enumerate([(-10, 0.5), (10, 11)]):
+    for lk, (x, z) in enumerate([(-12.5, 6.5), (10, 11)]):
         for r in range(3):
             for c in range(5 - r):
                 pos = (x, 0.15 + r * 0.27, z - 1.0 + c * 0.5 + r * 0.25)
@@ -368,6 +424,8 @@ def build_fences_and_signs() -> None:
     fk = 0
     for fz in range(-30, -2, 2):
         for sx in (-1, 1):
+            if sx < 0 and fz < -21:
+                continue  # the Common Room lodge stands there
             inst(f"Fence{fk}", "Fences", (sx * 15.5, 0, fz + 1), "fence", math.pi / 2)
             fk += 1
     for fx in range(-10, 12, 2):
@@ -415,12 +473,12 @@ def build_yards_and_pines() -> None:
     yk = 0
     for sx in (-1, 1):
         for yz in (-29, -19, -9):
-            x = sx * random.uniform(17.5, 22.5)
+            x = sx * random.uniform(17.5 if sx > 0 else 18.5, 22.5)
             z = yz + random.uniform(-2, 2)
             _shed(yk, sx, x, z)
             yk += 1
         for t in range(5):
-            x = sx * random.uniform(16.5, 24.5)
+            x = sx * random.uniform(16.5 if sx > 0 else 18.5, 24.5)
             z = random.uniform(-34, 12)
             pine(f"YardPine{yk}_{t}", "Yards", x, z, random.uniform(0.55, 0.85))
     group("Pines")
@@ -472,6 +530,9 @@ def header() -> str:
         '[ext_resource type="Environment" path="res://levels/looks/lantern_post_night.tres" id="look"]',
     ]
     ext += [f'[ext_resource type="PackedScene" path="res://assets/models/town/{sc}.glb" id="{sc}"]' for sc in SCENES]
+    ext += [
+        f'[ext_resource type="PackedScene" path="res://assets/models/town_large/{sc}.glb" id="{sc}"]' for sc in LODGES
+    ]
     ext += [f'[ext_resource type="Material" path="res://levels/materials/{m}.tres" id="{m}"]' for m in MATS]
     ext.append('[ext_resource type="PackedScene" path="res://systems/hub/deploy_board.tscn" id="deploy_board"]')
     ext.append(
@@ -483,6 +544,7 @@ def header() -> str:
         f'[sub_resource type="BoxMesh" id="{mesh}_{mat}"]\nmaterial = ExtResource("{mat}")\n'
         for mesh, mat in sorted(used)
     ]
+    subs += [f'[sub_resource type="BoxShape3D" id="{key}"]\nsize = {size}\n' for key, size in sorted(shapes.items())]
     subs.append(
         '[sub_resource type="CylinderMesh" id="pine_tree"]\nmaterial = ExtResource("pine")\ntop_radius = 0.0\n'
         "bottom_radius = 2.2\nheight = 10.0\nradial_segments = 9\nrings = 3\n"
@@ -503,11 +565,13 @@ def build() -> str:
     """Returns the whole scene text. Same seed, same scene."""
     nodes.clear()
     used.clear()
+    shapes.clear()
     shadow_budget[0] = 6
     random.seed(7)
     build_ground()
     build_walls()
     build_houses()
+    build_lodges()
     build_lamps()
     build_gate()
     build_props()

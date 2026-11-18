@@ -27,6 +27,7 @@ REFERENCES = {
     "characters": "gear_sets.jpg",
     "gear": "gear_sets.jpg",
     "town": "style_hub.jpg",
+    "town_large": "lantern_post_concept.jpg",
 }
 VIEWS = (("FRONT", 0), ("3/4", 45), ("SIDE", 90), ("BACK", 180))
 

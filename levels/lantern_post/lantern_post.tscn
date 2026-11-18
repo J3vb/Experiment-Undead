@@ -9,6 +9,8 @@
 [ext_resource type="PackedScene" path="res://assets/models/town/window_dark.glb" id="window_dark"]
 [ext_resource type="PackedScene" path="res://assets/models/town/fence.glb" id="fence"]
 [ext_resource type="PackedScene" path="res://assets/models/town/signpost.glb" id="signpost"]
+[ext_resource type="PackedScene" path="res://assets/models/town_large/lodge_lantern_post.glb" id="lodge_lantern_post"]
+[ext_resource type="PackedScene" path="res://assets/models/town_large/lodge_common_room.glb" id="lodge_common_room"]
 [ext_resource type="Material" path="res://levels/materials/town_stone.tres" id="town_stone"]
 [ext_resource type="Material" path="res://levels/materials/town_plaster.tres" id="town_plaster"]
 [ext_resource type="Material" path="res://levels/materials/town_planks.tres" id="town_planks"]
@@ -58,6 +60,18 @@ material = ExtResource("town_snow")
 
 [sub_resource type="BoxMesh" id="box_town_stone"]
 material = ExtResource("town_stone")
+
+[sub_resource type="BoxShape3D" id="shape_0p26x3p2x0p26"]
+size = Vector3(0.26, 3.2, 0.26)
+
+[sub_resource type="BoxShape3D" id="shape_12p34x7x6p64"]
+size = Vector3(12.34, 7, 6.64)
+
+[sub_resource type="BoxShape3D" id="shape_12p4x0p3x1p93"]
+size = Vector3(12.4, 0.3, 1.93)
+
+[sub_resource type="BoxShape3D" id="shape_14p34x7x5p94"]
+size = Vector3(14.34, 7, 5.94)
 
 [sub_resource type="CylinderMesh" id="pine_tree"]
 material = ExtResource("pine")
@@ -501,130 +515,130 @@ mesh = SubResource("box_town_snow")
 [node name="Windows" type="Node3D" parent="."]
 
 [node name="House0" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.148, 1.3, -26.65)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.148, 1.3, -26.65)
 script = ExtResource("block")
 size = Vector3(7.296, 2.6, 6.696)
 material = ExtResource("town_stone")
 
 [node name="House0Upper" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.148, 3.991, -26.65)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.148, 3.991, -26.65)
 script = ExtResource("block")
 size = Vector3(7.496, 2.781, 6.896)
 material = ExtResource("town_plaster")
 
 [node name="House0Beam" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(7.646, 0, 0, 0, 0.2, 0, 0, 0, 7.046, -9.148, 2.6, -26.65)
+transform = Transform3D(7.646, 0, 0, 0, 0.2, 0, 0, 0, 7.046, 9.148, 2.6, -26.65)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="House0Roof0" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(0.8139, -0.581, 0, 0.581, 0.8139, 0, 0, 0, 1, -10.97, 6.804, -26.65)
+transform = Transform3D(0.8139, -0.581, 0, 0.581, 0.8139, 0, 0, 0, 1, 7.324, 6.804, -26.65)
 script = ExtResource("block")
 size = Vector3(4.932, 0.22, 7.396)
 material = ExtResource("town_slate")
 
 [node name="House0Roof1" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(0.8139, 0.581, 0, -0.581, 0.8139, 0, 0, 0, 1, -7.324, 6.804, -26.65)
+transform = Transform3D(0.8139, 0.581, 0, -0.581, 0.8139, 0, 0, 0, 1, 10.97, 6.804, -26.65)
 script = ExtResource("block")
 size = Vector3(4.932, 0.22, 7.396)
 material = ExtResource("town_slate")
 
 [node name="House0Gable0_0" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(6.384, 0, 0, 0, 0.6511, 0, 0, 0, 0.24, -9.148, 5.707, -29.88)
+transform = Transform3D(6.384, 0, 0, 0, 0.6511, 0, 0, 0, 0.24, 9.148, 5.707, -29.88)
 mesh = SubResource("box_town_plaster")
 
 [node name="House0Gable0_1" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(4.56, 0, 0, 0, 0.6511, 0, 0, 0, 0.24, -9.148, 6.358, -29.88)
+transform = Transform3D(4.56, 0, 0, 0, 0.6511, 0, 0, 0, 0.24, 9.148, 6.358, -29.88)
 mesh = SubResource("box_town_plaster")
 
 [node name="House0Gable0_2" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(2.736, 0, 0, 0, 0.6511, 0, 0, 0, 0.24, -9.148, 7.009, -29.88)
+transform = Transform3D(2.736, 0, 0, 0, 0.6511, 0, 0, 0, 0.24, 9.148, 7.009, -29.88)
 mesh = SubResource("box_town_plaster")
 
 [node name="House0Gable0_3" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.912, 0, 0, 0, 0.6511, 0, 0, 0, 0.24, -9.148, 7.66, -29.88)
+transform = Transform3D(0.912, 0, 0, 0, 0.6511, 0, 0, 0, 0.24, 9.148, 7.66, -29.88)
 mesh = SubResource("box_town_plaster")
 
 [node name="House0Gable1_0" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(6.384, 0, 0, 0, 0.6511, 0, 0, 0, 0.24, -9.148, 5.707, -23.42)
+transform = Transform3D(6.384, 0, 0, 0, 0.6511, 0, 0, 0, 0.24, 9.148, 5.707, -23.42)
 mesh = SubResource("box_town_plaster")
 
 [node name="House0Gable1_1" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(4.56, 0, 0, 0, 0.6511, 0, 0, 0, 0.24, -9.148, 6.358, -23.42)
+transform = Transform3D(4.56, 0, 0, 0, 0.6511, 0, 0, 0, 0.24, 9.148, 6.358, -23.42)
 mesh = SubResource("box_town_plaster")
 
 [node name="House0Gable1_2" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(2.736, 0, 0, 0, 0.6511, 0, 0, 0, 0.24, -9.148, 7.009, -23.42)
+transform = Transform3D(2.736, 0, 0, 0, 0.6511, 0, 0, 0, 0.24, 9.148, 7.009, -23.42)
 mesh = SubResource("box_town_plaster")
 
 [node name="House0Gable1_3" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.912, 0, 0, 0, 0.6511, 0, 0, 0, 0.24, -9.148, 7.66, -23.42)
+transform = Transform3D(0.912, 0, 0, 0, 0.6511, 0, 0, 0, 0.24, 9.148, 7.66, -23.42)
 mesh = SubResource("box_town_plaster")
 
 [node name="House0Ridge" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.3, 0, 0, 0, 0.16, 0, 0, 0, 7.446, -9.148, 8.166, -26.65)
+transform = Transform3D(0.3, 0, 0, 0, 0.16, 0, 0, 0, 7.446, 9.148, 8.166, -26.65)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="House0Chimney" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.61, 7.204, -27.28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.61, 7.204, -27.28)
 script = ExtResource("block")
 size = Vector3(0.7, 4.065, 0.7)
 material = ExtResource("town_stone")
 
 [node name="House0ChimneyCap" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.9, 0, 0, 0, 0.12, 0, 0, 0, 0.9, -10.61, 9.287, -27.28)
+transform = Transform3D(0.9, 0, 0, 0, 0.12, 0, 0, 0, 0.9, 10.61, 9.287, -27.28)
 mesh = SubResource("box_town_slate")
 
 [node name="House0Smoke" parent="Houses" instance=ExtResource("chimney_smoke")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.61, 9.437, -27.28)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.61, 9.437, -27.28)
 
 [node name="House0DoorFrame" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.14, 0, 0, 0, 2.45, 0, 0, 0, 1.45, -5.45, 1.2, -25.85)
+transform = Transform3D(0.14, 0, 0, 0, 2.45, 0, 0, 0, 1.45, 5.45, 1.2, -25.85)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="House0Door" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.08, 0, 0, 0, 2.15, 0, 0, 0, 1.1, -5.41, 1.1, -25.85)
+transform = Transform3D(0.08, 0, 0, 0, 2.15, 0, 0, 0, 1.1, 5.41, 1.1, -25.85)
 mesh = SubResource("box_town_planks")
 
 [node name="House0Step" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.7, 0, 0, 0, 0.2, 0, 0, 0, 1.6, -5.1, 0.1, -25.85)
+transform = Transform3D(0.7, 0, 0, 0, 0.2, 0, 0, 0, 1.6, 5.1, 0.1, -25.85)
 mesh = SubResource("box_town_stone")
 
 [node name="House0Awning" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.872, 0.01979, 0, -0.2227, 0.07751, 0, 0, 0, 1.8, -5.05, 2.55, -25.85)
+transform = Transform3D(0.872, -0.01979, 0, 0.2227, 0.07751, 0, 0, 0, 1.8, 5.05, 2.55, -25.85)
 mesh = SubResource("box_town_slate")
 
 [node name="House0W0" parent="Windows" instance=ExtResource("window_dark")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.48, 0.845, -28.79)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.48, 0.845, -28.79)
 
 [node name="House0W1" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.48, 0.845, -24.51)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.48, 0.845, -24.51)
 
 [node name="House0W2" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.38, 2.995, -28.33)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.38, 2.995, -28.33)
 
 [node name="House0W3" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.38, 2.995, -24.98)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.38, 2.995, -24.98)
 
 [node name="House0LanternModel" parent="Houses" instance=ExtResource("wall_lantern")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.28, 2.25, -24.85)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.28, 2.25, -24.85)
 
 [node name="House0Lantern" type="OmniLight3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2.45, -24.85)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.45, -24.85)
 light_color = Color(1, 0.58, 0.25, 1)
 light_energy = 2.4
 omni_range = 8.0
 omni_attenuation = 1.2
 
 [node name="House0SignArm" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.9, 0, 0, 0, 0.05, 0, 0, 0, 0.05, -5.05, 3.05, -26.85)
+transform = Transform3D(0.9, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 5.05, 3.05, -26.85)
 mesh = SubResource("box_iron")
 
 [node name="House0SignBoard" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.05, 0, 0, 0, 0.45, 0, 0, 0, 0.7, -4.75, 2.75, -26.85)
+transform = Transform3D(0.05, 0, 0, 0, 0.45, 0, 0, 0, 0.7, 4.75, 2.75, -26.85)
 mesh = SubResource("box_town_planks")
 
 [node name="House0SignText0" type="Label3D" parent="Houses"]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, -4.78, 2.75, -26.85)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 4.72, 2.75, -26.85)
 pixel_size = 0.004
 modulate = Color(0.95, 0.85, 0.65, 1)
 outline_size = 6
@@ -632,7 +646,7 @@ font_size = 28
 text = "INFIRMARY"
 
 [node name="House0SignText2" type="Label3D" parent="Houses"]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -4.72, 2.75, -26.85)
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 4.78, 2.75, -26.85)
 pixel_size = 0.004
 modulate = Color(0.95, 0.85, 0.65, 1)
 outline_size = 6
@@ -640,232 +654,232 @@ font_size = 28
 text = "INFIRMARY"
 
 [node name="House1" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.864, 1.3, -17.76)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.864, 1.3, -17.76)
 script = ExtResource("block")
 size = Vector3(6.727, 2.6, 7.473)
 material = ExtResource("town_stone")
 
 [node name="House1Upper" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.864, 3.884, -17.76)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.864, 3.884, -17.76)
 script = ExtResource("block")
 size = Vector3(6.927, 2.568, 7.673)
 material = ExtResource("town_planks")
 
 [node name="House1Beam" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(7.077, 0, 0, 0, 0.2, 0, 0, 0, 7.823, -8.864, 2.6, -17.76)
+transform = Transform3D(7.077, 0, 0, 0, 0.2, 0, 0, 0, 7.823, 8.864, 2.6, -17.76)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="House1Roof0" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(0.8139, -0.581, 0, 0.581, 0.8139, 0, 0, 0, 1, -10.55, 6.489, -17.76)
+transform = Transform3D(0.8139, -0.581, 0, 0.581, 0.8139, 0, 0, 0, 1, 7.182, 6.489, -17.76)
 script = ExtResource("block")
 size = Vector3(4.583, 0.22, 8.173)
 material = ExtResource("town_slate")
 
 [node name="House1Roof1" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(0.8139, 0.581, 0, -0.581, 0.8139, 0, 0, 0, 1, -7.182, 6.489, -17.76)
+transform = Transform3D(0.8139, 0.581, 0, -0.581, 0.8139, 0, 0, 0, 1, 10.55, 6.489, -17.76)
 script = ExtResource("block")
 size = Vector3(4.583, 0.22, 8.173)
 material = ExtResource("town_slate")
 
 [node name="House1Gable0_0" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(5.887, 0, 0, 0, 0.6003, 0, 0, 0, 0.24, -8.864, 5.468, -21.38)
+transform = Transform3D(5.887, 0, 0, 0, 0.6003, 0, 0, 0, 0.24, 8.864, 5.468, -21.38)
 mesh = SubResource("box_town_planks")
 
 [node name="House1Gable0_1" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(4.205, 0, 0, 0, 0.6003, 0, 0, 0, 0.24, -8.864, 6.068, -21.38)
+transform = Transform3D(4.205, 0, 0, 0, 0.6003, 0, 0, 0, 0.24, 8.864, 6.068, -21.38)
 mesh = SubResource("box_town_planks")
 
 [node name="House1Gable0_2" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(2.523, 0, 0, 0, 0.6003, 0, 0, 0, 0.24, -8.864, 6.669, -21.38)
+transform = Transform3D(2.523, 0, 0, 0, 0.6003, 0, 0, 0, 0.24, 8.864, 6.669, -21.38)
 mesh = SubResource("box_town_planks")
 
 [node name="House1Gable0_3" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.8409, 0, 0, 0, 0.6003, 0, 0, 0, 0.24, -8.864, 7.269, -21.38)
+transform = Transform3D(0.8409, 0, 0, 0, 0.6003, 0, 0, 0, 0.24, 8.864, 7.269, -21.38)
 mesh = SubResource("box_town_planks")
 
 [node name="House1Gable1_0" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(5.887, 0, 0, 0, 0.6003, 0, 0, 0, 0.24, -8.864, 5.468, -14.15)
+transform = Transform3D(5.887, 0, 0, 0, 0.6003, 0, 0, 0, 0.24, 8.864, 5.468, -14.15)
 mesh = SubResource("box_town_planks")
 
 [node name="House1Gable1_1" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(4.205, 0, 0, 0, 0.6003, 0, 0, 0, 0.24, -8.864, 6.068, -14.15)
+transform = Transform3D(4.205, 0, 0, 0, 0.6003, 0, 0, 0, 0.24, 8.864, 6.068, -14.15)
 mesh = SubResource("box_town_planks")
 
 [node name="House1Gable1_2" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(2.523, 0, 0, 0, 0.6003, 0, 0, 0, 0.24, -8.864, 6.669, -14.15)
+transform = Transform3D(2.523, 0, 0, 0, 0.6003, 0, 0, 0, 0.24, 8.864, 6.669, -14.15)
 mesh = SubResource("box_town_planks")
 
 [node name="House1Gable1_3" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.8409, 0, 0, 0, 0.6003, 0, 0, 0, 0.24, -8.864, 7.269, -14.15)
+transform = Transform3D(0.8409, 0, 0, 0, 0.6003, 0, 0, 0, 0.24, 8.864, 7.269, -14.15)
 mesh = SubResource("box_town_planks")
 
 [node name="House1Ridge" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.3, 0, 0, 0, 0.16, 0, 0, 0, 8.223, -8.864, 7.749, -17.76)
+transform = Transform3D(0.3, 0, 0, 0, 0.16, 0, 0, 0, 8.223, 8.864, 7.749, -17.76)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="House1Chimney" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.21, 6.849, -20.23)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.21, 6.849, -20.23)
 script = ExtResource("block")
 size = Vector3(0.7, 3.842, 0.7)
 material = ExtResource("town_stone")
 
 [node name="House1ChimneyCap" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.9, 0, 0, 0, 0.12, 0, 0, 0, 0.9, -10.21, 8.82, -20.23)
+transform = Transform3D(0.9, 0, 0, 0, 0.12, 0, 0, 0, 0.9, 10.21, 8.82, -20.23)
 mesh = SubResource("box_town_slate")
 
 [node name="House1DoorFrame" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.14, 0, 0, 0, 2.45, 0, 0, 0, 1.45, -5.45, 1.2, -16.87)
+transform = Transform3D(0.14, 0, 0, 0, 2.45, 0, 0, 0, 1.45, 5.45, 1.2, -16.87)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="House1Door" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.08, 0, 0, 0, 2.15, 0, 0, 0, 1.1, -5.41, 1.1, -16.87)
+transform = Transform3D(0.08, 0, 0, 0, 2.15, 0, 0, 0, 1.1, 5.41, 1.1, -16.87)
 mesh = SubResource("box_town_planks")
 
 [node name="House1Step" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.7, 0, 0, 0, 0.2, 0, 0, 0, 1.6, -5.1, 0.1, -16.87)
+transform = Transform3D(0.7, 0, 0, 0, 0.2, 0, 0, 0, 1.6, 5.1, 0.1, -16.87)
 mesh = SubResource("box_town_stone")
 
 [node name="House1Awning" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.872, 0.01979, 0, -0.2227, 0.07751, 0, 0, 0, 1.8, -5.05, 2.55, -16.87)
+transform = Transform3D(0.872, -0.01979, 0, 0.2227, 0.07751, 0, 0, 0, 1.8, 5.05, 2.55, -16.87)
 mesh = SubResource("box_town_slate")
 
 [node name="House1W0" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.48, 0.845, -20.16)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.48, 0.845, -20.16)
 
 [node name="House1W1" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.48, 0.845, -15.37)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.48, 0.845, -15.37)
 
 [node name="House1W2" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.38, 2.995, -19.63)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.38, 2.995, -19.63)
 
 [node name="House1W3" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.38, 2.995, -15.9)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.38, 2.995, -15.9)
 
 [node name="House1LanternModel" parent="Houses" instance=ExtResource("wall_lantern")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.28, 2.25, -15.87)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.28, 2.25, -15.87)
 
 [node name="House1Lantern" type="OmniLight3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2.45, -15.87)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.45, -15.87)
 light_color = Color(1, 0.58, 0.25, 1)
 light_energy = 2.4
 omni_range = 8.0
 omni_attenuation = 1.2
 
 [node name="House2" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.213, 2.918, -7.592)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.213, 2.918, -7.592)
 script = ExtResource("block")
 size = Vector3(7.425, 5.836, 7.637)
 material = ExtResource("town_stone")
 
 [node name="House2Roof0" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(0.8139, -0.581, 0, 0.581, 0.8139, 0, 0, 0, 1, -11.07, 7.281, -7.592)
+transform = Transform3D(0.8139, -0.581, 0, 0.581, 0.8139, 0, 0, 0, 1, 7.356, 7.281, -7.592)
 script = ExtResource("block")
 size = Vector3(5.012, 0.22, 8.337)
 material = ExtResource("town_slate")
 
 [node name="House2Roof1" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(0.8139, 0.581, 0, -0.581, 0.8139, 0, 0, 0, 1, -7.356, 7.281, -7.592)
+transform = Transform3D(0.8139, 0.581, 0, -0.581, 0.8139, 0, 0, 0, 1, 11.07, 7.281, -7.592)
 script = ExtResource("block")
 size = Vector3(5.012, 0.22, 8.337)
 material = ExtResource("town_slate")
 
 [node name="House2Gable0_0" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(6.497, 0, 0, 0, 0.6626, 0, 0, 0, 0.24, -9.213, 6.167, -11.29)
+transform = Transform3D(6.497, 0, 0, 0, 0.6626, 0, 0, 0, 0.24, 9.213, 6.167, -11.29)
 mesh = SubResource("box_town_plaster")
 
 [node name="House2Gable0_1" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(4.641, 0, 0, 0, 0.6626, 0, 0, 0, 0.24, -9.213, 6.83, -11.29)
+transform = Transform3D(4.641, 0, 0, 0, 0.6626, 0, 0, 0, 0.24, 9.213, 6.83, -11.29)
 mesh = SubResource("box_town_plaster")
 
 [node name="House2Gable0_2" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(2.785, 0, 0, 0, 0.6626, 0, 0, 0, 0.24, -9.213, 7.492, -11.29)
+transform = Transform3D(2.785, 0, 0, 0, 0.6626, 0, 0, 0, 0.24, 9.213, 7.492, -11.29)
 mesh = SubResource("box_town_plaster")
 
 [node name="House2Gable0_3" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.9282, 0, 0, 0, 0.6626, 0, 0, 0, 0.24, -9.213, 8.155, -11.29)
+transform = Transform3D(0.9282, 0, 0, 0, 0.6626, 0, 0, 0, 0.24, 9.213, 8.155, -11.29)
 mesh = SubResource("box_town_plaster")
 
 [node name="House2Gable1_0" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(6.497, 0, 0, 0, 0.6626, 0, 0, 0, 0.24, -9.213, 6.167, -3.893)
+transform = Transform3D(6.497, 0, 0, 0, 0.6626, 0, 0, 0, 0.24, 9.213, 6.167, -3.893)
 mesh = SubResource("box_town_plaster")
 
 [node name="House2Gable1_1" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(4.641, 0, 0, 0, 0.6626, 0, 0, 0, 0.24, -9.213, 6.83, -3.893)
+transform = Transform3D(4.641, 0, 0, 0, 0.6626, 0, 0, 0, 0.24, 9.213, 6.83, -3.893)
 mesh = SubResource("box_town_plaster")
 
 [node name="House2Gable1_2" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(2.785, 0, 0, 0, 0.6626, 0, 0, 0, 0.24, -9.213, 7.492, -3.893)
+transform = Transform3D(2.785, 0, 0, 0, 0.6626, 0, 0, 0, 0.24, 9.213, 7.492, -3.893)
 mesh = SubResource("box_town_plaster")
 
 [node name="House2Gable1_3" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.9282, 0, 0, 0, 0.6626, 0, 0, 0, 0.24, -9.213, 8.155, -3.893)
+transform = Transform3D(0.9282, 0, 0, 0, 0.6626, 0, 0, 0, 0.24, 9.213, 8.155, -3.893)
 mesh = SubResource("box_town_plaster")
 
 [node name="House2Ridge" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.3, 0, 0, 0, 0.16, 0, 0, 0, 8.387, -9.213, 8.666, -7.592)
+transform = Transform3D(0.3, 0, 0, 0, 0.16, 0, 0, 0, 8.387, 9.213, 8.666, -7.592)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="House2Chimney" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.7, 7.691, -7.813)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.7, 7.691, -7.813)
 script = ExtResource("block")
 size = Vector3(0.7, 4.116, 0.7)
 material = ExtResource("town_stone")
 
 [node name="House2ChimneyCap" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.9, 0, 0, 0, 0.12, 0, 0, 0, 0.9, -10.7, 9.799, -7.813)
+transform = Transform3D(0.9, 0, 0, 0, 0.12, 0, 0, 0, 0.9, 10.7, 9.799, -7.813)
 mesh = SubResource("box_town_slate")
 
 [node name="House2Smoke" parent="Houses" instance=ExtResource("chimney_smoke")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.7, 9.949, -7.813)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.7, 9.949, -7.813)
 
 [node name="House2DoorFrame" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.14, 0, 0, 0, 2.45, 0, 0, 0, 1.45, -5.45, 1.2, -6.676)
+transform = Transform3D(0.14, 0, 0, 0, 2.45, 0, 0, 0, 1.45, 5.45, 1.2, -6.676)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="House2Door" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.08, 0, 0, 0, 2.15, 0, 0, 0, 1.1, -5.41, 1.1, -6.676)
+transform = Transform3D(0.08, 0, 0, 0, 2.15, 0, 0, 0, 1.1, 5.41, 1.1, -6.676)
 mesh = SubResource("box_town_planks")
 
 [node name="House2Step" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.7, 0, 0, 0, 0.2, 0, 0, 0, 1.6, -5.1, 0.1, -6.676)
+transform = Transform3D(0.7, 0, 0, 0, 0.2, 0, 0, 0, 1.6, 5.1, 0.1, -6.676)
 mesh = SubResource("box_town_stone")
 
 [node name="House2Awning" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.872, 0.01979, 0, -0.2227, 0.07751, 0, 0, 0, 1.8, -5.05, 2.55, -6.676)
+transform = Transform3D(0.872, -0.01979, 0, 0.2227, 0.07751, 0, 0, 0, 1.8, 5.05, 2.55, -6.676)
 mesh = SubResource("box_town_slate")
 
 [node name="House2W0" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.48, 0.845, -10.04)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.48, 0.845, -10.04)
 
 [node name="House2W1" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.48, 0.845, -5.148)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.48, 0.845, -5.148)
 
 [node name="House2W2" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.38, 2.995, -9.501)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.38, 2.995, -9.501)
 
 [node name="House2W3" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.38, 2.995, -5.683)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.38, 2.995, -5.683)
 
 [node name="House2LanternModel" parent="Houses" instance=ExtResource("wall_lantern")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.28, 2.25, -5.676)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.28, 2.25, -5.676)
 
 [node name="House2Lantern" type="OmniLight3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2.45, -5.676)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.45, -5.676)
 light_color = Color(1, 0.58, 0.25, 1)
 light_energy = 2.4
 omni_range = 8.0
 omni_attenuation = 1.2
 
 [node name="House2SignArm" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.9, 0, 0, 0, 0.05, 0, 0, 0, 0.05, -5.05, 3.05, -7.676)
+transform = Transform3D(0.9, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 5.05, 3.05, -7.676)
 mesh = SubResource("box_iron")
 
 [node name="House2SignBoard" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.05, 0, 0, 0, 0.45, 0, 0, 0, 0.7, -4.75, 2.75, -7.676)
+transform = Transform3D(0.05, 0, 0, 0, 0.45, 0, 0, 0, 0.7, 4.75, 2.75, -7.676)
 mesh = SubResource("box_town_planks")
 
 [node name="House2SignText0" type="Label3D" parent="Houses"]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, -4.78, 2.75, -7.676)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 4.72, 2.75, -7.676)
 pixel_size = 0.004
 modulate = Color(0.95, 0.85, 0.65, 1)
 outline_size = 6
@@ -873,7 +887,7 @@ font_size = 28
 text = "RADIO"
 
 [node name="House2SignText2" type="Label3D" parent="Houses"]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -4.72, 2.75, -7.676)
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 4.78, 2.75, -7.676)
 pixel_size = 0.004
 modulate = Color(0.95, 0.85, 0.65, 1)
 outline_size = 6
@@ -881,495 +895,221 @@ font_size = 28
 text = "RADIO"
 
 [node name="House3" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.239, 1.3, 1.525)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.239, 1.3, 1.525)
 script = ExtResource("block")
 size = Vector3(7.477, 2.6, 7.102)
 material = ExtResource("town_stone")
 
 [node name="House3Upper" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.239, 3.777, 1.525)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.239, 3.777, 1.525)
 script = ExtResource("block")
 size = Vector3(7.677, 2.354, 7.302)
 material = ExtResource("town_plaster")
 
 [node name="House3Beam" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(7.827, 0, 0, 0, 0.2, 0, 0, 0, 7.452, -9.239, 2.6, 1.525)
+transform = Transform3D(7.827, 0, 0, 0, 0.2, 0, 0, 0, 7.452, 9.239, 2.6, 1.525)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="House3Roof0" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(0.8139, -0.581, 0, 0.581, 0.8139, 0, 0, 0, 1, -11.11, 6.408, 1.525)
+transform = Transform3D(0.8139, -0.581, 0, 0.581, 0.8139, 0, 0, 0, 1, 7.369, 6.408, 1.525)
 script = ExtResource("block")
 size = Vector3(5.043, 0.22, 7.802)
 material = ExtResource("town_slate")
 
 [node name="House3Roof1" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(0.8139, 0.581, 0, -0.581, 0.8139, 0, 0, 0, 1, -7.369, 6.408, 1.525)
+transform = Transform3D(0.8139, 0.581, 0, -0.581, 0.8139, 0, 0, 0, 1, 11.11, 6.408, 1.525)
 script = ExtResource("block")
 size = Vector3(5.043, 0.22, 7.802)
 material = ExtResource("town_slate")
 
 [node name="House3Gable0_0" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(6.542, 0, 0, 0, 0.6672, 0, 0, 0, 0.24, -9.239, 5.288, -1.906)
+transform = Transform3D(6.542, 0, 0, 0, 0.6672, 0, 0, 0, 0.24, 9.239, 5.288, -1.906)
 mesh = SubResource("box_town_plaster")
 
 [node name="House3Gable0_1" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(4.673, 0, 0, 0, 0.6672, 0, 0, 0, 0.24, -9.239, 5.955, -1.906)
+transform = Transform3D(4.673, 0, 0, 0, 0.6672, 0, 0, 0, 0.24, 9.239, 5.955, -1.906)
 mesh = SubResource("box_town_plaster")
 
 [node name="House3Gable0_2" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(2.804, 0, 0, 0, 0.6672, 0, 0, 0, 0.24, -9.239, 6.622, -1.906)
+transform = Transform3D(2.804, 0, 0, 0, 0.6672, 0, 0, 0, 0.24, 9.239, 6.622, -1.906)
 mesh = SubResource("box_town_plaster")
 
 [node name="House3Gable0_3" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.9346, 0, 0, 0, 0.6672, 0, 0, 0, 0.24, -9.239, 7.289, -1.906)
+transform = Transform3D(0.9346, 0, 0, 0, 0.6672, 0, 0, 0, 0.24, 9.239, 7.289, -1.906)
 mesh = SubResource("box_town_plaster")
 
 [node name="House3Gable1_0" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(6.542, 0, 0, 0, 0.6672, 0, 0, 0, 0.24, -9.239, 5.288, 4.956)
+transform = Transform3D(6.542, 0, 0, 0, 0.6672, 0, 0, 0, 0.24, 9.239, 5.288, 4.956)
 mesh = SubResource("box_town_plaster")
 
 [node name="House3Gable1_1" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(4.673, 0, 0, 0, 0.6672, 0, 0, 0, 0.24, -9.239, 5.955, 4.956)
+transform = Transform3D(4.673, 0, 0, 0, 0.6672, 0, 0, 0, 0.24, 9.239, 5.955, 4.956)
 mesh = SubResource("box_town_plaster")
 
 [node name="House3Gable1_2" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(2.804, 0, 0, 0, 0.6672, 0, 0, 0, 0.24, -9.239, 6.622, 4.956)
+transform = Transform3D(2.804, 0, 0, 0, 0.6672, 0, 0, 0, 0.24, 9.239, 6.622, 4.956)
 mesh = SubResource("box_town_plaster")
 
 [node name="House3Gable1_3" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.9346, 0, 0, 0, 0.6672, 0, 0, 0, 0.24, -9.239, 7.289, 4.956)
+transform = Transform3D(0.9346, 0, 0, 0, 0.6672, 0, 0, 0, 0.24, 9.239, 7.289, 4.956)
 mesh = SubResource("box_town_plaster")
 
 [node name="House3Ridge" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.3, 0, 0, 0, 0.16, 0, 0, 0, 7.852, -9.239, 7.803, 1.525)
+transform = Transform3D(0.3, 0, 0, 0, 0.16, 0, 0, 0, 7.852, 9.239, 7.803, 1.525)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="House3Chimney" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.73, 6.822, 2.002)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.73, 6.822, 2.002)
 script = ExtResource("block")
 size = Vector3(0.7, 4.136, 0.7)
 material = ExtResource("town_stone")
 
 [node name="House3ChimneyCap" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.9, 0, 0, 0, 0.12, 0, 0, 0, 0.9, -10.73, 8.94, 2.002)
+transform = Transform3D(0.9, 0, 0, 0, 0.12, 0, 0, 0, 0.9, 10.73, 8.94, 2.002)
 mesh = SubResource("box_town_slate")
 
 [node name="House3DoorFrame" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.14, 0, 0, 0, 2.45, 0, 0, 0, 1.45, -5.45, 1.2, 0.673)
+transform = Transform3D(0.14, 0, 0, 0, 2.45, 0, 0, 0, 1.45, 5.45, 1.2, 0.673)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="House3Door" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.08, 0, 0, 0, 2.15, 0, 0, 0, 1.1, -5.41, 1.1, 0.673)
+transform = Transform3D(0.08, 0, 0, 0, 2.15, 0, 0, 0, 1.1, 5.41, 1.1, 0.673)
 mesh = SubResource("box_town_planks")
 
 [node name="House3Step" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.7, 0, 0, 0, 0.2, 0, 0, 0, 1.6, -5.1, 0.1, 0.673)
+transform = Transform3D(0.7, 0, 0, 0, 0.2, 0, 0, 0, 1.6, 5.1, 0.1, 0.673)
 mesh = SubResource("box_town_stone")
 
 [node name="House3Awning" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.872, 0.01979, 0, -0.2227, 0.07751, 0, 0, 0, 1.8, -5.05, 2.55, 0.673)
+transform = Transform3D(0.872, -0.01979, 0, 0.2227, 0.07751, 0, 0, 0, 1.8, 5.05, 2.55, 0.673)
 mesh = SubResource("box_town_slate")
 
 [node name="House3W0" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.48, 0.845, -0.7473)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.48, 0.845, -0.7473)
 
 [node name="House3W1" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.48, 0.845, 3.798)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.48, 0.845, 3.798)
 
 [node name="House3W2" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.38, 2.995, -0.2502)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.38, 2.995, -0.2502)
 
 [node name="House3W3" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.38, 2.995, 3.301)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.38, 2.995, 3.301)
 
 [node name="House3LanternModel" parent="Houses" instance=ExtResource("wall_lantern")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.28, 2.25, 1.673)
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.28, 2.25, 1.673)
 
 [node name="House3Lantern" type="OmniLight3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2.45, 1.673)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.45, 1.673)
 light_color = Color(1, 0.58, 0.25, 1)
 light_energy = 2.4
 omni_range = 8.0
 omni_attenuation = 1.2
 
-[node name="House4" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.156, 1.3, -26.23)
-script = ExtResource("block")
-size = Vector3(7.311, 2.6, 7.535)
-material = ExtResource("town_stone")
+[node name="Lodges" type="Node3D" parent="."]
 
-[node name="House4Upper" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.156, 3.804, -26.23)
-script = ExtResource("block")
-size = Vector3(7.511, 2.408, 7.735)
-material = ExtResource("town_planks")
+[node name="LodgeLanternPost" parent="Lodges" instance=ExtResource("lodge_lantern_post")]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -9.6, 0, -5)
 
-[node name="House4Beam" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(7.661, 0, 0, 0, 0.2, 0, 0, 0, 7.885, 9.156, 2.6, -26.23)
-mesh = SubResource("box_town_dark_wood")
+[node name="LanternPostWalls" type="StaticBody3D" parent="Lodges"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -10.53, 3.5, -5)
 
-[node name="House4Roof0" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(0.8139, -0.581, 0, 0.581, 0.8139, 0, 0, 0, 1, 7.328, 6.433, -26.23)
-script = ExtResource("block")
-size = Vector3(4.942, 0.22, 8.235)
-material = ExtResource("town_slate")
+[node name="Shape" type="CollisionShape3D" parent="Lodges/LanternPostWalls"]
+shape = SubResource("shape_12p34x7x6p64")
 
-[node name="House4Roof1" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(0.8139, 0.581, 0, -0.581, 0.8139, 0, 0, 0, 1, 10.98, 6.433, -26.23)
-script = ExtResource("block")
-size = Vector3(4.942, 0.22, 8.235)
-material = ExtResource("town_slate")
+[node name="LanternPostPorch" type="StaticBody3D" parent="Lodges"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -6.24, 0.15, -5)
 
-[node name="House4Gable0_0" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(6.398, 0, 0, 0, 0.6525, 0, 0, 0, 0.24, 9.156, 5.334, -29.88)
-mesh = SubResource("box_town_planks")
+[node name="Shape" type="CollisionShape3D" parent="Lodges/LanternPostPorch"]
+shape = SubResource("shape_12p4x0p3x1p93")
 
-[node name="House4Gable0_1" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(4.57, 0, 0, 0, 0.6525, 0, 0, 0, 0.24, 9.156, 5.987, -29.88)
-mesh = SubResource("box_town_planks")
+[node name="LanternPostSign" type="Label3D" parent="Lodges"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -7.16, 8.05, -5.3)
+pixel_size = 0.004
+modulate = Color(0.8, 0.78, 0.72, 1)
+outline_size = 6
+font_size = 190
+text = "LANTERN\nPOST"
 
-[node name="House4Gable0_2" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(2.742, 0, 0, 0, 0.6525, 0, 0, 0, 0.24, 9.156, 6.639, -29.88)
-mesh = SubResource("box_town_planks")
+[node name="LanternPostLantern" parent="Lodges" instance=ExtResource("wall_lantern")]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -7.4, 6.35, -2.1)
 
-[node name="House4Gable0_3" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.9139, 0, 0, 0, 0.6525, 0, 0, 0, 0.24, 9.156, 7.292, -29.88)
-mesh = SubResource("box_town_planks")
-
-[node name="House4Gable1_0" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(6.398, 0, 0, 0, 0.6525, 0, 0, 0, 0.24, 9.156, 5.334, -22.58)
-mesh = SubResource("box_town_planks")
-
-[node name="House4Gable1_1" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(4.57, 0, 0, 0, 0.6525, 0, 0, 0, 0.24, 9.156, 5.987, -22.58)
-mesh = SubResource("box_town_planks")
-
-[node name="House4Gable1_2" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(2.742, 0, 0, 0, 0.6525, 0, 0, 0, 0.24, 9.156, 6.639, -22.58)
-mesh = SubResource("box_town_planks")
-
-[node name="House4Gable1_3" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.9139, 0, 0, 0, 0.6525, 0, 0, 0, 0.24, 9.156, 7.292, -22.58)
-mesh = SubResource("box_town_planks")
-
-[node name="House4Ridge" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.3, 0, 0, 0, 0.16, 0, 0, 0, 8.285, 9.156, 7.798, -26.23)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="House4Chimney" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.62, 6.835, -27.48)
-script = ExtResource("block")
-size = Vector3(0.7, 4.071, 0.7)
-material = ExtResource("town_stone")
-
-[node name="House4ChimneyCap" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.9, 0, 0, 0, 0.12, 0, 0, 0, 0.9, 10.62, 8.92, -27.48)
-mesh = SubResource("box_town_slate")
-
-[node name="House4Smoke" parent="Houses" instance=ExtResource("chimney_smoke")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.62, 9.07, -27.48)
-
-[node name="House4DoorFrame" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.14, 0, 0, 0, 2.45, 0, 0, 0, 1.45, 5.45, 1.2, -25.33)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="House4Door" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.08, 0, 0, 0, 2.15, 0, 0, 0, 1.1, 5.41, 1.1, -25.33)
-mesh = SubResource("box_town_planks")
-
-[node name="House4Step" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.7, 0, 0, 0, 0.2, 0, 0, 0, 1.6, 5.1, 0.1, -25.33)
-mesh = SubResource("box_town_stone")
-
-[node name="House4Awning" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.872, -0.01979, 0, 0.2227, 0.07751, 0, 0, 0, 1.8, 5.05, 2.55, -25.33)
-mesh = SubResource("box_town_slate")
-
-[node name="House4W0" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.48, 0.845, -28.64)
-
-[node name="House4W1" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.48, 0.845, -23.82)
-
-[node name="House4W2" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.38, 2.995, -28.12)
-
-[node name="House4W3" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.38, 2.995, -24.35)
-
-[node name="House4LanternModel" parent="Houses" instance=ExtResource("wall_lantern")]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.28, 2.25, -24.33)
-
-[node name="House4Lantern" type="OmniLight3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.45, -24.33)
+[node name="LanternPostLanternLight" type="OmniLight3D" parent="Lodges"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.6, 6.8, -2.1)
 light_color = Color(1, 0.58, 0.25, 1)
-light_energy = 2.4
+light_energy = 2.6
+omni_range = 9.0
+omni_attenuation = 1.2
+
+[node name="LanternPostPorchLight" type="OmniLight3D" parent="Lodges"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.2, 2.8, -5)
+light_color = Color(1, 0.58, 0.25, 1)
+light_energy = 1.6
 omni_range = 8.0
 omni_attenuation = 1.2
 
-[node name="House4SignArm" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.9, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 5.05, 3.05, -26.33)
-mesh = SubResource("box_iron")
+[node name="LodgeCommonRoom" parent="Lodges" instance=ExtResource("lodge_common_room")]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -11.8, 0, -29)
 
-[node name="House4SignBoard" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.05, 0, 0, 0, 0.45, 0, 0, 0, 0.7, 4.75, 2.75, -26.33)
-mesh = SubResource("box_town_planks")
+[node name="CommonRoomWalls" type="StaticBody3D" parent="Lodges"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -12.91, 3.5, -29)
 
-[node name="House4SignText0" type="Label3D" parent="Houses"]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 4.72, 2.75, -26.33)
+[node name="Shape" type="CollisionShape3D" parent="Lodges/CommonRoomWalls"]
+shape = SubResource("shape_14p34x7x5p94")
+
+[node name="CommonRoomPost0" type="StaticBody3D" parent="Lodges"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -7.882, 1.6, -22)
+
+[node name="Shape" type="CollisionShape3D" parent="Lodges/CommonRoomPost0"]
+shape = SubResource("shape_0p26x3p2x0p26")
+
+[node name="CommonRoomPost1" type="StaticBody3D" parent="Lodges"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -7.882, 1.6, -25.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Lodges/CommonRoomPost1"]
+shape = SubResource("shape_0p26x3p2x0p26")
+
+[node name="CommonRoomPost2" type="StaticBody3D" parent="Lodges"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -7.882, 1.6, -29)
+
+[node name="Shape" type="CollisionShape3D" parent="Lodges/CommonRoomPost2"]
+shape = SubResource("shape_0p26x3p2x0p26")
+
+[node name="CommonRoomPost3" type="StaticBody3D" parent="Lodges"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -7.882, 1.6, -32.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Lodges/CommonRoomPost3"]
+shape = SubResource("shape_0p26x3p2x0p26")
+
+[node name="CommonRoomPost4" type="StaticBody3D" parent="Lodges"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -7.882, 1.6, -36)
+
+[node name="Shape" type="CollisionShape3D" parent="Lodges/CommonRoomPost4"]
+shape = SubResource("shape_0p26x3p2x0p26")
+
+[node name="CommonRoomSign" type="Label3D" parent="Lodges"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -7.69, 5.76, -29)
 pixel_size = 0.004
 modulate = Color(0.95, 0.85, 0.65, 1)
 outline_size = 6
-font_size = 28
-text = "SUPPLY"
+font_size = 130
+text = "COMMON ROOM"
 
-[node name="House4SignText2" type="Label3D" parent="Houses"]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 4.78, 2.75, -26.33)
-pixel_size = 0.004
-modulate = Color(0.95, 0.85, 0.65, 1)
-outline_size = 6
-font_size = 28
-text = "SUPPLY"
+[node name="CommonRoomSmoke" parent="Lodges" instance=ExtResource("chimney_smoke")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.01, 9.95, -33.4)
 
-[node name="House5" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.86, 2.501, -16.3)
-script = ExtResource("block")
-size = Vector3(6.721, 5.002, 6.78)
-material = ExtResource("town_stone")
-
-[node name="House5Roof0" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(0.8139, -0.581, 0, 0.581, 0.8139, 0, 0, 0, 1, 7.18, 6.321, -16.3)
-script = ExtResource("block")
-size = Vector3(4.579, 0.22, 7.48)
-material = ExtResource("town_slate")
-
-[node name="House5Roof1" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(0.8139, 0.581, 0, -0.581, 0.8139, 0, 0, 0, 1, 10.54, 6.321, -16.3)
-script = ExtResource("block")
-size = Vector3(4.579, 0.22, 7.48)
-material = ExtResource("town_slate")
-
-[node name="House5Gable0_0" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(5.881, 0, 0, 0, 0.5997, 0, 0, 0, 0.24, 8.86, 5.302, -19.57)
-mesh = SubResource("box_town_plaster")
-
-[node name="House5Gable0_1" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(4.2, 0, 0, 0, 0.5997, 0, 0, 0, 0.24, 8.86, 5.901, -19.57)
-mesh = SubResource("box_town_plaster")
-
-[node name="House5Gable0_2" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(2.52, 0, 0, 0, 0.5997, 0, 0, 0, 0.24, 8.86, 6.501, -19.57)
-mesh = SubResource("box_town_plaster")
-
-[node name="House5Gable0_3" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.8401, 0, 0, 0, 0.5997, 0, 0, 0, 0.24, 8.86, 7.101, -19.57)
-mesh = SubResource("box_town_plaster")
-
-[node name="House5Gable1_0" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(5.881, 0, 0, 0, 0.5997, 0, 0, 0, 0.24, 8.86, 5.302, -13.03)
-mesh = SubResource("box_town_plaster")
-
-[node name="House5Gable1_1" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(4.2, 0, 0, 0, 0.5997, 0, 0, 0, 0.24, 8.86, 5.901, -13.03)
-mesh = SubResource("box_town_plaster")
-
-[node name="House5Gable1_2" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(2.52, 0, 0, 0, 0.5997, 0, 0, 0, 0.24, 8.86, 6.501, -13.03)
-mesh = SubResource("box_town_plaster")
-
-[node name="House5Gable1_3" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.8401, 0, 0, 0, 0.5997, 0, 0, 0, 0.24, 8.86, 7.101, -13.03)
-mesh = SubResource("box_town_plaster")
-
-[node name="House5Ridge" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.3, 0, 0, 0, 0.16, 0, 0, 0, 7.53, 8.86, 7.581, -16.3)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="House5Chimney" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.2, 6.681, -15.18)
-script = ExtResource("block")
-size = Vector3(0.7, 3.839, 0.7)
-material = ExtResource("town_stone")
-
-[node name="House5ChimneyCap" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.9, 0, 0, 0, 0.12, 0, 0, 0, 0.9, 10.2, 8.65, -15.18)
-mesh = SubResource("box_town_slate")
-
-[node name="House5DoorFrame" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.14, 0, 0, 0, 2.45, 0, 0, 0, 1.45, 5.45, 1.2, -15.49)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="House5Door" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.08, 0, 0, 0, 2.15, 0, 0, 0, 1.1, 5.41, 1.1, -15.49)
-mesh = SubResource("box_town_planks")
-
-[node name="House5Step" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.7, 0, 0, 0, 0.2, 0, 0, 0, 1.6, 5.1, 0.1, -15.49)
-mesh = SubResource("box_town_stone")
-
-[node name="House5Awning" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.872, -0.01979, 0, 0.2227, 0.07751, 0, 0, 0, 1.8, 5.05, 2.55, -15.49)
-mesh = SubResource("box_town_slate")
-
-[node name="House5W0" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.48, 0.845, -18.47)
-
-[node name="House5W1" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.48, 0.845, -14.13)
-
-[node name="House5W2" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.38, 2.995, -18)
-
-[node name="House5W3" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.38, 2.995, -14.61)
-
-[node name="House5LanternModel" parent="Houses" instance=ExtResource("wall_lantern")]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.28, 2.25, -14.49)
-
-[node name="House5Lantern" type="OmniLight3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.45, -14.49)
+[node name="CommonRoomPorchLight" type="OmniLight3D" parent="Lodges"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.8, 2.6, -29)
 light_color = Color(1, 0.58, 0.25, 1)
 light_energy = 2.4
-omni_range = 8.0
+omni_range = 9.0
 omni_attenuation = 1.2
 
-[node name="House5SignArm" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.9, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 5.05, 3.05, -16.49)
-mesh = SubResource("box_iron")
-
-[node name="House5SignBoard" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.05, 0, 0, 0, 0.45, 0, 0, 0, 0.7, 4.75, 2.75, -16.49)
-mesh = SubResource("box_town_planks")
-
-[node name="House5SignText0" type="Label3D" parent="Houses"]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 4.72, 2.75, -16.49)
-pixel_size = 0.004
-modulate = Color(0.95, 0.85, 0.65, 1)
-outline_size = 6
-font_size = 28
-text = "WORKSHOP"
-
-[node name="House5SignText2" type="Label3D" parent="Houses"]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 4.78, 2.75, -16.49)
-pixel_size = 0.004
-modulate = Color(0.95, 0.85, 0.65, 1)
-outline_size = 6
-font_size = 28
-text = "WORKSHOP"
-
-[node name="House6" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.771, 1.3, -6.314)
-script = ExtResource("block")
-size = Vector3(6.543, 2.6, 7.725)
-material = ExtResource("town_stone")
-
-[node name="House6Upper" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.771, 4.34, -6.314)
-script = ExtResource("block")
-size = Vector3(6.743, 3.48, 7.925)
-material = ExtResource("town_plaster")
-
-[node name="House6Beam" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(6.893, 0, 0, 0, 0.2, 0, 0, 0, 8.075, 8.771, 2.6, -6.314)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="House6Roof0" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(0.8139, -0.581, 0, 0.581, 0.8139, 0, 0, 0, 1, 7.136, 7.368, -6.314)
-script = ExtResource("block")
-size = Vector3(4.469, 0.22, 8.425)
-material = ExtResource("town_slate")
-
-[node name="House6Roof1" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(0.8139, 0.581, 0, -0.581, 0.8139, 0, 0, 0, 1, 10.41, 7.368, -6.314)
-script = ExtResource("block")
-size = Vector3(4.469, 0.22, 8.425)
-material = ExtResource("town_slate")
-
-[node name="House6Gable0_0" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(5.725, 0, 0, 0, 0.5839, 0, 0, 0, 0.24, 8.771, 6.372, -10.06)
-mesh = SubResource("box_town_plaster")
-
-[node name="House6Gable0_1" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(4.089, 0, 0, 0, 0.5839, 0, 0, 0, 0.24, 8.771, 6.956, -10.06)
-mesh = SubResource("box_town_plaster")
-
-[node name="House6Gable0_2" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(2.453, 0, 0, 0, 0.5839, 0, 0, 0, 0.24, 8.771, 7.539, -10.06)
-mesh = SubResource("box_town_plaster")
-
-[node name="House6Gable0_3" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.8178, 0, 0, 0, 0.5839, 0, 0, 0, 0.24, 8.771, 8.123, -10.06)
-mesh = SubResource("box_town_plaster")
-
-[node name="House6Gable1_0" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(5.725, 0, 0, 0, 0.5839, 0, 0, 0, 0.24, 8.771, 6.372, -2.571)
-mesh = SubResource("box_town_plaster")
-
-[node name="House6Gable1_1" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(4.089, 0, 0, 0, 0.5839, 0, 0, 0, 0.24, 8.771, 6.956, -2.571)
-mesh = SubResource("box_town_plaster")
-
-[node name="House6Gable1_2" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(2.453, 0, 0, 0, 0.5839, 0, 0, 0, 0.24, 8.771, 7.539, -2.571)
-mesh = SubResource("box_town_plaster")
-
-[node name="House6Gable1_3" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.8178, 0, 0, 0, 0.5839, 0, 0, 0, 0.24, 8.771, 8.123, -2.571)
-mesh = SubResource("box_town_plaster")
-
-[node name="House6Ridge" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.3, 0, 0, 0, 0.16, 0, 0, 0, 8.475, 8.771, 8.595, -6.314)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="House6Chimney" type="StaticBody3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.08, 7.715, -4.984)
-script = ExtResource("block")
-size = Vector3(0.7, 3.769, 0.7)
-material = ExtResource("town_stone")
-
-[node name="House6ChimneyCap" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.9, 0, 0, 0, 0.12, 0, 0, 0, 0.9, 10.08, 9.649, -4.984)
-mesh = SubResource("box_town_slate")
-
-[node name="House6Smoke" parent="Houses" instance=ExtResource("chimney_smoke")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.08, 9.799, -4.984)
-
-[node name="House6DoorFrame" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.14, 0, 0, 0, 2.45, 0, 0, 0, 1.45, 5.45, 1.2, -5.387)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="House6Door" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.08, 0, 0, 0, 2.15, 0, 0, 0, 1.1, 5.41, 1.1, -5.387)
-mesh = SubResource("box_town_planks")
-
-[node name="House6Step" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.7, 0, 0, 0, 0.2, 0, 0, 0, 1.6, 5.1, 0.1, -5.387)
-mesh = SubResource("box_town_stone")
-
-[node name="House6Awning" type="MeshInstance3D" parent="Houses"]
-transform = Transform3D(0.872, -0.01979, 0, 0.2227, 0.07751, 0, 0, 0, 1.8, 5.05, 2.55, -5.387)
-mesh = SubResource("box_town_slate")
-
-[node name="House6W0" parent="Windows" instance=ExtResource("window_dark")]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.48, 0.845, -8.786)
-
-[node name="House6W1" parent="Windows" instance=ExtResource("window_dark")]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.48, 0.845, -3.842)
-
-[node name="House6W2" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.38, 2.995, -8.245)
-
-[node name="House6W3" parent="Windows" instance=ExtResource("window_lit")]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.38, 2.995, -4.383)
-
-[node name="House6LanternModel" parent="Houses" instance=ExtResource("wall_lantern")]
-transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 5.28, 2.25, -4.387)
-
-[node name="House6Lantern" type="OmniLight3D" parent="Houses"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.45, -4.387)
+[node name="CommonRoomBalconyLight" type="OmniLight3D" parent="Lodges"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.6, 5.2, -29)
 light_color = Color(1, 0.58, 0.25, 1)
 light_energy = 2.4
-omni_range = 8.0
+omni_range = 9.0
 omni_attenuation = 1.2
 
 [node name="Lamps" type="Node3D" parent="."]
@@ -2030,55 +1770,55 @@ transform = Transform3D(0.9, 0, 0, 0, 0.05, 0, 0, 0, 0.9, -3.4, 1.03, -8)
 mesh = SubResource("box_town_snow")
 
 [node name="Log0_0_0" type="MeshInstance3D" parent="Props"]
-transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -10, 0.15, -0.5)
+transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -12.5, 0.15, 5.5)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="Log0_0_1" type="MeshInstance3D" parent="Props"]
-transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -10, 0.15, 0)
+transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -12.5, 0.15, 6)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="Log0_0_2" type="MeshInstance3D" parent="Props"]
-transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -10, 0.15, 0.5)
+transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -12.5, 0.15, 6.5)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="Log0_0_3" type="MeshInstance3D" parent="Props"]
-transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -10, 0.15, 1)
+transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -12.5, 0.15, 7)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="Log0_0_4" type="MeshInstance3D" parent="Props"]
-transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -10, 0.15, 1.5)
+transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -12.5, 0.15, 7.5)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="Log0_1_0" type="MeshInstance3D" parent="Props"]
-transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -10, 0.42, -0.25)
+transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -12.5, 0.42, 5.75)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="Log0_1_1" type="MeshInstance3D" parent="Props"]
-transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -10, 0.42, 0.25)
+transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -12.5, 0.42, 6.25)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="Log0_1_2" type="MeshInstance3D" parent="Props"]
-transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -10, 0.42, 0.75)
+transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -12.5, 0.42, 6.75)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="Log0_1_3" type="MeshInstance3D" parent="Props"]
-transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -10, 0.42, 1.25)
+transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -12.5, 0.42, 7.25)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="Log0_2_0" type="MeshInstance3D" parent="Props"]
-transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -10, 0.69, 0)
+transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -12.5, 0.69, 6)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="Log0_2_1" type="MeshInstance3D" parent="Props"]
-transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -10, 0.69, 0.5)
+transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -12.5, 0.69, 6.5)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="Log0_2_2" type="MeshInstance3D" parent="Props"]
-transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -10, 0.69, 1)
+transform = Transform3D(1.8, 0, 0, 0, 0.26, 0, 0, 0, 0.26, -12.5, 0.69, 7)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="LogStackBody0" type="StaticBody3D" parent="Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0.4, 0.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.5, 0.4, 6.5)
 script = ExtResource("block")
 size = Vector3(1.8, 0.8, 2.5)
 material = ExtResource("town_dark_wood")
@@ -2182,111 +1922,96 @@ mesh = SubResource("box_town_dark_wood")
 [node name="Fences" type="Node3D" parent="."]
 
 [node name="Fence0" parent="Fences" instance=ExtResource("fence")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -29)
-
-[node name="Fence1" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -29)
 
-[node name="Fence2" parent="Fences" instance=ExtResource("fence")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -27)
-
-[node name="Fence3" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence1" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -27)
 
-[node name="Fence4" parent="Fences" instance=ExtResource("fence")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -25)
-
-[node name="Fence5" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence2" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -25)
 
-[node name="Fence6" parent="Fences" instance=ExtResource("fence")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -23)
-
-[node name="Fence7" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence3" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -23)
 
-[node name="Fence8" parent="Fences" instance=ExtResource("fence")]
-transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -21)
-
-[node name="Fence9" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence4" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -21)
 
-[node name="Fence10" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence5" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -19)
 
-[node name="Fence11" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence6" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -19)
 
-[node name="Fence12" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence7" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -17)
 
-[node name="Fence13" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence8" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -17)
 
-[node name="Fence14" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence9" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -15)
 
-[node name="Fence15" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence10" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -15)
 
-[node name="Fence16" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence11" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -13)
 
-[node name="Fence17" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence12" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -13)
 
-[node name="Fence18" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence13" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -11)
 
-[node name="Fence19" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence14" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -11)
 
-[node name="Fence20" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence15" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -9)
 
-[node name="Fence21" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence16" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -9)
 
-[node name="Fence22" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence17" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -7)
 
-[node name="Fence23" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence18" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -7)
 
-[node name="Fence24" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence19" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -5)
 
-[node name="Fence25" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence20" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -5)
 
-[node name="Fence26" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence21" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -3)
 
-[node name="Fence27" parent="Fences" instance=ExtResource("fence")]
+[node name="Fence22" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -3)
 
-[node name="PlazaFence28" parent="Fences" instance=ExtResource("fence")]
+[node name="PlazaFence23" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0, 13.2)
 
-[node name="PlazaFence29" parent="Fences" instance=ExtResource("fence")]
+[node name="PlazaFence24" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, 13.2)
 
-[node name="PlazaFence30" parent="Fences" instance=ExtResource("fence")]
+[node name="PlazaFence25" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, 13.2)
 
-[node name="PlazaFence31" parent="Fences" instance=ExtResource("fence")]
+[node name="PlazaFence26" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 13.2)
 
-[node name="PlazaFence32" parent="Fences" instance=ExtResource("fence")]
+[node name="PlazaFence27" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 13.2)
 
-[node name="PlazaFence33" parent="Fences" instance=ExtResource("fence")]
+[node name="PlazaFence28" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 13.2)
 
-[node name="PlazaFence34" parent="Fences" instance=ExtResource("fence")]
+[node name="PlazaFence29" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, 13.2)
 
-[node name="PlazaFence35" parent="Fences" instance=ExtResource("fence")]
+[node name="PlazaFence30" parent="Fences" instance=ExtResource("fence")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 0, 13.2)
 
 [node name="Signs" type="Node3D" parent="."]
@@ -2372,7 +2097,7 @@ mesh = SubResource("box_sodium_lamp")
 [node name="Sacks" type="Node3D" parent="."]
 
 [node name="Sack0" type="MeshInstance3D" parent="Sacks"]
-transform = Transform3D(0.4824, 0, 0.1922, 0, 0.5, 0, -0.2642, 0, 0.3508, -9.6, 0.25, 1.6)
+transform = Transform3D(-0.4777, 0, 0.1983, 0, 0.5, 0, -0.2726, 0, -0.3474, -9.6, 0.25, 1.6)
 mesh = SubResource("box_town_plaster")
 
 [node name="SackBody0" type="StaticBody3D" parent="Sacks"]
@@ -2382,7 +2107,7 @@ size = Vector3(0.5, 0.5, 0.4)
 material = ExtResource("town_plaster")
 
 [node name="Sack1" type="MeshInstance3D" parent="Sacks"]
-transform = Transform3D(-0.3729, 0, 0.294, 0, 0.5, 0, -0.4043, 0, -0.2712, -9.2, 0.25, 2.2)
+transform = Transform3D(-0.1474, 0, 0.3854, 0, 0.5, 0, -0.5299, 0, -0.1072, -9.2, 0.25, 2.2)
 mesh = SubResource("box_town_plaster")
 
 [node name="SackBody1" type="StaticBody3D" parent="Sacks"]
@@ -2392,7 +2117,7 @@ size = Vector3(0.5, 0.5, 0.4)
 material = ExtResource("town_plaster")
 
 [node name="Sack2" type="MeshInstance3D" parent="Sacks"]
-transform = Transform3D(-0.01484, 0, 0.3999, 0, 0.5, 0, -0.5498, 0, -0.01079, 9.6, 0.25, 6.4)
+transform = Transform3D(0.4963, 0, 0.1724, 0, 0.5, 0, -0.2371, 0, 0.3609, 9.6, 0.25, 6.4)
 mesh = SubResource("box_town_plaster")
 
 [node name="SackBody2" type="StaticBody3D" parent="Sacks"]
@@ -2402,7 +2127,7 @@ size = Vector3(0.5, 0.5, 0.4)
 material = ExtResource("town_plaster")
 
 [node name="Sack3" type="MeshInstance3D" parent="Sacks"]
-transform = Transform3D(-0.3814, 0, 0.2882, 0, 0.5, 0, -0.3962, 0, -0.2774, 9.9, 0.25, 7.1)
+transform = Transform3D(0.3999, 0, 0.2746, 0, 0.5, 0, -0.3776, 0, 0.2908, 9.9, 0.25, 7.1)
 mesh = SubResource("box_town_plaster")
 
 [node name="SackBody3" type="StaticBody3D" parent="Sacks"]
@@ -2412,7 +2137,7 @@ size = Vector3(0.5, 0.5, 0.4)
 material = ExtResource("town_plaster")
 
 [node name="Sack4" type="MeshInstance3D" parent="Sacks"]
-transform = Transform3D(0.3022, 0, 0.3342, 0, 0.5, 0, -0.4595, 0, 0.2198, -3.6, 0.25, -27.2)
+transform = Transform3D(0.2774, 0, 0.3454, 0, 0.5, 0, -0.4749, 0, 0.2017, -3.6, 0.25, -27.2)
 mesh = SubResource("box_town_plaster")
 
 [node name="SackBody4" type="StaticBody3D" parent="Sacks"]
@@ -2422,7 +2147,7 @@ size = Vector3(0.5, 0.5, 0.4)
 material = ExtResource("town_plaster")
 
 [node name="Sack5" type="MeshInstance3D" parent="Sacks"]
-transform = Transform3D(0.4314, 0, 0.2481, 0, 0.5, 0, -0.3412, 0, 0.3137, 3.7, 0.25, -28)
+transform = Transform3D(0.2532, 0, 0.3551, 0, 0.5, 0, -0.4883, 0, 0.1841, 3.7, 0.25, -28)
 mesh = SubResource("box_town_plaster")
 
 [node name="SackBody5" type="StaticBody3D" parent="Sacks"]
@@ -2434,709 +2159,713 @@ material = ExtResource("town_plaster")
 [node name="Yards" type="Node3D" parent="."]
 
 [node name="Shed0" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.56, 1.1, -27.06)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.99, 1.1, -27.6)
 script = ExtResource("block")
 size = Vector3(2.6, 2.2, 3.2)
 material = ExtResource("town_planks")
 
 [node name="ShedRoof0" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(0.9838, 0.179, 0, -0.179, 0.9838, 0, 0, 0, 1, -21.56, 2.3, -27.06)
+transform = Transform3D(0.9838, 0.179, 0, -0.179, 0.9838, 0, 0, 0, 1, -18.99, 2.3, -27.6)
 script = ExtResource("block")
 size = Vector3(3, 0.2, 3.6)
 material = ExtResource("town_slate")
 
 [node name="ShedRoofSnow0" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(2.755, 0.01074, 0, -0.5013, 0.05903, 0, 0, 0, 3.4, -21.56, 2.42, -27.06)
+transform = Transform3D(2.755, 0.01074, 0, -0.5013, 0.05903, 0, 0, 0, 3.4, -18.99, 2.42, -27.6)
 mesh = SubResource("box_town_snow")
 
 [node name="ShedDoor0" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.06, 0, 0, 0, 1.9, 0, 0, 0, 1, -20.25, 0.95, -27.06)
+transform = Transform3D(0.06, 0, 0, 0, 1.9, 0, 0, 0, 1, -17.68, 0.95, -27.6)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog0_0" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -19.96, 0.13, -26.06)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -17.39, 0.13, -26.6)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog0_1" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -19.96, 0.38, -26.06)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -17.39, 0.38, -26.6)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog0_2" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -19.96, 0.13, -25.76)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -17.39, 0.13, -26.3)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog0_3" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -19.96, 0.38, -25.76)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -17.39, 0.38, -26.3)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="Shed1" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.76, 1.1, -17.78)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.47, 1.1, -19.14)
 script = ExtResource("block")
 size = Vector3(2.6, 2.2, 3.2)
 material = ExtResource("town_planks")
 
 [node name="ShedRoof1" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(0.9838, 0.179, 0, -0.179, 0.9838, 0, 0, 0, 1, -21.76, 2.3, -17.78)
+transform = Transform3D(0.9838, 0.179, 0, -0.179, 0.9838, 0, 0, 0, 1, -22.47, 2.3, -19.14)
 script = ExtResource("block")
 size = Vector3(3, 0.2, 3.6)
 material = ExtResource("town_slate")
 
 [node name="ShedRoofSnow1" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(2.755, 0.01074, 0, -0.5013, 0.05903, 0, 0, 0, 3.4, -21.76, 2.42, -17.78)
+transform = Transform3D(2.755, 0.01074, 0, -0.5013, 0.05903, 0, 0, 0, 3.4, -22.47, 2.42, -19.14)
 mesh = SubResource("box_town_snow")
 
 [node name="ShedDoor1" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.06, 0, 0, 0, 1.9, 0, 0, 0, 1, -20.45, 0.95, -17.78)
+transform = Transform3D(0.06, 0, 0, 0, 1.9, 0, 0, 0, 1, -21.16, 0.95, -19.14)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog1_0" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -20.16, 0.13, -16.78)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -20.87, 0.13, -18.14)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog1_1" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -20.16, 0.38, -16.78)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -20.87, 0.38, -18.14)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog1_2" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -20.16, 0.13, -16.48)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -20.87, 0.13, -17.84)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog1_3" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -20.16, 0.38, -16.48)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -20.87, 0.38, -17.84)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="Shed2" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.59, 1.1, -8.041)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.44, 1.1, -10.66)
 script = ExtResource("block")
 size = Vector3(2.6, 2.2, 3.2)
 material = ExtResource("town_planks")
 
 [node name="ShedRoof2" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(0.9838, 0.179, 0, -0.179, 0.9838, 0, 0, 0, 1, -21.59, 2.3, -8.041)
+transform = Transform3D(0.9838, 0.179, 0, -0.179, 0.9838, 0, 0, 0, 1, -20.44, 2.3, -10.66)
 script = ExtResource("block")
 size = Vector3(3, 0.2, 3.6)
 material = ExtResource("town_slate")
 
 [node name="ShedRoofSnow2" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(2.755, 0.01074, 0, -0.5013, 0.05903, 0, 0, 0, 3.4, -21.59, 2.42, -8.041)
+transform = Transform3D(2.755, 0.01074, 0, -0.5013, 0.05903, 0, 0, 0, 3.4, -20.44, 2.42, -10.66)
 mesh = SubResource("box_town_snow")
 
 [node name="ShedDoor2" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.06, 0, 0, 0, 1.9, 0, 0, 0, 1, -20.28, 0.95, -8.041)
+transform = Transform3D(0.06, 0, 0, 0, 1.9, 0, 0, 0, 1, -19.13, 0.95, -10.66)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog2_0" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -19.99, 0.13, -7.041)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -18.84, 0.13, -9.656)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog2_1" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -19.99, 0.38, -7.041)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -18.84, 0.38, -9.656)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog2_2" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -19.99, 0.13, -6.741)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -18.84, 0.13, -9.356)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog2_3" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -19.99, 0.38, -6.741)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, -18.84, 0.38, -9.356)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="YardPine3_0" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.657, 0, 0, 0, 0.657, 0, 0, 0, 0.657, -18.3, 3.29, -10.2)
+transform = Transform3D(0.629, 0, 0, 0, 0.629, 0, 0, 0, 0.629, -19.1, 3.15, -18.2)
 mesh = SubResource("pine_tree")
 
 [node name="YardPine3_1" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.634, 0, 0, 0, 0.634, 0, 0, 0, 0.634, -16.7, 3.17, -32.7)
+transform = Transform3D(0.557, 0, 0, 0, 0.557, 0, 0, 0, 0.557, -23.5, 2.79, -26.6)
 mesh = SubResource("pine_tree")
 
 [node name="YardPine3_2" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.837, 0, 0, 0, 0.837, 0, 0, 0, 0.837, -18.6, 4.18, -2.14)
+transform = Transform3D(0.594, 0, 0, 0, 0.594, 0, 0, 0, 0.594, -24.2, 2.97, -9.7)
 mesh = SubResource("pine_tree")
 
 [node name="YardPine3_3" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.846, 0, 0, 0, 0.846, 0, 0, 0, 0.846, -20.1, 4.23, 9.1)
+transform = Transform3D(0.708, 0, 0, 0, 0.708, 0, 0, 0, 0.708, -21.8, 3.54, -32.8)
 mesh = SubResource("pine_tree")
 
 [node name="YardPine3_4" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.616, 0, 0, 0, 0.616, 0, 0, 0, 0.616, -24.1, 3.08, -17.2)
+transform = Transform3D(0.759, 0, 0, 0, 0.759, 0, 0, 0, 0.759, -24.4, 3.79, 5.71)
 mesh = SubResource("pine_tree")
 
 [node name="Shed3" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.63, 1.1, -30.21)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.81, 1.1, -29.53)
 script = ExtResource("block")
 size = Vector3(2.6, 2.2, 3.2)
 material = ExtResource("town_planks")
 
 [node name="ShedRoof3" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(0.9838, -0.179, 0, 0.179, 0.9838, 0, 0, 0, 1, 18.63, 2.3, -30.21)
+transform = Transform3D(0.9838, -0.179, 0, 0.179, 0.9838, 0, 0, 0, 1, 18.81, 2.3, -29.53)
 script = ExtResource("block")
 size = Vector3(3, 0.2, 3.6)
 material = ExtResource("town_slate")
 
 [node name="ShedRoofSnow3" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(2.755, -0.01074, 0, 0.5013, 0.05903, 0, 0, 0, 3.4, 18.63, 2.42, -30.21)
+transform = Transform3D(2.755, -0.01074, 0, 0.5013, 0.05903, 0, 0, 0, 3.4, 18.81, 2.42, -29.53)
 mesh = SubResource("box_town_snow")
 
 [node name="ShedDoor3" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.06, 0, 0, 0, 1.9, 0, 0, 0, 1, 17.32, 0.95, -30.21)
+transform = Transform3D(0.06, 0, 0, 0, 1.9, 0, 0, 0, 1, 17.5, 0.95, -29.53)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog3_0" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 17.03, 0.13, -29.21)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 17.21, 0.13, -28.53)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog3_1" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 17.03, 0.38, -29.21)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 17.21, 0.38, -28.53)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog3_2" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 17.03, 0.13, -28.91)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 17.21, 0.13, -28.23)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog3_3" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 17.03, 0.38, -28.91)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 17.21, 0.38, -28.23)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="Shed4" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.52, 1.1, -18.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.34, 1.1, -17.91)
 script = ExtResource("block")
 size = Vector3(2.6, 2.2, 3.2)
 material = ExtResource("town_planks")
 
 [node name="ShedRoof4" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(0.9838, -0.179, 0, 0.179, 0.9838, 0, 0, 0, 1, 18.52, 2.3, -18.5)
+transform = Transform3D(0.9838, -0.179, 0, 0.179, 0.9838, 0, 0, 0, 1, 18.34, 2.3, -17.91)
 script = ExtResource("block")
 size = Vector3(3, 0.2, 3.6)
 material = ExtResource("town_slate")
 
 [node name="ShedRoofSnow4" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(2.755, -0.01074, 0, 0.5013, 0.05903, 0, 0, 0, 3.4, 18.52, 2.42, -18.5)
+transform = Transform3D(2.755, -0.01074, 0, 0.5013, 0.05903, 0, 0, 0, 3.4, 18.34, 2.42, -17.91)
 mesh = SubResource("box_town_snow")
 
 [node name="ShedDoor4" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.06, 0, 0, 0, 1.9, 0, 0, 0, 1, 17.21, 0.95, -18.5)
+transform = Transform3D(0.06, 0, 0, 0, 1.9, 0, 0, 0, 1, 17.03, 0.95, -17.91)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog4_0" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 16.92, 0.13, -17.5)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 16.74, 0.13, -16.91)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog4_1" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 16.92, 0.38, -17.5)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 16.74, 0.38, -16.91)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog4_2" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 16.92, 0.13, -17.2)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 16.74, 0.13, -16.61)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog4_3" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 16.92, 0.38, -17.2)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 16.74, 0.38, -16.61)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="Shed5" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 1.1, -7.638)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.16, 1.1, -7.884)
 script = ExtResource("block")
 size = Vector3(2.6, 2.2, 3.2)
 material = ExtResource("town_planks")
 
 [node name="ShedRoof5" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(0.9838, -0.179, 0, 0.179, 0.9838, 0, 0, 0, 1, 22, 2.3, -7.638)
+transform = Transform3D(0.9838, -0.179, 0, 0.179, 0.9838, 0, 0, 0, 1, 20.16, 2.3, -7.884)
 script = ExtResource("block")
 size = Vector3(3, 0.2, 3.6)
 material = ExtResource("town_slate")
 
 [node name="ShedRoofSnow5" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(2.755, -0.01074, 0, 0.5013, 0.05903, 0, 0, 0, 3.4, 22, 2.42, -7.638)
+transform = Transform3D(2.755, -0.01074, 0, 0.5013, 0.05903, 0, 0, 0, 3.4, 20.16, 2.42, -7.884)
 mesh = SubResource("box_town_snow")
 
 [node name="ShedDoor5" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.06, 0, 0, 0, 1.9, 0, 0, 0, 1, 20.69, 0.95, -7.638)
+transform = Transform3D(0.06, 0, 0, 0, 1.9, 0, 0, 0, 1, 18.85, 0.95, -7.884)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog5_0" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 20.4, 0.13, -6.638)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 18.56, 0.13, -6.884)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog5_1" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 20.4, 0.38, -6.638)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 18.56, 0.38, -6.884)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog5_2" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 20.4, 0.13, -6.338)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 18.56, 0.13, -6.584)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="ShedLog5_3" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 20.4, 0.38, -6.338)
+transform = Transform3D(0.26, 0, 0, 0, 0.26, 0, 0, 0, 1.2, 18.56, 0.38, -6.584)
 mesh = SubResource("box_town_dark_wood")
 
 [node name="YardPine6_0" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.79, 0, 0, 0, 0.79, 0, 0, 0, 0.79, 20.3, 3.95, -3.96)
+transform = Transform3D(0.793, 0, 0, 0, 0.793, 0, 0, 0, 0.793, 19.1, 3.97, -23.7)
 mesh = SubResource("pine_tree")
 
 [node name="YardPine6_1" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.823, 0, 0, 0, 0.823, 0, 0, 0, 0.823, 17.2, 4.12, -3.61)
+transform = Transform3D(0.792, 0, 0, 0, 0.792, 0, 0, 0, 0.792, 24.4, 3.96, 5.22)
 mesh = SubResource("pine_tree")
 
 [node name="YardPine6_2" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.693, 0, 0, 0, 0.693, 0, 0, 0, 0.693, 22.8, 3.46, 0.506)
+transform = Transform3D(0.618, 0, 0, 0, 0.618, 0, 0, 0, 0.618, 23, 3.09, 0.0342)
 mesh = SubResource("pine_tree")
 
 [node name="YardPine6_3" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.65, 0, 0, 0, 0.65, 0, 0, 0, 0.65, 17.9, 3.25, 2.3)
+transform = Transform3D(0.559, 0, 0, 0, 0.559, 0, 0, 0, 0.559, 20.6, 2.8, -17.6)
 mesh = SubResource("pine_tree")
 
 [node name="YardPine6_4" type="MeshInstance3D" parent="Yards"]
-transform = Transform3D(0.669, 0, 0, 0, 0.669, 0, 0, 0, 0.669, 22.9, 3.35, 10.7)
+transform = Transform3D(0.628, 0, 0, 0, 0.628, 0, 0, 0, 0.628, 16.7, 3.14, -21.1)
 mesh = SubResource("pine_tree")
 
 [node name="Pines" type="Node3D" parent="."]
 
 [node name="Pine0" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.21, 0, 0, 0, 1.21, 0, 0, 0, 1.21, -9.07, 6.05, 32.7)
+transform = Transform3D(1.01, 0, 0, 0, 1.01, 0, 0, 0, 1.01, 17.7, 5.05, 33.7)
 mesh = SubResource("pine_tree")
 
 [node name="Pine1" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.806, 0, 0, 0, 0.806, 0, 0, 0, 0.806, -30.4, 4.03, -49.3)
+transform = Transform3D(1.37, 0, 0, 0, 1.37, 0, 0, 0, 1.37, 40.2, 6.85, 36.8)
 mesh = SubResource("pine_tree")
 
 [node name="Pine2" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.802, 0, 0, 0, 0.802, 0, 0, 0, 0.802, 37.2, 4.01, 18.7)
+transform = Transform3D(0.843, 0, 0, 0, 0.843, 0, 0, 0, 0.843, -25.1, 4.21, -42.3)
 mesh = SubResource("pine_tree")
 
 [node name="Pine3" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.16, 0, 0, 0, 1.16, 0, 0, 0, 1.16, 30, 5.8, 36)
+transform = Transform3D(1.29, 0, 0, 0, 1.29, 0, 0, 0, 1.29, 11.4, 6.45, 28)
 mesh = SubResource("pine_tree")
 
 [node name="Pine4" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.38, 0, 0, 0, 1.38, 0, 0, 0, 1.38, -33.9, 6.9, -60.6)
+transform = Transform3D(1.16, 0, 0, 0, 1.16, 0, 0, 0, 1.16, 27.6, 5.8, -53.5)
 mesh = SubResource("pine_tree")
 
 [node name="Pine5" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.31, 0, 0, 0, 1.31, 0, 0, 0, 1.31, 39.9, 6.55, -18.6)
+transform = Transform3D(1.23, 0, 0, 0, 1.23, 0, 0, 0, 1.23, 37.7, 6.15, 16.2)
 mesh = SubResource("pine_tree")
 
 [node name="Pine6" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.876, 0, 0, 0, 0.876, 0, 0, 0, 0.876, 30, 4.38, -40.9)
+transform = Transform3D(1.25, 0, 0, 0, 1.25, 0, 0, 0, 1.25, -2.02, 6.25, -44.1)
 mesh = SubResource("pine_tree")
 
 [node name="Pine7" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.34, 0, 0, 0, 1.34, 0, 0, 0, 1.34, -7.45, 6.7, -48.9)
+transform = Transform3D(1.38, 0, 0, 0, 1.38, 0, 0, 0, 1.38, -15.4, 6.9, 18.1)
 mesh = SubResource("pine_tree")
 
 [node name="Pine8" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.994, 0, 0, 0, 0.994, 0, 0, 0, 0.994, 7.67, 4.97, 28.4)
+transform = Transform3D(0.819, 0, 0, 0, 0.819, 0, 0, 0, 0.819, 41.1, 4.09, 10.5)
 mesh = SubResource("pine_tree")
 
 [node name="Pine9" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.07, 0, 0, 0, 1.07, 0, 0, 0, 1.07, 38.4, 5.35, -11.8)
+transform = Transform3D(1.33, 0, 0, 0, 1.33, 0, 0, 0, 1.33, -34.3, 6.65, -46.9)
 mesh = SubResource("pine_tree")
 
 [node name="Pine10" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.01, 0, 0, 0, 1.01, 0, 0, 0, 1.01, 2.16, 5.05, -60.1)
+transform = Transform3D(1.28, 0, 0, 0, 1.28, 0, 0, 0, 1.28, 28.2, 6.4, -47.4)
 mesh = SubResource("pine_tree")
 
 [node name="Pine11" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.26, 0, 0, 0, 1.26, 0, 0, 0, 1.26, -29.2, 6.3, -61.6)
+transform = Transform3D(0.945, 0, 0, 0, 0.945, 0, 0, 0, 0.945, 44.2, 4.72, 3.73)
 mesh = SubResource("pine_tree")
 
 [node name="Pine12" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.21, 0, 0, 0, 1.21, 0, 0, 0, 1.21, -30.1, 6.05, -14.7)
+transform = Transform3D(0.71, 0, 0, 0, 0.71, 0, 0, 0, 0.71, 4.48, 3.55, -48.9)
 mesh = SubResource("pine_tree")
 
 [node name="Pine13" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.09, 0, 0, 0, 1.09, 0, 0, 0, 1.09, 26.2, 5.45, -51.4)
+transform = Transform3D(1.07, 0, 0, 0, 1.07, 0, 0, 0, 1.07, 43.3, 5.35, 2.97)
 mesh = SubResource("pine_tree")
 
 [node name="Pine14" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.13, 0, 0, 0, 1.13, 0, 0, 0, 1.13, 37.9, 5.65, -17.7)
+transform = Transform3D(1.31, 0, 0, 0, 1.31, 0, 0, 0, 1.31, 39.9, 6.55, -18.6)
 mesh = SubResource("pine_tree")
 
 [node name="Pine15" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.31, 0, 0, 0, 1.31, 0, 0, 0, 1.31, 40.6, 6.55, 7.92)
+transform = Transform3D(0.876, 0, 0, 0, 0.876, 0, 0, 0, 0.876, 30, 4.38, -40.9)
 mesh = SubResource("pine_tree")
 
 [node name="Pine16" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.09, 0, 0, 0, 1.09, 0, 0, 0, 1.09, 40.7, 5.45, -36)
+transform = Transform3D(1.34, 0, 0, 0, 1.34, 0, 0, 0, 1.34, -7.45, 6.7, -48.9)
 mesh = SubResource("pine_tree")
 
 [node name="Pine17" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.796, 0, 0, 0, 0.796, 0, 0, 0, 0.796, 40.8, 3.98, 22)
+transform = Transform3D(0.994, 0, 0, 0, 0.994, 0, 0, 0, 0.994, 7.67, 4.97, 28.4)
 mesh = SubResource("pine_tree")
 
 [node name="Pine18" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.751, 0, 0, 0, 0.751, 0, 0, 0, 0.751, -34.8, 3.75, -17.8)
+transform = Transform3D(1.07, 0, 0, 0, 1.07, 0, 0, 0, 1.07, 38.4, 5.35, -11.8)
 mesh = SubResource("pine_tree")
 
 [node name="Pine19" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.17, 0, 0, 0, 1.17, 0, 0, 0, 1.17, -23.9, 5.85, -54.7)
+transform = Transform3D(1.01, 0, 0, 0, 1.01, 0, 0, 0, 1.01, 2.16, 5.05, -60.1)
 mesh = SubResource("pine_tree")
 
 [node name="Pine20" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.808, 0, 0, 0, 0.808, 0, 0, 0, 0.808, 26.1, 4.04, 27.7)
+transform = Transform3D(1.26, 0, 0, 0, 1.26, 0, 0, 0, 1.26, -29.2, 6.3, -61.6)
 mesh = SubResource("pine_tree")
 
 [node name="Pine21" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.38, 0, 0, 0, 1.38, 0, 0, 0, 1.38, -32.8, 6.9, 26.3)
+transform = Transform3D(1.21, 0, 0, 0, 1.21, 0, 0, 0, 1.21, -30.1, 6.05, -14.7)
 mesh = SubResource("pine_tree")
 
 [node name="Pine22" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.979, 0, 0, 0, 0.979, 0, 0, 0, 0.979, -25.8, 4.89, 33.3)
+transform = Transform3D(1.09, 0, 0, 0, 1.09, 0, 0, 0, 1.09, 26.2, 5.45, -51.4)
 mesh = SubResource("pine_tree")
 
 [node name="Pine23" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.28, 0, 0, 0, 1.28, 0, 0, 0, 1.28, -1.17, 6.4, 37)
+transform = Transform3D(1.13, 0, 0, 0, 1.13, 0, 0, 0, 1.13, 37.9, 5.65, -17.7)
 mesh = SubResource("pine_tree")
 
 [node name="Pine24" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.06, 0, 0, 0, 1.06, 0, 0, 0, 1.06, -31.1, 5.3, -18.8)
+transform = Transform3D(1.31, 0, 0, 0, 1.31, 0, 0, 0, 1.31, 40.6, 6.55, 7.92)
 mesh = SubResource("pine_tree")
 
 [node name="Pine25" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.923, 0, 0, 0, 0.923, 0, 0, 0, 0.923, -14.8, 4.62, -42.4)
+transform = Transform3D(1.09, 0, 0, 0, 1.09, 0, 0, 0, 1.09, 40.7, 5.45, -36)
 mesh = SubResource("pine_tree")
 
 [node name="Pine26" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.09, 0, 0, 0, 1.09, 0, 0, 0, 1.09, 20.4, 5.45, -60.1)
+transform = Transform3D(0.796, 0, 0, 0, 0.796, 0, 0, 0, 0.796, 40.8, 3.98, 22)
 mesh = SubResource("pine_tree")
 
 [node name="Pine27" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.932, 0, 0, 0, 0.932, 0, 0, 0, 0.932, -5.48, 4.66, -60.2)
+transform = Transform3D(0.751, 0, 0, 0, 0.751, 0, 0, 0, 0.751, -34.8, 3.75, -17.8)
 mesh = SubResource("pine_tree")
 
 [node name="Pine28" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.25, 0, 0, 0, 1.25, 0, 0, 0, 1.25, -40.1, 6.25, 36.5)
+transform = Transform3D(1.17, 0, 0, 0, 1.17, 0, 0, 0, 1.17, -23.9, 5.85, -54.7)
 mesh = SubResource("pine_tree")
 
 [node name="Pine29" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.886, 0, 0, 0, 0.886, 0, 0, 0, 0.886, 43.4, 4.43, -51.5)
+transform = Transform3D(0.808, 0, 0, 0, 0.808, 0, 0, 0, 0.808, 26.1, 4.04, 27.7)
 mesh = SubResource("pine_tree")
 
 [node name="Pine30" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.889, 0, 0, 0, 0.889, 0, 0, 0, 0.889, -42.4, 4.45, 15.9)
+transform = Transform3D(1.38, 0, 0, 0, 1.38, 0, 0, 0, 1.38, -32.8, 6.9, 26.3)
 mesh = SubResource("pine_tree")
 
 [node name="Pine31" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.34, 0, 0, 0, 1.34, 0, 0, 0, 1.34, -34.1, 6.7, -19.8)
+transform = Transform3D(0.979, 0, 0, 0, 0.979, 0, 0, 0, 0.979, -25.8, 4.89, 33.3)
 mesh = SubResource("pine_tree")
 
 [node name="Pine32" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.805, 0, 0, 0, 0.805, 0, 0, 0, 0.805, 29.3, 4.03, -36.1)
+transform = Transform3D(1.28, 0, 0, 0, 1.28, 0, 0, 0, 1.28, -1.17, 6.4, 37)
 mesh = SubResource("pine_tree")
 
 [node name="Pine33" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.19, 0, 0, 0, 1.19, 0, 0, 0, 1.19, 38.6, 5.95, -4.94)
+transform = Transform3D(1.06, 0, 0, 0, 1.06, 0, 0, 0, 1.06, -31.1, 5.3, -18.8)
 mesh = SubResource("pine_tree")
 
 [node name="Pine34" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.18, 0, 0, 0, 1.18, 0, 0, 0, 1.18, -37.8, 5.9, -56.2)
+transform = Transform3D(0.923, 0, 0, 0, 0.923, 0, 0, 0, 0.923, -14.8, 4.62, -42.4)
 mesh = SubResource("pine_tree")
 
 [node name="Pine35" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.36, 0, 0, 0, 1.36, 0, 0, 0, 1.36, -6.87, 6.8, -54.8)
+transform = Transform3D(1.09, 0, 0, 0, 1.09, 0, 0, 0, 1.09, 20.4, 5.45, -60.1)
 mesh = SubResource("pine_tree")
 
 [node name="Pine36" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.759, 0, 0, 0, 0.759, 0, 0, 0, 0.759, 12.4, 3.79, 18.2)
+transform = Transform3D(0.932, 0, 0, 0, 0.932, 0, 0, 0, 0.932, -5.48, 4.66, -60.2)
 mesh = SubResource("pine_tree")
 
 [node name="Pine37" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, 32.8, 6.5, -55.3)
+transform = Transform3D(1.25, 0, 0, 0, 1.25, 0, 0, 0, 1.25, -40.1, 6.25, 36.5)
 mesh = SubResource("pine_tree")
 
 [node name="Pine38" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.888, 0, 0, 0, 0.888, 0, 0, 0, 0.888, 4.88, 4.44, 30.7)
+transform = Transform3D(0.886, 0, 0, 0, 0.886, 0, 0, 0, 0.886, 43.4, 4.43, -51.5)
 mesh = SubResource("pine_tree")
 
 [node name="Pine39" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.867, 0, 0, 0, 0.867, 0, 0, 0, 0.867, -34.1, 4.33, -9.31)
+transform = Transform3D(0.889, 0, 0, 0, 0.889, 0, 0, 0, 0.889, -42.4, 4.45, 15.9)
 mesh = SubResource("pine_tree")
 
 [node name="Pine40" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.735, 0, 0, 0, 0.735, 0, 0, 0, 0.735, -35.9, 3.67, -45.9)
+transform = Transform3D(1.34, 0, 0, 0, 1.34, 0, 0, 0, 1.34, -34.1, 6.7, -19.8)
 mesh = SubResource("pine_tree")
 
 [node name="Pine41" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.713, 0, 0, 0, 0.713, 0, 0, 0, 0.713, -29.6, 3.56, -27.3)
+transform = Transform3D(0.805, 0, 0, 0, 0.805, 0, 0, 0, 0.805, 29.3, 4.03, -36.1)
 mesh = SubResource("pine_tree")
 
 [node name="Pine42" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.21, 0, 0, 0, 1.21, 0, 0, 0, 1.21, -23, 6.05, -60.5)
+transform = Transform3D(1.19, 0, 0, 0, 1.19, 0, 0, 0, 1.19, 38.6, 5.95, -4.94)
 mesh = SubResource("pine_tree")
 
 [node name="Pine43" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.03, 0, 0, 0, 1.03, 0, 0, 0, 1.03, 4.7, 5.15, -43.1)
+transform = Transform3D(1.18, 0, 0, 0, 1.18, 0, 0, 0, 1.18, -37.8, 5.9, -56.2)
 mesh = SubResource("pine_tree")
 
 [node name="Pine44" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.27, 0, 0, 0, 1.27, 0, 0, 0, 1.27, 40, 6.35, -51.4)
+transform = Transform3D(1.36, 0, 0, 0, 1.36, 0, 0, 0, 1.36, -6.87, 6.8, -54.8)
 mesh = SubResource("pine_tree")
 
 [node name="Pine45" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.05, 0, 0, 0, 1.05, 0, 0, 0, 1.05, 30.8, 5.25, -22.7)
+transform = Transform3D(0.759, 0, 0, 0, 0.759, 0, 0, 0, 0.759, 12.4, 3.79, 18.2)
 mesh = SubResource("pine_tree")
 
 [node name="Pine46" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.94, 0, 0, 0, 0.94, 0, 0, 0, 0.94, 17.3, 4.7, 36.2)
+transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, 32.8, 6.5, -55.3)
 mesh = SubResource("pine_tree")
 
 [node name="Pine47" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.15, 0, 0, 0, 1.15, 0, 0, 0, 1.15, 30.6, 5.75, 8.67)
+transform = Transform3D(0.888, 0, 0, 0, 0.888, 0, 0, 0, 0.888, 4.88, 4.44, 30.7)
 mesh = SubResource("pine_tree")
 
 [node name="Pine48" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, -41, 3.75, -49)
+transform = Transform3D(0.867, 0, 0, 0, 0.867, 0, 0, 0, 0.867, -34.1, 4.33, -9.31)
 mesh = SubResource("pine_tree")
 
 [node name="Pine49" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.29, 0, 0, 0, 1.29, 0, 0, 0, 1.29, -31, 6.45, -53.6)
+transform = Transform3D(0.735, 0, 0, 0, 0.735, 0, 0, 0, 0.735, -35.9, 3.67, -45.9)
 mesh = SubResource("pine_tree")
 
 [node name="Pine50" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.897, 0, 0, 0, 0.897, 0, 0, 0, 0.897, 34.1, 4.49, 5.05)
+transform = Transform3D(0.713, 0, 0, 0, 0.713, 0, 0, 0, 0.713, -29.6, 3.56, -27.3)
 mesh = SubResource("pine_tree")
 
 [node name="Pine51" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.01, 0, 0, 0, 1.01, 0, 0, 0, 1.01, -3.73, 5.05, -46.2)
+transform = Transform3D(1.21, 0, 0, 0, 1.21, 0, 0, 0, 1.21, -23, 6.05, -60.5)
 mesh = SubResource("pine_tree")
 
 [node name="Pine52" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.38, 0, 0, 0, 1.38, 0, 0, 0, 1.38, -21.8, 6.9, 34.2)
+transform = Transform3D(1.03, 0, 0, 0, 1.03, 0, 0, 0, 1.03, 4.7, 5.15, -43.1)
 mesh = SubResource("pine_tree")
 
 [node name="Pine53" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.95, 0, 0, 0, 0.95, 0, 0, 0, 0.95, 42.8, 4.75, -31)
+transform = Transform3D(1.27, 0, 0, 0, 1.27, 0, 0, 0, 1.27, 40, 6.35, -51.4)
 mesh = SubResource("pine_tree")
 
 [node name="Pine54" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.03, 0, 0, 0, 1.03, 0, 0, 0, 1.03, -45.9, 5.15, -23.8)
+transform = Transform3D(1.05, 0, 0, 0, 1.05, 0, 0, 0, 1.05, 30.8, 5.25, -22.7)
 mesh = SubResource("pine_tree")
 
 [node name="Pine55" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.05, 0, 0, 0, 1.05, 0, 0, 0, 1.05, 0.254, 5.25, -41.9)
+transform = Transform3D(0.94, 0, 0, 0, 0.94, 0, 0, 0, 0.94, 17.3, 4.7, 36.2)
 mesh = SubResource("pine_tree")
 
 [node name="Pine56" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.763, 0, 0, 0, 0.763, 0, 0, 0, 0.763, -45.5, 3.81, -35.6)
+transform = Transform3D(1.15, 0, 0, 0, 1.15, 0, 0, 0, 1.15, 30.6, 5.75, 8.67)
 mesh = SubResource("pine_tree")
 
 [node name="Pine57" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.716, 0, 0, 0, 0.716, 0, 0, 0, 0.716, -9.24, 3.58, -57.8)
+transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, -41, 3.75, -49)
 mesh = SubResource("pine_tree")
 
 [node name="Pine58" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.973, 0, 0, 0, 0.973, 0, 0, 0, 0.973, 19.9, 4.87, 25.9)
+transform = Transform3D(1.29, 0, 0, 0, 1.29, 0, 0, 0, 1.29, -31, 6.45, -53.6)
 mesh = SubResource("pine_tree")
 
 [node name="Pine59" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.805, 0, 0, 0, 0.805, 0, 0, 0, 0.805, -16, 4.03, 36.5)
+transform = Transform3D(0.897, 0, 0, 0, 0.897, 0, 0, 0, 0.897, 34.1, 4.49, 5.05)
 mesh = SubResource("pine_tree")
 
 [node name="Pine60" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.32, 0, 0, 0, 1.32, 0, 0, 0, 1.32, -42, 6.6, 21.5)
+transform = Transform3D(1.01, 0, 0, 0, 1.01, 0, 0, 0, 1.01, -3.73, 5.05, -46.2)
 mesh = SubResource("pine_tree")
 
 [node name="Pine61" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.07, 0, 0, 0, 1.07, 0, 0, 0, 1.07, 28.7, 5.35, -48.1)
+transform = Transform3D(1.38, 0, 0, 0, 1.38, 0, 0, 0, 1.38, -21.8, 6.9, 34.2)
 mesh = SubResource("pine_tree")
 
 [node name="Pine62" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.26, 0, 0, 0, 1.26, 0, 0, 0, 1.26, 0.402, 6.3, 21.5)
+transform = Transform3D(0.95, 0, 0, 0, 0.95, 0, 0, 0, 0.95, 42.8, 4.75, -31)
 mesh = SubResource("pine_tree")
 
 [node name="Pine63" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.32, 0, 0, 0, 1.32, 0, 0, 0, 1.32, 30, 6.6, -3.59)
+transform = Transform3D(1.03, 0, 0, 0, 1.03, 0, 0, 0, 1.03, -45.9, 5.15, -23.8)
 mesh = SubResource("pine_tree")
 
 [node name="Pine64" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.793, 0, 0, 0, 0.793, 0, 0, 0, 0.793, -24.8, 3.97, -58.9)
+transform = Transform3D(1.05, 0, 0, 0, 1.05, 0, 0, 0, 1.05, 0.254, 5.25, -41.9)
 mesh = SubResource("pine_tree")
 
 [node name="Pine65" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.29, 0, 0, 0, 1.29, 0, 0, 0, 1.29, -12.8, 6.45, -51.5)
+transform = Transform3D(0.763, 0, 0, 0, 0.763, 0, 0, 0, 0.763, -45.5, 3.81, -35.6)
 mesh = SubResource("pine_tree")
 
 [node name="Pine66" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.26, 0, 0, 0, 1.26, 0, 0, 0, 1.26, -0.985, 6.3, -61.7)
+transform = Transform3D(0.716, 0, 0, 0, 0.716, 0, 0, 0, 0.716, -9.24, 3.58, -57.8)
 mesh = SubResource("pine_tree")
 
 [node name="Pine67" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.877, 0, 0, 0, 0.877, 0, 0, 0, 0.877, -39.9, 4.38, 11.7)
+transform = Transform3D(0.973, 0, 0, 0, 0.973, 0, 0, 0, 0.973, 19.9, 4.87, 25.9)
 mesh = SubResource("pine_tree")
 
 [node name="Pine68" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.21, 0, 0, 0, 1.21, 0, 0, 0, 1.21, -39.2, 6.05, -35.4)
+transform = Transform3D(0.805, 0, 0, 0, 0.805, 0, 0, 0, 0.805, -16, 4.03, 36.5)
 mesh = SubResource("pine_tree")
 
 [node name="Pine69" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.968, 0, 0, 0, 0.968, 0, 0, 0, 0.968, 43.8, 4.84, -12.6)
+transform = Transform3D(1.32, 0, 0, 0, 1.32, 0, 0, 0, 1.32, -42, 6.6, 21.5)
 mesh = SubResource("pine_tree")
 
 [node name="Pine70" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.803, 0, 0, 0, 0.803, 0, 0, 0, 0.803, 13.1, 4.02, -54.3)
+transform = Transform3D(1.07, 0, 0, 0, 1.07, 0, 0, 0, 1.07, 28.7, 5.35, -48.1)
 mesh = SubResource("pine_tree")
 
 [node name="Pine71" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.888, 0, 0, 0, 0.888, 0, 0, 0, 0.888, -44.9, 4.44, -55.9)
+transform = Transform3D(1.26, 0, 0, 0, 1.26, 0, 0, 0, 1.26, 0.402, 6.3, 21.5)
 mesh = SubResource("pine_tree")
 
 [node name="Pine72" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.33, 0, 0, 0, 1.33, 0, 0, 0, 1.33, -3.1, 6.65, -50.1)
+transform = Transform3D(1.32, 0, 0, 0, 1.32, 0, 0, 0, 1.32, 30, 6.6, -3.59)
 mesh = SubResource("pine_tree")
 
 [node name="Pine73" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.36, 0, 0, 0, 1.36, 0, 0, 0, 1.36, -27.7, 6.8, 35.8)
+transform = Transform3D(0.793, 0, 0, 0, 0.793, 0, 0, 0, 0.793, -24.8, 3.97, -58.9)
 mesh = SubResource("pine_tree")
 
 [node name="Pine74" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.27, 0, 0, 0, 1.27, 0, 0, 0, 1.27, -44.4, 6.35, -16.1)
+transform = Transform3D(1.29, 0, 0, 0, 1.29, 0, 0, 0, 1.29, -12.8, 6.45, -51.5)
 mesh = SubResource("pine_tree")
 
 [node name="Pine75" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.888, 0, 0, 0, 0.888, 0, 0, 0, 0.888, 43.1, 4.44, -17.1)
+transform = Transform3D(1.26, 0, 0, 0, 1.26, 0, 0, 0, 1.26, -0.985, 6.3, -61.7)
 mesh = SubResource("pine_tree")
 
 [node name="Pine76" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.847, 0, 0, 0, 0.847, 0, 0, 0, 0.847, -26.7, 4.23, 32.6)
+transform = Transform3D(0.877, 0, 0, 0, 0.877, 0, 0, 0, 0.877, -39.9, 4.38, 11.7)
 mesh = SubResource("pine_tree")
 
 [node name="Pine77" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.07, 0, 0, 0, 1.07, 0, 0, 0, 1.07, 7.5, 5.35, -47.8)
+transform = Transform3D(1.21, 0, 0, 0, 1.21, 0, 0, 0, 1.21, -39.2, 6.05, -35.4)
 mesh = SubResource("pine_tree")
 
 [node name="Pine78" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.27, 0, 0, 0, 1.27, 0, 0, 0, 1.27, 41.7, 6.35, -48.7)
+transform = Transform3D(0.968, 0, 0, 0, 0.968, 0, 0, 0, 0.968, 43.8, 4.84, -12.6)
 mesh = SubResource("pine_tree")
 
 [node name="Pine79" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.19, 0, 0, 0, 1.19, 0, 0, 0, 1.19, 0.804, 5.95, 26.7)
+transform = Transform3D(0.803, 0, 0, 0, 0.803, 0, 0, 0, 0.803, 13.1, 4.02, -54.3)
 mesh = SubResource("pine_tree")
 
 [node name="Pine80" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.04, 0, 0, 0, 1.04, 0, 0, 0, 1.04, -24.7, 5.2, 27.8)
+transform = Transform3D(0.888, 0, 0, 0, 0.888, 0, 0, 0, 0.888, -44.9, 4.44, -55.9)
 mesh = SubResource("pine_tree")
 
 [node name="Pine81" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.04, 0, 0, 0, 1.04, 0, 0, 0, 1.04, -43.7, 5.2, -61.6)
+transform = Transform3D(1.33, 0, 0, 0, 1.33, 0, 0, 0, 1.33, -3.1, 6.65, -50.1)
 mesh = SubResource("pine_tree")
 
 [node name="Pine82" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.921, 0, 0, 0, 0.921, 0, 0, 0, 0.921, -33.1, 4.61, -27.6)
+transform = Transform3D(1.36, 0, 0, 0, 1.36, 0, 0, 0, 1.36, -27.7, 6.8, 35.8)
 mesh = SubResource("pine_tree")
 
 [node name="Pine83" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.23, 0, 0, 0, 1.23, 0, 0, 0, 1.23, 31.3, 6.15, -61.8)
+transform = Transform3D(1.27, 0, 0, 0, 1.27, 0, 0, 0, 1.27, -44.4, 6.35, -16.1)
 mesh = SubResource("pine_tree")
 
 [node name="Pine84" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.35, 0, 0, 0, 1.35, 0, 0, 0, 1.35, 31.2, 6.75, -50)
+transform = Transform3D(0.888, 0, 0, 0, 0.888, 0, 0, 0, 0.888, 43.1, 4.44, -17.1)
 mesh = SubResource("pine_tree")
 
 [node name="Pine85" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.903, 0, 0, 0, 0.903, 0, 0, 0, 0.903, 19.6, 4.52, 28.2)
+transform = Transform3D(0.847, 0, 0, 0, 0.847, 0, 0, 0, 0.847, -26.7, 4.23, 32.6)
 mesh = SubResource("pine_tree")
 
 [node name="Pine86" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.952, 0, 0, 0, 0.952, 0, 0, 0, 0.952, 45.9, 4.76, -3.08)
+transform = Transform3D(1.07, 0, 0, 0, 1.07, 0, 0, 0, 1.07, 7.5, 5.35, -47.8)
 mesh = SubResource("pine_tree")
 
 [node name="Pine87" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.28, 0, 0, 0, 1.28, 0, 0, 0, 1.28, -41.6, 6.4, -51.8)
+transform = Transform3D(1.27, 0, 0, 0, 1.27, 0, 0, 0, 1.27, 41.7, 6.35, -48.7)
 mesh = SubResource("pine_tree")
 
 [node name="Pine88" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.875, 0, 0, 0, 0.875, 0, 0, 0, 0.875, -19.7, 4.38, 31.6)
+transform = Transform3D(1.19, 0, 0, 0, 1.19, 0, 0, 0, 1.19, 0.804, 5.95, 26.7)
 mesh = SubResource("pine_tree")
 
 [node name="Pine89" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.37, 0, 0, 0, 1.37, 0, 0, 0, 1.37, -28.5, 6.85, -24.7)
+transform = Transform3D(1.04, 0, 0, 0, 1.04, 0, 0, 0, 1.04, -24.7, 5.2, 27.8)
 mesh = SubResource("pine_tree")
 
 [node name="Pine90" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.14, 0, 0, 0, 1.14, 0, 0, 0, 1.14, 35.4, 5.7, 19.2)
+transform = Transform3D(1.04, 0, 0, 0, 1.04, 0, 0, 0, 1.04, -43.7, 5.2, -61.6)
 mesh = SubResource("pine_tree")
 
 [node name="Pine91" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.08, 0, 0, 0, 1.08, 0, 0, 0, 1.08, 38, 5.4, 32.1)
+transform = Transform3D(0.921, 0, 0, 0, 0.921, 0, 0, 0, 0.921, -33.1, 4.61, -27.6)
 mesh = SubResource("pine_tree")
 
 [node name="Pine92" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.21, 0, 0, 0, 1.21, 0, 0, 0, 1.21, 20.2, 6.05, -57.1)
+transform = Transform3D(1.23, 0, 0, 0, 1.23, 0, 0, 0, 1.23, 31.3, 6.15, -61.8)
 mesh = SubResource("pine_tree")
 
 [node name="Pine93" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.789, 0, 0, 0, 0.789, 0, 0, 0, 0.789, -41.5, 3.95, 30.7)
+transform = Transform3D(1.35, 0, 0, 0, 1.35, 0, 0, 0, 1.35, 31.2, 6.75, -50)
 mesh = SubResource("pine_tree")
 
 [node name="Pine94" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.16, 0, 0, 0, 1.16, 0, 0, 0, 1.16, 43.8, 5.8, -36)
+transform = Transform3D(0.903, 0, 0, 0, 0.903, 0, 0, 0, 0.903, 19.6, 4.52, 28.2)
 mesh = SubResource("pine_tree")
 
 [node name="Pine95" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.813, 0, 0, 0, 0.813, 0, 0, 0, 0.813, -9.72, 4.06, -45.3)
+transform = Transform3D(0.952, 0, 0, 0, 0.952, 0, 0, 0, 0.952, 45.9, 4.76, -3.08)
 mesh = SubResource("pine_tree")
 
 [node name="Pine96" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.05, 0, 0, 0, 1.05, 0, 0, 0, 1.05, -26.9, 5.25, 28.6)
+transform = Transform3D(1.28, 0, 0, 0, 1.28, 0, 0, 0, 1.28, -41.6, 6.4, -51.8)
 mesh = SubResource("pine_tree")
 
 [node name="Pine97" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, -25.8, 7, 28.6)
+transform = Transform3D(0.875, 0, 0, 0, 0.875, 0, 0, 0, 0.875, -19.7, 4.38, 31.6)
 mesh = SubResource("pine_tree")
 
 [node name="Pine98" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.835, 0, 0, 0, 0.835, 0, 0, 0, 0.835, -4.6, 4.17, -48)
+transform = Transform3D(1.37, 0, 0, 0, 1.37, 0, 0, 0, 1.37, -28.5, 6.85, -24.7)
 mesh = SubResource("pine_tree")
 
 [node name="Pine99" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.764, 0, 0, 0, 0.764, 0, 0, 0, 0.764, -37.7, 3.82, -27.8)
+transform = Transform3D(1.14, 0, 0, 0, 1.14, 0, 0, 0, 1.14, 35.4, 5.7, 19.2)
 mesh = SubResource("pine_tree")
 
 [node name="Pine100" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.22, 0, 0, 0, 1.22, 0, 0, 0, 1.22, 6.4, 6.1, 26.7)
+transform = Transform3D(1.08, 0, 0, 0, 1.08, 0, 0, 0, 1.08, 38, 5.4, 32.1)
 mesh = SubResource("pine_tree")
 
 [node name="Pine101" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.894, 0, 0, 0, 0.894, 0, 0, 0, 0.894, -14.9, 4.47, -55.8)
+transform = Transform3D(1.21, 0, 0, 0, 1.21, 0, 0, 0, 1.21, 20.2, 6.05, -57.1)
 mesh = SubResource("pine_tree")
 
 [node name="Pine102" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.05, 0, 0, 0, 1.05, 0, 0, 0, 1.05, 43, 5.25, -49.4)
+transform = Transform3D(0.789, 0, 0, 0, 0.789, 0, 0, 0, 0.789, -41.5, 3.95, 30.7)
 mesh = SubResource("pine_tree")
 
 [node name="Pine103" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.851, 0, 0, 0, 0.851, 0, 0, 0, 0.851, 11.9, 4.25, 24.3)
+transform = Transform3D(1.16, 0, 0, 0, 1.16, 0, 0, 0, 1.16, 43.8, 5.8, -36)
 mesh = SubResource("pine_tree")
 
 [node name="Pine104" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.31, 0, 0, 0, 1.31, 0, 0, 0, 1.31, 41.8, 6.55, 22.9)
+transform = Transform3D(0.813, 0, 0, 0, 0.813, 0, 0, 0, 0.813, -9.72, 4.06, -45.3)
 mesh = SubResource("pine_tree")
 
 [node name="Pine105" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, -44, 6, -58.8)
+transform = Transform3D(1.05, 0, 0, 0, 1.05, 0, 0, 0, 1.05, -26.9, 5.25, 28.6)
 mesh = SubResource("pine_tree")
 
 [node name="Pine106" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.11, 0, 0, 0, 1.11, 0, 0, 0, 1.11, 36.4, 5.55, -14.7)
+transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, -25.8, 7, 28.6)
 mesh = SubResource("pine_tree")
 
 [node name="Pine107" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.35, 0, 0, 0, 1.35, 0, 0, 0, 1.35, -46, 6.75, -22.8)
+transform = Transform3D(0.835, 0, 0, 0, 0.835, 0, 0, 0, 0.835, -4.6, 4.17, -48)
 mesh = SubResource("pine_tree")
 
 [node name="Pine108" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.38, 0, 0, 0, 1.38, 0, 0, 0, 1.38, 30, 6.9, 23.5)
+transform = Transform3D(0.764, 0, 0, 0, 0.764, 0, 0, 0, 0.764, -37.7, 3.82, -27.8)
 mesh = SubResource("pine_tree")
 
 [node name="Pine109" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(0.808, 0, 0, 0, 0.808, 0, 0, 0, 0.808, -23.1, 4.04, -51.1)
+transform = Transform3D(1.22, 0, 0, 0, 1.22, 0, 0, 0, 1.22, 6.4, 6.1, 26.7)
 mesh = SubResource("pine_tree")
 
 [node name="Pine110" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.15, 0, 0, 0, 1.15, 0, 0, 0, 1.15, 40.6, 5.75, 10.2)
+transform = Transform3D(0.894, 0, 0, 0, 0.894, 0, 0, 0, 0.894, -14.9, 4.47, -55.8)
 mesh = SubResource("pine_tree")
 
 [node name="Pine111" type="MeshInstance3D" parent="Pines"]
-transform = Transform3D(1.25, 0, 0, 0, 1.25, 0, 0, 0, 1.25, 4.74, 6.25, -58)
+transform = Transform3D(1.05, 0, 0, 0, 1.05, 0, 0, 0, 1.05, 43, 5.25, -49.4)
+mesh = SubResource("pine_tree")
+
+[node name="Pine112" type="MeshInstance3D" parent="Pines"]
+transform = Transform3D(0.851, 0, 0, 0, 0.851, 0, 0, 0, 0.851, 11.9, 4.25, 24.3)
 mesh = SubResource("pine_tree")
 
 [node name="Ridge" type="Node3D" parent="."]

@@ -38,6 +38,7 @@ BUDGETS = {
     "doors": (2_000, 4),
     "machines": (2_000, 4),
     "town": (2_500, 4),
+    "town_large": (12_000, 6),
 }
 BUDGETS.update(character_checks.BUDGETS)
 
@@ -68,6 +69,8 @@ JOINTS = {
     "window_dark": {},
     "fence": {},
     "signpost": {},
+    "lodge_lantern_post": {},
+    "lodge_common_room": {},
     "mess_table": {},
     "serving_counter": {},
     "guard_desk": {},

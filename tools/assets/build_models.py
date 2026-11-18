@@ -26,6 +26,7 @@ import door_models
 import finish
 import machine_models
 import prop_models
+import town_buildings
 import town_props
 import zombie_model
 from mathutils import Vector
@@ -253,6 +254,7 @@ MODELS = {
 MODELS.update(character_models.MODELS)
 MODELS.update(prop_models.MODELS)
 MODELS.update(town_props.MODELS)
+MODELS.update(town_buildings.MODELS)
 MODELS.update(door_models.MODELS)
 MODELS.update(machine_models.MODELS)
 
