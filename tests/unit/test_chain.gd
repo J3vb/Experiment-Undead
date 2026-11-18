@@ -13,23 +13,17 @@ var _chain: Chain
 
 func before_each() -> void:
 	_port = TwoPeers.next_port()
-	_session = GameSession.new()
+	_session = CoopSide.make(self, "Match")
 	_session.rng.seed = 17
-	_spawner = Spawner.new()
-	_spawner.session = _session
-	_spawner.spawn_group = &"test_chain_spawn"
-	add_child(_spawner)
-	var marker: Marker3D = Marker3D.new()
-	marker.add_to_group(&"test_chain_spawn")
-	_spawner.add_child(marker)
+	_spawner = _session.spawner
+	CoopSide.add_spawn_point(_session)
 	_chain = Chain.new()
 	add_child(_chain)
 
 
 func after_each() -> void:
 	_chain.free()
-	_spawner.free()
-	_session.free()
+	CoopSide.close(_session)
 
 
 func _zombie(point: Vector3) -> Zombie:

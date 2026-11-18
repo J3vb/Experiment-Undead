@@ -6,6 +6,8 @@ extends RefCounted
 const ADDRESS: String = "127.0.0.1"
 const FIRST_PORT: int = 24800
 const PORT_COUNT: int = 200
+## ENet's default throttle interval. See _no_throttle().
+const THROTTLE_INTERVAL_MS: int = 5000
 
 static var _next: int = 0
 static var _admit: Callable
@@ -42,6 +44,7 @@ static func add_player_spawner(root: Node, player_scene: PackedScene) -> PlayerS
 static func host(side: Node, port: int, max_clients: int) -> Error:
 	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
 	var error: Error = peer.create_server(port, max_clients)
+	_no_throttle(peer)
 	side.multiplayer.multiplayer_peer = peer
 	return error
 
@@ -49,8 +52,17 @@ static func host(side: Node, port: int, max_clients: int) -> Error:
 static func join(side: Node, port: int) -> Error:
 	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
 	var error: Error = peer.create_client(ADDRESS, port)
+	_no_throttle(peer)
 	side.multiplayer.multiplayer_peer = peer
 	return error
+
+
+## Every side runs in one thread, so a long frame on one side reads as lag to the others and
+## ENet's throttle starts dropping unreliable packets (shots, poses). Tests turn the throttle off.
+static func _no_throttle(peer: ENetMultiplayerPeer) -> void:
+	peer.peer_connected.connect(
+		func(peer_id: int) -> void: peer.get_peer(peer_id).throttle_configure(THROTTLE_INTERVAL_MS, 2, 0)
+	)
 
 
 ## Closes the side's peer, frees the side and removes its SceneMultiplayer.

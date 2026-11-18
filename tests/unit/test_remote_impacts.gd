@@ -3,7 +3,6 @@
 extends GutTest
 
 const RIFLE: String = "res://content/weapons/rifle_ar.tres"
-const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
 
 var _effects: RemoteShotEffects
 var _roots: Array[Node] = []
@@ -18,11 +17,9 @@ func before_each() -> void:
 
 
 func after_each() -> void:
-	_roots.reverse()
-	for root: Node in _roots:
-		TwoPeers.close_side(root)
+	_sessions.reverse()
 	for session: GameSession in _sessions:
-		session.free()
+		CoopSide.close(session)
 	_roots.clear()
 	_sessions.clear()
 
@@ -31,23 +28,15 @@ func after_each() -> void:
 func _three_peers() -> void:
 	var port: int = TwoPeers.next_port()
 	for side_name: String in ["Server", "Client", "Observer"]:
-		var root: Node = TwoPeers.make_side(self, side_name)
-		var session: GameSession = GameSession.new()
-		var shots: RemoteShots = RemoteShots.new()
-		shots.name = "RemoteShots"
-		shots.session = session
-		session.remote_shots = shots
-		root.add_child(shots)
-		var spawner: PlayerSpawner = TwoPeers.add_player_spawner(root, PLAYER)
-		session.players = spawner
-		spawner.player_added.connect(_arm.bind(session, shots))
-		_roots.append(root)
+		var session: GameSession = CoopSide.make(self, side_name, [&"remote_shots"])
+		session.players.player_added.connect(_arm.bind(session, session.remote_shots))
+		_roots.append(session.get_parent())
 		_sessions.append(session)
 	assert_eq(TwoPeers.host(_roots[0], port, 3), OK)
 	assert_eq(TwoPeers.join(_roots[1], port), OK)
 	assert_eq(TwoPeers.join(_roots[2], port), OK)
 	for index: int in [1, 2, 0]:
-		_sessions[index].players.setup(_roots[index].get_node("World") as Node3D, Transform3D.IDENTITY)
+		CoopSide.start_players(_sessions[index])
 	await wait_until(_all_see_three, 5.0, "three peers see three players")
 
 
@@ -58,8 +47,8 @@ func _arm(player: Player, session: GameSession, shots: RemoteShots) -> void:
 
 
 func _all_see_three() -> bool:
-	for root: Node in _roots:
-		if root.get_node("World").get_child_count() != 3:
+	for session: GameSession in _sessions:
+		if CoopSide.players(session).size() != 3:
 			return false
 	return true
 

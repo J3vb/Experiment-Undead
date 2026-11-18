@@ -1,7 +1,6 @@
 ## Real client claims exercise server Prototype effects, synced frost and cosmetic arcs.
 extends GutTest
 
-const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
 const WALKER: EnemyData = preload("res://content/enemies/zombie_walker.tres")
 const WAVES: WaveRules = preload("res://content/waves/default_waves.tres")
 const CRYO: WeaponData = preload("res://content/weapons/cryo_lance.tres")
@@ -17,34 +16,10 @@ var _progression: ProgressionService
 
 
 func _side(side_name: String) -> HitClaims:
-	var root: Node = TwoPeers.make_side(self, side_name)
-	var session: GameSession = GameSession.new()
+	var session: GameSession = CoopSide.make(self, side_name, [&"hit_claims"])
 	session.rng.seed = 83
-	var world: Node3D = Node3D.new()
-	world.name = "World"
-	root.add_child(world)
-	var economy: Economy = Economy.new()
-	economy.name = "Economy"
-	economy.rules = load("res://content/economy/default_economy.tres")
-	root.add_child(economy)
-	var rewards: ProgressionService = ProgressionService.new()
-	rewards.name = "Progression"
-	root.add_child(rewards)
-	session.spawner = Spawner.new()
-	session.spawner.name = "Enemies"
-	session.spawner.spawn_group = &"test_prototype_claim_points"
-	session.spawner.session = session
-	root.add_child(session.spawner)
-	session.players = PlayerSpawner.new()
-	session.players.name = "Players"
-	session.players.player_scene = PLAYER
 	session.players.player_added.connect(_prepare.bind(session))
-	root.add_child(session.players)
-	var claims: HitClaims = HitClaims.new()
-	claims.name = "HitClaims"
-	claims.session = session
-	root.add_child(claims)
-	return claims
+	return session.hit_claims
 
 
 func _prepare(player: Player, session: GameSession) -> void:
@@ -57,10 +32,8 @@ func before_each() -> void:
 	_port = TwoPeers.next_port()
 	_server = _side("Server")
 	_client = _side("Client")
-	_progression = _server.get_parent().get_node("Progression") as ProgressionService
-	var marker: Marker3D = Marker3D.new()
-	marker.add_to_group(&"test_prototype_claim_points")
-	_server.get_parent().add_child(marker)
+	_progression = _server.session.progression
+	CoopSide.add_spawn_point(_server.session)
 	await _connect()
 	var peer: int = _client.multiplayer.get_unique_id()
 	_claimant = _server.session.players.find_player(peer)
@@ -72,8 +45,8 @@ func before_each() -> void:
 func _connect() -> void:
 	assert_eq(TwoPeers.host(_server, _port, 2), OK)
 	assert_eq(TwoPeers.join(_client, _port), OK)
-	_client.session.players.setup(_client.get_parent().get_node("World") as Node3D, Transform3D.IDENTITY)
-	_server.session.players.setup(_server.get_parent().get_node("World") as Node3D, Transform3D.IDENTITY)
+	CoopSide.start_players(_client.session)
+	CoopSide.start_players(_server.session)
 	await wait_until(
 		func() -> bool:
 			var peer: int = _client.multiplayer.get_unique_id()
@@ -89,15 +62,7 @@ func _connect() -> void:
 
 func after_each() -> void:
 	for claims: HitClaims in [_client, _server]:
-		var root: Node = claims.get_parent()
-		for node: Node in claims.session.spawner.get_children():
-			if node is Zombie:
-				node.free()
-		for node: Node in root.get_node("World").get_children():
-			if node is Player:
-				node.free()
-		claims.session.free()
-		TwoPeers.close_side(root)
+		CoopSide.close(claims.session)
 
 
 func _pair(point: Vector3) -> Array[Zombie]:
@@ -172,10 +137,10 @@ func _assert_single_kill_credit(zombie: Zombie, hits: int) -> void:
 	assert_eq((killed[1] as DamageInfo).attacker, _claimant)
 	assert_eq(_progression.get_xp(_claimant), WALKER.xp_reward)
 	assert_eq(_progression.get_xp(_host), 0)
-	var rewards: ProgressionService = _client.get_parent().get_node("Progression") as ProgressionService
+	var rewards: ProgressionService = _client.session.progression
 	await wait_until(func() -> bool: return rewards.get_xp(_mine) == WALKER.xp_reward, 3.0, "owner XP synced")
 	assert_eq(rewards.get_xp(_mine), WALKER.xp_reward)
-	var economy: Economy = _server.get_parent().get_node("Economy") as Economy
+	var economy: Economy = _server.session.economy
 	assert_eq(_host.wallet.points, economy.rules.starting_points)
 	assert_eq(
 		_claimant.wallet.points,
