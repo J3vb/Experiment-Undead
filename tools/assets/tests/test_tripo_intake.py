@@ -142,3 +142,28 @@ def test_every_character_vertex_is_weighted(character):
     objects = check_models.load_glb(character["model"])
     body = next(obj for obj in objects if obj.type == "MESH")
     assert all(sum(g.weight for g in v.groups) > 0.5 for v in body.data.vertices)
+
+
+def test_mixamo_joints_move_our_bones():
+    """Mixamo names map one to one: LeftArm is the upper arm, LeftForeArm the forearm, LeftLeg the shin."""
+    import character_rig
+    import tripo_rig
+    from mathutils import Matrix, Vector
+
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    source = character_rig.build_armature("Source")
+    names = {
+        f"{ours}_{side}": tripo_rig.MIXAMO[ours].format(s=word)
+        for ours in ("upperarm", "forearm", "thigh", "shin")
+        for side, word in tripo_rig.SIDES.items()
+    }
+    names.update(pelvis="Hips", neck="Neck", head="Head")
+    for ours, theirs in names.items():
+        source.data.bones[ours].name = f"mixamorig:{theirs}"
+    joints = tripo_rig.source_joints(source, Matrix.Translation((0.0, 0.0, 0.1)))
+    assert set(joints) == set(names)
+    rest = character_rig.BONES
+    assert joints["forearm_L"] == Vector(rest["forearm_L"][1]) + Vector((0.0, 0.0, 0.1))
+    assert joints["shin_R"] == Vector(rest["shin_R"][1]) + Vector((0.0, 0.0, 0.1))
+    arm = character_rig.build_armature()
+    assert tripo_rig.fit(arm, joints) == len(names)

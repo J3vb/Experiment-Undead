@@ -1,7 +1,7 @@
 """Puts a Tripo character mesh on our shared 22-bone skeleton with the existing player clips.
 
 Tripo's own rig is not reused: its bone names and rest pose differ from ours, so its skin would not
-play our clips. When the source has a skeleton, its joint positions move our bones; otherwise our
+play our clips. When the source has a Mixamo-named skeleton, its joint positions move our bones; otherwise our
 1.80 m rest rig is used as is. Weights come from `character_rig.bind`.
 """
 
@@ -11,53 +11,49 @@ import bpy
 import character_rig
 from mathutils import Matrix, Vector
 
-# Our bone -> name fragments Tripo / Mixamo-style rigs use for the bone's head joint (lower case).
-JOINT_NAMES = {
-    "pelvis": ("hips", "pelvis"),
-    "neck": ("neck",),
-    "head": ("head",),
-    "upperarm": ("upperarm", "upper_arm", "arm"),
-    "forearm": ("forearm", "lowerarm", "lower_arm"),
-    "hand": ("hand", "wrist"),
-    "thigh": ("upleg", "thigh", "upperleg", "upper_leg"),
-    "shin": ("leg", "shin", "calf", "lowerleg", "lower_leg", "knee"),
-    "foot": ("foot", "ankle"),
+# Our bone -> Mixamo bone (Tripo's "Mixamo" preset), "{s}" = Left / Right.
+MIXAMO = {
+    "pelvis": "Hips",
+    "neck": "Neck",
+    "head": "Head",
+    "upperarm": "{s}Arm",
+    "forearm": "{s}ForeArm",
+    "hand": "{s}Hand",
+    "thigh": "{s}UpLeg",
+    "shin": "{s}Leg",
+    "foot": "{s}Foot",
 }
-SIDES = {"L": ("left", "_l", ".l", "l_"), "R": ("right", "_r", ".r", "r_")}
+SIDES = {"L": "Left", "R": "Right"}
 EYE_HEIGHT = 1.682
 EYE_FRONT = 0.115
 
 
-def _match(names: list, fragments: tuple, side: str | None) -> str | None:
-    """Longest source bone name that holds a fragment (and the side tag), skipping finger/twist bones."""
-    skip = ("thumb", "index", "middle", "ring", "pinky", "twist", "toe", "end", "top", "base")
-    hits = []
-    for name in names:
-        low = name.lower().replace("mixamorig:", "")
-        if any(word in low for word in skip):
+def _plain(name: str) -> str:
+    return name.split(":")[-1].lower()
+
+
+def _targets() -> dict:
+    """Our bone name -> the plain lower-case Mixamo name it takes its head joint from."""
+    targets = {}
+    for ours, theirs in MIXAMO.items():
+        if "{s}" not in theirs:
+            targets[ours] = theirs.lower()
             continue
-        if side is not None and not any(tag in low for tag in SIDES[side]):
-            continue
-        if side is None and any(tag in low for tags in SIDES.values() for tag in tags if tag[0] in "lr"):
-            continue
-        for fragment in fragments:
-            if low.endswith(fragment) or f"{fragment}" == low.split("_")[-1]:
-                hits.append((len(fragment), name))
-    return max(hits)[1] if hits else None
+        for side, word in SIDES.items():
+            targets[f"{ours}_{side}"] = theirs.format(s=word).lower()
+    return targets
 
 
 def source_joints(armature, placed: Matrix) -> dict:
-    """Our bone name -> head position from the Tripo skeleton, in the placed (scaled, turned) space."""
+    """Our bone name -> head position from a Mixamo-named source skeleton, in the placed space."""
     if armature is None:
         return {}
-    names = [bone.name for bone in armature.data.bones]
+    by_name = {_plain(bone.name): bone for bone in armature.data.bones}
     joints = {}
-    for ours, fragments in JOINT_NAMES.items():
-        for side in ("L", "R") if ours not in ("pelvis", "neck", "head") else (None,):
-            found = _match(names, fragments, side)
-            if found is not None:
-                head = armature.matrix_world @ armature.data.bones[found].head_local
-                joints[f"{ours}_{side}" if side else ours] = placed @ head
+    for ours, theirs in _targets().items():
+        bone = by_name.get(theirs)
+        if bone is not None:
+            joints[ours] = placed @ (armature.matrix_world @ bone.head_local)
     return joints
 
 
