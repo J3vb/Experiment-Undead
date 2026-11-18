@@ -17,4 +17,4 @@ func _ready_up(player: Player) -> void:
 
 func _end_first_match(round_number: int, _count: int) -> void:
 	if round_number == 1 and is_instance_valid(session) and not session.is_hub:
-		session._end_match.call_deferred(false)
+		session.match_end._end_match.call_deferred(false)

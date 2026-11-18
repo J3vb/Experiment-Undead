@@ -7,6 +7,9 @@ func _ready() -> void:
 	loot.name = "LootService"
 	loot.session = self
 	add_child(loot)
+	match_end = MatchEnd.new()
+	match_end.session = self
+	add_child(match_end)
 
 
 func _exit_tree() -> void:

@@ -52,7 +52,7 @@ func test_kill_and_round_xp_survive_game_over_and_next_session() -> void:
 	assert_eq(stats["start_total_xp"], START_XP)
 	assert_eq(stats["total_xp"], START_XP + run_xp)
 	assert_eq(int(SaveFile.read(_path)["total_xp"]), START_XP + run_xp)
-	session.bank_run_xp()
+	session.match_end.bank_run_xp()
 	assert_eq(int(SaveFile.read(_path)["total_xp"]), START_XP + run_xp)
 	session.free()
 	session = SESSION.instantiate() as GameSession
@@ -65,9 +65,9 @@ func test_kill_and_round_xp_survive_game_over_and_next_session() -> void:
 
 func test_exfil_banks_after_bonus_once() -> void:
 	session.progression.add_xp(player, 101)
-	session.finish_exfil()
-	session.finish_exfil()
-	session.bank_run_xp()
+	session.match_end.finish_exfil()
+	session.match_end.finish_exfil()
+	session.match_end.bank_run_xp()
 	assert_eq(session.progression.get_xp(player), 151)
 	assert_eq(int(SaveFile.read(_path)["total_xp"]), START_XP + 151)
 	await wait_seconds(0.05)
@@ -98,7 +98,7 @@ func test_inventory_and_unknown_item_keys_survive_match_save_and_load() -> void:
 	add_child_autofree(session)
 	player = session.get_players()[0]
 	session.progression.add_xp(player, 75)
-	session.bank_run_xp()
+	session.match_end.bank_run_xp()
 	var loaded: CharacterProfile = CharacterProfile.load_or_create(ID)
 	assert_eq(loaded.total_xp, START_XP + 75)
 	assert_eq(loaded.stash, expected["stash"])
@@ -116,7 +116,7 @@ func test_old_v1_save_banks_xp_with_empty_inventory() -> void:
 	add_child_autofree(session)
 	player = session.get_players()[0]
 	session.progression.add_xp(player, 75)
-	session.bank_run_xp()
+	session.match_end.bank_run_xp()
 	var loaded: CharacterProfile = CharacterProfile.load_or_create(ID)
 	assert_eq(loaded.total_xp, START_XP + 75)
 	assert_eq(loaded.stash.size(), 60)
@@ -134,7 +134,7 @@ func test_restart_mid_run_banks_once() -> void:
 	get_tree().current_scene = session
 	session.progression.add_xp(player, 75)
 	session.restart()
-	session.bank_run_xp()
+	session.match_end.bank_run_xp()
 	assert_eq(int(SaveFile.read(_path)["total_xp"]), START_XP + 75)
 	await wait_process_frames(2)
 	session = get_tree().current_scene as GameSession
@@ -145,8 +145,8 @@ func test_restart_mid_run_banks_once() -> void:
 	player = session.get_players()[0]
 	assert_eq(session.progression.get_total_xp(player), START_XP + 75)
 	assert_eq(session.progression.get_level(player), 2)
-	session.bank_run_xp()
-	session.bank_run_xp()
+	session.match_end.bank_run_xp()
+	session.match_end.bank_run_xp()
 	assert_eq(int(SaveFile.read(_path)["total_xp"]), START_XP + 75)
 	session.free()
 
@@ -159,7 +159,7 @@ func test_empty_profile_id_does_not_load_or_save() -> void:
 	player = session.get_players()[0]
 	assert_eq(session.progression.get_total_xp(player), 0)
 	session.progression.add_xp(player, 100)
-	session.bank_run_xp()
+	session.match_end.bank_run_xp()
 	assert_eq(int(SaveFile.read(_path)["total_xp"]), START_XP)
 
 
@@ -167,7 +167,7 @@ func test_window_close_banks_once() -> void:
 	session.progression.add_xp(player, 75)
 	session.notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
 	session.notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
-	session.bank_run_xp()
+	session.match_end.bank_run_xp()
 	assert_eq(int(SaveFile.read(_path)["total_xp"]), START_XP + 75)
 
 
@@ -198,7 +198,7 @@ func test_pack_is_saved_on_death_and_banking_is_idempotent() -> void:
 	assert_true(session.loot.pack.add(item))
 	player.take_damage(DamageInfo.create(10000.0, null))
 	await wait_until(func() -> bool: return UI.top() == &"results", 2.0, "death results shown")
-	session.bank_run_xp()
+	session.match_end.bank_run_xp()
 	var saved: CharacterProfile = CharacterProfile.load_or_create(ID)
 	assert_eq(saved.stash[0].uid, "kept-on-death")
 	assert_eq(saved.stash[1], {})
@@ -209,11 +209,11 @@ func test_pack_is_saved_on_death_and_banking_is_idempotent() -> void:
 
 func test_stash_full_keeps_what_fits_saves_and_reports_overflow() -> void:
 	for slot: int in CharacterProfile.STASH_SIZE - 1:
-		session._profile.stash[slot] = {"uid": "old-%d" % slot}
+		session.profile.stash[slot] = {"uid": "old-%d" % slot}
 	for index: int in 3:
 		session.loot.pack.add({"uid": "new-%d" % index, "base": "vest_light", "rar": "common"})
 	var lost_before: int = Log.event_counts.get("loot.stash_item_lost", 0)
-	session.finish_exfil()
+	session.match_end.finish_exfil()
 	await wait_until(func() -> bool: return UI.top() == &"results", 2.0, "results shown")
 	var saved: CharacterProfile = CharacterProfile.load_or_create(ID)
 	assert_eq(saved.stash[59].uid, "new-0")
@@ -221,14 +221,14 @@ func test_stash_full_keeps_what_fits_saves_and_reports_overflow() -> void:
 	assert_eq(session.loot.lost, 2)
 	assert_eq(Log.event_counts.get("loot.stash_item_lost", 0) - lost_before, 2)
 	assert_eq(_results().loot_status.text, "Stash full · 1 kept, 2 items lost")
-	session.bank_run_xp()
+	session.match_end.bank_run_xp()
 	assert_eq(session.loot.lost, 2)
 
 
 func test_game_over_records_best_round_even_after_xp_was_banked_first() -> void:
 	session.director.round_number = 4
 	watch_signals(Events)
-	session.bank_run_xp()
+	session.match_end.bank_run_xp()
 	player.take_damage(DamageInfo.create(10000.0, null))
 	await wait_for_signal(Events.game_over, 3.0)
 	var stats: Dictionary = get_signal_parameters(Events, "game_over")[0]

@@ -40,13 +40,12 @@ func before_each() -> void:
 			_add_player(root, owner_id)
 	for index: int in range(2):
 		var session: GameSession = clients[index].get_node("GameSession") as GameSession
-		session._profile_player = _player(clients[index], peer_ids[index])
-		session.loot.player = session._profile_player
-		session._profile = CharacterProfile.load_or_create(IDS[index])
-		session._profile.total_xp = 100 * (index + 1)
-		assert_eq(session._profile.save(), OK)
-		session.progression.set_start_total(session._profile_player, session._profile.total_xp)
-		session.progression.run_xp_finalized.connect(session.bank_run_xp)
+		session.profile_player = _player(clients[index], peer_ids[index])
+		session.loot.player = session.profile_player
+		session.profile = CharacterProfile.load_or_create(IDS[index])
+		session.profile.total_xp = 100 * (index + 1)
+		assert_eq(session.profile.save(), OK)
+		session.progression.set_start_total(session.profile_player, session.profile.total_xp)
 		watch_signals(session.progression)
 		sessions.append(session)
 
@@ -98,8 +97,8 @@ func test_final_grant_reaches_only_owner_and_banks_once() -> void:
 	service.add_xp(owner, 75)
 	var server_session: GameSession = server_root.get_node("GameSession") as GameSession
 	server_session.has_local_player = false
-	server_session.bank_run_xp()
-	server_session.bank_run_xp()
+	server_session.match_end.bank_run_xp()
+	server_session.match_end.bank_run_xp()
 	assert_true(service._pending_grants.has(peer_ids[0]))
 	await service.wait_for_run_grants()
 	assert_true(service._pending_grants.is_empty(), "owner acknowledges after saving")
@@ -113,17 +112,17 @@ func test_final_grant_reaches_only_owner_and_banks_once() -> void:
 	assert_eq(_service(clients[1]).get_xp(_player(clients[1], peer_ids[0])), 0)
 	assert_signal_emit_count(_service(clients[0]), "run_xp_finalized", 1)
 	assert_signal_emit_count(_service(clients[1]), "run_xp_finalized", 1)
-	sessions[0].bank_run_xp()
+	sessions[0].match_end.bank_run_xp()
 	assert_eq(_read_xp(0), 175, "leaving after the grant does not bank twice")
 
 
 func test_dedicated_server_never_saves_a_character() -> void:
 	var dedicated: GameSession = server_root.get_node("GameSession") as GameSession
 	dedicated.has_local_player = false
-	dedicated._profile = CharacterProfile.load_or_create(IDS[2])
-	dedicated._profile_player = _player(server_root, peer_ids[0])
-	dedicated.progression.add_xp(dedicated._profile_player, 75)
-	dedicated.bank_run_xp()
+	dedicated.profile = CharacterProfile.load_or_create(IDS[2])
+	dedicated.profile_player = _player(server_root, peer_ids[0])
+	dedicated.progression.add_xp(dedicated.profile_player, 75)
+	dedicated.match_end.bank_run_xp()
 	assert_false(FileAccess.file_exists(CharacterProfile.directory() + String(IDS[2]) + ".json"))
 
 
@@ -143,8 +142,8 @@ func test_owner_snapshot_announces_each_new_level_once() -> void:
 	var owner: Player = _player(server_root, peer_ids[0])
 	var local_service: ProgressionService = _service(clients[0])
 	var local_player: Player = _player(clients[0], peer_ids[0])
-	sessions[0]._profile.total_xp = 450
-	assert_eq(sessions[0]._profile.save(), OK)
+	sessions[0].profile.total_xp = 450
+	assert_eq(sessions[0].profile.save(), OK)
 	local_service.set_start_total(local_player, 450)
 	service.add_xp(owner, 3200)
 	# Server events fire synchronously; only the subsequent client RPC is observed.
@@ -167,7 +166,7 @@ func test_disconnect_banks_last_received_xp_without_final_grant() -> void:
 	await wait_until(func() -> bool: return local_service.get_xp(local_player) == 60, 5.0, "live owner XP")
 	assert_eq(_read_xp(0), 100, "live updates do not bank the unfinished run")
 	clients[0].multiplayer.multiplayer_peer.close()
-	sessions[0].bank_run_xp()
+	sessions[0].match_end.bank_run_xp()
 	assert_eq(_read_xp(0), 160)
 	assert_signal_not_emitted(local_service, "run_xp_finalized")
 	assert_eq(_read_xp(1), 200)
