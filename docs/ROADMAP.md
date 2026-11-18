@@ -23,6 +23,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | Id | Feature | Issue | Needs | Plan | Size | Status |
 |---|---|---|---|---|---|---|
 | F-00 | Foundation fixes, in the ranked order of [FOUNDATIONS.md](FOUNDATIONS.md#foundation-fixes-in-order) | - | - | per fix: 1 (done, no plan: one CI PR), 2 = F-02 (done), [3](plans/item-effects-server.md) (done), [4](plans/ids-into-data.md) (done), [5](plans/ui-router.md) (done), 6 (done, no plan: one PR per issue), [7](plans/hot-path-allocations.md) (done), 8 (done, no plan: one test-only PR per issue), 9 (done, no plan: doc lines plus a test) | - | Done |
+| F-79 | Easy, safe changes: one written co-op pattern with CI checks (foundation 1), short agent docs (foundation 13), then the picked audit fixes (split the 350-line scripts, one co-op test side, model list from the registry) | - | - | [ready](plans/easy-changes.md) | L | Ready |
 | F-01 | First-person arms on the guns | #102 | - | issue | S | Done (PR #136 fitted arms, sleeve fix) |
 | F-02 | Co-op clients can use doors, wall-buys and machines | #138 | F-00 | [done](plans/coop-interactions.md) | M | Done (play-test: #191) |
 | F-03 | Player footsteps and landing sounds | #103 | - | issue | S | Done |
