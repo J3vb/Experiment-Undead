@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SKIP = {"README.md", "TEMPLATE.md"}
 STATUSES = {"Draft", "Review", "Approved", "Building", "Done", "Dropped"}
 APPROVED = {"Approved", "Building", "Done"}
+NEEDS_LORE_LINE = {"Draft", "Review"}
 SECTIONS = (
     "Goal",
     "Scope",
@@ -42,6 +43,17 @@ def open_decisions(text: str) -> list[str]:
     return [line for line in bullets if line.lower() not in NONE_WORDS and not line.startswith("[x]")]
 
 
+def check_lore_link(name: str, text: str, status: str | None) -> list[str]:
+    if status not in NEEDS_LORE_LINE:
+        return []
+    lore = field(text, "Lore link")
+    if lore is None:
+        return [f"{name}: missing 'Lore link:' line (see docs/plans/TEMPLATE.md)"]
+    if status == "Review" and (lore.lower() in NONE_WORDS or lore.startswith("<")):
+        return [f"{name}: 'Lore link:' must give the story reason, or 'none: <why>' for pure tech work"]
+    return []
+
+
 def check_plan(name: str, text: str) -> list[str]:
     problems: list[str] = []
     if not text.startswith("# Plan: "):
@@ -52,6 +64,7 @@ def check_plan(name: str, text: str) -> list[str]:
     for heading in SECTIONS:
         if not re.search(rf"^## {re.escape(heading)}\s*$", text, re.MULTILINE):
             problems.append(f"{name}: missing section '## {heading}'")
+    problems += check_lore_link(name, text, status)
     if not re.search(r"^### Step 1\b", text, re.MULTILINE):
         problems.append(f"{name}: Steps needs at least '### Step 1: ...'")
     if status in APPROVED:
