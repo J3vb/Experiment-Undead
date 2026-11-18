@@ -5,8 +5,8 @@ numbers. Read the file for your task **before** you start UI, art, audio,
 weapon, enemy or map work.
 
 **Which wins:** the code and `docs/DECISIONS.md` beat these files. These are
-the design targets; `DECISIONS.md` says what was built and what changed on
-purpose. If you find a conflict that matters, follow `DECISIONS.md` and say so
+the design targets; `DECISIONS.md` lists, one line each, what differs on
+purpose or is simplified. If you find a conflict that matters, follow `DECISIONS.md` and say so
 in your PR.
 
 | File | Read it for |

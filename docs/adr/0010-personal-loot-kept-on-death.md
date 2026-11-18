@@ -23,4 +23,4 @@ exit. No trading in v1. Transmog is out; dyes only.
 
 ## Links
 
-`docs/design/affixes.md`, `docs/design/gear-visuals.md`, `docs/DECISIONS.md` (personal zombie loot).
+`docs/design/affixes.md`, `docs/design/gear-visuals.md`, `docs/plans/item-effects-server.md` (server luck and loadouts).

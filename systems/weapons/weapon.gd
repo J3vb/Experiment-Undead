@@ -40,21 +40,13 @@ var _sprint_progress: float = 0.0
 var _reload_timer: float = 0.0
 var _reload_duration: float = 0.0
 var _empty_reload: bool = false
-var _kick: float = 0.0
-var _flash_timer: float = 0.0
 var _rng: RandomNumberGenerator
 var _spin_up: SpinUp = SpinUp.new()
-var _flash_light: Light3D
-var _flash_mesh: Node3D
-var _magazine: Node3D
-var _bolt: Node3D
-var _magazine_rest: Vector3
-var _bolt_rest: Vector3
 
+@onready var pose: WeaponPose = WeaponPose.attach_to(self)
 @onready var _double_barrel: DoubleBarrel = DoubleBarrel.attach_to(self)
 @onready var _viewmodel_root: Node3D = $Viewmodel
 @onready var _fire_audio: AudioStreamPlayer = $FireAudio
-@onready var _mech_audio: AudioStreamPlayer = $MechAudio
 
 
 func setup(p_instance: WeaponInstance, p_shooter: Player, p_camera: Camera3D) -> void:
@@ -68,27 +60,13 @@ func _ready() -> void:
 	if data.viewmodel_scene:
 		var vm: Node = data.viewmodel_scene.instantiate()
 		_viewmodel_root.add_child(vm)
-		_find_moving_parts(vm)
+		pose.find_moving_parts(vm)
 	_spin_up.configure(data.spin_up_time, _viewmodel_root.find_child("SpinUpAudio", true, false) as AudioStreamPlayer)
-	_set_flash(false)
+	pose.set_flash(false)
 	_fire_audio.stream = data.fire_sound
 	position = data.hip_position
 	fired.connect(_on_fired)
 	traced.connect(_on_traced)
-
-
-func _find_moving_parts(vm: Node) -> void:
-	_flash_light = vm.find_child("FlashLight", true, false) as Light3D
-	_flash_mesh = vm.find_child("FlashMesh", true, false) as Node3D
-	_magazine = vm.find_child("Magazine", true, false) as Node3D
-	_bolt = vm.find_child("Bolt", true, false) as Node3D
-	if _magazine:
-		_magazine_rest = _magazine.position
-	if _bolt:
-		_bolt_rest = _bolt.position
-	for mesh: Node in vm.find_children("*", "MeshInstance3D", true, false):
-		(mesh as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		(mesh as MeshInstance3D).layers = ScopeLens.VIEWMODEL_LAYER
 
 
 func set_active(value: bool) -> void:
@@ -121,7 +99,7 @@ func start_reload() -> bool:
 	if data.reload_per_round:
 		_reload_duration = RoundReload.duration(self)
 	_reload_timer = _reload_duration
-	_play_mech(data.reload_sound)
+	pose.play_mech(data.reload_sound)
 	reload_started.emit(_reload_duration)
 	return true
 
@@ -154,10 +132,7 @@ func tick(delta: float) -> void:
 func _process(delta: float) -> void:
 	if not active:
 		return
-	_flash_timer -= delta
-	if _flash_timer <= 0.0:
-		_set_flash(false)
-	_update_pose(delta)
+	pose.update(delta)
 
 
 func _tick_timers(delta: float) -> void:
@@ -195,7 +170,7 @@ func _handle_trigger() -> void:
 		_buffered = 0.0
 		if instance.ammo_in_mag <= 0:
 			_burst_left = 0
-			_play_mech(data.dry_fire_sound)
+			pose.play_mech(data.dry_fire_sound)
 			start_reload()
 			break
 		fire()
@@ -280,9 +255,7 @@ func _hit(result: Dictionary, origin: Vector3, direction: Vector3) -> void:
 
 
 func _on_fired() -> void:
-	_kick = data.viewmodel_kick * lerpf(1.0, 0.5, ads_progress)
-	_set_flash(true)
-	_flash_timer = 0.045
+	pose.on_fired()
 	if _fire_audio.stream:
 		_fire_audio.pitch_scale = randf_range(0.95, 1.05)  # cosmetic
 		_fire_audio.play()
@@ -296,53 +269,6 @@ func _finish_reload() -> void:
 	state = State.IDLE
 	instance.refill_magazine()
 	_emit_ammo()
-
-
-func _update_pose(delta: float) -> void:
-	_kick = move_toward(_kick, 0.0, delta * 0.6)
-	var pos: Vector3 = data.hip_position.lerp(data.ads_position, ads_progress)
-	pos.z += _kick
-	pos += Vector3(-0.08, -0.06, 0.04) * _sprint_progress
-	var rot: Vector3 = Vector3(_kick * 2.0, 0.0, 0.0) + Vector3(-0.25, 0.7, 0.35) * _sprint_progress
-	if state == State.RELOADING:
-		var t: float = 1.0 - _reload_timer / maxf(_reload_duration, 0.001)
-		var dip: float = sin(t * PI)
-		pos += Vector3(0.0, -0.12, 0.02) * dip
-		rot += Vector3(-0.5, 0.0, 0.6) * dip
-	var smooth: float = clampf(delta * 25.0, 0.0, 1.0)
-	position = position.lerp(pos, smooth)
-	rotation = rotation.lerp(rot, smooth)
-	_pose_moving_parts()
-
-
-func _pose_moving_parts() -> void:
-	if _bolt:
-		var back: float = _kick / maxf(data.viewmodel_kick, 0.001)
-		if state == State.RELOADING and _empty_reload:
-			back = 1.0
-		_bolt.position = _bolt_rest + Vector3(0.0, 0.0, 0.035 * back)
-	if _magazine:
-		var out: float = 0.0
-		if state == State.RELOADING:
-			var t: float = 1.0 - _reload_timer / maxf(_reload_duration, 0.001)
-			out = clampf(minf(t / 0.25, (0.85 - t) / 0.25), 0.0, 1.0)
-		_magazine.position = _magazine_rest + Vector3(0.0, -0.22, 0.02) * out
-
-
-func _set_flash(on: bool) -> void:
-	on = on and not data.no_muzzle_flash
-	if _flash_light:
-		_flash_light.visible = on
-	if _flash_mesh:
-		_flash_mesh.visible = on
-		if on:
-			_flash_mesh.rotation.z = _rng.randf() * TAU
-
-
-func _play_mech(stream: AudioStream) -> void:
-	if stream:
-		_mech_audio.stream = stream
-		_mech_audio.play()
 
 
 func _emit_ammo() -> void:

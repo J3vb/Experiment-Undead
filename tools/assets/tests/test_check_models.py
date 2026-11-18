@@ -195,12 +195,19 @@ def test_unknown_folder(tmp_path):
     assert has(broken(tmp_path, "wall_panel", folder="vehicles"), "unknown model folder 'vehicles'")
 
 
-def test_model_without_rules(tmp_path):
-    path = tmp_path / "kit" / "new_piece.glb"
+def export_wall_panel(path) -> list:
     build_models.reset_scene()
     build_models.build_wall_panel()
     build_models.export(str(path))
-    assert has(check_models.check_model(str(path)), "no rules for 'new_piece'")
+    return check_models.check_model(str(path))
+
+
+def test_gun_without_rules_fails(tmp_path):
+    assert has(export_wall_panel(tmp_path / "weapons" / "new_gun.glb"), "no rules for 'new_gun'")
+
+
+def test_static_prop_without_rules_passes(tmp_path):
+    assert export_wall_panel(tmp_path / "kit" / "new_piece.glb") == []
 
 
 def test_main_fails_on_a_bad_model(tmp_path):

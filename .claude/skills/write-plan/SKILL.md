@@ -14,7 +14,7 @@ Rules and lifecycle: `docs/plans/README.md`. Template: `docs/plans/TEMPLATE.md`.
 2. **Read the sources** before writing a line:
    - the issue, and the design sections it points to (`docs/design/README.md`
      says which file covers what)
-   - `docs/DECISIONS.md` and `docs/adr/` entries for the systems involved
+   - `docs/DECISIONS.md` lines and `docs/adr/` records for the systems involved
    - `docs/FOUNDATIONS.md` (the ready-to-build checklist and known weak spots)
    - `docs/MULTIPLAYER.md` for who owns state in co-op
    - **the actual code** the feature touches: open each file you will name.
@@ -24,17 +24,23 @@ Rules and lifecycle: `docs/plans/README.md`. Template: `docs/plans/TEMPLATE.md`.
 4. **Co-op first.** For every piece of state, say who owns it (server, owning
    client, each client), what is sent, and what a late joiner gets. A solo-only
    design is the most common cause of rework (issue #138).
-5. **Numbers come from `docs/design/`** and `docs/design/balance/*.csv`. Never
+5. **Lore link.** Fill the `Lore link:` line: which part of
+   `docs/design/lore.md` gives what the player sees (a zombie, gun, prop,
+   sign, screen, name) its story reason. If nothing fits, add a row to its
+   "Story links for game content" section in the same PR, marked
+   provisional; a story or tone choice goes to the person as a decision.
+   Pure tech work writes `none: <why>`.
+6. **Numbers come from `docs/design/`** and `docs/design/balance/*.csv`. Never
    invent one; if the docs have none, put it under Open decisions.
-6. **Cut steps to one PR each** (one Codex prompt or one thread, roughly under
+7. **Cut steps to one PR each** (one Codex prompt or one thread, roughly under
    400 changed lines). Each step: Build, Files, Tests (a test that fails without
    the step), Done when. Each step must leave the game playable and CI green.
    Put risky or unknown parts in the earliest step so a bad idea fails cheap.
-7. **Open decisions** are only for goal, look or feel questions the person
+8. **Open decisions** are only for goal, look or feel questions the person
    must answer. Technical choices: pick the simplest option that follows
    `docs/KEEP_IT_SIMPLE.md` and write why in one line.
-8. **Check it** with `python tools/ci/check_plans.py`.
-9. **Open a docs-only PR** with `Status: Review`, label `tech`, and add the plan
+9. **Check it** with `python tools/ci/check_plans.py`.
+10. **Open a docs-only PR** with `Status: Review`, label `tech`, and add the plan
    link to the roadmap row (Status: Planning). The Codex review on that PR
    runs the `review-plan` checklist.
 

@@ -38,6 +38,9 @@ Answer each one. A "no" is a finding.
     per-frame allocations in hot paths?
 12. **Acceptance.** Can each acceptance line be checked by a test or a recorded
     play-test?
+13. **Lore link.** Does the `Lore link:` line point to a real reason in
+    `docs/design/lore.md` for everything new the player sees and every new
+    name? Does nothing contradict the lore (colours, factions, timeline)?
 
 ## Output
 

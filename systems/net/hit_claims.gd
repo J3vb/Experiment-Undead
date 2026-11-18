@@ -235,7 +235,7 @@ func _well_weapon(weapon_id: StringName) -> WeaponData:
 
 
 func _accept_well(peer_id: int, point: Vector3, weapon_id: StringName) -> void:
-	if not Net.is_authority() or not multiplayer.is_server():
+	if not multiplayer.is_server():
 		return
 	var data: WeaponData = _well_weapon(weapon_id)
 	if data == null:

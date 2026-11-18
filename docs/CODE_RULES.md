@@ -209,8 +209,8 @@ panel that is not a screen ask for the mouse with `UI.hold_mouse`.
 Code picks behaviour from a field on the data, never from a content id, so a
 new `.tres` works without a code edit (foundation 2). Any string or
 `StringName` literal in `core/` or `systems/` that equals the file name of a
-weapon, enemy, serum, power-up, gear visual, loot gear base, grip, skill or
-wave file fails. Comments are ignored. Left out on purpose: affixes (their ids
+weapon, enemy, serum, power-up, gear visual, loot gear base, grip, melee
+weapon, skill or wave file fails. Comments are ignored. Left out on purpose: affixes (their ids
 are also stat keys code must name), rarities and rarity looks (a fixed ordered
 rule), singletons loaded by one name (economy, progression, stat caps) and UI
 screens (screen flow is code).
@@ -223,3 +223,50 @@ lines. The checker also holds the first list, so no new pair can be added, and
 a pair that no longer appears must be deleted from the file. Fix a finding by
 adding a field to the data type (see `docs/HOW_TO_ADD.md`), not by adding a
 baseline line.
+
+## 18. decisions-short
+
+Every list entry in `docs/DECISIONS.md` is one line of at most 300 characters,
+so agents can read the entries for their systems without wading through build
+notes. Detail goes in the linked plan, ADR or doc. A line that does not start
+with `- ` directly under an entry (a wrapped or nested line) fails.
+
+- Good: `- **Range falloff** uses start and end distances, not a Curve. Fix when: a gun needs a curve.`
+- Bad: an entry that wraps onto a second line, or a paragraph of build notes.
+
+Cut the entry to what a future agent must not undo, and link the plan for the rest.
+
+## 19. rpc-rules
+
+Co-op messages keep one shape (foundation 1; patterns in `docs/MULTIPLAYER.md`
+"Writing co-op code"). In game code:
+
+- Every `@rpc(...)` names its mode (`"authority"` or `"any_peer"`) and its
+  transfer mode (`"reliable"`, `"unreliable"` or `"unreliable_ordered"`).
+  Godot's default transfer is unreliable, a silent trap for state.
+- The first code line of an `"any_peer"` RPC's body contains
+  `multiplayer.is_server()`. A signature over several lines, blank lines and
+  comments before it are skipped. The check comes before reading the sender.
+
+- Good:
+
+  ```gdscript
+  @rpc("any_peer", "call_remote", "reliable")
+  func _request_open(path: NodePath) -> void:
+  	if not multiplayer.is_server():
+  		return
+  ```
+
+- Bad: `@rpc("any_peer")`, or a handler that starts with
+  `var sender: int = multiplayer.get_remote_sender_id()`.
+
+## 20. log-catalogue
+
+Every `Log.warn(&"<system>", &"<event>", ...)` in `core/` and `systems/` whose
+event is written as a literal must have its event name in `docs/LOGGING.md`
+(the event catalogue), so an agent reading a log can look it up. Events passed
+as a variable (`Log.warn(&"net", event, ...)`) are not checked; list every value
+they can take in the catalogue by hand.
+
+- Good: `Log.warn(&"net", &"join_failed", {...})` with a `net.join_failed` row.
+- Bad: a new `Log.warn` event with no row in `docs/LOGGING.md`.

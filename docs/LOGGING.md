@@ -83,6 +83,7 @@ The server also prints every warning and error to stdout as
 | `waves.round_started` | info | Round number, enemies this round, health snapshot |
 | `waves.round_ended` | info | Round cleared |
 | `waves.round_stalled` | warn | 90 s in a round with no kill; lists where the living zombies are |
+| `waves.spawn_points_missing` | warn | The Spawner found no marker in its `spawn_group` (`spawn_group`), so no zombie spawns. The map has no spawn markers in that group, or the group name in the Spawner is wrong |
 | `player.player_spawned` / `player_died` | info | Player `net_id`, spawn position |
 | `player.weapon_has_no_grip` | warn | A gun has no `GripData`, so it shows no first-person arms. `weapon` id; once per gun per run. Add `content/grips/<base id>.tres` and set the gun's `grip` |
 | `progression.profile_save_failed` | warn | Character could not be saved; `id`, `path`, `error` (Godot Error code). Check folder permissions and disk space |
@@ -95,6 +96,8 @@ The server also prints every warning and error to stdout as
 | `game.game_over` | info | Final stats |
 | `net.peer_connected` / `peer_disconnected` | info | Server side, peer id |
 | `net.join_refused` | info | Client side: the server refused the hello (`reason`: `WRONG_VERSION`, `CONTENT_MISMATCH`, `SERVER_FULL`, or `REFUSED` for a code from a newer server; `older`: `client`, `server` or empty for dev builds; `message`, `client_protocol`, `server_protocol`). `older` says which side to update |
+| `net.join_failed` | warn | Client side: the pending join could not start (`error`, a Godot error string), so the game goes back to the main menu. Usually a bad address or a port the OS would not open |
+| `net.connection_lost` | warn | Client side: the server disconnected, the connection failed or the server refused authentication. Run XP is banked and the game goes back to the main menu. Look at the server's log for the same time |
 | `net.round_state_ignored` | warn | A round message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
 | `net.interaction_rejected` | warn | Server refused a client's interact request (`peer`, `reason`, `path`): `player_not_alive`, `match_over`, `unknown_path`, `out_of_range`, `grant_pending` (last gun grant not applied yet), `bad_facts` (gun facts with wrong fields or ids). At most one per second. Many `out_of_range` = `InteractionSync.REACH_SLACK` too tight |
 | `net.deploy_refused` | warn | The hub's deploy vote or `deploy()` was refused (`place`, `reason` or `hub`): an unknown place id on a deploy board, or a deploy outside the hub. A board with a typo in `place` |
