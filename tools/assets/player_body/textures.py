@@ -1,7 +1,8 @@
 """Surface looks for the player body: each part gets a detailed material, baked to three texture maps.
 
 Colour, normal and roughness are baked from procedural materials (weave, wrinkles, strands, wear,
-stitching, dirt), so the game model keeps its triangle count and gains the fine detail.
+stitching, dirt), so the game model keeps its triangle count and gains the fine detail. A town NPC
+passes its own looks table in the same shape as LOOKS.
 """
 
 import math
@@ -76,19 +77,19 @@ LOOKS = {
     "lace": ("BodyRubber", "#3A382F", 0.90, (0.10, 30), (300, 0.0004), (60, 0.0), 0.0, ("BootLace",)),
     "snap": ("BodyRubber", "#6A6D6E", 0.35, (0.05, 30), (300, 0.0), (30, 0.0), 0.6, ("Snap",)),
 }
-NAMES = list(LOOKS)
 DIRTY = ("jacket", "pocket", "trousers", "pad", "strap", "boot", "lace")
 SOLE_TOP = 0.034
 
 
-def tag(obj) -> None:
+def tag(obj, table: dict = LOOKS) -> None:
     """Store the look of every face, so it survives joining the parts into one mesh."""
+    names = list(table)
     part = obj.name.split(".")[0]
-    look = next(name for name, spec in LOOKS.items() if part in spec[7])
+    look = next(name for name, spec in table.items() if part in spec[7])
     values = obj.data.attributes.new("look", "INT", "FACE")
     for face, item in zip(obj.data.polygons, values.data, strict=True):
         sole = look == "boot" and part == "Boot" and face.center.z < SOLE_TOP
-        item.value = NAMES.index("sole" if sole else look)
+        item.value = names.index("sole" if sole else look)
 
 
 def _linear(hex_code: str) -> np.ndarray:
@@ -112,18 +113,19 @@ def _skin_tint(colours, points, mask):
     return colours * (1 - 0.3 * bump(ax, 0.030, 0.02) * bump(z, 1.684, 0.012) * face)[:, None]
 
 
-def paint_tint(obj) -> None:
+def paint_tint(obj, table: dict = LOOKS) -> None:
     """Per-vertex base colour: the look's colour, mud towards the ground, skin tones on the face."""
+    names = list(table)
     mesh = obj.data
     looks = np.zeros(len(mesh.vertices), dtype=int)
     for face, item in zip(mesh.polygons, mesh.attributes["look"].data, strict=True):
         looks[list(face.vertices)] = item.value
     points = np.asarray([vertex.co[:] for vertex in mesh.vertices])
-    colours = np.asarray([_linear(LOOKS[name][1]) for name in NAMES])[looks]
-    dirty = np.isin(looks, [NAMES.index(name) for name in DIRTY])
+    colours = np.asarray([_linear(table[name][1]) for name in names])[looks]
+    dirty = np.isin(looks, [names.index(name) for name in DIRTY if name in names])
     mud = np.clip((0.75 - points[:, 2]) / 0.75, 0, 1) * 0.8
     colours = _mix(colours, _linear(MUD), mud * dirty)
-    colours = _skin_tint(colours, points, looks == NAMES.index("skin"))
+    colours = _skin_tint(colours, points, looks == names.index("skin"))
     tint = mesh.color_attributes.new("Tint", "FLOAT_COLOR", "POINT")
     tint.data.foreach_set("color", np.concatenate([colours, np.ones((len(colours), 1))], axis=1).ravel())
     mesh.color_attributes.active_color = mesh.color_attributes["Color"]
@@ -208,8 +210,7 @@ def _cloth_colour(graph: _Graph, spec, coords, stitch):
     return seam.outputs[0]
 
 
-def _bake_material(name: str):
-    spec = LOOKS[name]
+def _bake_material(name: str, spec: tuple):
     material = bpy.data.materials.new("Bake" + name)
     graph = _Graph(material)
     surface = graph.node("ShaderNodeBsdfPrincipled")
@@ -308,25 +309,26 @@ def _unwrap(obj) -> None:
     bpy.ops.object.mode_set(mode="OBJECT")
 
 
-def bake(obj) -> None:
+def bake(obj, table: dict = LOOKS) -> None:
     """Bake every look into shared colour, normal and roughness maps and leave the four Body materials."""
+    names = list(table)
     mesh = obj.data
     looks = [item.value for item in mesh.attributes["look"].data]
     _unwrap(obj)
-    paint_tint(obj)
-    bake_materials = [_bake_material(name) for name in NAMES]
+    paint_tint(obj, table)
+    bake_materials = [_bake_material(name, spec) for name, spec in table.items()]
     mesh.materials.clear()
     for material in bake_materials:
         mesh.materials.append(material)
     for face, look in zip(mesh.polygons, looks, strict=True):
         face.material_index = look
     images = _bake_maps(obj, bake_materials)
-    finals = list(dict.fromkeys(spec[0] for spec in LOOKS.values()))
+    finals = list(dict.fromkeys(spec[0] for spec in table.values()))
     mesh.materials.clear()
     for name in finals:
         mesh.materials.append(_final_material(name, images))
     for face, look in zip(mesh.polygons, looks, strict=True):
-        face.material_index = finals.index(LOOKS[NAMES[look]][0])
+        face.material_index = finals.index(table[names[look]][0])
     for material in bake_materials:
         bpy.data.materials.remove(material)
     mesh.color_attributes.remove(mesh.color_attributes["Tint"])

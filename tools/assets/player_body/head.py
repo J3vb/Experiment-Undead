@@ -1,4 +1,7 @@
-"""Survivor head: a CC0 base head (MakeHuman) cut down to budget, with hair, beard and brows grown on it."""
+"""Survivor head: a CC0 base head (MakeHuman) cut down to budget, with hair, beard and brows grown on it.
+
+A look picks the face shape, the hair style and whether there is a beard; the player is the default.
+"""
 
 import os
 
@@ -26,6 +29,10 @@ CHEEK_X = (0.0, 0.018, 0.030, 0.042, 0.055, 0.066, 0.080)
 CHEEK_Z = (1.637, 1.635, 1.625, 1.627, 1.645, 1.665, 1.673)
 JAW_BACK_Z = (1.545, 1.57, 1.60, 1.63, 1.68)
 JAW_BACK_Y = (0.040, 0.038, 0.022, 0.004, -0.006)
+# How much higher the combed-back hairline sits than the cropped one, front to back.
+BUN_LINE_LIFT = np.asarray((0.006, 0.004, 0.0, -0.01, -0.02, -0.03, -0.035, -0.02, -0.02, -0.025, -0.025))[:, None]
+BUN = ((0, 0.092, 1.735), (0.040, 0.034, 0.038))
+PLAYER = {"face": "rugged", "hair": "crop", "beard": True}
 
 
 def _load_base() -> tuple:
@@ -56,6 +63,25 @@ def _rugged(points: np.ndarray) -> np.ndarray:
     return points
 
 
+def _soft(points: np.ndarray) -> np.ndarray:
+    """An older woman's face: narrower jaw and chin, fuller cheeks, a lighter brow."""
+    ax, y, z = np.abs(points[:, 0]), points[:, 1], points[:, 2]
+    front = step(-y, 0.0, 0.05)
+    points = points.copy()
+    points[:, 0] *= 1 - 0.08 * front * bump(z, 1.585, 0.03) + 0.025 * front * bump(z, 1.645, 0.02)
+    points[:, 1] += 0.004 * front * bump(z, 1.575, 0.014) * bump(ax, 0, 0.03)
+    points[:, 1] += 0.0015 * front * bump(z, 1.703, 0.008) * step(0.055 - ax, 0, 0.015)
+    points[:, 0] *= 1 - 0.035 * bump(z, 1.74, 0.06)
+    fold = bump(ax, 0.021 + (1.635 - z) * 0.3, 0.004) * bump(z, 1.617, 0.016)  # nose to mouth corner
+    points[:, 1] += 0.0022 * front * fold
+    points[:, 1] -= 0.0018 * front * bump(z, 1.664, 0.004) * bump(ax, 0.032, 0.010)  # bags under the eyes
+    points[:, 1] += 0.0012 * front * bump(z, 1.612, 0.006) * bump(ax, 0, 0.018)  # thinner lips
+    return points
+
+
+FACES = {"rugged": _rugged, "soft": _soft}
+
+
 def _decimate(obj, triangles: int) -> None:
     """Collapse to a triangle count, mirrored left to right."""
     now = sum(len(face.vertices) - 2 for face in obj.data.polygons)
@@ -75,6 +101,18 @@ def hair_cover(points: np.ndarray) -> np.ndarray:
     ax, y, z = np.abs(points[:, 0]), points[:, 1], points[:, 2]
     line = surf.spline(HAIRLINE_Y, np.asarray(HAIRLINE_Z)[:, None], y)[..., 0]
     return step(z - line, 0.0, 0.010) * step(0.079 - ax, 0, 0.004)
+
+
+def bun_cover(points: np.ndarray) -> np.ndarray:
+    """0 to 1: long hair combed back from a high forehead over the ears to the nape."""
+    ax, y, z = np.abs(points[:, 0]), points[:, 1], points[:, 2]
+    line = surf.spline(HAIRLINE_Y, np.asarray(HAIRLINE_Z)[:, None] + BUN_LINE_LIFT, y)[..., 0]
+    return step(z - line, 0.0, 0.010) * step(0.085 - ax, 0, 0.004)
+
+
+def _bun_thick(points: np.ndarray) -> np.ndarray:
+    y, z = points[:, 1], points[:, 2]
+    return 0.008 + 0.004 * bump(y, 0.03, 0.05) * step(z, 1.70, 0.04)
 
 
 def beard_cover(points: np.ndarray) -> np.ndarray:
@@ -156,22 +194,30 @@ def _bare(skin, covers: list) -> None:
     mesh.free()
 
 
-def build_head(mats: dict) -> dict:
+HAIRS = {"crop": (hair_cover, _hair_thick), "bun": (bun_cover, _bun_thick)}
+
+
+def build_head(mats: dict, look: dict = PLAYER) -> dict:
     """Returns {"skin": [...], "hair": [...], "eyes": [...]}: every part rides the head bone."""
     points, faces = _load_base()
-    skin = surf._object("Head", _rugged(points), faces, mats["skin"])
+    skin = surf._object("Head", FACES[look["face"]](points), faces, mats["skin"])
     _decimate(skin, SKIN_TRIANGLES)
     points, _normals, _covers, faces = _cut(skin.data, neck_cover(_points_of(skin)))
     bpy.data.objects.remove(skin)
     skin = surf._object("Head", points, faces, mats["skin"])
     points = _points_of(skin)
-    hair, beard, brow = hair_cover(points), beard_cover(points), brow_cover(points)
-    hairs = [
-        _grow("Hair", skin, hair, _hair_thick(points), mats["hair"]),
-        _grow("Beard", skin, beard, _beard_thick(points), mats["hair"]),
-        _grow("Brow", skin, brow, 0.0022, mats["hair"]),
-    ]
-    _bare(skin, [hair, beard])
+    cover, thick = HAIRS[look["hair"]]
+    hair, brow = cover(points), brow_cover(points)
+    hairs = [_grow("Hair", skin, hair, thick(points), mats["hair"])]
+    covers = [hair]
+    if look["beard"]:
+        beard = beard_cover(points)
+        hairs.append(_grow("Beard", skin, beard, _beard_thick(points), mats["hair"]))
+        covers.append(beard)
+    hairs.append(_grow("Brow", skin, brow, 0.0022, mats["hair"]))
+    if look["hair"] == "bun":
+        hairs.append(surf.ball("Bun", *BUN, mats["hair"], (12, 8)))
+    _bare(skin, covers)
     eyes = [
         surf.ball("Eyeball", (sign * EYE[0], EYE_Y, EYE[1]), (EYE_RADIUS,) * 3, mats["rubber"], (8, 5))
         for sign in (1, -1)

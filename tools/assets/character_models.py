@@ -16,11 +16,13 @@ from implant_model import (
 )
 from player_arms_model import build_player_arms
 from player_body.build import build_player
+from town_npcs.build import builder as npc_builder
 from vest_model import build_vest_heavy, build_vest_light, build_vest_medium
 
 MODELS = {
     "player": ("characters/player.glb", build_player),
     "player_arms": ("characters/player_arms.glb", build_player_arms),
+    "npc_quartermaster": ("characters/npc_quartermaster.glb", npc_builder("quartermaster")),
     "charm_dog_tags": ("gear/charm_dog_tags.glb", build_charm_dog_tags),
     "charm_vial": ("gear/charm_vial.glb", build_charm_vial),
     "charm_keycard": ("gear/charm_keycard.glb", build_charm_keycard),
