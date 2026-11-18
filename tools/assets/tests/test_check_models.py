@@ -84,6 +84,10 @@ def test_triangle_budget(tmp_path):
     assert has(broken(tmp_path, "wall_panel", add_dense_sphere), "budget for kit is 2000")
 
 
+def test_large_props_share_the_large_town_budget():
+    assert check_models.BUDGETS["props_large"] == check_models.BUDGETS["town_large"] == (12_000, 6)
+
+
 def test_guns_have_the_baked_gun_budget():
     assert check_models.BUDGETS["weapons"] == (30_000, 6), "ADR 0014: 30,000 triangles, 6 materials"
 
