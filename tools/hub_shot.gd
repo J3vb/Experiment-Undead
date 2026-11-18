@@ -1,7 +1,7 @@
 ## Renders Lantern Post from the player spawn and from above the street.
 ## Saves screenshots/hub_street.png, hub_overview.png, hub_gate.png (the Deploy board), hub_lodges.png
 ## (the west-side lodges), hub_market.png (the stalls), hub_cabins.png (the east side), hub_deploy_gate.png
-## (the concrete gate and tunnel) and hub_concept.png
+## (the concrete gate and tunnel), hub_camp.png (fire barrels, benches, crates) and hub_concept.png
 ## (the camera spot of docs/design/images/lantern_post_concept.jpg):
 ##   xvfb-run -s "-screen 0 1600x900x24" godot --path . --rendering-driver vulkan -s res://tools/hub_shot.gd
 extends SceneTree
@@ -46,6 +46,9 @@ func _run(hub: Node3D, camera: Camera3D) -> void:
 	camera.global_position = Vector3(-3.0, 2.2, 6.0)
 	camera.look_at(Vector3(2.0, 5.0, -36.0))
 	await _shot("res://screenshots/hub_concept.png")
+	camera.global_position = Vector3(-0.5, 1.9, -9.0)
+	camera.look_at(Vector3(-2.5, 0.8, -27.0))
+	await _shot("res://screenshots/hub_camp.png")
 	quit()
 
 
@@ -54,4 +57,5 @@ func _shot(path: String) -> void:
 		await process_frame
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://screenshots"))
 	root.get_texture().get_image().save_png(path)
-	print("saved ", path)
+	var calls: int = RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME)
+	print("saved ", path, " (", calls, " draw calls)")

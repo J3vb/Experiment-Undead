@@ -33,6 +33,8 @@ const SHARED: Dictionary = {
 	"TownHazard": "res://levels/materials/town_hazard.tres",
 	"Banner": "res://levels/materials/town_banner.tres",
 	"Beacon": "res://levels/materials/beacon_red.tres",
+	"Bulb": "res://levels/materials/sodium_lamp.tres",
+	"Pine": "res://levels/materials/pine.tres",
 }
 
 

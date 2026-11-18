@@ -28,7 +28,7 @@ def _mats() -> dict:
         "hazard": material("TownHazard", srgb("#D9A21E"), roughness=0.7),
         "fluid": material("Fluid", srgb("#8DFF3A"), roughness=0.2, glow=2.0),
         "banner": material("Banner", srgb("#5A1A1E"), roughness=0.9),
-        "lamp": material("SodiumPaint", srgb("#FFD9A0"), roughness=0.3, glow=3.0),
+        "lamp": material("Bulb", srgb("#FFD9A0"), roughness=0.3, glow=3.0),
         "beacon": material("Beacon", srgb("#C3201B"), roughness=0.3, glow=4.0),
     }
 

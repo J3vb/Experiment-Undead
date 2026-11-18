@@ -28,7 +28,7 @@ def _mats() -> dict:
         "snow": material("Snow", srgb("#D6DEE8"), roughness=0.8),
         "sign": material("SignPaint", srgb("#1E1C1A"), roughness=0.7),
         "iron": material("Iron", (0.012, 0.012, 0.014, 1.0), metallic=0.7, roughness=0.5),
-        "bulb": material("SodiumPaint", srgb("#FF9A3C"), roughness=0.3, glow=4.0),
+        "bulb": material("Bulb", srgb("#FF9A3C"), roughness=0.3, glow=4.0),
         "paper": material("Paper", srgb("#D8D2C0"), roughness=0.9),
         "olive": material("Olive", srgb("#4A4F33"), roughness=0.7),
         "screen": material("Screen", srgb("#4FD6C8"), roughness=0.2, glow=2.0),
