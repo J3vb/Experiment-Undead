@@ -18,7 +18,7 @@ static func cancel(weapon: Weapon) -> void:
 	weapon.state = Weapon.State.IDLE
 	weapon._reload_timer = 0.0
 	weapon._empty_reload = false
-	weapon._mech_audio.stop()
+	weapon.pose.mech_audio.stop()
 
 
 static func tick(weapon: Weapon, delta: float) -> void:

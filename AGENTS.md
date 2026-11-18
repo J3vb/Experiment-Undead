@@ -93,7 +93,10 @@ Edit skills in `.agents/skills/` only, then run
 4. **No global player.** Loop over the `players` group.
 5. **Multiplayer rules:**
    - The player reads `InputFrame`s, never the keyboard directly.
-   - Damage, spawns, points and XP only change where `Net.is_authority()` is true.
+   - Damage, spawns, points and XP only change on the server. Node code asks
+     `multiplayer.is_server()` (true in solo); `Net.is_authority()` is only for code
+     with no node; never both. Co-op messages follow `docs/MULTIPLAYER.md`
+     "Writing co-op code" (CI rule `rpc-rules`).
    - Gameplay runs in `_physics_process`. `_process` is for visuals only.
    - All enemies come from `Spawner`.
    - Gameplay randomness uses `GameSession.rng`, never `randf()`.

@@ -138,3 +138,13 @@ func test_copy_that_arrives_dead_is_not_a_fresh_death() -> void:
 	await wait_until(func() -> bool: return client_spawner.has_node(copy_path), 3.0, "zombie reached client")
 	var copy: Zombie = client_spawner.get_node(copy_path) as Zombie
 	assert_false((copy.get_node("Sync") as ZombieSync)._seen_alive, "a corpse a late joiner finds is not seen dying")
+
+
+func test_vault_progress_reaches_the_client_copy() -> void:
+	var pair: Array[Zombie] = await _spawn_on_server()
+	var zombie: Zombie = pair[0]
+	var copy: Zombie = pair[1]
+	zombie.set_physics_process(false)
+	zombie.entry.vault_time = ZombieEntry.VAULT_TIME * 0.5
+	await wait_until(func() -> bool: return copy.entry.vault_progress() >= 0.0, 3.0, "vault synced")
+	assert_almost_eq(copy.entry.vault_progress(), 0.5, 0.001, "the client copy shows the hop")

@@ -18,7 +18,9 @@ import bpy
 # isort: split
 import bmesh
 import numpy
+import tripo_rig
 from mathutils import Matrix, Vector
+from player_body.build import strip_icc
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT = os.path.join(REPO, "docs", "design", "reviews", "tripo-trial")
@@ -30,13 +32,15 @@ CHANNELS = ("albedo", "roughness", "metal")
 def load_source(path: str) -> tuple:
     """Empties the scene, imports the source and returns (joined mesh, armature or None)."""
     bpy.ops.wm.read_factory_settings(use_empty=True)
-    bpy.ops.import_scene.gltf(filepath=path)
+    bpy.ops.import_scene.gltf(filepath=path, disable_bone_shape=True)
     armature = next((o for o in bpy.context.scene.objects if o.type == "ARMATURE"), None)
     if armature is not None and armature.animation_data:
         armature.animation_data.action = None
     meshes = [o for o in bpy.context.scene.objects if o.type == "MESH"]
     if not meshes:
         raise SystemExit(f"{path}: no meshes")
+    if armature is not None:
+        tripo_rig.a_pose(armature, meshes)
     for obj in meshes:
         for mod in [m for m in obj.modifiers if m.type == "ARMATURE"]:
             obj.modifiers.remove(mod)
@@ -297,7 +301,6 @@ def export(objects: list, path: str) -> None:
         export_format="GLB",
         export_yup=True,
         export_apply=True,
-        export_tangents=True,
         export_image_format="JPEG",
         export_jpeg_quality=88,
     )
@@ -317,12 +320,11 @@ def run(args: argparse.Namespace) -> dict:
     keep = [low]
     if args.kind == "character":
         low.data.materials[0].name = "Body" + BAKED
-        import tripo_rig
-
         keep = tripo_rig.rig(low, armature, placed)
     bpy.data.objects.remove(high)
     model = os.path.join(folder, f"{args.name}.glb")
     export(keep, model)
+    strip_icc(model)
     return {"source_tris": source_tris, "tris": triangle_count(low), "model": model, **paths}
 
 

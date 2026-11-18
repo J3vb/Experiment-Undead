@@ -54,6 +54,74 @@ already reads `InputFrame`s, so the server could replay them.
 | Cosmetics (muzzle flash, impacts, sounds) | Each peer | Local reaction to synced facts |
 | Teammate body animation (F-41) | Each peer, locally | `BodyAnimator` picks clips from the synced pose, crouch, downed state, held gun and reload time; a relayed remote shot plays the fire kick |
 
+## Writing co-op code
+
+Six patterns cover every co-op message in the game. Pick the one that fits,
+copy its reference file, and keep the shape. CI rule `rpc-rules`
+(`docs/CODE_RULES.md`) checks the two parts that are easy to forget. The
+recipe that walks through it step by step is "A co-op request or synced
+state" in `docs/HOW_TO_ADD.md`.
+
+**1. The server check.** New code in a node asks `multiplayer.is_server()`.
+It is true in solo too, because solo is an offline peer that acts as the
+server (ADR 0004). `Net.is_authority()` is only for code that has no node
+(a static function, a `RefCounted`). Never write both: there is one
+multiplayer in the game, so the second half adds nothing.
+
+**2. A client asks the server** (reference: `InteractionSync.request` and
+`request_interact`). A public `request_x()` runs the change directly when
+this peer is the server, and sends `request_x_on_server.rpc_id(1, ...)` from
+a client. The handler is `@rpc("any_peer", "call_remote", "reliable")` and
+keeps this order:
+
+```gdscript
+@rpc("any_peer", "call_remote", "reliable")
+func _request_open(path: NodePath) -> void:
+	if not multiplayer.is_server():
+		return
+	var sender: int = multiplayer.get_remote_sender_id()
+	var reason: StringName = _check(sender, path)  # alive, in range, not too fast, facts true
+	if reason != &"":
+		_reject(sender, reason)  # Log.warn at most once a second (see InteractionSync._reject)
+		return
+	_open(path)  # the same function solo runs
+```
+
+Send only what the client owns (its own gun, its own position); the server
+looks up everything else itself.
+
+**3. Shared state plus a late-joiner snapshot** (reference: `WaveDirector`,
+`DeployVote`). The server changes the state and sends the change to every
+client with an `"authority"` RPC. A client that joins later asks once: the
+session node connects `multiplayer.connected_to_server` to a
+`_request_snapshot.rpc_id(1)`, and the server answers that one sender with
+the whole state.
+
+**4. A grant to one owner, with an ack** (reference:
+`InteractionSync.grant`, `ProgressionService` run XP). When the server gives
+something to one player's own state (a gun, XP), it calls the owner with
+`rpc_id(owner, ...)`, or runs it directly when the owner is the server. The
+owner applies it and answers with an ack RPC, so the server knows the
+owner's facts are up to date again (`_pending` until then).
+
+**5. A server-owned node under a client-owned Player** (reference:
+`PlayerStateSync`, `Revive`). The Player belongs to its owner, but health,
+downed state and revives belong to the server. Such a node calls
+`set_multiplayer_authority(1)` in `_init()` and is added in
+`Player._ready()`, so it exists with the same name on every peer. It is
+created on a client too, so it asks for its state in `_ready()` when it is not
+the server.
+
+**6. A cosmetic relay** (reference: `RemoteShots`). Visual-only facts
+(muzzle flash, tracers, impacts) go owner to server to the other clients with
+`"unreliable"`. The server checks the sender is alive and the gun is real,
+then relays; nothing in it changes gameplay, so a lost packet costs nothing.
+
+**Any network change bumps `Build.PROTOCOL_VERSION`:** a new, renamed or
+moved RPC, a changed argument, or a node that moved (its path is on the wire).
+Old and new builds then refuse each other cleanly at the handshake. Tests
+compare against `Build.PROTOCOL_VERSION`, never a number.
+
 ## The handshake (frozen keys)
 
 Before a client gets any player or RPC, `Handshake` trades JSON objects

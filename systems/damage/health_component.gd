@@ -58,7 +58,7 @@ func get_ratio() -> float:
 func _physics_process(delta: float) -> void:
 	if is_dead or regen_delay <= 0.0 or current >= max_health:
 		return
-	if not Net.is_authority() or not multiplayer.is_server():
+	if not multiplayer.is_server():
 		return
 	_since_damage += delta
 	if _since_damage >= regen_delay:
