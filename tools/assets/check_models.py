@@ -46,107 +46,11 @@ BUDGETS.update(character_checks.BUDGETS)
 GUN = {"Receiver": None, "Muzzle": "Receiver", "Bolt": "Receiver"}
 GUN_WITH_MAG = {**GUN, "Magazine": "Receiver"}
 
+# Folders of models that never move: a model here needs no JOINTS line.
+STATIC = {"kit", "props", "props_large", "dressing", "doors", "machines", "town", "town_large"}
+
 # Required node -> required ancestor (None = any). Code finds these by name.
 JOINTS = {
-    "wall_panel": {},
-    "specimen_tank": {},
-    "lab_bench": {},
-    "jar_shelf": {},
-    "filing_cabinets": {},
-    "lab_papers": {},
-    "bulkhead_door": {},
-    "bulkhead_door_wide": {},
-    "debris_pile": {},
-    "roll_shutter": {},
-    "vent_grate": {},
-    "vent_grate_wide": {},
-    "freezer_door": {},
-    "weapon_rack": {},
-    "weapon_rack_cold": {},
-    "specimen_vault": {},
-    "street_lamp": {},
-    "wall_lantern": {},
-    "window_lit": {},
-    "window_dark": {},
-    "signpost": {},
-    "lodge_lantern_post": {},
-    "lodge_common_room": {},
-    "cabin_small": {},
-    "cabin_two_storey": {},
-    "shed_lean_to": {},
-    "watchtower": {},
-    "stall_frame": {},
-    "stall_sign": {},
-    "missions_board": {},
-    "trader_goods": {},
-    "gun_wall": {},
-    "workbench": {},
-    "tech_desk": {},
-    "gate_wall": {},
-    "gate_tunnel": {},
-    "radio_mast": {},
-    "banner": {},
-    "floodlight": {},
-    "fire_barrel": {},
-    "bench": {},
-    "supply_crate_large": {},
-    "supply_crate_small": {},
-    "ammo_case": {},
-    "fenlight_crate": {},
-    "lantern_hanging": {},
-    "lantern_table": {},
-    "string_lights": {},
-    "fence_rail": {},
-    "snow_drift_a": {},
-    "snow_drift_b": {},
-    "firewood_stack": {},
-    "pine_tree": {},
-    "mess_table": {},
-    "serving_counter": {},
-    "guard_desk": {},
-    "locker_row": {},
-    "mess_spill": {},
-    "generator": {},
-    "holding_cell": {},
-    "pipe_run_3": {},
-    "pipe_run_6": {},
-    "hazard_sign": {},
-    "supply_truck": {},
-    "crate_stack": {},
-    "crate_long": {},
-    "crate_large": {},
-    "fuel_drum": {},
-    "forklift": {},
-    "barricade": {},
-    "covered_gurney": {},
-    "body_bag": {},
-    "vine_wall": {},
-    "vine_wall_small": {},
-    "vine_pillar": {},
-    "vine_ceiling": {},
-    "fenlight_spill": {},
-    "kitchen_line": {},
-    "overturned_table": {},
-    "vending_machine": {},
-    "military_cases": {},
-    "hanging_strip": {},
-    "research_room": {},
-    "screen_pair": {},
-    "lab_floor_wreck": {},
-    "big_tank_shattered": {},
-    "big_tank_cracked": {},
-    "toppled_console": {},
-    "fallen_barrels": {},
-    "floor_cables": {},
-    "catwalk_office": {},
-    "ceiling_loading_dock": {},
-    "ceiling_guard_post": {},
-    "ceiling_mess_hall": {},
-    "ceiling_main_corridor": {},
-    "ceiling_generator_hall": {},
-    "ceiling_labs": {},
-    "ceiling_coolant_tunnel": {},
-    "ceiling_containment_wing": {},
     "rifle_ar": GUN_WITH_MAG,
     "kestrel_smg": GUN_WITH_MAG,
     "talon_dmr": GUN_WITH_MAG,
@@ -299,7 +203,7 @@ def check_forward(nodes: dict, objects: list, folder: str) -> list:
 
 def check_joints(nodes: dict, stem: str) -> list:
     errors = []
-    for name, ancestor in JOINTS[stem].items():
+    for name, ancestor in JOINTS.get(stem, {}).items():
         node = nodes.get(name)
         if node is None:
             errors.append(f"missing node '{name}'")
@@ -336,7 +240,7 @@ def check_model(path: str) -> list:
     stem = os.path.splitext(os.path.basename(path))[0]
     if folder not in BUDGETS:
         return [f"unknown model folder '{folder}', add it to BUDGETS in check_models.py"]
-    if stem not in JOINTS:
+    if stem not in JOINTS and folder not in STATIC:
         target = "character_checks.py" if folder in character_checks.BUDGETS else "JOINTS in check_models.py"
         return [f"no rules for '{stem}', add it to {target}"]
     objects = load_glb(path)
