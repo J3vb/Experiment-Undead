@@ -25,6 +25,12 @@ weapon, enemy or map work. Start with `docs/design/README.md`; for anything
 visual, `docs/design/look-rules.md` is the style to match. Use its colours,
 names and numbers instead of inventing new ones.
 
+**Lore link:** nothing goes in the game without a story reason. Before adding
+anything the player sees or reads (zombie, gun, item, prop, sign, screen,
+name), find its reason in `docs/design/lore.md` ("Story links for game
+content"). No reason yet: add a provisional row there in the same PR, and ask
+the person about any choice that sets the story or tone.
+
 ## Skills
 
 Step-by-step guides in `.agents/skills/<name>/SKILL.md` (Codex) and the same
