@@ -1,0 +1,104 @@
+## Viewmodel pose and visuals for a Weapon: hip/ADS/sprint/reload pose, kick, bolt, magazine and muzzle flash.
+class_name WeaponPose
+extends Node
+
+var weapon: Weapon
+var mech_audio: AudioStreamPlayer
+var _kick: float = 0.0
+var _flash_timer: float = 0.0
+var _flash_light: Light3D
+var _flash_mesh: Node3D
+var _magazine: Node3D
+var _bolt: Node3D
+var _magazine_rest: Vector3
+var _bolt_rest: Vector3
+
+
+static func attach_to(owner_weapon: Weapon) -> WeaponPose:
+	var pose: WeaponPose = WeaponPose.new()
+	pose.name = "Pose"
+	pose.weapon = owner_weapon
+	pose.mech_audio = owner_weapon.get_node_or_null(^"MechAudio") as AudioStreamPlayer
+	owner_weapon.add_child(pose)
+	return pose
+
+
+func find_moving_parts(vm: Node) -> void:
+	_flash_light = vm.find_child("FlashLight", true, false) as Light3D
+	_flash_mesh = vm.find_child("FlashMesh", true, false) as Node3D
+	_magazine = vm.find_child("Magazine", true, false) as Node3D
+	_bolt = vm.find_child("Bolt", true, false) as Node3D
+	if _magazine:
+		_magazine_rest = _magazine.position
+	if _bolt:
+		_bolt_rest = _bolt.position
+	for mesh: Node in vm.find_children("*", "MeshInstance3D", true, false):
+		(mesh as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		(mesh as MeshInstance3D).layers = ScopeLens.VIEWMODEL_LAYER
+
+
+## Presentation step, run from the weapon's _process while it is active.
+func update(delta: float) -> void:
+	_flash_timer -= delta
+	if _flash_timer <= 0.0:
+		set_flash(false)
+	_update_pose(delta)
+
+
+func on_fired() -> void:
+	_kick = weapon.data.viewmodel_kick * lerpf(1.0, 0.5, weapon.ads_progress)
+	set_flash(true)
+	_flash_timer = 0.045
+
+
+func set_flash(on: bool) -> void:
+	on = on and not weapon.data.no_muzzle_flash
+	if _flash_light:
+		_flash_light.visible = on
+	if _flash_mesh:
+		_flash_mesh.visible = on
+		if on:
+			_flash_mesh.rotation.z = weapon._rng.randf() * TAU
+
+
+func play_mech(stream: AudioStream) -> void:
+	if stream:
+		mech_audio.stream = stream
+		mech_audio.play()
+
+
+func _update_pose(delta: float) -> void:
+	var data: WeaponData = weapon.data
+	var sprint: float = weapon._sprint_progress
+	_kick = move_toward(_kick, 0.0, delta * 0.6)
+	var pos: Vector3 = data.hip_position.lerp(data.ads_position, weapon.ads_progress)
+	pos.z += _kick
+	pos += Vector3(-0.08, -0.06, 0.04) * sprint
+	var rot: Vector3 = Vector3(_kick * 2.0, 0.0, 0.0) + Vector3(-0.25, 0.7, 0.35) * sprint
+	if weapon.state == Weapon.State.RELOADING:
+		var dip: float = sin(_reload_t() * PI)
+		pos += Vector3(0.0, -0.12, 0.02) * dip
+		rot += Vector3(-0.5, 0.0, 0.6) * dip
+	var smooth: float = clampf(delta * 25.0, 0.0, 1.0)
+	weapon.position = weapon.position.lerp(pos, smooth)
+	weapon.rotation = weapon.rotation.lerp(rot, smooth)
+	_pose_moving_parts()
+
+
+func _pose_moving_parts() -> void:
+	var reloading: bool = weapon.state == Weapon.State.RELOADING
+	if _bolt:
+		var back: float = _kick / maxf(weapon.data.viewmodel_kick, 0.001)
+		if reloading and weapon._empty_reload:
+			back = 1.0
+		_bolt.position = _bolt_rest + Vector3(0.0, 0.0, 0.035 * back)
+	if _magazine:
+		var out: float = 0.0
+		if reloading:
+			var t: float = _reload_t()
+			out = clampf(minf(t / 0.25, (0.85 - t) / 0.25), 0.0, 1.0)
+		_magazine.position = _magazine_rest + Vector3(0.0, -0.22, 0.02) * out
+
+
+func _reload_t() -> float:
+	return 1.0 - weapon._reload_timer / maxf(weapon._reload_duration, 0.001)

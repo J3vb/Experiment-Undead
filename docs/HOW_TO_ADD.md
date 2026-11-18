@@ -111,11 +111,17 @@ live state belongs in objects such as `WeaponInstance`.
     `BuySound`/`DeniedSound` `AudioStreamPlayer3D` children; `_pay()` calls `Economy.try_spend()`.
 6. `Player.apply_frame()` invokes interactions only with authority. Use
     `Level.power_on`/`power_turned_on` for power gates and public methods for purchases.
-7. Extend `tests/content/test_halcyon_labs.gd` and the matching integration test
+7. Co-op: a client's press reaches the server through `InteractionSync`, which runs
+    the same `interact()`. Override `owner_facts(player)` to send what only the owner
+    knows (the gun in hand) and `check_facts(facts)` to refuse impossible facts; a
+    state change emits `state_changed`, and `net_state()` / `apply_net_state()` carry
+    it to clients and late joiners. Add a test that presses it from a client
+    (`tests/unit/coop_interaction_fixture.gd`, `test_coop_machines.gd`).
+8. Extend `tests/content/test_halcyon_labs.gd` and the matching integration test
     `test_med_dispenser.gd`, `test_reforger.gd`, `test_specimen_vault.gd` or `test_halcyon_doors.gd`;
     new behaviour gets `tests/integration/test_<name>.gd`; check `test_machine_sounds.gd` too.
-8. Done when focus/prompts work, rejected purchases preserve points/state, and
-    success charges once and applies the effect. `BuyableData` is not implemented; use these scenes.
+9. Done when focus/prompts work, rejected purchases preserve points/state,
+    success charges once and applies the effect, and the client test passes. `BuyableData` is not implemented; use these scenes.
 
 ## A wave mix or balance change
 
@@ -170,15 +176,45 @@ live state belongs in objects such as `WeaponInstance`.
     make requests through direct public calls such as `Economy.try_spend()`.
 5. Signal up to the owner for local facts. Never reach into another system's
     children; the owner passes references and connects public APIs/signals.
-6. Gameplay uses physics ticks, `InputFrame`, `GameSession.rng`, `Net.is_authority()`,
-    `Spawner` and `ProgressionService` as required by AGENTS; visuals use `_process()`.
-7. Add `tests/unit/test_<feature>.gd` for logic; cross-system flows go in
-    `tests/integration/test_<feature>.gd` with a seeded `GameSession`.
-8. Add early-warning logs using the recipe below. An autoload is almost never
+6. Gameplay uses physics ticks, `InputFrame`, `GameSession.rng`, the server check
+    (`multiplayer.is_server()`), `Spawner` and `ProgressionService` as required by AGENTS;
+    visuals use `_process()`.
+7. Co-op: decide who owns each piece of state (`docs/MULTIPLAYER.md` "Who owns what")
+    and follow the recipe below for every client request or synced state.
+8. Add `tests/unit/test_<feature>.gd` for logic; cross-system flows go in
+    `tests/integration/test_<feature>.gd` with a seeded `GameSession`. Anything a
+    client can trigger gets a two-peer test that runs it from the client.
+9. Add early-warning logs using the recipe below. An autoload is almost never
     needed: only add an architecture-listed global owner when this phase needs it;
     follow [KEEP_IT_SIMPLE.md](KEEP_IT_SIMPLE.md) and AGENTS rule 5 before changing `project.godot`.
-9. Done when its owner wires it, tests exercise its real behaviour, and
+10. Done when its owner wires it, tests exercise its real behaviour, and
     `tools/ci/check_rules.py` accepts its dependencies and test coverage.
+
+## A co-op request or synced state
+
+Read "Writing co-op code" in [MULTIPLAYER.md](MULTIPLAYER.md) first; it names a
+reference file for each pattern.
+
+1. Decide who owns the state: the server for anything shared (points, health,
+    zombies, doors), the owning client for its own movement, look and hits.
+2. Pick the pattern: a client request (2), shared state with a late-joiner
+    snapshot (3), a grant to one owner with an ack (4), a server-owned node under
+    the Player (5) or a cosmetic relay (6). Copy the shape of its reference file.
+3. Write every `@rpc` with its mode and transfer mode, for example
+    `@rpc("any_peer", "call_remote", "reliable")`. State is `"reliable"`; only
+    visuals may be `"unreliable"`.
+4. An `"any_peer"` handler starts with `if not multiplayer.is_server(): return`,
+    then reads the sender, checks it (alive, in range, not too fast, facts true),
+    refuses with a `Log.warn` at most once a second, and finally calls the same
+    function solo runs. Solo never goes through the RPC.
+5. Bump `Build.PROTOCOL_VERSION` in `core/build.gd` when an RPC is added,
+    renamed, moved to another node or changes its arguments.
+6. Add the refusal warning to `docs/LOGGING.md` (CI rule `log-catalogue`).
+7. Test it with two peers (`tests/helpers/two_peers.gd`): the action run from the
+    client changes the server's state, a bad request is refused and changes
+    nothing, and a late joiner sees the state when it is synced state.
+8. Done when `python tools/ci/check_rules.py` passes (`rpc-rules`) and the
+    two-peer test fails without your change.
 
 ## A new Events signal
 
@@ -247,7 +283,7 @@ live state belongs in objects such as `WeaponInstance`.
 3. Include useful ids, positions, counts or timings, with no player names or
     personal data. Report once or group repeats; never warn every frame/shot/hit.
 4. Add `system.event`, level, trigger, fields and what to check to the
-    `docs/LOGGING.md` event catalogue in the same PR.
+    `docs/LOGGING.md` event catalogue in the same PR (CI rule `log-catalogue`).
 5. Extend the owning system's unit test; follow `tests/unit/test_spawner.gd`
     or `test_health_watch.gd` to assert `Log.event_counts` deltas and `Log.problems` payloads.
     Extend `tests/unit/test_log.gd` only if the logger's behaviour changes.

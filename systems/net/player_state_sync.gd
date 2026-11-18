@@ -172,9 +172,9 @@ func send_loadout() -> void:
 
 @rpc("any_peer", "call_remote", "reliable")
 func submit_loadout(new_gear: Array, guns: Array) -> void:
-	var sender: int = multiplayer.get_remote_sender_id()
-	if not multiplayer.is_server() or sender != _player.get_multiplayer_authority():
+	if not multiplayer.is_server() or multiplayer.get_remote_sender_id() != _player.get_multiplayer_authority():
 		return
+	var sender: int = multiplayer.get_remote_sender_id()
 	var reason: String = _loadout_problem(new_gear, guns)
 	if not reason.is_empty():
 		Log.warn(&"net", &"loadout_rejected", {"peer": sender, "reason": reason})

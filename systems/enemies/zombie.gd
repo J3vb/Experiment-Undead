@@ -1,7 +1,8 @@
 ## Basic zombie brain: rises, queues at and tears through its window barrier
 ## (if it spawned behind one), vaults in, chases the nearest living player over
 ## the navmesh, swings when close, dies. State machine is a plain enum + match. The body
-## (ZombieRig) and voice (ZombieVoice) are child nodes with their own scripts.
+## (ZombieRig) and voice (ZombieVoice) are child nodes with their own scripts; the
+## way in through a window lives in ZombieEntry.
 class_name Zombie
 extends CharacterBody3D
 
@@ -13,8 +14,6 @@ const SEPARATION_FORCE: float = 2.5
 const STRIKE_TIME: float = 0.35
 ## A swing still lands this far past attack_range (also the reach through a window).
 const HIT_SLACK: float = 0.3
-## Seconds to climb through an open window (AI doc: 1.0 s vault).
-const VAULT_TIME: float = 1.0
 
 var data: EnemyData
 var net_id: int = 0
@@ -34,15 +33,14 @@ var target: Player
 var barrier: Barrier
 ## The Spawner's live zombies (shared array, not a copy); separation pushes off these.
 var neighbours: Array[Zombie] = []
+## Window queue, plank tearing and vault (ZombieEntry).
+var entry: ZombieEntry = ZombieEntry.new()
 
 var _max_health: float = 100.0
 var _speed: float = 1.8
 var _damage: float = 35.0
 var _attack_cooldown: float = 0.0
 var _attack_landed: bool = false
-var _tear_timer: float = 0.0
-var _vault_time: float = -1.0
-var _vault_from: Vector3 = Vector3.ZERO
 var _repath_timer: float = 0.0
 var _retarget_timer: float = 0.0
 var _stuck_watch: ZombieStuckWatch = ZombieStuckWatch.new()
@@ -113,7 +111,7 @@ func _physics_process(delta: float) -> void:
 		State.SPAWNING:
 			_tick_spawning()
 		State.ENTERING:
-			_tick_entering(delta)
+			entry.tick(self, delta)
 		State.CHASING:
 			_tick_chasing(delta)
 		State.ATTACKING:
@@ -135,7 +133,7 @@ func _tick_spawning() -> void:
 	velocity.z = 0.0
 	if state_time >= SPAWN_TIME:
 		_stuck_watch.restart(global_position)
-		_tear_timer = data.plank_time
+		entry.tear_timer = data.plank_time
 		_enter(State.ENTERING if barrier else State.CHASING)
 
 
@@ -169,62 +167,9 @@ func _tick_chasing(delta: float) -> void:
 	_face(to_target, delta)
 
 
-## Take an attack slot at the window (or wait in the queue), tear planks or
-## swipe a player through the gap, then vault in once the window is open.
-func _tick_entering(delta: float) -> void:
-	if _vault_time >= 0.0:
-		_tick_vault(delta)
-		return
-	var slot: int = barrier.claim_slot(self)
-	var spot: Vector3 = barrier.slot_point(slot) if slot >= 0 else barrier.queue_point(net_id)
-	_update_target(delta)
-	var to_spot: Vector3 = spot - global_position
-	to_spot.y = 0.0
-	if to_spot.length() > 0.3:
-		_steer(to_spot.normalized() * _speed + _separation(), delta)
-		_face(to_spot, delta)
-		return
-	_steer(Vector3.ZERO, delta)
-	_face(barrier.global_position - global_position, delta)
-	if slot < 0:
-		return
-	if barrier.is_broken():
-		if barrier.try_start_vault(self):
-			_vault_from = global_position
-			_vault_time = 0.0
-		return
-	if (
-		target
-		and _attack_cooldown <= 0.0
-		and ((target.global_position - global_position) * Vector3(1, 0, 1)).length() <= data.attack_range + HIT_SLACK
-		and _can_see(target)
-	):
-		_enter(State.ATTACKING)
-		return
-	_tear_timer -= delta
-	if _tear_timer <= 0.0:
-		_tear_timer = data.plank_time
-		barrier.tear_plank()
-
-
-## Over the sill on a fixed path; the rig adds the hop (see vault_progress).
-func _tick_vault(delta: float) -> void:
-	_vault_time += delta
-	var t: float = clampf(_vault_time / VAULT_TIME, 0.0, 1.0)
-	var landing: Vector3 = barrier.inside_point()
-	landing.y = _vault_from.y
-	velocity = Vector3.ZERO
-	global_position = _vault_from.lerp(landing, t)
-	_face(landing - _vault_from, delta)
-	if t >= 1.0:
-		barrier.release(self)
-		barrier = null
-		restart_chase()
-
-
 ## Chase again from where we stand (after a vault or a relocate); health is kept.
 func restart_chase() -> void:
-	_vault_time = -1.0
+	entry.vault_time = -1.0
 	_repath_timer = 0.0
 	_stuck_watch.restart(global_position)
 	_enter(State.CHASING)
@@ -233,11 +178,6 @@ func restart_chase() -> void:
 ## The round's last zombies run at least this fast so the round never stalls.
 func hurry(speed: float) -> void:
 	_speed = maxf(_speed, speed)
-
-
-## 0..1 while vaulting through a window, -1 otherwise.
-func vault_progress() -> float:
-	return clampf(_vault_time / VAULT_TIME, 0.0, 1.0) if _vault_time >= 0.0 else -1.0
 
 
 func _tick_attacking(delta: float) -> void:
