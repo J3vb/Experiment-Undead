@@ -213,19 +213,19 @@ func test_rifle_hip_preserves_the_approved_imported_joint_pose() -> void:
 func _assert_arm_update_preserves_weapon_motion(holder: WeaponHolder) -> void:
 	var weapon: Weapon = holder.current
 	var transform: Transform3D = weapon.transform
-	var bolt: Vector3 = weapon._bolt.position if weapon._bolt else Vector3.ZERO
-	var magazine: Vector3 = weapon._magazine.position if weapon._magazine else Vector3.ZERO
+	var bolt: Vector3 = weapon.pose._bolt.position if weapon.pose._bolt else Vector3.ZERO
+	var magazine: Vector3 = weapon.pose._magazine.position if weapon.pose._magazine else Vector3.ZERO
 	var pump: Vector3 = Vector3.ZERO
 	if not holder.arm_view.profile.support_part.is_empty():
-		var rest: Vector3 = weapon._bolt.get_parent_node_3d().to_global(weapon._bolt_rest)
-		pump = weapon.to_local(weapon._bolt.global_position) - weapon.to_local(rest)
+		var rest: Vector3 = weapon.pose._bolt.get_parent_node_3d().to_global(weapon.pose._bolt_rest)
+		pump = weapon.to_local(weapon.pose._bolt.global_position) - weapon.to_local(rest)
 	holder.arm_view.update_pose()
 	_assert_grip_targets(holder, pump)
 	assert_eq(weapon.transform, transform, "arm IK cannot move the weapon")
-	if weapon._bolt:
-		assert_eq(weapon._bolt.position, bolt, "arm IK cannot move the bolt or pump")
-	if weapon._magazine:
-		assert_eq(weapon._magazine.position, magazine, "arm IK cannot move the magazine")
+	if weapon.pose._bolt:
+		assert_eq(weapon.pose._bolt.position, bolt, "arm IK cannot move the bolt or pump")
+	if weapon.pose._magazine:
+		assert_eq(weapon.pose._magazine.position, magazine, "arm IK cannot move the magazine")
 
 
 func test_all_weapon_definitions_keep_firing_reloads_and_slots_with_the_imported_arms() -> void:
