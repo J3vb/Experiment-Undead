@@ -179,7 +179,7 @@ func down_player(second_wind: bool = false) -> void:
 	if second_wind:
 		_player.revive.second_wind()
 	elif _player.session and _player.session.is_inside_tree():
-		_player.session.check_squad()
+		_player.session.match_end.check_squad()
 
 
 func revive_player() -> void:
