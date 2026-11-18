@@ -2,8 +2,6 @@
 ## clients, the host and Pack guns, and item claims use the item gun's numbers.
 extends GutTest
 
-const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
-const HUD: PackedScene = preload("res://systems/ui/hud.tscn")
 const WALKER: EnemyData = preload("res://content/enemies/zombie_walker.tres")
 const WAVES: WaveRules = preload("res://content/waves/default_waves.tres")
 const RIFLE: WeaponData = preload("res://content/weapons/rifle_ar.tres")
@@ -19,32 +17,10 @@ var _port: int
 
 
 func _make_side(side_name: String) -> HitClaims:
-	var root: Node = TwoPeers.make_side(self, side_name)
-	var session: GameSession = GameSession.new()
-	session.rng.seed = 7
-	var world: Node3D = Node3D.new()
-	world.name = "World"
-	root.add_child(world)
-	var economy: Economy = Economy.new()
-	economy.name = "Economy"
-	economy.rules = load("res://content/economy/default_economy.tres")
-	normal_points = economy.rules.points_per_hit
-	root.add_child(economy)
-	session.spawner = Spawner.new()
-	session.spawner.name = "Enemies"
-	session.spawner.spawn_group = &"test_item_effect_points"
-	session.spawner.session = session
-	root.add_child(session.spawner)
-	session.players = PlayerSpawner.new()
-	session.players.name = "PlayerSpawner"
-	session.players.player_scene = PLAYER
+	var session: GameSession = CoopSide.make(self, side_name, [&"hit_claims"])
+	normal_points = session.economy.rules.points_per_hit
 	session.players.player_added.connect(_prepare_player.bind(session))
-	root.add_child(session.players)
-	var claims: HitClaims = HitClaims.new()
-	claims.name = "HitClaims"
-	claims.session = session
-	root.add_child(claims)
-	return claims
+	return session.hit_claims
 
 
 func _prepare_player(player: Player, session: GameSession) -> void:
@@ -57,14 +33,11 @@ func before_each() -> void:
 	_port = TwoPeers.next_port()
 	server = _make_side("Server")
 	client = _make_side("Client")
-	var marker: Marker3D = Marker3D.new()
-	marker.add_to_group(&"test_item_effect_points")
-	marker.position = Vector3(0, 0, -4)
-	server.get_parent().add_child(marker)
+	CoopSide.add_spawn_point(server.session, Vector3(0, 0, -4))
 	assert_eq(TwoPeers.host(server, _port, 2), OK)
 	assert_eq(TwoPeers.join(client, _port), OK)
-	client.session.players.setup(client.get_parent().get_node("World") as Node3D, Transform3D.IDENTITY)
-	server.session.players.setup(server.get_parent().get_node("World") as Node3D, Transform3D.IDENTITY)
+	CoopSide.start_players(client.session)
+	CoopSide.start_players(server.session)
 	await wait_until(_players_ready, 5.0, "players connected")
 	var peer_id: int = client.multiplayer.get_unique_id()
 	claimant = server.session.players.find_player(peer_id)
@@ -86,15 +59,7 @@ func _players_ready() -> bool:
 
 func after_each() -> void:
 	for claims: HitClaims in [client, server]:
-		var root: Node = claims.get_parent()
-		for node: Node in claims.session.spawner.get_children():
-			if node is Zombie:
-				node.free()
-		for node: Node in root.get_node("World").get_children():
-			if node is Player:
-				node.free()
-		claims.session.free()
-		TwoPeers.close_side(root)
+		CoopSide.close(claims.session)
 
 
 func _item(affixes: Array, uid: String = UID) -> Dictionary:
@@ -193,10 +158,8 @@ func test_pack_leech_gun_heals_for_a_client() -> void:
 	var service: LootService = LootService.new()
 	service.session = client.session
 	service.player = mine
-	client.get_parent().add_child(service)
-	var hud: Hud = HUD.instantiate() as Hud
-	client.get_parent().add_child(hud)
-	var overlay: PackOverlay = hud.get_node("Root/Pack") as PackOverlay
+	client.session.add_child(service)
+	var overlay: PackOverlay = client.session.hud.get_node("Root/Pack") as PackOverlay
 	overlay.setup(service)
 	service.pack.add(_item([["leech", 5, 1.0]], "pack_rifle"))
 	overlay._equip()
