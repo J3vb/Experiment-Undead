@@ -93,11 +93,20 @@ func test_protocol_was_bumped_for_the_loadout_rpc() -> void:
 	assert_gte(Build.PROTOCOL_VERSION, 6, "later protocol bumps keep this one")
 
 
+func test_loadout_sync_is_a_server_owned_child_on_both_sides() -> void:
+	assert_gte(Build.PROTOCOL_VERSION, 19, "loadout RPC moved to its own node")
+	for player: Player in [server, client]:
+		var node: LoadoutSync = player.get_node("LoadoutSync") as LoadoutSync
+		assert_eq(node, player.loadout_sync)
+		assert_eq(node.get_multiplayer_authority(), 1, "the server owns the loadout node")
+	assert_false(server.state_sync.has_method("submit_loadout"), "PlayerStateSync no longer takes loadouts")
+
+
 func test_client_loadout_raises_server_health_and_records_item_guns() -> void:
 	var weapon: Weapon = client.weapons.give(Content.weapon(&"pistol_service"))
 	weapon.item = ItemInstance.new(_gun())
-	client.state_sync.gear = [_vest()]
-	client.state_sync.send_loadout()
+	client.loadout_sync.gear = [_vest()]
+	client.loadout_sync.send_loadout()
 	await wait_until(func() -> bool: return server.health.max_health == 140.0, 3.0, "loadout reached server")
 	assert_eq(server.health.current, 140.0)
 	assert_eq(server.item_guns.keys(), ["gun_pistol_service"])
@@ -107,11 +116,11 @@ func test_client_loadout_raises_server_health_and_records_item_guns() -> void:
 
 
 func test_new_loadout_without_the_vest_drops_max_health() -> void:
-	client.state_sync.gear = [_vest()]
-	client.state_sync.send_loadout()
+	client.loadout_sync.gear = [_vest()]
+	client.loadout_sync.send_loadout()
 	await wait_until(func() -> bool: return client.health.max_health == 140.0, 3.0, "vest applied")
-	client.state_sync.gear = []
-	client.state_sync.send_loadout()
+	client.loadout_sync.gear = []
+	client.loadout_sync.send_loadout()
 	await wait_until(func() -> bool: return server.health.max_health == 100.0, 3.0, "vest removed on server")
 	await wait_until(func() -> bool: return client.health.max_health == 100.0, 3.0, "owner sees removal")
 	assert_eq(client.health.current, 100.0)
@@ -119,9 +128,9 @@ func test_new_loadout_without_the_vest_drops_max_health() -> void:
 
 func test_malformed_loadouts_are_rejected_logged_and_change_nothing() -> void:
 	var before: int = Log.event_counts.get("net.loadout_rejected", 0)
-	client.state_sync.submit_loadout.rpc_id(1, ["vest"], [])
-	client.state_sync.submit_loadout.rpc_id(1, [_vest(), _vest(), _vest(), _vest()], [])
-	client.state_sync.submit_loadout.rpc_id(1, [_vest()], [_gun("not_a_gun")])
+	client.loadout_sync.submit_loadout.rpc_id(1, ["vest"], [])
+	client.loadout_sync.submit_loadout.rpc_id(1, [_vest(), _vest(), _vest(), _vest()], [])
+	client.loadout_sync.submit_loadout.rpc_id(1, [_vest()], [_gun("not_a_gun")])
 	await wait_until(
 		func() -> bool: return Log.event_counts.get("net.loadout_rejected", 0) == before + 3, 3.0, "all rejected"
 	)
@@ -131,7 +140,7 @@ func test_malformed_loadouts_are_rejected_logged_and_change_nothing() -> void:
 
 func test_loadout_handler_on_a_client_returns_before_anything_else() -> void:
 	var before: int = Log.event_counts.get("net.loadout_rejected", 0)
-	client.state_sync.submit_loadout([_vest()], [_gun()])
+	client.loadout_sync.submit_loadout([_vest()], [_gun()])
 	await wait_physics_frames(3)
 	assert_eq(client.health.max_health, 100.0, "only the server applies a loadout")
 	assert_true(client.item_guns.is_empty())
@@ -142,9 +151,9 @@ func test_host_loadout_applies_once_on_its_own_player() -> void:
 	var host: Player = PLAYER.instantiate() as Player
 	add_child_autofree(host)
 	host.set_physics_process(false)
-	host.state_sync.gear = [_vest()]
+	host.loadout_sync.gear = [_vest()]
 	host.equip_gear([_vest()])
-	host.state_sync.send_loadout()
-	host.state_sync.send_loadout()
+	host.loadout_sync.send_loadout()
+	host.loadout_sync.send_loadout()
 	assert_eq(host.health.max_health, 140.0, "the host's gear is not stacked twice")
 	assert_eq(host.health.current, 140.0)

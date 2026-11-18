@@ -107,7 +107,7 @@ func _leech_item() -> Dictionary:
 
 func _arm_client(item: Dictionary) -> void:
 	mine.weapons.current.item = ItemInstance.new(item)
-	mine.state_sync.send_loadout()
+	mine.loadout_sync.send_loadout()
 	var uid: String = str(item.uid)
 	await wait_until(func() -> bool: return claimant.item_guns.has(uid), 3.0, "loadout reached server")
 
@@ -163,7 +163,7 @@ func test_claim_within_the_item_guns_damage_is_accepted() -> void:
 
 func test_host_item_gun_trace_heals_through_the_same_server_path() -> void:
 	host.weapons.current.item = ItemInstance.new(_leech_item())
-	host.state_sync.send_loadout()
+	host.loadout_sync.send_loadout()
 	var zombie: Zombie = await _zombie()
 	var body: HitZone = zombie.hit_zones[1]
 	var copy: Zombie = client.session.spawner.get_node(NodePath(String(zombie.name))) as Zombie

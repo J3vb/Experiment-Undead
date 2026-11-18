@@ -138,8 +138,8 @@ func test_drop_reaches_only_its_owner_and_pickup_only_changes_their_pack() -> vo
 	var client_player: Player = _add_player(client, client_id)
 	server.player = host_player
 	client.player = client_player
-	client_player.state_sync.gear = [{"v": 1, "uid": "charm", "base": "charm", "aff": [["test_loot_luck", 1, 1.0]]}]
-	client_player.state_sync.send_loadout()
+	client_player.loadout_sync.gear = [{"v": 1, "uid": "charm", "base": "charm", "aff": [["test_loot_luck", 1, 1.0]]}]
+	client_player.loadout_sync.send_loadout()
 	var server_copy: Player = server.get_parent().get_node(str(client_id)) as Player
 	await wait_until(
 		func() -> bool: return LootService.player_luck(server_copy, 1) == 0.2, 3.0, "charm luck counts on the server"
