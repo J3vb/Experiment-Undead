@@ -1,35 +1,37 @@
 # Rules for coding agents (Codex, Claude, others)
 
-Adding something? Follow docs/HOW_TO_ADD.md.
+Experiment Undead is an original wave-based zombie FPS in **Godot 4.7.2**,
+written in **typed GDScript**, with RPG progression and co-op on self-hosted
+servers of up to 8 players. Every line of code must work in co-op.
+
+This file is the one entry point. Read it all, then only the docs the reading
+map names for your task.
+
+## Reading map
+
+| Your task | Also read |
+|---|---|
+| Any task | This file. `docs/DECISIONS.md` entries for the systems you touch (not the whole file) |
+| A feature | Its row in `docs/ROADMAP.md`, its approved plan in `docs/plans/`, `docs/FOUNDATIONS.md` (fill in its **Ready to build** checklist), the `docs/adr/` records it touches |
+| Co-op code (RPCs, shared state) | `docs/MULTIPLAYER.md`, section "Writing co-op code", and `docs/adr/0003-trusted-client-co-op.md` |
+| New content or a new system | `docs/HOW_TO_ADD.md` |
+| Anything visual, audio, UI, gun, enemy or map | `docs/design/README.md`; for visuals `docs/design/look-rules.md` (use its colours, names and numbers) |
+| Anything the player sees or reads | `docs/design/lore.md` "Story links for game content" (see Lore link below) |
+| A bug, crash or test run | `docs/LOGGING.md` |
+| A CI structure rule fails | `docs/CODE_RULES.md` |
+| How work flows (pillars, milestones) | `docs/PROCESS.md` |
 
 **Plan first.** Before building a feature, find it in `docs/ROADMAP.md`. If it
 needs a plan, build only from an approved plan in `docs/plans/` and only the
 step your task names. No approved plan: write one first
 (`docs/plans/README.md`). Your PR says `Plan: docs/plans/<file>.md, step N`.
-
-Experiment Undead is an original wave-based zombie FPS in **Godot 4.7.2**,
-written in **typed GDScript**. It will get RPG progression and self-hosted
-8-player servers later, so code must stay multiplayer-ready from day one.
-
-Read `docs/PROCESS.md` (pillars, milestones, how work flows) and
-the entries in `docs/DECISIONS.md` for the systems you touch (not the whole
-file): one-line lists of design differences, simplifications and provisional picks.
-
-**Before you build a feature:** check `docs/FOUNDATIONS.md` (which core systems
-are solid, shaky or missing) and fill in its **Ready to build** checklist in
-your plan, Codex prompt or PR. Big technical choices are decision records in
-`docs/adr/`; do not go against one without writing a new record first.
-
-**Design references:** read `docs/design/` before any UI, art, audio,
-weapon, enemy or map work. Start with `docs/design/README.md`; for anything
-visual, `docs/design/look-rules.md` is the style to match. Use its colours,
-names and numbers instead of inventing new ones.
+Do not go against a decision record in `docs/adr/` without writing a new one first.
 
 **Lore link:** nothing goes in the game without a story reason. Before adding
 anything the player sees or reads (zombie, gun, item, prop, sign, screen,
-name), find its reason in `docs/design/lore.md` ("Story links for game
-content"). No reason yet: add a provisional row there in the same PR, and ask
-the person about any choice that sets the story or tone.
+name), find its reason in `docs/design/lore.md`. No reason yet: add a
+provisional row there in the same PR, and ask the person about any choice that
+sets the story or tone. Points and score stay a game abstraction.
 
 ## Skills
 
@@ -47,37 +49,18 @@ files in `.claude/skills/` (Claude Code). Load the one that fits your task:
 | `finish-feature` | Checking a feature against the Definition of done and closing it |
 
 Third-party skills (Apache-2.0, from gamedev-skills/awesome-gamedev-agent-skills, see
-`docs/CREDITS.md`). They are general Godot 4.7.2 and game-design guides:
+`docs/CREDITS.md`) are general Godot 4.7.2 and game-design guides; each one's
+description says when to use it: `godot-3d-essentials`, `godot-shaders`,
+`godot-physics`, `godot-resources`, `godot-gdscript`, `godot-signals-groups`,
+`godot-nodes-scenes`, `godot-animation`, `godot-audio`, `godot-ui-control`,
+`godot-multiplayer`, `fps-shooter`, `rpg`, `game-feel`, `level-design`,
+`game-ai`, `camera-systems`, `input-systems`, `game-ui-ux`, `audio-design`,
+`performance-optimization`.
 
-| Skill | Use it for |
-|---|---|
-| `godot-3d-essentials` | Cameras, lights, `WorldEnvironment`, materials |
-| `godot-shaders` | `.gdshader` syntax, errors, wiring |
-| `godot-physics` | Bodies, areas, collision layers, raycasts, Jolt |
-| `godot-resources` | Custom `Resource` data, `.tres`, shared vs duplicated |
-| `godot-gdscript` | Typing, `await`, parse errors |
-| `godot-signals-groups` | Signals, groups, deferred connections |
-| `godot-nodes-scenes` | Scene structure, instancing, broken `res://` paths |
-| `godot-animation` | `AnimationPlayer`, `AnimationTree`, tweens |
-| `godot-audio` | Players, buses, volume |
-| `godot-ui-control` | Control layout, themes, focus |
-| `godot-multiplayer` | ENet, `@rpc`, spawner and synchronizer (P7) |
-| `fps-shooter` | Shot model, TTK, recoil, spread, ADS sensitivity |
-| `rpg` | Stats, XP curves, items, rarity, affixes |
-| `game-feel` | Screen shake, hit-stop, knockback |
-| `level-design` | Layout, player metrics, pacing |
-| `game-ai` | Enemy FSM, perception, pathfinding |
-| `camera-systems` | First-person look and camera feel |
-| `input-systems` | Input actions, buffering, rebinding |
-| `game-ui-ux` | HUD and menu rules, accessibility |
-| `audio-design` | Mixing, ducking, adaptive music |
-| `performance-optimization` | Profiling, draw calls, frame budget |
-
-**Our rules win.** When a third-party skill disagrees with this file, `docs/KEEP_IT_SIMPLE.md`,
-`docs/design/` or one of our own skills above, follow ours. For example: no new autoloads
-or event buses without the Keep it simple check, GUT is our test runner, co-op follows
-`docs/MULTIPLAYER.md`, and numbers come from the balance sheet, not the skill's examples.
-Their links to skills we did not copy (Unity, Roblox, `save-systems`, ...) can be ignored.
+**Our rules win.** When a third-party skill disagrees with this file, `docs/design/`
+or one of our own skills, follow ours: no new autoloads or event buses without the
+Keep it simple check, GUT is our test runner, co-op follows `docs/MULTIPLAYER.md`,
+numbers come from the balance sheet. Ignore their links to skills we did not copy.
 Do not edit these folders; update them by copying a newer upstream release.
 
 Edit skills in `.agents/skills/` only, then run
@@ -115,21 +98,17 @@ Edit skills in `.agents/skills/` only, then run
    - All enemies come from `Spawner`.
    - Gameplay randomness uses `GameSession.rng`, never `randf()`.
    - XP and items go through `ProgressionService`.
-6. **Performance:** v0.1 (P4) must hold 60 fps with 24 zombies alive. The
-   long-term target is 120 fps on an RTX 4080 Super at 1440p High, so keep
-   code 120-friendly: no per-frame allocations in hot paths, no `get_node()`
-   in loops, cache lookups.
+6. **Performance:** hold 60 fps with 24 zombies alive (v0.1); the long-term
+   target is 120 fps on an RTX 4080 Super at 1440p High. No per-frame
+   allocations in hot paths, no `get_node()` in loops, cache lookups.
 7. Short doc comment (`##`) at the top of every new script. Few other comments.
 8. **Assets.** Up to v0.1, art is built in code to match the style-guide
    previews (Cold Containment): Godot grey boxes and shaders, Blender Python
    scripts in `tools/assets/` that export `.glb` into `assets/`, and
    generated sounds (`tools/generate_sfx.py`). The script is the source; never
-   hand-edit its output. Asset packs come after v0.1 to raise quality. Every
-   third-party file (code or asset) gets one line in `docs/CREDITS.md`: name,
-   author, link, licence. CC0 first, CC-BY with credit, MIT for code. No
-   "non-commercial" or "no AI" licences. No Git LFS for now.
-   How to build, import and check models (including `check_models.py` and the
-   glTF validator the Assets CI runs): the skills below.
+   hand-edit its output. Every third-party file (code or asset) gets one line
+   in `docs/CREDITS.md`: name, author, link, licence. CC0 first, CC-BY with
+   credit, MIT for code. No "non-commercial" or "no AI" licences. No Git LFS.
 9. **Names.** Use the design doc's words in code and data:
    - Machines: `SpecimenVault` (random gun), `MedDispenser` (gives a serum),
      `Reforger` (upgrades a gun). Not "mystery box" or "perk machine".
@@ -137,56 +116,31 @@ Edit skills in `.agents/skills/` only, then run
      `EconomyRules`, `SerumData`, `AmmoModData`, `BuyableData`,
      `PowerUpData`, `MapData`. Not `PerkData` or `RoundCurve`.
 
-## Structure rules (CI checked)
-
-Examples and fixes: [docs/CODE_RULES.md](docs/CODE_RULES.md).
-
-- `core-no-features`: core never depends on systems or levels.
-- `content-is-data`: content contains only resources and their Godot sidecars.
-- `file-names`: scripts, scenes, resources, Python and models use snake_case.
-- `class-name-matches-file`: class names match their snake_case script filenames.
-- `input-only-in-input`: direct input stays in input, UI, debug and tools.
-- `session-rng`: gameplay uses the session RNG; visual randomness ends in `# cosmetic`.
-- `log-not-print`: game diagnostics use Log outside the three allowed log entry points.
-- `no-absolute-paths`: use autoload names, signals or exported paths instead of climbing the tree.
-- `ui-router-only`: scene changes and mouse mode writes live only in `core/ui.gd` (`UI.replace`, `UI.push`, `UI.hold_mouse`).
-- `autoload-list`: autoload names must be explicitly allowed in the checker.
-- `no-weakening`: keep lint limits and Godot warning levels at least as strict.
-- `no-todo`: finish work or open an issue; no unfinished-work markers in scripts.
-- `warning-ignore-reason`: every warning ignore explains why on the same line.
-- `doc-comment`: core and systems scripts have a `##` comment in their first five lines.
-- `no-triple-copy`: extract a shared operation when an eight-line block has a third copy.
-- `tested-scripts`: core and systems scripts need test references; the baseline only shrinks.
-- `no-content-id-literals`: core and systems code never names a content id; add a data field instead. The baseline only shrinks.
-- `decisions-short`: every entry in `docs/DECISIONS.md` is one line of at most 300 characters.
+**Structure rules** (`tools/ci/check_rules.py`): each rule, its reason and its
+fix are in `docs/CODE_RULES.md`.
 
 ## Keep it simple
 
-The game will grow to loot, co-op and a town hub, but it grows by adding
-**small, plain pieces**, not by building frameworks up front. When two readings
-of a task are possible, pick the one with less code. Examples and the list of
-things to build only when needed: `docs/KEEP_IT_SIMPLE.md`.
+Grow the game by adding **small, plain pieces**, not frameworks. When two
+readings of a task are possible, pick the one with less code. Examples and the list of things to build only when needed:
+`docs/KEEP_IT_SIMPLE.md`.
 
 1. **Build only what your task's phase needs.** The phases are P0 to P10 in the
    architecture doc. Do not add fields, functions, signals, enum values, settings
-   or files for a later phase "because we'll need it". Later phases add them.
+   or files for a later phase "because we'll need it".
 2. **No abstraction before the third use.** Write the code plainly the first
    time, copy it the second time, and only pull out a shared function, base
-   class or helper when the third real use arrives. Two similar 10-line blocks
-   are fine.
+   class or helper when the third real use arrives.
 3. **No interface with one implementation.** No base class whose methods are
    empty stubs, no "Service" that only forwards to another class.
-4. **Size limits** (CI enforces these in the `quality` check):
-   - function: 50 lines max
-   - complexity: 10 max
-   - file: 350 lines max
-   - function arguments: 6 max
-
-   If you hit a limit, split by job (move the zombie's attack logic to its own
-   function), not by layer (no `ZombieAttackHelper`, `ZombieAttackManager`).
+4. **Size limits** (CI `quality` check): function 50 lines, complexity 10,
+   file 350 lines, 6 function arguments. If you hit a limit, split by job
+   (move the zombie's attack logic to its own function), not by layer (no
+   `ZombieAttackHelper`, `ZombieAttackManager`).
 5. **New autoload:** only the ones in the architecture doc's autoload table
    (Events, Content, Settings, Audio, Pool, Game, Net), and only when your task
-   actually needs it. Any other autoload: stop and ask in the PR.
+   actually needs it. Any other autoload: stop and ask in the PR. Add exactly
+   one line at the end of the `[autoload]` block in `project.godot`.
 6. **New manager / director / service node:** only if it owns state or a rule
    that no existing node owns. If it would just pass calls through, put the code
    in the node that owns the data.
@@ -197,13 +151,10 @@ things to build only when needed: `docs/KEEP_IT_SIMPLE.md`.
    AudioStreamRandomizer, ConfigFile, JSON, MultiplayerSpawner/Synchronizer.
    No custom event bus, state-machine framework, dependency injection,
    object factory, plugin system or service locator.
-9. **Multiplayer: only the seams the architecture already reserves.** They are
-   listed in code rule 5 above (InputFrame, `Net.is_authority()`,
-   physics ticks, one Spawner with net ids, `GameSession.rng`,
-   ProgressionService, items as dicts, no global player). P7 co-op is being
-   built now: follow `docs/MULTIPLAYER.md` and `docs/adr/0003-trusted-client-co-op.md`
-   (client asks, server decides shared state). Do **not** add prediction,
-   interpolation buffers or lag compensation without a new decision record.
+9. **Co-op: follow the written pattern.** Co-op is trusted client: the client
+   asks, the server decides shared state (`docs/MULTIPLAYER.md`, ADR 0003). Use
+   the seams in code rule 5. Do **not** add prediction, interpolation buffers
+   or lag compensation without a new decision record.
 10. **No config for things nobody tunes.** Export a value to data only if a
     designer will change it for balance or feel. Fixed rules stay as constants.
 11. **Delete, don't disable.** Remove dead code, unused functions and
@@ -212,19 +163,8 @@ things to build only when needed: `docs/KEEP_IT_SIMPLE.md`.
     serum is a `.tres` file. If it needs code, add the smallest script that data
     can point to.
 
-### Simplicity check (every PR)
-
-Add this section to the PR description and answer each line in a few words.
-Reviewers (human or AI) reject the PR if an answer is "no" without a good reason.
-
-```
-### Simplicity check
-- Only builds what this phase needs: yes / no (why)
-- New autoloads, managers or base classes: none / list + which rule allows it
-- New abstraction used in fewer than 3 places: none / list
-- Anything a Godot built-in already does: none / list
-- Dead code removed: yes / n.a.
-```
+Every PR answers the **Simplicity check** in the PR template. Reviewers reject
+a PR if an answer is "no" without a good reason.
 
 ## How to run checks
 
@@ -237,91 +177,80 @@ unzip -q godot.zip && mv Godot_v4.7.2-stable_linux.x86_64 godot && chmod +x godo
 ./godot --headless --path . --quit-after 300               # boot test: no SCRIPT ERROR / Parse Error
 ./godot --headless --path . -s addons/gut/gut_cmdln.gd     # all GUT tests
 ./godot --headless --path . -s addons/gut/gut_cmdln.gd -gconfig= -gtest=res://tests/unit/<file>.gd -gexit  # one file
-```
 
-Claude Code cloud sessions install Godot (as `godot` on PATH), gdtoolkit and ruff
-automatically (`.claude/hooks/session-start.sh`). Run the import once before tests.
-
-All three must pass before you open a pull request. CI runs the same steps.
-If you cannot download Godot, say so in the PR and let CI run the checks.
-
-## Quality checks (CI is the merge gate)
-
-CI has three required checks. A PR can only merge when all three are green.
-
-- **`quality`** (pull requests only, all tracked `.gd` and `.py` files outside `addons/`):
-  - `gdlint` with the repo `gdlintrc`: lines max 120, files max 350 lines,
-    functions max 6 arguments, Godot style guide names and member order.
-  - `gdformat --check --line-length 120`. Fix with
-    `gdformat --line-length 120 <files>`. When you touch an old file, format
-    the whole file.
-  - Functions max 50 lines; cyclomatic complexity max 10 (`gdradon cc`).
-  - Python: `ruff check` and `ruff format --check`, line length 120, complexity max 10.
-  - Quality-gate unit tests in `tools/ci/`.
-  - **Tests required:** if you change a `.gd` file in `core/` or `systems/`,
-    you must also add or change a file in `tests/`. Only for visual-only or
-    pure-rename changes, add the label `no-tests-needed` and say why in the PR.
-- **`test`**: import, boot test, all GUT tests. Any `SCRIPT ERROR` or
-  `Parse Error` fails it. `tests/unit/test_scripts_compile.gd` loads every
-  script, so unused variables, shadowing, unreachable code and the other
-  warnings set to error in `project.godot` fail CI too. Do not lower those
-  warning levels or skip a test to get green.
-- **`soak`** (`.github/workflows/soak.yml`): plays Halcyon Labs rounds 1-10 headless
-  (seed 1, 4x speed) and must print `| PASS |` with no `SCRIPT ERROR`. A change
-  that breaks a round, a spawn or a wave cannot merge. Read the job summary table
-  and the `soak-logs` artifact when it fails. Do not loosen its thresholds.
-
-Run the same `quality` check locally before you push:
-
-```bash
-pip install "gdtoolkit==4.5.0" "ruff==0.17.5"
+pip install "gdtoolkit==4.5.0" "ruff==0.17.5"              # the quality check
 python -m unittest discover -s tools/ci -p "test_*.py"
 python tools/ci/check_pr.py origin/main
 python tools/ci/check_rules.py
 ```
 
-### Test rules
+Claude Code cloud sessions install Godot (as `godot` on PATH), gdtoolkit and ruff
+automatically (`.claude/hooks/session-start.sh`). Run the import once before tests.
+All of these must pass before you open a pull request. If you cannot download
+Godot, say so in the PR and let CI run the checks.
 
-- `tests/unit/`: one file per system, pure logic (no scene tree when possible).
-- `tests/content/`: data checks for every `content/` type. New Resource type =
-  new content checks.
-- `tests/integration/`: a real `GameSession` run headless, for flows across
-  systems (spawn, kill, points, rounds).
-- Every bug fix adds a test that fails without the fix.
-- Tests use `GameSession.rng` with a fixed seed, never real time or `randf()`.
+## CI checks (the merge gate)
 
-## Logs and diagnostics
+- **`quality`**: `gdlint` (repo `gdlintrc`) and `gdformat --check --line-length 120`
+  (fix with `gdformat --line-length 120 <files>`; format the whole file when you
+  touch an old one), the size limits above (`gdradon cc`), `ruff check` and
+  `ruff format --check` (line length 120), the tests in `tools/ci/`, and the
+  structure rules. **Tests required:** a changed `.gd` in `core/` or `systems/`
+  needs a changed file in `tests/`. Only visual-only or pure-rename changes get
+  the label `no-tests-needed`, with the reason in the PR.
+- **`test`**: import, boot test, all GUT tests. Any `SCRIPT ERROR` or
+  `Parse Error` fails it. `tests/unit/test_scripts_compile.gd` loads every
+  script, so the warnings set to error in `project.godot` (unused variables,
+  shadowing, unreachable code) fail CI too.
+- **`soak`**: plays Halcyon Labs rounds 1-10 headless (seed 1, 4x speed) and
+  must print `| PASS |` with no `SCRIPT ERROR`. When it fails, read the job
+  summary table and the `soak-logs` artifact.
 
-Each run writes a JSON-lines log and a summary to `user://logs/` (engine
-errors with file, line and stack included). To debug a bug report, a crash or
-a test run, read `docs/LOGGING.md` first: it says where the files are, how to
-read them and what each event means. When you build a system, add `Log.warn`
-lines for its early warning signs and list them in that doc's catalogue.
+Never lower warning levels, loosen thresholds, or skip or delete a test to get
+green. If a check seems wrong, ask the person first.
+
+**Test rules.** `tests/unit/`: one file per system, pure logic (no scene tree
+when possible). `tests/content/`: data checks for every `content/` type; a new
+Resource type gets new content checks. `tests/integration/`: a real
+`GameSession` run headless, for flows across systems. Every bug fix adds a test
+that fails without the fix. Tests use `GameSession.rng` with a fixed seed,
+never real time or `randf()`.
+
+**Logs.** When you build a system, add `Log.warn` lines for its early warning
+signs and list them in the `docs/LOGGING.md` catalogue.
+
+## Gotchas
+
+- `godot -s <script>` runs without autoloads. For a script that needs them,
+  run a temporary `.tscn` that holds the script instead.
+- After pulling main, run `godot --headless --path . --import` once. A stale
+  `.godot` class cache makes scripts fail to load.
+- Never commit an editor-churned `project.godot`, and commit only the
+  `.tres` / `.tscn` files you meant to change: editor-local uids break CI.
+- The game pauses when its window loses focus.
+- Model imports: `meshes/light_baking=2` for kit and static props (baked into
+  lightmaps), `3` for anything that moves (zombies, guns, doors, pickups).
+  Details: the `godot-asset-import` skill.
 
 ## Merging
 
-- **Codex reviews every PR**, from Claude and from Codex. It runs when the PR
-  is opened as ready or marked ready. It does **not** run on later pushes:
-  after each push with changes, comment `@codex review` on the PR once.
-- You may merge your PR yourself (squash merge), no human approval needed,
-  when all of these hold for the current head commit:
-  1. `quality`, `test` and `soak` checks are green.
-  2. The Codex review for that commit is finished: its "Codex Review
-     Summary" comment shows ✅ Completed for that commit (or a 👍 reaction).
-  3. Every review comment is fixed, or answered with a reason if it is a
-     "Suggestion" you decline, and its conversation is resolved. A comment
-     marked "Blocking" or a P0/P1 finding must be fixed, not declined.
+- You may squash-merge your own PR, no human approval needed, when `quality`,
+  `test` and `soak` are green on the head commit. CI is the merge gate.
+- Codex reviews PRs when it has quota. It runs when a PR is marked ready and
+  not on later pushes: after a push with changes, comment `@codex review` once.
+  Fix its comments in the PR if it arrives before the merge, else in a
+  follow-up PR. A "Blocking" or P0/P1 finding is always fixed; a "Suggestion"
+  you decline gets a reason. Resolve each conversation.
 - Never merge with a red or pending check, and never merge someone else's PR.
 - Each PR gets exactly one label for release notes: `new`, `fix`, `balance`
   or `tech`.
 
 ## Working rules
 
-- One task = one branch = one pull request. Branch name: `codex/<task-name>`.
+- One task = one branch = one pull request. Branch name: `codex/<task-name>`
+  (Claude: `claude/<task-name>`).
 - Only touch the files and folders your task allows. If you must touch
   something else, stop and explain why in the PR instead of doing it.
-- Adding an autoload: add exactly one line to the `[autoload]` block in
-  `project.godot`, at the end.
 - Add or update tests for everything you build.
 - Add one line to `docs/DECISIONS.md` (at most 300 characters, with a link) for
   each design difference, simplification or provisional pick; remove the line

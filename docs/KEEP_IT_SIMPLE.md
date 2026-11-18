@@ -1,10 +1,7 @@
 # Keep it simple: examples and deferred work
 
-The rules are in the "Keep it simple" section of `AGENTS.md`. This file shows
-what they mean in this codebase.
-
-Rule 4 size limits: function: 50 lines max; file: 350 lines max;
-function arguments: 6 max; complexity: 10 max.
+The rules live only in the "Keep it simple" section of `AGENTS.md`. This file
+holds examples of what they mean in this codebase, and the deferred list.
 
 ## Examples
 
@@ -78,3 +75,5 @@ trigger below is true, not just because the doc lists them.
 | Debug console commands | A test or tuning task needs the command. Start with the few you use. |
 | Zombie AI tiers (frame skipping) | Profiling with 24+ zombies shows the AI over budget. |
 | StatBlock "more" modifiers and caps | P5. Before then, P3 serums use plain add / multiply modifiers. |
+| `MapData` and one session scene | The second match map starts. Today `game_session.tscn` and `hub_session.tscn` are near copies. |
+| An ADR picking one map builder | Before the next map plan. Halcyon Labs is built by a GDScript tool from `layout.json`, Lantern Post by a Python `.tscn` writer. |

@@ -16,7 +16,7 @@ new record first. Feature plans and their order live in `docs/ROADMAP.md` and
 **Keep it current.** A PR that fixes or changes a foundation updates its row
 here in the same PR. Re-check every row at the end of each milestone.
 
-Last full check: 2026-11-16, main at `3a2fb7f`.
+Last full check: 2026-11-18, the F-79 audit ([plan](plans/easy-changes.md)), main at `e3c1b65`.
 
 ## Foundation map
 
@@ -38,7 +38,7 @@ pattern. **Missing** = needed soon, not built.
 | 10 | [Exported builds and dedicated server](#10-exported-builds-and-dedicated-server) | solid | `docs/RELEASING.md`, [ADR 0006](adr/0006-self-hosted-servers.md) |
 | 11 | [Asset pipeline](#11-asset-pipeline) | solid | [ADR 0008](adr/0008-code-built-assets-first.md), skills |
 | 12 | [Performance: pooling and hot paths](#12-performance-pooling-and-hot-paths) | solid | AGENTS.md code rule 6 |
-| 13 | [Rules and docs agents read](#13-rules-and-docs-agents-read) | shaky | AGENTS.md, this file, `docs/adr/` |
+| 13 | [Rules and docs agents read](#13-rules-and-docs-agents-read) | solid | AGENTS.md, this file, `docs/adr/` |
 
 ### 1. Co-op authority
 
@@ -194,15 +194,14 @@ zombies), cheap without allocation.
 
 ### 13. Rules and docs agents read
 
-**Why shaky:** `docs/DECISIONS.md` had grown into long build notes, so the
-actual rules were hard to find. Step 4 cut it to one-line lists (design
-differences, simplifications, provisional picks); the decision records in
-`docs/adr/` hold the big choices. AGENTS.md said "no
-RPCs before P7" while P7 co-op was half built; that line now points to the
-co-op rules instead.
+**Rule:** `AGENTS.md` is the one entry point. It opens with a reading map
+that names the other docs per task, holds the agent gotchas, and stays under
+2,300 words. Each rule has one home: Keep it simple rules in `AGENTS.md`
+(`docs/KEEP_IT_SIMPLE.md` holds examples only), CI structure rules in
+`docs/CODE_RULES.md`, big choices in `docs/adr/`, and `docs/DECISIONS.md` is
+one-line lists (CI rule `decisions-short`).
 
-**Being fixed:** F-79, [plans/easy-changes.md](plans/easy-changes.md) step 5
-(AGENTS.md reading map and gotchas). Step 4 (DECISIONS.md as short lists) is done.
+**Fixed by:** F-79, [plans/easy-changes.md](plans/easy-changes.md) steps 4 and 5.
 
 ## Ready to build
 
