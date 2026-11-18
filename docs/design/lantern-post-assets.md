@@ -41,7 +41,7 @@ replaced by these models. The generator only places them.
 | `Snow` | Soft snow, slightly blue | Caps, drifts, ledges |
 | `Iron` | Dark rusty metal | Lamps, barrels, rails, mast |
 | `Concrete` | Stained grey concrete | Gate wall, tunnel, blocks |
-| `Hazard` | Yellow and black stripes | Gate posts, tunnel mouth |
+| `TownHazard` | Yellow and black stripes (`town_hazard.tres`; the Halcyon `Hazard` stays orange) | Gate posts, tunnel mouth |
 | `Canvas` | Dark olive-grey tarp | Stall awnings, sign cloths |
 | `Banner` | Deep maroon cloth with the outpost emblem in light grey | Banners |
 | `SignPaint` | Painted letters on wood or metal, light on dark | Sign boards |
@@ -61,7 +61,7 @@ Halcyon slots the town reuses as they are (`Concrete`, `Hazard`, `Fluid`,
 gets its material in step 4 with the banner model, the first model that uses it.
 
 Step 4 adds `Banner` (`town_banner.tres`: `town_surface` pattern 8 draws the emblem from the
-banner model's own position, so every banner gets it without UVs) and `Beacon` (`beacon_red.tres`,
+banner model's own position, so every banner gets it without UVs), `TownHazard` (`town_hazard.tres`, the yellow the concept shows) and `Beacon` (`beacon_red.tres`,
 the radio mast lights).
 
 Built so far: B1-B2 in `tools/assets/town_buildings.py`, B3-B6 in

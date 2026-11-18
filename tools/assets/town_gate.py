@@ -25,7 +25,7 @@ def _mats() -> dict:
         "concrete": material("Concrete", srgb("#6E716E"), roughness=0.9),
         "iron": material("Iron", (0.012, 0.012, 0.014, 1.0), metallic=0.7, roughness=0.5),
         "snow": material("Snow", srgb("#D6DEE8"), roughness=0.8),
-        "hazard": material("Hazard", srgb("#D9A21E"), roughness=0.7),
+        "hazard": material("TownHazard", srgb("#D9A21E"), roughness=0.7),
         "fluid": material("Fluid", srgb("#8DFF3A"), roughness=0.2, glow=2.0),
         "banner": material("Banner", srgb("#5A1A1E"), roughness=0.9),
         "lamp": material("SodiumPaint", srgb("#FFD9A0"), roughness=0.3, glow=3.0),

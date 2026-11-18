@@ -9,7 +9,7 @@ const MATERIALS: String = "res://levels/materials/"
 const GATE: Dictionary = {
 	"town_large/gate_wall": [Vector3(8, 8, 3), ["raw_concrete.tres", "iron.tres", "town_snow.tres"]],
 	"town_large/gate_tunnel":
-	[Vector3(10, 9, 14), ["raw_concrete.tres", "hazard_paint.tres", "specimen_tank.tres", "iron.tres"]],
+	[Vector3(10, 9, 14), ["raw_concrete.tres", "town_hazard.tres", "specimen_tank.tres", "iron.tres"]],
 	"town/banner": [Vector3(1.4, 4.5, 0.2), ["town_banner.tres", "iron.tres"]],
 	"town/floodlight": [Vector3(0.8, 2.1, 0.5), ["sodium_paint.tres", "iron.tres"]],
 	"town_large/radio_mast": [Vector3(3, 30, 3), ["beacon_red.tres", "iron.tres", "raw_concrete.tres"]],

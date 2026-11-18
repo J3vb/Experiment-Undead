@@ -30,6 +30,7 @@ const SHARED: Dictionary = {
 	"WindowGlow": "res://levels/materials/lit_window.tres",
 	"Canvas": "res://levels/materials/town_canvas.tres",
 	"SignPaint": "res://levels/materials/town_sign_paint.tres",
+	"TownHazard": "res://levels/materials/town_hazard.tres",
 	"Banner": "res://levels/materials/town_banner.tres",
 	"Beacon": "res://levels/materials/beacon_red.tres",
 }
