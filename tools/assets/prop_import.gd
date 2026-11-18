@@ -1,4 +1,4 @@
-## Post-import script for Halcyon props and Lantern Post buildings: maps each named glb
+## Post-import script for props, dressing and Lantern Post buildings: maps each named glb
 ## slot to the shared textured material in levels/materials (SHARED), after the
 ## embedded materials take the baked AO vertex colour (grime reads it too).
 @tool
@@ -33,6 +33,10 @@ const SHARED: Dictionary = {
 	"TownHazard": "res://levels/materials/town_hazard.tres",
 	"Banner": "res://levels/materials/town_banner.tres",
 	"Beacon": "res://levels/materials/beacon_red.tres",
+	"Stone": "res://levels/materials/stone.tres",
+	"Tile": "res://levels/materials/clinic_tile.tres",
+	"Enamel": "res://levels/materials/enamel.tres",
+	"Ice": "res://levels/materials/ice.tres",
 }
 
 

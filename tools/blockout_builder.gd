@@ -18,8 +18,8 @@ const FLOOR_MATERIAL: String = "tiled_wet_floor"
 const CEILING_MATERIAL: String = "ceiling_stained"
 ## Plain wall above the panels and around door cuts.
 const WALL_MATERIAL: String = "wall_paint"
-const PROP_MODEL: String = "res://assets/models/props/%s.glb"
-const DRESSING_MODEL: String = "res://assets/models/dressing/%s.glb"
+## "model" names a .glb in props/ (dressing/ for dressing); "props_large/x" picks another folder.
+const MODEL: String = "res://assets/models/%s.glb"
 const WALL_THICKNESS: float = 0.2
 const PANEL_WIDTH: float = 2.0
 const PANEL_HEIGHT: float = 3.0
@@ -65,7 +65,7 @@ static func build(layout: Dictionary) -> Node3D:
 
 
 ## box = [x, bottom above the room floor, z, size x, size y, size z] in map coordinates.
-## With "model", the .glb from assets/models/props/ stands in the box (turned by
+## With "model", the .glb (see model_path) stands in the box (turned by
 ## "turn" degrees) and the box is only its collider, so collision and navmesh match a plain box.
 static func _build_prop(root: Node3D, prop: Dictionary) -> void:
 	var room: Node3D = root.get_node(NodePath(prop["room"])) as Node3D
@@ -90,7 +90,7 @@ static func _build_prop(root: Node3D, prop: Dictionary) -> void:
 	shape.shape = box
 	body.add_child(shape)
 	shape.owner = root
-	var model: Node3D = _model(root, body, PROP_MODEL % prop["model"], float(prop.get("turn", 0.0)))
+	var model: Node3D = _model(root, body, model_path(prop["model"], "props"), float(prop.get("turn", 0.0)))
 	model.position.y = -size.y * 0.5
 
 
@@ -100,9 +100,13 @@ static func _build_dressing(root: Node3D, item: Dictionary) -> void:
 	var room: Node3D = root.get_node(NodePath(item["room"])) as Node3D
 	var dressing: Node3D = _group(root, room, "Dressing")
 	var a: Array = item["at"]
-	var model: Node3D = _model(root, dressing, DRESSING_MODEL % item["model"], float(item.get("turn", 0.0)))
+	var model: Node3D = _model(root, dressing, model_path(item["model"], "dressing"), float(item.get("turn", 0.0)))
 	model.name = item["id"]
 	model.position = Vector3(a[0], room.position.y + float(a[1]), a[2]) - room.position
+
+
+static func model_path(model: String, folder: String) -> String:
+	return MODEL % (model if model.contains("/") else "%s/%s" % [folder, model])
 
 
 static func _model(root: Node3D, parent: Node3D, path: String, turn: float) -> Node3D:
