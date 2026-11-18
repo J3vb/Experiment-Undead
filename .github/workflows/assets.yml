@@ -43,7 +43,22 @@ jobs:
             weapons/coachman_2b.glb weapons/grubber_sawnoff.glb zombies/shambler.glb \
             zombies/crawler.glb zombies/bloater.glb characters/player.glb characters/player_arms.glb \
             props/specimen_tank.glb props/lab_bench.glb props/jar_shelf.glb props/filing_cabinets.glb \
-            dressing/lab_papers.glb; do
+            props/mess_table.glb props/serving_counter.glb props/guard_desk.glb props/locker_row.glb \
+            props/generator.glb props/holding_cell.glb props/supply_truck.glb props/crate_stack.glb \
+            props/crate_long.glb props/crate_large.glb props/fuel_drum.glb props/forklift.glb \
+            dressing/lab_papers.glb dressing/mess_spill.glb dressing/pipe_run_3.glb dressing/pipe_run_6.glb \
+            props/barricade.glb props/covered_gurney.glb dressing/hazard_sign.glb dressing/body_bag.glb \
+            dressing/vine_wall.glb dressing/vine_wall_small.glb dressing/vine_pillar.glb dressing/vine_ceiling.glb \
+            dressing/fenlight_spill.glb props/kitchen_line.glb props/overturned_table.glb props/vending_machine.glb \
+            props/military_cases.glb dressing/hanging_strip.glb props/research_room.glb dressing/screen_pair.glb \
+            dressing/lab_floor_wreck.glb props/big_tank_shattered.glb props/big_tank_cracked.glb props/toppled_console.glb \
+            props/fallen_barrels.glb dressing/floor_cables.glb dressing/catwalk_office.glb \
+            dressing/ceiling_loading_dock.glb dressing/ceiling_guard_post.glb dressing/ceiling_mess_hall.glb \
+            dressing/ceiling_main_corridor.glb dressing/ceiling_generator_hall.glb dressing/ceiling_labs.glb \
+            dressing/ceiling_coolant_tunnel.glb dressing/ceiling_containment_wing.glb \
+            doors/bulkhead_door.glb doors/bulkhead_door_wide.glb doors/debris_pile.glb doors/roll_shutter.glb \
+            doors/vent_grate.glb doors/vent_grate_wide.glb doors/freezer_door.glb \
+            machines/weapon_rack.glb machines/weapon_rack_cold.glb machines/specimen_vault.glb; do
             test -s "$RUNNER_TEMP/models/$f" || { echo "missing $f"; exit 1; }
           done
           for name in charm_dog_tags charm_vial charm_keycard charm_dosimeter charm_coin implant_reflex implant_lung implant_spine implant_ocular implant_relay; do
@@ -51,6 +66,9 @@ jobs:
           done
           for name in street_lamp wall_lantern window_lit window_dark fence signpost; do
             test -s "$RUNNER_TEMP/models/town/$name.glb" || { echo "missing town/$name.glb"; exit 1; }
+          done
+          for name in lodge_lantern_post lodge_common_room; do
+            test -s "$RUNNER_TEMP/models/town_large/$name.glb" || { echo "missing town_large/$name.glb"; exit 1; }
           done
           for f in gear/vest_light.glb gear/vest_medium.glb gear/vest_heavy.glb; do
             test -s "$RUNNER_TEMP/models/$f" || { echo "missing $f"; exit 1; }

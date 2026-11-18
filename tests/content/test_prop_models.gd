@@ -1,10 +1,15 @@
 ## Checks the code-built prop and dressing models (plan F-15): each loads as one
 ## mesh, imports as a static lightmapped piece with baked AO shading, and monitor
-## screens keep their own Screen surface for the screen shader.
+## screens use the shared monitor screen material.
 extends GutTest
 
 const FOLDERS: Array[String] = ["res://assets/models/props/", "res://assets/models/dressing/"]
-const WITH_SCREEN: Array[String] = ["res://assets/models/props/lab_bench.glb"]
+const SCREEN: String = "res://systems/effects/monitor_screen.tres"
+const WITH_SCREEN: Array[String] = [
+	"res://assets/models/props/lab_bench.glb",
+	"res://assets/models/props/guard_desk.glb",
+	"res://assets/models/props/vending_machine.glb",
+]
 
 
 func _models() -> Array[String]:
@@ -41,9 +46,9 @@ func test_every_model_is_one_static_lightmapped_mesh() -> void:
 
 func test_monitors_keep_a_screen_surface() -> void:
 	for path: String in WITH_SCREEN:
-		var names: Array[String] = []
+		var paths: Array[String] = []
 		for mesh: MeshInstance3D in _meshes(path):
 			for i: int in mesh.mesh.get_surface_count():
 				var mat: Material = mesh.mesh.surface_get_material(i)
-				names.append(mat.resource_name if mat else "")
-		assert_has(names, "Screen", path + " has a Screen surface")
+				paths.append(mat.resource_path if mat else "")
+		assert_has(paths, SCREEN, path + " shows the shared monitor screen")

@@ -154,8 +154,12 @@ func _refresh() -> void:
 	_select(mini(_selected, maxi(items.size() - 1, 0)))
 
 
+## An unknown rarity (a save from a newer build) shows as common.
 static func _colour(item: Dictionary) -> Color:
-	return (Content.get_item(&"loot", StringName(item.get("rar", "common"))) as RarityData).colour
+	var rarity: StringName = StringName(item.get("rar", "common"))
+	if not Content.has(&"loot", rarity):
+		rarity = ItemRoller.RARITIES[0]
+	return (Content.get_item(&"loot", rarity) as RarityData).colour
 
 
 func _select(index: int) -> void:

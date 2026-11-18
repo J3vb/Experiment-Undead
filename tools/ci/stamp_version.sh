@@ -12,7 +12,7 @@ exact="$(git describe --tags --exact-match --match 'v[0-9]*' HEAD 2>/dev/null ||
 if [ -n "$exact" ]; then
   version="${exact#v}"
 else
-  last="$(git describe --tags --abbrev=0 --match 'v[0-9]*' HEAD 2>/dev/null || echo v0.0.0)"
+  last="$(git describe --tags --abbrev=0 --match 'v[0-9]*' --exclude 'v*-*' HEAD 2>/dev/null || echo v0.0.0)"
   base="${last#v}"
   base="${base%%-*}"
   IFS=. read -r major minor patch <<<"$base"

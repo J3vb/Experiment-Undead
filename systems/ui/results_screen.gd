@@ -22,6 +22,7 @@ var _shown_level: int = 1
 @onready var headshots_label: Label = %Headshots
 @onready var points_label: Label = %Points
 @onready var exfil_banner: Label = %Exfil
+@onready var gear_kept_banner: Label = %GearKept
 @onready var xp_label: Label = %Xp
 @onready var xp_bar: ProgressBar = %XpBar
 @onready var level_label: Label = %Level
@@ -40,14 +41,19 @@ func _ready() -> void:
 	theme.merge_with(UI_THEME)
 	main_menu_button.pressed.connect(func() -> void: main_menu_requested.emit())
 	restart_button.pressed.connect(func() -> void: restart_requested.emit())
-	if Net.is_online():
-		Net.holds_place = true
-		restart_button.text = "Back to hub"
+	_follow_coop(Net.is_coop())
+	Net.coop_changed.connect(_follow_coop)
 	$Background.color = get_theme_color("bg_deep", "ResultsScreen")
 
 
 func _exit_tree() -> void:
 	Net.holds_place = false
+
+
+## Alone: Restart. With friends: Back to hub. GameSession.restart() reads the rule again when pressed.
+func _follow_coop(on: bool) -> void:
+	Net.holds_place = on
+	restart_button.text = "Back to hub" if on else "Restart"
 
 
 func show_results(stats: Dictionary, seconds: int = 0, rules: XpRules = DEFAULT_RULES) -> void:
@@ -64,6 +70,7 @@ func show_results(stats: Dictionary, seconds: int = 0, rules: XpRules = DEFAULT_
 	points_label.text = _format_number(int(stats.get("points", 0)))
 	_show_loot(stats.get("loot", []), int(stats.get("loot_lost", 0)))
 	exfil_banner.visible = bool(stats.get("exfil", false))
+	gear_kept_banner.visible = not exfil_banner.visible
 	xp_label.text = "XP +%s" % _format_number(int(stats.get("xp", 0)))
 	var start: int = int(stats.get("start_total_xp", 0))
 	var total: int = int(stats.get("total_xp", start))

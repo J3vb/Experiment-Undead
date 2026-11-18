@@ -7,6 +7,8 @@ const SCENES: Array[String] = [
 	"res://levels/halcyon_labs/map.tscn",
 ]
 const BUILDER: String = "res://tools/blockout_builder.gd"
+const DECALS: String = "res://levels/halcyon_labs/decals.tscn"
+const LAYOUT: String = "res://levels/halcyon_labs/layout.json"
 const TEXTURED: Array[String] = [
 	"ceiling_stained",
 	"wall_paint",
@@ -85,6 +87,35 @@ func test_rooms_take_their_materials_from_the_layout() -> void:
 		assert_eq(material.resource_path, "res://levels/materials/%s.tres" % expect[path], path)
 	assert_false(built.get_node("plain/Walls").has_meta(&"material"), "the build-time wall material is not saved")
 	built.free()
+
+
+func test_decals_have_textures_and_lie_on_a_room_floor() -> void:
+	var rooms: Array = (JSON.parse_string(FileAccess.get_file_as_string(LAYOUT)) as Dictionary)["rooms"]
+	var decals: Node = (load(DECALS) as PackedScene).instantiate()
+	assert_gt(decals.get_child_count(), 20, "decals at doors and in every room")
+	for decal: Decal in decals.get_children():
+		assert_not_null(decal.texture_albedo, decal.name)
+		var floor_y: float = _floor_under(rooms, decal.position)
+		assert_false(is_nan(floor_y), "%s is inside a room" % decal.name)
+		if not is_nan(floor_y):
+			assert_lt(absf(decal.position.y - floor_y), decal.size.y * 0.5, "%s reaches the floor" % decal.name)
+	assert_not_null(_map_child("Decals"), "map.tscn instances decals.tscn")
+	decals.free()
+
+
+func _floor_under(rooms: Array, at: Vector3) -> float:
+	for room: Dictionary in rooms:
+		var r: Array = room["rect"]
+		if at.x >= float(r[0]) and at.x <= float(r[2]) and at.z >= float(r[1]) and at.z <= float(r[3]):
+			return float(room["floor"])
+	return NAN
+
+
+func _map_child(child: String) -> Node:
+	var map: Node = (load(SCENES[1]) as PackedScene).instantiate()
+	var found: bool = map.has_node(child)
+	map.free()
+	return self if found else null
 
 
 func _upper_material(run: Node) -> Material:

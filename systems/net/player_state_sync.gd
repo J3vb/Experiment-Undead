@@ -45,7 +45,7 @@ func _ready() -> void:
 
 
 func is_coop() -> bool:
-	return not multiplayer.multiplayer_peer is OfflineMultiplayerPeer
+	return Net.is_coop(multiplayer)
 
 
 func _physics_process(delta: float) -> void:
@@ -54,7 +54,9 @@ func _physics_process(delta: float) -> void:
 	if _player.session and _player.session.is_over:
 		return
 	if multiplayer.is_server():
-		if _player.is_downed and is_coop():
+		# Only a co-op down bleeds out: a solo Second Wind down (no bleed time) keeps the solo
+		# rule even if a friend joins during it.
+		if _player.is_downed and bleed_left > 0.0:
 			bleed_left = maxf(bleed_left - delta, 0.0)
 			if bleed_left <= 0.0:
 				_player.is_downed = false
@@ -94,7 +96,7 @@ func queue_publish() -> void:
 
 func publish() -> void:
 	_publish_queued = false
-	if multiplayer.is_server() and is_coop():
+	if is_inside_tree() and multiplayer.is_server() and is_coop():
 		_receive_state.rpc(_snapshot())
 
 
@@ -287,7 +289,7 @@ func _present() -> void:
 	_player.collision_mask = 0 if _player.is_dead else Layers.WORLD | Layers.ENEMY | Layers.BARRIER
 	_player.input_enabled = not _player.is_dead
 	_player.weapons.visible = local and not _player.is_dead
-	_player.camera_rig.tilt(25.0 if _player.is_downed else 0.0, 0.2)
+	_player.camera_rig.tilt_down(_player.is_downed)
 	_icon.visible = _player.is_downed and not local
 	if _player.is_downed:
 		_equip_sidearm()

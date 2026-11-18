@@ -106,8 +106,10 @@ func test_a_held_order_waits_on_the_results_and_the_menu_forgets_it() -> void:
 
 func test_co_op_results_offer_back_to_hub_and_hold_place_changes() -> void:
 	assert_eq(Net.host(PORT, 2), OK)
+	var friend: Node = await TwoPeers.add_friend(self, PORT)
 	var results: ResultsScreen = (load("res://systems/ui/results_screen.tscn") as PackedScene).instantiate()
 	add_child(results)
+	TwoPeers.remove_friend(friend)
 	assert_eq(results.restart_button.text, "Back to hub")
 	assert_true(Net.holds_place)
 	results.free()

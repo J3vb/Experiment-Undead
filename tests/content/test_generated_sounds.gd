@@ -26,3 +26,12 @@ func test_zombie_sounds_load() -> void:
 		if sound:
 			assert_gt(sound.get_length(), 0.0, name)
 			assert_eq(sound.loop_mode, AudioStreamWAV.LOOP_DISABLED, name)
+
+
+func test_down_screen_sounds_load() -> void:
+	for name: String in ["downed", "revived", "bled_out"]:
+		var sound: AudioStreamWAV = load("res://assets/audio/%s.wav" % name) as AudioStreamWAV
+		assert_not_null(sound, name)
+		if sound:
+			assert_gt(sound.get_length(), 0.0, name)
+			assert_eq(sound.loop_mode, AudioStreamWAV.LOOP_DISABLED, name)

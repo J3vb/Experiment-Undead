@@ -3,10 +3,10 @@ extends GutTest
 
 const SCREEN: PackedScene = preload("res://systems/ui/character_screen.tscn")
 const PROFILE_ID: StringName = &"test_character_screen"
-const PROFILE_PATH: String = "user://characters/test_character_screen.json"
 
 var screen: CharacterScreen
 var profile: CharacterProfile
+var _profile_path: String = CharacterProfile.directory() + "test_character_screen.json"
 
 
 func before_each() -> void:
@@ -37,7 +37,7 @@ func test_open_shows_profile_slots_stash_and_default_focus() -> void:
 	assert_true(screen.is_ancestor_of(screen.get_viewport().gui_get_focus_owner()))
 	assert_eq(screen.get_theme_font("font"), (screen.get_node("%ItemTooltip") as Control).get_theme_font("font"))
 	assert_not_null(screen.rig.skeleton)
-	assert_false(FileAccess.file_exists(PROFILE_PATH), "Opening does not write a save")
+	assert_false(FileAccess.file_exists(_profile_path), "Opening does not write a save")
 
 
 func test_e_equips_selected_stash_item_then_unequips_loadout() -> void:
@@ -50,7 +50,7 @@ func test_e_equips_selected_stash_item_then_unequips_loadout() -> void:
 	screen._input(_key(KEY_E))
 	assert_eq(profile.loadout[&"sidearm"], {})
 	assert_true(profile.stash.has(chosen))
-	assert_false(FileAccess.file_exists(PROFILE_PATH), "Equipment saves on close")
+	assert_false(FileAccess.file_exists(_profile_path), "Equipment saves on close")
 
 
 func test_equipment_request_reapplies_rig_and_removes_unequipped_vest() -> void:
@@ -92,7 +92,7 @@ func test_vest_charm_and_implant_equip_and_unequip_through_inventory_and_rig() -
 func test_double_click_equips_and_hover_inspects_item() -> void:
 	var button: Button = _stash_button(9)
 	button.mouse_entered.emit()
-	assert_eq((screen.get_node("%ItemTooltip") as ItemTooltip).item_name.text, "Talon DMR")
+	assert_eq((screen.get_node("%ItemTooltip") as ItemTooltip).item_name.text, "MR-28")
 	var double_click: InputEventMouseButton = InputEventMouseButton.new()
 	double_click.button_index = MOUSE_BUTTON_LEFT
 	double_click.pressed = true
@@ -238,7 +238,7 @@ func test_close_saves_equipment_and_profile_before_emitting_closed() -> void:
 	watch_signals(screen)
 	screen._close()
 	assert_signal_emitted(screen, "closed")
-	assert_true(FileAccess.file_exists(PROFILE_PATH))
+	assert_true(FileAccess.file_exists(_profile_path))
 	var saved: CharacterProfile = CharacterProfile.load_or_create(PROFILE_ID)
 	assert_eq(saved.display_name, "Rook")
 	assert_eq(saved.total_xp, profile.total_xp)
@@ -250,7 +250,7 @@ func test_escape_and_controller_b_save_and_close() -> void:
 	watch_signals(screen)
 	screen._input(_key(KEY_ESCAPE))
 	assert_signal_emitted(screen, "closed")
-	assert_true(FileAccess.file_exists(PROFILE_PATH))
+	assert_true(FileAccess.file_exists(_profile_path))
 	screen.open(profile)
 	var cancel: InputEventJoypadButton = InputEventJoypadButton.new()
 	cancel.button_index = JOY_BUTTON_B
@@ -317,6 +317,6 @@ func _key(code: Key) -> InputEventKey:
 
 
 func _remove_save() -> void:
-	for path: String in [PROFILE_PATH, PROFILE_PATH + ".tmp", PROFILE_PATH + ".v0.bak"]:
+	for path: String in [_profile_path, _profile_path + ".tmp", _profile_path + ".v0.bak"]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

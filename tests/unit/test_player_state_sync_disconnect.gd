@@ -56,3 +56,12 @@ func test_removing_peer_before_deferred_snapshot_does_not_send_an_rpc() -> void:
 	assert_engine_error_count(0, "the deferred request does not require an assigned peer")
 	assert_eq(client_player.health.current, 100.0)
 	assert_signal_not_emitted(client_player.health, "health_changed")
+
+
+func test_a_publish_queued_before_the_player_left_the_tree_does_nothing() -> void:
+	var player: Player = _add_player(self, 1)
+	player.state_sync.queue_publish()
+	remove_child(player)
+	await wait_process_frames(2)
+	assert_engine_error_count(0, "a world closing under a queued publish raises no script error")
+	player.free()

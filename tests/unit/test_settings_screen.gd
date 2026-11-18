@@ -47,7 +47,7 @@ func test_tabs_come_from_data_with_key_bindings_once_at_the_end_of_controls() ->
 	var names: Array[String] = []
 	for tab: Node in tabs.get_children():
 		names.append(String(tab.name))
-	assert_eq(names, ["Controls", "Aim", "Graphics", "Audio", "Accessibility", "Comfort"] as Array[String])
+	assert_eq(names, ["Controls", "Aim", "Graphics", "Audio", "Accessibility", "Comfort", "Network"] as Array[String])
 	assert_eq(_screen.pages[1].page, &"aim")
 	assert_eq(_graphics().page, &"graphics")
 	var controls: SettingsPage = _screen.pages[0]

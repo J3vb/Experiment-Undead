@@ -86,23 +86,40 @@ The server also prints every warning and error to stdout as
 | `player.player_spawned` / `player_died` | info | Player `net_id`, spawn position |
 | `player.weapon_has_no_grip` | warn | A gun has no `GripData`, so it shows no first-person arms. `weapon` id; once per gun per run. Add `content/grips/<base id>.tres` and set the gun's `grip` |
 | `progression.profile_save_failed` | warn | Character could not be saved; `id`, `path`, `error` (Godot Error code). Check folder permissions and disk space |
-| `progression.profile_unreadable` | warn | Existing character is unreadable, malformed or newer; file stays untouched, this match uses a temporary character. `id`, `path`; inspect nearby engine errors |
+| `progression.profile_unreadable` | warn | Existing character is unreadable or malformed; file stays untouched, this match uses a temporary character. `id`, `path`; inspect nearby engine errors |
+| `save.profile_newer` | warn | A character file was saved by a newer game version (`id`, `path`, `version` = its save_version). The file stays untouched, the main menu tells the player to update, and this run uses a temporary character. Happens after going back to an older build |
 | `settings.binding_unknown_action` | warn | `user://settings.cfg` has a key binding for an action the game no longer has (`action`); it is ignored. Normal after an action is renamed or removed |
 | `settings.binding_malformed` | warn | A saved key binding is not a list of up to 2 `{"type": "key", "physical": n}` / `{"type": "mouse", "button": n}` entries, or names Esc (`action`); that action uses its default keys |
 | `settings.display_mode_failed` | warn | The window refused the chosen display mode (`mode`: 0 Windowed, 1 Borderless, 2 Fullscreen). Usually the OS or driver does not allow exclusive fullscreen; pick Borderless |
 | `settings.row_unknown_key` | warn | A `content/settings/*.tres` row names a `section`/`key` that `Settings.DEFAULTS` does not have; the row is left off the settings screen. Fix the row or add the key |
 | `game.game_over` | info | Final stats |
 | `net.peer_connected` / `peer_disconnected` | info | Server side, peer id |
+| `net.join_refused` | info | Client side: the server refused the hello (`reason`: `WRONG_VERSION`, `CONTENT_MISMATCH`, `SERVER_FULL`, or `REFUSED` for a code from a newer server; `older`: `client`, `server` or empty for dev builds; `message`, `client_protocol`, `server_protocol`). `older` says which side to update |
 | `net.round_state_ignored` | warn | A round message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
 | `net.interaction_rejected` | warn | Server refused a client's interact request (`peer`, `reason`, `path`): `player_not_alive`, `match_over`, `unknown_path`, `out_of_range`, `grant_pending` (last gun grant not applied yet), `bad_facts` (gun facts with wrong fields or ids). At most one per second. Many `out_of_range` = `InteractionSync.REACH_SLACK` too tight |
 | `net.deploy_refused` | warn | The hub's deploy vote or `deploy()` was refused (`place`, `reason` or `hub`): an unknown place id on a deploy board, or a deploy outside the hub. A board with a typo in `place` |
 | `net.place_change_kicked` | warn | A client was sent to another place but had not left after `Net.CONNECT_TIMEOUT`, so the server dropped it (`peer`). It never got the order: check the network |
 | `net.place_changed` | info | The server changed place (`place`, `players` sent along) |
+| `net.port_busy` | warn | Enter world could not open the world's port (`port`), so the world runs offline and friends cannot join. Another game or server holds it: change the port in Settings > Network |
+| `net.upnp_opened` | info | The router opened the world's game and info ports (`port`) for an hour; renewed every 50 minutes while the game runs |
+| `net.upnp_failed` | warn | The router could not open the world's ports (`port`, `reason`: `no_router` = no UPnP router answered, `failed` = it refused the mapping). Friends on the same network can still join; internet friends need the ports opened by hand |
+| `net.upnp_cgnat` | warn | The router opened the ports but its internet address is private or provider-shared (100.64.0.0/10): internet friends cannot reach this world (`port`) |
+| `net.info_port_busy` | warn | The server browser info port (game port + 1000) is taken by another program: the world runs but browsers cannot see it (`port`) |
+| `net.info_bad_packet` | warn | A packet on the info port was not a server browser query; at most one line a second (`source`) |
+| `net.coop_started` / `coop_ended` | info | The first friend joined this world, or the last one left (`peers`): the solo or co-op rules now apply (`Net.is_coop()`) |
 | `net.go_to_place` | info | This peer loads another place (`place`, `online`) |
 | `net.join_switches_place` | info | A joining client loaded another place than the server's and switches before spawning (`from`, `to`) |
 | `net.hit_claim_rejected` | warn | Server refused a client's hit or gravity well claim (`peer`, `reason`): `player_not_alive`, `zombie_not_alive`, `hit_out_of_bounds`, `zone_missing`, `claims_too_fast`, `well_out_of_bounds`, `well_wrong_weapon` (well or orb request named a gun whose `effect` is not WELL: a mismatched build or a cheat). At most one per second |
 | `net.loadout_rejected` | warn | Server refused a client's equipped loadout (`peer`, `reason`): `not_a_dictionary`, `too_much_gear` (over 3 gear items), `too_many_guns` (more than the player's weapon slots), `unknown_gun` (gun base not in content). The server keeps the last good loadout; check that both builds have the same content |
 | `net.interaction_rate_limited` | warn | A client sent interact requests less than 0.1 s apart; extra ones are refused. At most one per second |
+| `launcher.download_failed` | warn | A release zip did not download (`version`, `result` = HTTPRequest result code, `code` = HTTP status). No network, GitHub down or a moved asset |
+| `launcher.digest_mismatch` | warn | A downloaded zip's SHA-256 is not the release's digest (`version`); nothing was installed. A cut-off download or a replaced asset |
+| `launcher.install_failed` | warn | A checked zip could not be unpacked into `versions/` (`version`, `folder`): a read-only install folder (Program Files) or a full disk |
+| `launcher.version_installed` | info | A release is unpacked and ready in `versions/<version>/` |
+| `launcher.releases_unreachable` | warn | The launcher could not read the GitHub Releases list (`result`, `code`; 403 = GitHub rate limit, 60 per hour per address); it plays offline |
+| `launcher.version_started` / `start_failed` | info / warn | Play started an installed version (`version`, `pid`) or could not (`exe`): a deleted or blocked versions folder |
+| `launcher.root_refreshed` / `root_refresh_failed` | info / warn | A started copy replaced the install folder's exe and pck (`version`, `tries`), or gave up after 15 s (`root`): the old copy was still running or the folder is read-only |
+| `launcher.server_started` / `server_stop_requested` / `server_exited` / `server_start_failed` | info / warn | The launcher's Host a server panel (`version`, `port`, `pid`, `exe`). A quick `server_exited` after start = port in use; read that server's own log |
 | `ui.unknown_screen` | warn | `UI.push` or `UI.replace` got an id with no `content/screens/<id>.tres`; `id`. Nothing opens |
 | `ui.pop_empty` | warn | `UI.pop()` with no screen open: a screen emitted `closed` twice or something popped a screen it did not push |
 | `ui.loading_failed` | warn | A root behind a loading screen failed its threaded load; `scene`. The router falls back to a plain scene change |

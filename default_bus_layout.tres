@@ -1,5 +1,8 @@
 [gd_resource type="AudioBusLayout" format=3 uid="uid://6jlawde7i6jc"]
 
+[sub_resource type="AudioEffectAmplify" id="world_fade"]
+resource_name = "WorldFade"
+
 [sub_resource type="AudioEffectCompressor" id="duck_under_music"]
 resource_name = "DuckUnderMusic"
 threshold = -36.0
@@ -20,6 +23,8 @@ bus/2/mute = false
 bus/2/bypass_fx = false
 bus/2/volume_db = 0.0
 bus/2/send = &"Master"
+bus/2/effect/0/effect = SubResource("world_fade")
+bus/2/effect/0/enabled = true
 bus/3/name = &"Weapons"
 bus/3/solo = false
 bus/3/mute = false
@@ -43,7 +48,7 @@ bus/6/solo = false
 bus/6/mute = false
 bus/6/bypass_fx = false
 bus/6/volume_db = 0.0
-bus/6/send = &"SFX"
+bus/6/send = &"Master"
 bus/7/name = &"Ambient"
 bus/7/solo = false
 bus/7/mute = false

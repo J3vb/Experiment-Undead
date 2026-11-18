@@ -84,7 +84,7 @@ func _read_xp(index: int) -> int:
 
 func _remove_profiles() -> void:
 	for id: StringName in IDS:
-		var path: String = CharacterProfile.DIRECTORY + String(id) + ".json"
+		var path: String = CharacterProfile.directory() + String(id) + ".json"
 		for file: String in [path, path + ".tmp"]:
 			if FileAccess.file_exists(file):
 				DirAccess.remove_absolute(ProjectSettings.globalize_path(file))
@@ -124,7 +124,7 @@ func test_dedicated_server_never_saves_a_character() -> void:
 	dedicated._profile_player = _player(server_root, peer_ids[0])
 	dedicated.progression.add_xp(dedicated._profile_player, 75)
 	dedicated.bank_run_xp()
-	assert_false(FileAccess.file_exists(CharacterProfile.DIRECTORY + String(IDS[2]) + ".json"))
+	assert_false(FileAccess.file_exists(CharacterProfile.directory() + String(IDS[2]) + ".json"))
 
 
 func test_different_players_bank_their_own_totals() -> void:

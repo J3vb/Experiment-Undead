@@ -1,0 +1,44 @@
+[
+  {
+    "tag_name": "v0.2.0-test.1",
+    "prerelease": true,
+    "draft": false,
+    "body": "Test build notes",
+    "html_url": "https://example.invalid/v0.2.0-test.1",
+    "assets": [
+      {"name": "ExperimentUndead-0.2.0-test.1-windows.zip", "digest": "sha256:aaa", "size": 100, "browser_download_url": "https://example.invalid/w-0.2.0-test.1.zip"},
+      {"name": "ExperimentUndead-0.2.0-test.1-linux.zip", "digest": "sha256:bbb", "size": 100, "browser_download_url": "https://example.invalid/l-0.2.0-test.1.zip"}
+    ]
+  },
+  {
+    "tag_name": "v0.1.1",
+    "prerelease": false,
+    "draft": false,
+    "body": "Stable notes",
+    "html_url": "https://example.invalid/v0.1.1",
+    "assets": [
+      {"name": "ExperimentUndead-0.1.1-windows.zip", "digest": "sha256:ccc", "size": 200, "browser_download_url": "https://example.invalid/w-0.1.1.zip"},
+      {"name": "ExperimentUndead-0.1.1-linux.zip", "digest": null, "size": 200, "browser_download_url": "https://example.invalid/l-0.1.1.zip"}
+    ]
+  },
+  {
+    "tag_name": "v0.1.0",
+    "prerelease": false,
+    "draft": false,
+    "body": "First release",
+    "html_url": "https://example.invalid/v0.1.0",
+    "assets": [
+      {"name": "ExperimentUndead-0.1.0-windows.zip", "digest": "sha256:ddd", "size": 300, "browser_download_url": "https://example.invalid/w-0.1.0.zip"},
+      {"name": "ExperimentUndead-0.1.0-linux.zip", "digest": "sha256:eee", "size": 300, "browser_download_url": "https://example.invalid/l-0.1.0.zip"}
+    ]
+  },
+  {
+    "tag_name": "v0.3.0",
+    "prerelease": false,
+    "draft": true,
+    "body": "Draft",
+    "assets": [
+      {"name": "ExperimentUndead-0.3.0-windows.zip", "digest": "sha256:fff", "size": 1, "browser_download_url": "x"}
+    ]
+  }
+]

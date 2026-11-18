@@ -230,3 +230,25 @@ MODELS = {
     "filing_cabinets": ("props/filing_cabinets.glb", build_filing_cabinets),
     "lab_papers": ("dressing/lab_papers.glb", build_lab_papers),
 }
+
+
+# Area modules import the helpers above, so they load last.
+import props_aftermath  # noqa: E402
+import props_ceiling  # noqa: E402
+import props_dock  # noqa: E402
+import props_fenlight  # noqa: E402
+import props_mess_guard  # noqa: E402
+import props_power_containment  # noqa: E402
+import props_wreck_containment  # noqa: E402
+import props_wreck_labs  # noqa: E402
+import props_wreck_mess  # noqa: E402
+
+MODELS.update(props_mess_guard.MODELS)
+MODELS.update(props_power_containment.MODELS)
+MODELS.update(props_dock.MODELS)
+MODELS.update(props_aftermath.MODELS)
+MODELS.update(props_fenlight.MODELS)
+MODELS.update(props_wreck_mess.MODELS)
+MODELS.update(props_ceiling.MODELS)
+MODELS.update(props_wreck_labs.MODELS)
+MODELS.update(props_wreck_containment.MODELS)

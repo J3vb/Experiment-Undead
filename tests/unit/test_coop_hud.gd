@@ -8,10 +8,12 @@ const COOP_HUD: GDScript = preload("res://systems/net/coop_hud.gd")
 var hud: Hud
 var player: Player
 var teammate: Player
+var friend: Node
 
 
 func before_each() -> void:
 	assert_eq(Net.host(24645, 2), OK)
+	friend = await TwoPeers.add_friend(self, 24645)
 	hud = HUD.instantiate() as Hud
 	add_child_autofree(hud)
 	hud.set_process(false)
@@ -27,6 +29,7 @@ func after_each() -> void:
 	while UI.top() != &"":
 		UI.pop()
 	Input.action_release(&"interact")
+	TwoPeers.remove_friend(friend)
 	Net.leave()
 
 
@@ -62,7 +65,7 @@ func test_down_and_dead_messages_follow_synced_flags() -> void:
 	player.is_downed = false
 	player.is_dead = true
 	hud._process(0.0)
-	assert_eq(hud.prompt_label.text, "Spectating · Respawn next round")
+	assert_eq(hud.prompt_label.text, "Spectating · Gear kept · Respawn next round")
 
 
 func test_held_input_uses_frames_and_pause_cancels() -> void:

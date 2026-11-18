@@ -29,6 +29,37 @@ the server must stop cleanly before anything is uploaded.
 
 Tags with a dash (`v0.2.0-rc.1`) become pre-releases and do not move `latest`.
 
+## Launcher, channels and updates (F-65 steps 4-6)
+
+| Channel | Tag | Who gets it |
+|---|---|---|
+| stable | `v0.1.0` | everyone (launcher default) |
+| test | `v0.1.0-test.1` (GitHub pre-release) | players who pick "Test builds" in the launcher |
+| dev | none (main builds, `0.1.1-dev.N+sha`) | Actions artifacts only; never shows the launcher |
+
+- **Install:** download `ExperimentUndead-<version>-windows.zip` from Releases, unzip it
+  anywhere you own (not Program Files), run `ExperimentUndead.exe`. That copy is the
+  launcher.
+- **Update:** the launcher reads the GitHub Releases list, downloads the newest zip for
+  its channel into `versions/<version>/` next to the exe (SHA-256 checked, complete or
+  not at all, the 2 newest kept), and Play starts it with `--from-launcher`. That copy
+  then refreshes the root exe and pck, so the next start is already new. Offline it
+  plays the newest installed version.
+- **Host a server:** the launcher's Host a server panel runs the newest installed build
+  with `--headless -- --server --port=<p> --max-players=<n> --stop-file=<f>`. Players
+  (the host too) join from Servers in the main menu. Closing the launcher stops it.
+- **Restart to update:** "your game is older" in a release build offers a button that
+  starts the root copy, which updates.
+- **Frozen from v0.1.0 (the launcher depends on them):** asset names
+  `ExperimentUndead-<version>-windows.zip`, `-linux.zip`, `-server.zip`; zip root holds
+  the exe and its pck; tags `vX.Y.Z` and `vX.Y.Z-test.N`; GitHub's `digest` field.
+- **Cut a test build:** tag `v0.1.0-test.1` on main and push it. Save version bumps go to
+  test first. A bad release is fixed by releasing a newer one (roll forward), never by
+  deleting the old one.
+- Main builds count up from the last **stable** tag (`stamp_version.sh` ignores test tags).
+- Test hooks: `--launcher` (open it in any build), `--releases-api=<url>`,
+  `--launcher-autoplay` (smoke test only).
+
 ## Version numbers
 
 - The git tag is the version. Never edit a version number by hand.
@@ -38,6 +69,23 @@ Tags with a dash (`v0.2.0-rc.1`) become pre-releases and do not move `latest`.
 - `Build.PROTOCOL_VERSION`: bump when client/server messages change.
 - `SaveFile.CURRENT_VERSION`: bump when save fields change, and add an
   upgrade step plus a test (see `systems/save/save_file.gd`).
+
+## Guards that keep old versions working
+
+- **Saved ids are permanent.** Every weapon, gear, affix, rarity and skill
+  file and every map folder can be in a player's save, so each is listed in
+  `tools/ci/saved_ids.txt`. The `quality` check fails when a listed id
+  disappears (also when its line is deleted with it) or a new one is not
+  listed. Add new ids with `python tools/ci/check_saved_ids.py --fix`. To
+  rename one, add a `SaveFile` migration and keep the old line.
+- **Save versions never go down.** `quality` fails when
+  `SaveFile.CURRENT_VERSION` is lower than at the newest stable `v*` tag.
+- **Old clients get a clear refusal.** Every Build downloads the newest
+  stable release that is not its own version, joins this build's exported
+  server with that old client and requires a `join_refused` with
+  `WRONG_VERSION` within 15 s. Releases from before the JSON handshake
+  (protocol below 17), or no release at all, print "skipped".
+- **Frozen handshake keys.** See `docs/MULTIPLAYER.md` (The handshake).
 
 ## Crash logs
 
@@ -56,12 +104,12 @@ Tags with a dash (`v0.2.0-rc.1`) become pre-releases and do not move `latest`.
 3. Copy `deploy/unraid/experiment-undead-server.xml` to
    `/boot/config/plugins/dockerMan/templates-user/` and add the container from
    **Docker**, **Add Container**, template `experiment-undead-server`.
-4. It runs as `99:100` (nobody:users) so it can write to appdata. Port 7777/udp.
+4. It runs as `99:100` (nobody:users) so it can write to appdata. Ports 7777/udp (game) and 8777/udp (server browser info; set `EU_SERVER_NAME` to name the server).
 
 Run it anywhere else:
 
 ```bash
-docker run -d --name eu-server -p 7777:7777/udp -v eu-data:/data \
+docker run -d --name eu-server -p 7777:7777/udp -p 8777:8777/udp -v eu-data:/data \
   ghcr.io/j3vb/experiment-undead-server:latest
 ```
 

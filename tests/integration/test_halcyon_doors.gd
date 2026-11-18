@@ -49,6 +49,20 @@ func test_buying_a_door_opens_its_area() -> void:
 	assert_eq(get_tree().get_nodes_in_group(&"enemy_spawn").size(), 8, "Guard Post windows join")
 
 
+func test_a_bought_bulkhead_slides_up_and_is_freed() -> void:
+	player.wallet.set_points(5000)
+	var door: Door = _door("GuardPostDoor")
+	var model: Node3D = door.get_node("Blocker/Model") as Node3D
+	var start: Vector3 = model.global_position
+	door.interact(player)
+	assert_eq(model.get_parent(), level, "the model leaves the door before the blocker goes")
+	await wait_seconds(Door.SLIDE_TIME * 0.5)
+	assert_gt(model.global_position.y, start.y + 0.2, "it is sliding up")
+	assert_almost_eq(model.global_position.x, start.x, 0.001, "straight up")
+	await wait_seconds(Door.SLIDE_TIME)
+	assert_false(is_instance_valid(model), "freed once it is out of the way")
+
+
 func test_door_stays_shut_without_points() -> void:
 	player.wallet.set_points(100)
 	var door: Door = _door("GuardPostDoor")

@@ -85,3 +85,56 @@ def test_corvid_thumbhole_and_flutes_are_carved():
     shoulder = hit("Barrel", (0.08, 0.22, 0.018), (-1, 0, 0))
     assert flute is not None and shoulder is not None
     assert flute.x < shoulder.x - 0.001
+
+
+def test_ar17_concept_shapes_skeleton_stock_quad_rail_and_open_front_sight():
+    models.reset_scene()
+    models.MODELS["rifle_ar"][1]()
+    bpy.context.view_layer.update()
+    assert hit("Receiver", (0.08, -0.36, -0.03), (-1, 0, 0)) is None, "skeleton stock has an open triangle"
+    assert hit("Receiver", (0.08, -0.36, 0.03), (-1, 0, 0)) is not None, "stock top bar stays solid"
+    for direction in ((0, 0, 1), (1, 0, 0), (-1, 0, 0)):
+        origin = Vector((0, 0.42, 0.016)) - Vector(direction) * 0.1
+        surface = hit("Receiver", origin, direction)
+        assert surface is not None and (surface - Vector((0, 0.42, 0.016))).length > 0.036, direction
+    assert hit("Receiver", (0, 0.4, 0.09), (0, 1, 0)) is None, "front sight window leaves the eye line open"
+    assert hit("Receiver", (0, 0.4, 0.075), (0, 1, 0)) is not None, "front sight post rises into the window"
+
+
+def test_vx9_concept_shapes_vertical_grip_curved_mag_and_open_red_dot():
+    models.reset_scene()
+    models.MODELS["kestrel_smg"][1]()
+    bpy.context.view_layer.update()
+    grip = hit("Receiver", (0, 0.285, -0.2), (0, 0, 1))
+    assert grip is not None and -0.102 < grip.z < -0.095, "vertical foregrip hangs under the fore-end"
+    assert hit("Receiver", (0, 0.25, -0.2), (0, 0, 1)).z > -0.025, "support hand space behind the foregrip stays clear"
+    top = hit("Magazine", (0.0, 0.2, -0.06), (0, -1, 0))
+    bottom = hit("Magazine", (0.0, 0.2, -0.21), (0, -1, 0))
+    assert bottom.y > top.y + 0.004, "magazine curves forward"
+    assert hit("Receiver", (0, -0.2, 0.077), (0, 1, 0)) is None, "red dot window and front leave the eye line open"
+
+
+def test_br12_concept_shapes_shell_holder_open_red_dot_and_no_heat_shield():
+    models.reset_scene()
+    models.MODELS["shotgun_brenner"][1]()
+    bpy.context.view_layer.update()
+    for i in range(4):
+        shell = hit("Receiver", (0.1, -0.304 + i * 0.026, -0.03), (-1, 0, 0))
+        assert shell is not None and shell.x > 0.04, f"shell {i} stands proud of the stock"
+    assert hit("Receiver", (0, 0.2, 0.06), (0, 0, -1)).z < 0.045, "no heat shield over the barrel"
+    assert hit("Receiver", (0, -0.2, 0.089), (0, 1, 0)) is None, "red dot window and barrel leave the eye line open"
+    assert len(bpy.data.objects["Receiver"].data.materials) <= 6
+
+
+def test_mr28_concept_shapes_skeleton_stock_big_turrets_and_tan_furniture():
+    models.reset_scene()
+    models.MODELS["talon_dmr"][1]()
+    bpy.context.view_layer.update()
+    assert hit("Stock", (0.08, -0.35, -0.025), (-1, 0, 0)) is None, "skeleton stock has an open triangle"
+    assert hit("Stock", (0.08, -0.35, 0.02), (-1, 0, 0)) is not None, "stock top bar stays solid"
+    turret = hit("Optic", (0, 0.039, 0.3), (0, 0, -1))
+    assert turret is not None and turret.z > 0.09 + 0.044, "elevation turret stands tall"
+    names = {mat.name for obj in bpy.data.objects if obj.type == "MESH" for mat in obj.data.materials}
+    assert {"TanWorn", "Markings", "GunMetalKnurledWorn"} <= names
+    assert "GreyPolymer" not in names
+    assert len(names) <= 6

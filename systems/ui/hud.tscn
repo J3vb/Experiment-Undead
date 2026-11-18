@@ -1,7 +1,8 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://systems/ui/hud.gd" id="1"]
 [ext_resource type="Script" path="res://systems/net/coop_hud.gd" id="coop"]
+[ext_resource type="PackedScene" path="res://systems/feel/down_screen.tscn" id="down_screen"]
 [ext_resource type="Theme" path="res://systems/ui/theme.tres" id="2"]
 [ext_resource type="Script" path="res://systems/ui/crosshair.gd" id="3"]
 [ext_resource type="Script" path="res://systems/ui/hit_marker.gd" id="4"]
@@ -95,6 +96,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="DownScreen" parent="Root" instance=ExtResource("down_screen")]
+layout_mode = 1
 
 [node name="Crosshair" type="Control" parent="Root"]
 layout_mode = 1

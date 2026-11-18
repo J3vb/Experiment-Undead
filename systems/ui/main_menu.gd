@@ -1,4 +1,5 @@
-## Solo and co-op front end with shared settings and plain-word network errors.
+## Front end: Enter world opens your own world, Servers joins someone else's. Shared settings
+## and plain-word network errors.
 class_name MainMenu
 extends Control
 
@@ -10,52 +11,70 @@ GUT (Godot Unit Test) 9.7.1, `addons/gut/`
 Butch Wesley and contributors
 https://github.com/bitwes/Gut · MIT"""
 
+const NEWER_SAVE: String = (
+	"This character was saved by a newer version of the game. "
+	+ "Update the game to play it. Your save was not changed."
+)
+
 static var launch_consumed: bool = false
 
 var _panel_tween: Tween
 var _drift_time: float = 0.0
+## Character waiting for the newer-save message to close before its screen opens.
+var _pending_profile: CharacterProfile
 
 @onready var menu: VBoxContainer = $Screens/Root/Menu
-@onready var play_button: Button = $Screens/Root/Menu/Play
-@onready var host_button: Button = $Screens/Root/Menu/Host
-@onready var join_button: Button = $Screens/Root/Menu/Join
-@onready var character_button: Button = $Screens/Root/Menu/Character
+@onready var enter_button: Button = $Screens/Root/Menu/EnterWorld
+@onready var servers_button: Button = $Screens/Root/Menu/Servers
+@onready var loadout_button: Button = $Screens/Root/Menu/Loadout
 @onready var settings_button: Button = $Screens/Root/Menu/Settings
 @onready var credits_button: Button = $Screens/Root/Menu/Credits
 @onready var credits_panel: PanelContainer = $Screens/Root/CreditsPanel
 @onready var camera: Camera3D = $Camera3D
-@onready var host_panel: PanelContainer = $Screens/Root/HostPanel
-@onready var join_panel: PanelContainer = $Screens/Root/JoinPanel
-@onready var port_field: LineEdit = $Screens/Root/HostPanel/Box/Port
-@onready var address_field: LineEdit = $Screens/Root/JoinPanel/Box/Address
 @onready var error_dialog: NetErrorDialog = $NetErrorDialog
 
 
 func _ready() -> void:
+	if _hand_over():
+		return
 	Net.cancel_place_change()
 	_bind_gamepad()
-	play_button.pressed.connect(_play_solo)
-	host_button.pressed.connect(_open_host)
-	join_button.pressed.connect(_open_join)
-	$Screens/Root/HostPanel/Box/Start.pressed.connect(_host)
-	$Screens/Root/HostPanel/Box/Back.pressed.connect(_close_coop)
-	$Screens/Root/JoinPanel/Box/Connect.pressed.connect(_join)
-	$Screens/Root/JoinPanel/Box/Back.pressed.connect(_close_coop)
-	port_field.text_submitted.connect(func(_text: String) -> void: _host())
-	address_field.text_submitted.connect(func(_text: String) -> void: _join())
+	Net.world.close()
+	enter_button.pressed.connect(enter_world)
+	servers_button.pressed.connect(_open_servers)
 	error_dialog.closed.connect(_close_error)
-	character_button.pressed.connect(_open_character)
+	loadout_button.pressed.connect(_open_character)
 	settings_button.pressed.connect(_open_settings)
 	credits_button.pressed.connect(_open_credits)
 	$Screens/Root/Menu/Quit.pressed.connect(func() -> void: get_tree().quit())
 	$Screens/Root/CreditsPanel/Box/Back.pressed.connect(_close_credits)
 	$Screens/Root/CreditsPanel/Box/Text.text = CREDITS
 	$Screens/Root.add_child(VersionLabel.new())
-	play_button.grab_focus()
+	enter_button.grab_focus()
 	if not Net.last_error.is_empty():
 		_show_error(Net.last_error["reason"], Net.last_error["details"])
 		Net.last_error.clear()
 	_launch_from_command_line.call_deferred(OS.get_cmdline_user_args())
+
+
+## "--server" runs this build as a dedicated server. A release build run from the install
+## folder opens the launcher first, once per process. A copy the launcher started refreshes
+## the root copy when the root is older.
+func _hand_over() -> bool:
+	if parse_launch(OS.get_cmdline_user_args()).has("server"):
+		UI.replace.call_deferred(&"dedicated_server")
+		return true
+	var exe_dir: String = OS.get_executable_path().get_base_dir()
+	if VersionInstaller.is_version_dir(exe_dir):
+		var refresher: VersionInstaller = VersionInstaller.new()
+		add_child(refresher)
+		refresher.refresh_root()
+	var args: PackedStringArray = LauncherScreen.launch_args()
+	if LauncherScreen.shown or not LauncherScreen.should_open(args, Build.version, OS.has_feature("template"), exe_dir):
+		return false
+	LauncherScreen.shown = true
+	UI.replace.call_deferred(&"launcher")
+	return true
 
 
 ## Command-line launches run once per process, so returning to the menu
@@ -71,9 +90,12 @@ func _launch_from_command_line(args: PackedStringArray) -> void:
 		_start_host(launch["host"])
 
 
-## "--join=address:port" -> {"join": "address:port"}; "--host" or "--host=port" -> {"host": port}.
+## "--join=address:port" -> {"join": "address:port"}; "--host" or "--host=port" -> {"host": port};
+## "--server" -> {"server": true}.
 static func parse_launch(args: PackedStringArray) -> Dictionary:
 	for arg: String in args:
+		if arg == "--server":
+			return {"server": true}
 		if arg.begins_with("--join="):
 			return {"join": arg.substr(7)}
 		if arg == "--host":
@@ -94,52 +116,23 @@ func _input(event: InputEvent) -> void:
 		return
 	if error_dialog.visible:
 		return
-	if host_panel.visible or join_panel.visible:
-		_close_coop()
-	elif credits_panel.visible:
+	if credits_panel.visible:
 		_close_credits()
-	else:
-		return
-	get_viewport().set_input_as_handled()
+		get_viewport().set_input_as_handled()
 
 
-## Play solo skips the hub and goes straight into the match.
-func _play_solo() -> void:
-	Net.place = &"match"
-	UI.replace(&"match")
+## Your own Lantern Post: open to friends on the saved port, or offline when it cannot be
+## (the pause screen says why). Nothing here joins anyone else's game.
+func enter_world() -> void:
+	Net.world.open(int(Settings.get_value(&"network", &"last_port")))
+	Net.place = &"hub"
+	UI.replace(&"hub")
 
 
-func _open_host() -> void:
-	menu.hide()
-	port_field.text = str(Settings.get_value(&"network", &"last_port"))
-	host_panel.show()
-	port_field.grab_focus()
-	port_field.select_all()
-
-
-func _open_join() -> void:
-	menu.hide()
-	address_field.text = str(Settings.get_value(&"network", &"last_address"))
-	join_panel.show()
-	address_field.grab_focus()
-	address_field.select_all()
-
-
-func _close_coop() -> void:
-	var return_focus: Button = host_button if host_panel.visible else join_button
-	host_panel.hide()
-	join_panel.hide()
-	menu.show()
-	return_focus.grab_focus()
-
-
-func _host() -> void:
-	var port: int = port_field.text.to_int()
-	if not port_field.text.is_valid_int() or port < 1 or port > 65535:
-		_show_error(&"invalid_port")
-		return
-	Settings.set_value(&"network", &"last_port", port)
-	_start_host(port)
+## The server browser: the only way into someone else's game.
+func _open_servers() -> void:
+	if UI.top().is_empty():
+		UI.push(&"server_browser")
 
 
 func _start_host(port: int) -> void:
@@ -155,12 +148,8 @@ func _start_host(port: int) -> void:
 	UI.replace(&"hub")
 
 
-func _join() -> void:
-	_start_join(address_field.text)
-
-
 func _start_join(address: String) -> void:
-	var target: String = normalized_address(address)
+	var target: String = ServerAddress.normalized(address)
 	if target.is_empty():
 		_show_error(&"bad_address")
 		return
@@ -172,60 +161,6 @@ func _start_join(address: String) -> void:
 	UI.replace(&"hub")
 
 
-## Validate before Net.join so malformed input never opens a connection.
-static func normalized_address(text: String) -> String:
-	var parts: PackedStringArray = _address_parts(text.strip_edges())
-	if parts.size() != 2 or not _valid_host(parts[0]) or not parts[1].is_valid_int():
-		return ""
-	var port: int = parts[1].to_int()
-	if port < 1 or port > 65535:
-		return ""
-	return "%s:%d" % [parts[0], port]
-
-
-static func _address_parts(address: String) -> PackedStringArray:
-	if address.begins_with("["):
-		return _bracketed_address_parts(address)
-	var colon: int = address.rfind(":")
-	if colon < 0:
-		return PackedStringArray([address, str(Net.DEFAULT_PORT)])
-	var host: String = address.substr(0, colon)
-	var port: String = address.substr(colon + 1)
-	# Keep legacy IPv6 host:port parsing; brackets disambiguate a literal's last group.
-	if address.count(":") == 1 or (host.is_valid_ip_address() and port.is_valid_int()):
-		return PackedStringArray([host, port])
-	return PackedStringArray([address, str(Net.DEFAULT_PORT)])
-
-
-static func _bracketed_address_parts(address: String) -> PackedStringArray:
-	var close: int = address.find("]")
-	if close < 0:
-		return PackedStringArray()
-	var host: String = address.substr(1, close - 1)
-	var suffix: String = address.substr(close + 1)
-	if not host.contains(":") or not host.is_valid_ip_address():
-		return PackedStringArray()
-	if suffix.is_empty():
-		return PackedStringArray([host, str(Net.DEFAULT_PORT)])
-	if not suffix.begins_with(":"):
-		return PackedStringArray()
-	return PackedStringArray([host, suffix.substr(1)])
-
-
-static func _valid_host(host: String) -> bool:
-	if host.is_empty() or host.length() > 253:
-		return false
-	if host.is_valid_ip_address():
-		return true
-	if host.replace(".", "").is_valid_int():
-		return false
-	var label_pattern: RegEx = RegEx.create_from_string("^[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?$")
-	for label: String in host.split("."):
-		if label_pattern.search(label) == null:
-			return false
-	return true
-
-
 func _show_error(reason: StringName, details: Dictionary = {}) -> void:
 	$Screens/Root.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED
 	$Screens/Root.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED
@@ -235,12 +170,12 @@ func _show_error(reason: StringName, details: Dictionary = {}) -> void:
 func _close_error() -> void:
 	$Screens/Root.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_INHERITED
 	$Screens/Root.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_INHERITED
-	if host_panel.visible:
-		port_field.grab_focus()
-	elif join_panel.visible:
-		address_field.grab_focus()
+	if _pending_profile:
+		var profile: CharacterProfile = _pending_profile
+		_pending_profile = null
+		(UI.push(&"character") as CharacterScreen).open(profile)
 	else:
-		play_button.grab_focus()
+		enter_button.grab_focus()
 
 
 func _open_settings() -> void:
@@ -269,8 +204,15 @@ func _close_credits() -> void:
 
 
 func _open_character() -> void:
-	if UI.top().is_empty():
-		(UI.push(&"character") as CharacterScreen).open(CharacterProfile.load_or_create(&"solo"))
+	if not UI.top().is_empty():
+		return
+	var profile: CharacterProfile = CharacterProfile.load_or_create(&"solo")
+	if not profile.saved_by_newer_version:
+		(UI.push(&"character") as CharacterScreen).open(profile)
+		return
+	_pending_profile = profile
+	_show_error(&"newer_save")
+	error_dialog.message_label.text = NEWER_SAVE
 
 
 func _bind_gamepad() -> void:

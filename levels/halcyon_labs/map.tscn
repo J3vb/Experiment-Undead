@@ -12,9 +12,24 @@
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/blockout.tscn" id="blockout"]
 [ext_resource type="PackedScene" path="res://systems/effects/film_post.tscn" id="film"]
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/ambience.tscn" id="ambience"]
+[ext_resource type="PackedScene" path="res://levels/halcyon_labs/decals.tscn" id="decals"]
+[ext_resource type="PackedScene" path="res://levels/halcyon_labs/signs.tscn" id="signs"]
+[ext_resource type="PackedScene" path="res://levels/halcyon_labs/fenlight.tscn" id="fenlight"]
+[ext_resource type="PackedScene" path="res://systems/effects/fire_spot.tscn" id="fire"]
+[ext_resource type="Texture2D" path="res://assets/textures/signs/tank_c01.png" id="tank_c01"]
+[ext_resource type="Texture2D" path="res://assets/textures/signs/tank_c02.png" id="tank_c02"]
+[ext_resource type="Texture2D" path="res://assets/textures/signs/tank_c03.png" id="tank_c03"]
 [ext_resource type="Material" path="res://levels/materials/rust.tres" id="rust"]
-[ext_resource type="Material" path="res://levels/materials/wood.tres" id="wood"]
 [ext_resource type="PackedScene" path="res://systems/interactables/door.tscn" id="door"]
+[ext_resource type="PackedScene" path="res://assets/models/doors/bulkhead_door.glb" id="bulkhead_door"]
+[ext_resource type="PackedScene" path="res://assets/models/machines/weapon_rack.glb" id="weapon_rack"]
+[ext_resource type="PackedScene" path="res://assets/models/machines/weapon_rack_cold.glb" id="weapon_rack_cold"]
+[ext_resource type="PackedScene" path="res://assets/models/doors/bulkhead_door_wide.glb" id="bulkhead_door_wide"]
+[ext_resource type="PackedScene" path="res://assets/models/doors/debris_pile.glb" id="debris_pile"]
+[ext_resource type="PackedScene" path="res://assets/models/doors/roll_shutter.glb" id="roll_shutter"]
+[ext_resource type="PackedScene" path="res://assets/models/doors/vent_grate.glb" id="vent_grate"]
+[ext_resource type="PackedScene" path="res://assets/models/doors/vent_grate_wide.glb" id="vent_grate_wide"]
+[ext_resource type="PackedScene" path="res://assets/models/doors/freezer_door.glb" id="freezer_door"]
 [ext_resource type="PackedScene" path="res://systems/interactables/power_switch.tscn" id="power"]
 [ext_resource type="PackedScene" path="res://systems/interactables/wall_buy.tscn" id="wallbuy"]
 [ext_resource type="Resource" path="res://content/weapons/rifle_ar.tres" id="rifle"]
@@ -67,18 +82,6 @@ agent_radius = 0.5
 agent_max_climb = 0.5
 agent_max_slope = 45.0
 
-[sub_resource type="StandardMaterial3D" id="door_dev"]
-albedo_color = Color(0.85, 0.4, 0.08, 1)
-roughness = 0.7
-emission_enabled = true
-emission = Color(0.85, 0.4, 0.08, 1)
-emission_energy_multiplier = 0.15
-albedo_texture = ExtResource("painted_metal_albedo")
-normal_enabled = true
-normal_texture = ExtResource("painted_metal_normal")
-uv1_triplanar = true
-uv1_world_triplanar = true
-
 [sub_resource type="StandardMaterial3D" id="machine_dev"]
 albedo_color = Color(0.15, 0.75, 0.3, 1)
 roughness = 0.6
@@ -90,6 +93,21 @@ normal_enabled = true
 normal_texture = ExtResource("painted_metal_normal")
 uv1_triplanar = true
 uv1_world_triplanar = true
+
+[sub_resource type="BoxShape3D" id="door_block_2"]
+size = Vector3(2, 2.6, 0.5)
+
+[sub_resource type="BoxShape3D" id="door_block_4"]
+size = Vector3(4, 2.6, 0.5)
+
+[sub_resource type="BoxShape3D" id="door_block_3"]
+size = Vector3(3, 2.6, 0.5)
+
+[sub_resource type="BoxShape3D" id="vent_block_2"]
+size = Vector3(1.6, 2.6, 0.3)
+
+[sub_resource type="BoxShape3D" id="vent_block_3"]
+size = Vector3(3, 2.6, 0.3)
 
 [sub_resource type="BoxShape3D" id="door_area_2"]
 size = Vector3(2, 2.6, 0.8)
@@ -105,6 +123,9 @@ size = Vector3(0.6, 1.2, 1.2)
 
 [sub_resource type="BoxShape3D" id="wallbuy_area"]
 size = Vector3(0.6, 1.2, 2)
+
+[sub_resource type="BoxShape3D" id="wallbuy_board"]
+size = Vector3(0.1, 0.8, 1.6)
 
 [sub_resource type="BoxMesh" id="wreck_mesh"]
 size = Vector3(1.4, 0.9, 1.1)
@@ -127,42 +148,6 @@ navigation_mesh = SubResource("navmesh")
 
 [node name="Props" type="Node3D" parent="NavigationRegion3D"]
 
-[node name="Truck" type="StaticBody3D" parent="NavigationRegion3D/Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 1.4, 54)
-script = ExtResource("block")
-size = Vector3(2.6, 2.8, 7)
-material = ExtResource("rust")
-
-[node name="CrateA" type="StaticBody3D" parent="NavigationRegion3D/Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0.5, 52)
-script = ExtResource("block")
-size = Vector3(1, 1, 1)
-material = ExtResource("wood")
-
-[node name="CrateB" type="StaticBody3D" parent="NavigationRegion3D/Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.2, 1.4, 52.1)
-script = ExtResource("block")
-size = Vector3(0.8, 0.8, 0.8)
-material = ExtResource("wood")
-
-[node name="CrateC" type="StaticBody3D" parent="NavigationRegion3D/Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.3, 0.45, 53.4)
-script = ExtResource("block")
-size = Vector3(0.9, 0.9, 1.2)
-material = ExtResource("wood")
-
-[node name="CrateD" type="StaticBody3D" parent="NavigationRegion3D/Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 0.6, 56)
-script = ExtResource("block")
-size = Vector3(1.2, 1.2, 1.2)
-material = ExtResource("wood")
-
-[node name="Drum" type="StaticBody3D" parent="NavigationRegion3D/Props"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0.45, 49)
-script = ExtResource("block")
-size = Vector3(0.6, 0.9, 0.6)
-material = ExtResource("rust")
-
 [node name="TruckFire" type="OmniLight3D" parent="NavigationRegion3D/Props"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 3.2, 52)
 light_color = Color(1, 0.55, 0.2, 1)
@@ -178,15 +163,19 @@ opens_area = &"guard_post"
 cost = 750
 needs_power = false
 label = "door"
+slide_up = 2.6
 
 [node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/GuardPostDoor"]
 shape = SubResource("door_area_2")
 
 [node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/GuardPostDoor"]
-script = ExtResource("block")
-size = Vector3(2, 2.6, 0.5)
-material = SubResource("door_dev")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/GuardPostDoor/Blocker"]
+shape = SubResource("door_block_2")
+
+[node name="Model" parent="NavigationRegion3D/Doors/GuardPostDoor/Blocker" instance=ExtResource("bulkhead_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, 0)
 
 [node name="MessHallDebris" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 1.3, 46)
@@ -199,10 +188,13 @@ label = "debris"
 shape = SubResource("door_area_4")
 
 [node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/MessHallDebris"]
-script = ExtResource("block")
-size = Vector3(4, 2.6, 0.5)
-material = SubResource("door_dev")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/MessHallDebris/Blocker"]
+shape = SubResource("door_block_4")
+
+[node name="Model" parent="NavigationRegion3D/Doors/MessHallDebris/Blocker" instance=ExtResource("debris_pile")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, 0)
 
 [node name="CorridorDoorGuardPost" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1.3, 30)
@@ -210,15 +202,19 @@ opens_area = &"main_corridor"
 cost = 1000
 needs_power = false
 label = "door"
+slide_up = 2.6
 
 [node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/CorridorDoorGuardPost"]
 shape = SubResource("door_area_2")
 
 [node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/CorridorDoorGuardPost"]
-script = ExtResource("block")
-size = Vector3(2, 2.6, 0.5)
-material = SubResource("door_dev")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/CorridorDoorGuardPost/Blocker"]
+shape = SubResource("door_block_2")
+
+[node name="Model" parent="NavigationRegion3D/Doors/CorridorDoorGuardPost/Blocker" instance=ExtResource("bulkhead_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, 0)
 
 [node name="CorridorDoorMessHall" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 1.3, 30)
@@ -226,15 +222,19 @@ opens_area = &"main_corridor"
 cost = 1000
 needs_power = false
 label = "door"
+slide_up = 2.6
 
 [node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/CorridorDoorMessHall"]
 shape = SubResource("door_area_2")
 
 [node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/CorridorDoorMessHall"]
-script = ExtResource("block")
-size = Vector3(2, 2.6, 0.5)
-material = SubResource("door_dev")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/CorridorDoorMessHall/Blocker"]
+shape = SubResource("door_block_2")
+
+[node name="Model" parent="NavigationRegion3D/Doors/CorridorDoorMessHall/Blocker" instance=ExtResource("bulkhead_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, 0)
 
 [node name="GeneratorHallDoor" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 1.3, 26)
@@ -242,15 +242,19 @@ opens_area = &"generator_hall"
 cost = 1250
 needs_power = false
 label = "door"
+slide_up = 2.6
 
 [node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/GeneratorHallDoor"]
 shape = SubResource("door_area_2")
 
 [node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/GeneratorHallDoor"]
-script = ExtResource("block")
-size = Vector3(2, 2.6, 0.5)
-material = SubResource("door_dev")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/GeneratorHallDoor/Blocker"]
+shape = SubResource("door_block_2")
+
+[node name="Model" parent="NavigationRegion3D/Doors/GeneratorHallDoor/Blocker" instance=ExtResource("bulkhead_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, 0)
 
 [node name="LabsDebris" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 1.3, 26)
@@ -263,10 +267,13 @@ label = "debris"
 shape = SubResource("door_area_4")
 
 [node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/LabsDebris"]
-script = ExtResource("block")
-size = Vector3(4, 2.6, 0.5)
-material = SubResource("door_dev")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/LabsDebris/Blocker"]
+shape = SubResource("door_block_4")
+
+[node name="Model" parent="NavigationRegion3D/Doors/LabsDebris/Blocker" instance=ExtResource("debris_pile")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, 0)
 
 [node name="TunnelWestShutter" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 28, 1.3, 12.5)
@@ -274,15 +281,19 @@ opens_area = &"coolant_tunnel"
 cost = 0
 needs_power = true
 label = "shutter"
+slide_up = 2.6
 
 [node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/TunnelWestShutter"]
 shape = SubResource("door_area_3")
 
 [node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/TunnelWestShutter"]
-script = ExtResource("block")
-size = Vector3(3, 2.6, 0.5)
-material = SubResource("door_dev")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/TunnelWestShutter/Blocker"]
+shape = SubResource("door_block_3")
+
+[node name="Model" parent="NavigationRegion3D/Doors/TunnelWestShutter/Blocker" instance=ExtResource("roll_shutter")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, 0)
 
 [node name="TunnelEastShutter" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 36, 1.3, 12.5)
@@ -290,15 +301,19 @@ opens_area = &"coolant_tunnel"
 cost = 0
 needs_power = true
 label = "shutter"
+slide_up = 2.6
 
 [node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/TunnelEastShutter"]
 shape = SubResource("door_area_3")
 
 [node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/TunnelEastShutter"]
-script = ExtResource("block")
-size = Vector3(3, 2.6, 0.5)
-material = SubResource("door_dev")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/TunnelEastShutter/Blocker"]
+shape = SubResource("door_block_3")
+
+[node name="Model" parent="NavigationRegion3D/Doors/TunnelEastShutter/Blocker" instance=ExtResource("roll_shutter")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, 0)
 
 [node name="ContainmentDoor" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 52, 1.3, 18)
@@ -306,15 +321,19 @@ opens_area = &"containment_wing"
 cost = 1500
 needs_power = true
 label = "door"
+slide_up = 2.6
 
 [node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/ContainmentDoor"]
 shape = SubResource("door_area_4")
 
 [node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/ContainmentDoor"]
-script = ExtResource("block")
-size = Vector3(4, 2.6, 0.5)
-material = SubResource("door_dev")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/ContainmentDoor/Blocker"]
+shape = SubResource("door_block_4")
+
+[node name="Model" parent="NavigationRegion3D/Doors/ContainmentDoor/Blocker" instance=ExtResource("bulkhead_door_wide")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, 0)
 
 [node name="VentGrateMessHall" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 58, 2.7, 45)
@@ -326,10 +345,13 @@ label = "vent grate"
 shape = SubResource("door_area_2")
 
 [node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/VentGrateMessHall"]
-script = ExtResource("block")
-size = Vector3(1.6, 2.6, 0.3)
-material = ExtResource("rust")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/VentGrateMessHall/Blocker"]
+shape = SubResource("vent_block_2")
+
+[node name="Model" parent="NavigationRegion3D/Doors/VentGrateMessHall/Blocker" instance=ExtResource("vent_grate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, 0)
 
 [node name="VentGrateContainment" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 62.5, -1.7, 32)
@@ -341,25 +363,32 @@ label = "vent grate"
 shape = SubResource("door_area_3")
 
 [node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/VentGrateContainment"]
-script = ExtResource("block")
-size = Vector3(3, 2.6, 0.3)
-material = ExtResource("rust")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/VentGrateContainment/Blocker"]
+shape = SubResource("vent_block_3")
+
+[node name="Model" parent="NavigationRegion3D/Doors/VentGrateContainment/Blocker" instance=ExtResource("vent_grate_wide")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, 0)
 
 [node name="FreezerDoor" parent="NavigationRegion3D/Doors" instance=ExtResource("door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.5, 1.3, 46)
 opens_area = &"cold_room"
 cost = 0
 label = "freezer door"
+slide_up = 2.6
 
 [node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/FreezerDoor"]
 shape = SubResource("door_area_2")
 
 [node name="Blocker" type="StaticBody3D" parent="NavigationRegion3D/Doors/FreezerDoor"]
-script = ExtResource("block")
-size = Vector3(2, 2.6, 0.5)
-material = ExtResource("rust")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Doors/FreezerDoor/Blocker"]
+shape = SubResource("door_block_2")
+
+[node name="Model" parent="NavigationRegion3D/Doors/FreezerDoor/Blocker" instance=ExtResource("freezer_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.3, 0)
 
 [node name="Machines" type="Node3D" parent="NavigationRegion3D"]
 
@@ -371,6 +400,9 @@ serum = ExtResource("serum_quickhands")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 1, 30.5)
 serum = ExtResource("serum_second_wind")
 max_sales = 3
+
+[node name="Body" parent="NavigationRegion3D/Machines/MedDispenserSecondWind" index="1"]
+baked = false
 
 [node name="MedDispenserIronhide" parent="NavigationRegion3D/Machines" instance=ExtResource("meddisp")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 1, 26.5)
@@ -432,17 +464,23 @@ weapon = ExtResource("brenner")
 shape = SubResource("wallbuy_area")
 
 [node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/WallBuyBrennerTrench"]
-script = ExtResource("block")
-size = Vector3(0.1, 0.8, 1.6)
-material = ExtResource("wood")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyBrennerTrench/Board"]
+shape = SubResource("wallbuy_board")
+
+[node name="Model" parent="NavigationRegion3D/Machines/WallBuyBrennerTrench/Board" instance=ExtResource("weapon_rack")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, -0.4, 0)
+
+[node name="GunMount" type="Marker3D" parent="NavigationRegion3D/Machines/WallBuyBrennerTrench/Board"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -0.09, 0.06, -0.1)
 
 [node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyBrennerTrench"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
 billboard = 1
 pixel_size = 0.004
 font_size = 40
-text = "Brenner Trench 750"
+text = "BR-12 750"
 
 [node name="WallBuyKestrel" parent="NavigationRegion3D/Machines" instance=ExtResource("wallbuy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.25, 1.4, 32)
@@ -452,17 +490,23 @@ weapon = ExtResource("kestrel")
 shape = SubResource("wallbuy_area")
 
 [node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/WallBuyKestrel"]
-script = ExtResource("block")
-size = Vector3(0.1, 0.8, 1.6)
-material = ExtResource("wood")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyKestrel/Board"]
+shape = SubResource("wallbuy_board")
+
+[node name="Model" parent="NavigationRegion3D/Machines/WallBuyKestrel/Board" instance=ExtResource("weapon_rack")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, -0.4, 0)
+
+[node name="GunMount" type="Marker3D" parent="NavigationRegion3D/Machines/WallBuyKestrel/Board"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, 0.06, 0.1)
 
 [node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyKestrel"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
 billboard = 1
 pixel_size = 0.004
 font_size = 40
-text = "Kestrel SMG 1000"
+text = "VX-9 1000"
 
 [node name="WallBuyCoachman" parent="NavigationRegion3D/Machines" instance=ExtResource("wallbuy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.25, 1.4, 38)
@@ -472,10 +516,16 @@ weapon = ExtResource("coachman")
 shape = SubResource("wallbuy_area")
 
 [node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/WallBuyCoachman"]
-script = ExtResource("block")
-size = Vector3(0.1, 0.8, 1.6)
-material = ExtResource("wood")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyCoachman/Board"]
+shape = SubResource("wallbuy_board")
+
+[node name="Model" parent="NavigationRegion3D/Machines/WallBuyCoachman/Board" instance=ExtResource("weapon_rack")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, -0.4, 0)
+
+[node name="GunMount" type="Marker3D" parent="NavigationRegion3D/Machines/WallBuyCoachman/Board"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, 0.06, 0.1)
 
 [node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyCoachman"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
@@ -492,17 +542,23 @@ weapon = ExtResource("talon")
 shape = SubResource("wallbuy_area")
 
 [node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/WallBuyTalon"]
-script = ExtResource("block")
-size = Vector3(0.1, 0.8, 1.6)
-material = ExtResource("wood")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyTalon/Board"]
+shape = SubResource("wallbuy_board")
+
+[node name="Model" parent="NavigationRegion3D/Machines/WallBuyTalon/Board" instance=ExtResource("weapon_rack")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, -0.4, 0)
+
+[node name="GunMount" type="Marker3D" parent="NavigationRegion3D/Machines/WallBuyTalon/Board"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, 0.06, 0.1)
 
 [node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyTalon"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
 billboard = 1
 pixel_size = 0.004
 font_size = 40
-text = "Talon DMR 1500"
+text = "MR-28 1500"
 
 [node name="PowerSwitch" parent="NavigationRegion3D/Machines" instance=ExtResource("power")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 1.3, 16)
@@ -530,17 +586,23 @@ weapon = ExtResource("rifle")
 shape = SubResource("wallbuy_area")
 
 [node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/WallBuyRifle"]
-script = ExtResource("block")
-size = Vector3(0.1, 0.8, 1.6)
-material = ExtResource("wood")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/WallBuyRifle/Board"]
+shape = SubResource("wallbuy_board")
+
+[node name="Model" parent="NavigationRegion3D/Machines/WallBuyRifle/Board" instance=ExtResource("weapon_rack")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, -0.4, 0)
+
+[node name="GunMount" type="Marker3D" parent="NavigationRegion3D/Machines/WallBuyRifle/Board"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -0.09, 0.06, -0.1)
 
 [node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/WallBuyRifle"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
 billboard = 1
 pixel_size = 0.004
 font_size = 40
-text = "AR-7 Rifle 1200"
+text = "AR-17 1200"
 
 [node name="CryoRack" parent="NavigationRegion3D/Machines" instance=ExtResource("wallbuy")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 53.5, 1.4, 50.75)
@@ -551,10 +613,16 @@ once_per_player = true
 shape = SubResource("wallbuy_area")
 
 [node name="Board" type="StaticBody3D" parent="NavigationRegion3D/Machines/CryoRack"]
-script = ExtResource("block")
-size = Vector3(0.1, 0.8, 1.6)
-material = ExtResource("rust")
-baked = false
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="NavigationRegion3D/Machines/CryoRack/Board"]
+shape = SubResource("wallbuy_board")
+
+[node name="Model" parent="NavigationRegion3D/Machines/CryoRack/Board" instance=ExtResource("weapon_rack_cold")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, -0.4, 0)
+
+[node name="GunMount" type="Marker3D" parent="NavigationRegion3D/Machines/CryoRack/Board"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.09, 0.06, 0.1)
 
 [node name="Label" type="Label3D" parent="NavigationRegion3D/Machines/CryoRack"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
@@ -741,6 +809,41 @@ area = &"coolant_tunnel"
 
 [node name="Ambience" parent="." instance=ExtResource("ambience")]
 
+[node name="Decals" parent="." instance=ExtResource("decals")]
+
+[node name="Signs" parent="." instance=ExtResource("signs")]
+
+[node name="Fenlight" parent="." instance=ExtResource("fenlight")]
+
+[node name="TankCodes" type="Node3D" parent="."]
+
+[node name="C01" type="Decal" parent="TankCodes"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 68, -2.7, 11.35)
+size = Vector3(0.9, 0.4, 0.4)
+texture_albedo = ExtResource("tank_c01")
+modulate = Color(1, 1, 1, 0.85)
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
+[node name="C02" type="Decal" parent="TankCodes"]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 72.3, -2.7, 24.05)
+size = Vector3(0.9, 0.4, 0.4)
+texture_albedo = ExtResource("tank_c02")
+modulate = Color(1, 1, 1, 0.8)
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
+[node name="C03" type="Decal" parent="TankCodes"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 64, -2.7, 14.65)
+size = Vector3(0.9, 0.4, 0.4)
+texture_albedo = ExtResource("tank_c03")
+modulate = Color(1, 1, 1, 0.75)
+distance_fade_enabled = true
+distance_fade_begin = 25.0
+distance_fade_length = 5.0
+
 [node name="CoopTruckGap1" type="Marker3D" parent="ZombieSpawns"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.5, 0.1, 62)
 script = ExtResource("spawn")
@@ -801,12 +904,8 @@ transform = Transform3D(0.87, 0, -0.5, 0, 1, 0, 0.5, 0, 0.87, 36.1, 0.45, 61.3)
 mesh = SubResource("wreck_mesh")
 gi_mode = 2
 
-[node name="Fire" type="OmniLight3D" parent="TruckWreckage"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 1.4, 61.5)
-light_color = Color(1, 0.55, 0.2, 1)
-light_energy = 1.5
-light_bake_mode = 0
-omni_range = 5.0
+[node name="Fire" parent="TruckWreckage" instance=ExtResource("fire")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.5, 0.9, 61.0)
 
 [node name="FilmPost" parent="." instance=ExtResource("film")]
 

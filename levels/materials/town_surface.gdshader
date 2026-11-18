@@ -1,6 +1,8 @@
 // Lantern Post surfaces from world position, so grey-box blocks of any size
 // get stone courses, planks, slate or cobbles without UVs or texture files.
-// pattern: 0 stone wall, 1 planks, 2 slate roof, 3 cobbles, 4 snow, 5 plaster with timber beams.
+// pattern: 0 stone wall, 1 planks, 2 slate roof, 3 cobbles, 4 snow, 5 plaster with timber beams,
+// 6 wet mud road with wheel ruts, puddles and slush at the edges, 7 round-log grain (lodge models).
+// Code-built models also multiply in their baked AO vertex colour (COLOR is white on plain blocks).
 shader_type spatial;
 
 uniform int pattern = 0;
@@ -70,6 +72,21 @@ void fragment() {
 		joint = c.x;
 		color *= mix(0.7, 1.2, c.y) * mix(0.85, 1.1, grain);
 		rough = mix(roughness_value, 0.12, wetness * smoothstep(0.45, 0.65, grain) + joint * wetness * 0.6);
+	} else if (pattern == 6) {
+		float ruts = 1.0 - smoothstep(0.0, 0.5, abs(abs(world_pos.x) - 1.1));
+		float puddle = smoothstep(0.6, 0.66, texture(noise, uv * 0.11 + vec2(0.5, 0.2)).r + ruts * 0.08);
+		float edge = world_pos.z < -1.0 ? abs(world_pos.x) : abs(world_pos.x) * 0.36;
+		float slush = smoothstep(2.4, 3.9, edge + (texture(noise, uv * 0.12).r - 0.5) * 2.0);
+		slush *= 1.0 - puddle;
+		color *= mix(0.75, 1.15, fine) * mix(1.0, 0.7, ruts);
+		color = mix(color, vec3(0.58, 0.62, 0.68) * mix(0.85, 1.0, fine), slush * 0.85);
+		color = mix(color, color * 0.4, puddle);
+		rough = mix(mix(roughness_value, 0.5, wetness), 0.03, puddle);
+		rough = mix(rough, 0.7, slush);
+	} else if (pattern == 7) {
+		float streak = texture(noise, vec2(uv.x * 0.12, uv.y * 3.5)).r;
+		float knot = smoothstep(0.78, 0.86, texture(noise, uv * 0.9 + vec2(0.13, 0.57)).r);
+		color *= mix(0.65, 1.2, streak) * mix(0.9, 1.05, fine) * (1.0 - knot * 0.35);
 	} else if (pattern == 4) {
 		color *= mix(0.86, 1.04, grain) * mix(0.95, 1.03, fine);
 	} else {
@@ -85,8 +102,8 @@ void fragment() {
 	color *= 1.0 - dirt;
 	float snow = snow_on_top * smoothstep(0.35, 0.75, up + (grain - 0.5) * 0.4);
 	color = mix(color, vec3(0.86, 0.9, 0.95) * mix(0.9, 1.0, fine), snow);
-	ALBEDO = color;
+	ALBEDO = color * COLOR.rgb;
 	ROUGHNESS = mix(rough + joint * 0.1, 0.75, snow);
 	NORMAL_MAP = normalize(vec3((fine - 0.5) * 0.35, (grain - 0.5) * 0.25, 1.0)) * 0.5 + 0.5;
-	NORMAL_MAP_DEPTH = 1.0 + joint * 2.0;
+	NORMAL_MAP_DEPTH = (1.0 + joint * 2.0) * (rough < 0.1 ? 0.1 : 1.0);
 }

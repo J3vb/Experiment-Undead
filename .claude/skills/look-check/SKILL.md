@@ -10,8 +10,12 @@ PR gets a render next to its reference.
 
 ## 1. Render
 
-No display in a cloud container, so wrap Godot in `xvfb-run`. Without a GPU
-use OpenGL (works with software rendering); with a GPU use Vulkan.
+No display in a cloud container, so wrap Godot in `xvfb-run`. Cloud sessions
+have Mesa's software Vulkan (lavapipe, installed by the session-start hook), so
+render with the game's real Forward+ renderer (SSAO, glow, shadows):
+`--rendering-driver vulkan --rendering-method forward_plus`. It is slower than
+OpenGL (about 45 s for one gun in the weapon review) but judges light and
+materials as the game shows them. OpenGL is fine for quick shape checks.
 
 ```bash
 # Godot renders (lighting, materials, scenes)
@@ -19,6 +23,10 @@ xvfb-run -s "-screen 0 1600x900x24" ./godot --path . --rendering-driver opengl3 
 xvfb-run -s "-screen 0 1600x900x24" ./godot --path . --rendering-driver opengl3 -s res://tools/look_shot.gd
 xvfb-run -s "-screen 0 1600x900x24" ./godot --path . --rendering-driver opengl3 -s res://tools/gun_lineup.gd
 xvfb-run -s "-screen 0 1600x900x24" ./godot --path . --rendering-driver opengl3 res://tools/screenshot.tscn
+
+# Guns with real lighting: booth, 10 m, hip and ADS views per rarity
+xvfb-run -a -s "-screen 0 1920x1080x24" ./godot --path . --rendering-driver vulkan --rendering-method forward_plus \
+  res://tools/weapon_review.tscn -- --out /tmp/weapon-review --guns rifle_ar
 
 # Gun plates from the committed .glb files (CPU Blender, no Godot)
 python tools/render_weapon_comparison.py --out screenshots/weapons
@@ -33,7 +41,7 @@ python tools/render_weapon_comparison.py --out screenshots/weapons
 | `tools/render_weapon_comparison.py` | `side.png`, `first_person.png` | `docs/design/images/weapon_comparison_*.png` |
 
 `screenshots/` is git-ignored. OpenGL renders skip SSR, SDFGI and some glow,
-so judge shape, colour and value there, not final lighting. The game pauses
+so judge shape, colour and value there, not final lighting; use Forward+ for that. The game pauses
 when its window loses focus; that does not matter for these scripts.
 
 A new kind of visual (a prop, a machine) with no render script: add a few lines

@@ -5,6 +5,9 @@ extends Control
 signal closed
 
 const KEEP_SECONDS: int = 15
+## Rows stop growing past this width on ultrawide screens; the panel centres instead.
+const MAX_CONTENT_WIDTH: float = 1800.0
+const SIDE_MARGIN: int = 48
 
 var fade: Tween
 var pages: Array[SettingsPage] = []
@@ -37,9 +40,22 @@ func _ready() -> void:
 	%Revert.pressed.connect(revert)
 	%Defaults.pressed.connect(reset_page)
 	%Back.pressed.connect(_close)
+	get_viewport().size_changed.connect(_on_viewport_resized)
+	_on_viewport_resized()
 	if is_visible_in_tree():
 		_fade_in()
 		(%Tabs as TabContainer).get_tab_bar().grab_focus()
+
+
+func _on_viewport_resized() -> void:
+	fit_width(get_viewport_rect().size.x)
+
+
+## Uses the screen width, not this panel's, because the margins themselves widen the panel.
+func fit_width(screen_width: float) -> void:
+	var side: int = maxi(SIDE_MARGIN, int((screen_width - MAX_CONTENT_WIDTH) / 2.0))
+	$Margin.add_theme_constant_override(&"margin_left", side)
+	$Margin.add_theme_constant_override(&"margin_right", side)
 
 
 ## Fades in with a 12 px slide; reduce motion keeps only the fade.

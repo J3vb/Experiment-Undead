@@ -233,3 +233,21 @@ func test_left_click_on_open_pack_stays_with_its_buttons() -> void:
 	Settings.reset_binding(&"pack_drop")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(Settings.config_path))
 	Settings.config_path = old_path
+
+
+func test_unknown_rarity_and_affix_from_a_newer_save_show_as_common_without_errors() -> void:
+	var common: RarityData = Content.get_item(&"loot", ItemRoller.RARITIES[0]) as RarityData
+	var item: Dictionary = {
+		"uid": "future",
+		"base": "vest_light",
+		"rar": "test_future_rarity",
+		"ilvl": 9,
+		"aff": [["test_future_affix", 3, 0.5]]
+	}
+	service.pack.add(item)
+	overlay.set_open(true)
+	assert_eq(overlay.slots[0].get_theme_color("font_color"), common.colour)
+	assert_eq(overlay.feed.modulate, common.colour)
+	assert_eq(overlay.tooltip.item_name.text, "Lantern Rig")
+	assert_true(overlay.tooltip.visible)
+	overlay.set_open(false)

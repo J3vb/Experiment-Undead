@@ -1,6 +1,6 @@
 # Plan: Finish Halcyon Labs
 
-Status: Approved
+Status: Done
 Roadmap: F-13
 Phase: P4 (v0.1 Vertical slice), co-op points for P7
 Size: M
@@ -292,12 +292,16 @@ step 5.
 
 ## Acceptance
 
-- [ ] Mess Hall table loop has a navmesh path all the way round (test).
-- [ ] Every prop sits in its room and clear of doors, machines and spawns (test).
-- [ ] 4 co-op-only spawn points, unused below 3 players (test, soak).
-- [ ] Vent drop works one way solo, both ways at 3+ (test).
-- [ ] Secret opens the Cold Room and gives a Cryo Lance once per player (test).
-- [ ] Lightmap re-baked and fps above 120 at the 4 spots (GPU agent report).
+- [x] Mess Hall table loop has a navmesh path all the way round (test: `test_halcyon_labs.gd` `test_mess_hall_tables_make_a_loop`).
+- [x] Every prop sits in its room and clear of doors, machines and spawns (test: `test_props_sit_in_their_rooms_clear_of_doors_machines_and_spawns`).
+- [x] 4 co-op-only spawn points, unused below 3 players (tests: `test_spawn_points_follow_the_rules`, `test_spawner.gd` `test_coop_points_wait_for_three_players`, `test_zombie_relocate.gd` `test_coop_point_is_not_used_below_three_players`; soak green).
+- [x] Vent drop works one way solo, both ways at 3+ (tests: `test_vent_ledge_is_out_of_jump_reach_but_the_step_reaches_it`, `test_vent_step.gd`).
+- [x] Secret opens the Cold Room and gives a Cryo Lance once per player (tests: `test_radio_puzzle.gd`, `test_coop_secret.gd`).
+- [x] Lightmap re-baked and fps above 120 at the 4 spots (PR #296: Mess Hall 250, Main Corridor 221, Containment 410, Loading Dock 474 avg fps; 1% lows 157 to 266).
+
+Steps merged: 1 #226, 2 #229, 3 #233, 4 #236 and #238, 5 #296.
+
+Follow-ups (look, not blocking): #297 (bake barely shows, Containment very dark, wreckage hard to see from the Dock, vent ledge check, Windows-only `test_screens.gd` failure).
 
 ## Risks
 

@@ -42,6 +42,7 @@ _(Diagram not copied: computed from the formulas below · rounds 1 to 30, solo.)
 
 | Rounds | Shamble (1.2 m/s) | Jog (2.6 m/s) | Run (4.2 m/s) | Sprint (5.6 m/s) |
 | --- | --- | --- | --- | --- |
+| 2026-11-17 | Co-op | Every game is joinable: Enter world opens your own Lantern Post to friends (router port opened automatically), alone it plays like solo; Play solo and Host and play are gone. Joining is only through the Servers screen: saved, recent and LAN servers, add by address, no master server. | [MULTIPLAYER.md](../MULTIPLAYER.md) Worlds and the browser, [ADR 0013](../adr/0013-every-game-joinable.md), PRs #306 #311 #312 #315 #319 |
 | 1 to 3 | 100% | 0% | 0% | 0% |
 | 4 to 6 | 60% | 40% | 0% | 0% |
 | 7 to 9 | 30% | 50% | 20% | 0% |
@@ -506,6 +507,9 @@ Design changes since the Nov 14, 2026 copy, newest first. Add one row in the sam
 
 | Date | Area | Change | Detail |
 | --- | --- | --- | --- |
+| 2026-11-17 | UI | Screens follow the person's concept art: the one main action button per screen is bio-green (Enter World, Join Server, Select Character); main menu gets Enter World, Servers, Character, Loadout, Progression, Settings, Exit, a profile card and a news card. | [ui-hud.md](ui-hud.md) UI style, screens 1 and 2 |
+| 2026-11-17 | Characters | Character select picks a preset survivor (name, role, bio, 3 small traits) instead of making your own; progress is per survivor (provisional). | [ui-hud.md](ui-hud.md) screen 3, roadmap F-67 |
+| 2026-11-17 | HUD | Match HUD gets an always-on health panel (number and bar), an objective list top right, the area name under the round, and grenade and tactical slots by the ammo. No minimap, armour or medkits. | [ui-hud.md](ui-hud.md) screen 10 |
 | 2026-11-17 | Gore | Full gore is stronger, picked from renders: blood bursts have 24 flecks (was 12) and each death lays a 1.6x pool plus 2 small splats. Head pops on headshot kills; Gore setting Full / Reduced / Off on the Graphics page. | [game-feel.md](game-feel.md) Blood and gore, plan zombie-sounds-gore step 4 |
 | 2026-11-17 | Campaign | Long campaign: maps come in acts of four (Act I = the first four maps), each map has a boss reached through a mid-run Sublevel descent, Lantern Post grows per act, and endgame hooks are named. | [lore.md](lore.md), PR #201, roadmap F-60 |
 | 2026-11-16 | Process | Plan first: a feature whose roadmap row says "needed" gets an approved plan in `docs/plans/` before any code. `docs/ROADMAP.md` is the build order. | [PROCESS.md](../PROCESS.md), PR #172 |

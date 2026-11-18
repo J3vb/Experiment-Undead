@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SettingData" format=3]
+
+[ext_resource type="Script" path="res://systems/ui/setting_data.gd" id="1_setting"]
+
+[resource]
+script = ExtResource("1_setting")
+page = &"network"
+section = &"network"
+key = &"open_to_friends"
+label = "Let friends join my world"
+hint = "Enter world opens your world on the port below so friends can join it from their server browser. Off keeps it private."
+kind = &"toggle"
+order = 10

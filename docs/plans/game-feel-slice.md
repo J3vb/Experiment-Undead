@@ -1,6 +1,6 @@
 # Plan: Game feel and death screen
 
-Status: Building
+Status: Done
 Roadmap: F-16 / no issue (audit of the v0.1 slice against docs/design/game-feel.md)
 Phase: P1 + P4 (feel layer the slice still misses)
 Size: M
@@ -331,15 +331,16 @@ budget.
 
 ## Acceptance
 
-- [ ] Every gun has a FeelData within the validator ranges (content test).
-- [ ] Bullet direction is identical with shake at 0% and 100% (unit test).
-- [ ] Both comfort sliders at 0 remove all camera shake and punch (unit test).
-- [ ] Hitstop never pauses the simulation and never exceeds 4 per second (unit test).
+- [x] Every gun has a FeelData within the validator ranges (content test). `test_feel_data.gd`: `test_every_weapon_has_feel`, `test_feel_values_in_validator_ranges`.
+- [x] Bullet direction is identical with shake at 0% and 100% (unit test). `test_camera_feel.gd`: `test_trace_basis_identical_with_shake_off_and_on`.
+- [x] Both comfort sliders at 0 remove all camera shake and punch (unit test). `test_camera_feel.gd`: `test_comfort_zero_removes_all_motion`; `test_hitstop.gd`: `test_comfort_zero_skips_hitstop_and_other_players`.
+- [x] Hitstop never pauses the simulation and never exceeds 4 per second (unit test). `test_hitstop.gd`: `test_gun_still_fires_during_a_hold`, `test_fifth_hitstop_in_a_second_is_skipped`.
 - [ ] Death fades to black with world sound dropping, then results or spectate;
       UI sound stays audible and world buses are always restored (unit test + play-test).
-- [ ] The results screen says "Gear kept" after a death (unit test).
-- [ ] Soak stays green.
-- [ ] The person's feel play-test (list in the handoff).
+      Unit side: `test_down_screen.gd`. Play-test still open.
+- [x] The results screen says "Gear kept" after a death (unit test). `test_results_screen.gd`: `test_stats_exfil_and_default_focus`.
+- [x] Soak stays green (required `soak` check on every step PR).
+- [ ] The person's feel play-test (list in the handoff). Open.
 
 ## Risks
 

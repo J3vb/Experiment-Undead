@@ -1,6 +1,6 @@
 # Menus, HUD and Screen Flow
 
-Source: copy of the design doc (UI/UX spec) as of Nov 14, 2026. Where this file and the code differ, the code and `docs/DECISIONS.md` win.
+Source: copy of the design doc (UI/UX spec) as of Nov 14, 2026, with screens 1, 2, 3 and 10 updated on Nov 17, 2026 to the person's concept art ([concepts/screens/screens_concept.jpg](concepts/screens/screens_concept.jpg)). Where this file and the code differ, the code and `docs/DECISIONS.md` win.
 
 ## Summary
 
@@ -8,7 +8,7 @@ The game has 15 screens in 3 places: the front end (before you join a server), t
 
 **Rules every screen follows**
 
-1. **Two clicks to play.** From the main menu, Continue puts you in the town with your last character; from the town, the Deploy Gate is the only way into a match.
+1. **Two clicks to play.** From the main menu, Enter World puts you in your own town with your last character; from the town, the Deploy Gate is the only way into a match.
 2. **Easy to read.** Atkinson Hyperlegible by default (Lexend and OpenDyslexic as options), body text never below 24 px at 1080p, left-aligned, no italics, no long all-caps text, short labels. A text size slider scales every screen, not only the HUD.
 3. **The middle of the HUD stays empty.** Only the crosshair, hitmarkers and the interaction prompt live in the centre.
 4. **Colour always has a second signal.** Rarity has a colour, a shape, a name and pips (Common circle with 1 pip up to Prototype hazard triangle with 6). Low ammo turns orange and shows LOW. This keeps colour-blind players covered.
@@ -26,7 +26,9 @@ Two-way arrows are screens that open on top and close with Esc or B. The first-l
 
 ## UI style
 
-Menus look like containment-facility terminals: dark blue-black glass panels, thin teal-grey borders, and one bright accent per screen. Bio-green stays reserved for the experiment (Prototype loot, power-ups, the Vault), so it never appears as a plain button colour.
+Menus look like containment-facility terminals: dark blue-black glass panels, thin teal-grey borders, and one bright accent per screen. Bio-green is for the experiment (Prototype loot, power-ups, the Vault) and for **one main action button per screen** (Enter World, Join Server, Select Character, the launcher's PLAY), as in the concept art (the person, 2026-11-17). Every other button, focus ring and selected row stays teal.
+
+**Front-end layout (from the concept art).** Front-end screens use a left column of menu rows or tabs, each with a small line icon, and the selected row gets a teal bar on its left edge. Content sits in large glass panels. The one main action is a wide green button with dark text and a soft green glow, at the bottom right of the screen's content or at the top of the menu column.
 
 | Token | Hex | Used for |
 | --- | --- | --- |
@@ -36,12 +38,12 @@ Menus look like containment-facility terminals: dark blue-black glass panels, th
 | line | #2C3B44 | Borders, dividers |
 | text | #E6ECEC | Main text |
 | text\_dim | #8FA3A8 | Labels, hints, disabled |
-| accent | #7FD6E0 | Focus ring, selected item, primary button (cold fluorescent teal) |
+| accent | #7FD6E0 | Focus ring, selected item, secondary buttons (cold fluorescent teal) |
 | warn | #FF9F1C | Low ammo, warnings |
 | danger | #C3201B | Round number, damage, death, delete |
 | headshot | #FFC845 | Headshot hitmarker and kill numbers |
 | xp | #E3CF9A | XP bar and level-up (brass) |
-| experiment | #8DFF3A | Prototype, power-ups, Vault only |
+| experiment | #8DFF3A | Prototype, power-ups, Vault, and the one main action button per screen (gradient #A6FF66 to #6FD626, text bg\_deep) |
 
 Rarity colours come from the style guide: Common #D9D9D2, Uncommon #3FE0C8, Rare #3D7DFF, Epic #A64DFF, Legendary #FF8A1C, Prototype #8DFF3A. Each item shows rarity four ways: border colour, rarity shape (circle for Common up to hazard triangle for Prototype), rarity name in the tooltip, and 1 to 6 pips.
 
@@ -61,35 +63,58 @@ Shown once, before the main menu, and again from Settings. One page with big pre
 
 ### 1. Main menu
 
-A slow camera drift over the burning supply truck at the Halcyon Labs dock, with the menu on the left third.
+A live 3D scene: your selected character stands in the snow at the Halcyon Labs outer gate at night, under a green Fenlight aurora, with the Oriel Biotechnic building and its red warning lights behind. Slow camera drift, falling snow. The menu sits on the left third over a dark fade.
 
-- **Continue** (default focus): joins the last server with the last character. Greyed out on first launch.
-- **Play**: opens the server browser.
-- **Play solo**: starts a private local server in the background and goes straight to character select. Same code path as online.
-- **Host and play**: same as solo, but opens the port so friends can join. Asks for a server name and password once.
-- **Settings**, **Credits**, **Quit**.
-- Bottom right: game version and build number, for bug reports.
+- **Top left:** the wordmark "EXPERIMENT: UNDEAD" (UNDEAD in bio-green) with the four-point Fenlight star, and the line "A Fenlight survival story".
+- **Enter World** (green, default focus): starts your own Lantern Post with the selected character (open to friends, F-66).
+- **Servers**: the server browser (screen 2).
+- **Character**: character select (screen 3).
+- **Loadout**: the Character screen (screen 5) for the selected character.
+- **Progression**: the Skill tree (screen 6) for the selected character.
+- **Settings**, **Exit**.
+- **Top right, profile card:** portrait, character name, level and a brass XP bar. Click it or press C to change character. Never a real name: the mockup uses "Survivor".
+- **Bottom right, news card:** the latest update's title and one line, from the patch notes bundled with the build (no internet feed), with dots to page through the last 3. Replaces the concept's season banner: there are no seasons.
+- **Bottom left:** game version and build number, for bug reports.
 
 ![Main menu mockup](images/ui_main_menu.jpg)
 
-### 2. Server browser and direct connect
+### 2. Server browser
 
-There is no master server, so the list holds servers you added or joined before, plus servers found on your local network (LAN broadcast on UDP 24600).
+There is no master server (F-66, ADR 0006), so the list holds servers you added or joined before, plus servers found on your local network: the browser sends an info query to each server's info port (game port + 1000, so 8777 for 7777) and broadcasts it on the LAN.
 
-- Columns: name, players (3/8), map in progress, ping, password lock. Sorted by ping.
-- **Direct connect** field: address and port, with a password field that appears when the server asks for one.
-- Right-click or Y on a row: favourite, rename, remove.
-- Errors in plain words: "Server is full (8/8)", "Wrong password", "Version mismatch: server 0.3.1, you 0.3.0".
+- **Left column tabs:** All, Favourites, Recent, LAN, and Refresh at the bottom. The concept's Official, Community and Modded tabs and its Region filter need a master server, so they are left out.
+- **Filters:** Map, Players, Show full, Show other versions, and a search box.
+- **Columns:** favourite star, server name, now playing (hub or map and round), players (3 / 8), ping (signal bars plus ms, orange above 80 ms), tags (LAN, Full, version in orange when it does not match yours). Sorted by ping.
+- **Add by address** under the list: address and port, then Add and join. No password field until P8.
+- **Detail panel** at the bottom for the selected row: map picture, name, what it is playing, version check, address, tags, players, and a green **Join Server** button.
+- Favourite, rename and remove from a row (F, right-click or Y).
+- Errors in plain words: "Server is full (8/8)", "Version mismatch: server 0.4.1, you 0.4.0".
 
 ![Server browser mockup](images/ui_server_browser.jpg)
 
-### 3. Character select and create
+### 3. Character select
 
-Up to 6 character slots, stored in `user://characters/`. Each card shows name, level, the 3 skill branches as small bars, and the loadout primary with its rarity border.
+Built in F-67 (plan needed). You pick one of a small roster of **preset survivors**, each with a name, a role, a short bio and 3 fixed traits (the person picked this over making your own character, 2026-11-17). Skills and loot still make your build; traits are a small flavour on top.
 
-- Create: name, body type, 4 face presets, outfit colour. No class choice: your build comes from skills and loot.
-- Delete needs you to type the character's name.
-- Import and export a character file, so players can move PCs or back up.
+- **Left column:** a portrait for each survivor with name and level (no level shown if never played), the selected one with a teal frame.
+- **Middle:** the selected survivor as a live 3D model in their equipped gear, lit by a warm lamp in a dark room. Drag or right stick to turn it.
+- **Right panel:** name (large), role ("Field Lead · Salvager"), a 2-line bio, **Traits** (icon, name, one line each), then your progress with this survivor: level, brass XP bar, best round, and the equipped guns as small rarity cards.
+- **Select Character** (green) under the panel: back to the main menu with this survivor on the profile card.
+- Export and import a save file, so players can move PCs or back up.
+
+**Provisional, for the F-67 plan to settle:**
+
+- **Progress is per survivor:** each survivor has their own save (`user://characters/<survivor_id>.json`: level, skills, stash, Scrap), so playing a new survivor starts at level 1. This keeps today's one-file-per-character save.
+- **Starting roster of 4** (names and bios are placeholders until the lore pass; no real people's names, ever):
+
+| Survivor | Role | Bio | Traits |
+| --- | --- | --- | --- |
+| Elias Kell | Field Lead · Salvager | Former Cordon logistics sergeant. Knows the zone and its people. | Tenacious (less damage while downed), Field Experience (more ammo carried), Team Anchor (nearby squadmates regenerate a little faster between rounds) |
+| Noor Wouters | Medic | Night nurse at Halcyon Labs who got out on Day 0. | Quick Hands (faster revives), Triage (revived squadmates get back more health), Calm (less screen shake when hit) |
+| Jonas Leclercq | Engineer | Kessel Dam turbine fitter, now keeps Lantern Post's lamps lit. | Tinkerer (cheaper barricade repair points), Heavy Lifter (faster weapon swap), Night Shift (longer power-up timers) |
+| Ines Haelen | Lab Tech | Oriel sample technician who knows how Fenlight behaves. | Sample Sense (Fenlight samples and drops show farther away), Cold Read (see a special zombie's tell a bit earlier), Steady (less sway when aiming) |
+
+- **Trait numbers** come from the balance sheet, small (around 5 to 15%), and use existing stat keys where one exists. A new data type (`SurvivorData` in `content/survivors/`) holds name, role, bio, portrait, model and trait list.
 
 ![Character select mockup](images/ui_character_select.jpg)
 
@@ -152,13 +177,15 @@ Map art, the map name, and one rotating tip. A progress bar, and the names of sq
 
 ### 10. Match HUD
 
-Follows the design doc table. Additions:
+Follows the design doc table. Additions (the concept art on 2026-11-17 added the health panel, objective list, item slots and area name):
 
-- **Top right:** squad cards (name, health bar, down state with bleed-out timer) and pinned contracts.
-- **Bottom left, above serums:** field ability icon with a cooldown ring, and the Pack count (4/6).
+- **Top left:** round number, and under it the map and the area you are in ("Halcyon Labs · Containment").
+- **Top right:** an objective list (exfil steps, map events, pinned contracts with a count, done ones ticked and struck through), then squad cards (name, health bar, down state with bleed-out timer).
+- **Bottom left:** field ability icon with a cooldown ring, serums and the Pack count (4/6) in one row, and under it the health panel: portrait, health number and max (100 / 150) and a health bar. The red vignette under 40 HP and the heartbeat stay.
 - **Bottom centre:** power-up timers, and a small item drop feed ("Rare Talon DMR" in rarity colour) that fades after 4 s.
-- **Health:** no health bar for yourself, like the design doc: red vignette under 40 HP and a short heartbeat. A thin bar only appears when Ironhide or gear raises max health above 150, so the extra health is readable.
+- **Bottom right:** points, then the grenade and tactical slots (icon, count, key G and Q) next to the ammo panel (gun name with rarity shape, magazine big, reserve small).
 - **Exfil:** from round 10, every 5 rounds, a marker and a 60 s hold bar appear at the top centre.
+- **Not taken from the concept:** a minimap (Halcyon Labs is small; later if a bigger map needs it), armour and medkits (the game has neither), and a zombies-remaining count.
 
 ![Match HUD mockup over a first-playable screenshot](images/ui_match_hud.jpg)
 
@@ -192,6 +219,7 @@ Exfil uses the same screen with a green "Exfiltrated" banner and the exfil cache
 
 Pages: Controls, Aim, Video, Audio, Accessibility, Comfort, with a search box at the top that finds any setting by name. Each row is a label, a control, and a one-line hint under it. The full list of rows lives in the [Controls and accessibility plan](controls.md); this doc only covers the layout. Changes apply live, with "Revert" and "Defaults" at the bottom. Video changes that need a restart say so.
 
+- **Network tab (F-66):** Let friends join my world, Open router port automatically, World name, port.
 - **Accessibility tab:** text size, colour-blind mode (3 presets for hitmarkers, drops and rarity), subtitles for audio tells, screen shake, reduce motion, hold or toggle for ADS, sprint and crouch, aim assist for controller.
 - **Controls tab:** every action from the input map, with keyboard and controller columns and a "press a key" rebind.
 
@@ -247,13 +275,14 @@ UI is built in the same phases as the roadmap, so no screen is made before the s
 | P2 Wave loop | Round number, points with floating numbers, interaction prompt, power-up timers, serum row, simple results screen |
 | P4 Map 1 (v0.1) | Main menu, Loading, final HUD polish, results screen in final look |
 | P5 Levels and skills | XP bar, level-up toast, Skill tree, field ability icon |
-| P6 Loot (v0.2) | Item card and tooltip, Pack overlay, drop feed, Character screen (loadout, stash), results loot column, character select |
+| P6 Loot (v0.2) | Item card and tooltip, Pack overlay, drop feed, Character screen (loadout, stash), results loot column, character select (F-67) |
 | P7 Co-op | Squad cards, down and revive states, results View squad |
 | P8 Server package | Server browser, direct connect, Host and play |
 | P9 Town hub (v1.0) | Town HUD, stations (Workbench, Quartermaster, Contracts, Records), Deploy Gate, player list and inspect, chat |
 
 **Provisional decisions (taken without a review, change any of them)**
 
-- **Main menu background: a live 3D scene** of the Halcyon Labs dock, reusing Map 1 with a slow camera drift. A pre-rendered video is the fallback if loading takes too long.
+- **Main menu background: a live 3D scene** of the selected character at the Halcyon Labs outer gate at night (snow, green aurora), from the concept art. A pre-rendered video is the fallback if loading takes too long.
+- **Main menu Loadout and Progression** open the same Character screen and Skill tree as in town, for the selected character. **News card** reads the patch notes bundled with the build.
 - **Pack overlay: the game keeps running at full speed**, solo too. Only mouse look pauses. This keeps it a quick check, not a safe spot.
 - **Controller: supported at launch**, following the controller layouts in the [Controls and accessibility plan](controls.md). Every screen gets a default focus and button glyphs from P0, so this costs little up front.

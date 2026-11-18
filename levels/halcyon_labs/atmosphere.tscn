@@ -3,7 +3,7 @@
 [ext_resource type="Material" path="res://levels/materials/pipe.tres" id="pipe"]
 [ext_resource type="Script" path="res://systems/level/atmosphere.gd" id="atmosphere"]
 [ext_resource type="PackedScene" path="res://systems/effects/spark_spot.tscn" id="spark"]
-[ext_resource type="Material" path="res://systems/effects/monitor_screen.tres" id="screen"]
+[ext_resource type="PackedScene" path="res://systems/effects/fire_spot.tscn" id="fire"]
 [ext_resource type="Material" path="res://levels/materials/fluorescent.tres" id="tube"]
 [ext_resource type="AudioStream" path="res://assets/audio/ambience/steam_hiss.ogg" id="hiss"]
 [ext_resource type="AudioStream" path="res://assets/audio/ambience/machine_hum.ogg" id="hum"]
@@ -29,6 +29,10 @@ emission_enabled = true
 emission = Color(0.765, 0.125, 0.106, 1)
 emission_energy_multiplier = 3.0
 roughness = 0.3
+
+[sub_resource type="BoxMesh" id="red_lamp_mesh"]
+material = SubResource("alarm_glass")
+size = Vector3(0.22, 0.12, 0.08)
 
 [sub_resource type="CylinderMesh" id="dome_mesh"]
 material = SubResource("alarm_glass")
@@ -66,7 +70,7 @@ billboard_mode = 1
 
 [sub_resource type="QuadMesh" id="dust_mesh"]
 material = SubResource("dust_mat")
-size = Vector2(0.008, 0.008)
+size = Vector2(0.016, 0.016)
 
 [sub_resource type="ParticleProcessMaterial" id="dust_big_hall"]
 emission_shape = 3
@@ -182,7 +186,7 @@ color_ramp = SubResource("fade_tex")
 [sub_resource type="StandardMaterial3D" id="smoke_mat"]
 transparency = 1
 vertex_color_use_as_albedo = true
-albedo_color = Color(0.09, 0.09, 0.09, 0.55)
+albedo_color = Color(0.09, 0.09, 0.09, 0.7)
 billboard_mode = 3
 particles_anim_h_frames = 1
 particles_anim_v_frames = 1
@@ -190,7 +194,7 @@ particles_anim_loop = false
 
 [sub_resource type="QuadMesh" id="smoke_mesh"]
 material = SubResource("smoke_mat")
-size = Vector2(2.2, 2.2)
+size = Vector2(3, 3)
 
 [sub_resource type="ParticleProcessMaterial" id="ember_process"]
 emission_shape = 3
@@ -220,16 +224,16 @@ albedo = Color(0.6, 0.7, 0.7, 1)
 height_falloff = 1.5
 edge_fade = 0.3
 
-[sub_resource type="BoxMesh" id="monitor_body"]
-material = ExtResource("pipe")
-size = Vector3(0.5, 0.36, 0.12)
-
-[sub_resource type="QuadMesh" id="monitor_screen_mesh"]
-size = Vector2(0.44, 0.3)
+[sub_resource type="FogMaterial" id="research_mist"]
+density = 0.35
+albedo = Color(0.55, 0.85, 0.45, 1)
+emission = Color(0.06, 0.14, 0.03, 1)
+height_falloff = 0.8
+edge_fade = 0.4
 
 [sub_resource type="BoxMesh" id="cable_mesh"]
 material = ExtResource("pipe")
-size = Vector3(0.025, 1.0, 0.025)
+size = Vector3(0.04, 1.0, 0.04)
 
 [sub_resource type="BoxMesh" id="lamp_housing"]
 material = ExtResource("pipe")
@@ -318,8 +322,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.16, 0)
 [node name="Light" type="SpotLight3D" parent="Beacons/BeaconWest/Spin"]
 transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 0, 0)
 light_color = Color(0.765, 0.125, 0.106, 1)
-light_energy = 6.0
-light_volumetric_fog_energy = 2.0
+light_energy = 10.0
+light_volumetric_fog_energy = 3.0
 light_bake_mode = 0
 distance_fade_enabled = true
 distance_fade_begin = 20.0
@@ -353,8 +357,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.16, 0)
 [node name="Light" type="SpotLight3D" parent="Beacons/BeaconEast/Spin"]
 transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 0, 0)
 light_color = Color(0.765, 0.125, 0.106, 1)
-light_energy = 6.0
-light_volumetric_fog_energy = 2.0
+light_energy = 10.0
+light_volumetric_fog_energy = 3.0
 light_bake_mode = 0
 distance_fade_enabled = true
 distance_fade_begin = 20.0
@@ -374,7 +378,7 @@ autoplay = &"spin"
 cast_shadow = 0
 gi_mode = 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 2.5, 38)
-amount = 120
+amount = 180
 lifetime = 12.0
 preprocess = 12.0
 visibility_range_end = 30.0
@@ -386,7 +390,7 @@ draw_pass_1 = SubResource("dust_mesh")
 cast_shadow = 0
 gi_mode = 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 2.5, 16)
-amount = 120
+amount = 180
 lifetime = 12.0
 preprocess = 12.0
 visibility_range_end = 30.0
@@ -398,7 +402,7 @@ draw_pass_1 = SubResource("dust_mesh")
 cast_shadow = 0
 gi_mode = 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 1.7, 18)
-amount = 80
+amount = 120
 lifetime = 12.0
 preprocess = 12.0
 visibility_range_end = 30.0
@@ -410,7 +414,7 @@ draw_pass_1 = SubResource("dust_mesh")
 cast_shadow = 0
 gi_mode = 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 1.7, 28)
-amount = 80
+amount = 120
 lifetime = 12.0
 preprocess = 12.0
 visibility_range_end = 30.0
@@ -494,7 +498,7 @@ draw_pass_1 = SubResource("drip_mesh")
 cast_shadow = 0
 gi_mode = 0
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 3.0, 53)
-amount = 60
+amount = 100
 lifetime = 6.0
 preprocess = 6.0
 visibility_range_end = 30.0
@@ -522,6 +526,49 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 3.35, 27)
 [node name="Labs" parent="Sparks" instance=ExtResource("spark")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.5, 3.35, 24.5)
 
+[node name="MessHall" parent="Sparks" instance=ExtResource("spark")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.4, 2.1, 37.5)
+
+[node name="KitchenFires" type="Node3D" parent="."]
+
+[node name="Stove" parent="KitchenFires" instance=ExtResource("fire")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.35, 0.95, 30.78)
+
+[node name="Pan" parent="KitchenFires" instance=ExtResource("fire")]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 49.15, 0.95, 30.78)
+
+[node name="RedLamps" type="Node3D" parent="."]
+
+[node name="MessNorthExit" type="MeshInstance3D" parent="RedLamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.3, 2.2, 30.16)
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("red_lamp_mesh")
+
+[node name="MessSouthExit" type="MeshInstance3D" parent="RedLamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.3, 2.2, 45.84)
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("red_lamp_mesh")
+
+[node name="CorridorMessExit" type="MeshInstance3D" parent="RedLamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.3, 2.2, 29.84)
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("red_lamp_mesh")
+
+[node name="CorridorGuardExit" type="MeshInstance3D" parent="RedLamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.3, 2.2, 29.84)
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("red_lamp_mesh")
+
+[node name="CorridorLabsExit" type="MeshInstance3D" parent="RedLamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.3, 2.2, 26.16)
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("red_lamp_mesh")
+
 [node name="Fog" type="Node3D" parent="."]
 
 [node name="ContainmentFloor" type="FogVolume" parent="Fog"]
@@ -529,38 +576,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68, -2.4, 18)
 size = Vector3(16, 1.4, 28)
 material = SubResource("floor_fog")
 
+[node name="ResearchRoom" type="FogVolume" parent="Fog"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.6, 1.0, 10.75)
+size = Vector3(3.8, 2.0, 0.9)
+material = SubResource("research_mist")
+
 [node name="CoolantTunnel" type="FogVolume" parent="Fog"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0.6, 12.5)
 size = Vector3(8, 1.2, 3)
 material = SubResource("floor_fog")
-
-[node name="Monitors" type="Node3D" parent="."]
-
-[node name="GuardDeskLeft" type="MeshInstance3D" parent="Monitors"]
-cast_shadow = 0
-transform = Transform3D(0.966, 0, 0.259, 0, 1, 0, -0.259, 0, 0.966, 16.4, 1.08, 40.1)
-gi_mode = 0
-mesh = SubResource("monitor_body")
-
-[node name="Screen" type="MeshInstance3D" parent="Monitors/GuardDeskLeft"]
-cast_shadow = 0
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.061)
-gi_mode = 0
-mesh = SubResource("monitor_screen_mesh")
-surface_material_override/0 = ExtResource("screen")
-
-[node name="GuardDeskRight" type="MeshInstance3D" parent="Monitors"]
-cast_shadow = 0
-transform = Transform3D(0.966, 0, -0.259, 0, 1, 0, 0.259, 0, 0.966, 17.6, 1.08, 40.1)
-gi_mode = 0
-mesh = SubResource("monitor_body")
-
-[node name="Screen" type="MeshInstance3D" parent="Monitors/GuardDeskRight"]
-cast_shadow = 0
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.061)
-gi_mode = 0
-mesh = SubResource("monitor_screen_mesh")
-surface_material_override/0 = ExtResource("screen")
 
 [node name="SwingingLamp" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.5, 3.5, 28)

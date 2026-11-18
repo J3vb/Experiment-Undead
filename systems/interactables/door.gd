@@ -1,15 +1,20 @@
 ## Buyable door or debris. Buying it removes the door (and its blocker child),
 ## opens its area so that area's spawn points join, and rebakes the navmesh.
-## Doors that open the same area open together. A door with cost 0 that needs
+## A door with slide_up moves its Model up out of the way while the blocker is
+## already gone. Doors that open the same area open together. A door with cost 0 that needs
 ## power opens by itself when the power comes on. Clients open doors the
 ## server lists as removed; only the server rebakes.
 class_name Door
 extends Interactable
 
+const SLIDE_TIME: float = 0.8
+
 @export var opens_area: StringName
 @export var cost: int = 1000
 @export var needs_power: bool = false
 @export var label: String = "door"
+## Metres the Model slides up when the door opens; 0 makes it vanish at once.
+@export var slide_up: float = 0.0
 
 var is_open: bool = false
 var level: Level
@@ -60,6 +65,7 @@ func open() -> void:
 		buy.reparent(level)
 		buy.finished.connect(buy.queue_free)
 		buy.play()
+	_slide_model()
 	# Free the blocker now so the navmesh rebake no longer sees it.
 	get_node("Blocker").free()
 	retire()
@@ -71,3 +77,15 @@ func open() -> void:
 	level.open_area(opens_area)
 	if multiplayer.is_server():
 		level.rebake_navigation()
+
+
+## Visual only: the Model leaves the blocker, slides up (into the ceiling) and is freed.
+func _slide_model() -> void:
+	var model: Node3D = get_node_or_null(^"Blocker/Model") as Node3D
+	if model == null or slide_up <= 0.0:
+		return
+	model.reparent(level)
+	var tween: Tween = model.create_tween()
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(model, ^"position", model.position + Vector3.UP * slide_up, SLIDE_TIME)
+	tween.tween_callback(model.queue_free)

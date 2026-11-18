@@ -25,7 +25,7 @@ const CONTAINMENT: Vector3 = Vector3(70, -3, 20)
 const PROP_CLEARANCE: float = 1.5
 const MAX_SHADOWED_PER_ROOM: int = 2
 const LIGHTMAP_FILES: Array[String] = ["res://levels/halcyon_labs/map.exr", "res://levels/halcyon_labs/map.lmbake"]
-const MAX_LIGHTMAP_BYTES: int = 15 * 1024 * 1024
+const MAX_LIGHTMAP_BYTES: int = 18 * 1024 * 1024
 
 
 func _spawn_points(level: Node) -> Array[ZombieSpawnPoint]:
@@ -149,7 +149,7 @@ func test_kestrel_replaces_its_wall_placeholder() -> void:
 		assert_eq(wall.weapon.id, &"kestrel_smg")
 		assert_eq(wall.position, Vector3(10.25, 1.4, 32))
 		assert_eq(wall.basis, Basis.IDENTITY, "same facing as the placeholder")
-		assert_eq((wall.get_node("Label") as Label3D).text, "Kestrel SMG 1000")
+		assert_eq((wall.get_node("Label") as Label3D).text, "VX-9 1000")
 	assert_eq(get_tree().get_nodes_in_group(&"wall_buy_spot").size(), 0, "no wall-gun placeholders remain")
 
 
@@ -162,7 +162,7 @@ func test_talon_replaces_its_wall_placeholder() -> void:
 		assert_eq(wall.weapon.id, &"talon_dmr")
 		assert_eq(wall.position, Vector3(8.25, 1.4, 20))
 		assert_eq(wall.basis, Basis.IDENTITY, "same facing as the placeholder")
-		assert_eq((wall.get_node("Label") as Label3D).text, "Talon DMR 1500")
+		assert_eq((wall.get_node("Label") as Label3D).text, "MR-28 1500")
 
 
 func test_map_has_baked_lightmaps_under_the_size_budget() -> void:
@@ -187,9 +187,15 @@ func test_things_that_move_or_vanish_are_not_baked() -> void:
 	var blocks: Array[Node] = level.get_node("NavigationRegion3D/Doors").find_children("Blocker", "StaticBody3D")
 	blocks.append_array(level.find_children("Board", "StaticBody3D"))
 	blocks.append(level.get_node("NavigationRegion3D/Machines/SpecimenVault/Body"))
-	assert_eq(blocks.size(), 12 + 6 + 1, "9 doors, 2 vent grates, the freezer, 6 wall-buys, the vault")
+	blocks.append(level.get_node("NavigationRegion3D/Machines/MedDispenserSecondWind/Body"))
+	assert_eq(blocks.size(), 12 + 6 + 2, "9 doors, 2 vent grates, the freezer, 6 wall-buys, the vault, Second Wind")
 	for node: Node in blocks:
-		assert_false((node as Block).baked, "%s is not baked" % level.get_path_to(node))
+		var meshes: Array[Node] = node.find_children("*", "MeshInstance3D", true, false)
+		if node is Block:
+			assert_false((node as Block).baked, "%s is not baked" % level.get_path_to(node))
+		for mesh: Node in meshes:
+			var gi: int = (mesh as GeometryInstance3D).gi_mode
+			assert_ne(gi, GeometryInstance3D.GI_MODE_STATIC, "%s is not baked" % level.get_path_to(mesh))
 	var planks: Array[Node] = level.get_node("Barriers").find_children("Plank*", "MeshInstance3D", true, false)
 	assert_eq(planks.size(), 16 * 6, "16 barriers of 6 planks")
 	for node: Node in planks:

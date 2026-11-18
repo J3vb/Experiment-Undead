@@ -59,7 +59,7 @@ func test_defaults_for_missing_file() -> void:
 			&"toggle_crouch": true,
 			&"reduce_motion": false,
 		},
-		&"network": {&"last_address": "", &"last_port": 7777},
+		&"network": {&"last_address": "", &"last_port": 7777, &"open_to_friends": true},
 	}
 	for section: StringName in expected:
 		for key: StringName in expected[section]:
@@ -124,7 +124,9 @@ func test_network_port_clamps_and_bad_types_use_defaults() -> void:
 	_settings.set_value(&"network", &"last_port", 0)
 	assert_eq(_settings.get_value(&"network", &"last_port"), 1)
 	_settings.set_value(&"network", &"last_port", 70000)
-	assert_eq(_settings.get_value(&"network", &"last_port"), 65535)
+	assert_eq(_settings.get_value(&"network", &"last_port"), 64535, "the info port (+1000) must fit too")
+	_settings.set_value(&"network", &"open_to_friends", "yes")
+	assert_true(_settings.get_value(&"network", &"open_to_friends"), "worlds are open to friends by default")
 	_settings.set_value(&"network", &"last_port", "7778")
 	assert_eq(_settings.get_value(&"network", &"last_port"), 7777)
 	_settings.set_value(&"network", &"last_address", 123)

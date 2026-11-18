@@ -342,6 +342,5 @@ func _on_died(_info: DamageInfo) -> void:
 		return
 	is_dead = true
 	weapons.visible = false
-	var tween: Tween = camera_rig.tilt(70.0, 0.8).parallel()
-	tween.tween_property(camera_rig, "position:y", 0.3, 0.8).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+	camera_rig.tilt_down(true)
 	Events.player_died.emit(self)
