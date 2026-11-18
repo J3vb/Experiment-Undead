@@ -3,7 +3,7 @@
 extends Node
 
 ## Bump when client/server messages change. Mismatched peers are refused.
-const PROTOCOL_VERSION: int = 18
+const PROTOCOL_VERSION: int = 19
 const VERSION_FILE: String = "res://version.json"
 const CRASH_MARKER: String = "user://running.lock"
 ## A server started from the launcher shares the client's user folder, so it keeps its own marker.
