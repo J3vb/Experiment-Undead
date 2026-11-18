@@ -46,6 +46,7 @@ func before_each() -> void:
 		session.profile.total_xp = 100 * (index + 1)
 		assert_eq(session.profile.save(), OK)
 		session.progression.set_start_total(session.profile_player, session.profile.total_xp)
+		session.progression.run_xp_finalized.connect(session.match_end.bank_run_xp)
 		watch_signals(session.progression)
 		sessions.append(session)
 

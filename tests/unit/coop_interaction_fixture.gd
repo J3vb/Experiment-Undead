@@ -90,6 +90,9 @@ func make_side(side_name: String) -> GameSession:
 	session.interactions.session = session
 	session.add_child(session.interactions)
 	root.add_child(session)
+	session.match_end = MatchEnd.new()
+	session.match_end.session = session
+	session.add_child(session.match_end)
 	session.set_physics_process(false)
 	session.set_process_unhandled_input(false)
 	_sessions.append(session)

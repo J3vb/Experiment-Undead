@@ -63,6 +63,7 @@ func _ready() -> void:
 	match_end = MatchEnd.new()
 	match_end.session = self
 	add_child(match_end)
+	match_end.setup()
 	_setup_handshake()
 	if not _setup_network():
 		return

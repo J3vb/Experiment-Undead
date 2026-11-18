@@ -14,7 +14,8 @@ func _init() -> void:
 	name = "MatchEnd"
 
 
-func _ready() -> void:
+## Called by the session once it is ready; test sessions that skip it get no automatic match end.
+func setup() -> void:
 	session.progression.run_xp_finalized.connect(bank_run_xp)
 	Events.player_died.connect(_on_player_died)
 	Events.enemy_killed.connect(_on_enemy_killed)
