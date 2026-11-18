@@ -24,8 +24,8 @@ not memory.
    `load()` in hot paths in the feature's code. If the feature adds enemies,
    effects or many nodes, ask for a GPU performance check.
 5. **Docs.** New early warnings in `docs/LOGGING.md`, new content recipes in
-   `docs/HOW_TO_ADD.md`, a `docs/DECISIONS.md` entry for what was built and
-   simplified.
+   `docs/HOW_TO_ADD.md`, one `docs/DECISIONS.md` line per simplification,
+   design difference or provisional pick (what was built lives in the plan).
 6. **Close out** in the same PR: tick Acceptance, set the plan to
    `Status: Done`, set the roadmap row to Done, and put `Closes #<issue>` in the
    PR body.

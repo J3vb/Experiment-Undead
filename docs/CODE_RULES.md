@@ -223,3 +223,15 @@ lines. The checker also holds the first list, so no new pair can be added, and
 a pair that no longer appears must be deleted from the file. Fix a finding by
 adding a field to the data type (see `docs/HOW_TO_ADD.md`), not by adding a
 baseline line.
+
+## 18. decisions-short
+
+Every list entry in `docs/DECISIONS.md` is one line of at most 300 characters,
+so agents can read the entries for their systems without wading through build
+notes. Detail goes in the linked plan, ADR or doc. A line that does not start
+with `- ` directly under an entry (a wrapped or nested line) fails.
+
+- Good: `- **Range falloff** uses start and end distances, not a Curve. Fix when: a gun needs a curve.`
+- Bad: an entry that wraps onto a second line, or a paragraph of build notes.
+
+Cut the entry to what a future agent must not undo, and link the plan for the rest.

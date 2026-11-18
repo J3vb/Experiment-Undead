@@ -106,5 +106,5 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 - F-40 and F-47 were pulled into Now on 2026-11-17: the person set co-op as
   the goal for that week. They touch only co-op code, not the v0.1 rows.
 - Loot and co-op were partly built before v0.1 shipped (see
-  `docs/DECISIONS.md` and `docs/MULTIPLAYER.md`). From here on, the order
+  `docs/plans/` and `docs/MULTIPLAYER.md`). From here on, the order
   above is the order.
