@@ -129,29 +129,30 @@ func test_set_flash_never_shows_nightjar_light_or_mesh() -> void:
 	var gun: Weapon = autofree(Weapon.new()) as Weapon
 	gun._rng = RandomNumberGenerator.new()
 	gun._rng.seed = 77
-	gun._flash_light = OmniLight3D.new()
-	gun._flash_mesh = Node3D.new()
-	gun.add_child(gun._flash_light)
-	gun.add_child(gun._flash_mesh)
+	var pose: WeaponPose = WeaponPose.attach_to(gun)
+	pose._flash_light = OmniLight3D.new()
+	pose._flash_mesh = Node3D.new()
+	gun.add_child(pose._flash_light)
+	gun.add_child(pose._flash_mesh)
 	for id: StringName in [&"nightjar_sd", &"nightjar_sd_reforged"]:
 		gun.instance = WeaponInstance.new(Content.weapon(id))
 		assert_true(gun.data.no_muzzle_flash, String(id) + " suppresses the flash")
-		gun._flash_light.visible = true
-		gun._flash_mesh.visible = true
-		gun._set_flash(true)
-		assert_false(gun._flash_light.visible, "even a visible light is hidden on a shot")
-		assert_false(gun._flash_mesh.visible, "even a visible flash mesh is hidden on a shot")
-		gun._set_flash(false)
-		assert_false(gun._flash_light.visible)
-		assert_false(gun._flash_mesh.visible)
+		pose._flash_light.visible = true
+		pose._flash_mesh.visible = true
+		pose.set_flash(true)
+		assert_false(pose._flash_light.visible, "even a visible light is hidden on a shot")
+		assert_false(pose._flash_mesh.visible, "even a visible flash mesh is hidden on a shot")
+		pose.set_flash(false)
+		assert_false(pose._flash_light.visible)
+		assert_false(pose._flash_mesh.visible)
 	gun.instance = WeaponInstance.new(Content.weapon(&"sentry_br3"))
 	assert_false(gun.data.no_muzzle_flash, "ordinary guns keep their flash")
-	gun._set_flash(true)
-	assert_true(gun._flash_light.visible)
-	assert_true(gun._flash_mesh.visible)
-	gun._set_flash(false)
-	assert_false(gun._flash_light.visible)
-	assert_false(gun._flash_mesh.visible)
+	pose.set_flash(true)
+	assert_true(pose._flash_light.visible)
+	assert_true(pose._flash_mesh.visible)
+	pose.set_flash(false)
+	assert_false(pose._flash_light.visible)
+	assert_false(pose._flash_mesh.visible)
 
 
 func test_nightjar_shots_keep_the_flash_hidden_during_presentation() -> void:
