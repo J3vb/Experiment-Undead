@@ -3,8 +3,10 @@
 Run from the repo root: python -m pytest tools/assets/tests/test_tripo_intake.py
 """
 
+import json
 import math
 import os
+import struct
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -18,6 +20,7 @@ import check_models
 import numpy
 import pytest
 import tripo_intake
+from mathutils import Vector
 from player_body.build import build_player
 
 
@@ -167,3 +170,68 @@ def test_mixamo_joints_move_our_bones():
     assert joints["shin_R"] == Vector(rest["shin_R"][1]) + Vector((0.0, 0.0, 0.1))
     arm = character_rig.build_armature()
     assert tripo_rig.fit(arm, joints) == len(names)
+
+
+def mixamo_source(path: str) -> None:
+    """The survivor body skinned to a T-posed skeleton with Mixamo names, like Tripo's Humanoid / Mixamo rig."""
+    import character_rig
+    import tripo_rig
+
+    character_source(path)
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.ops.import_scene.gltf(filepath=path)
+    body = next(obj for obj in bpy.context.scene.objects if obj.type == "MESH")
+    arm = character_rig.build_armature("Armature")
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.mode_set(mode="EDIT")
+    for side, sign in (("L", 1.0), ("R", -1.0)):
+        shoulder = arm.data.edit_bones[f"upperarm_{side}"].head.copy()
+        for part, start, end in (("upperarm", 0.0, 0.3), ("forearm", 0.3, 0.58), ("hand", 0.58, 0.72)):
+            bone = arm.data.edit_bones[f"{part}_{side}"]
+            bone.head = shoulder + Vector((sign * start, 0.0, 0.0))
+            bone.tail = shoulder + Vector((sign * end, 0.0, 0.0))
+    bpy.ops.object.mode_set(mode="OBJECT")
+    character_rig.bind(body, arm, blend=0.08)
+    body.parent = arm
+    for ours, theirs in tripo_rig._targets().items():
+        arm.data.bones[ours].name = f"mixamorig:{theirs}"
+    extra = {"spine_01": "Spine", "spine_02": "Spine1", "spine_03": "Spine2"}
+    extra.update(clavicle_L="LeftShoulder", clavicle_R="RightShoulder")
+    for ours, theirs in extra.items():
+        arm.data.bones[ours].name = f"mixamorig:{theirs}"
+    bpy.ops.export_scene.gltf(filepath=path, export_format="GLB")
+
+
+def test_rigged_tripo_body_is_swung_to_our_rest_and_keeps_its_skin(tmp_path, capfd):
+    import tripo_rig
+
+    source = str(tmp_path / "rigged.glb")
+    mixamo_source(source)
+    args = tripo_intake.parse([source, "--kind", "character", "--name", "rigged", "--out", str(tmp_path)])
+    args.size, args.samples = 128, 1
+    summary = tripo_intake.run(args)
+    assert "kept the source skin weights" in capfd.readouterr().out
+    objects = check_models.load_glb(summary["model"])
+    assert character_checks.check(objects, "characters", "player") == []
+    armature = next(obj for obj in objects if obj.type == "ARMATURE")
+    for side in tripo_rig.SIDES:
+        bone = armature.data.bones[f"upperarm_{side}"]
+        rest = tripo_rig.character_rig.BONES[f"upperarm_{side}"]
+        want = (Vector(rest[2]) - Vector(rest[1])).normalized()
+        assert (bone.tail_local - bone.head_local).normalized().dot(want) > 0.98
+    body = next(obj for obj in objects if obj.type == "MESH")
+    assert all(sum(g.weight for g in v.groups) > 0.5 for v in body.data.vertices)
+
+
+def test_embedded_jpegs_have_no_icc_profile(prop):
+    """Godot's JPEG loader rejects ICC (APP2) segments, which left the albedo blank in the game."""
+    _source_tris, summary = prop
+    with open(summary["model"], "rb") as glb:
+        data = glb.read()
+    length = struct.unpack("<I", data[12:16])[0]
+    document = json.loads(data[20 : 20 + length])
+    binary = data[28 + length :]
+    for image in document["images"]:
+        view = document["bufferViews"][image["bufferView"]]
+        jpeg = binary[view.get("byteOffset", 0) : view.get("byteOffset", 0) + view["byteLength"]]
+        assert b"ICC_PROFILE" not in jpeg
