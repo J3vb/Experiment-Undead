@@ -40,7 +40,7 @@ static func launch(weapon: Weapon) -> void:
 	var player: Player = weapon.shooter
 	if not is_instance_valid(player) or not player.is_multiplayer_authority():
 		return
-	var claims: Node = player.session.get_node_or_null("HitClaims") if player.session else null
+	var claims: Node = player.session.get_node_or_null("WellClaims") if player.session else null
 	var origin: Vector3 = weapon.camera.global_position
 	var direction: Vector3 = -PlayerCamera.aim_of(weapon.camera).z
 	var parent: Node = player.session if player.session else player.get_parent()
