@@ -7,4 +7,6 @@ script = ExtResource("1_screen")
 scene = "res://systems/game/hub_session.tscn"
 root = true
 captures_mouse = true
+loading_screen = &"loading"
 title = "Lantern Post"
+tips = PackedStringArray("Lantern Post is safe: no zombies come past the walls.", "Press F at the Deploy board by the gate to ready up. When everyone is ready, the squad deploys after 5 seconds.", "Changed your mind? Press F at the Deploy board again to cancel your ready.", "After a match, press Back to hub on the results screen to return to town with your squad.")

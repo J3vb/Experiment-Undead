@@ -57,6 +57,7 @@ func test_loading_screens_exist_and_their_roots_have_a_title_and_tips() -> void:
 		assert_false(data.title.is_empty(), "%s has a title" % id)
 		assert_false(data.tips.is_empty(), "%s has tips" % id)
 	assert_eq((Content.get_item(&"screens", &"match") as ScreenData).loading_screen, &"loading")
+	assert_eq((Content.get_item(&"screens", &"hub") as ScreenData).loading_screen, &"loading")
 
 
 func test_the_hub_session_is_a_hub_and_the_match_is_not() -> void:
