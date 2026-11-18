@@ -220,6 +220,37 @@ Six NPCs, one per town job. Each has a short bark set that changes as players cl
 
 The NPC jobs are suggestions to match the town systems in the design doc. Swap names or jobs freely.
 
+### The stall keepers
+
+Four of the six run the market stalls on the main street (plan
+`docs/plans/lantern-post-vendors.md`; cast picked by the person on
+2026-11-18). They all wear heavy winter clothes, lit warm from the stall lamp
+above. No rarity colours on their clothes, and bio-green only where Fenlight is.
+
+| Stall | Who | Look | Will do (F-45) |
+| --- | --- | --- | --- |
+| TRADER "Buy / Sell" | **Odile Brandt**, Quartermaster, 60s | Grey hair in a bun, reading glasses on a cord, long charcoal wool coat, maroon knit shawl, fingerless gloves, a ledger. | Buys and sells Common and Uncommon basics for Scrap, one rotating Rare a day. |
+| GUNSMITH "Upgrades / Mods" | **Teun Maes**, Gunsmith, 50s | Bald, thick grey-brown beard, ear defenders round the neck, tan canvas apron over olive overalls, rolled sleeves. | The Workbench: salvage, raise level, recalibrate, sockets and mods. |
+| TECHNICIAN "Serums / Gear" | **Dr. Lien Corvelyn**, ex-HALCYON researcher, 30s | Short black hair, padded parka under a stained Oriel lab coat with the logo scratched out, blue-grey radio headset. Lit by her monitors and the Fenlight sample crate. | Serum and gear offers. Still the town doctor: the infirmary is hers too. |
+| MISSIONS | **Lieutenant Raes**, Cordon liaison, 40s | Snow-grey Cordon parka, officer fur hat with the Cordon badge, black armband with a white Cordon mark, a tablet. | The Contract Board: daily and weekly contracts. |
+
+Talking to a keeper gives one short line, in order, only to you. First lines
+(text only for now, voiced later with the notes and radio):
+
+- **Odile Brandt:** "Scrap is scrap. Bring enough and we'll talk." / "I shipped
+  crates out of Halcyon for six years. Never asked what was in them." / "Wipe
+  your boots. That green gets everywhere." / "My prices are fair. The winter
+  isn't."
+- **Teun Maes:** "Leave it on the bench. I'll get the rattle out." / "Every gun
+  has a temper. Learn yours." / "Kessel? I don't talk about Kessel." / "Oil it
+  tonight. The cold won't wait for you."
+- **Dr. Lien Corvelyn:** "A serum is Fenlight on a leash. Don't forget the
+  leash." / "I made these doses once. For Oriel." / "Dr. Aust had a reason. I
+  have to believe that." / "If your vial glows bright, come and see me."
+- **Lieutenant Raes:** "Contracts are on the board. The Cordon pays in Scrap,
+  not thanks." / "Bring back data, not stories." / "Command wants samples.
+  Whole ones." / "Don't walk past the wall. They shoot first out there."
+
 ## How the story is told in-game
 
 No cutscenes and nothing that stops play. Story is optional: a player who ignores all of it still has a full game.
