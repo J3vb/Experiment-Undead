@@ -45,6 +45,27 @@ class CheckPlanTests(unittest.TestCase):
         text = plan(status="Done", approved_by="review PR #1", decisions="- [x] Beam colour: rarity colour")
         self.assertEqual(check_plans.check_plan("a.md", text), [])
 
+    def test_draft_without_lore_line_fails(self):
+        text = "\n".join(line for line in plan().splitlines() if not line.startswith("Lore link:"))
+        self.assertTrue(any("missing 'Lore link:'" in p for p in check_plans.check_plan("a.md", text)))
+
+    def test_review_with_placeholder_lore_line_fails(self):
+        problems = check_plans.check_plan("a.md", plan(status="Review"))
+        self.assertTrue(any("'Lore link:' must give" in p for p in problems))
+
+    def test_review_with_filled_lore_line_passes(self):
+        text = plan(status="Review").replace(
+            next(line for line in plan().splitlines() if line.startswith("Lore link:")),
+            "Lore link: Brute = riot troops (lore.md, The Lit)",
+        )
+        self.assertEqual(check_plans.check_plan("a.md", text), [])
+
+    def test_old_approved_plan_needs_no_lore_line(self):
+        text = "\n".join(
+            line for line in plan(status="Done", approved_by="PR #1").splitlines() if "Lore link" not in line
+        )
+        self.assertEqual(check_plans.check_plan("a.md", text), [])
+
     def test_draft_may_have_open_decisions(self):
         self.assertEqual(check_plans.check_plan("a.md", plan(decisions="- Which colour?")), [])
 

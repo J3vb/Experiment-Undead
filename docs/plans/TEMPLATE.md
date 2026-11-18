@@ -5,6 +5,7 @@ Roadmap: <F-xx> / issue #<n>
 Phase: <P0-P10>
 Size: <S / M / L>
 Approved by: <who approved and when, empty until Approved>
+Lore link: <the story reason for what the player sees, from docs/design/lore.md#story-links-for-game-content, or "none: <why>" for pure tech work>
 
 <!--
 Copy this file to docs/plans/<feature-name>.md and fill every section.
