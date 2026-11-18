@@ -63,6 +63,9 @@ its own copy, and leech / points per hit run where the server applies the hit
   write their own `@rpc` with their own checks, so every new feature
   re-invents it.
 
+**Being fixed:** F-79, [plans/easy-changes.md](plans/easy-changes.md) steps 1-3
+(`RequestGate`, one server check, the written patterns and a CI rule).
+
 **Fixed when:** ~~one request path for interactions (client sends the request,
 server checks sender, range and state, then calls the same `interact()`)~~
 (done, F-02), ~~a test runs each interactable from a client~~ (done), and
@@ -196,6 +199,9 @@ big choices in short form; DECISIONS.md stays the build log. AGENTS.md said "no
 RPCs before P7" while P7 co-op was half built; that line now points to the
 co-op rules instead.
 
+**Being fixed:** F-79, [plans/easy-changes.md](plans/easy-changes.md) steps 4-5
+(DECISIONS.md as short one-line lists, AGENTS.md reading map and gotchas).
+
 ## Ready to build
 
 Copy this block into the feature plan (or the Codex prompt, or the PR
@@ -246,3 +252,4 @@ tests, as usual. The issue numbers have the details.
 | 7 | Done: hot-path allocations ([plan](plans/hot-path-allocations.md)): impacts, remote tracers, chain arcs and the gravity well reuse resources; zombie separation without per-tick arrays | #139, #141, #142, #150, #151 | 4-player play-test (#127), more VFX |
 | 8 | Done: shared test helpers: `TwoPeers` for two-peer ENet tests, `MeshChecks` for model sight-line checks, `grip_checks.py` for grip tests | #161, #164, #170 | more co-op tests |
 | 9 | Done: every Events signal says which peers emit it (`## Peers:` in `core/events.gd`, checked by a test) | - | next co-op feature that uses Events |
+| 10 | F-79 ([plan](plans/easy-changes.md)): one client request pattern (`RequestGate`) with a CI rule, then short agent docs (foundations 1 and 13) | - | next co-op feature (skills, abilities, grenades) |
