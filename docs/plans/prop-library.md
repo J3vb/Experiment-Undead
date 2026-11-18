@@ -1,14 +1,14 @@
 # Plan: Shared prop library for future maps
 
-Status: Review
+Status: Approved
 Roadmap: F-77
 Phase: art track ahead of the Act I maps (Kessel Dam is next in the maps.md build order)
 Size: L
-Approved by:
+Approved by: the person on a decision card (2026-11-18, scope: kit plus map hero pieces); plan review on PR #342 (Claude reviewer, Codex quota out; 3 blocking + 4 suggestions fixed)
 
 ## Goal
 
-A ready-made library of about 70 code-built props, so building Kessel Dam,
+A ready-made library of about 75 code-built props, so building Kessel Dam,
 Marrow Junction, Grauwald Sanatorium and later towns is placing models in
 `layout.json`, not modelling first. Props are generic kit pieces that fit more
 than one map (barriers, vehicles, fences, pipes, rail pieces, hospital
@@ -20,45 +20,56 @@ fast and cheap.
 
 In:
 
-- About 70 new props and dressing models in seven families (list below), each
+- About 75 new props and dressing models in eight families (list below), each
   built by script in `tools/assets/library_<family>.py` with the existing
   pipeline (`build_models.py`, `finish.finish()`, `check_models.py`, glTF
   validator, turnarounds, `prop_import.gd` shared slots).
 - A catalogue, `docs/design/prop-library.md`: one row per model (name, folder,
   size in metres, families, which maps it suits, material slots), covering the
-  51 Halcyon props and dressing models that already exist too, so there is one
-  place to look before modelling anything.
-- A catalogue check (Python, in `tools/assets/tests/`) that fails when a model
-  in `props/`, `dressing/` or `props_large/` has no catalogue row, or a row
-  names a missing file.
+  75 models that already exist too (27 props, 24 dressing, 15 town, 9
+  town_large), so there is one place to look before modelling anything.
+- A catalogue check, `tools/ci/test_prop_catalogue.py` (runs in the required
+  `quality` check with the other `tools/ci` tests), that fails when a model in
+  `props/`, `dressing/`, `town/`, `town_large/` or `props_large/` has no
+  catalogue row, or a row names a missing file.
 - A lineup render, `tools/prop_lineup.gd`: one family per image, models in a
-  row under Cold Containment light with a 1.8 m figure for scale. Each step's
-  board goes in `docs/design/prop-library/` and to the person on a decision
-  card.
+  row under Cold Containment light with a figure at the player capsule height
+  (1.8 m, `systems/player/player.tscn`) for scale. It is the third lineup
+  script after `gun_lineup.gd` and `zombie_lineup.gd`, so step 1 moves their
+  shared stage setup (camera, light, environment, save) into
+  `tools/lineup_stage.gd` (Keep it simple rule 2, third use) and the two old
+  scripts use it too. Each family's board goes in
+  `docs/design/prop-library/` and to the person on a decision card.
 - A few new shared material slots for outdoor and hospital surfaces (Stone,
-  Tile, Enamel, Ice, SignalLamp; final list in step 1), added to
-  `prop_import.gd` like the town slots were.
+  Tile, Enamel, Ice; final list in step 1), added to `prop_import.gd` like the
+  town slots were. Red signal and tail lamps reuse the existing `Beacon` slot
+  (`beacon_red.tres`) instead of a new one: they are light fixtures, which
+  look rule 3 allows to glow.
 - `props_large/` folder for big pieces (train car, signal gantry, container
   stack) with the `town_large` budget, and a small builder change so a
   `layout.json` prop or dressing entry can name `"model": "props_large/<name>"`.
 
-The families (sizes are real-world; final list fixed per step):
+The person asked for a library ahead of the maps (2026-11-18), so families
+6 and 7 and parts of 3 and 4 are generic kit beyond the maps.md "Key props"
+lists on purpose; the order puts Kessel Dam's needs first (maps.md build
+order). "Reuse" marks existing models the catalogue points to instead of
+building again. Sizes are real-world; the final list is fixed per step.
 
 | Family | Models | Suits |
 |---|---|---|
-| 1 Barriers and checkpoint | jersey barrier (yellow-black), concrete block, sandbag wall straight + corner, boom barrier, chain-link fence + gate, razor-wire fence, yellow hard case, jerrycan pair, pallet stack | Kessel crest, Marrow gate, towns, Halcyon dock |
-| 2 Military camp and vehicles | canvas-top army truck, armoured car, field tent, field table with laptop and radio, ammo crate stack, portable generator, floodlight tripod, body under tarp (dressing) | Kessel crest, Marrow gate, towns |
-| 3 Industrial | yellow guard rail section, big pipe straight + elbow + valve wheel, electrical cabinet, transformer, cable reel, wall ladder, sodium street lamp (cobra head), control desk, steel stair landing rail | Kessel, Marrow substation, Grauwald boiler room |
+| 1 Barriers and checkpoint | new: jersey barrier (yellow-black), concrete block, sandbag wall straight + corner, boom barrier, chain-link fence + gate, razor-wire fence, yellow hard case, jerrycan pair, pallet stack. Reuse: props/barricade, props/military_cases | Kessel crest, Marrow gate, towns, Halcyon dock |
+| 2 Military camp and vehicles | new: canvas-top army truck, armoured car, field tent, field table with laptop and radio, portable generator (small, on wheels; props/generator is the big diesel set), floodlight tripod (town/floodlight is a wall-gate fitting), body under tarp (dressing). Reuse: props/crate_stack, props/military_cases, props/fuel_drum, props/supply_truck | Kessel crest, Marrow gate, towns |
+| 3 Industrial | new: yellow guard rail section, big pipe elbow + valve wheel, electrical cabinet, transformer, cable reel, wall ladder, sodium street lamp (cobra head; town/street_lamp is an old lantern post), control desk. Reuse: dressing/pipe_run_3 and pipe_run_6 for straight pipe | Kessel, Marrow substation, Grauwald boiler room |
 | 4 Rail | track section, buffer stop, signal post with red lamps, shipping container closed + open, flatbed wagon, platform bench, luggage pile (dressing), station sign | Marrow, later rail maps |
 | 5 Large pieces | hospital train car, last car with green glow, signal gantry, container stack (3 high) | Marrow, towns |
 | 6 Hospital and sanatorium | iron hospital bed, wheelchair, IV stand, medical trolley, privacy screen, glass-front cabinet, bathtub, reception desk, chapel pew, wall radiator | Grauwald, Halcyon med rooms, town clinic |
-| 7 Outdoor and clutter | dead tree, pine tree, rock cluster, iron gate with stone posts and lanterns, iron fence section, iron park bench, snow drift (dressing), leaf litter (dressing), trash bags, cardboard boxes | Grauwald, Kessel, Marrow, towns |
+| 7 Outdoor and clutter | dead tree, pine tree, rock cluster, iron gate with stone posts and lanterns, wrought-iron fence section (town/fence is wooden pickets), iron park bench, snow drift (dressing), leaf litter (dressing), trash bags, cardboard boxes | Grauwald, Kessel, Marrow, towns |
+| 8 Map hero pieces | frozen tiered fountain with icicles, turbine housing, dam control building (crest end, with radio masts and red tip lights), sanatorium front (columns, balcony, wide stairs, arched windows) and roof cupola | Grauwald courtyard and backdrop, Kessel Turbine Hall and crest |
 
 Not in (non-goals, and where each one goes instead):
 
-- One-off hero pieces whose shape depends on the map layout: the frozen
-  fountain, turbine housings, the dam control building, the sanatorium front
-  and cupola (later: each map's own build, which can reuse library parts).
+- Map hero pieces beyond the five in family 8 (each map's build adds its own
+  if it needs more).
 - Placing props in any map, or new map layouts (later: each map's F-row).
 - Snow or rain on props as variants: props stay clean; snowy maps add snow
   with library dressing (snow drift) or a top-snow material in their own
@@ -87,8 +98,8 @@ Not in (non-goals, and where each one goes instead):
 - Save: no change. Renames or removes a saved id: no.
 - Events and UI: none.
 - Input through InputFrame, gameplay in _physics_process, session RNG: n.a. (no runtime code).
-- Tests: check_models.py rules per folder, catalogue check, tests/content/test_prop_library.gd
-  (models load, light_baking 2, slots mapped, no flat surfaces), builder test for props_large.
+- Tests: check_models.py rules per folder, tools/ci/test_prop_catalogue.py, props_large/ and a
+  shared-slot check added to tests/content/test_prop_models.gd, builder test for props_large.
 - Logging: none (no runtime system).
 - Performance: nothing created at run time. Budgets below; one mesh per model.
 - Out of scope: as listed under "Not in".
@@ -120,7 +131,7 @@ Not in (non-goals, and where each one goes instead):
 |---|---|---|
 | tools/assets/library_*.py | new (one per family) | builders and `MODELS` |
 | tools/assets/build_models.py | changed | merges each family's `MODELS` |
-| tools/assets/prop_import.gd | changed (step 1, maybe 6-7) | new shared slots |
+| tools/assets/prop_import.gd | changed (step 1, maybe 7-8) | new shared slots |
 | levels/materials/*.tres | new (step 1) | materials for the new slots |
 | tools/assets/check_models.py | changed | `props_large` budget, `JOINTS` entries |
 | .github/workflows/assets.yml | changed | new files in the required-output list |
@@ -129,9 +140,12 @@ Not in (non-goals, and where each one goes instead):
 | docs/design/prop-library.md | new | the catalogue |
 | docs/design/prop-library/*.jpg | new | one lineup board per family |
 | tools/prop_lineup.gd | new (step 1) | family lineup render |
-| tools/assets/tests/test_prop_library.py | new (step 1) | catalogue check |
-| tests/content/test_prop_library.gd | new (step 1) | models load, baking, slots, no flat surfaces |
-| tools/blockout_builder.gd | changed (step 5) | `"model"` with a folder prefix loads from that folder |
+| tools/lineup_stage.gd | new (step 1) | stage setup shared by the three lineup scripts |
+| tools/gun_lineup.gd, tools/zombie_lineup.gd | changed (step 1) | use `lineup_stage.gd` |
+| tools/ci/test_prop_catalogue.py | new (step 1) | catalogue check |
+| tests/content/test_prop_models.gd | changed (step 1) | `props_large/` in FOLDERS, every surface uses a `prop_import.gd` SHARED slot |
+| tools/blockout_builder.gd | changed (step 1) | `"model"` with a folder prefix loads from that folder |
+| tests/content/test_blockout_model_prefix.gd | new (step 1) | builder places a `props_large/` model from a small test layout |
 
 Autoloads, managers or base classes added: none. Shared shape helpers go in a
 `library_parts.py` only once a third family needs the same helper (Keep it
@@ -140,14 +154,15 @@ simple rule 2).
 ## Data
 
 - No Resource types, no save fields, no network messages.
-- `layout.json` props and dressing: `"model": "props_large/<name>"` (step 5).
+- `layout.json` props and dressing: `"model": "props_large/<name>"` (step 1).
   A name with no folder still means `props/<name>` (or `dressing/<name>`), so
   every existing layout loads as today.
 - Catalogue rows: `| name | folder | W x D x H m | families | maps | slots |`.
 - Save format change: none.
-- Content checks to add: `tests/content/test_prop_library.gd` (every library
-  model loads, light_baking 2, every surface uses a shared slot, no flat
-  surfaces as in `test_halcyon_surfaces`).
+- Content checks to add: in the existing `tests/content/test_prop_models.gd`
+  (it already loads every model in props/ and dressing/ and checks one mesh,
+  light_baking 2 and the import script): add `props_large/` and a check that
+  every surface's material is a `prop_import.gd` SHARED slot.
 
 ## Co-op behaviour
 
@@ -168,63 +183,88 @@ capture.
 
 ## Steps
 
-One step = one PR, built in its own thread. Every step: models, turnarounds
-approved, catalogue rows, lineup board, and a decision card with the board
-before the next family starts.
+One step = one PR, built in its own thread. Every model step: models,
+turnarounds approved, catalogue rows, lineup board, and a decision card with
+the board before the next family starts.
 
-### Step 1: Library basics and barriers
+### Step 1: Library basics (no models)
 
-- Build: catalogue `docs/design/prop-library.md` with the 51 existing Halcyon
-  rows; catalogue check; `tools/prop_lineup.gd`; the new shared slots and
-  materials; family 1 (barriers and checkpoint) in `library_barriers.py`.
-- Files: as in Systems touched for step 1.
-- Tests: `test_prop_library.py` fails on a model with no row (and on a row with
-  no file); `test_prop_library.gd` loads family 1 and checks baking and slots;
-  `check_models.py` budgets.
+- Build: catalogue `docs/design/prop-library.md` with the 75 existing rows;
+  `tools/ci/test_prop_catalogue.py`; `tools/lineup_stage.gd` and
+  `tools/prop_lineup.gd` (gun and zombie lineups moved onto the shared stage);
+  the new shared slots and materials; `props_large` budget in
+  `check_models.py`; builder folder prefix for props and dressing. The risky
+  runtime change goes first so a bad idea fails cheap.
+- Tests: `test_prop_catalogue.py` fails on a model with no row and on a row
+  with no file; `test_blockout_model_prefix.gd` places a `props_large/` model
+  (fails without the builder change); `test_prop_models.gd` slot check;
+  `test_halcyon_labs.gd` `test_blockout_is_up_to_date_with_layout` stays green
+  (Halcyon layout unchanged).
+- Done when: CI green, a lineup of existing props renders.
+
+### Step 2: Barriers and checkpoint
+
+- Build: family 1 in `library_barriers.py`.
+- Tests: catalogue rows (the catalogue check fails without them); budgets and
+  joints in `check_models.py`; `test_prop_models.gd` loads them.
 - Done when: CI green, family 1 board approved by the person.
 
-### Step 2: Military camp and vehicles
+### Step 3: Military camp and vehicles
 
 - Build: family 2 in `library_military.py`. Trucks and the armoured car stay
-  under 2,000 tris (simple cab, canvas top, six wheels); if one can't, it moves
-  to props_large in step 5 instead.
-- Tests: catalogue and content tests extended; budgets.
+  under 2,000 tris (simple cab, canvas top, six wheels); if one can't, it goes
+  to props_large instead, no budget raise.
+- Tests: as step 2.
 - Done when: board approved.
 
-### Step 3: Industrial
+### Step 4: Industrial
 
-- Build: family 3 in `library_industrial.py`. Pipes and rails come in lengths
-  that snap on a 1 m grid (3 m and 6 m like `pipe_run_3/6`).
-- Tests: as step 2, plus a content check that rail and pipe lengths are whole
-  metres.
+- Build: family 3 in `library_industrial.py`. The guard rail comes in 3 m and
+  6 m lengths to match `pipe_run_3/6` (tool choice so pieces snap on a 1 m
+  grid).
+- Tests: as step 2.
 - Done when: board approved.
 
-### Step 4: Rail
+### Step 5: Rail
 
-- Build: family 4 in `library_rail.py`. Track section 6 m on the 1.435 m
-  gauge, so sections line up end to end.
-- Tests: as step 2, plus track ends at exactly 0 and 6 m.
+- Build: family 4 in `library_rail.py`. Track on the real 1.435 m standard
+  gauge; section length 6 m is a tool choice so sections line up end to end.
+- Tests: as step 2.
 - Done when: board approved.
 
-### Step 5: Large pieces
+### Step 6: Large pieces
 
-- Build: `props_large/` budget in `check_models.py`; builder reads a folder
-  prefix in `"model"` for props and dressing; family 5 in `library_large.py`.
-  The train cars are hollow shells (body, roof, windows, doors open, steps)
-  placed as dressing over a `layout.json` room, so the map's own walls give
-  collision and navmesh and players can walk through them (Marrow's train
-  chokepoint). The gantry and container stack are props with box colliders.
-- Tests: builder test with a `props_large/` prop in a small test layout;
-  existing Halcyon builder tests unchanged; budgets.
-- Done when: board approved, Halcyon blockout rebuilds byte-identical.
+- Build: family 5 in `library_large.py`. The train cars are hollow shells
+  (body, roof, windows, doors open, steps) placed as dressing over a
+  `layout.json` room, so the map's own walls give collision and navmesh and
+  players can walk through them (Marrow's train chokepoint). The gantry and
+  container stack are props with box colliders. The green last car's glow is
+  the bio-green experiment (look rule 2).
+- Tests: as step 2, in `props_large/`.
+- Done when: board approved.
 
-### Step 6: Hospital and sanatorium
+### Step 7: Hospital and sanatorium
 
 - Build: family 6 in `library_hospital.py`.
 - Tests: as step 2.
 - Done when: board approved.
 
-### Step 7: Outdoor and clutter, close-out
+### Step 8: Map hero pieces
+
+- Build: family 8 in `library_heroes.py`, all in `props_large/` (12,000 tris /
+  6 materials). Sizes from `docs/design/maps.md`: the fountain fits inside the
+  25 m Courtyard loop with a 1.5 m clear ring for the loop; four turbine
+  housings fit the 40 x 25 m Turbine Hall figure-eight; the control building
+  and sanatorium front are backdrop shells (front faces only, no interior),
+  so a map layout can change behind them without a remodel. The icicles and
+  snow use the `Ice` and `Snow` slots, the control building's tip lights the
+  `Beacon` slot, and the sanatorium keeps one window on the teal `WindowGlow`
+  style only where the map places it (a separate dressing piece, so the map
+  picks which window).
+- Tests: as step 2, in `props_large/`.
+- Done when: board approved.
+
+### Step 9: Outdoor and clutter, close-out
 
 - Build: family 7 in `library_outdoor.py`; catalogue complete; ROADMAP Done;
   `docs/DECISIONS.md` line; finish-feature check.
@@ -233,22 +273,24 @@ before the next family starts.
 
 ## Acceptance
 
-- [ ] Every model in families 1-7 builds from its script and passes
+- [ ] Every model in families 1-8 builds from its script and passes
   `check_models.py` and the glTF validator (Assets CI).
 - [ ] Every model has an approved turnaround and a catalogue row; the
   catalogue check is green.
 - [ ] Every library model loads in Godot with light_baking 2 and only shared
-  material slots (`test_prop_library.gd`).
+  material slots (`test_prop_models.gd`).
 - [ ] A `layout.json` prop can place a `props_large/` model (builder test).
 - [ ] The person approved each family's lineup board.
 
 ## Risks
 
-- Vehicles over budget at 2,000 tris: step 2 tries first; fallback is
+- Vehicles over budget at 2,000 tris: step 3 tries first; fallback is
   props_large, no budget raise.
-- Look drifts from the key shots across seven threads: each family board goes
+- Look drifts from the key shots across eight threads: each family board goes
   to the person before the next starts, and every step renders with the same
   lineup tool and light.
+- Hero pieces built before their map's layout: they are shells sized from
+  the maps.md numbers, so a layout change moves them, not remodels them.
 - Props too map-specific to reuse: families come from the shared "Key props"
   lists; anything only one map wants goes to that map's build.
 - Main moves fast: each step only adds new files plus one-line list edits, so
@@ -256,6 +298,6 @@ before the next family starts.
 
 ## Open decisions
 
-- [ ] Scope: generic kit plus the big reusable pieces (train car, gantry,
-  container stack), with one-off map heroes (fountain, turbine housings, dam
-  and sanatorium buildings) left to each map's build. Asked on a decision card.
+- [x] Scope: generic kit plus big reusable pieces, and also the map hero
+  pieces now? Answer (person, 2026-11-18): yes, add the map hero pieces
+  (family 8, step 8).
