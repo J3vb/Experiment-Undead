@@ -72,8 +72,8 @@ Not in (non-goals, and where each one goes instead):
 
 | Folder or file | New / changed | What changes |
 |---|---|---|
-| tools/assets/tripo/intake.py | new | Import, clean, decimate, unwrap, bake, export |
-| tools/assets/tripo/rig.py | new | Fit 22 bones to a body, skin, copy clips |
+| tools/assets/tripo_intake.py | new | Import, clean, decimate, unwrap, bake, export |
+| tools/assets/tripo_rig.py | new | Fit 22 bones to a body, skin, copy clips |
 | tools/assets/tests/test_tripo_intake.py | new | Fixture tests |
 | docs/design/reviews/tripo-trial/ | new | Output .glb, renders, report (`.gdignore`d) |
 
@@ -105,12 +105,12 @@ the same. Maps at 1024 for props, 2048 for characters, like the player body.
 
 ### Step 1: Prop intake
 
-- Build: `python tools/assets/tripo/intake.py <source.glb> --kind prop --height <m>`.
+- Build: `python tools/assets/tripo_intake.py <source.glb> --kind prop --height <m>`.
   Joins meshes, scales to the given height, puts the origin at floor centre,
   turns the front to Godot +Z, decimates to 2,000 triangles, smart-unwraps,
   bakes albedo / normal / ORM from the source at 1024, exports a `.glb` with
   one material. Renders it beside the nearest code-built prop.
-- Files: tools/assets/tripo/intake.py, tools/assets/tests/test_tripo_intake.py,
+- Files: tools/assets/tripo_intake.py, tools/assets/tests/test_tripo_intake.py,
   docs/design/reviews/tripo-trial/.
 - Tests: a fixture "Tripo-like" source (a code prop subdivided to 40k tris
   with a texture) goes through the intake; the test checks triangles, origin,
@@ -126,7 +126,7 @@ the same. Maps at 1024 for props, 2048 for characters, like the player body.
   with `character_rig` segment weights, add an `Eyes` marker, copy the clips
   from `assets/models/characters/player.glb` by bone name. Renders idle, walk
   and a turnaround.
-- Files: tools/assets/tripo/rig.py, intake.py, test_tripo_intake.py.
+- Files: tools/assets/tripo_rig.py, tripo_intake.py, test_tripo_intake.py.
 - Tests: the code-built player body (no skeleton) goes through the rig step;
   the test checks all 22 bones exist, every vertex is weighted, the clips
   are present, and check_models passes it as a character.
