@@ -24,6 +24,7 @@ import bmesh
 import character_models
 import door_models
 import finish
+import library_barriers
 import machine_models
 import prop_models
 import town_buildings
@@ -265,6 +266,7 @@ MODELS.update(town_cabins.MODELS)
 MODELS.update(town_market.MODELS)
 MODELS.update(town_gate.MODELS)
 MODELS.update(town_camp.MODELS)
+MODELS.update(library_barriers.MODELS)
 MODELS.update(door_models.MODELS)
 MODELS.update(machine_models.MODELS)
 

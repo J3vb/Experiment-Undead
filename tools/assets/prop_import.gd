@@ -39,6 +39,7 @@ const SHARED: Dictionary = {
 	"Tile": "res://levels/materials/clinic_tile.tres",
 	"Enamel": "res://levels/materials/enamel.tres",
 	"Ice": "res://levels/materials/ice.tres",
+	"Burlap": "res://levels/materials/burlap.tres",
 }
 
 

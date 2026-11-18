@@ -72,6 +72,6 @@ func test_every_surface_uses_a_shared_slot() -> void:
 
 
 func test_library_slots_load() -> void:
-	for slot: String in ["Stone", "Tile", "Enamel", "Ice", "Beacon"]:
+	for slot: String in ["Stone", "Tile", "Enamel", "Ice", "Burlap", "Beacon"]:
 		assert_true(IMPORTER.SHARED.has(slot), slot + " is a shared slot")
 		assert_true(load(IMPORTER.SHARED[slot]) is Material, slot + " loads as a material")
