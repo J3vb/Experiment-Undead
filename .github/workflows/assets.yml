@@ -64,7 +64,7 @@ jobs:
           for name in charm_dog_tags charm_vial charm_keycard charm_dosimeter charm_coin implant_reflex implant_lung implant_spine implant_ocular implant_relay; do
             test -s "$RUNNER_TEMP/models/gear/$name.glb" || { echo "missing gear/$name.glb"; exit 1; }
           done
-          for name in street_lamp wall_lantern window_lit window_dark fence signpost stall_frame stall_sign missions_board trader_goods gun_wall workbench tech_desk banner floodlight; do
+          for name in street_lamp wall_lantern window_lit window_dark signpost stall_frame stall_sign missions_board trader_goods gun_wall workbench tech_desk banner floodlight fire_barrel bench supply_crate_large supply_crate_small ammo_case fenlight_crate lantern_hanging lantern_table string_lights fence_rail snow_drift_a snow_drift_b firewood_stack pine_tree; do
             test -s "$RUNNER_TEMP/models/town/$name.glb" || { echo "missing town/$name.glb"; exit 1; }
           done
           for name in lodge_lantern_post lodge_common_room cabin_small cabin_two_storey shed_lean_to watchtower gate_wall gate_tunnel radio_mast; do

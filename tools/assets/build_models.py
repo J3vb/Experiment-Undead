@@ -28,6 +28,7 @@ import machine_models
 import prop_models
 import town_buildings
 import town_cabins
+import town_camp
 import town_gate
 import town_market
 import town_props
@@ -263,6 +264,7 @@ MODELS.update(town_buildings.MODELS)
 MODELS.update(town_cabins.MODELS)
 MODELS.update(town_market.MODELS)
 MODELS.update(town_gate.MODELS)
+MODELS.update(town_camp.MODELS)
 MODELS.update(door_models.MODELS)
 MODELS.update(machine_models.MODELS)
 

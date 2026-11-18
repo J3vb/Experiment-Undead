@@ -43,7 +43,7 @@ after a shared slot, and import swaps in the shared material from
 `levels/materials/` (the `SHARED` table): Steel, Dark, Paint, Laminate, Olive,
 Wood, Glass, Fluid, JarFluid, Paper, Alarm, SodiumPaint, Hazard, Concrete, Vine,
 Screen, Logs, Planks, DarkWood, RoofSnow, Snow, Iron, WindowGlow, Canvas,
-SignPaint, TownHazard, Banner, Beacon, and for the library Stone (clean dressed
+SignPaint, TownHazard, Banner, Beacon, Bulb, Pine, and for the library Stone (clean dressed
 stone and rock), Tile (`clinic_tile`), Enamel (off-white hospital metal) and Ice.
 Red signal and tail lamps use Beacon. "(own)" marks town models that keep their
 embedded colours (`vertex_shading_import.gd`).
@@ -115,21 +115,34 @@ embedded colours (`vertex_shading_import.gd`).
 
 | Name | Folder | W x D x H m | Families | Maps | Slots |
 |---|---|---|---|---|---|
+| `ammo_case` | town | 0.8 x 0.4 x 0.4 | Town | Lantern Post | Olive, Iron, Snow |
 | `banner` | town | 1.6 x 0.2 x 4.4 | Town | Lantern Post | Banner, Iron, Snow |
-| `fence` | town | 2.0 x 0.2 x 1.2 | Town | Lantern Post | FenceWood (own), FencePost (own) |
-| `floodlight` | town | 0.8 x 0.5 x 2.1 | Town | Lantern Post | Iron, Snow, SodiumPaint |
+| `bench` | town | 1.8 x 0.4 x 0.6 | Town | Lantern Post | Planks, DarkWood, Snow |
+| `fence_rail` | town | 3.0 x 0.2 x 1.2 | Town | Lantern Post | DarkWood, Snow, Planks |
+| `fenlight_crate` | town | 0.9 x 0.6 x 0.5 | Town | Lantern Post | Planks, DarkWood, Fluid, Iron |
+| `fire_barrel` | town | 0.6 x 0.6 x 1.2 | Town | Lantern Post | Iron, Bulb, DarkWood |
+| `firewood_stack` | town | 1.9 x 0.9 x 1.0 | Town | Lantern Post | Logs, DarkWood, Snow |
+| `floodlight` | town | 0.8 x 0.5 x 2.1 | Town | Lantern Post | Iron, Snow, Bulb |
 | `gun_wall` | town | 3.0 x 0.2 x 2.0 | Town | Lantern Post | Planks, DarkWood, Iron |
-| `missions_board` | town | 3.2 x 0.5 x 2.5 | Town | Lantern Post | DarkWood, Paper, Snow, SodiumPaint |
+| `lantern_hanging` | town | 0.2 x 0.2 x 0.5 | Town | Lantern Post | Iron, Bulb |
+| `lantern_table` | town | 0.2 x 0.2 x 0.3 | Town | Lantern Post | Iron, Bulb |
+| `missions_board` | town | 3.2 x 0.5 x 2.5 | Town | Lantern Post | DarkWood, Paper, Snow, Bulb |
+| `pine_tree` | town | 4.3 x 4.3 x 10.1 | Town, Outdoor | Lantern Post, Grauwald Sanatorium, Kessel Dam | DarkWood, Pine, Snow |
 | `signpost` | town | 2.0 x 0.5 x 2.7 | Town | Lantern Post | SignWood (own), SignPost (own) |
-| `stall_frame` | town | 4.2 x 3.3 x 3.2 | Town | Lantern Post | Planks, Canvas, Snow, SodiumPaint |
+| `snow_drift_a` | town | 2.4 x 1.0 x 0.4 | Town, Outdoor | Lantern Post, Grauwald Sanatorium, Kessel Dam | Snow |
+| `snow_drift_b` | town | 1.4 x 1.2 x 0.6 | Town, Outdoor | Lantern Post, Grauwald Sanatorium, Kessel Dam | Snow |
+| `stall_frame` | town | 4.2 x 3.3 x 3.2 | Town | Lantern Post | Planks, Canvas, Snow, Bulb |
 | `stall_sign` | town | 3.6 x 0.1 x 1.0 | Town | Lantern Post | SignPaint, DarkWood, Snow, Iron |
-| `street_lamp` | town | 0.7 x 1.0 x 4.6 | Town | Lantern Post | Iron (own), LampGlass (own), Stone (own) |
+| `street_lamp` | town | 0.7 x 1.0 x 4.6 | Town | Lantern Post | Iron, LampGlass (own), Stone |
+| `string_lights` | town | 9.2 x 0.1 x 0.7 | Town | Lantern Post | Iron, Bulb |
+| `supply_crate_large` | town | 1.0 x 0.8 x 0.8 | Town | Lantern Post | Planks, DarkWood, Snow |
+| `supply_crate_small` | town | 0.6 x 0.5 x 0.5 | Town | Lantern Post | Planks, DarkWood, Snow |
 | `tech_desk` | town | 2.0 x 0.8 x 1.5 | Town | Lantern Post | Planks, DarkWood, Iron, Screen |
 | `trader_goods` | town | 1.8 x 0.6 x 0.7 | Town | Lantern Post | Planks, Olive, Iron, Paper |
-| `wall_lantern` | town | 0.5 x 0.5 x 0.4 | Town | Lantern Post | Iron (own), LampGlass (own) |
+| `wall_lantern` | town | 0.5 x 0.5 x 0.4 | Town | Lantern Post | Iron, LampGlass (own) |
 | `window_dark` | town | 2.1 x 0.3 x 1.4 | Town | Lantern Post | DarkGlass (own), WindowFrame (own), Stone (own), Shutter (own) |
 | `window_lit` | town | 2.1 x 0.3 x 1.4 | Town | Lantern Post | WindowGlow (own), WindowFrame (own), Stone (own), Shutter (own) |
-| `workbench` | town | 2.0 x 1.1 x 1.2 | Town | Lantern Post | Planks, DarkWood, Iron, SodiumPaint |
+| `workbench` | town | 2.0 x 1.1 x 1.2 | Town | Lantern Post | Planks, DarkWood, Iron, Bulb |
 
 ### Town buildings (`assets/models/town_large/`)
 

@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://c6nagfvdacxfy"
-path="res://.godot/imported/fence.glb-c2d9e2b102a9454467e246dcb9de7130.scn"
+uid="uid://cesoh82rgnppn"
+path="res://.godot/imported/snow_drift_a.glb-967026a53302bc5d1c3949f8fb17dc20.scn"
 
 [deps]
 
-source_file="res://assets/models/town/fence.glb"
-dest_files=["res://.godot/imported/fence.glb-c2d9e2b102a9454467e246dcb9de7130.scn"]
+source_file="res://assets/models/town/snow_drift_a.glb"
+dest_files=["res://.godot/imported/snow_drift_a.glb-967026a53302bc5d1c3949f8fb17dc20.scn"]
 
 [params]
 
@@ -35,7 +35,7 @@ animation/fps=30
 animation/trimming=false
 animation/remove_immutable_tracks=true
 animation/import_rest_as_RESET=false
-import_script/path="res://tools/assets/vertex_shading_import.gd"
+import_script/path="res://tools/assets/prop_import.gd"
 materials/extract=0
 materials/extract_format=0
 materials/extract_path=""
