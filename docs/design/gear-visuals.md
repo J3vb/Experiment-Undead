@@ -212,7 +212,7 @@ The save file gets an `unlocked_dyes` list per character.
 
 ### Network sync
 
-Implemented authority and wire format: see [DECISIONS.md — Co-op gear looks](../DECISIONS.md); trusted clients send their own look, superseding the server-owned inventory model below.
+Implemented authority: trusted clients send their own look (`LookSync`), superseding the server-owned inventory model below; see [DECISIONS.md — Co-op gear looks](../DECISIONS.md) and [ADR 0003](../adr/0003-trusted-client-co-op.md).
 
 The server owns inventories, so the server builds each player's `CharacterLook` and sends it. Clients never send their own look, so nobody can fake a Legendary.
 

@@ -1,6 +1,6 @@
 ## Checks the shared Cold Containment look and the corridor look reference scene
 ## against the style-guide rules (AgX, volumetric fog, max 6 shadowed lights;
-## see the look reference entry in docs/DECISIONS.md).
+## see the Look reference line in docs/DECISIONS.md).
 extends GutTest
 
 const LOOK: String = "res://levels/looks/halcyon_interior.tres"

@@ -194,14 +194,15 @@ zombies), cheap without allocation.
 
 ### 13. Rules and docs agents read
 
-**Why shaky:** `docs/DECISIONS.md` has grown into long build notes, so the
-actual rules are hard to find. The decision records in `docs/adr/` now hold the
-big choices in short form; DECISIONS.md stays the build log. AGENTS.md said "no
+**Why shaky:** `docs/DECISIONS.md` had grown into long build notes, so the
+actual rules were hard to find. Step 4 cut it to one-line lists (design
+differences, simplifications, provisional picks); the decision records in
+`docs/adr/` hold the big choices. AGENTS.md said "no
 RPCs before P7" while P7 co-op was half built; that line now points to the
 co-op rules instead.
 
-**Being fixed:** F-79, [plans/easy-changes.md](plans/easy-changes.md) steps 4-5
-(DECISIONS.md as short one-line lists, AGENTS.md reading map and gotchas).
+**Being fixed:** F-79, [plans/easy-changes.md](plans/easy-changes.md) step 5
+(AGENTS.md reading map and gotchas). Step 4 (DECISIONS.md as short lists) is done.
 
 ## Ready to build
 

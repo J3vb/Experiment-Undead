@@ -57,7 +57,7 @@ Add a gun: copy `content/weapons/rifle_ar.tres`, change `id` to the new file
 name and tune the numbers. Add a zombie type: copy a file in
 `content/enemies/` and add it to `content/waves/default_waves.tres`.
 
-See [docs/DECISIONS.md](docs/DECISIONS.md) for the choices made so far.
+See [docs/DECISIONS.md](docs/DECISIONS.md) for where the game differs from the design, what is simplified and which picks are provisional.
 
 ## Licence
 

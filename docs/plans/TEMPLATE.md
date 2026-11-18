@@ -41,7 +41,7 @@ them.
 
 - docs/design/<file>.md#<section>
 - docs/design/balance/<file>.csv rows ...
-- docs/DECISIONS.md entries that change the design
+- docs/DECISIONS.md lines for the systems involved (design differences, simplifications)
 - docs/adr/<file>.md decisions this plan must respect
 
 ## Systems touched
