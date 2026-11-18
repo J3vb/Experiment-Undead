@@ -66,8 +66,8 @@ func test_zombie_tears_through_and_climbs_in() -> void:
 	assert_lt(barrier.planks, Barrier.PLANKS, "zombie tears planks")
 	while barrier.planks > 1:
 		barrier.tear_plank()
-	await wait_until(func() -> bool: return zombie.vault_progress() >= 0.0, 6.0, "vault starts")
-	assert_gt(zombie.vault_progress(), -1.0, "zombie vaults through the open window")
+	await wait_until(func() -> bool: return zombie.entry.vault_progress() >= 0.0, 6.0, "vault starts")
+	assert_gt(zombie.entry.vault_progress(), -1.0, "zombie vaults through the open window")
 	await wait_until(func() -> bool: return zombie.state == Zombie.State.CHASING, 8.0, "climbed in")
 	assert_true(barrier.is_broken())
 	assert_null(zombie.barrier, "barrier forgotten once inside")
