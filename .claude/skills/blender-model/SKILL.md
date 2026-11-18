@@ -76,8 +76,9 @@ A new model is one `build_<name>()` function plus one line in `MODELS`
 `tools/assets/check_models.py` enforces the rules on every `.glb`: triangle and
 material budget per folder (`BUDGETS`: kit 2,000 / 4, weapons 8,000 / 6,
 zombies 6,000 / 8), origin, forward axis, named joints with the right parents
-(`JOINTS`), closed shells with outward normals, materials. A new model needs a
-line in `JOINTS`.
+(`JOINTS`), closed shells with outward normals, materials. A new gun, zombie,
+character or gear model needs a line in `JOINTS`; static models (kit, props,
+props_large, dressing, doors, machines, town, town_large) do not.
 
 Those are hard limits, not targets. Today: rifle 6,332 triangles, Talon 7,452,
 Shambler 2,904, wall panel 240. Stay close to the similar model. Guns also have
@@ -98,4 +99,6 @@ bevels.
    `.import` file, tests).
 3. Render it and compare with the reference: `look-check` skill.
 4. Commit the script change, the `.glb` and its `.import` together.
-5. New model file: add it to the file list in `.github/workflows/assets.yml`.
+5. New model file: add it to its family script's `MODELS`. The Assets CI
+   (`tools/assets/check_outputs.py`) fails if a `MODELS` entry is not built or
+   a committed `.glb` is not in `MODELS`.
