@@ -1,7 +1,8 @@
 // Lantern Post surfaces from world position, so grey-box blocks of any size
 // get stone courses, planks, slate or cobbles without UVs or texture files.
 // pattern: 0 stone wall, 1 planks, 2 slate roof, 3 cobbles, 4 snow, 5 plaster with timber beams,
-// 6 wet mud road with wheel ruts, puddles and slush at the edges, 7 round-log grain (lodge models).
+// 6 wet mud road with wheel ruts, puddles and slush at the edges, 7 round-log grain (lodge models),
+// 8 banner cloth with the outpost emblem in joint_color, placed in the model's own space (emblem_center).
 // Code-built models also multiply in their baked AO vertex colour (COLOR is white on plain blocks).
 shader_type spatial;
 
@@ -12,12 +13,16 @@ uniform float scale = 1.0;
 uniform float roughness_value : hint_range(0.0, 1.0) = 0.85;
 uniform float snow_on_top : hint_range(0.0, 1.0) = 0.0;
 uniform float wetness : hint_range(0.0, 1.0) = 0.0;
+uniform vec2 emblem_center = vec2(0.0, 2.7);
+uniform float emblem_size = 0.42;
 uniform sampler2D noise : hint_default_white, repeat_enable, filter_linear_mipmap;
 
 varying vec3 world_pos;
 varying vec3 world_normal;
+varying vec3 local_pos;
 
 void vertex() {
+	local_pos = VERTEX;
 	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	world_normal = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 }
@@ -43,6 +48,16 @@ vec2 courses(vec2 uv, vec2 cell, float joint) {
 	vec2 d = min(f, cell - f);
 	float j = 1.0 - smoothstep(0.0, joint, min(d.x, d.y));
 	return vec2(j, hash(id));
+}
+
+// 1 on the emblem: a diamond outline around an upward chevron with a small diamond under it.
+float emblem(vec2 p) {
+	vec2 e = (p - emblem_center) / emblem_size;
+	float ring = 1.0 - smoothstep(0.07, 0.11, abs(abs(e.x) + abs(e.y) - 1.0));
+	float arm = abs(e.y - 0.48 + abs(e.x) * 1.7) / 1.97;
+	float chevron = (1.0 - smoothstep(0.05, 0.08, arm)) * step(-0.36, e.y);
+	float dot_mark = 1.0 - smoothstep(0.1, 0.13, abs(e.x) + abs(e.y + 0.22));
+	return max(ring, max(chevron, dot_mark));
 }
 
 void fragment() {
@@ -87,6 +102,11 @@ void fragment() {
 		float streak = texture(noise, vec2(uv.x * 0.12, uv.y * 3.5)).r;
 		float knot = smoothstep(0.78, 0.86, texture(noise, uv * 0.9 + vec2(0.13, 0.57)).r);
 		color *= mix(0.65, 1.2, streak) * mix(0.9, 1.05, fine) * (1.0 - knot * 0.35);
+	} else if (pattern == 8) {
+		float weave = texture(noise, vec2(local_pos.x * 3.0, local_pos.y * 0.25)).r;
+		float hem = 1.0 - smoothstep(0.0, 0.05, 0.6 - abs(local_pos.x));
+		color *= mix(0.75, 1.1, weave) * mix(0.9, 1.05, fine) * (1.0 - hem * 0.4);
+		color = mix(color, joint_color * mix(0.85, 1.0, fine), emblem(local_pos.xy));
 	} else if (pattern == 4) {
 		color *= mix(0.86, 1.04, grain) * mix(0.95, 1.03, fine);
 	} else {

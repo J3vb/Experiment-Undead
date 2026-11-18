@@ -1,4 +1,5 @@
-## Lantern Post town scene: a Level that is ready on load, with room for 8 players at the spawn.
+## Lantern Post town scene: a Level that is ready on load, with room for 8 players at the spawn, and a
+## Deploy gate that closes the north end.
 extends GutTest
 
 const SCENE: String = "res://levels/lantern_post/lantern_post.tscn"
@@ -18,6 +19,9 @@ const SIGN_TEXTS: Array[String] = [
 const COUNTER_FRONT: float = 1.45
 const LANE_DEPTH: float = 1.5
 const LANE_WIDTH: float = 3.6
+## Tunnel pillar faces and how far players may walk in (tools/levels/lantern_post_scene.py TUNNEL_Z, TUNNEL_STOP).
+const TUNNEL_MOUTH_Z: float = -37.6
+const TUNNEL_WALK_DEPTH: float = 3.0
 
 var _hub: Level
 
@@ -147,3 +151,52 @@ func test_cabins_stand_east_of_the_street_and_block_players() -> void:
 			Vector3(0, CHEST_HEIGHT, into.z), into, Layers.WORLD
 		)
 		assert_false(space.intersect_ray(ray).is_empty(), cabin.name + " walls stop a player from the street")
+
+
+func test_deploy_tunnel_is_closed_three_metres_in() -> void:
+	await wait_physics_frames(2)
+	var space: PhysicsDirectSpaceState3D = _hub.get_world_3d().direct_space_state
+	var board: Vector3 = (_hub.get_node("Gate/DeployBoardSpot") as Node3D).global_position
+	var ray: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
+		Vector3(0, CHEST_HEIGHT, board.z), Vector3(0, CHEST_HEIGHT, board.z - 20.0), Layers.WORLD
+	)
+	var hit: Dictionary = space.intersect_ray(ray)
+	assert_false(hit.is_empty(), "something closes the tunnel")
+	if hit.is_empty():
+		return
+	var depth: float = TUNNEL_MOUTH_Z - (hit.position as Vector3).z
+	assert_almost_eq(depth, TUNNEL_WALK_DEPTH, 0.3, "players walk 3 m into the tunnel, then stop")
+
+
+func test_gate_wall_closes_the_north_end() -> void:
+	await wait_physics_frames(2)
+	var space: PhysicsDirectSpaceState3D = _hub.get_world_3d().direct_space_state
+	for x: float in [-24.0, -17.0, -9.0, -4.5, 4.5, 9.0, 17.0, 24.0]:
+		var ray: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
+			Vector3(x, CHEST_HEIGHT, -33.0), Vector3(x, CHEST_HEIGHT, -48.0), Layers.WORLD
+		)
+		var hit: Dictionary = space.intersect_ray(ray)
+		assert_false(hit.is_empty(), "the gate stops a player at x %.1f" % x)
+
+
+func test_gate_has_a_deploy_sign_and_banners() -> void:
+	var texts: Array[String] = []
+	for node: Node in _hub.get_node("Gate").find_children("*", "Label3D", true, false):
+		texts.append((node as Label3D).text)
+	assert_has(texts, "DEPLOY", "the tunnel reads DEPLOY")
+	assert_eq(_hub.get_node("Gate").find_children("Banner?", "", false, false).size(), 4, "4 banners on the wall")
+	assert_not_null(_hub.get_node_or_null("Gate/CommonRoomBanner"), "and one by the Common Room")
+
+
+func test_watchtower_spotlight_sweeps() -> void:
+	var sweep: Node3D = _hub.get_node_or_null("Cabins/WatchtowerSweep") as Node3D
+	assert_not_null(sweep, "the watchtower has a sweep pivot")
+	if sweep == null:
+		return
+	assert_eq(sweep.find_children("*", "SpotLight3D", false, false).size(), 1, "one beam")
+	var player: AnimationPlayer = sweep.get_node("Sweep") as AnimationPlayer
+	assert_eq(player.autoplay, &"sweep", "the sweep starts on its own")
+	assert_eq(player.get_animation(&"sweep").loop_mode, Animation.LOOP_LINEAR, "and loops")
+	var start: float = sweep.rotation.y
+	await wait_seconds(0.5)
+	assert_ne(sweep.rotation.y, start, "the beam moves")

@@ -31,7 +31,18 @@ MATS = [
 ]
 SCENES = ["street_lamp", "wall_lantern", "fence", "signpost"]
 MARKET = ["stall_frame", "stall_sign", "missions_board", "trader_goods", "gun_wall", "workbench", "tech_desk"]
-LARGE = ["lodge_lantern_post", "lodge_common_room", "cabin_small", "cabin_two_storey", "shed_lean_to", "watchtower"]
+GATE = ["banner", "floodlight"]
+LARGE = [
+    "lodge_lantern_post",
+    "lodge_common_room",
+    "cabin_small",
+    "cabin_two_storey",
+    "shed_lean_to",
+    "watchtower",
+    "gate_wall",
+    "gate_tunnel",
+    "radio_mast",
+]
 LODGE_YAW = math.pi / 2  # model fronts (+Z) face the street (+X)
 EAST_YAW = -math.pi / 2  # east-side model fronts face the street (-X)
 # Stall sign -> (subtitle, [(dressing model, spot in the stall's own space, extra yaw)]), north to south.
@@ -64,7 +75,19 @@ CABINS = [
 TOWER = (8.0, -35.6)
 SHEDS = [(-20.0, -23.0), (-20.0, -11.0), (20.0, -23.0), (20.0, -11.0)]
 SODIUM = "1, 0.58, 0.25, 1"
+FLOOD = "1, 0.9, 0.75, 1"
+GREEN = "0.553, 1, 0.227, 1"
 WALL_H = 3.6
+# Deploy gate (asset list G1-G5). The concrete wall's face is at GATE_Z; the tunnel pillars stand a little proud.
+GATE_Z = -38.0
+GATE_WALL_X = (-17.0, -9.0, 9.0, 17.0)
+GATE_WALL_FRONT = 0.925  # wall body face, in the gate_wall model's own space (+Z)
+TUNNEL_Z = -37.6  # tunnel pillar faces
+TUNNEL_FRONT = 6.62  # pillar face, in the gate_tunnel model's own space (+Z)
+TUNNEL_STOP = 3.0  # players can walk this far into the tunnel
+BANNER_BACK = 0.1075  # wall plate behind a banner's origin
+BANNERS_X = (-17.0, -6.6, 11.4, 17.0)  # east of the tunnel the watchtower stands in front of the wall
+SWEEP = (math.pi / 2 - 0.7, math.pi / 2 + 0.7)  # watchtower spotlight yaw range: gate to street
 
 nodes: list[str] = []
 used: set[tuple[str, str]] = set()
@@ -153,6 +176,14 @@ def omni(name, parent, pos, color, energy, rng, shadow=False) -> None:
     )
 
 
+def spot(name, parent, pos, rot, energy, rng, angle, color=FLOOD) -> None:
+    """Unshadowed spot light shining along its -Z."""
+    nodes.append(
+        f'[node name="{name}" type="SpotLight3D" parent="{parent}"]\ntransform = {xform(pos, rot)}\n'
+        f"light_color = Color({color})\nlight_energy = {energy}\nspot_range = {rng}\nspot_angle = {angle}\n"
+    )
+
+
 def lit(name, parent, pos, energy, rng, color=SODIUM, want_shadow=False) -> None:
     sh = want_shadow and shadow_budget[0] > 0
     if sh:
@@ -197,8 +228,8 @@ def build_ground() -> None:
 def build_walls() -> None:
     group("Walls")
     for name, pos, size in [
-        ("NorthWest", (-14.5, WALL_H / 2, -38), (23, WALL_H, 0.6)),
-        ("NorthEast", (14.5, WALL_H / 2, -38), (23, WALL_H, 0.6)),
+        ("NorthWest", (-23.5, WALL_H / 2, -39), (5, WALL_H, 0.6)),
+        ("NorthEast", (23.5, WALL_H / 2, -39), (5, WALL_H, 0.6)),
         ("South", (0, WALL_H / 2, 16), (52, WALL_H, 0.6)),
         ("West", (-26, WALL_H / 2, -11), (0.6, WALL_H, 54)),
         ("East", (26, WALL_H / 2, -11), (0.6, WALL_H, 54)),
@@ -277,46 +308,45 @@ def build_lamps() -> None:
         deco(f"Wire{li}", "StringLights", (0, 4.55, z), (9.2, 0.02, 0.02), "iron")
 
 
-def _gate_tower(s) -> None:
-    n = "W" if s < 0 else "E"
-    tx = s * 4.3
-    block(f"Tower{n}", "Gate", (tx, 3.2, -38), (2.4, 6.4, 2.4), "town_planks")
-    deco(f"Tower{n}Platform", "Gate", (tx, 6.5, -38), (3.0, 0.2, 3.0), "town_dark_wood")
-    deco(f"Tower{n}Roof", "Gate", (tx, 8.2, -38), (3.2, 0.25, 3.2), "town_slate")
-    deco(f"Tower{n}RoofSnow", "Gate", (tx, 8.36, -38), (3.0, 0.1, 3.0), "town_snow")
-    for c in range(4):
-        cx, cz2 = (-1 if c < 2 else 1) * 1.35, (-1 if c % 2 else 1) * 1.35
-        deco(f"Tower{n}Pillar{c}", "Gate", (tx + cx, 7.35, -38 + cz2), (0.16, 1.7, 0.16), "town_dark_wood")
-    deco(f"Tower{n}Torch", "Gate", (tx - s * 1.3, 3.0, -36.75), (0.25, 0.35, 0.25), "sodium_lamp")
-    lit(f"Tower{n}TorchLight", "Gate", (tx - s * 1.3, 3.0, -36.3), 2.5, 8.0)
+def _gate_wall() -> None:
+    """Four concrete wall sections either side of the tunnel, a box collider each, banners hung on the face."""
+    for k, x in enumerate(GATE_WALL_X):
+        inst(f"Wall{k}", "Gate", (x, 0, GATE_Z - GATE_WALL_FRONT), "gate_wall")
+        collider(f"Wall{k}Block", "Gate", (x, 3.5, GATE_Z - 1.2), (8.0, 7.0, 2.4))
+    for k, x in enumerate(BANNERS_X):
+        inst(f"Banner{k}", "Gate", (x, 2.1, GATE_Z + BANNER_BACK), "banner")
+    for k, x in enumerate((-19.5, 19.5)):
+        inst(f"WallFlood{k}", "Gate", (x, 7.3, GATE_Z - 0.3), "floodlight")
+
+
+def _gate_tunnel() -> None:
+    """The DEPLOY tunnel: sign, floodlights on the pillars, green glow, and colliders that close it 3 m in."""
+    inst("Tunnel", "Gate", (0, 0, TUNNEL_Z - TUNNEL_FRONT), "gate_tunnel")
+    label("DeploySign", "Gate", (-0.9, 7.3, TUNNEL_Z + 0.13), 0.0, "DEPLOY", 300, "0.82, 0.84, 0.82, 1")
+    for k, s in enumerate((-1, 1)):
+        collider(f"TunnelPillar{k}", "Gate", (s * 4.1, 4.5, TUNNEL_Z - 1.0), (1.8, 9.0, 2.0))
+        collider(f"TunnelSide{k}", "Gate", (s * 3.3, 2.5, TUNNEL_Z - 2.7), (0.6, 5.0, 1.4))
+        inst(f"TunnelFlood{k}", "Gate", (s * 4.3, 9.1, TUNNEL_Z - 0.6), "floodlight")
+        aim = basis_rot(math.pi - s * 0.35, pitch=-0.85)
+        spot(f"TunnelFloodLight{k}", "Gate", (s * 4.3, 9.9, TUNNEL_Z - 0.2), aim, 5.0, 22.0, 38.0)
+    collider("TunnelStop", "Gate", (0, 2.7, TUNNEL_Z - TUNNEL_STOP - 0.1), (6.0, 5.4, 0.2))
+    lit("TunnelGlow", "Gate", (0, 3.5, TUNNEL_Z - 1.5), 2.5, 9.0, color=GREEN)
 
 
 def build_gate() -> None:
+    """The concrete Deploy gate at the north end (asset list G1-G4) with the Deploy board in front."""
     group("Gate")
-    for s in (-1, 1):
-        _gate_tower(s)
-    block("Lintel", "Gate", (0, 5.6, -38), (6.2, 0.7, 0.9), "town_dark_wood")
-    deco("SignBoard", "Gate", (0, 4.85, -37.5), (4.6, 0.8, 0.1), "town_dark_wood")
-    deco("SignStrip", "Gate", (0, 4.4, -37.43), (4.2, 0.07, 0.05), "bio_leak")
-    nodes.append(
-        '[node name="Sign" type="Label3D" parent="Gate"]\ntransform = ' + xform((0, 4.88, -37.43)) + "\n"
-        "pixel_size = 0.006\nmodulate = Color(0.553, 1, 0.227, 1)\noutline_size = 0\nfont_size = 80\n"
-        'text = "LANTERN POST"\n'
-    )
-    lit("GateGlow", "Gate", (0, 4.0, -36.3), 3.2, 10.0, color="0.553, 1, 0.227, 1")
-    block("GateLeafW", "Gate", (-2.0, 1.7, -38.3), (2.0, 3.4, 0.2), "town_planks")
-    block("GateLeafE", "Gate", (2.0, 1.7, -38.3), (2.0, 3.4, 0.2), "town_planks")
-    for s in (-1, 1):
-        for bh in (0.7, 2.7):
-            band = f"GateBand{'W' if s < 0 else 'E'}{int(bh * 10)}"
-            deco(band, "Gate", (s * 2.0, bh, -38.18), (1.9, 0.12, 0.05), "iron")
-    spot = xform((0, 0, -35.5))
-    nodes.append(f'[node name="DeployBoardSpot" type="Marker3D" parent="Gate"]\ntransform = {spot}\n')
+    _gate_wall()
+    _gate_tunnel()
+    spot_mark = xform((0, 0, -35.5))
+    nodes.append(f'[node name="DeployBoardSpot" type="Marker3D" parent="Gate"]\ntransform = {spot_mark}\n')
     nodes.append(
         '[node name="DeployBoard" parent="Gate/DeployBoardSpot" instance=ExtResource("deploy_board")]\n'
         'place = &"match"\nlabel = "Halcyon Labs"\n'
     )
     nodes.append('[node name="DeployVotePanel" parent="." instance=ExtResource("deploy_vote_panel")]\n')
+    block("BannerPole", "Gate", (-5.6, 3.4, -34.6), (0.14, 6.8, 0.14), "iron")
+    inst("CommonRoomBanner", "Gate", (-5.53 + BANNER_BACK, 2.1, -34.6), "banner", LODGE_YAW)
 
 
 def _plaza_well() -> None:
@@ -435,6 +465,17 @@ def _cabin(k: int, model: str, at: tuple, mirror: bool, lantern: tuple, smoke) -
         )
 
 
+def _watchtower_sweep() -> None:
+    """The tower floodlight's beam sweeps between the gate and the street: an AnimationPlayer loop, no script."""
+    pivot = xform(_on_east(TOWER, (1.3, 10.1, 2.5)), basis_rot(sum(SWEEP) / 2))
+    nodes.append(f'[node name="WatchtowerSweep" type="Node3D" parent="Cabins"]\ntransform = {pivot}\n')
+    spot("Beam", "Cabins/WatchtowerSweep", (0, 0, 0), basis_rot(pitch=-0.45), 6.0, 30.0, 14.0)
+    nodes.append(
+        '[node name="Sweep" type="AnimationPlayer" parent="Cabins/WatchtowerSweep"]\n'
+        'libraries = {\n&"": SubResource("sweep_library")\n}\nautoplay = &"sweep"\n'
+    )
+
+
 def build_east_side() -> None:
     """Cabins B3/B4 along the east of the street, the watchtower by the gate and the four yard sheds."""
     group("Cabins")
@@ -444,7 +485,7 @@ def build_east_side() -> None:
     for k, (sx, sz) in enumerate(((-1, -1), (1, -1), (-1, 1), (1, 1))):
         leg = _on_east(TOWER, (sx * 1.55, 4.3, sz * 1.55 - 0.028))
         collider(f"WatchtowerLeg{k}", "Cabins", leg, (0.3, 8.6, 0.3), EAST_YAW)
-    lit("WatchtowerFlood", "Cabins", _on_east(TOWER, (1.3, 10.0, 3.2)), 3.0, 14.0)
+    _watchtower_sweep()
     group("Yards")
     for k, (x, z) in enumerate(SHEDS):
         yaw = LODGE_YAW if x < 0 else EAST_YAW
@@ -472,21 +513,11 @@ def build_yards_and_pines() -> None:
 
 
 def build_ridge() -> None:
-    """Radio mast with red beacons on a snowy knoll north-east of the gate, and the falling snow."""
+    """Radio mast (G5) with red beacons on a snowy knoll north-east of the gate, and the falling snow."""
     group("Ridge")
     mx, mz = 21.0, -55.0
     deco("Knoll", "Ridge", (mx, 0.5, mz), (14, 3, 12), "town_snow", basis_rot(0.4))
-    for leg in range(4):
-        lx = (-1 if leg < 2 else 1) * 0.9
-        lz = (-1 if leg % 2 else 1) * 0.9
-        lean = basis_rot(roll=-lx * 0.035, pitch=lz * 0.035)
-        deco(f"MastLeg{leg}", "Ridge", (mx + lx * 0.5, 14.0, mz + lz * 0.5), (0.14, 28.0, 0.14), "iron", lean)
-    for rung in range(9):
-        y = 2.0 + rung * 3.0
-        width = 1.8 - y * 0.032
-        deco(f"MastRung{rung}", "Ridge", (mx, y, mz), (width, 0.08, width), "iron")
-    for bk, y in enumerate((9.5, 19.0, 28.2)):
-        deco(f"MastBeacon{bk}", "Ridge", (mx, y, mz), (0.35, 0.35, 0.35), "beacon_red")
+    inst("RadioMast", "Ridge", (mx, 2.0, mz), "radio_mast", 0.4)
     nodes.append(
         '[node name="Snowfall" parent="." instance=ExtResource("snowfall")]\ntransform = ' + xform((0, 18, -12)) + "\n"
     )
@@ -501,6 +532,17 @@ def build_spawn_and_moon() -> None:
     )
 
 
+SWEEP_ANIMATION = (
+    '[sub_resource type="Animation" id="sweep"]\nresource_name = "sweep"\nlength = 14.0\nloop_mode = 1\n'
+    'tracks/0/type = "value"\ntracks/0/imported = false\ntracks/0/enabled = true\n'
+    'tracks/0/path = NodePath(".:rotation")\ntracks/0/interp = 2\ntracks/0/loop_wrap = true\n'
+    'tracks/0/keys = {\n"times": PackedFloat32Array(0, 7, 14),\n"transitions": PackedFloat32Array(1, 1, 1),\n'
+    f'"update": 0,\n"values": [Vector3(0, {fmt(SWEEP[0])}, 0), Vector3(0, {fmt(SWEEP[1])}, 0), '
+    f"Vector3(0, {fmt(SWEEP[0])}, 0)]\n}}\n\n"
+    '[sub_resource type="AnimationLibrary" id="sweep_library"]\n_data = {\n&"sweep": SubResource("sweep")\n}\n'
+)
+
+
 def header() -> str:
     ext = [
         '[ext_resource type="Script" path="res://systems/level/level.gd" id="level"]',
@@ -508,7 +550,9 @@ def header() -> str:
         '[ext_resource type="Environment" path="res://levels/looks/lantern_post_night.tres" id="look"]',
     ]
     ext += [f'[ext_resource type="PackedScene" path="res://assets/models/town/{sc}.glb" id="{sc}"]' for sc in SCENES]
-    ext += [f'[ext_resource type="PackedScene" path="res://assets/models/town/{sc}.glb" id="{sc}"]' for sc in MARKET]
+    ext += [
+        f'[ext_resource type="PackedScene" path="res://assets/models/town/{sc}.glb" id="{sc}"]' for sc in MARKET + GATE
+    ]
     ext += [
         f'[ext_resource type="PackedScene" path="res://assets/models/town_large/{sc}.glb" id="{sc}"]' for sc in LARGE
     ]
@@ -524,6 +568,7 @@ def header() -> str:
         for mesh, mat in sorted(used)
     ]
     subs += [f'[sub_resource type="BoxShape3D" id="{key}"]\nsize = {size}\n' for key, size in sorted(shapes.items())]
+    subs.append(SWEEP_ANIMATION)
     subs.append(
         '[sub_resource type="CylinderMesh" id="pine_tree"]\nmaterial = ExtResource("pine")\ntop_radius = 0.0\n'
         "bottom_radius = 2.2\nheight = 10.0\nradial_segments = 9\nrings = 3\n"
