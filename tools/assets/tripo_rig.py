@@ -5,6 +5,8 @@ play our clips. When the source has a Mixamo-named skeleton, its joint positions
 1.80 m rest rig is used as is. Weights come from `character_rig.bind`.
 """
 
+import math
+
 import bpy
 
 # isort: split
@@ -54,6 +56,26 @@ def _aim(arm, pbone, world_dir: Vector) -> None:
     bpy.context.view_layer.update()
 
 
+def _turn_thumb_up(arm, bones: dict, word: str, direction: Vector) -> None:
+    """Twists the forearm about the arm so the thumb points down and in, back of the hand up and out, like
+    our rest hand. Without it the clips show open, upturned palms."""
+    forearm, hand = bones.get(f"{word}forearm"), bones.get(f"{word}hand")
+    thumb = bones.get(f"{word}handthumb2") or bones.get(f"{word}handthumb1")
+    if forearm is None or hand is None or thumb is None:
+        return
+    axis = direction.normalized()
+    up = Vector((0.0, 0.0, 1.0))
+    want = (axis * up.dot(axis) - up).normalized()
+    world = arm.matrix_world.to_3x3()
+    have = world @ (thumb.head - hand.head)
+    have = (have - axis * have.dot(axis)).normalized()
+    angle = math.atan2(axis.dot(have.cross(want)), have.dot(want))
+    turn = Matrix.Rotation(angle, 4, (world.inverted() @ axis).normalized())
+    head = forearm.matrix.translation.copy()
+    forearm.matrix = Matrix.Translation(head) @ turn @ Matrix.Translation(-head) @ forearm.matrix
+    bpy.context.view_layer.update()
+
+
 def a_pose(arm, meshes: list) -> None:
     """Swings a T-posed Mixamo body's arms down to our rest angle with Tripo's own skin, then keeps that
     pose as the mesh and the rest. Our clips are made for our A-pose rest, so a T-pose rest raises the arms."""
@@ -66,6 +88,7 @@ def a_pose(arm, meshes: list) -> None:
             pbone = bones.get(f"{word.lower()}{part}")
             if pbone is not None:
                 _aim(arm, pbone, direction)
+        _turn_thumb_up(arm, bones, word.lower(), direction)
     for obj in meshes:
         for mod in [m for m in obj.modifiers if m.type == "ARMATURE"]:
             bpy.context.view_layer.objects.active = obj

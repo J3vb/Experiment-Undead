@@ -19,7 +19,7 @@ code-built versions.
 
 - [crate_comparison.jpg](crate_comparison.jpg): source, our output, today's code-built `crate_large`.
 - [odile_comparison.jpg](odile_comparison.jpg): code-built Quartermaster, Tripo + intake with clips, in Godot.
-- [godot_forward_plus.jpg](godot_forward_plus.jpg): both models in Godot, imported as-is.
+- [godot_forward_plus.jpg](godot_forward_plus.jpg): player body and Odile (idle, walk, reload) with the crate in Godot, imported as-is.
 
 ## What works
 
@@ -70,6 +70,10 @@ All in `tools/assets/tripo_intake.py` / `tripo_rig.py`, with tests in
   the albedo came out blank.
 - No exported tangents: one degenerate UV gave a zero tangent the validator
   rejects; Godot makes its own.
+- Twist the forearm after the swing so the hand matches our rest hand (back of
+  the hand up and out). Tripo's T-pose has the palms down, and the first run
+  showed open, upturned palms in every clip
+  ([hands_player_vs_odile.jpg](hands_player_vs_odile.jpg), player left).
 
 ## How to run
 
