@@ -129,7 +129,7 @@ live state belongs in objects such as `WeaponInstance`.
 5. Points earned: `content/economy/default_economy.tres` (`EconomyRules`) ↔
     `design/balance/economy.csv` and `prices.csv`; serum price/stat changes use `content/serums/<id>.tres`.
 6. Change data only. CSVs are design exports, refreshed only when their source
-    changes; record intentional runtime differences in DECISIONS, never in balance formulas in code.
+    changes; record intentional runtime differences as one line in DECISIONS, never in balance formulas in code.
 7. Add/extend `tests/content/test_<subject>.gd` to lock values and outcomes;
     `test_content_rules.gd` checks numeric constraints. Extend `tests/unit/test_wave_rules.gd`
     for mix first/last-round boundaries with a fixed seed.
@@ -253,6 +253,23 @@ live state belongs in objects such as `WeaponInstance`.
     Extend `tests/unit/test_log.gd` only if the logger's behaviour changes.
 6. Done when the trigger produces the expected warning and payload in
     `user://logs/*.jsonl`/summary, normal operation stays quiet, and repeats stay bounded.
+
+## A lightmap re-bake
+
+Re-bake after any geometry or light change in a baked scene (the corridor look
+reference `levels/look_reference/halcyon_corridor.tscn` or Halcyon Labs).
+Godot 4 has no command-line bake, so this needs the editor on a GPU.
+
+1. Halcyon Labs layout change: rebuild the blockout with `tools/blockout_builder.gd`
+    (command in the file). A change that removes baked meshes breaks the map's tests
+    until the re-bake; `tools/prune_lightmap_users.gd` drops those entries and keeps the rest.
+2. Open the scene (`levels/halcyon_labs/map.tscn` holds the map's `LightmapGI`), select
+    `LightmapGI`, press Bake Lightmaps and save.
+3. Commit only the `.exr`, its `.import`, the `.lmbake` and the scene; revert anything else
+    the editor re-saved and keep the scene free of editor-only uids.
+4. Moving or vanishing things stay out of the bake (doors, wall-buy racks, the Vault,
+    barrier planks, zombies): import them dynamic or set GI to Disabled/Dynamic.
+5. Done when the lightmap size test (18 MiB budget) and the map tests pass.
 
 ## Before you open the PR
 

@@ -112,7 +112,7 @@ A base only drops (zombies, caches, Vault, exfil) once your character reaches it
 | 20 | 17 | Bastion |
 | 25 | 29 | Ironwood .50 |
 
-The first drop of a new base shows a short "New weapon" banner on pickup. Base pick inside the drop pool uses the Drop weight column (100 normal, lower for heavy guns); Prototypes use their own 0.1% / 0.5% rarity rolls. Before loot exists (v0.1), the Vault keeps its map `pool` from DECISIONS and ignores levels.
+The first drop of a new base shows a short "New weapon" banner on pickup. Base pick inside the drop pool uses the Drop weight column (100 normal, lower for heavy guns); Prototypes use their own 0.1% / 0.5% rarity rolls. Before loot exists (v0.1), the Vault keeps its fixed map `pool` and ignores levels (DECISIONS, Specimen Vault line).
 
 ## Affixes and Legendaries per gun
 

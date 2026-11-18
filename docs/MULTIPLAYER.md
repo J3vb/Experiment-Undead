@@ -1,7 +1,8 @@
 # Multiplayer plan (P7 co-op, P8 server, P9 town)
 
-How co-op works and the order it gets built. Big decisions also go in
-`docs/DECISIONS.md`. "Provisional" means picked by an agent and easy to change.
+How co-op works and the order it gets built. Big decisions go in `docs/adr/`;
+co-op simplifications get one line in `docs/DECISIONS.md`. "Provisional" means
+picked by an agent and easy to change.
 
 ## Decided
 

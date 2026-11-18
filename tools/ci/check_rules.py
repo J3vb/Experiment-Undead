@@ -407,6 +407,28 @@ def check_no_content_id_literals(root: Path) -> list[str]:
     return errors
 
 
+DECISIONS = "docs/DECISIONS.md"
+DECISIONS_MAX = 300
+
+
+def check_decisions_short(root: Path) -> list[str]:
+    path = root / DECISIONS
+    if not path.is_file():
+        return []
+    errors = []
+    in_entry = False
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        if line.startswith("- "):
+            in_entry = True
+            if len(line) > DECISIONS_MAX:
+                errors.append(problem(DECISIONS, number, "decisions-short", f"entry over {DECISIONS_MAX} characters"))
+        elif not line.strip() or line.startswith("#"):
+            in_entry = False
+        elif in_entry:
+            errors.append(problem(DECISIONS, number, "decisions-short", "entry wraps; keep it on one line"))
+    return errors
+
+
 RULES = [
     check_core_no_features,
     check_content_is_data,
@@ -425,6 +447,7 @@ RULES = [
     check_no_triple_copy,
     check_tested_scripts,
     check_no_content_id_literals,
+    check_decisions_short,
 ]
 
 

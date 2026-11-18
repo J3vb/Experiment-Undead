@@ -14,7 +14,7 @@ Rules and lifecycle: `docs/plans/README.md`. Template: `docs/plans/TEMPLATE.md`.
 2. **Read the sources** before writing a line:
    - the issue, and the design sections it points to (`docs/design/README.md`
      says which file covers what)
-   - `docs/DECISIONS.md` and `docs/adr/` entries for the systems involved
+   - `docs/DECISIONS.md` lines and `docs/adr/` records for the systems involved
    - `docs/FOUNDATIONS.md` (the ready-to-build checklist and known weak spots)
    - `docs/MULTIPLAYER.md` for who owns state in co-op
    - **the actual code** the feature touches: open each file you will name.
