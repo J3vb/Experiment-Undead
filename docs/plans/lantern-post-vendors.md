@@ -195,7 +195,9 @@ survivor pipeline. If it fails the look card, steps 2-5 change, not throw away.
   concept for a look card.
 - Files: docs/adr/0016-baked-town-npcs.md, tools/assets/player_body/*.py,
   tools/assets/town_npcs/*.py, assets/models/characters/npc_quartermaster.glb,
-  tools/assets/check_models.py (budget entry), docs/design/turnarounds/,
+  docs/design/turnarounds/ (the `characters` budget of 16,000 / 4 in
+  `character_checks.BUDGETS` already covers NPCs; each NPC keeps the `Eyes`
+  empty on the head bone that check requires),
   docs/CREDITS.md line if the base head is reused (same CC0 file, note only).
 - Tests: character checks on the new `.glb` (budget, 22 bones with the same
   names, four materials, facing +Z); a check that the player `.glb` build is
@@ -233,7 +235,9 @@ survivor pipeline. If it fails the look card, steps 2-5 change, not throw away.
 ### Step 4: Vendors in town
 
 - Build: `VendorData`, `vendor.gd`/`vendor.tscn` (Interactable, `is_local()`
-  true, prompt "Talk to <name> [F]", interact plays `greet` then returns to the
+  true; `interact()` returns at once unless `player` is this peer's own
+  player, because `Player._physics_process` also calls `interact()` on the
+  host for remote players, prompt "Talk to <name> [F]", interact plays `greet` then returns to the
   idle, shows the next line in a Label3D over the head for 4 s, head turn via
   `LookAtModifier3D`), four `.tres` files with the lines from lore.md, the
   generator places one vendor per stall behind the counter (spot per stall in
@@ -243,7 +247,7 @@ survivor pipeline. If it fails the look card, steps 2-5 change, not throw away.
   levels/lantern_post/lantern_post.tscn, docs/LOGGING.md.
 - Tests: `tests/content/test_vendors.gd` (see Data); `tests/unit/test_vendor.gd`:
   prompt holds the name, two talks give line 1 then line 2 and wrap after 4,
-  `is_local()` is true, head target only set inside 4 m;
+  `is_local()` is true, a talk by a non-local player shows nothing, head target only set inside 4 m;
   `tests/unit/test_lantern_post.gd`: four vendors, one per stall, each inside
   its stall's bounds and not inside a collider; `tools/ci/test_lantern_post_scene.py`
   still matches the generator.
@@ -280,6 +284,10 @@ survivor pipeline. If it fails the look card, steps 2-5 change, not throw away.
 - Unarmed clips are new for this skeleton (all F-41 clips hold a gun). If the
   arms look wrong behind a counter, the counter hides the hands; step 3 GIFs
   show it early.
+- The 4 m head-turn range, 4 s line time and 90-character line cap are feel
+  values with no design number; they start as constants in `vendor.gd` and
+  the step 5 renders and play-test confirm them (no data field, nobody tunes
+  them for balance).
 - Repo size grows about 12 MB. Fine without LFS for now (asset policy); the
   maps can drop to 1024 px if it becomes a problem.
 
