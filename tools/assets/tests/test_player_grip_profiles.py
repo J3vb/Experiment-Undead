@@ -17,8 +17,8 @@ import build_models
 import character_rig
 import finish
 import grip_checks
+import player_arm_shapes as body
 import player_arms_model as arms
-import player_body_model as body
 import player_grip_profiles as profiles
 import pytest
 from mathutils import Vector
@@ -32,7 +32,7 @@ def test_profile_curls_keep_attached_roots_closed_surfaces_and_real_tip_markers(
     bpy.ops.wm.read_factory_settings(use_empty=True)
     mats = arms._materials()
     skeleton = character_rig.build_armature()
-    body._gloves(skeleton, mats)
+    body.gloves(skeleton, mats)
     parts, metadata = arms._fingers(skeleton, mats, side, sign, profile, markers=False)
     bpy.context.view_layer.update()
     palm = bpy.data.objects["GlovePalm" + side]

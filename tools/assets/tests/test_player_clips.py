@@ -11,7 +11,7 @@ import bpy
 import check_models
 import player_clips
 import pytest
-from player_body_model import build_player
+from player_body.build import build_player
 
 
 @pytest.fixture(scope="module")

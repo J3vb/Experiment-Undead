@@ -15,7 +15,7 @@ from implant_model import (
     build_implant_spine,
 )
 from player_arms_model import build_player_arms
-from player_body_model import build_player
+from player_body.build import build_player
 from vest_model import build_vest_heavy, build_vest_light, build_vest_medium
 
 MODELS = {

@@ -10,7 +10,7 @@ import bmesh
 import body_parts as soft
 import character_rig as rig
 import gear_paint as paint
-import player_body_model as body
+import player_arm_shapes as body
 import player_grip_profiles as profiles
 from mathutils import Matrix, Vector
 from player_arm_morphs import add_variant
@@ -205,7 +205,7 @@ def build_player_arms():
     mats = _materials()
     armature = rig.build_armature()
     _sleeves(mats)
-    body._gloves(armature, mats)
+    body.gloves(armature, mats)
     # Preserve the world body's palms, knit cuffs and knuckle pads; replace only curls.
     for obj in list(bpy.context.scene.objects):
         if obj.name.startswith(("GloveFinger", "GloveThumb")):

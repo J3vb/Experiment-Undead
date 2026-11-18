@@ -13,7 +13,7 @@ import gun_parts as hard
 INNER_RADIUS = 0.060
 MODULE_START = 0.018
 MODULE_END = 0.160
-PORT_CENTRE = (0.072, -0.065, 0.050)
+PORT_CENTRE = (0.072, -0.088, 0.050)  # sits on the survivor scarf (F-70 step 5 replaces the port)
 
 
 def _materials():
@@ -154,12 +154,16 @@ def _port(mats, code):
     _paint(feed, paint.ZONE_ACCENT)
     if "glass" in mats:
         _turned(
-            "NeckOpticalWell", [(0.011, 0), (0.011, -0.001)], (0.072, -0.0735, 0.050), mats["rubber"], paint.ZONE_ACCENT
+            "NeckOpticalWell",
+            [(0.011, 0), (0.011, -0.001)],
+            (0.072, PORT_CENTRE[1] - 0.0085, 0.050),
+            mats["rubber"],
+            paint.ZONE_ACCENT,
         )
         _turned(
             "NeckOptic",
             [(0.012, 0), (0.010, -0.003), (0.004, -0.004)],
-            (0.072, -0.0745, 0.050),
+            (0.072, PORT_CENTRE[1] - 0.0095, 0.050),
             mats["glass"],
             paint.ZONE_ACCENT,
         )

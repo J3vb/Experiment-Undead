@@ -9,8 +9,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import bpy
 import build_models
 import character_rig
+import player_arm_shapes as body
 import player_arms_model as arms
-import player_body_model as body
 import pytest
 import rifle_model
 from mathutils import Vector
@@ -21,7 +21,7 @@ def hands(version):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     mats = arms._materials()
     skeleton = character_rig.build_armature()
-    body._gloves(skeleton, mats)
+    body.gloves(skeleton, mats)
     if version == "first_person":
         for obj in list(bpy.context.scene.objects):
             if obj.name.startswith(("GloveFinger", "GloveThumb")):

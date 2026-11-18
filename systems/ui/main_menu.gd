@@ -9,7 +9,11 @@ https://github.com/googlefonts/atkinson-hyperlegible-next · SIL OFL 1.1
 
 GUT (Godot Unit Test) 9.7.1, `addons/gut/`
 Butch Wesley and contributors
-https://github.com/bitwes/Gut · MIT"""
+https://github.com/bitwes/Gut · MIT
+
+MakeHuman base mesh (head only), `tools/assets/player_body/base_head.obj`
+Data Collection AB, Joel Palmius, Jonas Hauquier
+https://github.com/makehumancommunity/makehuman · CC0 1.0"""
 
 const NEWER_SAVE: String = (
 	"This character was saved by a newer version of the game. "

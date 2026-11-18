@@ -216,3 +216,17 @@ func _files(path: String) -> PackedStringArray:
 			if clean.ends_with(".tres"):
 				paths.append(path.path_join(clean))
 	return paths
+
+
+func test_rarities_pick_field_plated_and_oriel_tiers_and_tiered_visuals_have_three_scenes() -> void:
+	var tiers: Dictionary[StringName, int] = {
+		&"common": 0, &"uncommon": 0, &"rare": 1, &"epic": 1, &"legendary": 2, &"prototype": 2
+	}
+	for rarity: StringName in tiers:
+		var look: RarityLook = Content.get_item(&"looks", rarity) as RarityLook
+		assert_eq(look.tier, tiers[rarity], String(rarity))
+	for visual_id: StringName in Content.ids(&"gear_visuals"):
+		var visual: GearVisual = GearVisual.find(visual_id)
+		assert_true(visual.tier_scenes.size() in [0, 3], "%s has no tier scenes or all three" % visual_id)
+		for scene: PackedScene in visual.tier_scenes:
+			assert_not_null(scene, String(visual_id))

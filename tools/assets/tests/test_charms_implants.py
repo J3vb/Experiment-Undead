@@ -15,7 +15,7 @@ import gear_paint as paint
 import pytest
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
-from player_body_model import build_player
+from player_body.build import build_player
 
 NAMES = character_checks.CHARMS + character_checks.IMPLANTS
 
@@ -136,7 +136,7 @@ def _forearm_radius():
     bpy.ops.wm.read_factory_settings(use_empty=True)
     build_player()
     bpy.context.view_layer.update()
-    suit = bpy.data.objects["Undersuit"]
+    suit = bpy.data.objects["Body"]
     head, tail = map(Vector, character_rig.BONES["forearm_L"][1:])
     axis = (tail - head).normalized()
     center = head + axis * 0.09
@@ -185,7 +185,7 @@ def test_neck_light_ring_clears_the_actual_undersuit_collar():
     bpy.ops.wm.read_factory_settings(use_empty=True)
     build_player()
     bpy.context.view_layer.update()
-    suit = bpy.data.objects["Undersuit"]
+    suit = bpy.data.objects["Body"]
     collar = BVHTree.FromObject(suit, bpy.context.evaluated_depsgraph_get())
     neck = Vector(character_rig.BONES["neck"][1])
     for name in character_checks.IMPLANTS:

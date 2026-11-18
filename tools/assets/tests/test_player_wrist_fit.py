@@ -144,13 +144,13 @@ def test_world_space_variants_preserve_basis_key_order_and_unaffected_grips():
 
 def test_actual_fabric_keeps_every_active_profile_closed_and_all_other_shapes_exact():
     import character_rig as rig
+    import player_arm_shapes as body
     import player_arms_model as arms
-    import player_body_model as body
 
     mats = arms._materials()
     armature = rig.build_armature()
     arms._sleeves(mats)
-    body._gloves(armature, mats)
+    body.gloves(armature, mats)
     for side, sign in (("L", 1), ("R", -1)):
         arms._wrist_details(mats, side, sign)
     parts = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]

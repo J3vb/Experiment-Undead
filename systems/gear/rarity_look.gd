@@ -7,3 +7,5 @@ extends Resource
 @export_range(0.0, 2.0) var glow_strength: float = 0.0
 @export var pulse_seconds: float = 0.0
 @export var flicker: bool = false
+## Model tier a piece of this rarity shows: 0 field, 1 plated, 2 Oriel.
+@export_range(0, 2) var tier: int = 0

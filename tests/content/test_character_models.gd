@@ -102,8 +102,8 @@ func test_player_faces_positive_z_with_eyes_on_the_head() -> void:
 	if skeleton == null or eyes == null:
 		return
 	var head: Vector3 = skeleton.global_transform * skeleton.get_bone_global_rest(skeleton.find_bone("head")).origin
-	assert_gt(eyes.global_position.z, head.z + 0.04, "goggles and Eyes face Godot +Z")
-	assert_between(eyes.global_position.y, 1.65, 1.77, "Eyes sits at goggle height")
+	assert_gt(eyes.global_position.z, head.z + 0.04, "Eyes face Godot +Z")
+	assert_between(eyes.global_position.y, 1.65, 1.77, "Eyes sits at eye height")
 	var attachment: BoneAttachment3D = eyes.get_parent() as BoneAttachment3D
 	assert_not_null(attachment, "Eyes follows a BoneAttachment3D")
 	if attachment:
@@ -136,8 +136,22 @@ func _assert_materials_have_gear_finish(model: Node3D) -> void:
 	assert_push_error_count(0, "known character materials import without fallback errors")
 
 
-func test_every_player_material_uses_the_gear_shader_and_a_known_finish() -> void:
-	_assert_materials_have_gear_finish(_character())
+func test_every_player_material_keeps_the_baked_body_maps() -> void:
+	var model: Node3D = _character()
+	if model == null:
+		return
+	var surfaces: int = 0
+	for node: Node in model.find_children("*", "MeshInstance3D", true, false):
+		var mesh: Mesh = (node as MeshInstance3D).mesh
+		for surface: int in mesh.get_surface_count():
+			var material: StandardMaterial3D = mesh.surface_get_material(surface) as StandardMaterial3D
+			assert_not_null(material, "%s surface %d keeps its baked material (ADR 0015)" % [node.name, surface])
+			if material == null:
+				continue
+			surfaces += 1
+			assert_true(material.resource_name.begins_with("Body"), material.resource_name + " is a body material")
+			assert_not_null(material.albedo_texture, material.resource_name + " has its colour map")
+	assert_eq(surfaces, 4, "four body materials share one set of maps")
 
 
 func test_every_first_person_arm_material_uses_the_gear_shader_and_a_known_finish() -> void:

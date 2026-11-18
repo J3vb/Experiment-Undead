@@ -200,3 +200,17 @@ func _equipped_count(rig: GearRig) -> int:
 		if rig.skeleton.get_node_or_null(String(slot).capitalize()) != null:
 			count += 1
 	return count
+
+
+func test_visual_picks_its_tier_scene_and_falls_back_to_the_single_scene() -> void:
+	var scenes: Array[PackedScene] = []
+	for tier: int in 3:
+		scenes.append(PackedScene.new())
+	var visual: GearVisual = GearVisual.new()
+	visual.scene = PackedScene.new()
+	assert_same(visual.scene_for(2), visual.scene, "no tier scenes: every tier shows the one scene")
+	visual.tier_scenes = scenes
+	for tier: int in 3:
+		assert_same(visual.scene_for(tier), scenes[tier])
+	assert_same(visual.scene_for(7), scenes[2], "tiers past the last scene clamp to it")
+	assert_same(visual.scene_for(-1), scenes[0])
