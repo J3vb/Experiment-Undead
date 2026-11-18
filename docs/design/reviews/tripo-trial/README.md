@@ -70,10 +70,13 @@ All in `tools/assets/tripo_intake.py` / `tripo_rig.py`, with tests in
   the albedo came out blank.
 - No exported tangents: one degenerate UV gave a zero tangent the validator
   rejects; Godot makes its own.
-- Twist the forearm after the swing so the hand matches our rest hand (back of
-  the hand up and out). Tripo's T-pose has the palms down, and the first run
-  showed open, upturned palms in every clip
-  ([hands_player_vs_odile.jpg](hands_player_vs_odile.jpg), player left).
+- Twist the forearm after the swing so the hand sits like our player body's rest
+  hand (palm forward and in, thumb up and out, measured off `player.glb`), and
+  curl Tripo's flat, spread fingers into the player's relaxed curl. Our skeleton
+  has no finger bones, so the curl has to be in the mesh. Without both, every
+  clip showed open, wrongly turned hands
+  ([hands_player_vs_odile.jpg](hands_player_vs_odile.jpg): rest pose on top,
+  idle front and side below, player left).
 
 ## How to run
 

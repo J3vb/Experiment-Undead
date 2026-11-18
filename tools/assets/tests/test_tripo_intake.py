@@ -237,9 +237,9 @@ def test_embedded_jpegs_have_no_icc_profile(prop):
         assert b"ICC_PROFILE" not in jpeg
 
 
-def test_forearm_twist_turns_the_thumb_down_and_in_like_our_rest():
+def test_forearm_twist_turns_the_thumb_like_our_player_rest_hand():
     """Tripo's T-pose palms face down; after the swing the thumb must point where our rest hand's does
-    (down and in, back of the hand up and out), or every clip shows open palms."""
+    (up and out, a little forward), or every clip turns her hands the wrong way."""
     import tripo_rig
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -265,6 +265,6 @@ def test_forearm_twist_turns_the_thumb_down_and_in_like_our_rest():
     tripo_rig._turn_thumb_up(arm, bones, "left", direction)
     thumb = (bones["lefthandthumb2"].head - bones["lefthand"].head).normalized()
     up = Vector((0.0, 0.0, 1.0))
-    want = (direction * up.dot(direction) - up).normalized()
-    assert (thumb - direction * thumb.dot(direction)).normalized().dot(want) > 0.99
+    want = (up - direction * up.dot(direction)).normalized() * 0.86 + Vector((0.0, -0.51, 0.0))
+    assert (thumb - direction * thumb.dot(direction)).normalized().dot(want.normalized()) > 0.99
     bpy.ops.object.mode_set(mode="OBJECT")

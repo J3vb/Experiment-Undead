@@ -1,8 +1,8 @@
 """Puts a Tripo character mesh on our shared 22-bone skeleton with the existing player clips.
 
-Tripo's own rig is not reused: its bone names and rest pose differ from ours, so its skin would not
-play our clips. When the source has a Mixamo-named skeleton, its joint positions move our bones; otherwise our
-1.80 m rest rig is used as is. Weights come from `character_rig.bind`.
+When the source has a Mixamo-named skeleton (Tripo's Mixamo preset), its arms are swung to our A-pose with the
+forearms twisted and fingers curled like our player hand, its joint positions move our bones and its skin weights
+are kept. Otherwise our 1.80 m rest rig and `character_rig.bind` weights are used.
 """
 
 import math
@@ -28,6 +28,12 @@ MIXAMO = {
 SIDES = {"L": "Left", "R": "Right"}
 EYE_HEIGHT = 1.682
 EYE_FRONT = 0.115
+# Our player body's rest thumb, measured off player.glb: up and out along the arm's side, 31 degrees forward.
+THUMB_OUT = 0.86
+THUMB_FORWARD = 0.51
+FORWARD = Vector((0.0, -1.0, 0.0))
+# Degrees per finger joint (base, middle, tip), like the player body's relaxed hand.
+FINGER_CURL = (25.0, 35.0, 25.0)
 
 
 def _plain(name: str) -> str:
@@ -57,15 +63,16 @@ def _aim(arm, pbone, world_dir: Vector) -> None:
 
 
 def _turn_thumb_up(arm, bones: dict, word: str, direction: Vector) -> None:
-    """Twists the forearm about the arm so the thumb points down and in, back of the hand up and out, like
-    our rest hand. Without it the clips show open, upturned palms."""
+    """Twists the forearm about the arm so the thumb points where our player body's rest thumb does: up and out,
+    a little forward (palm facing forward and in). Without it the clips turn her hands the wrong way."""
     forearm, hand = bones.get(f"{word}forearm"), bones.get(f"{word}hand")
     thumb = bones.get(f"{word}handthumb2") or bones.get(f"{word}handthumb1")
     if forearm is None or hand is None or thumb is None:
         return
     axis = direction.normalized()
     up = Vector((0.0, 0.0, 1.0))
-    want = (axis * up.dot(axis) - up).normalized()
+    want = (up - axis * up.dot(axis)).normalized() * THUMB_OUT + FORWARD * THUMB_FORWARD
+    want = (want - axis * want.dot(axis)).normalized()
     world = arm.matrix_world.to_3x3()
     have = world @ (thumb.head - hand.head)
     have = (have - axis * have.dot(axis)).normalized()
@@ -74,6 +81,30 @@ def _turn_thumb_up(arm, bones: dict, word: str, direction: Vector) -> None:
     head = forearm.matrix.translation.copy()
     forearm.matrix = Matrix.Translation(head) @ turn @ Matrix.Translation(-head) @ forearm.matrix
     bpy.context.view_layer.update()
+
+
+def _curl_fingers(arm, bones: dict, word: str, direction: Vector) -> None:
+    """Bends Tripo's flat, spread fingers into the relaxed curl our player hand is modelled with. Our skeleton has
+    no finger bones, so the curl has to be in the mesh before the swing is applied."""
+    hand = bones.get(f"{word}hand")
+    if hand is None:
+        return
+    world = arm.matrix_world.to_3x3()
+    axis = direction.normalized()
+    palm = axis.cross(FORWARD.cross(axis)).normalized()
+    for finger in ("index", "middle", "ring", "pinky"):
+        for joint, angle in enumerate(FINGER_CURL, start=1):
+            pbone = bones.get(f"{word}hand{finger}{joint}")
+            if pbone is None:
+                continue
+            along = (world @ (pbone.tail - pbone.head)).normalized()
+            turn_axis = along.cross(palm)
+            if turn_axis.length < 1e-4:
+                continue
+            turn = Matrix.Rotation(math.radians(angle), 4, (world.inverted() @ turn_axis).normalized())
+            head = pbone.matrix.translation.copy()
+            pbone.matrix = Matrix.Translation(head) @ turn @ Matrix.Translation(-head) @ pbone.matrix
+            bpy.context.view_layer.update()
 
 
 def a_pose(arm, meshes: list) -> None:
@@ -89,6 +120,7 @@ def a_pose(arm, meshes: list) -> None:
             if pbone is not None:
                 _aim(arm, pbone, direction)
         _turn_thumb_up(arm, bones, word.lower(), direction)
+        _curl_fingers(arm, bones, word.lower(), direction)
     for obj in meshes:
         for mod in [m for m in obj.modifiers if m.type == "ARMATURE"]:
             bpy.context.view_layer.objects.active = obj
