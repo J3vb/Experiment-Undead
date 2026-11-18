@@ -12,6 +12,8 @@ The one-line pitch: *the cold kept it asleep, and someone turned off the cold.* 
 
 **Fenlight** is a glowing green mould from the Grauwald Fen. It colonises nerves, rebuilds damaged tissue, and keeps a body moving after death so it can spread by bite. It goes dormant below about -10 °C, which is why every lab that held it was kept freezing.
 
+Outside a body it grows too, wherever it is warm and damp: glowing vines up pillars, pods on ceilings, wet green spill pools and soft mats on machines. That is the growth players see in Halcyon Labs after the breakout. Where it is cold, it lies grey and still.
+
 The outbreak was not an accident. The power cut at Kessel Dam was manual, and the person who threw the switch is the game's central mystery (see Dr. Maren Aust under Factions).
 
 **Why waves.** Infected hosts pulse in sync, like fireflies. Each pulse pulls every host within kilometres toward warm bodies. Players call one pulse a **round**, and the pulses get stronger over a night. The short quiet between rounds is the lull between pulses.
@@ -23,8 +25,8 @@ The outbreak was not an accident. The power cut at Kessel Dam was manual, and th
 | 1962 | A Cold War bunker is dug into the pine ridge, later abandoned. | Halcyon Labs layout |
 | 7 years before | Oriel Biotechnic buys the bunker and the sanatorium records, and starts Project HALCYON. | Halcyon Labs notes |
 | Day 0 | Kessel Dam's turbines are shut down on the coldest night of the year. The labs warm up and Fenlight wakes. | Kessel Dam, Halcyon Labs |
-| Day 3 | Evacuation trains at Marrow Junction are overrun. | Marrow Junction |
-| Day 9 | The Cordon seals the region. | Radio, town |
+| Day 3 | The army's evacuation trains at Marrow Junction are overrun. | Marrow Junction |
+| Day 9 | The army units that ran the evacuation pull back to the zone's edge and seal it. From now on they are the Cordon. | Radio, town, army trucks and checkpoints left inside the zone |
 | Day 200 (now) | Deep winter. Lantern Post holds on and sends salvagers out. | Lantern Post |
 
 The year is never named. Tech is modern military, so the present just feels like now.
@@ -37,7 +39,7 @@ Five groups, but players only ever fight the infected. The rest exist in notes, 
 | --- | --- | --- | --- |
 | **The Lit** (the infected) | Fenlight hosts. Eyes and veins glow green. Slower in cold, faster near heat. | To spread. | Every round. |
 | **Oriel Biotechnic** | Private biotech firm that ran Project HALCYON. Gone now, but its machines still run. | Healing soldiers that never stay down. | Memos, staff logs, the machines, the Prototype rarity. |
-| **The Cordon** | Military force guarding the zone's edge. Shoots anyone who walks out. | Keep it in. Buy Oriel data quietly. | Radio between rounds, supply drops, the liaison in town. |
+| **The Cordon** | Military force guarding the zone's edge. Shoots anyone who walks out. Before Day 9 the same units ran the evacuation, so their trucks, cases and checkpoints are all over the zone. | Keep it in. Buy Oriel data quietly. | Radio between rounds, supply drops, the liaison in town. |
 | **Lantern Post** | Survivors on the cold ridge. The players are its salvagers. | Survive the winter and find a cure. | The town hub and its NPCs. |
 | **The Wick** | A small group led by Dr. Maren Aust, ex-Oriel lead scientist. They think Fenlight is the next step for humans, not a disease. | To let it spread. | Never seen. Graffiti, stolen radio frequencies, Aust's recordings. |
 
@@ -207,6 +209,15 @@ A new act is 4 chapters plus: an act boss with 3 phases, one new lamp line and o
 
 Lantern Post is an old border-post village on the highest, coldest ridge in the zone. It survives because the Lit slow down in the cold, and because the villagers keep sodium lamps burning on every roof so salvagers can find their way home at night. Orange sodium light means safe; that is the town's look against the green of the maps.
 
+**Where it came from.** The village grew around an old customs post on the border road. In the 1960s a concrete border tunnel with a blast door was cut through the ridge behind it; that tunnel is now the **Deploy gate**, and the blast door is why the Lit never come in that way. In 1954 the night nurses who fled Grauwald Sanatorium settled here and hung their lantern over the customs gate. The villagers started calling the place Lantern Post. On Day 9 the survivors walled the village with whatever they had: logs, sheds and the customs post's concrete.
+
+**What the town shows and why.**
+
+- **The emblem** on the maroon banners is a lantern over a ridge line, light grey on maroon. Maroon was the old customs post's colour.
+- **The green lights in the Deploy tunnel** are the one place town uses green on purpose: green means Fenlight, so green points the way into the zone. Pell painted them.
+- **The FENLIGHT SAMPLES crates** at the Technician stall are Dr. Corvelyn's cure research. They sit in the snow because the cold keeps the jars asleep.
+- **Fire barrels** keep people warm, not the samples, so they stand away from the stalls with the jars.
+
 Six NPCs, one per town job. Each has a short bark set that changes as players clear map milestones, so the town reacts to progress.
 
 | NPC | Job in town | Background | Lore they hold |
@@ -251,6 +262,110 @@ Talking to a keeper gives one short line, in order, only to you. First lines
   not thanks." / "Bring back data, not stories." / "Command wants samples.
   Whole ones." / "Don't walk past the wall. They shoot first out there."
 
+## Story links for game content
+
+Everything in the game has a story reason. This section gives one for every
+kind of content that exists or is planned, so a new gun, zombie, prop or
+screen can copy the pattern. Rows marked *provisional* are recommended picks
+(2026-11-18) that can change in play-tests or when the feature is planned.
+New content adds its row here in the same PR (the **Lore link** rule in
+[docs/plans/TEMPLATE.md](../plans/TEMPLATE.md)).
+
+### The Lit (enemy types)
+
+Every type is a normal person changed by Fenlight in one way. What they wear
+follows the map: lab coats and security uniforms in Halcyon, overalls at the
+dam, coats and army fatigues at the Junction, gowns at Grauwald.
+
+| Type | Who they were and why they act this way |
+| --- | --- |
+| Shambler | Anyone. Fresh hosts walk; hosts that have been warm longer run. That is the round speed mix. |
+| Crawler | A host whose legs were blown off. Fenlight keeps the rest moving. |
+| Bloater | A host whose gut filled with Fenlight gas pods. They burst on death into a spore cloud. The belly glows because the pods do. *(provisional)* |
+| Stalker | A light, young host rewired for climbing. Warm air gathers under ceilings, so they hunt along pipes and vents up there. *(provisional)* |
+| Brute | Oriel security and army riot troops who turned in full kit. Fenlight grew the body huge and fused the riot helmet into a bone plate, which is the head plate. *(provisional)* |
+| Glower | Hosts so full of Fenlight they shine. They shun light, so they only come in force when the lights fail: the Blackout round. *(provisional)* |
+| Bosses | Named people from the notes and secrets (see The long campaign). |
+
+### Guns: where they come from
+
+Guns come from three places. The source decides the name style, which is why
+some guns have codes and some have names.
+
+| Source | Name style | Guns | Story |
+| --- | --- | --- | --- |
+| **Army and Cordon issue** | Codes on the four wall guns; plain military names on the rest | AR-17 (Vanguard), BR-12 (Brenner Trench), VX-9 (Kestrel), MR-28 (Talon), Rampart BR, Halberd LMG, Sentry, Wren MP, Nightjar SD, Corvid .338, Ironwood .50, Atlas Auto, Bastion | Left in the zone by the evacuation force (Day 3) or dropped by Cordon patrols. Oriel bought the same models for its guard force, so the Halcyon wall racks are Oriel security's armoury. The Ironwood .50 and Bastion are the Cordon's answer to Brutes at the wall. *(provisional)* |
+| **Oriel security** | Brand names | Warden P9, Mako PDW | Oriel guard kit. Odile hands every new salvager a Warden P9 from a crate she once shipped. *(provisional)* |
+| **Valley civilians** | Old maker names | Hollis .44, Fieldhand, Coachman, Grubber | Hunting and farm guns from the Ardennes villages. Kessel Dam staff kept Fieldhand lever rifles for wild boar on the slopes; Halcyon's dock guards kept a Coachman behind the gatehouse. *(provisional)* |
+| **Oriel prototypes** | Project names | Cryo Lance, Siphon, Synapse | HALCYON test weapons with live Fenlight. The Cryo Lance is the one Dr. Aust built in her Cold Room to freeze hosts; it is on Oriel's books as a prototype, which is why the Vault can roll it. The Siphon is the one the Courier smuggled onto the train. Synapse was built for the Cordon order. |
+
+**Reforged** guns are any of these run through the Reforger's Fenlight alloy
+(see Why the machines exist).
+
+### Power-ups, points and buying from walls
+
+These are the arcade rules of the wave game. Decided by the person
+(2026-11-18): things the player sees in the world get a story reason; points
+stay a plain game score. The drop reasons below are provisional picks.
+
+| Thing | Story reason |
+| --- | --- |
+| Points | A game score, not a currency in the story. No in-world reason needed. |
+| Wall guns, doors, debris | You are breaking locks and clearing rubble; the price is the game's way to pace it. |
+| Power-up drops | Kit the Lit still carry from their old lives. The Lit were staff, soldiers and evacuees. |
+| Resupply | An army ammo pouch. |
+| Ammo pack (Scavenger) | Loose rounds from a pocket. |
+| Payday | An Oriel bonus chit. A game-score drop; the chit is only its icon. |
+| Overkill | A Cordon "hot round" belt. |
+| Purge | An Oriel pulse breaker. It breaks the pulse sync for a moment, and every host nearby drops dead. |
+| Scrap Kit | A carpenter's repair kit. |
+| Stasis | An Oriel cryo charge: a burst of cold that freezes every host. |
+| Supply Crate | An Oriel Vault key card: one free Vault roll. |
+
+### Gear and abilities
+
+| Thing | Story reason |
+| --- | --- |
+| Vests | Body armour salvaged from Oriel security, the army and the Cordon. Light, medium and heavy frames. |
+| Charms | Keepsakes taken from the zone: dog tags, a sample vial, a coin, a key card, a dosimeter. Salvagers hang them on the gun for luck. |
+| Implants | HALCYON's soldier program: a forearm module and a neck port that feed the body tiny doses of tamed Fenlight. Dr. Corvelyn fits them at the Technician stall. *(provisional)* |
+| Rarity | How much use and Fenlight an item has seen. Prototype = live Fenlight (bio-green). |
+| Legendaries | Named items with a past. Each name hints at a place or person from the lore (Lantern Fall, Choir Mark, Quarantine Shell). |
+| Sets | Each set belongs to one map's story. Proposed: Containment Detail = Halcyon (Oriel security), Fenlight Circuit = Kessel Dam (the power line), Lamplighter = Grauwald (the night nurses), Marrow Junction gets a rail or evacuation set later. *(proposed; affixes.md still says Lamplighter on map 1)* |
+| Field abilities | Salvager kit Teun and Dr. Corvelyn build from Oriel scrap: Shock Pulse, Med Burst, the Sentry turret, Adrenal Rush (a HALCYON stimulant), Decoy Siren (copies the pulse sound). |
+| Skill branches | The three salvager trades taught in town: Marksman, Survivor, Tinkerer. |
+| Scrap | The town's money. Metal, parts and Oriel tech, traded at Odile's stall. |
+
+### Lantern Post services
+
+| Place | Who runs it |
+| --- | --- |
+| Stash and TRADER stall | Odile Brandt |
+| Workbench, GUNSMITH stall | Teun Maes |
+| TECHNICIAN stall and the infirmary | Dr. Lien Corvelyn |
+| MISSIONS stall, Contract Board | Lieutenant Raes |
+| Deploy gate, Codex, Hall of Records | Pell (he logs every run on the radio) |
+| Wall of Finds, cosmetics | Bram Ostijn |
+| Trainer (skill respec) | Dr. Corvelyn, as first written. *(provisional; open question below)* |
+| Firing Range | The old customs yard behind the post. |
+
+### Maps, rooms and props
+
+- **Rooms.** Every room tells one small story you can read in a glance. In
+  Halcyon Labs: the Loading Dock is the last truck out, the Guard Post is Oriel
+  security, the Generator Hall is the backup power, the Labs and Containment
+  tanks (C-01 to C-03) are where HALCYON grew Fenlight, the Coolant Tunnel
+  carried the cold from Kessel Dam's private line, and the Fenlight vines are
+  the mould escaping the warm tanks.
+- **Signs and logos.** Any text, logo or faction mark uses a lore name: Oriel
+  (teal), HALCYON, the Cordon mark, the Lantern Post emblem. Army gear inside
+  the zone is the Cordon's from before Day 9.
+- **Shared library props** (F-77) are generic kit and need no story of their
+  own. Their story comes from where a map places them: army trucks at Kessel
+  and Marrow are the Day 3 evacuation convoy, the hospital train car is the
+  evacuation train, hospital furniture at Grauwald is 1950s sanatorium stock.
+- **New maps** follow the chapter checklist in The long campaign.
+
 ## How the story is told in-game
 
 No cutscenes and nothing that stops play. Story is optional: a player who ignores all of it still has a full game.
@@ -280,3 +395,7 @@ No cutscenes and nothing that stops play. Story is optional: a player who ignore
 - [ ] Provisional (2026-11-17): the Wick stay off-screen. Players only fight the infected; Wick believers can appear as Lit (The Choir).
 - [ ] Who are the Act II and Act III newcomers in town, and which town jobs do they take? Decide when those acts are planned.
 - [ ] Should the town NPC jobs match the hub design 1:1? Check when the town hub (P9) is planned.
+- [ ] Who are the playable survivors (F-67 character select)? Write them as Lantern Post salvagers when F-67 is planned.
+- [ ] Who runs the Trainer (skill respec)? Provisional: Dr. Corvelyn. Decide with F-45.
+- [ ] The TECHNICIAN stall says "Serums / Gear", but Serums are run items bought from Med Dispensers in maps. Decide with F-45 what the town sells (implants and gear fit; Serums would break the run layer).
+- [ ] Name clashes that confuse players: Overclock (Serum and Implant Legendary), Second Wind (Serum and Warden P9 Legendary), Overkill (power-up and Corvid Legendary), Sentry (burst rifle and field ability). Rename the Legendaries and the ability with the design-change skill before loot ships.

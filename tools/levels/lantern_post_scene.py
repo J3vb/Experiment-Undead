@@ -18,20 +18,39 @@ MATS = [
     "town_planks",
     "town_dark_wood",
     "town_slate",
-    "town_cobbles",
     "town_mud",
     "town_snow",
-    "rust",
-    "bio_leak",
-    "sodium_lamp",
-    "lit_window",
-    "pine",
     "iron",
-    "beacon_red",
 ]
-SCENES = ["street_lamp", "wall_lantern", "fence", "signpost"]
+SCENES = ["street_lamp", "wall_lantern", "signpost"]
 MARKET = ["stall_frame", "stall_sign", "missions_board", "trader_goods", "gun_wall", "workbench", "tech_desk"]
-LARGE = ["lodge_lantern_post", "lodge_common_room", "cabin_small", "cabin_two_storey", "shed_lean_to", "watchtower"]
+GATE = ["banner", "floodlight"]
+CAMP = [
+    "bench",
+    "supply_crate_large",
+    "supply_crate_small",
+    "ammo_case",
+    "fenlight_crate",
+    "lantern_hanging",
+    "lantern_table",
+    "string_lights",
+    "fence_rail",
+    "snow_drift_a",
+    "snow_drift_b",
+    "firewood_stack",
+    "pine_tree",
+]
+LARGE = [
+    "lodge_lantern_post",
+    "lodge_common_room",
+    "cabin_small",
+    "cabin_two_storey",
+    "shed_lean_to",
+    "watchtower",
+    "gate_wall",
+    "gate_tunnel",
+    "radio_mast",
+]
 LODGE_YAW = math.pi / 2  # model fronts (+Z) face the street (+X)
 EAST_YAW = -math.pi / 2  # east-side model fronts face the street (-X)
 # Stall sign -> (subtitle, [(dressing model, spot in the stall's own space, extra yaw)]), north to south.
@@ -64,7 +83,54 @@ CABINS = [
 TOWER = (8.0, -35.6)
 SHEDS = [(-20.0, -23.0), (-20.0, -11.0), (20.0, -23.0), (20.0, -11.0)]
 SODIUM = "1, 0.58, 0.25, 1"
+FLOOD = "1, 0.9, 0.75, 1"
+GREEN = "0.553, 1, 0.227, 1"
+STENCIL = "0.78, 0.78, 0.72, 1"
 WALL_H = 3.6
+# Deploy gate (asset list G1-G5). The concrete wall's face is at GATE_Z; the tunnel pillars stand a little proud.
+GATE_Z = -38.0
+GATE_WALL_X = (-17.0, -9.0, 9.0, 17.0)
+GATE_WALL_FRONT = 0.925  # wall body face, in the gate_wall model's own space (+Z)
+TUNNEL_Z = -37.6  # tunnel pillar faces
+TUNNEL_FRONT = 6.62  # pillar face, in the gate_tunnel model's own space (+Z)
+TUNNEL_STOP = 3.0  # players can walk this far into the tunnel
+BANNER_BACK = 0.1075  # wall plate behind a banner's origin
+BANNERS_X = (-17.0, -6.6, 11.4, 17.0)  # east of the tunnel the watchtower stands in front of the wall
+SWEEP = (math.pi / 2 - 0.7, math.pi / 2 + 0.7)  # watchtower spotlight yaw range: gate to street
+# Camp props (asset list P1-P13). Collider sizes in each model's own space (width, height, depth).
+PROP_BLOCKS = {
+    "fire_barrel": (0.64, 1.0, 0.64),
+    "bench": (1.8, 0.5, 0.45),
+    "supply_crate_large": (1.0, 0.8, 0.8),
+    "supply_crate_small": (0.6, 0.5, 0.5),
+    "ammo_case": (0.72, 0.36, 0.38),
+    "firewood_stack": (1.9, 1.0, 0.85),
+}
+FIRES = [(-8.0, 4.0), (8.5, 4.5), (-2.4, -24.0), (3.0, -14.0)]
+BENCHES = [
+    (-6.0, 12.0, 0.0),
+    (2.0, 12.0, 0.0),
+    (3.0, -12.6, 0.0),
+    (3.0, -15.4, 0.0),
+    (-7.6, 2.7, 0.3),
+    (8.0, 3.0, -0.2),
+]
+TABLE_LANTERNS = [(-5.4, 12.0), (3.5, -12.6)]  # on benches
+# (model, x, y, z, yaw): y > 0 stacks on the crate below.
+CRATES = [
+    ("supply_crate_large", -9.0, 0.0, 10.0, 0.1),
+    ("supply_crate_small", -9.7, 0.0, 11.1, 0.4),
+    ("supply_crate_small", -9.1, 0.8, 10.0, -0.2),
+    ("supply_crate_large", 9.4, 0.0, 1.5, -0.15),
+    ("supply_crate_large", 3.4, 0.0, -20.0, 0.25),
+    ("supply_crate_large", -3.4, 0.0, -8.0, -0.1),
+    ("ammo_case", 4.9, 0.0, -8.6, 0.0),
+    ("ammo_case", 4.9, 0.36, -8.6, 0.15),
+    ("ammo_case", 4.8, 0.0, -25.5, -0.3),
+    ("ammo_case", 8.6, 0.0, 2.8, 0.5),
+]
+FENLIGHT_CRATES = [(-5.5, -30.2), (-5.5, -31.3)]  # by the Technician stall, on supply crates
+FIREWOOD = [(-12.5, 6.5, LODGE_YAW), (10.0, 11.0, EAST_YAW), (-20.0, -17.0, LODGE_YAW), (20.0, -17.0, EAST_YAW)]
 
 nodes: list[str] = []
 used: set[tuple[str, str]] = set()
@@ -153,6 +219,14 @@ def omni(name, parent, pos, color, energy, rng, shadow=False) -> None:
     )
 
 
+def spot(name, parent, pos, rot, energy, rng, angle, color=FLOOD) -> None:
+    """Unshadowed spot light shining along its -Z."""
+    nodes.append(
+        f'[node name="{name}" type="SpotLight3D" parent="{parent}"]\ntransform = {xform(pos, rot)}\n'
+        f"light_color = Color({color})\nlight_energy = {energy}\nspot_range = {rng}\nspot_angle = {angle}\n"
+    )
+
+
 def lit(name, parent, pos, energy, rng, color=SODIUM, want_shadow=False) -> None:
     sh = want_shadow and shadow_budget[0] > 0
     if sh:
@@ -168,14 +242,8 @@ def body(name, parent, pos, size, mat) -> None:
 
 
 def pine(name, parent, x, z, h) -> None:
-    """A pine cone mesh scaled by h, its base on the ground."""
-    hs = f"{h:.3g}"
-    y = 5.0 * float(hs)
-    nodes.append(
-        f'[node name="{name}" type="MeshInstance3D" parent="{parent}"]\n'
-        f"transform = Transform3D({hs}, 0, 0, 0, {hs}, 0, 0, 0, {hs}, {x:.3g}, {y:.3g}, {z:.3g})\n"
-        'mesh = SubResource("pine_tree")\n'
-    )
+    """A snowy pine_tree model (10 m) scaled by h, its base on the ground, turned at random."""
+    inst(name, parent, (x, 0, z), "pine_tree", random.uniform(0, math.tau), (h, h, h))  # cosmetic
 
 
 def build_ground() -> None:
@@ -189,16 +257,16 @@ def build_ground() -> None:
         z = -33 + k * 2.3 + random.uniform(-0.4, 0.4)
         if z > -1:
             continue
-        pos = (side * random.uniform(4.0, 4.4), 0.05, z)
-        size = (random.uniform(0.6, 1.0), random.uniform(0.25, 0.45), random.uniform(1.4, 2.4))
-        deco(f"Bank{k}", "SnowBanks", pos, size, "town_snow", basis_rot(random.uniform(-0.2, 0.2)))
+        pos = (side * random.uniform(4.5, 4.9), -0.04, z)
+        drift = "snow_drift_a" if k % 3 else "snow_drift_b"
+        inst(f"Bank{k}", "SnowBanks", pos, drift, math.pi / 2 + random.uniform(-0.2, 0.2))
 
 
 def build_walls() -> None:
     group("Walls")
     for name, pos, size in [
-        ("NorthWest", (-14.5, WALL_H / 2, -38), (23, WALL_H, 0.6)),
-        ("NorthEast", (14.5, WALL_H / 2, -38), (23, WALL_H, 0.6)),
+        ("NorthWest", (-23.5, WALL_H / 2, -39), (5, WALL_H, 0.6)),
+        ("NorthEast", (23.5, WALL_H / 2, -39), (5, WALL_H, 0.6)),
         ("South", (0, WALL_H / 2, 16), (52, WALL_H, 0.6)),
         ("West", (-26, WALL_H / 2, -11), (0.6, WALL_H, 54)),
         ("East", (26, WALL_H / 2, -11), (0.6, WALL_H, 54)),
@@ -270,53 +338,48 @@ def build_lamps() -> None:
     counts["lamps"] = k
     group("StringLights")
     for li, z in enumerate((-26, -18, -10, -3)):
-        for b in range(11):
-            t = b / 10
-            pos = (-4.6 + 9.2 * t, 5.0 - math.sin(math.pi * t) * 0.6, z)
-            deco(f"Bulb{li}_{b}", "StringLights", pos, (0.12, 0.12, 0.12), "sodium_lamp")
-        deco(f"Wire{li}", "StringLights", (0, 4.55, z), (9.2, 0.02, 0.02), "iron")
+        inst(f"String{li}", "StringLights", (0, 4.25, z), "string_lights")
 
 
-def _gate_tower(s) -> None:
-    n = "W" if s < 0 else "E"
-    tx = s * 4.3
-    block(f"Tower{n}", "Gate", (tx, 3.2, -38), (2.4, 6.4, 2.4), "town_planks")
-    deco(f"Tower{n}Platform", "Gate", (tx, 6.5, -38), (3.0, 0.2, 3.0), "town_dark_wood")
-    deco(f"Tower{n}Roof", "Gate", (tx, 8.2, -38), (3.2, 0.25, 3.2), "town_slate")
-    deco(f"Tower{n}RoofSnow", "Gate", (tx, 8.36, -38), (3.0, 0.1, 3.0), "town_snow")
-    for c in range(4):
-        cx, cz2 = (-1 if c < 2 else 1) * 1.35, (-1 if c % 2 else 1) * 1.35
-        deco(f"Tower{n}Pillar{c}", "Gate", (tx + cx, 7.35, -38 + cz2), (0.16, 1.7, 0.16), "town_dark_wood")
-    deco(f"Tower{n}Torch", "Gate", (tx - s * 1.3, 3.0, -36.75), (0.25, 0.35, 0.25), "sodium_lamp")
-    lit(f"Tower{n}TorchLight", "Gate", (tx - s * 1.3, 3.0, -36.3), 2.5, 8.0)
+def _gate_wall() -> None:
+    """Four concrete wall sections either side of the tunnel, a box collider each, banners hung on the face."""
+    for k, x in enumerate(GATE_WALL_X):
+        inst(f"Wall{k}", "Gate", (x, 0, GATE_Z - GATE_WALL_FRONT), "gate_wall")
+        collider(f"Wall{k}Block", "Gate", (x, 3.5, GATE_Z - 1.2), (8.0, 7.0, 2.4))
+    for k, x in enumerate(BANNERS_X):
+        inst(f"Banner{k}", "Gate", (x, 2.1, GATE_Z + BANNER_BACK), "banner")
+    for k, x in enumerate((-19.5, 19.5)):
+        inst(f"WallFlood{k}", "Gate", (x, 7.3, GATE_Z - 0.3), "floodlight")
+
+
+def _gate_tunnel() -> None:
+    """The DEPLOY tunnel: sign, floodlights on the pillars, green glow, and colliders that close it 3 m in."""
+    inst("Tunnel", "Gate", (0, 0, TUNNEL_Z - TUNNEL_FRONT), "gate_tunnel")
+    label("DeploySign", "Gate", (-0.9, 7.3, TUNNEL_Z + 0.13), 0.0, "DEPLOY", 300, "0.82, 0.84, 0.82, 1")
+    for k, s in enumerate((-1, 1)):
+        collider(f"TunnelPillar{k}", "Gate", (s * 4.1, 4.5, TUNNEL_Z - 1.0), (1.8, 9.0, 2.0))
+        collider(f"TunnelSide{k}", "Gate", (s * 3.3, 2.5, TUNNEL_Z - 2.7), (0.6, 5.0, 1.4))
+        inst(f"TunnelFlood{k}", "Gate", (s * 4.3, 9.1, TUNNEL_Z - 0.6), "floodlight")
+        aim = basis_rot(math.pi - s * 0.35, pitch=-0.85)
+        spot(f"TunnelFloodLight{k}", "Gate", (s * 4.3, 9.9, TUNNEL_Z - 0.2), aim, 5.0, 22.0, 38.0)
+    collider("TunnelStop", "Gate", (0, 2.7, TUNNEL_Z - TUNNEL_STOP - 0.1), (6.0, 5.4, 0.2))
+    lit("TunnelGlow", "Gate", (0, 3.5, TUNNEL_Z - 1.5), 2.5, 9.0, color=GREEN)
 
 
 def build_gate() -> None:
+    """The concrete Deploy gate at the north end (asset list G1-G4) with the Deploy board in front."""
     group("Gate")
-    for s in (-1, 1):
-        _gate_tower(s)
-    block("Lintel", "Gate", (0, 5.6, -38), (6.2, 0.7, 0.9), "town_dark_wood")
-    deco("SignBoard", "Gate", (0, 4.85, -37.5), (4.6, 0.8, 0.1), "town_dark_wood")
-    deco("SignStrip", "Gate", (0, 4.4, -37.43), (4.2, 0.07, 0.05), "bio_leak")
-    nodes.append(
-        '[node name="Sign" type="Label3D" parent="Gate"]\ntransform = ' + xform((0, 4.88, -37.43)) + "\n"
-        "pixel_size = 0.006\nmodulate = Color(0.553, 1, 0.227, 1)\noutline_size = 0\nfont_size = 80\n"
-        'text = "LANTERN POST"\n'
-    )
-    lit("GateGlow", "Gate", (0, 4.0, -36.3), 3.2, 10.0, color="0.553, 1, 0.227, 1")
-    block("GateLeafW", "Gate", (-2.0, 1.7, -38.3), (2.0, 3.4, 0.2), "town_planks")
-    block("GateLeafE", "Gate", (2.0, 1.7, -38.3), (2.0, 3.4, 0.2), "town_planks")
-    for s in (-1, 1):
-        for bh in (0.7, 2.7):
-            band = f"GateBand{'W' if s < 0 else 'E'}{int(bh * 10)}"
-            deco(band, "Gate", (s * 2.0, bh, -38.18), (1.9, 0.12, 0.05), "iron")
-    spot = xform((0, 0, -35.5))
-    nodes.append(f'[node name="DeployBoardSpot" type="Marker3D" parent="Gate"]\ntransform = {spot}\n')
+    _gate_wall()
+    _gate_tunnel()
+    spot_mark = xform((0, 0, -35.5))
+    nodes.append(f'[node name="DeployBoardSpot" type="Marker3D" parent="Gate"]\ntransform = {spot_mark}\n')
     nodes.append(
         '[node name="DeployBoard" parent="Gate/DeployBoardSpot" instance=ExtResource("deploy_board")]\n'
         'place = &"match"\nlabel = "Halcyon Labs"\n'
     )
     nodes.append('[node name="DeployVotePanel" parent="." instance=ExtResource("deploy_vote_panel")]\n')
+    block("BannerPole", "Gate", (-5.6, 3.4, -34.6), (0.14, 6.8, 0.14), "iron")
+    inst("CommonRoomBanner", "Gate", (-5.53 + BANNER_BACK, 2.1, -34.6), "banner", LODGE_YAW)
 
 
 def _plaza_well() -> None:
@@ -330,33 +393,44 @@ def _plaza_well() -> None:
     deco("WellRoofB", "Props", (6, 2.45, 9.35), (2.2, 0.1, 0.9), "town_slate", basis_rot(pitch=-0.5))
 
 
-def _barrels_and_crates() -> None:
-    for bk, (x, z) in enumerate([(-8, 4), (8.5, 4.5), (-2.4, -24), (3.0, -14)]):
-        block(f"Barrel{bk}", "Props", (x, 0.45, z), (0.62, 0.9, 0.62), "rust")
-        deco(f"BarrelRim{bk}", "Props", (x, 0.88, z), (0.68, 0.06, 0.68), "iron")
-        deco(f"Fire{bk}", "Props", (x, 0.98, z), (0.42, 0.14, 0.42), "sodium_lamp")
-        lit(f"FireLight{bk}", "Props", (x, 1.5, z), 2.6, 7.0, color="1, 0.5, 0.18, 1", want_shadow=(bk == 0))
-    crates = [(-9, 10, 1.0), (-9.6, 11.1, 0.8), (-9.2, 10.4, 0.6), (9.4, 1.5, 1.1), (3.4, -20, 0.9), (-3.4, -8, 1.0)]
-    for ck, (x, z, s) in enumerate(crates):
-        y = s / 2 if ck != 2 else 1.0 + s / 2
-        block(f"Crate{ck}", "Props", (x, y, z), (s, s, s), "town_planks")
-        deco(f"CrateSnow{ck}", "Props", (x, y + s / 2 + 0.03, z), (s * 0.9, 0.05, s * 0.9), "town_snow")
-    for lk, (x, z) in enumerate([(-12.5, 6.5), (10, 11)]):
-        for r in range(3):
-            for c in range(5 - r):
-                pos = (x, 0.15 + r * 0.27, z - 1.0 + c * 0.5 + r * 0.25)
-                deco(f"Log{lk}_{r}_{c}", "Props", pos, (1.8, 0.26, 0.26), "town_dark_wood")
-        body(f"LogStackBody{lk}", "Props", (x, 0.4, z), "1.8, 0.8, 2.5", "town_dark_wood")
+def prop(name: str, parent: str, model: str, pos: tuple, yaw: float = 0.0) -> None:
+    """A camp prop model with its box collider (PROP_BLOCKS), standing at `pos`."""
+    inst(name, parent, pos, model, yaw)
+    size = PROP_BLOCKS[model]
+    collider(f"{name}Block", parent, (pos[0], pos[1] + size[1] / 2, pos[2]), size, yaw)
+
+
+def _fires_and_benches() -> None:
+    """Fire barrels (flames, flickering light) with benches round them, table lanterns on two benches."""
+    for k, (x, z) in enumerate(FIRES):
+        inst(f"FireBarrel{k}", "Props", (x, 0, z), "fire_barrel_scene")
+        size = PROP_BLOCKS["fire_barrel"]
+        collider(f"FireBarrel{k}Block", "Props", (x, size[1] / 2, z), size)
+    for k, (x, z, yaw) in enumerate(BENCHES):
+        prop(f"Bench{k}", "Props", "bench", (x, 0, z), yaw)
+    for k, (x, z) in enumerate(TABLE_LANTERNS):
+        inst(f"TableLantern{k}", "Props", (x, 0.5, z), "lantern_table")
+
+
+def _crates() -> None:
+    """Supply crates and ammo cases, the Fenlight sample crates with their stencil and a soft green glow."""
+    for k, (model, x, y, z, yaw) in enumerate(CRATES):
+        prop(f"Crate{k}", "Props", model, (x, y, z), yaw)
+    for k, (x, z) in enumerate(FENLIGHT_CRATES):
+        prop(f"FenlightBase{k}", "Props", "supply_crate_large", (x, 0, z), LODGE_YAW)
+        inst(f"FenlightCrate{k}", "Props", (x, 0.8, z), "fenlight_crate", LODGE_YAW)
+        label(f"FenlightStencil{k}", "Props", (x + 0.42, 0.4, z), LODGE_YAW, "FENLIGHT\\nSAMPLES", 36, STENCIL)
+    mid_z = sum(z for _, z in FENLIGHT_CRATES) / len(FENLIGHT_CRATES)
+    lit("FenlightGlow", "Props", (FENLIGHT_CRATES[0][0] + 0.3, 1.6, mid_z), 0.8, 3.5, color=GREEN)
+    for k, (x, z, yaw) in enumerate(FIREWOOD):
+        prop(f"Firewood{k}", "Props", "firewood_stack", (x, 0, z), yaw)
 
 
 def build_props() -> None:
     group("Props")
     _plaza_well()
-    _barrels_and_crates()
-    for bn, (x, z) in enumerate([(-6, 12), (2, 12)]):
-        block(f"Bench{bn}", "Props", (x, 0.45, z), (1.8, 0.1, 0.45), "town_planks")
-        for s in (-1, 1):
-            deco(f"BenchLeg{bn}{s + 1}", "Props", (x + s * 0.75, 0.2, z), (0.1, 0.4, 0.4), "town_dark_wood")
+    _fires_and_benches()
+    _crates()
     block("Cart", "Props", (-9.5, 0.75, 5.5), (1.4, 0.5, 2.4), "town_planks")
     for s in (-1, 1):
         deco(f"CartWheel{s + 1}", "Props", (-9.5 + s * 0.78, 0.45, 5.5), (0.08, 0.9, 0.9), "town_dark_wood")
@@ -365,16 +439,14 @@ def build_props() -> None:
 def build_fences_and_signs() -> None:
     group("Fences")
     fk = 0
-    for fz in range(-30, -2, 2):
+    for fz in range(-30, -2, 3):
         for sx in (-1, 1):
             if sx < 0 and fz < -21:
                 continue  # the Common Room lodge stands there
-            inst(f"Fence{fk}", "Fences", (sx * 15.5, 0, fz + 1), "fence", math.pi / 2)
+            inst(f"Fence{fk}", "Fences", (sx * 15.5, 0, fz + 1.5), "fence_rail", math.pi / 2)
             fk += 1
-    for fx in range(-10, 12, 2):
-        if -2 <= fx <= 2:
-            continue
-        inst(f"PlazaFence{fk}", "Fences", (fx + 1, 0, 13.2), "fence", 0.0)
+    for fx in (-10.5, -7.5, -4.5, 4.5, 7.5, 10.5):
+        inst(f"PlazaFence{fk}", "Fences", (fx, 0, 13.2), "fence_rail", 0.0)
         fk += 1
     group("Signs")
     inst("Signpost", "Signs", (-3.0, 0, -1.0), "signpost", 0.0)
@@ -404,6 +476,7 @@ def _stall(k: int, name: str) -> None:
     for b, (centre, size) in enumerate(STALL_BLOCKS):
         collider(f"{tag}Block{b}", "Market", _on_lodge(at, centre), size, LODGE_YAW)
     lit(f"{tag}Light", "Market", _on_lodge(at, (0, 2.3, 0.2)), 1.8, 6.0)
+    inst(f"{tag}Lantern", "Market", _on_lodge(at, (-1.85, 1.95, 1.5)), "lantern_hanging", LODGE_YAW)
 
 
 def build_market() -> None:
@@ -435,6 +508,17 @@ def _cabin(k: int, model: str, at: tuple, mirror: bool, lantern: tuple, smoke) -
         )
 
 
+def _watchtower_sweep() -> None:
+    """The tower floodlight's beam sweeps between the gate and the street: an AnimationPlayer loop, no script."""
+    pivot = xform(_on_east(TOWER, (1.3, 10.1, 2.5)), basis_rot(sum(SWEEP) / 2))
+    nodes.append(f'[node name="WatchtowerSweep" type="Node3D" parent="Cabins"]\ntransform = {pivot}\n')
+    spot("Beam", "Cabins/WatchtowerSweep", (0, 0, 0), basis_rot(pitch=-0.45), 6.0, 30.0, 14.0)
+    nodes.append(
+        '[node name="Sweep" type="AnimationPlayer" parent="Cabins/WatchtowerSweep"]\n'
+        'libraries = {\n&"": SubResource("sweep_library")\n}\nautoplay = &"sweep"\n'
+    )
+
+
 def build_east_side() -> None:
     """Cabins B3/B4 along the east of the street, the watchtower by the gate and the four yard sheds."""
     group("Cabins")
@@ -444,7 +528,7 @@ def build_east_side() -> None:
     for k, (sx, sz) in enumerate(((-1, -1), (1, -1), (-1, 1), (1, 1))):
         leg = _on_east(TOWER, (sx * 1.55, 4.3, sz * 1.55 - 0.028))
         collider(f"WatchtowerLeg{k}", "Cabins", leg, (0.3, 8.6, 0.3), EAST_YAW)
-    lit("WatchtowerFlood", "Cabins", _on_east(TOWER, (1.3, 10.0, 3.2)), 3.0, 14.0)
+    _watchtower_sweep()
     group("Yards")
     for k, (x, z) in enumerate(SHEDS):
         yaw = LODGE_YAW if x < 0 else EAST_YAW
@@ -472,21 +556,11 @@ def build_yards_and_pines() -> None:
 
 
 def build_ridge() -> None:
-    """Radio mast with red beacons on a snowy knoll north-east of the gate, and the falling snow."""
+    """Radio mast (G5) with red beacons on a snowy knoll north-east of the gate, and the falling snow."""
     group("Ridge")
     mx, mz = 21.0, -55.0
     deco("Knoll", "Ridge", (mx, 0.5, mz), (14, 3, 12), "town_snow", basis_rot(0.4))
-    for leg in range(4):
-        lx = (-1 if leg < 2 else 1) * 0.9
-        lz = (-1 if leg % 2 else 1) * 0.9
-        lean = basis_rot(roll=-lx * 0.035, pitch=lz * 0.035)
-        deco(f"MastLeg{leg}", "Ridge", (mx + lx * 0.5, 14.0, mz + lz * 0.5), (0.14, 28.0, 0.14), "iron", lean)
-    for rung in range(9):
-        y = 2.0 + rung * 3.0
-        width = 1.8 - y * 0.032
-        deco(f"MastRung{rung}", "Ridge", (mx, y, mz), (width, 0.08, width), "iron")
-    for bk, y in enumerate((9.5, 19.0, 28.2)):
-        deco(f"MastBeacon{bk}", "Ridge", (mx, y, mz), (0.35, 0.35, 0.35), "beacon_red")
+    inst("RadioMast", "Ridge", (mx, 2.0, mz), "radio_mast", 0.4)
     nodes.append(
         '[node name="Snowfall" parent="." instance=ExtResource("snowfall")]\ntransform = ' + xform((0, 18, -12)) + "\n"
     )
@@ -501,6 +575,17 @@ def build_spawn_and_moon() -> None:
     )
 
 
+SWEEP_ANIMATION = (
+    '[sub_resource type="Animation" id="sweep"]\nresource_name = "sweep"\nlength = 14.0\nloop_mode = 1\n'
+    'tracks/0/type = "value"\ntracks/0/imported = false\ntracks/0/enabled = true\n'
+    'tracks/0/path = NodePath(".:rotation")\ntracks/0/interp = 2\ntracks/0/loop_wrap = true\n'
+    'tracks/0/keys = {\n"times": PackedFloat32Array(0, 7, 14),\n"transitions": PackedFloat32Array(1, 1, 1),\n'
+    f'"update": 0,\n"values": [Vector3(0, {fmt(SWEEP[0])}, 0), Vector3(0, {fmt(SWEEP[1])}, 0), '
+    f"Vector3(0, {fmt(SWEEP[0])}, 0)]\n}}\n\n"
+    '[sub_resource type="AnimationLibrary" id="sweep_library"]\n_data = {\n&"sweep": SubResource("sweep")\n}\n'
+)
+
+
 def header() -> str:
     ext = [
         '[ext_resource type="Script" path="res://systems/level/level.gd" id="level"]',
@@ -508,7 +593,10 @@ def header() -> str:
         '[ext_resource type="Environment" path="res://levels/looks/lantern_post_night.tres" id="look"]',
     ]
     ext += [f'[ext_resource type="PackedScene" path="res://assets/models/town/{sc}.glb" id="{sc}"]' for sc in SCENES]
-    ext += [f'[ext_resource type="PackedScene" path="res://assets/models/town/{sc}.glb" id="{sc}"]' for sc in MARKET]
+    ext += [
+        f'[ext_resource type="PackedScene" path="res://assets/models/town/{sc}.glb" id="{sc}"]'
+        for sc in MARKET + GATE + CAMP
+    ]
     ext += [
         f'[ext_resource type="PackedScene" path="res://assets/models/town_large/{sc}.glb" id="{sc}"]' for sc in LARGE
     ]
@@ -517,6 +605,9 @@ def header() -> str:
     ext.append(
         '[ext_resource type="PackedScene" path="res://systems/hub/deploy_vote_panel.tscn" id="deploy_vote_panel"]'
     )
+    ext.append(
+        '[ext_resource type="PackedScene" path="res://levels/lantern_post/fire_barrel.tscn" id="fire_barrel_scene"]'
+    )
     for fx in ("snowfall", "chimney_smoke"):
         ext.append(f'[ext_resource type="PackedScene" path="res://levels/lantern_post/{fx}.tscn" id="{fx}"]')
     subs = [
@@ -524,10 +615,7 @@ def header() -> str:
         for mesh, mat in sorted(used)
     ]
     subs += [f'[sub_resource type="BoxShape3D" id="{key}"]\nsize = {size}\n' for key, size in sorted(shapes.items())]
-    subs.append(
-        '[sub_resource type="CylinderMesh" id="pine_tree"]\nmaterial = ExtResource("pine")\ntop_radius = 0.0\n'
-        "bottom_radius = 2.2\nheight = 10.0\nradial_segments = 9\nrings = 3\n"
-    )
+    subs.append(SWEEP_ANIMATION)
     return (
         "[gd_scene format=3]\n\n"
         + "\n".join(ext)

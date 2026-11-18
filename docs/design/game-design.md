@@ -42,7 +42,6 @@ _(Diagram not copied: computed from the formulas below · rounds 1 to 30, solo.)
 
 | Rounds | Shamble (1.2 m/s) | Jog (2.6 m/s) | Run (4.2 m/s) | Sprint (5.6 m/s) |
 | --- | --- | --- | --- | --- |
-| 2026-11-17 | Co-op | Every game is joinable: Enter world opens your own Lantern Post to friends (router port opened automatically), alone it plays like solo; Play solo and Host and play are gone. Joining is only through the Servers screen: saved, recent and LAN servers, add by address, no master server. | [MULTIPLAYER.md](../MULTIPLAYER.md) Worlds and the browser, [ADR 0013](../adr/0013-every-game-joinable.md), PRs #306 #311 #312 #315 #319 |
 | 1 to 3 | 100% | 0% | 0% | 0% |
 | 4 to 6 | 60% | 40% | 0% | 0% |
 | 7 to 9 | 30% | 50% | 20% | 0% |
@@ -392,7 +391,7 @@ Social basics: see other players' equipped gear (rarity glows on guns and vests)
 
 ### How multiplayer works (design view)
 
-This matches the architecture doc ([Technical Architecture](../DECISIONS.md)).
+This matches the architecture doc ([Technical Architecture](https://claude.ai/artifact/XNJ12WAbMJAy2mRNPd5PCx)).
 
 - **Godot can do this.** Godot 4 exports a headless dedicated server build (no window, no graphics) from the same project, and its built-in multiplayer (ENet over UDP) handles 8 players easily. No separate server language or engine is needed.
 - **One server for town and matches.** One server process holds the town plus up to 2 matches running side by side. Solo play runs the same server code as a private local server in the background, so there is only one code path to build and test. A "host and play" button lets a player host from their own game too.
@@ -475,7 +474,7 @@ Every number in this doc lives in a Godot Resource file (.tres), not in code. Co
 
 ## Build roadmap
 
-Build in three stages, in this order: a fun solo wave game, then progression and loot offline, then multiplayer and the town. Each stage ends in something you can play and show. The phase numbers are shared with the [Technical Architecture](../DECISIONS.md) doc, so both docs talk about the same steps.
+Build in three stages, in this order: a fun solo wave game, then progression and loot offline, then multiplayer and the town. Each stage ends in something you can play and show. The phase numbers are shared with the [Technical Architecture](https://claude.ai/artifact/XNJ12WAbMJAy2mRNPd5PCx) doc, so both docs talk about the same steps.
 
 _(Diagram not copied: build roadmap · 11 phases in 3 stages.)_
 
@@ -509,8 +508,12 @@ Design changes since the Nov 14, 2026 copy, newest first. Add one row in the sam
 
 | Date | Area | Change | Detail |
 | --- | --- | --- | --- |
+| 2026-11-18 | Story | Story links: every kind of content now has a story reason (zombie types, where guns come from, power-ups, gear, town services, rooms and props). Fixed lore gaps: Fenlight grows outside bodies, the Cordon was the evacuation army before Day 9, where Lantern Post, its tunnel, emblem and green Deploy lights come from. New rule: plans carry a Lore link line (checked by CI). | [lore.md](lore.md#story-links-for-game-content), [lore audit](reviews/lore-audit-2026-11-18.md) |
+| 2026-11-18 | Town | Lantern Post camp props and light pass: burning fire barrels (flames, flickering light) with benches round them, snowy supply crates and ammo cases, two FENLIGHT SAMPLES crates of glowing green jars by the Technician, hanging and table lanterns, string lights across the street, split-rail fences, firewood stacks, snow drifts and snowy pines. Stall, board and floodlight bulbs now really glow. | [lantern-post-assets.md](lantern-post-assets.md), plan lantern-post-concept step 5 |
+| 2026-11-18 | Town | Lantern Post Deploy gate: the timber palisade gate becomes a concrete wall with a DEPLOY tunnel (green strip lights, hazard pillars, closed blast door 12 m in; players can walk 3 m in), maroon outpost banners, floodlights, a sweeping watchtower spotlight and a lattice radio mast on the ridge. The Deploy board and ready-up vote are unchanged. | [lantern-post-assets.md](lantern-post-assets.md), plan lantern-post-concept step 4 |
 | 2026-11-18 | Town | The four stall keepers (provisional): Odile Brandt at TRADER, Teun Maes at GUNSMITH, Dr. Lien Corvelyn at TECHNICIAN, Lieutenant Raes at MISSIONS. Talking gives a short line; shop screens come with F-45. | [lore.md](lore.md#the-stall-keepers), plan lantern-post-vendors |
 | 2026-11-18 | Town | Lantern Post market row: four stalls between the lodges named MISSIONS, TRADER "Buy / Sell", GUNSMITH "Upgrades / Mods" and TECHNICIAN "Serums / Gear", mapped to the Contract Board, Quartermaster, Workbench and serum and gear jobs. East side gets log cabins, a watchtower by the gate and lean-to sheds. | [Town hub](#town-hub-lantern-post), [lantern-post-assets.md](lantern-post-assets.md), plan lantern-post-concept step 3 |
+| 2026-11-17 | Co-op | Every game is joinable: Enter world opens your own Lantern Post to friends (router port opened automatically), alone it plays like solo; Play solo and Host and play are gone. Joining is only through the Servers screen: saved, recent and LAN servers, add by address, no master server. | [MULTIPLAYER.md](../MULTIPLAYER.md) Worlds and the browser, [ADR 0013](../adr/0013-every-game-joinable.md), PRs #306 #311 #312 #315 #319 |
 | 2026-11-17 | UI | Screens follow the person's concept art: the one main action button per screen is bio-green (Enter World, Join Server, Select Character); main menu gets Enter World, Servers, Character, Loadout, Progression, Settings, Exit, a profile card and a news card. | [ui-hud.md](ui-hud.md) UI style, screens 1 and 2 |
 | 2026-11-17 | Characters | Character select picks a preset survivor (name, role, bio, 3 small traits) instead of making your own; progress is per survivor (provisional). | [ui-hud.md](ui-hud.md) screen 3, roadmap F-67 |
 | 2026-11-17 | HUD | Match HUD gets an always-on health panel (number and bar), an objective list top right, the area name under the round, and grenade and tactical slots by the ammo. No minimap, armour or medkits. | [ui-hud.md](ui-hud.md) screen 10 |

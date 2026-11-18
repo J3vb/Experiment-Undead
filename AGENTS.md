@@ -12,8 +12,8 @@ written in **typed GDScript**. It will get RPG progression and self-hosted
 8-player servers later, so code must stay multiplayer-ready from day one.
 
 Read `docs/PROCESS.md` (pillars, milestones, how work flows) and
-`docs/DECISIONS.md` before you start. DECISIONS.md lists what is built, what is
-simplified on purpose, and what is not started.
+the entries in `docs/DECISIONS.md` for the systems you touch (not the whole
+file): one-line lists of design differences, simplifications and provisional picks.
 
 **Before you build a feature:** check `docs/FOUNDATIONS.md` (which core systems
 are solid, shaky or missing) and fill in its **Ready to build** checklist in
@@ -24,6 +24,12 @@ your plan, Codex prompt or PR. Big technical choices are decision records in
 weapon, enemy or map work. Start with `docs/design/README.md`; for anything
 visual, `docs/design/look-rules.md` is the style to match. Use its colours,
 names and numbers instead of inventing new ones.
+
+**Lore link:** nothing goes in the game without a story reason. Before adding
+anything the player sees or reads (zombie, gun, item, prop, sign, screen,
+name), find its reason in `docs/design/lore.md` ("Story links for game
+content"). No reason yet: add a provisional row there in the same PR, and ask
+the person about any choice that sets the story or tone.
 
 ## Skills
 
@@ -104,7 +110,10 @@ Edit skills in `.agents/skills/` only, then run
 4. **No global player.** Loop over the `players` group.
 5. **Multiplayer rules:**
    - The player reads `InputFrame`s, never the keyboard directly.
-   - Damage, spawns, points and XP only change where `Net.is_authority()` is true.
+   - Damage, spawns, points and XP only change on the server. Node code asks
+     `multiplayer.is_server()` (true in solo); `Net.is_authority()` is only for code
+     with no node; never both. Co-op messages follow `docs/MULTIPLAYER.md`
+     "Writing co-op code" (CI rule `rpc-rules`).
    - Gameplay runs in `_physics_process`. `_process` is for visuals only.
    - All enemies come from `Spawner`.
    - Gameplay randomness uses `GameSession.rng`, never `randf()`.
@@ -152,6 +161,9 @@ Examples and fixes: [docs/CODE_RULES.md](docs/CODE_RULES.md).
 - `no-triple-copy`: extract a shared operation when an eight-line block has a third copy.
 - `tested-scripts`: core and systems scripts need test references; the baseline only shrinks.
 - `no-content-id-literals`: core and systems code never names a content id; add a data field instead. The baseline only shrinks.
+- `rpc-rules`: every `@rpc` names its mode and transfer mode; an `any_peer` RPC starts with `multiplayer.is_server()`.
+- `log-catalogue`: every literal `Log.warn` event has a row in `docs/LOGGING.md`.
+- `decisions-short`: every entry in `docs/DECISIONS.md` is one line of at most 300 characters.
 
 ## Keep it simple
 
@@ -191,7 +203,7 @@ things to build only when needed: `docs/KEEP_IT_SIMPLE.md`.
    No custom event bus, state-machine framework, dependency injection,
    object factory, plugin system or service locator.
 9. **Multiplayer: only the seams the architecture already reserves.** They are
-   listed in code rule 5 above (InputFrame, `Net.is_authority()`,
+   listed in code rule 5 above (InputFrame, the server check,
    physics ticks, one Spawner with net ids, `GameSession.rng`,
    ProgressionService, items as dicts, no global player). P7 co-op is being
    built now: follow `docs/MULTIPLAYER.md` and `docs/adr/0003-trusted-client-co-op.md`
@@ -316,6 +328,7 @@ lines for its early warning signs and list them in that doc's catalogue.
 - Adding an autoload: add exactly one line to the `[autoload]` block in
   `project.godot`, at the end.
 - Add or update tests for everything you build.
-- Add a short entry to `docs/DECISIONS.md` under the right heading when you
-  build something listed there as "not started" or "simplified".
+- Add one line to `docs/DECISIONS.md` (at most 300 characters, with a link) for
+  each design difference, simplification or provisional pick; remove the line
+  when you fix it.
 - Open the PR as a **draft** and fill in the PR template.

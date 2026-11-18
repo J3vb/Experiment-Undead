@@ -23,6 +23,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | Id | Feature | Issue | Needs | Plan | Size | Status |
 |---|---|---|---|---|---|---|
 | F-00 | Foundation fixes, in the ranked order of [FOUNDATIONS.md](FOUNDATIONS.md#foundation-fixes-in-order) | - | - | per fix: 1 (done, no plan: one CI PR), 2 = F-02 (done), [3](plans/item-effects-server.md) (done), [4](plans/ids-into-data.md) (done), [5](plans/ui-router.md) (done), 6 (done, no plan: one PR per issue), [7](plans/hot-path-allocations.md) (done), 8 (done, no plan: one test-only PR per issue), 9 (done, no plan: doc lines plus a test) | - | Done |
+| F-79 | Easy, safe changes: one written co-op pattern with CI checks (foundation 1), short agent docs (foundation 13), then the picked audit fixes (split the 350-line scripts, one co-op test side, model list from the registry) | - | - | [ready](plans/easy-changes.md) | L | Ready |
 | F-01 | First-person arms on the guns | #102 | - | issue | S | Done (PR #136 fitted arms, sleeve fix) |
 | F-02 | Co-op clients can use doors, wall-buys and machines | #138 | F-00 | [done](plans/coop-interactions.md) | M | Done (play-test: #191) |
 | F-03 | Player footsteps and landing sounds | #103 | - | issue | S | Done |
@@ -54,6 +55,8 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-67 | Character select before Enter world: pick a preset survivor with a bio and 3 traits (ui-hud screen 3, concept art 2026-11-17) | - | F-66 step 2 | needed | M | Todo |
 | F-74 | Lantern Post to the concept art: ridge sky, timber lodges, market stalls, concrete Deploy gate, props | - | F-50 | [ready](plans/lantern-post-concept.md) | L | Building |
 | F-76 | Lantern Post vendors: the four stall keepers (Quartermaster, Gunsmith, Technician, Cordon liaison) as code-built NPCs with idle clips, head turn and talk lines; shop screens stay in F-45 | - | F-74 step 3 (#338), F-70 step 1 (#337) | [ready](plans/lantern-post-vendors.md) | L | Ready |
+| F-77 | Shared prop library for future maps: about 75 code-built props in eight families (barriers, military, industrial, rail, large pieces, hospital, outdoor, map hero pieces) plus a catalogue, so Act I maps and towns are assembly, not modelling | - | - | [ready](plans/prop-library.md) | L | Building |
+| F-78 | Tripo model trial: one Tripo prop and one vendor through a new intake (decimate, bake our three maps, fit our 22-bone skeleton, existing clips), side by side with code-built, report so the person can pick how F-76 and F-77 are made | - | - | [ready](plans/tripo-trial.md) | M | Ready |
 | F-70 | Player and gear to the concept art: bearded survivor body, headgear, gloves, backpack and boots models in three tiers (field, plated, Oriel), plate carrier vests, eye implant and vest vial | - | - | [ready](plans/player-gear-concept.md) | L | Building |
 | F-71 | Four new loot slots: headgear, gloves, backpack, boots (item bases, affix pools, drops, sets, save, inventory and character screen) | - | F-70 step 2 | [ready](plans/four-gear-slots.md) | M | Ready |
 | F-72 | The four starter guns to the concept art: worn black with tan and brass, Oriel marks, red dots, taped mags (rifle, Brenner, Kestrel, Talon) | - | - | [done](plans/guns-concept.md) | M | Done |
@@ -103,5 +106,5 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 - F-40 and F-47 were pulled into Now on 2026-11-17: the person set co-op as
   the goal for that week. They touch only co-op code, not the v0.1 rows.
 - Loot and co-op were partly built before v0.1 shipped (see
-  `docs/DECISIONS.md` and `docs/MULTIPLAYER.md`). From here on, the order
+  `docs/plans/` and `docs/MULTIPLAYER.md`). From here on, the order
   above is the order.

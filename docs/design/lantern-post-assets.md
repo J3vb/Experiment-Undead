@@ -41,13 +41,15 @@ replaced by these models. The generator only places them.
 | `Snow` | Soft snow, slightly blue | Caps, drifts, ledges |
 | `Iron` | Dark rusty metal | Lamps, barrels, rails, mast |
 | `Concrete` | Stained grey concrete | Gate wall, tunnel, blocks |
-| `Hazard` | Yellow and black stripes | Gate posts, tunnel mouth |
+| `TownHazard` | Yellow and black stripes (`town_hazard.tres`; the Halcyon `Hazard` stays orange) | Gate posts, tunnel mouth |
 | `Canvas` | Dark olive-grey tarp | Stall awnings, sign cloths |
 | `Banner` | Deep maroon cloth with the outpost emblem in light grey | Banners |
 | `SignPaint` | Painted letters on wood or metal, light on dark | Sign boards |
 | `WindowGlow` | Warm emissive glass | Windows |
-| `SodiumPaint` | Warm emissive bulb | Lamps, string lights, lanterns |
+| `Bulb` | Warm emissive bulb (`sodium_lamp.tres`) | Lamps, string lights, lanterns, fire embers. Not `SodiumPaint`: that is the Halcyon orange paint and does not glow |
+| `Pine` | Dark green needles (`pine.tres`) | Pine boughs |
 | `Fluid` | Bio-green emissive liquid (#8DFF3A) | Fenlight jars, Deploy chevrons, tunnel strips |
+| `Beacon` | Red emissive warning light | Radio mast beacons |
 | `Paper` | Off-white notes and maps | Missions board |
 | `Screen` | Blue-green monitor glow | Technician monitors |
 
@@ -59,8 +61,13 @@ Halcyon slots the town reuses as they are (`Concrete`, `Hazard`, `Fluid`,
 `Canvas` (`town_canvas.tres`) and `SignPaint` (`town_sign_paint.tres`). `Banner`
 gets its material in step 4 with the banner model, the first model that uses it.
 
+Step 4 adds `Banner` (`town_banner.tres`: `town_surface` pattern 8 draws the emblem from the
+banner model's own position, so every banner gets it without UVs), `TownHazard` (`town_hazard.tres`, the yellow the concept shows) and `Beacon` (`beacon_red.tres`,
+the radio mast lights).
+
 Built so far: B1-B2 in `tools/assets/town_buildings.py`, B3-B6 in
-`tools/assets/town_cabins.py` (same helpers), S1-S7 in `tools/assets/town_market.py`.
+`tools/assets/town_cabins.py` (same helpers), S1-S7 in `tools/assets/town_market.py`,
+G1-G5 in `tools/assets/town_gate.py`, P1-P13 in `tools/assets/town_camp.py` (step 5; `street_lamp`, `wall_lantern` and `signpost` stay in `town_props.py`). Step 5 adds the `Bulb` and `Pine` slots and moves the stall, board and floodlight bulbs from `SodiumPaint` to `Bulb`.
 
 ## 1. Buildings (`town_large`)
 
@@ -92,7 +99,7 @@ Built so far: B1-B2 in `tools/assets/town_buildings.py`, B3-B6 in
 | G1 | `gate_wall` | Thick concrete wall section with a walkway and rail on top | 8 x 3 x 8 | Repeats across the north end, 4 sections |
 | G2 | `gate_tunnel` | The tunnel mouth: concrete frame, "DEPLOY" with green chevrons, hazard striped posts, inner tunnel 12 m deep with green strip lights and a closed blast door at the far end | 10 x 14 x 9 | The Deploy board stands in front. Tunnel floor walkable to 3 m, then a collider |
 | G3 | `banner` (`town`) | Hanging maroon banner on an iron pole with the outpost emblem | 1.4 x 0.2 x 4.5 | 4 on the gate wall, 1 on the Common Room |
-| G4 | `floodlight` (`town`) | Box floodlight on a short pole or wall bracket | 0.8 x 0.8 x 2 | On the gate wall and watchtower |
+| G4 | `floodlight` (`town`) | Box floodlight on a short pole or wall bracket | 0.8 x 0.5 x 2.1 | On the gate wall and watchtower |
 | G5 | `radio_mast` | Lattice mast with dish and red beacons | 3 x 3 x 30 | On the ridge (replaces the step 1 box mast) |
 
 ## 4. Props (`town`)
@@ -101,17 +108,17 @@ Built so far: B1-B2 in `tools/assets/town_buildings.py`, B3-B6 in
 |---|---|---|---|
 | P1 | `fire_barrel` | Rusty barrel with holes, burning wood inside | Fire is a particle and one flickering light per barrel |
 | P2 | `bench` | Heavy timber bench | Around the fire barrels |
-| P3 | `crate_large`, `crate_small` | Planked supply crates with snow on top | Stacked in groups |
+| P3 | `supply_crate_large`, `supply_crate_small` | Planked supply crates with snow on top | Stacked in groups (named `supply_` because Halcyon Labs already has a `crate_large`) |
 | P4 | `ammo_case` | Olive metal case with handles | Stacks by the stalls |
 | P5 | `fenlight_crate` | Open crate of glass jars glowing bio-green, "FENLIGHT SAMPLES" stencil | 2 in town, by the Technician |
 | P6 | `lantern_hanging` | Hanging oil lantern | Porches and posts |
 | P7 | `lantern_table` | Small table lantern | On benches and counters |
-| P8 | `string_lights` | A 6 m sagging wire with bulbs | Across the street and on the balcony |
-| P9 | `street_lamp` | Keep the current model, retexture to `Iron` | Street |
-| P10 | `fence_rail` | Split-rail timber fence, 3 m | Yards |
+| P8 | `string_lights` | A 9.2 m sagging wire with bulbs, lamp post to lamp post | Across the street (the balcony string is part of the Common Room model) |
+| P9 | `street_lamp` | Keep the current model; its iron parts use the shared `Iron` material (`wall_lantern` too) | Street |
+| P10 | `fence_rail` | Split-rail timber fence, 3 m | Yards and the plaza; replaces the old picket `fence` |
 | P11 | `snow_drift_a`, `snow_drift_b` | Soft drift shapes | Along walls and stall bases |
 | P12 | `firewood_stack` | Log pile | Yards, by the cabins |
-| P13 | `pine_tree` | Snowy pine in 3 sizes (one model, scaled) | Replaces the cone pines |
+| P13 | `pine_tree` | Snowy pine, 10 m, scaled in the scene | Replaces the cone pines; lit by light probes (`light_baking=3`), not baked |
 | P14 | `sign_post` | Keep the current model | Plaza |
 
 ## 5. Not models

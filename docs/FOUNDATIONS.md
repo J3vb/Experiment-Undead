@@ -26,7 +26,7 @@ pattern. **Missing** = needed soon, not built.
 
 | # | Foundation | Status | Rule lives in |
 |---|---|---|---|
-| 1 | [Co-op authority: who decides what](#1-co-op-authority) | shaky | [ADR 0003](adr/0003-trusted-client-co-op.md), `docs/MULTIPLAYER.md` |
+| 1 | [Co-op authority: who decides what](#1-co-op-authority) | solid | [ADR 0003](adr/0003-trusted-client-co-op.md), `docs/MULTIPLAYER.md` |
 | 2 | [Content and ids in data](#2-content-and-ids-in-data) | solid | [ADR 0002](adr/0002-content-as-resources.md), `docs/HOW_TO_ADD.md` |
 | 3 | [Save format](#3-save-format) | solid | [ADR 0005](adr/0005-local-versioned-saves.md) |
 | 4 | [Events and signals](#4-events-and-signals) | solid | [ADR 0007](adr/0007-signals-and-events.md) |
@@ -58,10 +58,13 @@ its own copy, and leech / points per hit run where the server applies the hit
 (`ItemLoadout.apply_hit`). Pack equips run in `LootService`'s physics tick
 (plans/item-effects-server.md).
 
-**Why shaky:**
-- There is no standard "client asks the server" pattern. Eleven scripts each
-  write their own `@rpc` with their own checks, so every new feature
-  re-invents it.
+**Why solid now:** the six co-op message patterns are written down with a
+reference file each (`docs/MULTIPLAYER.md` "Writing co-op code"), new node
+code has one server check (`multiplayer.is_server()`), `docs/HOW_TO_ADD.md`
+has a co-op recipe, and CI rule `rpc-rules` checks every `@rpc` names its
+transfer mode and every `any_peer` handler starts with the server check
+(F-79 step 1, [plans/easy-changes.md](plans/easy-changes.md)). Steps 2 and 3
+split the two co-op scripts at the 350-line cap by job.
 
 **Fixed when:** ~~one request path for interactions (client sends the request,
 server checks sender, range and state, then calls the same `interact()`)~~
@@ -190,11 +193,15 @@ zombies), cheap without allocation.
 
 ### 13. Rules and docs agents read
 
-**Why shaky:** `docs/DECISIONS.md` has grown into long build notes, so the
-actual rules are hard to find. The decision records in `docs/adr/` now hold the
-big choices in short form; DECISIONS.md stays the build log. AGENTS.md said "no
+**Why shaky:** `docs/DECISIONS.md` had grown into long build notes, so the
+actual rules were hard to find. Step 4 cut it to one-line lists (design
+differences, simplifications, provisional picks); the decision records in
+`docs/adr/` hold the big choices. AGENTS.md said "no
 RPCs before P7" while P7 co-op was half built; that line now points to the
 co-op rules instead.
+
+**Being fixed:** F-79, [plans/easy-changes.md](plans/easy-changes.md) step 5
+(AGENTS.md reading map and gotchas). Step 4 (DECISIONS.md as short lists) is done.
 
 ## Ready to build
 
@@ -221,6 +228,7 @@ description for small changes) and answer every line **before** writing code.
 - Tests: which unit / content / integration tests; co-op features run the action from a client: …
 - Logging: Log.warn lines for early warning signs: …
 - Performance: anything created per frame, per shot or per hit? → preload or pool: …
+- Lore link: the story reason for what the player sees (docs/design/lore.md#story-links-for-game-content), or none for pure tech: …
 - Out of scope (later phases, not built now): …
 ```
 
@@ -246,3 +254,4 @@ tests, as usual. The issue numbers have the details.
 | 7 | Done: hot-path allocations ([plan](plans/hot-path-allocations.md)): impacts, remote tracers, chain arcs and the gravity well reuse resources; zombie separation without per-tick arrays | #139, #141, #142, #150, #151 | 4-player play-test (#127), more VFX |
 | 8 | Done: shared test helpers: `TwoPeers` for two-peer ENet tests, `MeshChecks` for model sight-line checks, `grip_checks.py` for grip tests | #161, #164, #170 | more co-op tests |
 | 9 | Done: every Events signal says which peers emit it (`## Peers:` in `core/events.gd`, checked by a test) | - | next co-op feature that uses Events |
+| 10 | F-79 ([plan](plans/easy-changes.md)): written co-op patterns with a CI rule for every RPC, then short agent docs (foundations 1 and 13) | - | next co-op feature (skills, abilities, grenades) |

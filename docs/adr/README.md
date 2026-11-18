@@ -1,8 +1,9 @@
 # Decision records
 
 One short file per big technical choice, so nobody (human or agent) goes
-against it by accident. `docs/DECISIONS.md` is the build log (what was built
-and simplified); these files are the rules behind it.
+against it by accident. `docs/DECISIONS.md` lists the small differences,
+simplifications and provisional picks, one line each; these files hold the big
+rules.
 
 ## When to write one
 

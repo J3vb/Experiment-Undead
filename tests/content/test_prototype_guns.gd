@@ -117,8 +117,8 @@ func test_all_prototype_versions_flash_at_the_muzzle_when_fired() -> void:
 			assert_not_null(flash, String(id) + " caches a first-person muzzle flash mesh")
 			if light == null or flash == null:
 				continue
-			assert_eq(light, weapon._flash_light)
-			assert_eq(flash, weapon._flash_mesh)
+			assert_eq(light, weapon.pose._flash_light)
+			assert_eq(flash, weapon.pose._flash_mesh)
 			assert_eq(light.get_parent(), muzzle)
 			assert_eq(flash.get_parent(), muzzle)
 			assert_false(light.visible, "Weapon._ready hides the light before firing")

@@ -35,6 +35,26 @@ func test_flash_is_on_the_model_muzzle() -> void:
 	assert_true(flash.visible, "flash shows on a shot")
 
 
+func test_weapon_owns_one_pose_child_that_drives_the_viewmodel() -> void:
+	var weapon: Weapon = _gun()
+	var poses: Array[Node] = weapon.find_children("*", "WeaponPose", false, false)
+	assert_eq(poses.size(), 1, "the weapon owns exactly one WeaponPose")
+	assert_eq(poses[0], weapon.pose)
+	assert_eq(weapon.pose.weapon, weapon)
+	assert_eq(weapon.pose._bolt, _part(weapon, "Bolt"), "the pose caches the model's moving parts")
+	weapon.aiming = true
+	for i: int in 60:
+		weapon.tick(1.0 / 60.0)
+		weapon._process(1.0 / 60.0)
+	assert_almost_eq(weapon.position, weapon.data.ads_position, Vector3.ONE * 0.002, "full ADS pose")
+	weapon.set_active(false)
+	weapon.aiming = false
+	for i: int in 60:
+		weapon.tick(1.0 / 60.0)
+		weapon._process(1.0 / 60.0)
+	assert_almost_eq(weapon.position, weapon.data.ads_position, Vector3.ONE * 0.002, "an inactive weapon is not posed")
+
+
 func test_bolt_kicks_back_on_fire() -> void:
 	for path: String in [RIFLE, KESTREL, TALON, BASTION]:
 		_check_bolt_kick(path)

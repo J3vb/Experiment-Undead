@@ -49,6 +49,7 @@ ID_FOLDERS = (
     "content/gear_visuals/",
     "content/loot/gear/",
     "content/grips/",
+    "content/melee/",
     "content/skills/",
     "content/waves/",
 )
@@ -81,6 +82,9 @@ INITIAL_CONTENT_ID_BASELINE = frozenset(
     }
 )
 LITERALS = re.compile(r""""((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'|#.*""")
+RPC_MODES = ("authority", "any_peer")
+RPC_TRANSFERS = ("reliable", "unreliable", "unreliable_ordered")
+LOG_WARN = re.compile(r"""Log\.warn\(\s*&?["'](\w+)["']\s*,\s*&?["'](\w+)["']""")
 STRINGS = re.compile(r""""(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|#.*""")
 
 
@@ -364,6 +368,67 @@ def check_tested_scripts(root: Path) -> list[str]:
     return errors
 
 
+def rpc_body_start(lines: list[str], start: int) -> tuple[int, str]:
+    """Return the line number and code of the first body line of the function after an annotation."""
+    depth, in_signature = 0, False
+    for number in range(start, len(lines) + 1):
+        text = code(lines[number - 1])
+        if not in_signature:
+            match = re.search(r"\bfunc\b", text)
+            if not match:
+                continue
+            in_signature, text = True, text[match.end() :]
+        for index, char in enumerate(text):
+            depth += (char == "(") - (char == ")")
+            if char == ":" and depth == 0:
+                rest = text[index + 1 :].strip()
+                if rest:
+                    return number, rest
+                return next(
+                    (
+                        (n, code(lines[n - 1]).strip())
+                        for n in range(number + 1, len(lines) + 1)
+                        if code(lines[n - 1]).strip()
+                    ),
+                    (number, ""),
+                )
+    return start, ""
+
+
+def check_rpc_rules(root: Path) -> list[str]:
+    """Every @rpc names its mode and transfer mode; an any_peer RPC's first line is the server check."""
+    errors = []
+    for path, lines in text_files(root, GAME_DIRS, (".gd",)):
+        for number, line in enumerate(lines, 1):
+            match = re.match(r"\s*@rpc\b(\([^)]*\))?", line)
+            if not match:
+                continue
+            words = re.findall(r"""["'](\w+)["']""", match[1] or "")
+            if not any(word in RPC_MODES for word in words) or not any(word in RPC_TRANSFERS for word in words):
+                errors.append(problem(path, number, "rpc-rules", "name the mode and the transfer mode in @rpc(...)"))
+            if "any_peer" in words:
+                body, text = rpc_body_start(lines, number + 1)
+                if "multiplayer.is_server()" not in text:
+                    errors.append(
+                        problem(path, body, "rpc-rules", "start an any_peer RPC with a multiplayer.is_server() check")
+                    )
+    return errors
+
+
+def check_log_catalogue(root: Path) -> list[str]:
+    """Every Log.warn event named by a literal in core/ and systems/ has a row in docs/LOGGING.md."""
+    doc = root / "docs/LOGGING.md"
+    catalogue = doc.read_text(encoding="utf-8") if doc.is_file() else ""
+    errors = []
+    for path, lines in text_files(root, ("core/", "systems/"), (".gd",)):
+        text = "\n".join(lines)
+        for match in LOG_WARN.finditer(text):
+            if not re.search(r"\b" + match[2] + r"\b", catalogue):
+                number = text.count("\n", 0, match.start()) + 1
+                errors.append(problem(path, number, "log-catalogue", f"add {match[1]}.{match[2]} to docs/LOGGING.md"))
+    return errors
+
+
 def content_id_literals(root: Path) -> set[tuple[str, str, int]]:
     ids = {Path(path).stem for path in scanned_paths(root) if path.startswith(ID_FOLDERS) and path.endswith(".tres")}
     found = set()
@@ -407,6 +472,28 @@ def check_no_content_id_literals(root: Path) -> list[str]:
     return errors
 
 
+DECISIONS = "docs/DECISIONS.md"
+DECISIONS_MAX = 300
+
+
+def check_decisions_short(root: Path) -> list[str]:
+    path = root / DECISIONS
+    if not path.is_file():
+        return []
+    errors = []
+    in_entry = False
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        if line.startswith("- "):
+            in_entry = True
+            if len(line) > DECISIONS_MAX:
+                errors.append(problem(DECISIONS, number, "decisions-short", f"entry over {DECISIONS_MAX} characters"))
+        elif not line.strip() or line.startswith("#"):
+            in_entry = False
+        elif in_entry:
+            errors.append(problem(DECISIONS, number, "decisions-short", "entry wraps; keep it on one line"))
+    return errors
+
+
 RULES = [
     check_core_no_features,
     check_content_is_data,
@@ -425,6 +512,9 @@ RULES = [
     check_no_triple_copy,
     check_tested_scripts,
     check_no_content_id_literals,
+    check_rpc_rules,
+    check_log_catalogue,
+    check_decisions_short,
 ]
 
 
