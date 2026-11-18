@@ -39,6 +39,7 @@ var is_crouching: bool = false
 var is_downed: bool = false
 var is_dead: bool = false
 var state_sync: PlayerStateSync
+var loadout_sync: LoadoutSync
 var revive: Revive
 var move_input: Vector2 = Vector2.ZERO
 var sprint_left: float = 4.0
@@ -90,6 +91,8 @@ func _ready() -> void:
 	_set_local(is_multiplayer_authority())
 	state_sync = PlayerStateSync.new()
 	add_child(state_sync)
+	loadout_sync = LoadoutSync.new()
+	add_child(loadout_sync)
 	revive = Revive.new()
 	add_child(revive)
 

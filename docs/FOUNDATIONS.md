@@ -53,7 +53,7 @@ request and the server runs the same code it runs in solo.
 Dispenser, Specimen Vault, exfil) follow the rule, with two-peer ENet tests
 (`test_interaction_sync`, `test_coop_machines`, `test_coop_world_state`).
 Gear and item guns do too: each owner sends its loadout
-(`PlayerStateSync.submit_loadout`), the server applies gear and loot luck from
+(`LoadoutSync.submit_loadout`), the server applies gear and loot luck from
 its own copy, and leech / points per hit run where the server applies the hit
 (`ItemLoadout.apply_hit`). Pack equips run in `LootService`'s physics tick
 (plans/item-effects-server.md).

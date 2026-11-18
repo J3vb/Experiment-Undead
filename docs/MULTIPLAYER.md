@@ -50,7 +50,7 @@ already reads `InputFrame`s, so the server could replay them.
 | Points, wall buys, machines, doors | Server | Client sends a request to `InteractionSync`; server checks sender, range, rate and gun facts, then runs the same `interact()`. World state goes to all (late joiners get a snapshot); guns and ammo reach the buyer as grants |
 | Waves, round number, power-ups | Server | Synced to all |
 | Run XP and loot rolls | Server (`ProgressionService`) | Grant RPC to the owning client, which saves it |
-| Equipped gear and item guns | Owning client picks; server owns the effects | `PlayerStateSync.submit_loadout` on spawn and every Pack equip; the server applies gear, loot luck and item on-hit effects (leech, points per hit) from its copy |
+| Equipped gear and item guns | Owning client picks; server owns the effects | `LoadoutSync.submit_loadout` on spawn and every Pack equip; the server applies gear, loot luck and item on-hit effects (leech, points per hit) from its copy |
 | Cosmetics (muzzle flash, impacts, sounds) | Each peer | Local reaction to synced facts |
 | Teammate body animation (F-41) | Each peer, locally | `BodyAnimator` picks clips from the synced pose, crouch, downed state, held gun and reload time; a relayed remote shot plays the fire kick |
 
@@ -105,7 +105,7 @@ owner applies it and answers with an ack RPC, so the server knows the
 owner's facts are up to date again (`_pending` until then).
 
 **5. A server-owned node under a client-owned Player** (reference:
-`PlayerStateSync`, `Revive`). The Player belongs to its owner, but health,
+`PlayerStateSync`, `LoadoutSync`, `Revive`). The Player belongs to its owner, but health,
 downed state and revives belong to the server. Such a node calls
 `set_multiplayer_authority(1)` in `_init()` and is added in
 `Player._ready()`, so it exists with the same name on every peer. It is

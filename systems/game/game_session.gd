@@ -166,7 +166,7 @@ func _on_player_added(player: Player) -> void:
 		var loadout: Variant = profile.to_dict().get("loadout", {})
 		if loadout is Dictionary:
 			ItemLoadout.apply(player, loadout)
-		player.state_sync.send_loadout()
+		player.loadout_sync.send_loadout()
 	if player.is_multiplayer_authority():
 		player.gear_rig.apply(LookBuilder.from_equipped(profile.loadout if profile else {}))
 	match_end.share_results(player.net_id)

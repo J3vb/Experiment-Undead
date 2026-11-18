@@ -45,3 +45,4 @@ change it), **replaced** (see the newer record).
 | [0013](0013-every-game-joinable.md) | Every game is joinable; alone means solo | proposed |
 | [0014](0014-baked-gun-textures.md) | Guns may use baked texture maps, 30,000-triangle budget | accepted |
 | [0015](0015-baked-player-body.md) | The player body may use baked texture maps | accepted |
+| [0016](0016-baked-town-npcs.md) | Town NPC bodies may use baked texture maps | accepted |

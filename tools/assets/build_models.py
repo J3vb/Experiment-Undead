@@ -24,6 +24,7 @@ import bmesh
 import character_models
 import door_models
 import finish
+import library_barriers
 import machine_models
 import prop_models
 import town_buildings
@@ -226,8 +227,11 @@ def tilted_box(name: str, size: tuple, at: tuple, lean: float, mat, pivot: tuple
 UNFINISHED = {"wall_panel"}
 # Guns with baked maps (ADR 0014): their game glb comes from gun_bake.py -> script name.
 BAKED = {"rifle_ar": "rifle_model"}
-# Models whose game glb carries baked maps from their own script (ADR 0015).
-OWN_BAKE = {"player": "tools/assets/player_body/build.py"}
+# Models whose game glb carries baked maps from their own script (ADR 0015, ADR 0016).
+OWN_BAKE = {
+    "player": "tools/assets/player_body/build.py",
+    "npc_quartermaster": "tools/assets/town_npcs/build.py quartermaster",
+}
 
 MODELS = {
     "wall_panel": ("kit/wall_panel.glb", build_wall_panel),
@@ -265,6 +269,7 @@ MODELS.update(town_cabins.MODELS)
 MODELS.update(town_market.MODELS)
 MODELS.update(town_gate.MODELS)
 MODELS.update(town_camp.MODELS)
+MODELS.update(library_barriers.MODELS)
 MODELS.update(door_models.MODELS)
 MODELS.update(machine_models.MODELS)
 
