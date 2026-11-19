@@ -1,6 +1,6 @@
 # Plan: Wear loot gear mid-run from the Pack
 
-Status: Approved
+Status: Building
 Roadmap: F-83 / issue none (solo play-test 2026-11-19)
 Phase: P6
 Size: M

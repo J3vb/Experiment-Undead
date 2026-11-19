@@ -102,9 +102,17 @@ func _build_panel() -> void:
 
 
 func _update_key_labels() -> void:
-	equip_button.text = "%s · Into hands" % Settings.key_name(&"pack_equip")
+	_update_equip_label()
 	drop_button.text = "%s · Drop" % Settings.key_name(&"pack_drop")
 	close_button.text = "%s · Close" % Settings.key_name(&"pack_toggle")
+
+
+## Gear is worn; guns go into your hands.
+func _update_equip_label() -> void:
+	var gear: bool = false
+	if service and _selected < service.pack.items.size():
+		gear = Inventory.is_gear(service.pack.items[_selected])
+	equip_button.text = "%s · %s" % [Settings.key_name(&"pack_equip"), "Wear" if gear else "Into hands"]
 
 
 func _on_setting_changed(section: StringName, _key_name: StringName, _value: Variant) -> void:
@@ -166,6 +174,7 @@ func _select(index: int) -> void:
 	_selected = index
 	var items: Array[Dictionary] = service.pack.items
 	tooltip.show_item(items[index] if index < items.size() else {})
+	_update_equip_label()
 
 
 func set_open(open: bool) -> void:

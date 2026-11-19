@@ -8,6 +8,7 @@ const TEST_DIRECTORY: String = "user://characters-test/"
 const STASH_SIZE: int = 60
 const NAME_MAX: int = 16
 const DEFAULT_NAME: String = "Survivor"
+const GEAR_SLOTS: Array[StringName] = [&"vest", &"charm", &"implant"]
 const XP_RULES: XpRules = preload("res://content/progression/xp_rules.tres")
 
 var id: StringName = &""

@@ -293,7 +293,7 @@ Zombies drop guns and gear with a rarity and random bonus stats (affixes). What 
 
 - **Loadout:** 1 sidearm (pistol class) and 1 primary from your stash, plus 3 gear slots: Vest, Charm and Implant.
 - **Start of a run:** you spawn with your loadout sidearm instead of the Warden P9. Your loadout primary waits in a Drop Locker at spawn that opens at round 5. This keeps the early point-farming rounds intact.
-- **Pack:** 6 slots for loot picked up during the run. Guns you pick up can be equipped right away, like a wall gun.
+- **Pack:** 6 slots for loot picked up during the run. Guns you pick up can be equipped right away, like a wall gun. Gear (vest, charm, implant) can be worn right away from the Pack too: the piece you take off goes into that Pack slot, and the swap never heals you.
 - **End of a run:** dying keeps everything equipped and in your Pack. From round 10, an **Exfil** option appears every 5 rounds: hold the exfil point for 60 s, then leave with +50% XP for the whole run, bonus Scrap (100 x the round number), and an exfil cache with 2 items: Rare or better, Epic or better from round 20. It is a bonus, not a requirement: you keep your loot either way.
 
 ### Rarity
@@ -508,6 +508,7 @@ Design changes since the Nov 14, 2026 copy, newest first. Add one row in the sam
 
 | Date | Area | Change | Detail |
 | --- | --- | --- | --- |
+| 2026-11-19 | Loot | Gear from drops can be worn mid-run from the Tab Pack overlay; the old piece swaps into the Pack slot, no heal on a swap. | [wear-gear-mid-run.md](../plans/wear-gear-mid-run.md), F-83 step 1 |
 | 2026-11-18 | Story | Story links: every kind of content now has a story reason (zombie types, where guns come from, power-ups, gear, town services, rooms and props). Fixed lore gaps: Fenlight grows outside bodies, the Cordon was the evacuation army before Day 9, where Lantern Post, its tunnel, emblem and green Deploy lights come from. New rule: plans carry a Lore link line (checked by CI). | [lore.md](lore.md#story-links-for-game-content), [lore audit](reviews/lore-audit-2026-11-18.md) |
 | 2026-11-18 | Town | Lantern Post camp props and light pass: burning fire barrels (flames, flickering light) with benches round them, snowy supply crates and ammo cases, two FENLIGHT SAMPLES crates of glowing green jars by the Technician, hanging and table lanterns, string lights across the street, split-rail fences, firewood stacks, snow drifts and snowy pines. Stall, board and floodlight bulbs now really glow. | [lantern-post-assets.md](lantern-post-assets.md), plan lantern-post-concept step 5 |
 | 2026-11-18 | Town | Lantern Post Deploy gate: the timber palisade gate becomes a concrete wall with a DEPLOY tunnel (green strip lights, hazard pillars, closed blast door 12 m in; players can walk 3 m in), maroon outpost banners, floodlights, a sweeping watchtower spotlight and a lattice radio mast on the ridge. The Deploy board and ready-up vote are unchanged. | [lantern-post-assets.md](lantern-post-assets.md), plan lantern-post-concept step 4 |
