@@ -1,6 +1,6 @@
 # 0016. Town NPC bodies may use baked texture maps
 
-- **Status:** accepted
+- **Status:** superseded by [ADR 0017](0017-tripo-models.md) (the stall keepers are Tripo models since F-80 step 3, 2026-11-19)
 - **Date:** 2026-11-18
 - **Decided by:** the person (approved the Lantern Post vendors plan, PR #339)
 

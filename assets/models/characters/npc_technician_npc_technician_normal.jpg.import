@@ -2,21 +2,19 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cn4jcltq1x6yk"
-path.s3tc="res://.godot/imported/npc_quartermaster_BodyRough.jpg-c4798771d247134b06605a67323f080a.s3tc.ctex"
+uid="uid://dkfce5bpbdv60"
+path="res://.godot/imported/npc_technician_npc_technician_normal.jpg-55018eecd2d61cff2734698bb5487eb3.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
-"md5": "b936e5f6785cadc304db80ed4864779e"
+"md5": "6e8e31e7d0113afe18518e127ffd2a4c"
 }
 
 [deps]
 
-source_file="res://assets/models/characters/npc_quartermaster_BodyRough.jpg"
-dest_files=["res://.godot/imported/npc_quartermaster_BodyRough.jpg-c4798771d247134b06605a67323f080a.s3tc.ctex"]
-
+source_file="res://assets/models/characters/npc_technician_npc_technician_normal.jpg"
+dest_files=["res://.godot/imported/npc_technician_npc_technician_normal.jpg-55018eecd2d61cff2734698bb5487eb3.ctex"]
 [params]
 
 compress/mode=2
@@ -25,7 +23,7 @@ compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
-compress/normal_map=2
+compress/normal_map=1
 compress/channel_pack=0
 mipmaps/generate=true
 mipmaps/limit=-1
