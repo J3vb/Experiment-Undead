@@ -1,6 +1,7 @@
 ## Reload as weapon-local key poses. Magazine guns: the support hand carries the magazine out and back, and on
 ## an empty reload presses the bolt catch above the well so the bolt slams home. Times are fractions of the reload.
 ## Shell guns: each round is one cycle, the hand brings a shell up into the loading port; from empty it then racks.
+## Cues name the sound moments (mag_out, mag_in, bolt, shell_in, pump) as times in the same fractions.
 class_name ReloadMotion
 extends RefCounted
 
@@ -44,6 +45,8 @@ class Keys:
 	var bolt: PackedFloat32Array = []
 	var roll: PackedFloat32Array = []
 	var shown: PackedFloat32Array = []
+	var cue_times: PackedFloat32Array = []
+	var cue_names: Array[StringName] = []
 
 
 ## mag_center: magazine middle, mag_top: its feed lip, mag_down: unit vector out of the well, all weapon-local.
@@ -68,6 +71,8 @@ static func for_shells(port: Vector3) -> ReloadMotion:
 	keys.bolt = PackedFloat32Array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 	keys.roll = PackedFloat32Array([0.0, 0.6, 0.6, 0.6, 0.6, 0.0])
 	keys.shown = PackedFloat32Array([0.0, 0.0, 1.0, 1.0, 1.0, 0.0])
+	keys.cue_times = PackedFloat32Array([SHELL_IN])
+	keys.cue_names = [&"shell_in"]
 	keys = motion._empty
 	keys.times = PackedFloat32Array([0.0, 0.12, 0.18, 0.33, EMPTY_SHELL_IN, 0.56, 0.68, 0.8, 1.0])
 	keys.hand = PackedVector3Array([low, low, low, below, grab, grab, grab, grab, grab])
@@ -76,6 +81,8 @@ static func for_shells(port: Vector3) -> ReloadMotion:
 	keys.bolt = PackedFloat32Array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0])
 	keys.roll = PackedFloat32Array([0.0, 0.6, 0.6, 0.6, 0.6, 0.2, 0.0, 0.0, 0.0])
 	keys.shown = PackedFloat32Array([0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0])
+	keys.cue_times = PackedFloat32Array([EMPTY_SHELL_IN, 0.58])
+	keys.cue_names = [&"shell_in", &"pump"]
 	return motion
 
 
@@ -96,6 +103,8 @@ func _set_magazine(mag_center: Vector3, mag_top: Vector3, mag_down: Vector3) -> 
 	_tactical.bolt = PackedFloat32Array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 	_tactical.roll = PackedFloat32Array([0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 0.0])
 	_tactical.shown.resize(_tactical.times.size())
+	_tactical.cue_times = PackedFloat32Array([0.2, SEATED])
+	_tactical.cue_names = [&"mag_out", &"mag_in"]
 	_empty.times = PackedFloat32Array([0.0, 0.1, 0.28, 0.36, 0.48, EMPTY_SEATED, 0.62, 0.72, 0.77, BOLT_RELEASE, 1.0])
 	_empty.hand = PackedVector3Array(
 		[
@@ -117,6 +126,8 @@ func _set_magazine(mag_center: Vector3, mag_top: Vector3, mag_down: Vector3) -> 
 	_empty.bolt = PackedFloat32Array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0])
 	_empty.roll = PackedFloat32Array([0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 0.0])
 	_empty.shown.resize(_empty.times.size())
+	_empty.cue_times = PackedFloat32Array([0.15, EMPTY_SEATED, BOLT_RELEASE])
+	_empty.cue_names = [&"mag_out", &"mag_in", &"bolt"]
 
 
 ## Builds the shell motion from a viewmodel's LoadShell node, or null when it has none.
@@ -158,3 +169,12 @@ func sample(empty: bool, t: float) -> void:
 	bolt_back = lerpf(keys.bolt[i], keys.bolt[i + 1], k)
 	roll = lerpf(keys.roll[i], keys.roll[i + 1], k)
 	part_shown = (keys.shown[i] if k < 0.5 else keys.shown[i + 1]) > 0.5
+
+
+## The sound moment the reload passed between two samples (from_t excluded), or &"" when none.
+func cue_between(empty: bool, from_t: float, to_t: float) -> StringName:
+	var keys: Keys = _empty if empty else _tactical
+	for i: int in keys.cue_times.size():
+		if keys.cue_times[i] > from_t and keys.cue_times[i] <= to_t:
+			return keys.cue_names[i]
+	return &""

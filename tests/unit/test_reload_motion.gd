@@ -123,3 +123,73 @@ func test_brenner_hand_carries_one_shell_into_the_port_per_round() -> void:
 	weapon.pose.update(1.0)
 	assert_false(weapon.is_reloading())
 	assert_false(shell.visible)
+
+
+func _cues_in_sweep(motion: ReloadMotion, empty: bool) -> Array[StringName]:
+	var heard: Array[StringName] = []
+	var last: float = 0.0
+	for step: int in range(1, 101):
+		var t: float = step / 100.0
+		var cue: StringName = motion.cue_between(empty, last, t)
+		if not cue.is_empty():
+			heard.append(cue)
+		last = t
+	return heard
+
+
+func test_each_sound_moment_plays_once_in_order() -> void:
+	var magazine: ReloadMotion = _motion()
+	assert_eq(_cues_in_sweep(magazine, false), [&"mag_out", &"mag_in"] as Array[StringName])
+	assert_eq(_cues_in_sweep(magazine, true), [&"mag_out", &"mag_in", &"bolt"] as Array[StringName])
+	var shells: ReloadMotion = ReloadMotion.for_shells(CENTER)
+	assert_eq(_cues_in_sweep(shells, false), [&"shell_in"] as Array[StringName])
+	assert_eq(_cues_in_sweep(shells, true), [&"shell_in", &"pump"] as Array[StringName])
+	for cue: StringName in [&"mag_out", &"mag_in", &"bolt", &"shell_in", &"pump"]:
+		assert_true(WeaponPose.CUES.has(cue), String(cue))
+
+
+func _heard_during_reload(player: Player, seconds: float) -> Array[AudioStream]:
+	var weapon: Weapon = player.weapons.current
+	var heard: Array[AudioStream] = []
+	var steps: int = int(seconds / 0.01)
+	for i: int in steps:
+		weapon.tick(0.01)
+		weapon.pose.update(0.01)
+		if weapon.pose.mech_audio.stream and (heard.is_empty() or heard[-1] != weapon.pose.mech_audio.stream):
+			heard.append(weapon.pose.mech_audio.stream)
+	return heard
+
+
+func test_magazine_reload_plays_its_moves_instead_of_the_old_sound() -> void:
+	var player: Player = _player_with(&"rifle_ar")
+	var weapon: Weapon = player.weapons.current
+	weapon.instance.ammo_in_mag = 0
+	assert_true(weapon.start_reload())
+	assert_null(weapon.pose.mech_audio.stream, "no single reload sound for a gun with the motion")
+	var heard: Array[AudioStream] = _heard_during_reload(player, weapon._reload_duration + 0.1)
+	var cues: Dictionary[StringName, AudioStream] = WeaponPose.CUES
+	assert_eq(heard, [cues[&"mag_out"], cues[&"mag_in"], cues[&"bolt"]] as Array[AudioStream])
+	assert_false(weapon.is_reloading())
+
+
+func test_brenner_plays_a_shell_sound_per_round_and_racks_once_from_empty() -> void:
+	var player: Player = _player_with(&"brenner_trench")
+	var weapon: Weapon = player.weapons.current
+	weapon.instance.ammo_in_mag = 0
+	weapon.instance.ammo_reserve = 2
+	assert_true(weapon.start_reload())
+	var heard: Array[AudioStream] = _heard_during_reload(player, 3.0)
+	var cues: Dictionary[StringName, AudioStream] = WeaponPose.CUES
+	assert_false(weapon.is_reloading())
+	assert_eq(heard, [cues[&"shell_in"], cues[&"pump"], cues[&"shell_in"]] as Array[AudioStream])
+
+
+func test_cancelled_reload_plays_no_later_moves() -> void:
+	var player: Player = _player_with(&"kestrel_smg")
+	var weapon: Weapon = player.weapons.current
+	weapon.instance.ammo_in_mag = 3
+	assert_true(weapon.start_reload())
+	var heard: Array[AudioStream] = _heard_during_reload(player, weapon._reload_duration * 0.3)
+	assert_eq(heard, [WeaponPose.CUES[&"mag_out"]] as Array[AudioStream])
+	RoundReload.cancel(weapon)
+	assert_eq(_heard_during_reload(player, 1.0), heard, "nothing new after the cancel")

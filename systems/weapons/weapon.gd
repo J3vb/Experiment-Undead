@@ -102,7 +102,8 @@ func start_reload() -> bool:
 	if data.reload_per_round:
 		_reload_duration = RoundReload.duration(self)
 		_reload_timer = RoundReload.cycle_length(self)
-	pose.play_mech(data.reload_sound)
+	if pose.motion == null:
+		pose.play_mech(data.reload_sound)
 	reload_started.emit(_reload_timer)
 	return true
 
