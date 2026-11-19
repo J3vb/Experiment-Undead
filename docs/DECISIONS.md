@@ -45,7 +45,7 @@ Each says when to fix it.
 - **Whole-tube reloads:** Brenner, Hollis and Atlas reload in one timed action. Fix when: real reload animations exist.
 - **Reforger** has Tier I only and swaps instantly. Fix when: Tiers II (ammo mods) and III get a roadmap row.
 - **Power-ups:** only Resupply and the Scavenger ammo pack; Scavenger's +1 grenade waits. Fix when: F-24 grenades and F-26 power-ups.
-- **Window barriers:** no slot timeout (move to another barrier after 4 s), no real sill, no hold-to-repair. Fix when: co-op crowding at a window needs it.
+- **Window barriers:** no slot timeout (move to another barrier after 4 s), no real sill. Fix when: co-op crowding at a window needs it.
 - **Emergency lighting:** dimmed red ceiling lights only, no separate fixtures or sound. Fix when: the sound world step.
 - **Stuck zombies:** relocate replaces the AI doc's repath sidestep and navmesh snap; no louder groan for the last zombies (voice is local). Fix when: relocates show in soak logs.
 - **Slide** keeps the normal 0.18 s sprint-out block before hip fire (weapon.gd was at its size limit). Fix when: weapon.gd is split (F-79 step 7).
@@ -85,7 +85,7 @@ Agent picks the person may change.
 - **Gun feel:** falloff ranges, spread, recoil and empty reloads not in `roster.csv` (Kestrel, Talon, vault batch A1, Bastion, batch B rifles, Wren, Siphon, Cryo Lance, Synapse). Talon head x3.0 and Atlas Auto's strong DPS wait for play-tests.
 - **Siphon:** 10 m/s orb, 3 s well, at most 12 zombies, 6 m pull, two live wells per player, Vault weight 0.05.
 - **FOV:** horizontal degrees at 16:9, 70-120, default 110 (about 78 vertical); ADS FOV stays vertical.
-- **Serums:** every Med Dispenser needs power; no limit on Serums held. Scavenger ammo pack chance 10%.
+- **Serums:** every Med Dispenser needs power; no limit on Serums held. Scavenger ammo pack chance 5% (10% gave too much ammo in the first play-test).
 - **Exfil and sprint:** the 60 s exfil hold pauses, not resets, when nobody is in range; sprint refills over 3 s after stopping early.
 - **Crouch** stays a toggle by default; aim and sprint default to hold.
 - **Gear bases:** names (Lantern Rig ... Pell Relay), all unlocked at level 1 with drop weight 100. Skill tree rows and columns are provisional too.
@@ -96,4 +96,6 @@ Agent picks the person may change.
 - **Halcyon concept pass (F-68):** kitchen fires as the Mess Hall's warm accent, the existing hazard orange (not yellow) on the tank railings, the catwalk office not walkable, pods at leak-glow strength, one steel material on the ceiling models. Look signed off 2026-11-19.
 - **Model looks:** skinned zombies, gear finishes, vest frames, first-person arms, teammate clips and the launcher screen are agent looks until the person sees them.
 - **Tripo settings:** `tripo_make.py` asks for model v3.1, PBR, detailed texture, standard geometry (a 0.9 m prop: 40 credits); `body_tarp` goes in `props/`, not `dressing/` (intake prop budget 2,000). [tripo-models](plans/tripo-models.md)
+- **Power-up drops:** 1% per kill, at most 1 a round (GDD 2.5%, 4), while Resupply is the deck's only power-up; raise with F-26. Resupply glows big and green, the ammo pack small and orange.
+- **Hold to repair:** one plank every 0.6 s while interact is held, tap still works; the 0.3 s hold-to-buy in `controls.md` is not built.
 - **Player names:** up to 16 Latin letters, digits, spaces and - _ . ' ; default "Survivor"; duplicates allowed; set on the Character screen before joining. See [player-names](plans/player-names.md).

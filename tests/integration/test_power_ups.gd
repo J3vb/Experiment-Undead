@@ -1,5 +1,5 @@
 ## Power-up drops in a real match: the drop roll, the per-round cap, Resupply
-## refilling every gun, and a drop timing out.
+## refilling every gun, the two pickups' looks, and a drop timing out.
 extends GutTest
 
 const SESSION: PackedScene = preload("res://systems/game/game_session.tscn")
@@ -49,14 +49,35 @@ func test_drop_floats_above_the_kill() -> void:
 	assert_almost_eq(_pickups()[0].global_position, Vector3(40, 0.8, 40), Vector3.ONE * 0.01)
 
 
-func test_at_most_four_drops_a_round() -> void:
+func test_drop_cap_per_round() -> void:
 	drops.drop_chance = 1.0
-	for i: int in 6:
+	for i: int in drops.max_per_round + 2:
 		_kill_somewhere()
-	assert_eq(_pickups().size(), 4)
+	assert_eq(_pickups().size(), drops.max_per_round)
 	Events.round_started.emit(2, 10)
 	_kill_somewhere()
-	assert_eq(_pickups().size(), 5, "the cap resets each round")
+	assert_eq(_pickups().size(), drops.max_per_round + 1, "the cap resets each round")
+
+
+func test_ammo_drop_rates_after_the_first_play_test() -> void:
+	var fresh: PowerUpDrops = PowerUpDrops.new()
+	assert_eq(fresh.drop_chance, 0.01, "Resupply is the only power-up yet, so it drops less than the GDD 2.5%")
+	assert_eq(fresh.max_per_round, 1)
+	assert_eq(fresh.ammo_pack_chance, 0.05, "Scavenger packs halved")
+	fresh.free()
+
+
+func test_resupply_and_ammo_pack_look_different() -> void:
+	var resupply: PowerUp = drops.drop(Content.get_item(&"power_ups", &"resupply") as PowerUpData, Vector3(40, 0, 40))
+	var pack: PowerUp = drops._spawn(Content.get_item(&"power_ups", &"ammo_pack") as PowerUpData, Vector3(42, 0, 40))
+	var big: MeshInstance3D = resupply.get_node(^"Visual/Core") as MeshInstance3D
+	var small: MeshInstance3D = pack.get_node(^"Visual/Core") as MeshInstance3D
+	assert_gt(big.scale.x, small.scale.x * 2.0, "Resupply is much bigger")
+	var green: Color = (big.material_override as StandardMaterial3D).emission
+	var orange: Color = (small.material_override as StandardMaterial3D).emission
+	assert_gt(green.g, green.r, "Resupply glows green")
+	assert_gt(orange.r, orange.g, "an ammo pack glows orange")
+	assert_ne((resupply.get_node(^"Visual/Label") as Label3D).text, (pack.get_node(^"Visual/Label") as Label3D).text)
 
 
 func test_resupply_fills_every_gun() -> void:
