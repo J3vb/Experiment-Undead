@@ -76,3 +76,12 @@ func test_clients_never_report_a_stalled_round() -> void:
 	assert_eq(_count("waves.round_stalled"), before, "clients get round events but no kill events")
 	peer.close()
 	get_tree().set_multiplayer(null, root.get_path())
+
+
+func test_report_counts_draw_time_shader_compiles() -> void:
+	var engine_total: int = int(Performance.get_monitor(Performance.PIPELINE_COMPILATIONS_DRAW))
+	watch._compiles_seen = engine_total - 3
+	for i: int in 12:
+		watch.record_frame(0.1)
+	assert_eq(watch.report()["draw_compiles"], 3, "compiles since the watch started are counted once")
+	assert_eq(watch._new_draw_compiles(), 0, "and not counted again")

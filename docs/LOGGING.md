@@ -70,11 +70,11 @@ The server also prints every warning and error to stdout as
 | `engine.engine_warning` | warn | `push_warning` or an engine warning |
 | `player.body_clips_missing` | warn | The player model has no third-person clips, so teammates show a still body; rebuild `player.glb` |
 | `player.world_model_missing` | warn | A teammate holds a gun whose `WeaponData` has no `world_model`, so its hands are empty; set the field in the gun's `.tres` |
-| `perf.long_frames` | warn | Frames over 50 ms in the last second (`count`, `worst_ms`). Hitch at load is normal; in a round it is not |
+| `perf.long_frames` | warn | Frames over 50 ms in the last second (`count`, `worst_ms`, `draw_compiles`: shader pipelines compiled while drawing that second, `enemies`). Hitch at load is normal; in a round it is not. `draw_compiles` > 0 means a first-use shader stutter |
 | `perf.low_fps` | warn | Under 50 fps for 3 s in a row (windowed builds only), with a health snapshot |
 | `perf.health` | info | Every 30 s: fps, process/physics ms, memory, objects, nodes, orphan nodes, enemies, draw calls |
 | `perf.orphan_nodes_growing` | warn | Over 200 orphan nodes and still rising: nodes created and never freed |
-| `level.navmesh_baked` / `navmesh_bake_slow` | info / warn | Navmesh bake time (`reason` load/rebake). Over 100 ms = visible hitch |
+| `level.navmesh_baked` / `navmesh_bake_slow` | info / warn | Navmesh bake time (`reason` load/rebake/rebake_parse). Load and the rebake's scene parse run on the main thread: over 100 ms = visible hitch. A door rebake bakes on a worker thread, so its `ms` is wall time, not a freeze |
 | `level.navigation_ready` | info | Time from load until zombies can path |
 | `level.navigation_not_ready` | error | No usable navmesh 10 s after load: zombies will not move |
 | `enemies.zombie_stuck` | warn | A chasing zombie moved under 0.3 m in 2 s while out of reach (logged once per zombie). `at`, `next_path_point`, `path_finished`: navmesh hole, bad spawn point or geometry snag |

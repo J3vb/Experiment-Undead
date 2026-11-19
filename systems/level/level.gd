@@ -27,6 +27,7 @@ var removed: Array[NodePath] = []
 var _baked: bool = false
 var _rebake_pending: bool = false
 var _ready_usec: int = 0
+var _rebake_usec: int = 0
 
 
 func _ready() -> void:
@@ -36,6 +37,7 @@ func _ready() -> void:
 		_finish()
 		return
 	navigation_region.bake_finished.connect(func() -> void: _baked = true, CONNECT_ONE_SHOT)
+	navigation_region.bake_finished.connect(_on_rebake_finished)
 	_ready_usec = Time.get_ticks_usec()
 	_bake(&"load")
 
@@ -48,8 +50,8 @@ func turn_power_on() -> void:
 
 
 ## Bakes again at the end of this frame (after a door opened). Several calls in
-## one frame give one bake. On the main thread: threaded bakes never finished
-## on the 2-core CI runner, and a door purchase is rare enough for one short hitch.
+## one frame give one bake. Only the scene parse runs on the main thread; the
+## bake itself runs on a worker thread so buying a door does not freeze the game.
 func rebake_navigation() -> void:
 	if navigation_region and not _rebake_pending:
 		_rebake_pending = true
@@ -57,15 +59,30 @@ func rebake_navigation() -> void:
 
 
 func is_rebaking() -> bool:
-	return _rebake_pending
+	return _rebake_pending or _rebake_usec != 0
 
 
 func _rebake_now() -> void:
+	if navigation_region.is_baking():
+		return  # _on_rebake_finished starts it again
 	_rebake_pending = false
-	_bake(&"rebake")
+	_rebake_usec = Time.get_ticks_usec()
+	navigation_region.bake_navigation_mesh(true)
+	var ms: float = (Time.get_ticks_usec() - _rebake_usec) / 1000.0
+	if ms > NAV_BAKE_WARN_MS:
+		Log.warn(&"level", &"navmesh_bake_slow", {"reason": &"rebake_parse", "ms": snappedf(ms, 0.1)})
 
 
-## Main-thread bake; the time is logged because it freezes the game.
+func _on_rebake_finished() -> void:
+	if _rebake_usec != 0:
+		var ms: float = (Time.get_ticks_usec() - _rebake_usec) / 1000.0
+		_rebake_usec = 0
+		Log.info(&"level", &"navmesh_baked", {"reason": &"rebake", "ms": snappedf(ms, 0.1), "open_areas": open_areas})
+	if _rebake_pending:
+		_rebake_now()
+
+
+## Main-thread bake at load (behind the loading screen); the time is logged.
 func _bake(reason: StringName) -> void:
 	var start: int = Time.get_ticks_usec()
 	navigation_region.bake_navigation_mesh(false)
