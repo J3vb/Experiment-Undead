@@ -3,13 +3,14 @@ class_name PackOverlay
 extends Control
 
 const TOOLTIP: PackedScene = preload("res://systems/ui/item_tooltip.tscn")
+const CHARACTER: PackedScene = preload("res://systems/ui/pack_character.tscn")
 
 var service: LootService
 var count: Label
 var panel: PanelContainer
 var slots: Array[Button] = []
 var tooltip: ItemTooltip
-var guns: Label
+var character: PackCharacter
 var feed: Label
 var equip_button: Button
 var drop_button: Button
@@ -36,7 +37,7 @@ func _ready() -> void:
 	background.bg_color = Color("0b1014", 0.97)
 	background.content_margin_left = 24
 	background.content_margin_right = 24
-	background.content_margin_top = 100
+	background.content_margin_top = 64
 	background.content_margin_bottom = 24
 	panel.add_theme_stylebox_override("panel", background)
 	resized.connect(_layout)
@@ -48,6 +49,7 @@ func setup(loot: LootService) -> void:
 	if loot == null:
 		return
 	service = loot
+	character.setup(loot)
 	service.pack.changed.connect(_refresh)
 	_refresh()
 
@@ -66,9 +68,12 @@ func _build_panel() -> void:
 	var hint: Label = Label.new()
 	hint.text = "The match keeps running. You keep loot on death."
 	box.add_child(hint)
-	guns = Label.new()
-	guns.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	box.add_child(guns)
+	character = CHARACTER.instantiate() as PackCharacter
+	character.slot_selected.connect(_show_worn)
+	box.add_child(character)
+	var picked: Label = Label.new()
+	picked.text = "Picked up this run"
+	box.add_child(picked)
 	var grid: GridContainer = GridContainer.new()
 	grid.columns = 3
 	box.add_child(grid)
@@ -134,6 +139,8 @@ func _layout() -> void:
 
 func _refresh() -> void:
 	var items: Array[Dictionary] = service.pack.items
+	if panel.visible:
+		character.refresh()
 	count.text = "Pack %d / 6 [%s]" % [items.size(), Settings.key_name(&"pack_toggle")]
 	if items.size() > _previous_items:
 		var item: Dictionary = items.back()
@@ -173,22 +180,28 @@ static func _colour(item: Dictionary) -> Color:
 func _select(index: int) -> void:
 	_selected = index
 	var items: Array[Dictionary] = service.pack.items
-	tooltip.show_item(items[index] if index < items.size() else {})
+	var item: Dictionary = items[index] if index < items.size() else {}
+	var gear: bool = Inventory.is_gear(item)
+	tooltip.show_item(item, character.worn(Inventory.slot_for(item)) if gear else {})
+	tooltip.set_comparing(gear)
 	_update_equip_label()
+
+
+func _show_worn(item: Dictionary) -> void:
+	tooltip.show_item(item)
+	tooltip.set_comparing(false)
 
 
 func set_open(open: bool) -> void:
 	panel.visible = open
 	tooltip.visible = open
+	character.set_rendering(open)
 	mouse_filter = Control.MOUSE_FILTER_STOP if open else Control.MOUSE_FILTER_IGNORE
 	UI.hold_mouse(self, open)
 	if open:
 		Input.action_release(&"fire")
 		Input.action_release(&"ads")
-		var names: PackedStringArray = []
-		for weapon: Weapon in service.player.weapons.weapons:
-			names.append(weapon.data.display_name)
-		guns.text = "In your hands\n" + " · ".join(names)
+		character.refresh()
 		slots[_selected].grab_focus()
 
 

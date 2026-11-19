@@ -191,7 +191,7 @@ Follows the design doc table. Additions (the concept art on 2026-11-17 added the
 
 ### 11. Pack overlay
 
-Tab in a match. A half-screen panel over the HUD with the 6 Pack slots, your 2 equipped guns and the tooltip. The game keeps running behind it (it is a quick check, not a menu). You can drop items or swap a Pack gun into your hands. Mouse look is paused while it is open; movement keys still work.
+Tab in a match. A half-screen panel over the HUD. On top, your character in its worn gear (a live 3D view), with a box per gear slot on its left and your level, health and the guns in your hands on its right. Underneath, the 6 Pack slots. The item card sits on the right half, comparing a Pack gear piece with the one you wear. The game keeps running behind it (it is a quick check, not a menu). You can drop items, swap a Pack gun into your hands, or wear a Pack vest, charm or implant (E; the piece you take off goes into that Pack slot). Mouse look is paused while it is open; movement keys still work. Layout from the person's pick, 2026-11-19 (plan [wear-gear-mid-run](../plans/wear-gear-mid-run.md)).
 
 ![Pack overlay mockup](images/ui_pack_overlay.jpg)
 
