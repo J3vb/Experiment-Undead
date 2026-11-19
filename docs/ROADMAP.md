@@ -45,7 +45,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-65 | Client and server updates: clear version refusals, saves safe across channels, a launcher that installs and updates the game and a server, self-updating Docker servers (steps 1-5 before F-11) | - | - | [ready](plans/client-server-updates.md) | L | Building |
 | F-09 | v0.1 performance check | #108 | F-01..F-07, F-12, F-13, F-16 | issue | S | Todo |
 | F-10 | First play-test (the person plays) | #109 | F-09 | issue | S | Todo |
-| F-82 | Separate launcher program (like Steam or Battle.net): installs and updates the game, updates itself, news and patch notes, hosts a server; replaces the launcher built into the game (F-65 steps 5-6, 9) | - | F-65 step 4 | [plan](plans/separate-launcher.md) | L | Planning |
+| F-82 | Separate launcher program (like Steam or Battle.net): installs and updates the game, updates itself, news and patch notes, hosts a server; replaces the launcher built into the game (F-65 steps 5-6, 9) | - | F-65 step 4 | [ready](plans/separate-launcher.md) | L | Ready |
 | F-11 | Release v0.1.0 | #111 | F-10, F-65 steps 1-4, F-82 steps 1-4 | issue | S | Todo |
 | F-40 | Round state and power-ups in co-op (rest of #126 after F-02) | #126 | F-02 | [done](plans/coop-round-state-power-ups.md) | M | Done |
 | F-47 | A full co-op match: co-op soak, pause, squad cards, hub and deploy flow | #213 | F-40 | [plan](plans/coop-full-match.md) | L | Done |
