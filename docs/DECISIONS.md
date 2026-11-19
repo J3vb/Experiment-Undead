@@ -93,6 +93,6 @@ Agent picks the person may change.
 - **Halcyon atmosphere:** spark gaps 3-9 s and a 30 s Containment klaxon. Emergency lights at 30% red-orange, back on in a 0.6 s ragged wave.
 - **Footsteps:** one step per 0.5 s walking, 0.34 s sprinting, 0.72 s crouched; landings silent under 3 m/s.
 - **HUD:** XP bar placement, the 90 px / 0.6 s level-up ring, a 3-row drop feed; "Crits only" damage numbers show headshots until a crit stat exists.
-- **Halcyon concept pass (F-68):** kitchen fires as the Mess Hall's warm accent, the existing hazard orange (not yellow) on the tank railings, the catwalk office not walkable, pods at leak-glow strength, one steel material on the ceiling models. Play-test #368.
+- **Halcyon concept pass (F-68):** kitchen fires as the Mess Hall's warm accent, the existing hazard orange (not yellow) on the tank railings, the catwalk office not walkable, pods at leak-glow strength, one steel material on the ceiling models. Look signed off 2026-11-19.
 - **Model looks:** skinned zombies, gear finishes, vest frames, first-person arms, teammate clips and the launcher screen are agent looks until the person sees them.
 - **Player names:** up to 16 Latin letters, digits, spaces and - _ . ' ; default "Survivor"; duplicates allowed; set on the Character screen before joining. See [player-names](plans/player-names.md).
