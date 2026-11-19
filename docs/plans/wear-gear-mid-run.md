@@ -242,12 +242,12 @@ stash shows a picture of what it is, not only a name and rarity mark.
 
 ## Acceptance
 
-- [ ] E on a Pack gear item wears it, the old piece takes its Pack slot (test).
-- [ ] Swapping gear never heals (test).
-- [ ] A client's swap changes the server's stats for that player (integration test).
-- [ ] The run's bank saves the new loadout and the old piece (integration test).
-- [ ] Tab shows the character and gear slots, and teammates see the new look (play-test).
-- [ ] Every loot gun and gear base has an icon shown in the Pack, slots, card and stash (content test).
+- [x] E on a Pack gear item wears it, the old piece takes its Pack slot (test: tests/integration/test_wear_gear_mid_run.gd, test_wearing_a_pack_vest_swaps_it_with_the_worn_one; PR #385).
+- [x] Swapping gear never heals (tests: test_swapping_a_health_vest_off_and_on_never_heals; tests/unit/test_gear_health_sync.gd, test_later_loadouts_only_cap_health_so_a_vest_swap_never_heals).
+- [x] A client's swap changes the server's stats for that player (two-peer test: test_gear_health_sync.gd, test_later_loadouts_only_cap_health_so_a_vest_swap_never_heals).
+- [x] The run's bank saves the new loadout and the old piece (test_bank_saves_the_worn_vest_and_stashes_the_old_one).
+- [ ] Tab shows the character and gear slots, and teammates see the new look (play-test by the person; built in PR #387, render in docs/design/images/ui_pack_overlay.jpg).
+- [x] Every loot gun and gear base has an icon shown in the Pack, slots, card and stash (tests/content/test_item_icons.gd; test_pack_overlay.gd, test_pack_slots_and_card_show_the_item_icon).
 
 ## Risks
 

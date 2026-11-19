@@ -78,14 +78,8 @@ func _build_panel() -> void:
 	grid.columns = 3
 	box.add_child(grid)
 	for index: int in Pack.CAPACITY:
-		var button: Button = Button.new()
-		button.custom_minimum_size = Vector2(180, 90)
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		button.pressed.connect(_select.bind(index))
-		button.focus_entered.connect(_select.bind(index))
-		grid.add_child(button)
-		slots.append(button)
+		slots.append(_slot_button(index))
+		grid.add_child(slots[index])
 	var spacer: Control = Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	box.add_child(spacer)
@@ -104,6 +98,18 @@ func _build_panel() -> void:
 	tooltip = TOOLTIP.instantiate() as ItemTooltip
 	tooltip.hide()
 	add_child(tooltip)
+
+
+func _slot_button(index: int) -> Button:
+	var button: Button = Button.new()
+	button.custom_minimum_size = Vector2(180, 90)
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	button.expand_icon = true
+	button.add_theme_constant_override("icon_max_width", 72)
+	button.pressed.connect(_select.bind(index))
+	button.focus_entered.connect(_select.bind(index))
+	return button
 
 
 func _update_key_labels() -> void:
@@ -166,6 +172,7 @@ func _refresh() -> void:
 		style.border_color = _colour(item) if not item.is_empty() else Color("2c3b44")
 		slots[index].add_theme_stylebox_override("normal", style)
 		slots[index].add_theme_color_override("font_color", _colour(item))
+		slots[index].icon = ItemTooltip.icon_for(item)
 	_select(mini(_selected, maxi(items.size() - 1, 0)))
 
 
