@@ -1,6 +1,6 @@
 # 0012. Exact versions, a built-in launcher, self-updating servers
 
-- **Status:** proposed
+- **Status:** proposed (launcher part to be replaced by 0018)
 - **Date:** 2026-11-17
 - **Decided by:** the person (own updater as a launcher, servers update
   between matches); the rest agent (provisional), see

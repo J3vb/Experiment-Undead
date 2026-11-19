@@ -366,6 +366,10 @@ stay a plain game score. The drop reasons below are provisional picks.
   and Marrow are the Day 3 evacuation convoy, the hospital train car is the
   evacuation train, hospital furniture at Grauwald is 1950s sanatorium stock.
 - **New maps** follow the chapter checklist in The long campaign.
+- **The launcher** (F-82) sits outside the fiction: it shows the game's name,
+  the tagline "A Fenlight survival experience", news and patch notes. Any art
+  or names on it use lore names (Oriel, HALCYON, the Cordon, Lantern Post).
+  *(provisional)*
 
 ## How the story is told in-game
 
