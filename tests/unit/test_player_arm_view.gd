@@ -27,6 +27,7 @@ func _give(holder: WeaponHolder, id: StringName = &"rifle_ar") -> Weapon:
 func _assert_grip_targets(holder: WeaponHolder, delta: Vector3 = Vector3.ZERO) -> void:
 	var view: PlayerArmView = holder.arm_view
 	var hands: Array[PlayerArmProfiles.Hand] = [view.profile.right, view.profile.left]
+	delta += view.weapon.pose.reload_hand(hands[1].wrist + delta)
 	var sides: Array[String] = ["R", "L"]
 	for index: int in sides.size():
 		var hand: int = view.skeleton.find_bone("hand_" + sides[index])

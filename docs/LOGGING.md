@@ -86,6 +86,7 @@ The server also prints every warning and error to stdout as
 | `waves.spawn_points_missing` | warn | The Spawner found no marker in its `spawn_group` (`spawn_group`), so no zombie spawns. The map has no spawn markers in that group, or the group name in the Spawner is wrong |
 | `player.player_spawned` / `player_died` | info | Player `net_id`, spawn position |
 | `player.weapon_has_no_grip` | warn | A gun has no `GripData`, so it shows no first-person arms. `weapon` id; once per gun per run. Add `content/grips/<base id>.tres` and set the gun's `grip` |
+| `player.reload_motion_unreachable` | warn | The left arm cannot reach a reload key pose, so the forearm stretches off the hand. `weapon` id, `gap` in metres; once per gun per run. Move the gun's reload pose in `WeaponPose` or the grab offsets in `ReloadMotion` |
 | `progression.profile_save_failed` | warn | Character could not be saved; `id`, `path`, `error` (Godot Error code). Check folder permissions and disk space |
 | `progression.profile_unreadable` | warn | Existing character is unreadable or malformed; file stays untouched, this match uses a temporary character. `id`, `path`; inspect nearby engine errors |
 | `save.profile_newer` | warn | A character file was saved by a newer game version (`id`, `path`, `version` = its save_version). The file stays untouched, the main menu tells the player to update, and this run uses a temporary character. Happens after going back to an older build |

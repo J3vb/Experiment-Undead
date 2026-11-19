@@ -1,6 +1,6 @@
 # Plan: Real reload animations
 
-Status: Approved
+Status: Building
 Roadmap: F-83 / solo play-test 2026-11-19
 Phase: P1
 Size: M
