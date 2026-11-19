@@ -46,14 +46,14 @@ func test_empty_and_partly_filled_looks_round_trip_without_adding_gear() -> void
 	assert_eq(_codec.encode(CharacterLook.new()), PackedByteArray([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
 
 
-func test_visual_indexes_follow_sorted_content_ids() -> void:
-	var visuals: Array = Content.ids(&"gear_visuals")
+func test_visual_indexes_follow_content_ids_in_name_order() -> void:
+	var visuals: PackedStringArray = PackedStringArray(Content.ids(&"gear_visuals"))
 	visuals.sort()
 	var look: CharacterLook = LookBuilder.from_equipped(MIXED)
 	var bytes: PackedByteArray = _codec.encode(look)
 	for index: int in CharacterLook.SLOTS.size():
 		var slot: StringName = CharacterLook.SLOTS[index]
-		assert_eq(bytes.decode_u16(index * 5), visuals.find(look.slots[slot]["visual_id"]) + 1)
+		assert_eq(bytes.decode_u16(index * 5), visuals.find(String(look.slots[slot]["visual_id"])) + 1)
 
 
 func test_bad_lengths_use_common_base_meshes_in_every_slot() -> void:

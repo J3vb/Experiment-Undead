@@ -231,6 +231,8 @@ signs and list them in the `docs/LOGGING.md` catalogue.
 - Never commit an editor-churned `project.godot`, and commit only the
   `.tres` / `.tscn` files you meant to change: editor-local uids break CI.
 - The game pauses when its window loses focus.
+- `Array.sort()` on StringNames orders them by memory address, which differs
+  between machines. Use `Content.sorted_ids()` or sort a `PackedStringArray`.
 - Model imports: `meshes/light_baking=2` for kit and static props (baked into
   lightmaps), `3` for anything that moves (zombies, guns, doors, pickups).
   Details: the `godot-asset-import` skill.

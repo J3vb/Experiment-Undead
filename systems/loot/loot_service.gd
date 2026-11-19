@@ -131,9 +131,7 @@ static func drop_chance(enemy: EnemyData, round_number: int) -> float:
 
 static func eligible_bases(character_level: int, rarity: StringName) -> Array[Resource]:
 	var pool: Array[Resource] = []
-	var ids: Array = Content.ids(&"weapons")
-	ids.sort()
-	for id: StringName in ids:
+	for id: StringName in Content.sorted_ids(&"weapons"):
 		var weapon: WeaponData = Content.weapon(id)
 		if String(id).ends_with("_reforged") or weapon.loot_tags.has(&"prototype") != (rarity == &"prototype"):
 			continue
@@ -144,9 +142,7 @@ static func eligible_bases(character_level: int, rarity: StringName) -> Array[Re
 			pool.append(weapon)
 	if rarity == &"prototype":
 		return pool
-	ids = Content.ids(&"loot")
-	ids.sort()
-	for id: StringName in ids:
+	for id: StringName in Content.sorted_ids(&"loot"):
 		var gear: GearBaseData = Content.get_item(&"loot", id) as GearBaseData
 		if gear and gear.unlock_level <= character_level and gear.drop_weight > 0.0:
 			pool.append(gear)
