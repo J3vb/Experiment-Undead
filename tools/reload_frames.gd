@@ -1,6 +1,6 @@
 ## Renders first-person reload key frames for a look check: screenshots/reload/<gun>_<kind>_<t>.png.
 ##   xvfb-run -s "-screen 0 1280x720x24" godot --path . --rendering-driver opengl3 res://tools/reload_frames.tscn
-##   -- --guns=rifle_ar,kestrel_smg --old (old = the dip from before F-83)
+##   -- --guns=rifle_ar,kestrel_smg --old (old = the dip from before F-86)
 extends Node
 
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
