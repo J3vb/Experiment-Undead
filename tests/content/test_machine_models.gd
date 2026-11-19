@@ -131,12 +131,12 @@ func test_machine_fronts_face_away_from_their_wall() -> void:
 		var body: Node3D = machine.get_node("Body") as Node3D
 		var model: Node3D = body.get_node("Model") as Node3D
 		var front: Vector3 = model.global_basis.z.normalized()
-		var from: Vector3 = body.global_position + Vector3.UP * 0.3
-		var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(from, from + front * 3.0)
+		var start: Vector3 = body.global_position + Vector3.UP * 0.3
+		var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(start, start + front * 3.0)
 		query.exclude = [(body as StaticBody3D).get_rid()]
 		query.collide_with_areas = false
 		var hit: Dictionary = space.intersect_ray(query)
-		var clear: float = 3.0 if hit.is_empty() else from.distance_to(hit["position"])
+		var clear: float = 3.0 if hit.is_empty() else start.distance_to(hit["position"])
 		assert_gt(clear, 1.2, "%s front is open, not against a wall" % machine.name)
 		checked += 1
 	assert_eq(checked, 10, "8 Med Dispensers, the Reforger and the power switch")
