@@ -66,3 +66,15 @@ func test_changes_signal_only_after_successful_mutations() -> void:
 	assert_signal_emit_count(pack, "changed", 6)
 	pack.remove(0)
 	assert_signal_emit_count(pack, "changed", 7)
+
+
+func test_replace_swaps_one_item_and_an_empty_item_removes_it() -> void:
+	for index: int in 3:
+		pack.add({"uid": str(index)})
+	watch_signals(pack)
+	assert_true(pack.replace(1, {"uid": "swapped"}))
+	assert_eq(pack.items, [{"uid": "0"}, {"uid": "swapped"}, {"uid": "2"}] as Array[Dictionary])
+	assert_signal_emitted(pack, "changed")
+	assert_true(pack.replace(0, {}))
+	assert_eq(pack.items, [{"uid": "swapped"}, {"uid": "2"}] as Array[Dictionary])
+	assert_false(pack.replace(5, {"uid": "x"}))

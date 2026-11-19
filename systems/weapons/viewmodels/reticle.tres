@@ -1,20 +1,19 @@
 [gd_resource type="StandardMaterial3D" format=3]
 
 [sub_resource type="Gradient" id="dot_grad"]
-offsets = PackedFloat32Array(0, 0.45, 1)
-colors = PackedColorArray(1, 0.9, 0.85, 1, 0.878431, 0.196078, 0.168627, 1, 0.878431, 0.196078, 0.168627, 0)
+offsets = PackedFloat32Array(0, 0.3, 0.55, 1)
+colors = PackedColorArray(1, 0.22, 0.16, 1, 1, 0.12, 0.08, 1, 1, 0.08, 0.05, 0.35, 1, 0.08, 0.05, 0)
 
 [sub_resource type="GradientTexture2D" id="dot_tex"]
 gradient = SubResource("dot_grad")
-width = 32
-height = 32
+width = 64
+height = 64
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(0.5, 0)
 
 [resource]
 transparency = 1
-blend_mode = 1
 shading_mode = 0
 cull_mode = 2
 no_depth_test = true

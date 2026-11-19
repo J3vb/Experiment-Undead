@@ -73,7 +73,11 @@ STALL_MODELS = {
         "shift": 0.0,
         "sign": (2.45, 1.75),
         "lantern": (-1.85, 1.95, 1.5),
-        "blocks": [((0, 0.5, 1.05), (3.9, 1.0, 0.76)), ((0, 1.3, -1.31), (3.9, 2.6, 0.12))],
+        "blocks": [
+            ((0, 0.5, 1.05), (3.9, 1.0, 0.76)),
+            ((0, 1.3, -1.31), (3.9, 2.6, 0.12)),
+            ((0, 1.25, -0.95), (3.2, 2.5, 0.54)),
+        ],
     },
     "stall_technician": {
         "shift": 0.66,
@@ -115,16 +119,20 @@ SODIUM = "1, 0.58, 0.25, 1"
 FLOOD = "1, 0.9, 0.75, 1"
 GREEN = "0.553, 1, 0.227, 1"
 STENCIL = "0.78, 0.78, 0.72, 1"
-WALL_H = 3.6
 # Deploy gate (asset list G1-G5). The concrete wall's face is at GATE_Z; the tunnel pillars stand a little proud.
 GATE_Z = -38.0
-GATE_WALL_X = (-17.0, -9.0, 9.0, 17.0)
+GATE_WALL_X = (-25.0, -17.0, -9.0, 9.0, 17.0, 25.0)
 GATE_WALL_FRONT = 0.925  # wall body face, in the gate_wall model's own space (+Z)
 TUNNEL_Z = -37.6  # tunnel pillar faces
 TUNNEL_FRONT = 6.62  # pillar face, in the gate_tunnel model's own space (+Z)
 TUNNEL_STOP = 3.0  # players can walk this far into the tunnel
 BANNER_BACK = 0.1075  # wall plate behind a banner's origin
 BANNERS_X = (-17.0, -6.6, 11.4, 17.0)  # east of the tunnel the watchtower stands in front of the wall
+# The rest of the town wall is the same gate_wall sections; their inner faces stand on these lines.
+RING_X = 25.0
+RING_SOUTH_Z = 15.0
+RING_SIDE_Z = (-35.5, -27.5, -19.5, -11.5, -3.5, 4.5, 12.5)  # 8 m sections, ends tucked into the north and south walls
+RING_SOUTH_X = (-24.0, -16.0, -8.0, 0.0, 8.0, 16.0, 24.0)
 SWEEP = (math.pi / 2 - 0.7, math.pi / 2 + 0.7)  # watchtower spotlight yaw range: gate to street
 # Camp props (asset list P1-P13). Collider sizes in each model's own space (width, height, depth).
 PROP_BLOCKS = {
@@ -134,7 +142,12 @@ PROP_BLOCKS = {
     "supply_crate_small": (0.6, 0.5, 0.5),
     "ammo_case": (0.72, 0.36, 0.38),
     "firewood_stack": (1.9, 1.0, 0.85),
+    "fenlight_crate": (0.92, 0.49, 0.62),
 }
+FENCE_BLOCK = (3.0, 1.2, 0.2)
+# Visible models the player may pass through get a reason (tests/content/test_level_collision.gd).
+OUT_OF_REACH = "outside the town walls"
+UP_HIGH = "on top of the gate wall, out of reach"
 FIRES = [(-8.0, 4.0), (8.5, 4.5), (-2.4, -24.0), (3.0, -14.0)]
 BENCHES = [
     (-6.0, 12.0, 0.0),
@@ -222,10 +235,11 @@ def deco(name, parent, pos, size, mat, rot=None, mesh="box") -> None:
     used.add((mesh, mat))
 
 
-def inst(name, parent, pos, scene, yaw=0.0, scale=(1, 1, 1)) -> None:
+def inst(name, parent, pos, scene, yaw=0.0, scale=(1, 1, 1), walk_through="") -> None:
+    meta = f'metadata/walk_through = "{walk_through}"\n' if walk_through else ""
     nodes.append(
         f'[node name="{name}" parent="{parent}" instance=ExtResource("{scene}")]\n'
-        f"transform = {xform(pos, basis_rot(yaw), scale)}\n"
+        f"transform = {xform(pos, basis_rot(yaw), scale)}\n{meta}"
     )
 
 
@@ -236,8 +250,9 @@ def label(name, parent, pos, yaw, text, size=48, color="0.95, 0.85, 0.65, 1") ->
     )
 
 
-def group(name, parent=".") -> None:
-    nodes.append(f'[node name="{name}" type="Node3D" parent="{parent}"]\n')
+def group(name, parent=".", walk_through="") -> None:
+    meta = f'metadata/walk_through = "{walk_through}"\n' if walk_through else ""
+    nodes.append(f'[node name="{name}" type="Node3D" parent="{parent}"]\n{meta}')
 
 
 def omni(name, parent, pos, color, energy, rng, shadow=False) -> None:
@@ -271,9 +286,12 @@ def body(name, parent, pos, size, mat) -> None:
     )
 
 
-def pine(name, parent, x, z, h) -> None:
-    """A snowy pine_tree model (10 m) scaled by h, its base on the ground, turned at random."""
-    inst(name, parent, (x, 0, z), "pine_tree", random.uniform(0, math.tau), (h, h, h))  # cosmetic
+def pine(name, parent, x, z, h, trunk=False) -> None:
+    """A snowy pine_tree model (10 m) scaled by h, its base on the ground, turned at random.
+    trunk: a box collider round the trunk, for pines players can reach."""
+    inst(name, parent, (x, 0, z), "pine_tree", random.uniform(0, math.tau), (h, h, h))
+    if trunk:
+        collider(f"{name}Trunk", parent, (x, h, z), (0.44 * h, 2.0 * h, 0.44 * h))
 
 
 def build_ground() -> None:
@@ -281,7 +299,7 @@ def build_ground() -> None:
     block("Snow", "Ground", (0, -0.25, -12), (90, 0.5, 100), "town_snow")
     block("Street", "Ground", (0, 0.01, -14), (8, 0.04, 44), "town_mud")
     block("Plaza", "Ground", (0, 0.01, 6), (22, 0.04, 14), "town_mud")
-    group("SnowBanks")
+    group("SnowBanks", walk_through="soft snow players wade through")
     for k in range(18):
         side = -1 if k % 2 == 0 else 1
         z = -33 + k * 2.3 + random.uniform(-0.4, 0.4)
@@ -292,23 +310,22 @@ def build_ground() -> None:
         inst(f"Bank{k}", "SnowBanks", pos, drift, math.pi / 2 + random.uniform(-0.2, 0.2))
 
 
+def _ring_wall(name: str, face: tuple, yaw: float) -> None:
+    """One gate_wall section with its front face on `face` (x, z), turned by `yaw` to face into the town."""
+    nx, nz = math.sin(yaw), math.cos(yaw)
+    at = (face[0] - nx * GATE_WALL_FRONT, 0, face[1] - nz * GATE_WALL_FRONT)
+    inst(name, "Walls", at, "gate_wall", yaw)
+    collider(f"{name}Block", "Walls", (face[0] - nx * 1.2, 3.5, face[1] - nz * 1.2), (8.0, 7.0, 2.4), yaw)
+
+
 def build_walls() -> None:
+    """The west, east and south town walls: the same concrete gate_wall sections as the Deploy gate."""
     group("Walls")
-    for name, pos, size in [
-        ("NorthWest", (-23.5, WALL_H / 2, -39), (5, WALL_H, 0.6)),
-        ("NorthEast", (23.5, WALL_H / 2, -39), (5, WALL_H, 0.6)),
-        ("South", (0, WALL_H / 2, 16), (52, WALL_H, 0.6)),
-        ("West", (-26, WALL_H / 2, -11), (0.6, WALL_H, 54)),
-        ("East", (26, WALL_H / 2, -11), (0.6, WALL_H, 54)),
-    ]:
-        block(name, "Walls", pos, size, "town_planks")
-        long_x = size[0] > size[2]
-        length = size[0] if long_x else size[2]
-        for i in range(int(length / 3) + 1):
-            off = -(length / 2) + i * 3
-            p = (pos[0] + off, WALL_H / 2 + 0.25, pos[2]) if long_x else (pos[0], WALL_H / 2 + 0.25, pos[2] + off)
-            deco(f"{name}Post{i}", "Walls", p, (0.32, WALL_H + 0.5, 0.32), "town_dark_wood")
-        deco(f"{name}Cap", "Walls", (pos[0], WALL_H + 0.05, pos[2]), (size[0] + 0.1, 0.1, size[2] + 0.3), "town_snow")
+    for k, z in enumerate(RING_SIDE_Z):
+        _ring_wall(f"West{k}", (-RING_X, z), LODGE_YAW)
+        _ring_wall(f"East{k}", (RING_X, z), EAST_YAW)
+    for k, x in enumerate(RING_SOUTH_X):
+        _ring_wall(f"South{k}", (x, RING_SOUTH_Z), math.pi)
 
 
 def _on_lodge(centre, local) -> tuple:
@@ -372,14 +389,14 @@ def build_lamps() -> None:
 
 
 def _gate_wall() -> None:
-    """Four concrete wall sections either side of the tunnel, a box collider each, banners hung on the face."""
+    """Six concrete wall sections either side of the tunnel, a box collider each, banners hung on the face."""
     for k, x in enumerate(GATE_WALL_X):
         inst(f"Wall{k}", "Gate", (x, 0, GATE_Z - GATE_WALL_FRONT), "gate_wall")
         collider(f"Wall{k}Block", "Gate", (x, 3.5, GATE_Z - 1.2), (8.0, 7.0, 2.4))
     for k, x in enumerate(BANNERS_X):
         inst(f"Banner{k}", "Gate", (x, 2.1, GATE_Z + BANNER_BACK), "banner")
     for k, x in enumerate((-19.5, 19.5)):
-        inst(f"WallFlood{k}", "Gate", (x, 7.3, GATE_Z - 0.3), "floodlight")
+        inst(f"WallFlood{k}", "Gate", (x, 7.3, GATE_Z - 0.3), "floodlight", walk_through=UP_HIGH)
 
 
 def _gate_tunnel() -> None:
@@ -389,7 +406,7 @@ def _gate_tunnel() -> None:
     for k, s in enumerate((-1, 1)):
         collider(f"TunnelPillar{k}", "Gate", (s * 4.1, 4.5, TUNNEL_Z - 1.0), (1.8, 9.0, 2.0))
         collider(f"TunnelSide{k}", "Gate", (s * 3.3, 2.5, TUNNEL_Z - 2.7), (0.6, 5.0, 1.4))
-        inst(f"TunnelFlood{k}", "Gate", (s * 4.3, 9.1, TUNNEL_Z - 0.6), "floodlight")
+        inst(f"TunnelFlood{k}", "Gate", (s * 4.3, 9.1, TUNNEL_Z - 0.6), "floodlight", walk_through=UP_HIGH)
         aim = basis_rot(math.pi - s * 0.35, pitch=-0.85)
         spot(f"TunnelFloodLight{k}", "Gate", (s * 4.3, 9.9, TUNNEL_Z - 0.2), aim, 5.0, 22.0, 38.0)
     collider("TunnelStop", "Gate", (0, 2.7, TUNNEL_Z - TUNNEL_STOP - 0.1), (6.0, 5.4, 0.2))
@@ -419,6 +436,7 @@ def _plaza_well() -> None:
         block(f"Well{wk}", "Props", (6 + dx, 0.45, 9 + dz), (sx, 0.9, sz), "town_stone")
     for s in (-1, 1):
         deco(f"WellPost{s + 1}", "Props", (6 + s * 0.85, 1.4, 9), (0.15, 1.9, 0.15), "town_dark_wood")
+        collider(f"WellPost{s + 1}Block", "Props", (6 + s * 0.85, 1.4, 9), (0.15, 1.9, 0.15))
     deco("WellRoofA", "Props", (6, 2.45, 8.65), (2.2, 0.1, 0.9), "town_slate", basis_rot(pitch=0.5))
     deco("WellRoofB", "Props", (6, 2.45, 9.35), (2.2, 0.1, 0.9), "town_slate", basis_rot(pitch=-0.5))
 
@@ -448,7 +466,7 @@ def _crates() -> None:
         prop(f"Crate{k}", "Props", model, (x, y, z), yaw)
     for k, (x, z) in enumerate(FENLIGHT_CRATES):
         prop(f"FenlightBase{k}", "Props", "supply_crate_large", (x, 0, z), LODGE_YAW)
-        inst(f"FenlightCrate{k}", "Props", (x, 0.8, z), "fenlight_crate", LODGE_YAW)
+        prop(f"FenlightCrate{k}", "Props", "fenlight_crate", (x, 0.8, z), LODGE_YAW)
         label(f"FenlightStencil{k}", "Props", (x + 0.42, 0.4, z), LODGE_YAW, "FENLIGHT\\nSAMPLES", 36, STENCIL)
     mid_z = sum(z for _, z in FENLIGHT_CRATES) / len(FENLIGHT_CRATES)
     lit("FenlightGlow", "Props", (FENLIGHT_CRATES[0][0] + 0.3, 1.6, mid_z), 0.8, 3.5, color=GREEN)
@@ -473,15 +491,22 @@ def build_fences_and_signs() -> None:
         for sx in (-1, 1):
             if sx < 0 and fz < -21:
                 continue  # the Common Room lodge stands there
-            inst(f"Fence{fk}", "Fences", (sx * 15.5, 0, fz + 1.5), "fence_rail", math.pi / 2)
+            fence(f"Fence{fk}", (sx * 15.5, fz + 1.5), math.pi / 2)
             fk += 1
     for fx in (-10.5, -7.5, -4.5, 4.5, 7.5, 10.5):
-        inst(f"PlazaFence{fk}", "Fences", (fx, 0, 13.2), "fence_rail", 0.0)
+        fence(f"PlazaFence{fk}", (fx, 13.2), 0.0)
         fk += 1
     group("Signs")
     inst("Signpost", "Signs", (-3.0, 0, -1.0), "signpost", 0.0)
+    collider("SignpostBlock", "Signs", (-3.0, 1.3, -1.0), (0.2, 2.6, 0.2))
+    collider("SignpostBoards", "Signs", (-3.0, 2.05, -0.9), (2.1, 1.0, 0.6))
     label("SignGate", "Signs", (-2.58, 2.25, -0.87), 0.0, "DEPLOY GATE", 26)
     label("SignInfirmary", "Signs", (-3.42, 1.85, -0.87), 0.0, "INFIRMARY", 26)
+
+
+def fence(name: str, at: tuple, yaw: float) -> None:
+    inst(name, "Fences", (at[0], 0, at[1]), "fence_rail", yaw)
+    collider(f"{name}Block", "Fences", (at[0], FENCE_BLOCK[1] / 2, at[1]), FENCE_BLOCK, yaw)
 
 
 def _sacks() -> None:
@@ -558,7 +583,8 @@ def build_east_side() -> None:
     group("Cabins")
     for k, cabin in enumerate(CABINS):
         _cabin(k, *cabin)
-    inst("Watchtower", "Cabins", (TOWER[0], 0, TOWER[1]), "watchtower", EAST_YAW)
+    legs = "open frame: its four legs have their own colliders"
+    inst("Watchtower", "Cabins", (TOWER[0], 0, TOWER[1]), "watchtower", EAST_YAW, walk_through=legs)
     for k, (sx, sz) in enumerate(((-1, -1), (1, -1), (-1, 1), (1, 1))):
         leg = _on_east(TOWER, (sx * 1.55, 4.3, sz * 1.55 - 0.028))
         collider(f"WatchtowerLeg{k}", "Cabins", leg, (0.3, 8.6, 0.3), EAST_YAW)
@@ -573,17 +599,19 @@ def build_east_side() -> None:
 def build_yards_and_pines() -> None:
     for k, sx in enumerate((-1, 1)):
         for t in range(5):
-            x = sx * random.uniform(16.5 if sx > 0 else 18.5, 24.5)
+            x = sx * random.uniform(16.5 if sx > 0 else 18.5, 22.5)
             z = random.uniform(-34, 12)
             if min(math.dist((x, z), shed) for shed in SHEDS) > 3.5:
-                pine(f"YardPine{k}_{t}", "Yards", x, z, random.uniform(0.55, 0.85))
-    group("Pines")
+                pine(f"YardPine{k}_{t}", "Yards", x, z, random.uniform(0.55, 0.85), trunk=True)
+    group("Pines", walk_through=OUT_OF_REACH)
     pk = 0
     for _ in range(170):
         x = random.uniform(-46, 46)
         z = random.uniform(-62, 38)
-        if -28 < x < 28 and -40 < z < 18:
-            continue
+        if -29 < x < 29 and -42 < z < 19:
+            continue  # inside the town walls
+        if -9 < x < 9 and z > -55:
+            continue  # inside or on top of the Deploy tunnel
         pine(f"Pine{pk}", "Pines", x, z, random.uniform(7, 14) / 10)
         pk += 1
     counts["pines"] = pk
@@ -591,7 +619,7 @@ def build_yards_and_pines() -> None:
 
 def build_ridge() -> None:
     """Radio mast (G5) with red beacons on a snowy knoll north-east of the gate, and the falling snow."""
-    group("Ridge")
+    group("Ridge", walk_through=OUT_OF_REACH)
     mx, mz = 21.0, -55.0
     deco("Knoll", "Ridge", (mx, 0.5, mz), (14, 3, 12), "town_snow", basis_rot(0.4))
     inst("RadioMast", "Ridge", (mx, 2.0, mz), "radio_mast", 0.4)

@@ -307,6 +307,17 @@ Godot 4 has no command-line bake, so this needs the editor on a GPU.
     barrier planks, zombies): import them dynamic or set GI to Disabled/Dynamic.
 5. Done when the lightmap size test (18 MiB budget) and the map tests pass.
 
+## A model in a map
+
+Anything a player can walk into needs a world collider (`Layers.WORLD`), or players pass through it.
+
+1. Halcyon Labs: a prop in `layout.json` gets its box collider; dressing a player can reach gets
+    `"block"` (same format as a prop box). Lantern Post: give the model a `collider(...)` in
+    `tools/levels/lantern_post_scene.py`, then run the script.
+2. A model players may pass on purpose (soft snow, out of reach, on the ceiling) gets
+    `metadata/walk_through = "<reason>"` on itself or a parent node.
+3. Done when `tests/content/test_level_collision.gd` passes; it lists every model with no collider.
+
 ## Before you open the PR
 
 - Run the `quality` commands from [AGENTS.md](../AGENTS.md): quality-gate unit

@@ -62,10 +62,11 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-83 | Halcyon Labs machine models (Med Dispenser, Reforger, power switch, exfil hatch) from Tripo, about 12 Tripo room props in the bare rooms, and small life (fan, drips, PA crackle) | - | F-80 step 2 | [ready](plans/halcyon-machines-fill.md) | L | Ready |
 | F-70 | Player and gear to the concept art: bearded survivor body, headgear, gloves, backpack and boots models in three tiers (field, plated, Oriel), plate carrier vests, eye implant and vest vial | - | - | [ready](plans/player-gear-concept.md) | L | Building |
 | F-71 | Four new loot slots: headgear, gloves, backpack, boots (item bases, affix pools, drops, sets, save, inventory and character screen) | - | F-70 step 2 | [ready](plans/four-gear-slots.md) | M | Ready |
-| F-83 | Wear loot gear mid-run: Tab Pack overlay shows your character and gear slots, E wears a picked-up vest, charm or implant (solo play-test 2026-11-19) | - | - | [ready](plans/wear-gear-mid-run.md) | M | Ready |
+| F-83 | Wear loot gear mid-run: Tab Pack overlay shows your character and gear slots, E wears a picked-up vest, charm or implant (solo play-test 2026-11-19) | - | - | [ready](plans/wear-gear-mid-run.md) | M | Building |
 | F-72 | The four starter guns to the concept art: worn black with tan and brass, Oriel marks, red dots, taped mags (rifle, Brenner, Kestrel, Talon) | - | - | [done](plans/guns-concept.md) | M | Done |
 | F-73 | Weapon stats panel: five bars (damage, fire rate, accuracy, range, control) computed from WeaponData, on wall-buys, the Vault and the inventory (look: [guns_concept.jpg](design/images/guns_concept.jpg)) | - | F-72 | needed | M | Todo |
 | F-75 | Baked texture maps for the four concept guns: high-detail bake (bevels, stipple, engraved marks, wear), 30,000-triangle gun budget, Forward+ lit previews, intake for handed-over .glb guns | - | F-72 step 2 (per gun: its F-72 step) | [ready](plans/baked-gun-textures.md) | L | Building (steps 1-2; 3-6 after the AR-17 look) |
+| F-83 | Real reload animations: left hand swaps magazines, charging handle on empty reloads, BR-12 loads shell by shell, sounds on each move (solo play-test 2026-11-19) | - | F-72 | [ready](plans/reload-animations.md) | M | Building |
 
 ## Next: v0.2 Progression and loot
 

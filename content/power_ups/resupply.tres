@@ -6,3 +6,5 @@
 script = ExtResource("1")
 id = &"resupply"
 display_name = "Resupply"
+color = Color(0.5529412, 1, 0.22745098, 1)
+size = 1.4

@@ -9,11 +9,11 @@ extends Node
 
 const SCENE: PackedScene = preload("res://systems/power_ups/power_up.tscn")
 
-@export var drop_chance: float = 0.025
-@export var max_per_round: int = 4
+@export var drop_chance: float = 0.01
+@export var max_per_round: int = 1
 @export var power_ups: Array[PowerUpData] = []
 @export var ammo_pack: PowerUpData
-@export var ammo_pack_chance: float = 0.1
+@export var ammo_pack_chance: float = 0.05
 
 var session: GameSession
 var dropped_this_round: int = 0

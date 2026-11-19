@@ -3,13 +3,15 @@
 ## re-bake (LightmapGI errors on missing baked nodes). Remaining meshes keep
 ## their baked light; new meshes stay unbaked until the re-bake.
 ##   godot --headless --path . -s res://tools/prune_lightmap_users.gd -- halcyon_labs
+## A scene path works too: -- res://levels/lantern_post/lantern_post.tscn
 extends SceneTree
 
 
 func _initialize() -> void:
 	var args: PackedStringArray = OS.get_cmdline_user_args()
 	var map_id: String = args[0] if not args.is_empty() else "halcyon_labs"
-	var level: Node = (load("res://levels/%s/map.tscn" % map_id) as PackedScene).instantiate()
+	var scene_path: String = map_id if map_id.ends_with(".tscn") else "res://levels/%s/map.tscn" % map_id
+	var level: Node = (load(scene_path) as PackedScene).instantiate()
 	var gi: LightmapGI = level.find_child("LightmapGI", false, false) as LightmapGI
 	var data: LightmapGIData = gi.light_data
 	var removed: int = prune(data, gi)

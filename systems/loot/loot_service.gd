@@ -46,10 +46,11 @@ func request_equip(uid: String) -> void:
 func _equip_from_pack(uid: String) -> void:
 	if session.is_over or not is_instance_valid(player) or player.is_downed or not player.is_alive():
 		return
-	var item: Dictionary = {}
-	for entry: Dictionary in pack.items:
-		if str(entry.get("uid", "")) == uid:
-			item = entry
+	var index: int = _pack_index(uid)
+	var item: Dictionary = pack.items[index] if index >= 0 else {}
+	if Inventory.is_gear(item):
+		_wear_from_pack(item, index)
+		return
 	if item.is_empty() or not Content.has(&"weapons", StringName(item.get("base", ""))):
 		return
 	for held: Weapon in player.weapons.weapons:
@@ -59,6 +60,29 @@ func _equip_from_pack(uid: String) -> void:
 	var weapon: Weapon = ItemLoadout.equip_weapon(player, ItemInstance.new(item), _run_weapons.get(uid))
 	_run_weapons[uid] = weapon.instance
 	player.loadout_sync.send_loadout()
+
+
+func _pack_index(uid: String) -> int:
+	var items: Array[Dictionary] = pack.items
+	for index: int in items.size():
+		if str(items[index].get("uid", "")) == uid:
+			return index
+	return -1
+
+
+## The worn piece in that slot takes the item's Pack slot; the profile saves the swap when the run banks.
+func _wear_from_pack(item: Dictionary, index: int) -> void:
+	if _banked or session.profile == null:
+		Log.warn(&"loot", &"gear_equip_refused", {"uid": item.get("uid"), "banked": _banked})
+		return
+	var slot: String = String(Inventory.slot_for(item))
+	var worn: Dictionary = session.profile.loadout.get(slot, {})
+	session.profile.loadout[slot] = item.duplicate(true)
+	ItemLoadout.apply_gear(player, session.profile.loadout)
+	pack.replace(index, worn)
+	player.gear_rig.apply(LookBuilder.from_equipped(session.profile.loadout))
+	player.loadout_sync.send_loadout()
+	Log.info(&"loot", &"gear_worn", {"uid": item.get("uid"), "slot": slot})
 
 
 func _on_enemy_killed(enemy: Node3D, _info: DamageInfo) -> void:
