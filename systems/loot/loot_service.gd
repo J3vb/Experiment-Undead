@@ -26,6 +26,8 @@ func _ready() -> void:
 	Events.enemy_killed.connect(_on_enemy_killed)
 	if multiplayer.is_server():
 		Log.info(&"loot", &"seed_selected", {"seed": session.rng.seed})
+		# Loads every loot base now, so the first drop mid-fight does not hitch (#181).
+		eligible_bases(1, &"common")
 
 
 func _physics_process(_delta: float) -> void:
