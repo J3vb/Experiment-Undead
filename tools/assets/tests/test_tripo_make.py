@@ -188,6 +188,9 @@ def test_intake_gets_length_or_height_and_the_folder():
     assert args[args.index("--folder") + 1] == "props"
     tall = {**table_row(), "source": "s.glb", "length": 0, "height": 2.5}
     assert "--length" not in tripo_make.intake_args(tall, "/files")
+    assert "--clips" not in args
+    keeper = tripo_make.intake_args({**table_row(), "source": "s.glb", "clips": "keeper"}, "/files")
+    assert keeper[keeper.index("--clips") + 1] == "keeper"
 
 
 def test_every_manifest_row_is_complete():

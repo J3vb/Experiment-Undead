@@ -322,7 +322,7 @@ def run(args: argparse.Namespace) -> dict:
     keep = [low]
     if args.kind == "character":
         low.data.materials[0].name = "Body" + BAKED
-        keep = tripo_rig.rig(low, armature, placed)
+        keep = tripo_rig.rig(low, armature, placed, args.clips)
     bpy.data.objects.remove(high)
     model = os.path.join(os.path.join(MODELS, args.folder) if args.folder else folder, f"{args.name}.glb")
     export(keep, model)
@@ -341,6 +341,7 @@ def parse(argv: list) -> argparse.Namespace:
     parser.add_argument("--size", type=int, default=0, help="map size; default 1024 props, 2048 characters")
     parser.add_argument("--samples", type=int, default=16)
     parser.add_argument("--out", default=OUT, help="folder for the baked maps (and the model without --folder)")
+    parser.add_argument("--clips", choices=("player", "keeper"), default="player", help="characters: clip set")
     parser.add_argument("--folder", default="", help="write the model to assets/models/<folder>/")
     return parser.parse_args(argv)
 

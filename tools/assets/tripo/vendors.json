@@ -1,6 +1,6 @@
 [
-  {"name": "npc_quartermaster", "folder": "characters", "kind": "character", "height": 1.66, "yaw": 0, "made": true, "source": "tripo/odile_brandt_source.glb"},
-  {"name": "npc_gunsmith", "folder": "characters", "kind": "character", "height": 1.8, "yaw": 0, "made": true, "source": "tripo/sources/teun_maes.glb"},
-  {"name": "npc_technician", "folder": "characters", "kind": "character", "height": 1.68, "yaw": 0, "made": true, "source": "tripo/sources/lien_corvelyn.glb"},
-  {"name": "npc_cordon_liaison", "folder": "characters", "kind": "character", "height": 1.73, "yaw": 0, "made": true, "source": "tripo/sources/raes.glb"}
+  {"name": "npc_quartermaster", "folder": "characters", "kind": "character", "height": 1.66, "yaw": 0, "clips": "keeper", "made": true, "source": "tripo/odile_brandt_source.glb"},
+  {"name": "npc_gunsmith", "folder": "characters", "kind": "character", "height": 1.8, "yaw": 0, "clips": "keeper", "made": true, "source": "tripo/sources/teun_maes.glb"},
+  {"name": "npc_technician", "folder": "characters", "kind": "character", "height": 1.68, "yaw": 0, "clips": "keeper", "made": true, "source": "tripo/sources/lien_corvelyn.glb"},
+  {"name": "npc_cordon_liaison", "folder": "characters", "kind": "character", "height": 1.73, "yaw": 0, "clips": "keeper", "made": true, "source": "tripo/sources/raes.glb"}
 ]

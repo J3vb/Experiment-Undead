@@ -1,4 +1,4 @@
-"""Puts a Tripo character mesh on our shared 22-bone skeleton with the existing player clips.
+"""Puts a Tripo character mesh on our shared 22-bone skeleton with the player clips or the stall keeper clips.
 
 When the source has a Mixamo-named skeleton (Tripo's Mixamo preset), its arms are swung to our A-pose with the
 forearms twisted and fingers curled like our player hand, its joint positions move our bones and its skin weights
@@ -226,8 +226,9 @@ def keep_source_weights(low, arm) -> bool:
     return all(merged)
 
 
-def rig(low, source_armature, placed: Matrix) -> list:
-    """Skeleton, skinned mesh, Eyes and clips; returns the objects to export."""
+def rig(low, source_armature, placed: Matrix, clips: str = "player") -> list:
+    """Skeleton, skinned mesh, Eyes and clips ("player" or "keeper"); returns the objects to export."""
+    import npc_clips
     import player_clips
 
     joints = source_joints(source_armature, placed)
@@ -242,5 +243,5 @@ def rig(low, source_armature, placed: Matrix) -> list:
         character_rig.bind(low, arm, blend=0.08)
     low.parent = arm
     eyes = eyes_marker(arm, low)
-    player_clips.build_clips(arm)
+    {"player": player_clips, "keeper": npc_clips}[clips].build_clips(arm)
     return [arm, low, eyes]
