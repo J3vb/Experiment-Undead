@@ -8,6 +8,17 @@ static func duration(weapon: Weapon) -> float:
 	return maxf(weapon.data.per_round_time * weapon._stat(&"reload_time"), 0.01)
 
 
+## The cycle now loading: from empty the first round also racks the action (empty_reload_time).
+static func cycle_length(weapon: Weapon) -> float:
+	var time: float = weapon.data.empty_reload_time if weapon._empty_reload else weapon.data.per_round_time
+	return maxf(time * weapon._stat(&"reload_time"), 0.01)
+
+
+## 0 to 1 through the round now loading, for the viewmodel.
+static func cycle_t(weapon: Weapon) -> float:
+	return 1.0 - weapon._reload_timer / cycle_length(weapon)
+
+
 static func can_fire(weapon: Weapon) -> bool:
 	return weapon.data.reload_per_round and weapon.state == Weapon.State.RELOADING and weapon.instance.ammo_in_mag > 0
 

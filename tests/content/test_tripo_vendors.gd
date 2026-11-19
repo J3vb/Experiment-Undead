@@ -1,7 +1,8 @@
 ## The four Lantern Post stall keepers made in Tripo (tools/assets/tripo/vendors.json): each imports as a moving
-## (not lightmapped) skinned body on our 22 bones, keeps its baked maps and carries looping clips.
+## (not lightmapped) skinned body on our 22 bones, keeps its baked maps and carries the keeper clips.
 extends GutTest
 
+const GEAR_IMPORTER: GDScript = preload("res://tools/assets/gear_import.gd")
 const FOLDER: String = "res://assets/models/characters/%s.glb"
 const KEEPERS: Array[String] = ["npc_quartermaster", "npc_gunsmith", "npc_technician", "npc_cordon_liaison"]
 
@@ -37,10 +38,19 @@ func test_keepers_are_skinned_on_our_skeleton_with_baked_maps() -> void:
 		assert_not_null(material.normal_texture, id + " normal map")
 
 
-func test_keepers_idle_loops() -> void:
+func test_keepers_carry_the_five_keeper_clips() -> void:
+	var one_shots: Array[StringName] = [&"greet"]
+	var expected: Array[StringName] = GEAR_IMPORTER.KEEPER_LOOPS + one_shots
+	expected.sort()
 	for id: String in KEEPERS:
 		var players: Array[Node] = _scene(id).find_children("*", "AnimationPlayer", true, false)
 		assert_eq(players.size(), 1, id + " has clips")
 		var anim: AnimationPlayer = players[0] as AnimationPlayer
-		assert_true(anim.has_animation(&"idle"), id + " has idle")
-		assert_eq(anim.get_animation(&"idle").loop_mode, Animation.LOOP_LINEAR, id + " idle loops")
+		var found: Array[StringName] = []
+		for clip: StringName in anim.get_animation_list():
+			found.append(clip)
+		found.sort()
+		assert_eq(found, expected, id + " has exactly the keeper clips")
+		for clip: StringName in found:
+			var looped: bool = anim.get_animation(clip).loop_mode == Animation.LOOP_LINEAR
+			assert_eq(looped, clip not in one_shots, id + " " + String(clip) + " loop mode")

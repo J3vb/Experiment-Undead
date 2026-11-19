@@ -98,11 +98,13 @@ func start_reload() -> bool:
 	_burst_left = 0
 	_empty_reload = instance.ammo_in_mag == 0
 	_reload_duration = (data.empty_reload_time if _empty_reload else data.reload_time) * _stat(&"reload_time")
+	_reload_timer = _reload_duration
 	if data.reload_per_round:
 		_reload_duration = RoundReload.duration(self)
-	_reload_timer = _reload_duration
-	pose.play_mech(data.reload_sound)
-	reload_started.emit(_reload_duration)
+		_reload_timer = RoundReload.cycle_length(self)
+	if pose.motion == null:
+		pose.play_mech(data.reload_sound)
+	reload_started.emit(_reload_timer)
 	return true
 
 

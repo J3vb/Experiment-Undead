@@ -15,6 +15,7 @@ import bpy
 import character_checks
 import character_rig
 import check_models
+import npc_clips
 import pytest
 import tripo_rig
 
@@ -57,6 +58,7 @@ def test_manifest_lists_the_four_keepers_as_made():
     for row in ROWS:
         assert row["made"] and row["kind"] == "character" and row["folder"] == "characters"
         assert row["name"] in character_checks.JOINTS
+        assert row["clips"] == "keeper"
 
 
 @pytest.mark.parametrize("row", ROWS, ids=[row["name"] for row in ROWS])
@@ -76,4 +78,4 @@ def test_committed_keeper_passes_the_character_rules_at_its_height(row):
     assert high.z - low.z == pytest.approx(row["height"], abs=0.01)
     eyes = next(obj for obj in objects if obj.name == "Eyes").matrix_world.translation.z
     assert 0.06 <= high.z - eyes <= 0.2, "eyes sit just under the top of the head (hair or hat on top)"
-    assert {"idle", "walk_fwd"} <= {action.name for action in bpy.data.actions}
+    assert sorted(action.name for action in bpy.data.actions) == sorted(npc_clips.CLIPS)

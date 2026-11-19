@@ -1,6 +1,6 @@
 ## Renders first-person reload key frames for a look check: screenshots/reload/<gun>_<kind>_<t>.png.
 ##   xvfb-run -s "-screen 0 1280x720x24" godot --path . --rendering-driver opengl3 res://tools/reload_frames.tscn
-##   -- --guns=rifle_ar,kestrel_smg --old (old = the dip from before F-83)
+##   -- --guns=rifle_ar,kestrel_smg --old (old = the dip from before F-85)
 extends Node
 
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
@@ -48,6 +48,8 @@ func _render(guns: PackedStringArray, old: bool) -> void:
 				weapon._empty_reload = empty
 				weapon._reload_duration = 1.0
 				weapon._reload_timer = 1.0 - t
+				if weapon.data.reload_per_round:
+					weapon._reload_timer = RoundReload.cycle_length(weapon) * (1.0 - t)
 				weapon.pose.update(1.0)
 				weapon.reset_physics_interpolation()
 				player.weapons.arm_view.update_pose()
