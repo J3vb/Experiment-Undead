@@ -635,6 +635,7 @@ def header() -> str:
         '[ext_resource type="Script" path="res://systems/level/level.gd" id="level"]',
         '[ext_resource type="Script" path="res://systems/level/block.gd" id="block"]',
         '[ext_resource type="Environment" path="res://levels/looks/lantern_post_night.tres" id="look"]',
+        '[ext_resource type="Script" path="res://systems/effects/environment_quality.gd" id="env_quality"]',
     ]
     ext += [f'[ext_resource type="PackedScene" path="res://assets/models/town/{sc}.glb" id="{sc}"]' for sc in SCENES]
     ext += [
@@ -671,7 +672,7 @@ def header() -> str:
         + '\n[node name="LanternPost" type="Node3D" node_paths=PackedStringArray("player_spawn")]\n'
         'script = ExtResource("level")\nplayer_spawn = NodePath("PlayerSpawn")\n\n'
         '[node name="WorldEnvironment" type="WorldEnvironment" parent="."]\n'
-        'environment = ExtResource("look")\n\n'
+        'script = ExtResource("env_quality")\nenvironment = ExtResource("look")\n\n'
     )
 
 

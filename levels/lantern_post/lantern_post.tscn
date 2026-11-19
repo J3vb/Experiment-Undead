@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://systems/level/level.gd" id="level"]
 [ext_resource type="Script" path="res://systems/level/block.gd" id="block"]
 [ext_resource type="Environment" path="res://levels/looks/lantern_post_night.tres" id="look"]
+[ext_resource type="Script" path="res://systems/effects/environment_quality.gd" id="env_quality"]
 [ext_resource type="PackedScene" path="res://assets/models/town/street_lamp.glb" id="street_lamp"]
 [ext_resource type="PackedScene" path="res://assets/models/town/wall_lantern.glb" id="wall_lantern"]
 [ext_resource type="PackedScene" path="res://assets/models/town/signpost.glb" id="signpost"]
@@ -172,6 +173,7 @@ script = ExtResource("level")
 player_spawn = NodePath("PlayerSpawn")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+script = ExtResource("env_quality")
 environment = ExtResource("look")
 
 [node name="Ground" type="Node3D" parent="."]
