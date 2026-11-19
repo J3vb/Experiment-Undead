@@ -1,10 +1,10 @@
 # Plan: Props and vendors made in Tripo
 
-Status: Review
+Status: Building
 Roadmap: F-80 (changes how F-76 vendors and F-77 props are made)
 Phase: P5 (art)
 Size: L
-Approved by:
+Approved by: the person ("Everything to Tripo" 2026-11-18; "Stalls now" and paid Tripo plan confirmed 2026-11-19)
 Lore link: no new content. The vendors and props are the ones already in docs/design/lore.md (the stall keepers) and docs/plans/prop-library.md; only how they are made changes.
 
 ## Goal
@@ -196,5 +196,4 @@ keep today's gate" (decision card, 2026-11-19).
 
 ## Open decisions
 
-- The person confirms the Tripo API licence covers commercial use, adds
-  `TRIPO_API_KEY` and allows `api.tripo3d.ai` in the cloud environment.
+None. The person confirmed the paid Tripo plan (commercial use) on 2026-11-19; the API key and `api.tripo3d.ai` are set up.
