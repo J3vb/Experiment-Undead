@@ -268,3 +268,10 @@ def test_forearm_twist_turns_the_thumb_like_our_player_rest_hand():
     want = (up - direction * up.dot(direction)).normalized() * 0.86 + Vector((0.0, -0.51, 0.0))
     assert (thumb - direction * thumb.dot(direction)).normalized().dot(want.normalized()) > 0.99
     bpy.ops.object.mode_set(mode="OBJECT")
+
+
+def test_large_kind_fits_the_building_budget():
+    tris, size, height = tripo_intake.KINDS["large"]
+    assert tris <= check_models.BUDGETS["town_large"][0]
+    assert tris <= check_models.BUDGETS["props_large"][0]
+    assert (size, height) == (2048, None)

@@ -19,7 +19,7 @@ boards. Pillar: the look matches the concept art.
 
 In:
 
-- ADR 0016: models made in Tripo are allowed in `assets/` (an exception to
+- ADR 0017: models made in Tripo are allowed in `assets/` (an exception to
   AGENTS rule 8 "built in code up to v0.1" and to ADR 0008 for these two
   features). Source of truth = the manifest row (prompt, image, Tripo task
   id, intake settings) plus the source `.glb` in the project files, not a
@@ -54,7 +54,7 @@ Not in (non-goals, and where each one goes instead):
 ### Ready to build
 - Foundations touched: none (asset tools and asset files only).
 - Decision records that apply: ADR 0008 (asset stages) and AGENTS rule 8:
-  ADR 0016 in step 1 records the exception before any Tripo model lands.
+  ADR 0017 in step 1 records the exception before any Tripo model lands.
   ADR 0015 (baked maps) covers the map set.
 - Co-op: n.a. (models only; vendors stay local-only per F-76).
 - Data: budgets from check_models.py / character_checks.py (props 2,000 /
@@ -68,7 +68,9 @@ Not in (non-goals, and where each one goes instead):
 - Logging: n.a. (offline tool prints a summary).
 - Performance: same budgets as code-built; each Tripo prop adds 3 textures
   (about 3 MB video memory at 1024), watched in each map's perf capture.
-- Out of scope: placing props in maps (each map's own F-row).
+- Out of scope: placing props in maps (each map's own F-row), except the
+  three Lantern Post stalls (step 2), which the person asked for on
+  2026-11-19.
 ```
 
 ## Design references
@@ -83,7 +85,7 @@ Not in (non-goals, and where each one goes instead):
 
 | Folder or file | New / changed | What changes |
 |---|---|---|
-| docs/adr/0016-tripo-models.md | new | Tripo exception, source of truth, licence |
+| docs/adr/0017-tripo-models.md | new | Tripo exception, source of truth, licence |
 | tools/assets/tripo_make.py | new | API client + manifest runner |
 | tools/assets/tripo/*.json | new | One manifest per family |
 | tools/assets/tripo_intake.py | changed | `--length`, `--folder` |
@@ -91,6 +93,9 @@ Not in (non-goals, and where each one goes instead):
 | docs/design/tripo-prompts.md | new | Image prompts per asset |
 | docs/plans/lantern-post-vendors.md, prop-library.md | changed | Build from manifests |
 | docs/CREDITS.md | changed | One Tripo line |
+| tools/levels/lantern_post_scene.py, levels/lantern_post/lantern_post.tscn | changed | Three stalls use the Tripo models |
+| assets/models/town_large/stall_*.glb | new | Tripo stalls (intake output) |
+| tests/content/test_tripo_stalls.gd | new | Stall model checks |
 
 Autoloads, managers or base classes added: none.
 
@@ -120,9 +125,27 @@ shared slots. Each map's perf capture decides on atlases or LODs if needed.
 
 ## Steps
 
-### Step 1: ADR, API tool and prompts
+### Step 1: ADR and the Lantern Post stalls
 
-- Build: ADR 0016, CREDITS line, `tripo_make.py` (image to model, rig for
+The person made four town buildings in Tripo Studio and picked "Stalls now,
+keep today's gate" (decision card, 2026-11-19).
+
+- Build: ADR 0017, CREDITS line, intake kind `large` (12,000 tris, 2048
+  maps, `town_large` budget). `stall_technician`, `stall_gunsmith` and
+  `stall_trader` replace `stall_frame` plus its dressing at those three
+  stalls in `tools/levels/lantern_post_scene.py` (back lined up with the old
+  frame, our own sign board and name labels on the front, one box collider,
+  light moved to the front). MISSIONS keeps the frame. The Tripo Deploy gate
+  is not used. `trader_goods`, `gun_wall`, `workbench` and `tech_desk` stay in
+  the prop library but leave the town.
+- Tests: `tests/content/test_tripo_stalls.gd` (one lightmapped mesh on the
+  origin, frame width, baked maps), scene generator test, catalogue rows,
+  Assets CI checks and validator.
+- Done when: CI green; before and after shots in the PR.
+
+### Step 2: API tool and prompts
+
+- Build: `tripo_make.py` (image to model, rig for
   characters, wait, download, intake), intake `--length` / `--folder`,
   `docs/design/tripo-prompts.md`, the vendor and family 2 manifests.
 - Tests: `test_tripo_make.py` with a faked HTTP session: request body for a
@@ -132,7 +155,7 @@ shared slots. Each map's perf capture decides on atlases or LODs if needed.
 - Done when: CI green; with the key and `api.tripo3d.ai` allowed, one test
   prop goes end to end in the cloud.
 
-### Step 2: Vendors (changes F-76 steps 1-2)
+### Step 3: Vendors (changes F-76 steps 1-2)
 
 - Build: Odile (F-78 output) becomes `npc_quartermaster.glb`; Teun Maes,
   Dr. Lien Corvelyn and Lieutenant Raes from their prompts, image approved
@@ -141,7 +164,7 @@ shared slots. Each map's perf capture decides on atlases or LODs if needed.
 - Tests: character checks on the four files (22 bones, budget, Eyes).
 - Done when: line-up approved by the person.
 
-### Step 3: Prop families (changes F-77 steps 2-9)
+### Step 4: Prop families (changes F-77 steps 2-9)
 
 - Build: per F-77 step, the family manifest instead of
   `library_<family>.py`; image sheet first (one image per model, the person
@@ -152,7 +175,7 @@ shared slots. Each map's perf capture decides on atlases or LODs if needed.
 
 ## Acceptance
 
-- [ ] ADR 0016 and the CREDITS line merged before the first Tripo model.
+- [ ] ADR 0017 and the CREDITS line merged with the first Tripo model (stalls).
 - [ ] `tripo_make.py` makes a model end to end from a manifest row.
 - [ ] Four vendors from Tripo pass character checks and play our clips.
 - [ ] Every F-77 family is built from a manifest, boards approved.

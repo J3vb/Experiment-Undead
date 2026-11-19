@@ -167,4 +167,7 @@ embedded colours (`vertex_shading_import.gd`).
 | `lodge_lantern_post` | town_large | 14.2 x 9.5 x 11.3 | Town | Lantern Post | Logs, Planks, RoofSnow, Snow, DarkWood, WindowGlow |
 | `radio_mast` | town_large | 3.3 x 3.2 x 29.9 | Town | Lantern Post | Concrete, Snow, Iron, Beacon |
 | `shed_lean_to` | town_large | 4.2 x 3.4 x 3.1 | Town | Lantern Post | Planks, DarkWood, RoofSnow, Snow, Logs |
+| `stall_gunsmith` | town_large | 4.2 x 3.2 x 4.0 | Town | Lantern Post | Baked (Tripo) |
+| `stall_technician` | town_large | 4.2 x 4.1 x 3.3 | Town | Lantern Post | Baked (Tripo) |
+| `stall_trader` | town_large | 4.2 x 2.6 x 3.2 | Town | Lantern Post | Baked (Tripo) |
 | `watchtower` | town_large | 4.7 x 4.8 x 12.7 | Town | Lantern Post | DarkWood, Planks, Snow, RoofSnow, Iron, WindowGlow |
