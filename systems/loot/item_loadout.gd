@@ -4,11 +4,7 @@ extends RefCounted
 
 
 static func apply(player: Player, loadout: Dictionary) -> void:
-	var gear: Array[Dictionary] = []
-	for slot: String in ["vest", "charm", "implant"]:
-		var equipped: Variant = loadout.get(slot)
-		if equipped is Dictionary:
-			gear.append(equipped)
+	var gear: Array[Dictionary] = worn_gear(loadout)
 	player.loadout_sync.gear = gear
 	player.equip_gear(gear)
 	var sidearm: Variant = loadout.get("sidearm")
@@ -23,6 +19,35 @@ static func apply(player: Player, loadout: Dictionary) -> void:
 	var starter: int = _pistol_slot(player)
 	var replacing: Weapon = player.weapons.weapons[starter] if starter >= 0 else null
 	equip_weapon(player, ItemInstance.new(sidearm), null, replacing)
+
+
+## Mid-run swap: new gear stats without a heal, then held item guns pick up the new numbers.
+static func apply_gear(player: Player, loadout: Dictionary) -> void:
+	var gear: Array[Dictionary] = worn_gear(loadout)
+	player.loadout_sync.gear = gear
+	player.equip_gear(gear, false)
+	refit_item_guns(player)
+
+
+static func worn_gear(loadout: Dictionary) -> Array[Dictionary]:
+	var gear: Array[Dictionary] = []
+	for slot: StringName in CharacterProfile.GEAR_SLOTS:
+		var equipped: Variant = loadout.get(String(slot))
+		if equipped is Dictionary and not equipped.is_empty():
+			gear.append(equipped)
+	return gear
+
+
+## Rebuilds each held item gun's numbers in place: same gun in hand, ammo kept (capped), no new pickup.
+static func refit_item_guns(player: Player) -> void:
+	for weapon: Weapon in player.weapons.weapons:
+		if weapon.item == null:
+			continue
+		var base: WeaponData = Content.weapon(StringName(weapon.item.data.get("base", "")))
+		weapon.instance.data = weapon.item.weapon_data(base, player.stats)
+		weapon.instance.ammo_in_mag = mini(weapon.instance.ammo_in_mag, weapon.instance.data.magazine_size)
+		weapon.instance.ammo_reserve = mini(weapon.instance.ammo_reserve, weapon.instance.data.max_reserve)
+		weapon.ammo_changed.emit(weapon.instance.ammo_in_mag, weapon.instance.ammo_reserve)
 
 
 ## Gives an item gun (or swaps it in for replacing), carries its run ammo and records it as an item gun.

@@ -157,3 +157,28 @@ func test_host_loadout_applies_once_on_its_own_player() -> void:
 	host.loadout_sync.send_loadout()
 	assert_eq(host.health.max_health, 140.0, "the host's gear is not stacked twice")
 	assert_eq(host.health.current, 140.0)
+
+
+func test_later_loadouts_only_cap_health_so_a_vest_swap_never_heals() -> void:
+	client.loadout_sync.gear = [_vest()]
+	client.loadout_sync.send_loadout()
+	await wait_until(func() -> bool: return server.health.current == 140.0, 3.0, "first loadout heals to full")
+	client.loadout_sync.gear = []
+	client.loadout_sync.send_loadout()
+	await wait_until(func() -> bool: return server.health.max_health == 100.0, 3.0, "vest off")
+	client.loadout_sync.gear = [_vest()]
+	client.loadout_sync.send_loadout()
+	await wait_until(func() -> bool: return server.health.max_health == 140.0, 3.0, "vest back on")
+	assert_eq(server.health.current, 100.0, "the swap back did not heal")
+
+
+func test_two_pieces_for_one_slot_or_a_gun_as_gear_are_rejected() -> void:
+	var before: int = Log.event_counts.get("net.loadout_rejected", 0)
+	var second: Dictionary = _vest()
+	second["uid"] = "second_vest"
+	client.loadout_sync.submit_loadout.rpc_id(1, [_vest(), second], [])
+	client.loadout_sync.submit_loadout.rpc_id(1, [_gun()], [])
+	await wait_until(
+		func() -> bool: return Log.event_counts.get("net.loadout_rejected", 0) == before + 2, 3.0, "both rejected"
+	)
+	assert_eq(server.health.max_health, 100.0)

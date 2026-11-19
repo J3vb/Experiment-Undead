@@ -1,13 +1,13 @@
 ## The owner's equipped gear and item guns, sent to the server on spawn and every Pack equip.
 ## The server checks the loadout and rebuilds the player's gear stats and item guns from it.
+## Only the first loadout of a Player heals up to the new max health; later ones (mid-run swaps) only cap it.
 class_name LoadoutSync
 extends Node
-
-const GEAR_SLOTS: int = 3
 
 ## The owner's equipped gear dicts; sent to the server with its item guns.
 var gear: Array[Dictionary] = []
 var _player: Player
+var _applied: bool = false
 
 
 func _init() -> void:
@@ -50,7 +50,7 @@ func submit_loadout(new_gear: Array, guns: Array) -> void:
 
 
 func _loadout_problem(new_gear: Array, guns: Array) -> String:
-	if new_gear.size() > GEAR_SLOTS:
+	if new_gear.size() > CharacterProfile.GEAR_SLOTS.size():
 		return "too_much_gear"
 	if guns.size() > _player.weapons.max_slots:
 		return "too_many_guns"
@@ -60,13 +60,27 @@ func _loadout_problem(new_gear: Array, guns: Array) -> String:
 	for gun: Dictionary in guns:
 		if not Content.has(&"weapons", StringName(str(gun.get("base", "")))):
 			return "unknown_gun"
+	return _gear_problem(new_gear)
+
+
+## Each worn piece must be gear, one per slot.
+func _gear_problem(new_gear: Array) -> String:
+	var slots: Array[StringName] = []
+	for piece: Dictionary in new_gear:
+		var slot: StringName = Inventory.slot_for(piece)
+		if not slot in CharacterProfile.GEAR_SLOTS:
+			return "not_gear"
+		if slot in slots:
+			return "slot_twice"
+		slots.append(slot)
 	return ""
 
 
 ## Server: rebuilds the player's gear stats and item guns from scratch.
 func _apply_loadout(new_gear: Array[Dictionary], guns: Array[Dictionary]) -> void:
 	gear = new_gear
-	_player.equip_gear(new_gear)
+	_player.equip_gear(new_gear, not _applied)
+	_applied = true
 	_player.item_guns.clear()
 	for gun: Dictionary in guns:
 		_player.item_guns[str(gun.get("uid", ""))] = ItemInstance.new(gun)

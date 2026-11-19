@@ -25,6 +25,18 @@ func add(item: Dictionary) -> bool:
 	return true
 
 
+## Swaps the item at index for another; an empty item just removes it.
+func replace(index: int, item: Dictionary) -> bool:
+	if index < 0 or index >= _items.size():
+		return false
+	if item.is_empty():
+		_items.remove_at(index)
+	else:
+		_items[index] = item.duplicate(true)
+	changed.emit()
+	return true
+
+
 func remove(index: int) -> Dictionary:
 	if index < 0 or index >= _items.size():
 		return {}

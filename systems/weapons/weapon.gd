@@ -4,6 +4,8 @@ extends Node3D
 
 signal ammo_changed(in_mag: int, reserve: int)
 signal fired
+## The trigger was pulled on an empty magazine; once per press, not every tick.
+signal dry_fired
 signal reload_started(duration: float)
 signal hit_landed(is_kill: bool, info: DamageInfo, zone: HitZone)
 signal traced(point: Vector3, normal: Vector3, kind: Impact.Kind)
@@ -167,17 +169,25 @@ func _handle_trigger() -> void:
 				wants = _burst_left > 0
 		if not wants or not can_fire():
 			break
+		var fresh_press: bool = _buffered > 0.0
 		_buffered = 0.0
 		if instance.ammo_in_mag <= 0:
-			_burst_left = 0
-			pose.play_mech(data.dry_fire_sound)
-			start_reload()
+			_dry_fire(fresh_press)
 			break
 		fire()
 		_burst_left = maxi(_burst_left - 1, 0)
 		var extra: float = 0.12 if data.fire_mode == WeaponData.FireMode.BURST and _burst_left == 0 else 0.0
 		_shot_timer += _spin_up.scale_interval(data.get_fire_interval(), _shot_timer) * _stat(&"fire_interval") + extra
 	_shot_timer = maxf(_shot_timer, 0.0)
+
+
+## Holding the trigger on an empty gun clicks once, then stays quiet until the next press.
+func _dry_fire(fresh_press: bool) -> void:
+	_burst_left = 0
+	if fresh_press:
+		pose.play_mech(data.dry_fire_sound)
+		dry_fired.emit()
+	start_reload()
 
 
 ## Fires one shot (all pellets) right now. Public for tests and AI.

@@ -87,10 +87,10 @@ func test_empty_reload_holds_slide_open_and_returns_the_magazine() -> void:
 		var magazine_rest: Vector3 = magazine.position
 		gun.instance.ammo_in_mag = 0
 		assert_true(gun.start_reload())
-		gun.tick(gun.data.empty_reload_time * 0.5)
+		gun.tick(gun.data.empty_reload_time * 0.32)
 		gun._process(0.001)
 		assert_almost_eq(receiver.to_local(slide.global_position).z - slide_rest.z, 0.035, 0.001)
-		assert_lt(magazine.position.y, magazine_rest.y - 0.15, String(id) + " magazine drops out")
+		assert_lt(magazine.position.y, magazine_rest.y - 0.1, String(id) + " magazine is out of the grip, in the hand")
 		gun.tick(gun.data.empty_reload_time)
 		gun._process(0.001)
 		assert_false(gun.is_reloading())

@@ -893,6 +893,7 @@ baked = false
 
 [node name="TruckWreckage" type="Node3D" parent="."]
 script = ExtResource("wreckage")
+metadata/walk_through = "outside the dock wall, players cannot reach it"
 
 [node name="WreckWest" type="MeshInstance3D" parent="TruckWreckage"]
 transform = Transform3D(0.94, 0, 0.34, 0, 1, 0, -0.34, 0, 0.94, 31.9, 0.45, 61.2)

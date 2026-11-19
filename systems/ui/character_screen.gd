@@ -145,7 +145,7 @@ func visible_stash_indices() -> Array[int]:
 			continue
 		var base: StringName = StringName(item.get("base", ""))
 		var weapon: bool = Content.has(&"weapons", base)
-		var gear: bool = Inventory.slot_for(item) in [&"vest", &"charm", &"implant"]
+		var gear: bool = Inventory.is_gear(item)
 		if (%Category.selected == 1 and not weapon) or (%Category.selected == 2 and not gear):
 			continue
 		if %Rarity.selected > 0 and item.get("rar", "common") != ItemRoller.RARITIES[%Rarity.selected - 1]:

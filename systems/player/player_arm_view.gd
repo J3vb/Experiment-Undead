@@ -8,6 +8,7 @@ const COMMON: RarityLook = preload("res://content/looks/rarity/common.tres")
 const PLACEHOLDERS: Array[String] = ["HandRight", "HandLeft", "SleeveRight", "SleeveLeft"]
 
 static var _warned_no_grip: Dictionary[StringName, bool] = {}
+static var _warned_reach: Dictionary[StringName, bool] = {}
 
 var skeleton: Skeleton3D
 var mesh: MeshInstance3D
@@ -102,7 +103,30 @@ func update_pose() -> void:
 	if not visible or not is_visible_in_tree():
 		return
 	var pump_delta: Vector3 = weapon.to_local(_support.global_position) - _support_rest if _support else Vector3.ZERO
-	_solver.pose(profile, weapon.transform, pump_delta, weapon._sprint_progress)
+	pump_delta += weapon.pose.reload_hand(profile.left.wrist + pump_delta)
+	_solver.pose(profile, weapon.transform, pump_delta, weapon._sprint_progress, weapon.pose.reload_relax())
+	if weapon.pose.motion and weapon.is_reloading() and not _warned_reach.has(weapon.data.id):
+		_check_reach()
+
+
+## How far the left forearm stretches past its length; zero when the hand target is reachable.
+func left_reach_gap() -> float:
+	var hand: int = skeleton.find_bone("hand_L")
+	var forearm: int = skeleton.get_bone_parent(hand)
+	var length: float = skeleton.get_bone_rest(hand).origin.length()
+	var span: float = skeleton.get_bone_global_pose(forearm).origin.distance_to(
+		skeleton.get_bone_global_pose(hand).origin
+	)
+	return absf(span - length)
+
+
+func _check_reach() -> void:
+	var gap: float = left_reach_gap()
+	if gap > 0.02:
+		_warned_reach[weapon.data.id] = true
+		Log.warn(
+			&"player", &"reload_motion_unreachable", {"weapon": String(weapon.data.id), "gap": snappedf(gap, 0.001)}
+		)
 
 
 func _attach_cuffs() -> void:

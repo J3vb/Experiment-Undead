@@ -32,6 +32,10 @@ mesh = SubResource("Ring")
 [node name="Pillar" type="MeshInstance3D" parent="."]
 mesh = SubResource("Pillar")
 
+[node name="Glow" type="OmniLight3D" parent="."]
+position = Vector3(0, 0.3, 0)
+omni_range = 2.5
+
 [node name="Lifetime" type="Timer" parent="."]
 process_callback = 0
 one_shot = true
