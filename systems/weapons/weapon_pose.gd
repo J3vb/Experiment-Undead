@@ -1,6 +1,14 @@
-## Viewmodel pose and visuals for a Weapon: hip/ADS/sprint/reload pose, kick, bolt, magazine and muzzle flash.
+## Viewmodel pose and visuals for a Weapon: hip/ADS/sprint/reload pose, kick, moving parts, flash, reload sounds.
 class_name WeaponPose
 extends Node
+
+const CUES: Dictionary[StringName, AudioStream] = {
+	&"mag_out": preload("res://assets/audio/reload_mag_out.wav"),
+	&"mag_in": preload("res://assets/audio/reload_mag_in.wav"),
+	&"bolt": preload("res://assets/audio/reload_bolt.wav"),
+	&"shell_in": preload("res://assets/audio/reload_shell_in.wav"),
+	&"pump": preload("res://assets/audio/reload_pump.wav"),
+}
 
 var weapon: Weapon
 ## Reload key poses, or null for guns that keep the dip (no Magazine, or no LoadShell on a round-by-round gun).
@@ -18,6 +26,8 @@ var _mag_to_parent: Basis = Basis.IDENTITY
 var _shell: bool = false
 var _hand_target: Vector3 = Vector3.ZERO
 var _hand_weight: float = 0.0
+var _cue_t: float = 0.0
+var _cue_empty: bool = false
 
 
 static func attach_to(owner_weapon: Weapon) -> WeaponPose:
@@ -93,7 +103,9 @@ func _update_pose(delta: float) -> void:
 	var rot: Vector3 = Vector3(_kick * 2.0, 0.0, 0.0) + Vector3(-0.25, 0.7, 0.35) * sprint
 	var reloading: bool = weapon.state == Weapon.State.RELOADING
 	if reloading and motion:
-		motion.sample(weapon._empty_reload, RoundReload.cycle_t(weapon) if _shell else _reload_t())
+		var t: float = RoundReload.cycle_t(weapon) if _shell else _reload_t()
+		motion.sample(weapon._empty_reload, t)
+		_play_cue(t)
 		pos += Vector3(-0.04, 0.075, -0.03) * motion.roll
 		rot += Vector3(0.3, 0.25, -0.45) * motion.roll
 	elif reloading:
@@ -105,9 +117,22 @@ func _update_pose(delta: float) -> void:
 		_hand_weight = lerpf(_hand_weight, motion.hand_weight if reloading else 0.0, clampf(delta * 20.0, 0.0, 1.0))
 		if reloading:
 			_hand_target = motion.hand_target
+	if not reloading:
+		_cue_t = 0.0
 	weapon.position = weapon.position.lerp(pos, smooth)
 	weapon.rotation = weapon.rotation.lerp(rot, smooth)
 	_pose_moving_parts()
+
+
+## Plays each sound moment once as the reload passes it; a new shell cycle starts again from zero.
+func _play_cue(t: float) -> void:
+	if t < _cue_t or weapon._empty_reload != _cue_empty:
+		_cue_t = 0.0
+	var cue: StringName = motion.cue_between(weapon._empty_reload, _cue_t, t)
+	if not cue.is_empty():
+		play_mech(CUES[cue])
+	_cue_t = t
+	_cue_empty = weapon._empty_reload
 
 
 ## Support-hand offset from its grip, weapon-local, blended by the reload motion (zero when not reloading).
