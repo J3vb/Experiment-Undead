@@ -34,6 +34,8 @@ const LOOP_CLIPS: Array[StringName] = [
 	&"downed_idle",
 	&"downed_crawl",
 ]
+## Stall keeper clips that cycle. Names match LOOPS in npc_clips.py; `greet` plays once.
+const KEEPER_LOOPS: Array[StringName] = [&"counter_idle", &"bench_work", &"desk_work", &"board_idle"]
 
 
 func _post_import(scene: Node) -> Object:
@@ -63,7 +65,7 @@ func _post_import(scene: Node) -> Object:
 
 static func _loop_clips(player: AnimationPlayer) -> void:
 	for clip: StringName in player.get_animation_list():
-		if clip in LOOP_CLIPS:
+		if clip in LOOP_CLIPS or clip in KEEPER_LOOPS:
 			player.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
 
 

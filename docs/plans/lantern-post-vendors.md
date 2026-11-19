@@ -231,8 +231,9 @@ Replaced by F-80 step 3 (see step 1).
   the screens), `board_idle` (arms crossed, turning to the board now and then),
   all 60-120 frame loops, and the one-shot `greet`. Every NPC `.glb` carries all
   five. Re-export the four NPCs.
-- Files: tools/assets/npc_clips.py, tools/assets/town_npcs/build.py,
-  tools/assets/character_checks.py, the four `.glb` files.
+- Files: tools/assets/npc_clips.py, tools/assets/tripo_rig.py (clip set per manifest row:
+  `"clips": "keeper"` in `tools/assets/tripo/vendors.json`, since F-80 replaced `town_npcs/`),
+  tools/assets/tests/test_npc_clips.py, the four `.glb` files.
 - Tests: character checks: the five clips exist, loops end where they start,
   `greet` ends in the `counter_idle` start pose (blend-safe).
 - Done when: a short GIF per clip posted, Assets CI green.
