@@ -149,7 +149,7 @@
 		{"id": "labs_vine_tank3", "room": "labs", "at": [49, 0, 14], "model": "vine_pillar", "turn": 120},
 		{"id": "labs_vine_hang_west", "room": "labs", "at": [40.5, 2.25, 21], "model": "vine_ceiling", "turn": 80},
 		{"id": "labs_vine_hang_east", "room": "labs", "at": [46.5, 2.25, 15], "model": "vine_ceiling", "turn": -10},
-		{"id": "mess_vine_north", "room": "mess_hall", "at": [39, 0, 30.25], "model": "vine_wall", "turn": 0},
+		{"id": "mess_vine_north", "room": "mess_hall", "at": [38.25, 0, 32.2], "model": "vine_wall", "turn": 90},
 		{"id": "mess_vine_west", "room": "mess_hall", "at": [38.25, 0, 42], "model": "vine_wall_small", "turn": 90},
 		{"id": "mess_vine_hang", "room": "mess_hall", "at": [50, 4.75, 38], "model": "vine_ceiling", "turn": 90},
 		{"id": "corridor_vine", "room": "main_corridor", "at": [31, 0, 26.25], "model": "vine_wall_small", "turn": 0},
