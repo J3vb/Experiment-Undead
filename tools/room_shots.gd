@@ -35,6 +35,8 @@ func _run() -> void:
 	var map: Node = (load(MAP) as PackedScene).instantiate()
 	add_child(map)
 	(map as Level).turn_power_on()
+	# Lights come back in a wave after power-on; shooting earlier swings room brightness by about 40 %.
+	await get_tree().create_timer(3.0).timeout
 	var camera: Camera3D = Camera3D.new()
 	camera.fov = 75.0
 	add_child(camera)

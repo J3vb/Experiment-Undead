@@ -97,7 +97,10 @@ func test_copy_build_replaces_root_files() -> void:
 	var pairs: Array = [[source, "new"], [target, "old"]]
 	for pair: Array in pairs:
 		for name: String in [exe, exe.get_basename() + ".pck"]:
-			FileAccess.open(str(pair[0]).path_join(name), FileAccess.WRITE).store_string(pair[1])
+			var file: FileAccess = FileAccess.open(str(pair[0]).path_join(name), FileAccess.WRITE)
+			file.store_string(pair[1])
+			# A temporary handle stays open until the function ends; Windows cannot replace an open file.
+			file.close()
 	assert_true(VersionInstaller.copy_build(source, target))
 	assert_eq(FileAccess.get_file_as_string(target.path_join(exe)), "new")
 	assert_eq(FileAccess.get_file_as_string(target.path_join(exe.get_basename() + ".pck")), "new")
