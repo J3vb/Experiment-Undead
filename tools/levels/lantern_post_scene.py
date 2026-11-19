@@ -23,7 +23,7 @@ MATS = [
     "iron",
 ]
 SCENES = ["street_lamp", "wall_lantern", "signpost"]
-MARKET = ["stall_frame", "stall_sign", "missions_board", "trader_goods", "gun_wall", "workbench", "tech_desk"]
+MARKET = ["stall_frame", "stall_sign", "missions_board"]
 GATE = ["banner", "floodlight"]
 CAMP = [
     "bench",
@@ -50,21 +50,50 @@ LARGE = [
     "gate_wall",
     "gate_tunnel",
     "radio_mast",
+    "stall_technician",
+    "stall_gunsmith",
+    "stall_trader",
 ]
 LODGE_YAW = math.pi / 2  # model fronts (+Z) face the street (+X)
 EAST_YAW = -math.pi / 2  # east-side model fronts face the street (-X)
-# Stall sign -> (subtitle, [(dressing model, spot in the stall's own space, extra yaw)]), north to south.
+# Stall sign -> (subtitle, stall model, [(dressing model, spot in the stall's own space, extra yaw)]), north to south.
 STALLS = {
-    "TECHNICIAN": ("Serums / Gear", [("tech_desk", (0, 0, -0.85), 0.0)]),
-    "GUNSMITH": ("Upgrades / Mods", [("gun_wall", (0, 0, -1.2), 0.0), ("workbench", (0.5, 0, 0.28), math.pi)]),
-    "TRADER": ("Buy / Sell", [("trader_goods", (0, 1.03, 1.0), 0.0)]),
-    "MISSIONS": ("", [("missions_board", (0, 0, -0.95), 0.0)]),
+    "TECHNICIAN": ("Serums / Gear", "stall_technician", []),
+    "GUNSMITH": ("Upgrades / Mods", "stall_gunsmith", []),
+    "TRADER": ("Buy / Sell", "stall_trader", []),
+    "MISSIONS": ("", "stall_frame", [("missions_board", (0, 0, -0.95), 0.0)]),
 }
 STALL_X = -6.1
 STALL_PITCH = 4.4
 STALL_SOUTH_Z = -13.8
-# Colliders in a model's own space (front +Z): (centre, size).
-STALL_BLOCKS = [((0, 0.5, 1.05), (3.9, 1.0, 0.76)), ((0, 1.3, -1.31), (3.9, 2.6, 0.12))]
+# Stall model -> back shift (z, so every back lines up with the frame's), sign board (bottom y, front z),
+# hanging lantern spot or None, colliders in the model's own space (front +Z): (centre, size).
+STALL_MODELS = {
+    "stall_frame": {
+        "shift": 0.0,
+        "sign": (2.45, 1.75),
+        "lantern": (-1.85, 1.95, 1.5),
+        "blocks": [((0, 0.5, 1.05), (3.9, 1.0, 0.76)), ((0, 1.3, -1.31), (3.9, 2.6, 0.12))],
+    },
+    "stall_technician": {
+        "shift": 0.66,
+        "sign": (2.0, 1.78),
+        "lantern": None,
+        "blocks": [((0, 1.3, -0.22), (4.1, 2.6, 3.56))],
+    },
+    "stall_gunsmith": {
+        "shift": 0.25,
+        "sign": (2.1, 1.62),
+        "lantern": None,
+        "blocks": [((0, 1.3, -0.09), (4.1, 2.6, 2.8))],
+    },
+    "stall_trader": {
+        "shift": -0.07,
+        "sign": (2.0, 1.35),
+        "lantern": None,
+        "blocks": [((0, 1.3, 0.02), (4.2, 2.6, 1.6))],
+    },
+}
 CABIN_BLOCKS = {
     "cabin_small": [((0, 2.5, -0.57), (6.34, 5.0, 4.14)), ((0, 0.15, 2.19), (6.3, 0.3, 1.38))],
     "cabin_two_storey": [
@@ -462,21 +491,25 @@ def _sacks() -> None:
 
 
 def _stall(k: int, name: str) -> None:
-    """One market stall facing the street: frame, sign board with its name, dressing, light and colliders."""
-    subtitle, dressing = STALLS[name]
-    at = (STALL_X, STALL_SOUTH_Z - (len(STALLS) - 1 - k) * STALL_PITCH)
+    """One market stall facing the street: stall model, sign board with its name, dressing, light and colliders."""
+    subtitle, model, dressing = STALLS[name]
+    spec = STALL_MODELS[model]
+    at = (STALL_X + spec["shift"], STALL_SOUTH_Z - (len(STALLS) - 1 - k) * STALL_PITCH)
     tag = name.capitalize()
-    inst(f"{tag}Stall", "Market", (at[0], 0, at[1]), "stall_frame", LODGE_YAW)
-    inst(f"{tag}Sign", "Market", _on_lodge(at, (0, 2.45, 1.75)), "stall_sign", LODGE_YAW)
-    label(f"{tag}SignName", "Market", _on_lodge(at, (0, 2.98 if subtitle else 2.86, 1.83)), LODGE_YAW, name, 80)
+    sign_y, sign_z = spec["sign"]
+    inst(f"{tag}Stall", "Market", (at[0], 0, at[1]), model, LODGE_YAW)
+    inst(f"{tag}Sign", "Market", _on_lodge(at, (0, sign_y, sign_z)), "stall_sign", LODGE_YAW)
+    name_y = sign_y + (0.53 if subtitle else 0.41)
+    label(f"{tag}SignName", "Market", _on_lodge(at, (0, name_y, sign_z + 0.08)), LODGE_YAW, name, 80)
     if subtitle:
-        label(f"{tag}SignSub", "Market", _on_lodge(at, (0, 2.66, 1.83)), LODGE_YAW, subtitle, 40)
-    for model, spot, yaw in dressing:
-        inst(f"{tag}{model.title().replace('_', '')}", "Market", _on_lodge(at, spot), model, LODGE_YAW + yaw)
-    for b, (centre, size) in enumerate(STALL_BLOCKS):
+        label(f"{tag}SignSub", "Market", _on_lodge(at, (0, sign_y + 0.21, sign_z + 0.08)), LODGE_YAW, subtitle, 40)
+    for dress, spot, yaw in dressing:
+        inst(f"{tag}{dress.title().replace('_', '')}", "Market", _on_lodge(at, spot), dress, LODGE_YAW + yaw)
+    for b, (centre, size) in enumerate(spec["blocks"]):
         collider(f"{tag}Block{b}", "Market", _on_lodge(at, centre), size, LODGE_YAW)
-    lit(f"{tag}Light", "Market", _on_lodge(at, (0, 2.3, 0.2)), 1.8, 6.0)
-    inst(f"{tag}Lantern", "Market", _on_lodge(at, (-1.85, 1.95, 1.5)), "lantern_hanging", LODGE_YAW)
+    lit(f"{tag}Light", "Market", _on_lodge(at, (0, 2.3, sign_z + 0.6)), 1.8, 6.0)
+    if spec["lantern"]:
+        inst(f"{tag}Lantern", "Market", _on_lodge(at, spec["lantern"]), "lantern_hanging", LODGE_YAW)
 
 
 def build_market() -> None:

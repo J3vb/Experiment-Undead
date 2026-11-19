@@ -24,7 +24,7 @@ from player_body.build import strip_icc
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT = os.path.join(REPO, "docs", "design", "reviews", "tripo-trial")
-KINDS = {"prop": (2_000, 1024, None), "character": (16_000, 2048, 1.8)}
+KINDS = {"prop": (2_000, 1024, None), "large": (12_000, 2048, None), "character": (16_000, 2048, 1.8)}
 BAKED = "Baked"  # characters: "BodyBaked", the Body* finish the character checks expect
 CHANNELS = ("albedo", "roughness", "metal")
 

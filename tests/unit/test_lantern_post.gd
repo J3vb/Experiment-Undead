@@ -16,7 +16,7 @@ const SIGN_TEXTS: Array[String] = [
 	"MISSIONS", "TRADER", "Buy / Sell", "GUNSMITH", "Upgrades / Mods", "TECHNICIAN", "Serums / Gear"
 ]
 ## A stall's counter front, measured from the stall's middle along its front (+Z) axis.
-const COUNTER_FRONT: float = 1.45
+const COUNTER_FRONT: float = 1.6
 const LANE_DEPTH: float = 1.5
 const LANE_WIDTH: float = 3.6
 ## Tunnel pillar faces and how far players may walk in (tools/levels/lantern_post_scene.py TUNNEL_Z, TUNNEL_STOP).
