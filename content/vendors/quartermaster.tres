@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="VendorData" format=3]
+
+[ext_resource type="Script" path="res://systems/hub/vendor_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/characters/npc_quartermaster.glb" id="2"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Odile Brandt"
+title = "Quartermaster"
+stall = &"TRADER"
+model = ExtResource("2")
+idle_clip = &"counter_idle"
+lines = Array[String](["Scrap is scrap. Bring enough and we'll talk.", "I shipped crates out of Halcyon for six years. Never asked what was in them.", "Wipe your boots. That green gets everywhere.", "My prices are fair. The winter isn't."])

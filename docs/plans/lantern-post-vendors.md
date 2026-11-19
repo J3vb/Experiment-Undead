@@ -248,6 +248,9 @@ Replaced by F-80 step 3 (see step 1).
   `LookAtModifier3D`), four `.tres` files with the lines from lore.md, the
   generator places one vendor per stall behind the counter (spot per stall in
   `STALLS`), regenerated `lantern_post.tscn`.
+- Since F-80 (2026-11-19): the Tripo stalls have no room behind the counter, so each keeper stands inside
+  on a hidden step (spot per stall in `STALL_MODELS["keeper"]`), and `Vendor.reach` stretches the talk area
+  just past the stall's one big collider. Town checks live in `tests/unit/test_lantern_post_keepers.gd`.
 - Files: systems/hub/vendor_data.gd, systems/hub/vendor.gd, vendor.tscn,
   content/vendors/*.tres, tools/levels/lantern_post_scene.py,
   levels/lantern_post/lantern_post.tscn, docs/LOGGING.md.

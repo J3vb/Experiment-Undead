@@ -46,6 +46,11 @@
 [ext_resource type="Material" path="res://levels/materials/town_snow.tres" id="town_snow"]
 [ext_resource type="Material" path="res://levels/materials/iron.tres" id="iron"]
 [ext_resource type="PackedScene" path="res://systems/hub/deploy_board.tscn" id="deploy_board"]
+[ext_resource type="PackedScene" path="res://systems/hub/vendor.tscn" id="vendor"]
+[ext_resource type="Resource" path="res://content/vendors/cordon_liaison.tres" id="vendor_cordon_liaison"]
+[ext_resource type="Resource" path="res://content/vendors/gunsmith.tres" id="vendor_gunsmith"]
+[ext_resource type="Resource" path="res://content/vendors/quartermaster.tres" id="vendor_quartermaster"]
+[ext_resource type="Resource" path="res://content/vendors/technician.tres" id="vendor_technician"]
 [ext_resource type="PackedScene" path="res://systems/hub/deploy_vote_panel.tscn" id="deploy_vote_panel"]
 [ext_resource type="PackedScene" path="res://levels/lantern_post/fire_barrel.tscn" id="fire_barrel_scene"]
 [ext_resource type="PackedScene" path="res://levels/lantern_post/snowfall.tscn" id="snowfall"]
@@ -614,6 +619,11 @@ light_energy = 1.8
 omni_range = 6.0
 omni_attenuation = 1.2
 
+[node name="TechnicianKeeper" parent="Market" instance=ExtResource("vendor")]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.34, 0.3, -27)
+data = ExtResource("vendor_technician")
+reach = 1.71
+
 [node name="GunsmithStall" parent="Market" instance=ExtResource("stall_gunsmith")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.85, 0, -22.6)
 
@@ -649,6 +659,11 @@ light_energy = 1.8
 omni_range = 6.0
 omni_attenuation = 1.2
 
+[node name="GunsmithKeeper" parent="Market" instance=ExtResource("vendor")]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -6.05, 0.2, -22.6)
+data = ExtResource("vendor_gunsmith")
+reach = 1.76
+
 [node name="TraderStall" parent="Market" instance=ExtResource("stall_trader")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -6.17, 0, -18.2)
 
@@ -683,6 +698,11 @@ light_color = Color(1, 0.58, 0.25, 1)
 light_energy = 1.8
 omni_range = 6.0
 omni_attenuation = 1.2
+
+[node name="TraderKeeper" parent="Market" instance=ExtResource("vendor")]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.82, 0.3, -18.2)
+data = ExtResource("vendor_quartermaster")
+reach = 0.72
 
 [node name="MissionsStall" parent="Market" instance=ExtResource("stall_frame")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -6.1, 0, -13.8)
@@ -725,6 +745,11 @@ light_color = Color(1, 0.58, 0.25, 1)
 light_energy = 1.8
 omni_range = 6.0
 omni_attenuation = 1.2
+
+[node name="MissionsKeeper" parent="Market" instance=ExtResource("vendor")]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -6.1, 0, -13.8)
+data = ExtResource("vendor_cordon_liaison")
+reach = 1.68
 
 [node name="MissionsLantern" parent="Market" instance=ExtResource("lantern_hanging")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -4.6, 1.95, -11.95)
