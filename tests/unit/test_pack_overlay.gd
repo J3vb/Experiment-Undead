@@ -263,6 +263,7 @@ func test_equip_button_says_wear_for_gear_and_into_hands_for_guns() -> void:
 
 
 func test_character_view_has_one_box_per_gear_slot_above_the_pack_grid() -> void:
+	assert_true(overlay.character is PackCharacter)
 	assert_eq(overlay.character.slot_buttons.keys(), CharacterProfile.GEAR_SLOTS)
 	var box: Node = overlay.character.get_parent()
 	assert_lt(overlay.character.get_index(), overlay.slots[0].get_parent().get_index(), "Pack grid sits underneath")
