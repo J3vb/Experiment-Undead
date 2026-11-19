@@ -1,10 +1,10 @@
 # Plan: Wear loot gear mid-run from the Pack
 
-Status: Review
+Status: Approved
 Roadmap: F-83 / issue none (solo play-test 2026-11-19)
 Phase: P6
 Size: M
-Approved by:
+Approved by: the person on decision card and reference image (layout, 2026-11-19); plan review by a separate Claude reviewer on PR #380 (Codex out of quota), 3 blocking findings fixed
 Lore link: docs/design/lore.md#gear-and-abilities, rows Vests, Charms, Implants (salvaged armour and keepsakes you strap on in the field); one provisional line added for swapping implant modules in the field
 
 ## Goal
@@ -24,9 +24,10 @@ In:
 - The worn gear counts at once: stats (server and owner), look (teammates see
   it through the existing LookSync), and the profile loadout saved at the end
   of the run.
-- Pack overlay layout: a character column with a live 3D preview of your
-  character (the existing `GearRig` in a `SubViewport`, as the character
-  screen does) and one button per gear slot, plus the two guns in your hands.
+- Pack overlay layout, left half: your character on top as a live 3D preview
+  (the existing `GearRig` in a `SubViewport`, as the character screen does)
+  with gear slot boxes on its left and the two guns in your hands on its
+  right; the Pack grid underneath. The item card stays on the right half.
   Selecting a slot shows the worn piece in the tooltip; selecting a Pack gear
   item compares it with the worn piece in its slot.
 - Slots come from one list, so F-71's four new slots appear without new code
@@ -107,25 +108,32 @@ Not in (non-goals, and where each one goes instead):
 |---|---|---|
 | systems/loot/loot_service.gd | changed | `_equip_from_pack` also handles gear: swap into `session.profile.loadout`, Pack slot gets the old piece, `ItemLoadout.apply_gear`, look, send_loadout |
 | systems/loot/pack.gd | changed | new `replace(index, item)` (emits `changed`) |
-| systems/loot/item_loadout.gd | changed | new `apply_gear(player, loadout)` split out of `apply` (gear list, `equip_gear`, rebuild held item guns) |
-| systems/loot/inventory.gd | changed | new `GEAR_SLOTS` list and `is_gear(item)`; character screen uses it instead of its own list |
-| systems/player/player.gd | changed | `equip_gear(items, heal)`: no heal for mid-run swaps |
-| systems/net/loadout_sync.gd | changed | server path passes `heal = false` after spawn |
+| systems/progression/character_profile.gd | changed | new `GEAR_SLOTS: Array[StringName] = [&"vest", &"charm", &"implant"]` (the name F-71 planned; F-71 adds its four slots here) |
+| systems/loot/item_loadout.gd | changed | gear loop (line 8) uses `CharacterProfile.GEAR_SLOTS`; new `apply_gear(player, loadout)` for swaps (`equip_gear(gear, false)`, then `refit_item_guns`); new `refit_item_guns(player)` |
+| systems/weapons/weapon_holder.gd | changed | new `refit(weapon, data)`: swaps a held gun's data in place, ammo capped to the new magazine, keeps the gun in hand and any reload, no `weapon_acquired` |
+| systems/loot/inventory.gd | changed | new `is_gear(item)` (`slot_for(item) in CharacterProfile.GEAR_SLOTS`) |
+| systems/player/player.gd | changed | `equip_gear(items, heal = true)`; `_refresh_stats(heal)` skips `health.heal(gained)` when false |
+| systems/net/loadout_sync.gd | changed | `_apply_loadout` heals only on its first apply for this Player (`_applied` flag); every later apply (swaps, gun pickups) passes `heal = false`; `_loadout_problem` rejects a gear slot that appears twice or a non-gear base (`slot_for`) |
 | systems/ui/pack_overlay.gd | changed | label "Wear" vs "Into hands"; character column moves to new `pack_character.gd` |
 | systems/ui/pack_character.gd | new | character column: preview SubViewport with GearRig, slot buttons, guns in hands |
-| systems/ui/character_screen.gd | changed | uses `Inventory.GEAR_SLOTS` |
+| systems/ui/character_screen.gd | changed | `SLOTS` becomes `[&"primary", &"sidearm"] + CharacterProfile.GEAR_SLOTS`; the gear filter (line 148) uses `Inventory.is_gear` |
+
+`systems/gear/look_builder.gd:5` and `CharacterLook.SLOTS` stay: they are the look's own list, and F-70/F-71 change them. F-83 builds before F-71 (F-71 waits on F-70 step 2); F-71 then extends `CharacterProfile.GEAR_SLOTS` instead of adding it.
 
 Autoloads, managers or base classes added: none.
 
 Files over 300 lines this plan grows: `systems/ui/character_screen.gd` (341)
-only swaps a constant (no growth). `pack_overlay.gd` (240) stays under 300 by
-putting the character column in its own script.
+only swaps a constant (no growth). `systems/player/player.gd` (349, limit
+350) may not grow: the heal flag goes into the existing signatures and the
+`health.heal(gained if heal else 0.0)` line, no new lines. `pack_overlay.gd`
+(240) stays under 300 by putting the character view in its own script.
 
 ## Data
 
 - `Pack.replace(index: int, item: Dictionary) -> bool` (new): swaps one item.
-- `Inventory.GEAR_SLOTS: Array[StringName] = [&"vest", &"charm", &"implant"]`
+- `CharacterProfile.GEAR_SLOTS: Array[StringName] = [&"vest", &"charm", &"implant"]`
   (new); F-71 appends its four slots here.
+- `WeaponHolder.refit(weapon: Weapon, data: WeaponData)` (new).
 - `Player.equip_gear(items: Array[Dictionary], heal: bool = true)`.
 - No Resource types, `.tres` files or network messages change.
 - Save format change: none (loadout keys exist; values change at bank time).
@@ -147,7 +155,7 @@ putting the character column in its own script.
 ## Performance
 
 One 3D preview of one character, drawn only while the overlay is open
-(SubViewport `UPDATE_WHEN_VISIBLE`, 512 px tall). Nothing per frame when
+(SubViewport `UPDATE_ALWAYS` while open, `UPDATE_DISABLED` when closed, 512 px tall). Nothing per frame when
 closed. A swap rebuilds a StatBlock and up to `max_slots` gun datas once.
 Budget: no measurable change with the overlay closed; overlay open may cost
 under 1 ms on the 4080 target.
@@ -156,13 +164,16 @@ under 1 ms on the 4080 target.
 
 ### Step 1: Wear gear from the Pack (rules, co-op, save)
 
-- Build: `Pack.replace`; `Inventory.GEAR_SLOTS` and `is_gear`;
-  `ItemLoadout.apply_gear` (split out of `apply`, also rebuilds held item guns
-  with their ammo); `Player.equip_gear(items, heal)` with no heal on swaps;
+- Build: `Pack.replace`; `CharacterProfile.GEAR_SLOTS` and `Inventory.is_gear`;
+  `ItemLoadout.apply_gear` and `refit_item_guns` (held item guns get new data
+  in place through `WeaponHolder.refit`: same gun in hand, ammo kept and
+  capped, reload not cancelled, no pickup event); `Player.equip_gear(items,
+  heal)`; `LoadoutSync` heals only on its first apply per Player and rejects
+  doubled or non-gear slots;
   `LootService._equip_from_pack` wears a gear item (swap with the worn piece
   into the same Pack slot, update `session.profile.loadout`, apply gear,
   `gear_rig.apply(LookBuilder.from_equipped(...))`, `send_loadout()`);
-  refuse when downed, dead, match over or no profile (`gear_equip_refused`).
+  refuse when downed, dead, match over, the run already banked (`LootService._banked`) or no profile (`gear_equip_refused`).
   Pack overlay button reads "Wear" for gear, "Into hands" for guns.
   Lore row, game-design Pack line and change log, LOGGING catalogue line.
 - Files: systems/loot/{pack,inventory,item_loadout,loot_service}.gd,
@@ -172,7 +183,10 @@ under 1 ms on the 4080 target.
 - Tests: tests/unit/test_pack.gd (replace), tests/unit/test_loot_service.gd
   (vest swap: Pack slot holds the old vest, loadout holds the new one, refused
   when downed), tests/unit/test_item_loadout.gd (swapping a +health vest off
-  and on does not heal; held item gun gets the new damage), integration
+  and on does not heal, on the host and through a client's resend; held item
+  gun gets the new damage, stays in hand and keeps its ammo),
+  tests/unit/test_loadout_sync.gd or the existing loadout test (two vests
+  rejected), integration
   (client wears a vest, server's player max health changes; bank saves the
   new loadout and puts the old vest in the stash).
 - Done when: in solo, E on a Pack vest wears it, the stats and body change at
