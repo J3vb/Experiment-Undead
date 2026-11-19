@@ -9,25 +9,25 @@
 [node name="North" type="OmniLight3D" parent="Glow"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68, -2.2, 12.8)
 light_color = Color(0.552941, 1, 0.227451, 1)
-light_energy = 1.4
+light_energy = 2.0
 light_bake_mode = 1
-omni_range = 6.0
+omni_range = 9.0
 omni_attenuation = 1.6
 
 [node name="East" type="OmniLight3D" parent="Glow"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 72.5, -2.2, 22.8)
 light_color = Color(0.552941, 1, 0.227451, 1)
-light_energy = 1.4
+light_energy = 2.0
 light_bake_mode = 1
-omni_range = 6.0
+omni_range = 9.0
 omni_attenuation = 1.6
 
 [node name="West" type="OmniLight3D" parent="Glow"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65.5, -2.2, 21.5)
 light_color = Color(0.552941, 1, 0.227451, 1)
-light_energy = 1.4
+light_energy = 2.0
 light_bake_mode = 1
-omni_range = 6.0
+omni_range = 9.0
 omni_attenuation = 1.6
 
 [node name="Pools" type="Node3D" parent="."]
