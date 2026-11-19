@@ -8,7 +8,7 @@ const STARTERS: Array[StringName] = [&"rifle_ar", &"kestrel_smg", &"talon_dmr"]
 
 
 func _motion() -> ReloadMotion:
-	return ReloadMotion.new(CENTER, TOP, Vector3.DOWN)
+	return ReloadMotion.for_magazine(CENTER, TOP, Vector3.DOWN)
 
 
 func test_rest_at_start_and_end() -> void:
@@ -70,8 +70,8 @@ func _player_with(id: StringName) -> Player:
 func test_magazine_guns_get_the_motion_and_others_keep_the_dip() -> void:
 	for id: StringName in STARTERS:
 		assert_not_null(_player_with(id).weapons.current.pose.motion, String(id))
-	assert_null(_player_with(&"brenner_trench").weapons.current.pose.motion, "no Magazine node")
-	assert_null(_player_with(&"fieldhand_lever").weapons.current.pose.motion, "loads round by round")
+	assert_not_null(_player_with(&"brenner_trench").weapons.current.pose.motion, "shell loading from LoadShell")
+	assert_null(_player_with(&"fieldhand_lever").weapons.current.pose.motion, "round by round with no LoadShell")
 
 
 func test_left_arm_reaches_every_key_pose_and_returns_to_its_grip() -> void:
@@ -100,3 +100,26 @@ func test_left_arm_reaches_every_key_pose_and_returns_to_its_grip() -> void:
 		var wrist: Vector3 = weapon.transform * view.profile.left.wrist
 		assert_almost_eq(view.skeleton.get_bone_global_pose(hand).origin, wrist, Vector3.ONE * 0.0001)
 		assert_eq(magazine.position, rest)
+
+
+func test_brenner_hand_carries_one_shell_into_the_port_per_round() -> void:
+	var player: Player = _player_with(&"brenner_trench")
+	var weapon: Weapon = player.weapons.current
+	var shell: Node3D = weapon.find_child("LoadShell", true, false) as Node3D
+	var rest: Vector3 = shell.position
+	assert_false(shell.visible, "hidden until a reload")
+	weapon.instance.ammo_in_mag = 3
+	assert_true(weapon.start_reload())
+	for step: Array in [[0.4, true], [ReloadMotion.SHELL_IN + 0.01, true], [0.9, false]]:
+		weapon._reload_timer = weapon._reload_duration * (1.0 - step[0])
+		weapon.pose.update(1.0)
+		player.weapons.arm_view.update_pose()
+		assert_eq(shell.visible, step[1], "shell shown at %.2f" % step[0])
+		assert_lt(player.weapons.arm_view.left_reach_gap(), 0.02)
+	weapon._reload_timer = weapon._reload_duration * (1.0 - ReloadMotion.SHELL_IN)
+	weapon.pose.update(1.0)
+	assert_almost_eq(shell.position, rest, Vector3.ONE * 0.0001, "in the port before the round counts")
+	weapon.tick(10.0)
+	weapon.pose.update(1.0)
+	assert_false(weapon.is_reloading())
+	assert_false(shell.visible)

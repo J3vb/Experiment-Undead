@@ -140,7 +140,7 @@ func test_every_weapon_keeps_anatomical_reload_and_sprint_joints() -> void:
 			_assert_pose(holder, "%s reload %.2f" % [data.id, fraction])
 			previous = fraction
 		if weapon.is_reloading():
-			weapon.tick(weapon._reload_duration * data.magazine_size)
+			weapon.tick(weapon._reload_timer + weapon._reload_duration * data.magazine_size)
 		assert_false(weapon.is_reloading(), String(data.id) + " all inserts complete before sprint")
 		weapon.sprinting = true
 		weapon.tick(1.0)

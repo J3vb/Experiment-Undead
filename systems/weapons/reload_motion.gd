@@ -1,5 +1,6 @@
-## Magazine reload as weapon-local key poses: the support hand carries the magazine out and back, and on
+## Reload as weapon-local key poses. Magazine guns: the support hand carries the magazine out and back, and on
 ## an empty reload presses the bolt catch above the well so the bolt slams home. Times are fractions of the reload.
+## Shell guns: each round is one cycle, the hand brings a shell up into the loading port; from empty it then racks.
 class_name ReloadMotion
 extends RefCounted
 
@@ -14,10 +15,19 @@ const GRAB: Vector3 = Vector3(-0.045, -0.06, 0.06)
 ## Where the wrist sits relative to the magazine's feed lip when the thumb is on the bolt catch.
 const CATCH: Vector3 = Vector3(-0.07, -0.03, 0.08)
 const PRESS: Vector3 = Vector3(0.008, 0.004, 0.0)
+## Where the wrist sits relative to a shell's middle when the fingers push it into the port.
+const SHELL_GRAB: Vector3 = Vector3(-0.035, -0.06, 0.07)
+const SHELL_BELOW: Vector3 = Vector3(0.0, -0.035, 0.01)
+## Shell cycle: shell shown from fetch to push, in the port by SHELL_IN.
+const SHELL_IN: float = 0.7
+const EMPTY_SHELL_IN: float = 0.42
 
 var hand_target: Vector3 = Vector3.ZERO
 var hand_weight: float = 0.0
+## Offset of the magazine (or the loading shell) from its rest, weapon-local.
 var mag_offset: Vector3 = Vector3.ZERO
+## The loading shell is in the hand (shell guns only).
+var part_shown: bool = false
 var bolt_back: float = 0.0
 var roll: float = 0.0
 
@@ -33,10 +43,43 @@ class Keys:
 	var weight: PackedFloat32Array = []
 	var bolt: PackedFloat32Array = []
 	var roll: PackedFloat32Array = []
+	var shown: PackedFloat32Array = []
 
 
 ## mag_center: magazine middle, mag_top: its feed lip, mag_down: unit vector out of the well, all weapon-local.
-func _init(mag_center: Vector3, mag_top: Vector3, mag_down: Vector3) -> void:
+static func for_magazine(mag_center: Vector3, mag_top: Vector3, mag_down: Vector3) -> ReloadMotion:
+	var motion: ReloadMotion = ReloadMotion.new()
+	motion._set_magazine(mag_center, mag_top, mag_down)
+	return motion
+
+
+## port: the loading shell's middle when it sits in the loading port, weapon-local.
+static func for_shells(port: Vector3) -> ReloadMotion:
+	var motion: ReloadMotion = ReloadMotion.new()
+	var grab: Vector3 = port + SHELL_GRAB
+	var below: Vector3 = grab + SHELL_BELOW
+	var low: Vector3 = grab + DROP
+	var z: Vector3 = Vector3.ZERO
+	var keys: Keys = motion._tactical
+	keys.times = PackedFloat32Array([0.0, 0.22, 0.32, 0.55, SHELL_IN, 1.0])
+	keys.hand = PackedVector3Array([low, low, low, below, grab, grab])
+	keys.mag = PackedVector3Array([DROP, DROP, DROP, SHELL_BELOW, z, z])
+	keys.weight = PackedFloat32Array([0.0, 1.0, 1.0, 1.0, 1.0, 0.0])
+	keys.bolt = PackedFloat32Array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+	keys.roll = PackedFloat32Array([0.0, 0.6, 0.6, 0.6, 0.6, 0.0])
+	keys.shown = PackedFloat32Array([0.0, 0.0, 1.0, 1.0, 1.0, 0.0])
+	keys = motion._empty
+	keys.times = PackedFloat32Array([0.0, 0.12, 0.18, 0.33, EMPTY_SHELL_IN, 0.56, 0.68, 0.8, 1.0])
+	keys.hand = PackedVector3Array([low, low, low, below, grab, grab, grab, grab, grab])
+	keys.mag = PackedVector3Array([DROP, DROP, DROP, SHELL_BELOW, z, z, z, z, z])
+	keys.weight = PackedFloat32Array([0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0])
+	keys.bolt = PackedFloat32Array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0])
+	keys.roll = PackedFloat32Array([0.0, 0.6, 0.6, 0.6, 0.6, 0.2, 0.0, 0.0, 0.0])
+	keys.shown = PackedFloat32Array([0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0])
+	return motion
+
+
+func _set_magazine(mag_center: Vector3, mag_top: Vector3, mag_down: Vector3) -> void:
 	var grab: Vector3 = mag_center + GRAB
 	var out: Vector3 = mag_down * WELL_GAP
 	var low: Vector3 = DROP + out
@@ -52,6 +95,7 @@ func _init(mag_center: Vector3, mag_top: Vector3, mag_down: Vector3) -> void:
 	_tactical.weight = PackedFloat32Array([0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0])
 	_tactical.bolt = PackedFloat32Array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 	_tactical.roll = PackedFloat32Array([0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 0.0])
+	_tactical.shown.resize(_tactical.times.size())
 	_empty.times = PackedFloat32Array([0.0, 0.1, 0.28, 0.36, 0.48, EMPTY_SEATED, 0.62, 0.72, 0.77, BOLT_RELEASE, 1.0])
 	_empty.hand = PackedVector3Array(
 		[
@@ -72,6 +116,14 @@ func _init(mag_center: Vector3, mag_top: Vector3, mag_down: Vector3) -> void:
 	_empty.weight = PackedFloat32Array([0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0])
 	_empty.bolt = PackedFloat32Array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0])
 	_empty.roll = PackedFloat32Array([0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 0.0])
+	_empty.shown.resize(_empty.times.size())
+
+
+## Builds the shell motion from a viewmodel's LoadShell node, or null when it has none.
+static func from_shell(weapon: Node3D, shell: Node3D) -> ReloadMotion:
+	if shell == null:
+		return null
+	return ReloadMotion.for_shells(weapon.to_local(shell.global_position))
 
 
 ## Builds the motion from a viewmodel's Magazine node, or null when it has none.
@@ -84,7 +136,7 @@ static func from_viewmodel(weapon: Node3D, magazine: Node3D) -> ReloadMotion:
 	if mesh and mesh.mesh:
 		center = to_weapon * mesh.get_aabb().get_center()
 	var down: Vector3 = (center - to_weapon.origin).normalized() if center != to_weapon.origin else Vector3.DOWN
-	return ReloadMotion.new(center, to_weapon.origin, down)
+	return ReloadMotion.for_magazine(center, to_weapon.origin, down)
 
 
 ## Seated time for this reload kind: the magazine offset is zero from here to the end.
@@ -105,3 +157,4 @@ func sample(empty: bool, t: float) -> void:
 	hand_weight = lerpf(keys.weight[i], keys.weight[i + 1], k)
 	bolt_back = lerpf(keys.bolt[i], keys.bolt[i + 1], k)
 	roll = lerpf(keys.roll[i], keys.roll[i + 1], k)
+	part_shown = (keys.shown[i] if k < 0.5 else keys.shown[i + 1]) > 0.5

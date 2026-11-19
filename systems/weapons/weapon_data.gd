@@ -39,6 +39,7 @@ enum Effect { NONE, CHAIN, FROST, WELL }
 @export var starting_reserve: int = 120
 @export var max_reserve: int = 240
 @export var reload_time: float = 2.2
+## For round-by-round guns: the first round from empty, which also racks the action.
 @export var empty_reload_time: float = 2.8
 @export var reload_per_round: bool = false
 @export var per_round_time: float = 0.5
