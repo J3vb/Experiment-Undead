@@ -2,7 +2,8 @@
 side shell holder, polymer pump with a tan front band, bare barrel over the magazine tube.
 
 Static parts join into `Receiver`. The pump is the `Bolt` node so the viewmodel racks it;
-there is no Magazine (shells load one by one through the loading port). `SightGlass` and the
+there is no Magazine (shells load one by one through the loading port). `LoadShell` is the one shell the
+support hand carries into the port on a reload (hidden until then). `SightGlass` and the
 `ReticleMount` marker stay separate. Worn materials and the `Markings` atlas follow docs/plans/guns-concept.md.
 """
 
@@ -107,6 +108,16 @@ def stock(metal, black, elastic, markings):
     return parts
 
 
+def load_shell(m, markings, body):
+    """One shell pointing up the tube, origin at its middle under the loading port."""
+    at = (0, 0.04, TUBE_Z - 0.03)
+    hull = paint(g.lathe("LoadShell", [(0.0092, 0.012), (0.0092, 0.068)], at, markings, 12), "shell")
+    rim = [(0.0098, -0.002), (0.0098, 0.004), (0.0094, 0.005), (0.0094, 0.012)]
+    head = paint(g.lathe("LoadShellHead", rim, at, markings, 12), "brass")
+    m.join_into(hull, [head])
+    m.attach(hull, (0, 0.075, TUBE_Z - 0.03), body)
+
+
 def barrel(metal, black):
     """Barrel and magazine tube with its cap, and the band that ties them together."""
     pipe = g.lathe(
@@ -167,6 +178,7 @@ def build(m) -> None:
     m.join_into(body, logos + stock(metal, black, elastic, markings) + barrel(metal, black))
     m.join_into(body, g.red_dot(m, 0.04, RAIL_TOP, EYE_Z, black, glass, markings, body))
     pump(m, black, tan, body)
+    load_shell(m, markings, body)
     m.marker("Muzzle", (0, 0.625, BORE_Z), parent=body)
     for side in (-1, 1):
         strip = g.slab("Inlay", g.rounded(-0.028, 0.040, 0.096, 0.042, 0.0008), 0.001, metal, x=side * 0.025)

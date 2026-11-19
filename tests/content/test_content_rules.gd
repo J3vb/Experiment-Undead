@@ -26,7 +26,10 @@ func test_weapon_rules() -> void:
 		assert_gt(weapon.damage, 0.0, path + " damage > 0")
 		assert_gte(weapon.pellets, 1, path + " pellets >= 1")
 		assert_gt(weapon.reload_time, 0.0, path + " reload_time > 0")
-		assert_gte(weapon.empty_reload_time, weapon.reload_time, path + " empty_reload_time >= reload_time")
+		if weapon.reload_per_round:
+			assert_gte(weapon.empty_reload_time, weapon.per_round_time, path + " first round from empty >= one round")
+		else:
+			assert_gte(weapon.empty_reload_time, weapon.reload_time, path + " empty_reload_time >= reload_time")
 		assert_lte(weapon.starting_reserve, weapon.max_reserve, path + " starting_reserve <= max_reserve")
 		assert_lte(weapon.ads_spread, weapon.hip_spread, path + " ads_spread <= hip_spread")
 		assert_lte(weapon.hip_spread, weapon.max_spread, path + " hip_spread <= max_spread")

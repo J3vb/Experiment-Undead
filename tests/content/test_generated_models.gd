@@ -85,7 +85,15 @@ func test_shotgun_has_a_pump_and_muzzle() -> void:
 	var box: AABB = _size_of(gun)
 	assert_almost_eq(box.size.z, 1.0, 0.05, "shotgun is about 1 m long")
 	assert_lt(box.size.x, 0.1, "shotgun is narrow")
-	assert_lt(gun.find_children("*", "MeshInstance3D", true, false).size(), 4, "few draw calls")
+	var shell: MeshInstance3D = gun.find_child("LoadShell", true, false) as MeshInstance3D
+	assert_not_null(shell, "the shell the hand loads is its own part")
+	if shell:
+		var receiver: Node3D = gun.find_child("Receiver", true, false) as Node3D
+		assert_eq(shell.get_parent(), receiver, "shell moves with the gun")
+		assert_lt(shell.position.y, 0.0, "shell waits under the loading port")
+		assert_lt(shell.get_aabb().size.length(), 0.1, "one shell")
+	var meshes: int = gun.find_children("*", "MeshInstance3D", true, false).size() - (1 if shell else 0)
+	assert_lt(meshes, 4, "few draw calls (the load shell is hidden outside reloads)")
 	gun.free()
 
 

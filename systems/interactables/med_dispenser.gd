@@ -65,4 +65,3 @@ func apply_net_state(state: Dictionary) -> void:
 
 func _light_up() -> void:
 	($Glow as Node3D).visible = true
-	($GlowBack as Node3D).visible = true

@@ -334,3 +334,27 @@ for at, amp in [(0.0, 1.0), (0.22, 0.7), (0.9, 0.8), (1.12, 0.45)]:
     seg = np.sin(2 * np.pi * (55 * beat - 20 * beat**2)) * np.exp(-beat * 22) * amp
     x[i : i + len(seg)] += seg[: len(x) - i]
 save("bled_out.wav", lowpass(x, 0.2), peak=0.85)
+
+# Reload moves, played as the first-person hand reaches each one (F-83). Own seed leaves earlier sounds unchanged.
+rng = np.random.default_rng(67)
+
+
+def handling(dur, parts):
+    """Short metal handling sound: (time, click freq, decay, amp) clicks plus a soft scrape."""
+    x = np.zeros(int(SR * dur))
+    for at, freq, decay, amp in parts:
+        i = int(at * SR)
+        n = min(int(0.1 * SR), len(x) - i)
+        s = np.arange(n) / SR
+        x[i : i + n] += (rng.standard_normal(n) * 0.55 + np.sin(2 * np.pi * freq * s)) * np.exp(-s * decay) * amp
+    return x
+
+
+save("reload_mag_out.wav", handling(0.25, [(0.0, 1900, 110, 0.6), (0.05, 700, 45, 0.5)]), peak=0.75)
+save("reload_mag_in.wav", handling(0.3, [(0.0, 850, 55, 1.0), (0.035, 2100, 140, 0.55)]), peak=0.85)
+bolt_parts = [(0.0, 2300, 150, 0.5), (0.06, 1100, 50, 1.0), (0.075, 2600, 160, 0.4)]
+save("reload_bolt.wav", handling(0.3, bolt_parts), peak=0.85)
+tt = t(0.22)
+slide = lowpass(rng.standard_normal(len(tt)), 0.25) * np.exp(-tt * 18) * 0.5
+save("reload_shell_in.wav", slide + handling(0.22, [(0.07, 1300, 80, 0.8)]), peak=0.7)
+save("reload_pump.wav", handling(0.45, [(0.0, 600, 35, 0.8), (0.03, 1500, 90, 0.4), (0.2, 900, 40, 1.0)]), peak=0.85)

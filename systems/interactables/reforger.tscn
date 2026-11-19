@@ -1,8 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://systems/interactables/reforger.gd" id="1"]
-[ext_resource type="Script" path="res://systems/level/block.gd" id="2"]
-[ext_resource type="Material" path="res://levels/materials/rust.tres" id="3"]
+[ext_resource type="PackedScene" path="res://assets/models/machines/reforger.glb" id="2"]
 
 [ext_resource type="AudioStream" path="res://assets/audio/buy.wav" id="sfx_buy"]
 
@@ -10,6 +9,9 @@
 
 [sub_resource type="BoxShape3D" id="area"]
 size = Vector3(1.3, 2, 1.8)
+
+[sub_resource type="BoxShape3D" id="body"]
+size = Vector3(0.88, 1.06, 1.58)
 
 [sub_resource type="StandardMaterial3D" id="glow"]
 albedo_color = Color(1, 0.45, 0.1, 1)
@@ -19,7 +21,7 @@ emission_energy_multiplier = 3.0
 
 [sub_resource type="BoxMesh" id="strip"]
 material = SubResource("glow")
-size = Vector3(1.02, 0.1, 1.2)
+size = Vector3(0.02, 0.04, 1.4)
 
 [node name="Reforger" type="Area3D"]
 script = ExtResource("1")
@@ -28,13 +30,19 @@ script = ExtResource("1")
 shape = SubResource("area")
 
 [node name="Body" type="StaticBody3D" parent="."]
-script = ExtResource("2")
-size = Vector3(1, 2, 1.6)
-material = ExtResource("3")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.47, 0)
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Body"]
+shape = SubResource("body")
+
+[node name="Model" parent="Body" instance=ExtResource("2")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, -0.53, 0)
 
 [node name="Glow" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.46, -0.25, 0)
 visible = false
+gi_mode = 0
 mesh = SubResource("strip")
 
 [node name="Label" type="Label3D" parent="."]

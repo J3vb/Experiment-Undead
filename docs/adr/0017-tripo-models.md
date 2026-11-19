@@ -34,7 +34,11 @@ hand.
   with commercial use. The Steam store page needs the AI-generated content
   disclosure.
 - Code-built models stay where Tripo is weak (snap-together kit pieces) and for
-  done features until a plan moves them.
+  done features until a plan moves them. F-83
+  ([halcyon-machines-fill.md](../plans/halcyon-machines-fill.md)) moves the
+  Halcyon Labs Med Dispenser, Reforger, power switch and exfil hatch.
+- Input images may come from Tripo's own text to image (`tripo_make.py`, about
+  5 credits each); the person approves them before any model is paid for.
 
 ## Links
 
