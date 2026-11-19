@@ -1,7 +1,8 @@
 ## Checks the code-built Halcyon Labs machine models (plan F-64): each loads as one
 ## dynamic (unbaked) mesh, only racks you buy wear hazard paint, every wall-buy is a
 ## rack that fits its board box with its gun hung on the open side, and the Specimen
-## Vault body is a model that fits its box.
+## Vault body is a model that fits its box. The Med Dispenser, Reforger, power switch and exfil
+## hatch are Tripo models (plan F-83) that fill their collider box and face out of their wall.
 extends GutTest
 
 const FOLDER: String = "res://assets/models/machines/"
@@ -9,6 +10,8 @@ const MAP: String = "res://levels/halcyon_labs/map.tscn"
 const VAULT: String = "res://systems/interactables/specimen_vault.tscn"
 const HAZARD: String = "res://levels/materials/hazard_paint.tres"
 const FIT_SLACK: float = 0.05
+## Made in Tripo (F-83): baked maps, no shared map materials.
+const TRIPO: Array[String] = ["med_dispenser", "reforger", "power_switch", "exfil_hatch"]
 ## Wall-buys whose wall is on their local +X, so the rack faces -X (found with a ray probe).
 const WALL_ON_PLUS_X: Array[String] = ["WallBuyBrennerTrench", "WallBuyRifle"]
 
@@ -49,7 +52,7 @@ func _assert_fits(body: StaticBody3D, label: String) -> void:
 
 
 func test_every_machine_model_is_one_unbaked_mesh() -> void:
-	assert_eq(_models().size(), 3, "two racks and the Vault")
+	assert_eq(_models().size(), 7, "two racks, the Vault and four Tripo machines")
 	for path: String in _models():
 		var scene: Node = autofree((load(path) as PackedScene).instantiate())
 		assert_eq(scene.find_children("*", "MeshInstance3D", true, false).size(), 1, path + " is one mesh")
@@ -63,6 +66,9 @@ func test_every_machine_model_is_one_unbaked_mesh() -> void:
 		for i: int in mesh.mesh.get_surface_count():
 			paths.append(mesh.mesh.surface_get_material(i).resource_path)
 		assert_eq(paths.has(HAZARD), path.ends_with("weapon_rack.glb"), path + ": only racks you buy wear hazard")
+		if TRIPO.has(path.get_file().get_basename()):
+			var baked: StandardMaterial3D = mesh.mesh.surface_get_material(0) as StandardMaterial3D
+			assert_not_null(baked.albedo_texture, path + " keeps its baked colour map")
 
 
 func test_every_wall_buy_is_a_rack_with_its_gun_on_the_open_side() -> void:
@@ -89,3 +95,48 @@ func test_every_wall_buy_is_a_rack_with_its_gun_on_the_open_side() -> void:
 func test_specimen_vault_body_is_a_model_that_fits() -> void:
 	var vault: Node3D = autofree((load(VAULT) as PackedScene).instantiate()) as Node3D
 	_assert_fits(vault.get_node("Body") as StaticBody3D, "SpecimenVault")
+
+
+func _scene(path: String) -> Node3D:
+	return autofree((load(path) as PackedScene).instantiate()) as Node3D
+
+
+func test_tripo_machines_are_models_that_fit_their_box() -> void:
+	for id: String in ["med_dispenser", "reforger", "power_switch"]:
+		var machine: Node3D = _scene("res://systems/interactables/%s.tscn" % id)
+		_assert_fits(machine.get_node("Body") as StaticBody3D, id)
+
+
+## The hatch is walked on: a flattened model over the old thin floor box, low enough to step over.
+func test_exfil_hatch_is_a_flat_model_on_its_floor_box() -> void:
+	var body: StaticBody3D = _scene("res://systems/interactables/exfil_hatch.tscn").get_node("Body") as StaticBody3D
+	assert_false(body is Block, "the hatch draws its model")
+	var mesh: MeshInstance3D = _mesh(body.get_node("Model"))
+	var bounds: AABB = _relative(mesh, body) * mesh.get_aabb()
+	assert_lt(bounds.end.y, 0.15, "top of the hatch is a low step")
+	assert_gt(bounds.size.x, 2.8, "hatch covers the 3 m pad")
+	assert_lt(maxf(bounds.size.x, bounds.size.z), 3.1, "hatch stays inside the glow frame")
+
+
+func test_machine_fronts_face_away_from_their_wall() -> void:
+	var level: Node = autofree((load(MAP) as PackedScene).instantiate())
+	add_child(level)
+	await wait_physics_frames(2)
+	var space: PhysicsDirectSpaceState3D = (level as Node3D).get_world_3d().direct_space_state
+	var checked: int = 0
+	for node: Node in level.find_children("*", "Area3D"):
+		if not (node is MedDispenser or node is Reforger or node is PowerSwitch):
+			continue
+		var machine: Node3D = node as Node3D
+		var body: Node3D = machine.get_node("Body") as Node3D
+		var model: Node3D = body.get_node("Model") as Node3D
+		var front: Vector3 = model.global_basis.z.normalized()
+		var from: Vector3 = body.global_position + Vector3.UP * 0.3
+		var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(from, from + front * 3.0)
+		query.exclude = [(body as StaticBody3D).get_rid()]
+		query.collide_with_areas = false
+		var hit: Dictionary = space.intersect_ray(query)
+		var clear: float = 3.0 if hit.is_empty() else from.distance_to(hit["position"])
+		assert_gt(clear, 1.2, "%s front is open, not against a wall" % machine.name)
+		checked += 1
+	assert_eq(checked, 10, "8 Med Dispensers, the Reforger and the power switch")

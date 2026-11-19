@@ -97,3 +97,4 @@ Agent picks the person may change.
 - **Model looks:** skinned zombies, gear finishes, vest frames, first-person arms, teammate clips and the launcher screen are agent looks until the person sees them.
 - **Tripo settings:** `tripo_make.py` asks for model v3.1, PBR, detailed texture, standard geometry (a 0.9 m prop: 40 credits); `body_tarp` goes in `props/`, not `dressing/` (intake prop budget 2,000). [tripo-models](plans/tripo-models.md)
 - **Player names:** up to 16 Latin letters, digits, spaces and - _ . ' ; default "Survivor"; duplicates allowed; set on the Character screen before joining. See [player-names](plans/player-names.md).
+- **Halcyon machines (F-83):** one Med Dispenser model for all 8 Serums with one teal glow (no per-Serum colour); exfil hatch model squashed to 14 cm over the old thin floor box so players walk over it; Reforger glow is a thin front strip. [plan](plans/halcyon-machines-fill.md)

@@ -46,6 +46,13 @@ class FakeTripo:
             return {"task_id": task_id, "status": "running", "progress": 50}
         if self.end != "success":
             return {"task_id": task_id, "status": self.end, "error_msg": "image has no clear subject"}
+        if task["body"].get("type") == "text_to_image":
+            return {
+                "task_id": task_id,
+                "status": "success",
+                "consumed_credit": 5.0,
+                "output": {"generated_image": f"https://cdn.test/{task_id}.jpeg?sig=1"},
+            }
         return {
             "task_id": task_id,
             "status": "success",
@@ -196,7 +203,7 @@ def test_every_manifest_row_is_complete():
         with open(os.path.join(folder, name), encoding="utf-8") as text:
             for row in json.load(text):
                 assert {"name", "folder", "kind"} <= set(row), f"{name}: {row}"
-                assert row.get("source") or row.get("image"), f"{name}: {row['name']} needs a source or an image"
+                assert row.get("source") or row.get("image") or row.get("prompt"), f"{name}: {row['name']} needs one"
                 assert row.get("height") or row.get("length") or row["kind"] == "character", row["name"]
 
 
@@ -219,3 +226,56 @@ def test_a_blocked_host_stops_with_a_clear_message(monkeypatch):
     monkeypatch.setattr(tripo_make.urllib.request, "urlopen", refuse)
     with pytest.raises(tripo_make.TripoError, match="did not connect: Tunnel connection failed"):
         tripo_make.urllib_send("GET", "https://cdn.test/model.glb?sig=secret", {}, None)
+
+
+def prompt_row() -> dict:
+    return {"name": "power_switch", "folder": "machines", "kind": "prop", "height": 1.8, "prompt": "Breaker cabinet."}
+
+
+def test_a_prompt_row_gets_its_image_then_its_model(tmp_path, files):
+    fake = FakeTripo()
+    manifest = write_manifest(tmp_path, [prompt_row()])
+    costs = tripo_make.make(manifest, [], str(files), intake=False, api=fake.api())
+    assert fake.tasks["task-1"]["body"] == {"type": "text_to_image", "prompt": tripo_make.STYLE + "Breaker cabinet."}
+    assert fake.tasks["task-2"]["body"]["type"] == "image_to_model"
+    assert fake.tasks["task-2"]["body"]["file"]["type"] == "jpg"
+    assert costs == [("power_switch", 35.0)], "image and model credits add up"
+    image = files / "tripo" / "sources" / "military" / "power_switch.jpg"
+    assert image.read_bytes().startswith(b"glTF-bytes-https://cdn.test/task-1.jpeg")
+    row = json.loads(open(manifest, encoding="utf-8").read())[0]
+    assert (row["image_task_id"], row["image"], row["task_id"]) == (
+        "task-1",
+        "tripo/sources/military/power_switch.jpg",
+        "task-2",
+    )
+
+
+def test_images_only_never_starts_a_model(tmp_path, files):
+    fake = FakeTripo()
+    manifest = write_manifest(tmp_path, [prompt_row(), table_row()])
+    costs = tripo_make.make(manifest, [], str(files), intake=False, api=fake.api(), images_only=True)
+    assert [t["body"]["type"] for t in fake.tasks.values()] == ["text_to_image"], "table already has its image"
+    assert costs == [("power_switch", 5.0), ("field_table", 0.0)]
+    assert "task_id" not in json.loads(open(manifest, encoding="utf-8").read())[0]
+
+
+def test_a_known_image_task_is_downloaded_without_paying_again(tmp_path, files):
+    fake = FakeTripo()
+    fake.tasks["task-7"] = {"body": {"type": "text_to_image"}, "polls": 5}
+    row = {**prompt_row(), "image_task_id": "task-7"}
+    costs = tripo_make.make(write_manifest(tmp_path, [row]), [], str(files), False, fake.api(), images_only=True)
+    assert "/task" not in fake.paths("POST") and costs == [("power_switch", 0.0)]
+
+
+def test_a_failed_image_task_stops_with_the_tripo_message(tmp_path, files):
+    fake = FakeTripo(end="failed")
+    with pytest.raises(tripo_make.TripoError, match="task-1 failed: image has no clear subject"):
+        tripo_make.make(write_manifest(tmp_path, [prompt_row()]), [], str(files), False, fake.api(), images_only=True)
+
+
+def test_a_row_without_image_or_prompt_stops_before_paying(tmp_path, files):
+    row = {**table_row(), "image": "tripo/sources/military/missing.png"}
+    fake = FakeTripo()
+    with pytest.raises(tripo_make.TripoError, match="no image on disk and no prompt"):
+        tripo_make.make(write_manifest(tmp_path, [row]), [], str(files), False, fake.api())
+    assert fake.calls == []

@@ -1,15 +1,17 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://systems/interactables/med_dispenser.gd" id="1"]
-[ext_resource type="Script" path="res://systems/level/block.gd" id="2"]
-[ext_resource type="Material" path="res://levels/materials/panel_paint.tres" id="3"]
+[ext_resource type="PackedScene" path="res://assets/models/machines/med_dispenser.glb" id="2"]
 
 [ext_resource type="AudioStream" path="res://assets/audio/buy.wav" id="sfx_buy"]
 
 [ext_resource type="AudioStream" path="res://assets/audio/denied.wav" id="sfx_denied"]
 
 [sub_resource type="BoxShape3D" id="area"]
-size = Vector3(1.2, 2, 0.9)
+size = Vector3(1.2, 2, 1.2)
+
+[sub_resource type="BoxShape3D" id="body"]
+size = Vector3(0.78, 2, 0.92)
 
 [sub_resource type="StandardMaterial3D" id="glow"]
 albedo_color = Color(0.2, 0.9, 0.75, 1)
@@ -19,7 +21,7 @@ emission_energy_multiplier = 3.0
 
 [sub_resource type="BoxMesh" id="strip"]
 material = SubResource("glow")
-size = Vector3(0.8, 0.12, 0.02)
+size = Vector3(0.6, 0.05, 0.02)
 
 [node name="MedDispenser" type="Area3D"]
 script = ExtResource("1")
@@ -28,18 +30,18 @@ script = ExtResource("1")
 shape = SubResource("area")
 
 [node name="Body" type="StaticBody3D" parent="."]
-script = ExtResource("2")
-size = Vector3(1, 2, 0.6)
-material = ExtResource("3")
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Body"]
+shape = SubResource("body")
+
+[node name="Model" parent="Body" instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
 
 [node name="Glow" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0.31)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.62, 0.4)
 visible = false
-mesh = SubResource("strip")
-
-[node name="GlowBack" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -0.31)
-visible = false
+gi_mode = 0
 mesh = SubResource("strip")
 
 [node name="Label" type="Label3D" parent="."]
