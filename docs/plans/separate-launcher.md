@@ -36,7 +36,7 @@ In:
   banner, news list, big green Play, channel dropdown, install size and free
   space (step 5).
 - A per-user Windows installer, `ExperimentUndead-Setup-<version>.exe`
-  (step 6), if the person picks it on the decision card.
+  (step 6, the person's pick).
 
 Not in (non-goals, and where each one goes instead):
 
@@ -273,7 +273,7 @@ news.json), far under GitHub's 60 an hour unauthenticated limit. It runs no
   of the launcher next to the concept (look-check), sent to the person.
 - Done when: the person signs off the launcher look against the concept.
 
-### Step 6: Windows installer (only if picked)
+### Step 6: Windows installer
 
 - Build: `tools/installer/experiment-undead.iss` (Inno Setup,
   `PrivilegesRequired=lowest`, installs to
@@ -320,5 +320,5 @@ news.json), far under GitHub's 60 an hour unauthenticated limit. It runs no
 
 - [ ] What is the launcher built with? Recommended: a small Godot app
   (card sent 2026-11-19).
-- [ ] How do players first get the launcher: Windows installer or one exe?
-  Recommended: installer (card sent 2026-11-19). If "one exe", step 6 is cut.
+- [x] How do players first get the launcher: Windows installer (the person,
+  2026-11-19, decision card). Step 6 stays.
