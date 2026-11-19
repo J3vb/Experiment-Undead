@@ -72,6 +72,9 @@ def test_tripo_manifest_rows_are_not_strays(tmp_path):
     assert check_outputs.stray_models(EXPECTED + found, str(tmp_path / "committed")) == []
 
 
-def test_every_committed_tripo_model_has_a_file():
-    for rel_path in check_outputs.tripo_models(check_outputs.TRIPO):
+def test_every_made_tripo_model_has_a_file():
+    """Rows tripo_make.py has run are marked made; rows still waiting for an image or a run are not."""
+    made = check_outputs.tripo_models(check_outputs.TRIPO, made_only=True)
+    assert made, "the Lantern Post stalls are made"
+    for rel_path in made:
         assert os.path.isfile(os.path.join(check_outputs.REPO, "assets", "models", rel_path)), rel_path

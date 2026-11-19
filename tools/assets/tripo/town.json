@@ -1,5 +1,5 @@
 [
-  {"name": "stall_technician", "folder": "town_large", "kind": "large", "height": 3.34, "yaw": 0, "source": "tripo/sources/stall_technician.glb"},
-  {"name": "stall_gunsmith", "folder": "town_large", "kind": "large", "height": 4.03, "yaw": 0, "source": "tripo/sources/stall_gunsmith.glb"},
-  {"name": "stall_trader", "folder": "town_large", "kind": "large", "height": 3.21, "yaw": 0, "source": "tripo/sources/stall_trader.glb"}
+  {"name": "stall_technician", "folder": "town_large", "kind": "large", "height": 3.34, "yaw": 0, "made": true, "source": "tripo/sources/stall_technician.glb"},
+  {"name": "stall_gunsmith", "folder": "town_large", "kind": "large", "height": 4.03, "yaw": 0, "made": true, "source": "tripo/sources/stall_gunsmith.glb"},
+  {"name": "stall_trader", "folder": "town_large", "kind": "large", "height": 3.21, "yaw": 0, "made": true, "source": "tripo/sources/stall_trader.glb"}
 ]

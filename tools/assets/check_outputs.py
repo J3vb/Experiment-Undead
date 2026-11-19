@@ -18,12 +18,13 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 TRIPO = os.path.join(REPO, "tools", "assets", "tripo")
 
 
-def tripo_models(manifest_dir: str) -> list:
-    """Committed paths of the Tripo models (ADR 0017): one manifest row each, made by tripo_intake.py, not built."""
+def tripo_models(manifest_dir: str, made_only: bool = False) -> list:
+    """Paths of the Tripo models (ADR 0017): one manifest row each, made by tripo_make.py, not built.
+    `made_only` keeps the rows already made (committed); the others still wait for an image or a run."""
     paths = []
     for manifest in sorted(glob.glob(os.path.join(manifest_dir, "*.json"))):
         with open(manifest, encoding="utf-8") as rows:
-            paths += [f"{row['folder']}/{row['name']}.glb" for row in json.load(rows)]
+            paths += [f"{r['folder']}/{r['name']}.glb" for r in json.load(rows) if r.get("made") or not made_only]
     return paths
 
 
