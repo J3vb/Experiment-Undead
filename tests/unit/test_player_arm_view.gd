@@ -247,7 +247,7 @@ func test_all_weapon_definitions_keep_firing_reloads_and_slots_with_the_imported
 			weapon._process(.05)
 			_assert_arm_update_preserves_weapon_motion(holder)
 			var rounds: int = weapon.data.magazine_size if weapon.data.reload_per_round else 1
-			weapon.tick(weapon._reload_duration * rounds)
+			weapon.tick(weapon._reload_timer + weapon._reload_duration * rounds)
 			assert_false(weapon.is_reloading(), String(id) + " reload genuinely completes")
 			weapon._process(.05)
 			_assert_arm_update_preserves_weapon_motion(holder)
@@ -281,6 +281,7 @@ func test_rifle_per_round_reload_keeps_current_arm_contacts_through_every_insert
 	var data: WeaponData = Content.weapon(&"rifle_ar").duplicate() as WeaponData
 	data.reload_per_round = true
 	data.magazine_size = 4
+	data.empty_reload_time = data.per_round_time
 	var weapon: Weapon = holder.give(data)
 	weapon.set_process(false)
 	weapon.instance.ammo_in_mag = 0
