@@ -58,4 +58,20 @@ def test_real_model_list_matches_committed_models():
     import build_models
 
     expected = [rel_path for rel_path, _build in build_models.MODELS.values()]
+    expected += check_outputs.tripo_models(check_outputs.TRIPO)
     assert check_outputs.stray_models(expected, os.path.join(check_outputs.REPO, "assets", "models")) == []
+
+
+def test_tripo_manifest_rows_are_not_strays(tmp_path):
+    manifests = tmp_path / "tripo"
+    manifests.mkdir()
+    (manifests / "town.json").write_text('[{"name": "stall_trader", "folder": "town_large"}]', encoding="utf-8")
+    write(tmp_path / "committed", "town_large/stall_trader.glb")
+    found = check_outputs.tripo_models(str(manifests))
+    assert found == ["town_large/stall_trader.glb"]
+    assert check_outputs.stray_models(EXPECTED + found, str(tmp_path / "committed")) == []
+
+
+def test_every_committed_tripo_model_has_a_file():
+    for rel_path in check_outputs.tripo_models(check_outputs.TRIPO):
+        assert os.path.isfile(os.path.join(check_outputs.REPO, "assets", "models", rel_path)), rel_path

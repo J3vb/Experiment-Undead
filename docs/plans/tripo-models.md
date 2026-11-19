@@ -96,6 +96,7 @@ Not in (non-goals, and where each one goes instead):
 | tools/levels/lantern_post_scene.py, levels/lantern_post/lantern_post.tscn | changed | Three stalls use the Tripo models |
 | assets/models/town_large/stall_*.glb | new | Tripo stalls (intake output) |
 | tests/content/test_tripo_stalls.gd | new | Stall model checks |
+| tools/assets/check_outputs.py | changed | Tripo manifest rows are not strays |
 
 Autoloads, managers or base classes added: none.
 
@@ -136,7 +137,8 @@ keep today's gate" (decision card, 2026-11-19).
   stalls in `tools/levels/lantern_post_scene.py` (back lined up with the old
   frame, our own sign board and name labels on the front, one box collider,
   light moved to the front). MISSIONS keeps the frame. The Tripo Deploy gate
-  is not used. `trader_goods`, `gun_wall`, `workbench` and `tech_desk` stay in
+  is not used. First manifest `tools/assets/tripo/town.json`; `check_outputs.py`
+  counts manifest rows as known models. `trader_goods`, `gun_wall`, `workbench` and `tech_desk` stay in
   the prop library but leave the town.
 - Tests: `tests/content/test_tripo_stalls.gd` (one lightmapped mesh on the
   origin, frame width, baked maps), scene generator test, catalogue rows,
