@@ -248,11 +248,12 @@ def omni(name, parent, pos, color, energy, rng, shadow=False) -> None:
     )
 
 
-def spot(name, parent, pos, rot, energy, rng, angle, color=FLOOD) -> None:
-    """Unshadowed spot light shining along its -Z."""
+def spot(name, parent, pos, rot, energy, rng, angle, color=FLOOD, moves=False) -> None:
+    """Unshadowed spot light shining along its -Z. A light that moves stays out of the lightmap bake."""
+    bake = "light_bake_mode = 0\n" if moves else ""
     nodes.append(
         f'[node name="{name}" type="SpotLight3D" parent="{parent}"]\ntransform = {xform(pos, rot)}\n'
-        f"light_color = Color({color})\nlight_energy = {energy}\nspot_range = {rng}\nspot_angle = {angle}\n"
+        f"light_color = Color({color})\nlight_energy = {energy}\n{bake}spot_range = {rng}\nspot_angle = {angle}\n"
     )
 
 
@@ -545,7 +546,7 @@ def _watchtower_sweep() -> None:
     """The tower floodlight's beam sweeps between the gate and the street: an AnimationPlayer loop, no script."""
     pivot = xform(_on_east(TOWER, (1.3, 10.1, 2.5)), basis_rot(sum(SWEEP) / 2))
     nodes.append(f'[node name="WatchtowerSweep" type="Node3D" parent="Cabins"]\ntransform = {pivot}\n')
-    spot("Beam", "Cabins/WatchtowerSweep", (0, 0, 0), basis_rot(pitch=-0.45), 6.0, 30.0, 14.0)
+    spot("Beam", "Cabins/WatchtowerSweep", (0, 0, 0), basis_rot(pitch=-0.45), 6.0, 30.0, 14.0, moves=True)
     nodes.append(
         '[node name="Sweep" type="AnimationPlayer" parent="Cabins/WatchtowerSweep"]\n'
         'libraries = {\n&"": SubResource("sweep_library")\n}\nautoplay = &"sweep"\n'
@@ -608,6 +609,16 @@ def build_spawn_and_moon() -> None:
     )
 
 
+def build_lightmap() -> None:
+    """Baked light for the static town (Halcyon Labs settings). Pines, fire flames and the sweep beam stay out.
+    The bake's ambient is the look's ambient colour (lantern_post_night.tres), not the dark night sky."""
+    nodes.append(
+        '[node name="LightmapGI" type="LightmapGI" parent="."]\nquality = 2\ntexel_scale = 1.5\n'
+        "environment_mode = 3\nenvironment_custom_color = Color(0.26, 0.3, 0.4, 1)\n"
+        'environment_custom_energy = 0.75\nlight_data = ExtResource("lightmap")\n'
+    )
+
+
 SWEEP_ANIMATION = (
     '[sub_resource type="Animation" id="sweep"]\nresource_name = "sweep"\nlength = 14.0\nloop_mode = 1\n'
     'tracks/0/type = "value"\ntracks/0/imported = false\ntracks/0/enabled = true\n'
@@ -643,8 +654,11 @@ def header() -> str:
     )
     for fx in ("snowfall", "chimney_smoke"):
         ext.append(f'[ext_resource type="PackedScene" path="res://levels/lantern_post/{fx}.tscn" id="{fx}"]')
+    ext.append(
+        '[ext_resource type="LightmapGIData" path="res://levels/lantern_post/lantern_post.lmbake" id="lightmap"]'
+    )
     subs = [
-        f'[sub_resource type="BoxMesh" id="{mesh}_{mat}"]\nmaterial = ExtResource("{mat}")\n'
+        f'[sub_resource type="BoxMesh" id="{mesh}_{mat}"]\nmaterial = ExtResource("{mat}")\nadd_uv2 = true\n'
         for mesh, mat in sorted(used)
     ]
     subs += [f'[sub_resource type="BoxShape3D" id="{key}"]\nsize = {size}\n' for key, size in sorted(shapes.items())]
@@ -680,6 +694,7 @@ def build() -> str:
     build_yards_and_pines()
     build_ridge()
     build_spawn_and_moon()
+    build_lightmap()
     return header() + "\n".join(nodes)
 
 
