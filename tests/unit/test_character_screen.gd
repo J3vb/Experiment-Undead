@@ -29,7 +29,7 @@ func after_each() -> void:
 
 func test_open_shows_profile_slots_stash_and_default_focus() -> void:
 	assert_eq(screen.profile, profile)
-	assert_eq((screen.get_node("%Name") as Label).text, "Rook")
+	assert_eq((screen.get_node("%Name") as NameField).text, "Rook")
 	assert_string_contains((screen.get_node("%Level") as Label).text, "14")
 	assert_eq(screen.stash_buttons.size(), 60)
 	assert_eq(screen.slot_buttons.size(), 5)
