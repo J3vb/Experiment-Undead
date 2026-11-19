@@ -334,6 +334,7 @@ stay a plain game score. The drop reasons below are provisional picks.
 | Sets | Each set belongs to one map's story. Proposed: Containment Detail = Halcyon (Oriel security), Fenlight Circuit = Kessel Dam (the power line), Lamplighter = Grauwald (the night nurses), Marrow Junction gets a rail or evacuation set later. *(proposed; affixes.md still says Lamplighter on map 1)* |
 | Field abilities | Salvager kit Teun and Dr. Corvelyn build from Oriel scrap: Shock Pulse, Med Burst, the Sentry turret, Adrenal Rush (a HALCYON stimulant), Decoy Siren (copies the pulse sound). |
 | Skill branches | The three salvager trades taught in town: Marksman, Survivor, Tinkerer. |
+| Your name | The name you sign in Pell's run log at the Deploy gate. Teammates read it on the squad cards, the ready-up board and the revive prompt. *(provisional)* |
 | Scrap | The town's money. Metal, parts and Oriel tech, traded at Odile's stall. |
 
 ### Lantern Post services

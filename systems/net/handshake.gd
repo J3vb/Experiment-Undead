@@ -34,7 +34,7 @@ var _rejected: Dictionary[int, bool] = {}
 
 ## Install on both sides before opening a connection. No profile data is saved here.
 func setup(display_name: String = "Survivor", level: int = 1) -> void:
-	_display_name = display_name
+	_display_name = CharacterProfile.clean_name(display_name)
 	_level = level
 	if fingerprint.is_empty():
 		fingerprint = Build.content_fingerprint()
@@ -132,8 +132,7 @@ func _admit(peer_id: int, hello_data: Dictionary) -> void:
 	if not (level is float or level is int) or not is_finite(float(level)):
 		return
 	_levels[peer_id] = clampi(int(level), 1, 50)
-	var display_name: String = str(hello_data.get("name", "")).strip_edges()
-	_names[peer_id] = display_name.left(24) if not display_name.is_empty() else "Survivor"
+	_names[peer_id] = CharacterProfile.clean_name(str(hello_data.get("name", "")))
 	_accepted[peer_id] = true
 	_send(peer_id, {"t": "accepted", "place": String(Net.place)})
 	_scene.complete_auth(peer_id)

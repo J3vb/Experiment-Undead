@@ -93,3 +93,4 @@ Agent picks the person may change.
 - **Footsteps:** one step per 0.5 s walking, 0.34 s sprinting, 0.72 s crouched; landings silent under 3 m/s.
 - **HUD:** XP bar placement, the 90 px / 0.6 s level-up ring, a 3-row drop feed; "Crits only" damage numbers show headshots until a crit stat exists.
 - **Model looks:** skinned zombies, gear finishes, vest frames, first-person arms, teammate clips and the launcher screen are agent looks until the person sees them.
+- **Player names:** up to 16 Latin letters, digits, spaces and - _ . ' ; default "Survivor"; duplicates allowed; set on the Character screen before joining. See [player-names](plans/player-names.md).
