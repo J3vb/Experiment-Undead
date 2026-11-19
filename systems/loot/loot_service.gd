@@ -56,11 +56,11 @@ func _equip_from_pack(uid: String) -> void:
 			return
 	var weapon: Weapon = ItemLoadout.equip_weapon(player, ItemInstance.new(item), _run_weapons.get(uid))
 	_run_weapons[uid] = weapon.instance
-	player.state_sync.send_loadout()
+	player.loadout_sync.send_loadout()
 
 
 func _on_enemy_killed(enemy: Node3D, _info: DamageInfo) -> void:
-	if not multiplayer.is_server() or session.is_over or session._xp_banked:
+	if not multiplayer.is_server() or session.is_over or session.match_end.xp_banked:
 		return
 	var zombie: Zombie = enemy as Zombie
 	if zombie == null or zombie.data == null or not session.spawner.is_ancestor_of(zombie):

@@ -8,7 +8,7 @@ const BLOATER: EnemyData = preload("res://content/enemies/zombie_bloater.tres")
 var session: GameSession
 var service: LootService
 var _port: int
-var _roots: Array[Node] = []
+var _sides: Array[GameSession] = []
 var _loot_before: Dictionary
 
 
@@ -28,10 +28,10 @@ func before_each() -> void:
 
 
 func after_each() -> void:
-	_roots.reverse()
-	for root: Node in _roots:
-		TwoPeers.close_side(root)
-	_roots.clear()
+	_sides.reverse()
+	for side: GameSession in _sides:
+		CoopSide.close(side)
+	_sides.clear()
 	Content._by_type[&"loot"] = _loot_before
 
 
@@ -106,13 +106,9 @@ func test_prototypes_are_fixed_and_only_in_their_rarity_pool() -> void:
 
 
 func _make_side(side_name: String) -> LootService:
-	var root: Node = TwoPeers.make_side(self, side_name)
-	_roots.append(root)
-	var loot: LootService = LootService.new()
-	loot.name = "LootService"
-	loot.session = session
-	root.add_child(loot)
-	return loot
+	var side: GameSession = CoopSide.make(self, side_name, [&"loot"])
+	_sides.append(side)
+	return side.loot
 
 
 func _add_player(loot: LootService, owner_id: int) -> Player:
@@ -120,7 +116,7 @@ func _add_player(loot: LootService, owner_id: int) -> Player:
 	owner_player.name = str(owner_id)
 	owner_player.set_multiplayer_authority(owner_id)
 	owner_player.get_node("PoseSync").free()
-	loot.get_parent().add_child(owner_player)
+	loot.session.level.add_child(owner_player)
 	owner_player.set_physics_process(false)
 	return owner_player
 
@@ -138,9 +134,9 @@ func test_drop_reaches_only_its_owner_and_pickup_only_changes_their_pack() -> vo
 	var client_player: Player = _add_player(client, client_id)
 	server.player = host_player
 	client.player = client_player
-	client_player.state_sync.gear = [{"v": 1, "uid": "charm", "base": "charm", "aff": [["test_loot_luck", 1, 1.0]]}]
-	client_player.state_sync.send_loadout()
-	var server_copy: Player = server.get_parent().get_node(str(client_id)) as Player
+	client_player.loadout_sync.gear = [{"v": 1, "uid": "charm", "base": "charm", "aff": [["test_loot_luck", 1, 1.0]]}]
+	client_player.loadout_sync.send_loadout()
+	var server_copy: Player = server.session.players.find_player(client_id)
 	await wait_until(
 		func() -> bool: return LootService.player_luck(server_copy, 1) == 0.2, 3.0, "charm luck counts on the server"
 	)

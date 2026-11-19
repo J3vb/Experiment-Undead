@@ -53,6 +53,9 @@ them.
 Autoloads, managers or base classes added: none / list + which Keep it simple
 rule allows it.
 
+Files over 300 lines this plan grows: none / list. Split each by job first, as
+its own step.
+
 ## Data
 
 New or changed Resource types, fields, `.tres` files, save fields and

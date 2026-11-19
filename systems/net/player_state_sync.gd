@@ -4,11 +4,8 @@ extends Node
 
 const BLEED_OUT_TIME: float = 30.0
 const PISTOL: StringName = &"pistol_service"
-const GEAR_SLOTS: int = 3
 
 var bleed_left: float = 0.0
-## The owner's equipped gear dicts; sent to the server with its item guns.
-var gear: Array[Dictionary] = []
 var _player: Player
 var _initial_spawn: Transform3D
 var _publish_queued: bool = false
@@ -156,59 +153,6 @@ func _receive_state(state: Dictionary) -> void:
 		Events.player_died.emit(_player)
 
 
-## Owner: tells the server what it has equipped. The server's own player applies it directly.
-func send_loadout() -> void:
-	if not _player.is_multiplayer_authority():
-		return
-	var guns: Array[Dictionary] = []
-	for weapon: Weapon in _player.weapons.weapons:
-		if weapon.item:
-			guns.append(weapon.item.data)
-	if multiplayer.is_server():
-		_apply_loadout(gear, guns)
-	else:
-		submit_loadout.rpc_id(1, gear, guns)
-
-
-@rpc("any_peer", "call_remote", "reliable")
-func submit_loadout(new_gear: Array, guns: Array) -> void:
-	if not multiplayer.is_server() or multiplayer.get_remote_sender_id() != _player.get_multiplayer_authority():
-		return
-	var sender: int = multiplayer.get_remote_sender_id()
-	var reason: String = _loadout_problem(new_gear, guns)
-	if not reason.is_empty():
-		Log.warn(&"net", &"loadout_rejected", {"peer": sender, "reason": reason})
-		return
-	var typed_gear: Array[Dictionary] = []
-	typed_gear.assign(new_gear)
-	var typed_guns: Array[Dictionary] = []
-	typed_guns.assign(guns)
-	_apply_loadout(typed_gear, typed_guns)
-
-
-func _loadout_problem(new_gear: Array, guns: Array) -> String:
-	if new_gear.size() > GEAR_SLOTS:
-		return "too_much_gear"
-	if guns.size() > _player.weapons.max_slots:
-		return "too_many_guns"
-	for entry: Variant in new_gear + guns:
-		if not entry is Dictionary:
-			return "not_a_dictionary"
-	for gun: Dictionary in guns:
-		if not Content.has(&"weapons", StringName(str(gun.get("base", "")))):
-			return "unknown_gun"
-	return ""
-
-
-## Server: rebuilds the player's gear stats and item guns from scratch.
-func _apply_loadout(new_gear: Array[Dictionary], guns: Array[Dictionary]) -> void:
-	gear = new_gear
-	_player.equip_gear(new_gear)
-	_player.item_guns.clear()
-	for gun: Dictionary in guns:
-		_player.item_guns[str(gun.get("uid", ""))] = ItemInstance.new(gun)
-
-
 func _sync_serums(ids: Array) -> void:
 	for index: int in range(_player.serums.size() - 1, -1, -1):
 		if not ids.has(_player.serums[index].id):
@@ -235,7 +179,7 @@ func down_player(second_wind: bool = false) -> void:
 	if second_wind:
 		_player.revive.second_wind()
 	elif _player.session and _player.session.is_inside_tree():
-		_player.session.check_squad()
+		_player.session.match_end.check_squad()
 
 
 func revive_player() -> void:

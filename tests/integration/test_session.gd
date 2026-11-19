@@ -170,7 +170,7 @@ func test_game_over_shows_results_with_headshot_kills_and_xp() -> void:
 	var headshot: DamageInfo = DamageInfo.create(1.0, player)
 	headshot.hit_zone = DamageInfo.Zone.HEAD
 	zombie.health.take_damage(headshot)
-	assert_eq(session._headshots, 0, "nonlethal head hit is not a headshot kill")
+	assert_eq(session.match_end.headshots, 0, "nonlethal head hit is not a headshot kill")
 	headshot.amount = 10000.0
 	zombie.health.take_damage(headshot)
 	var body_kill: Zombie = session.spawner.spawn(Content.enemy(&"zombie_walker"), 1, session.wave_rules)

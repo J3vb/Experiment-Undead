@@ -130,3 +130,50 @@ def test_tube_front_and_side_follow_the_angle():
     assert front == pytest.approx([0, -0.1, 0.5], abs=1e-6)
     assert side == pytest.approx([0.2, 0, 0.5], abs=1e-6)
     assert back == pytest.approx([0, 0.3, 0.5], abs=1e-6)
+
+
+# Taken from the player build before player_body learned to take a look (F-76 step 1): the default
+# look must build the same body, so the NPC refactor cannot change the player by accident.
+PLAYER_BUILD = {
+    "triangles": 14_998,
+    "vertices": 8_341,
+    "coordinate_sum": (-6.4591, -201.9211, 9202.2354),
+    "looks": {
+        0: 2034,
+        1: 52,
+        2: 1172,
+        3: 1552,
+        4: 522,
+        5: 308,
+        6: 626,
+        7: 216,
+        8: 280,
+        9: 540,
+        10: 744,
+        11: 110,
+        12: 112,
+        13: 21,
+    },
+    "head_weight": 2629.96,
+    "pelvis_weight": 617.7,
+}
+
+
+def test_default_look_builds_the_same_player_as_before_the_npc_refactor():
+    from collections import Counter
+
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    build_player(clips=False)
+    body = bpy.data.objects["Body"]
+    points = np.asarray([vertex.co[:] for vertex in body.data.vertices])
+    assert sum(len(face.vertices) - 2 for face in body.data.polygons) == PLAYER_BUILD["triangles"]
+    assert len(points) == PLAYER_BUILD["vertices"]
+    assert points.sum(axis=0) == pytest.approx(PLAYER_BUILD["coordinate_sum"], abs=1e-2)
+    looks = Counter(item.value for item in body.data.attributes["look"].data)
+    assert {look: looks[look] for look in PLAYER_BUILD["looks"]} == PLAYER_BUILD["looks"]
+    totals = Counter()
+    for vertex in body.data.vertices:
+        for group in vertex.groups:
+            totals[body.vertex_groups[group.group].name] += group.weight
+    assert totals["head"] == pytest.approx(PLAYER_BUILD["head_weight"], abs=0.05)
+    assert totals["pelvis"] == pytest.approx(PLAYER_BUILD["pelvis_weight"], abs=0.05)

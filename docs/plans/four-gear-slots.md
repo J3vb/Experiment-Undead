@@ -54,7 +54,7 @@ Not in (non-goals, and where each one goes instead):
   - Who decides: server rolls drops (LootService, as today); the owning client
     owns its stash and loadout (as today).
   - How a client triggers it: equips in the character screen; at spawn
-    PlayerStateSync.submit_loadout sends up to 7 gear dicts; the server checks
+    LoadoutSync.submit_loadout sends up to 7 gear dicts; the server checks
     the count and that each base exists, then rebuilds stats.
   - What other players see: the worn pieces through LookSync (F-70 step 2).
   - Works on a dedicated server with no local player: yes (server only rolls
@@ -167,7 +167,7 @@ Step 2 writes this into `docs/DECISIONS.md` and F-32's roadmap row.
 | systems/save/save_file.gd | changed | `CURRENT_VERSION` 3, `_v2_to_v3` adds the four empty slots |
 | systems/loot/gear_base_data.gd | changed | `slot` enum gains the four slots |
 | systems/loot/item_loadout.gd | changed | gear loop uses `CharacterProfile.GEAR_SLOTS` |
-| systems/net/player_state_sync.gd | changed | `GEAR_SLOTS` from the profile (7) |
+| systems/net/loadout_sync.gd | changed | `GEAR_SLOTS` from the profile (7) |
 | core/build.gd | changed | `PROTOCOL_VERSION` bump |
 | systems/gear/look_builder.gd | changed | visual from `GearBaseData.visual_id`; `BASE_VISUALS` table and its baseline lines removed |
 | content/loot/gear/*.tres | new / changed | four new bases; drop weights (step 2) |
@@ -233,12 +233,12 @@ as today.
 - Needs: F-70 step 2 merged (CharacterLook has the four slots and the four
   GearVisuals exist).
 - Build: `CharacterProfile.SLOTS` / `GEAR_SLOTS`; every hard-coded slot list
-  in profile, ItemLoadout, PlayerStateSync and LookBuilder uses them.
+  in profile, ItemLoadout, LoadoutSync and LookBuilder uses them.
   `GearBaseData.slot` enum; four new bases with `drop_weight = 0`. SaveFile
   version 3 with `_v2_to_v3`. LookBuilder reads `GearBaseData.visual_id` and
   drops `BASE_VISUALS` (baseline shrinks). Protocol bump.
 - Files: character_profile.gd, save_file.gd, gear_base_data.gd,
-  item_loadout.gd, player_state_sync.gd, look_builder.gd, core/build.gd,
+  item_loadout.gd, loadout_sync.gd, look_builder.gd, core/build.gd,
   four `content/loot/gear/*.tres`, content_id_baseline.txt, tests.
 - Tests: `test_save_file.gd`: a version 2 sample loads with four empty new
   slots and saves as version 3. `test_character_profile.gd`: loadout has 9

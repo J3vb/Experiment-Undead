@@ -11,35 +11,23 @@ var client_root: Node
 var server_spawner: Spawner
 var client_spawner: Spawner
 var _port: int
-var _session: GameSession
 
 var _gore_before: Variant
 
 
 func _make_side(side_name: String) -> Spawner:
-	var root: Node = TwoPeers.make_side(self, side_name)
-	var spawner: Spawner = Spawner.new()
-	spawner.name = "Enemies"
-	spawner.spawn_group = &"test_zombie_sync_points"
-	spawner.session = _session
-	root.add_child(spawner)
-	return spawner
+	return CoopSide.make(self, side_name).spawner
 
 
 func before_each() -> void:
 	_gore_before = Settings.get_value(&"graphics", &"gore")
 	Settings._values[&"graphics"][&"gore"] = Impact.Gore.FULL
 	_port = TwoPeers.next_port()
-	_session = GameSession.new()
-	_session.rng.seed = 7
 	server_spawner = _make_side("Server")
 	client_spawner = _make_side("Client")
-	server_root = server_spawner.get_parent()
-	client_root = client_spawner.get_parent()
-	var marker: Marker3D = Marker3D.new()
-	marker.add_to_group(&"test_zombie_sync_points")
-	marker.position = Vector3(4, 0, -3)
-	server_root.add_child(marker)
+	server_root = server_spawner.session.get_parent()
+	client_root = client_spawner.session.get_parent()
+	CoopSide.add_spawn_point(server_spawner.session, Vector3(4, 0, -3))
 	assert_eq(TwoPeers.host(server_root, _port, 2), OK)
 	assert_eq(TwoPeers.join(client_root, _port), OK)
 	await wait_until(
@@ -52,12 +40,8 @@ func before_each() -> void:
 
 func after_each() -> void:
 	Settings._values[&"graphics"][&"gore"] = _gore_before
-	for root: Node in [client_root, server_root]:
-		for child: Node in (root.get_node("Enemies") as Node).get_children():
-			if child is Zombie:
-				child.free()
-		TwoPeers.close_side(root)
-	_session.free()
+	for spawner: Spawner in [client_spawner, server_spawner]:
+		CoopSide.close(spawner.session)
 
 
 func _spawn_on_server() -> Array[Zombie]:

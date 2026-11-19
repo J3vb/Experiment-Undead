@@ -1,0 +1,72 @@
+## The owner's equipped gear and item guns, sent to the server on spawn and every Pack equip.
+## The server checks the loadout and rebuilds the player's gear stats and item guns from it.
+class_name LoadoutSync
+extends Node
+
+const GEAR_SLOTS: int = 3
+
+## The owner's equipped gear dicts; sent to the server with its item guns.
+var gear: Array[Dictionary] = []
+var _player: Player
+
+
+func _init() -> void:
+	name = "LoadoutSync"
+	set_multiplayer_authority(1)
+
+
+func _ready() -> void:
+	_player = get_parent() as Player
+
+
+## Owner: tells the server what it has equipped. The server's own player applies it directly.
+func send_loadout() -> void:
+	if not _player.is_multiplayer_authority():
+		return
+	var guns: Array[Dictionary] = []
+	for weapon: Weapon in _player.weapons.weapons:
+		if weapon.item:
+			guns.append(weapon.item.data)
+	if multiplayer.is_server():
+		_apply_loadout(gear, guns)
+	else:
+		submit_loadout.rpc_id(1, gear, guns)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func submit_loadout(new_gear: Array, guns: Array) -> void:
+	if not multiplayer.is_server() or multiplayer.get_remote_sender_id() != _player.get_multiplayer_authority():
+		return
+	var sender: int = multiplayer.get_remote_sender_id()
+	var reason: String = _loadout_problem(new_gear, guns)
+	if not reason.is_empty():
+		Log.warn(&"net", &"loadout_rejected", {"peer": sender, "reason": reason})
+		return
+	var typed_gear: Array[Dictionary] = []
+	typed_gear.assign(new_gear)
+	var typed_guns: Array[Dictionary] = []
+	typed_guns.assign(guns)
+	_apply_loadout(typed_gear, typed_guns)
+
+
+func _loadout_problem(new_gear: Array, guns: Array) -> String:
+	if new_gear.size() > GEAR_SLOTS:
+		return "too_much_gear"
+	if guns.size() > _player.weapons.max_slots:
+		return "too_many_guns"
+	for entry: Variant in new_gear + guns:
+		if not entry is Dictionary:
+			return "not_a_dictionary"
+	for gun: Dictionary in guns:
+		if not Content.has(&"weapons", StringName(str(gun.get("base", "")))):
+			return "unknown_gun"
+	return ""
+
+
+## Server: rebuilds the player's gear stats and item guns from scratch.
+func _apply_loadout(new_gear: Array[Dictionary], guns: Array[Dictionary]) -> void:
+	gear = new_gear
+	_player.equip_gear(new_gear)
+	_player.item_guns.clear()
+	for gun: Dictionary in guns:
+		_player.item_guns[str(gun.get("uid", ""))] = ItemInstance.new(gun)

@@ -87,7 +87,7 @@ func _physics_process(delta: float) -> void:
 	is_holding = false
 	is_counting = false
 	_set_open(false)
-	(get_tree().get_first_node_in_group(&"game_session") as GameSession).finish_exfil()
+	(get_tree().get_first_node_in_group(&"game_session") as GameSession).match_end.finish_exfil()
 
 
 ## Visual only: the client's countdown between server updates.

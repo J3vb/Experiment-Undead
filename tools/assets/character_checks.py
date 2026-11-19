@@ -26,6 +26,7 @@ IMPLANT_JOINTS = {"Module": None, "Port": None}
 VEST_BUDGETS = {"vest_light": (3_000, 4_500), "vest_medium": (4_000, 5_500), "vest_heavy": (4_500, 6_000)}
 JOINTS = {
     "player": {"Eyes": None},
+    "npc_quartermaster": {"Eyes": None},
     "player_arms": {},
     **dict.fromkeys(CHARMS, CHARM_JOINTS),
     **dict.fromkeys(IMPLANTS, IMPLANT_JOINTS),

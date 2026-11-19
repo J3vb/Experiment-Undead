@@ -2,7 +2,6 @@
 ## zombie loses health and receives the validated both-barrel impulse.
 extends GutTest
 
-const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
 const WALKER: EnemyData = preload("res://content/enemies/zombie_walker.tres")
 const WAVES: WaveRules = preload("res://content/waves/default_waves.tres")
 
@@ -17,28 +16,10 @@ var _port: int
 
 
 func _make_side(side_name: String) -> HitClaims:
-	var root: Node = TwoPeers.make_side(self, side_name)
-	var session: GameSession = GameSession.new()
+	var session: GameSession = CoopSide.make(self, side_name, [&"hit_claims"])
 	session.rng.seed = 17
-	var world: Node3D = Node3D.new()
-	world.name = "World"
-	root.add_child(world)
-	session.spawner = Spawner.new()
-	session.spawner.name = "Enemies"
-	session.spawner.spawn_group = &"test_double_barrel_claim_points"
-	session.spawner.session = session
-	root.add_child(session.spawner)
-	session.players = PlayerSpawner.new()
-	session.players.name = "PlayerSpawner"
-	session.players.player_scene = PLAYER
 	session.players.player_added.connect(_prepare_player.bind(session))
-	root.add_child(session.players)
-	var claims: HitClaims = HitClaims.new()
-	claims.name = "HitClaims"
-	claims.session = session
-	session.hit_claims = claims
-	root.add_child(claims)
-	return claims
+	return session.hit_claims
 
 
 func _prepare_player(player: Player, session: GameSession) -> void:
@@ -52,10 +33,7 @@ func before_each() -> void:
 	damage_events.clear()
 	server = _make_side("Server")
 	client = _make_side("Client")
-	var marker: Marker3D = Marker3D.new()
-	marker.add_to_group(&"test_double_barrel_claim_points")
-	marker.position = Vector3(0, 0, -4)
-	server.get_parent().add_child(marker)
+	CoopSide.add_spawn_point(server.session, Vector3(0, 0, -4))
 	await _connect_peers()
 	var peer_id: int = client.multiplayer.get_unique_id()
 	claimant = server.session.players.find_player(peer_id)
@@ -66,8 +44,8 @@ func before_each() -> void:
 func _connect_peers() -> void:
 	assert_eq(TwoPeers.host(server, _port, 2), OK)
 	assert_eq(TwoPeers.join(client, _port), OK)
-	client.session.players.setup(client.get_parent().get_node("World") as Node3D, Transform3D.IDENTITY)
-	server.session.players.setup(server.get_parent().get_node("World") as Node3D, Transform3D.IDENTITY)
+	CoopSide.start_players(client.session)
+	CoopSide.start_players(server.session)
 	await wait_until(
 		func() -> bool:
 			var peer_id: int = client.multiplayer.get_unique_id()
@@ -99,15 +77,7 @@ func _spawn_target() -> void:
 
 func after_each() -> void:
 	for claims: HitClaims in [client, server]:
-		var root: Node = claims.get_parent()
-		for node: Node in claims.session.spawner.get_children():
-			if node is Zombie:
-				node.free()
-		for node: Node in root.get_node("World").get_children():
-			if node is Player:
-				node.free()
-		claims.session.free()
-		TwoPeers.close_side(root)
+		CoopSide.close(claims.session)
 
 
 func _gun(id: StringName) -> Weapon:

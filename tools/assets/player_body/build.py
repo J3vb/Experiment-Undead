@@ -1,9 +1,12 @@
 """Builds the survivor player body and bakes its texture maps into the game .glb (ADR 0015).
 
+build_body() takes a look (face, hair, colours, texture looks); town NPCs reuse it (ADR 0016).
+
 python tools/assets/player_body/build.py            # build, bake, check and export assets/models/characters/player.glb
 python tools/assets/player_body/build.py --out DIR  # somewhere else
 """
 
+import functools
 import json
 import math
 import os
@@ -26,14 +29,22 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.a
 OUT = os.path.join(REPO, "assets", "models")
 
 
-def materials() -> dict:
+PLAYER = {
+    **head.PLAYER,
+    "colours": {"skin": "#8F6A50", "hair": "#1E1915", "cloth": "#2F393B", "rubber": "#1C2122"},
+    "textures": textures.LOOKS,
+}
+
+
+def materials(look: dict = PLAYER) -> dict:
     from build_models import material, srgb
 
+    colours = look["colours"]
     return {
-        "skin": material("BodySkin", srgb("#8F6A50"), roughness=0.62),
-        "hair": material("BodyHair", srgb("#1E1915"), roughness=0.85),
-        "cloth": material("BodyCloth", srgb("#2F393B"), roughness=0.9),
-        "rubber": material("BodyRubber", srgb("#1C2122"), roughness=0.78),
+        "skin": material("BodySkin", srgb(colours["skin"]), roughness=0.62),
+        "hair": material("BodyHair", srgb(colours["hair"]), roughness=0.85),
+        "cloth": material("BodyCloth", srgb(colours["cloth"]), roughness=0.9),
+        "rubber": material("BodyRubber", srgb(colours["rubber"]), roughness=0.78),
     }
 
 
@@ -66,14 +77,15 @@ def _skin_to(obj, armature, bones: tuple, blend: float) -> None:
             groups[bone].add([vertex.index], weight, "REPLACE")
 
 
-def _bind(parts: list, armature, zone: float, bone: str | None = None, blend: float = 0.14) -> list:
+def _bind(parts: list, zone: float, bone: str | None = None, blend: float = 0.14, *, armature, table, cloth) -> list:
+    """Tag each part with its texture look and skin it to the rig (clothes only to their own bones)."""
     for obj in parts:
-        textures.tag(obj)
+        textures.tag(obj, table)
         paint.zone(obj, zone)
-        cloth = CLOTH_BONES.get(obj.name.split(".")[0])
-        if cloth:
+        bones = cloth.get(obj.name.split(".")[0])
+        if bones:
             side = "L" if sum(vertex.co.x for vertex in obj.data.vertices) > 0 else "R"
-            _skin_to(obj, armature, tuple(name.format(s=side) for name in cloth), 0.12)
+            _skin_to(obj, armature, tuple(name.format(s=side) for name in bones), 0.12)
         elif bone:
             rig.bind_rigid(obj, armature, bone)
         else:
@@ -89,24 +101,32 @@ def _eyes_marker(armature) -> None:
     eyes.matrix_world = Matrix.Translation((0, -0.115, head.EYE[1]))
 
 
-def build_player(clips: bool = True) -> None:
-    """Survivor body on the shared 22 bones, facing -Y, 1.8 m tall."""
+def build_body(look: dict = PLAYER, dress=outfit.build_outfit, cloth_bones: dict = CLOTH_BONES):
+    """A body on the shared 22 bones, facing -Y, 1.8 m tall. `dress(mats)` returns the clothes:
+    {"cloth": [...], "arms": {sign: [...]}} and optionally "head": [...] for parts that ride the head bone."""
     from build_models import join_into
 
-    mats = materials()
+    mats = materials(look)
     armature = rig.build_armature()
-    face = head.build_head(mats)
-    parts = _bind(face["skin"] + face["hair"] + face["eyes"], armature, paint.ZONE_ACCENT, "head")
-    parts += _bind([head.build_neck(mats)], armature, paint.ZONE_ACCENT, blend=0.06)
-    clothes = outfit.build_outfit(mats)
-    parts += _bind(clothes["cloth"], armature, paint.ZONE_MAIN)
+    bind = functools.partial(_bind, armature=armature, table=look["textures"], cloth=cloth_bones)
+    face = head.build_head(mats, look)
+    clothes = dress(mats)
+    parts = bind(face["skin"] + face["hair"] + face["eyes"] + clothes.get("head", []), paint.ZONE_ACCENT, "head")
+    parts += bind([head.build_neck(mats)], paint.ZONE_ACCENT, blend=0.06)
+    parts += bind(clothes["cloth"], paint.ZONE_MAIN)
     for sign in (1, -1):
-        parts += _bind(clothes["arms"][sign], armature, paint.ZONE_MAIN)
-        parts += _bind(extremities.build_glove(mats, sign), armature, paint.ZONE_ACCENT, blend=0.05)
-        parts += _bind(extremities.build_boot(mats, sign), armature, paint.ZONE_ACCENT, blend=0.06)
+        parts += bind(clothes["arms"][sign], paint.ZONE_MAIN)
+        parts += bind(extremities.build_glove(mats, sign), paint.ZONE_ACCENT, blend=0.05)
+        parts += bind(extremities.build_boot(mats, sign), paint.ZONE_ACCENT, blend=0.06)
     join_into(parts[0], parts[1:])
     parts[0].name = "Body"
     _eyes_marker(armature)
+    return armature
+
+
+def build_player(clips: bool = True) -> None:
+    """The survivor player body (the default look)."""
+    armature = build_body()
     if clips:
         import player_clips
 

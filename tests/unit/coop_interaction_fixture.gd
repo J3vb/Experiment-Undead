@@ -1,10 +1,8 @@
 ## Shared two-peer fixture for co-op interaction tests: a server with no local
 ## player (like a dedicated server), a client, and an optional late joiner.
-## Each side has its own GameSession, Economy, Level and InteractionSync.
+## Each side is a CoopSide with InteractionSync and this fixture's Level.
 extends GutTest
 
-const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
-const HUD: PackedScene = preload("res://systems/ui/hud.tscn")
 const DOOR: PackedScene = preload("res://systems/interactables/door.tscn")
 const POWER_SWITCH: PackedScene = preload("res://systems/interactables/power_switch.tscn")
 const WALL_BUY: PackedScene = preload("res://systems/interactables/wall_buy.tscn")
@@ -14,7 +12,6 @@ const BARRIER: PackedScene = preload("res://systems/interactables/barrier.tscn")
 const VAULT: PackedScene = preload("res://systems/interactables/specimen_vault.tscn")
 const HATCH: PackedScene = preload("res://systems/interactables/exfil_hatch.tscn")
 const RADIO: PackedScene = preload("res://systems/interactables/wall_radio.tscn")
-const ECONOMY: String = "res://content/economy/default_economy.tres"
 
 var server: GameSession
 var client: GameSession
@@ -22,16 +19,6 @@ var late: GameSession
 var client_id: int
 var _port: int
 var _sessions: Array[GameSession] = []
-
-
-class FixtureSession:
-	extends GameSession
-
-	func _ready() -> void:
-		pass
-
-	func _exit_tree() -> void:
-		pass
 
 
 func before_each() -> void:
@@ -50,7 +37,7 @@ func before_each() -> void:
 
 func after_each() -> void:
 	for session: GameSession in _sessions:
-		TwoPeers.close_side(session.get_parent())
+		CoopSide.close(session)
 
 
 func join(session: GameSession) -> void:
@@ -65,33 +52,7 @@ func join(session: GameSession) -> void:
 
 
 func make_side(side_name: String) -> GameSession:
-	var root: Node = TwoPeers.make_side(self, side_name)
-	var session: GameSession = FixtureSession.new()
-	session.name = "GameSession"
-	var economy: Economy = Economy.new()
-	economy.rules = load(ECONOMY)
-	var children: Dictionary[StringName, Node] = {
-		&"WaveDirector": WaveDirector.new(),
-		&"Economy": economy,
-		&"Progression": ProgressionService.new(),
-		&"PowerUpDrops": PowerUpDrops.new(),
-		&"Hud": HUD.instantiate(),
-	}
-	for node_name: StringName in children:
-		children[node_name].name = node_name
-		session.add_child(children[node_name])
-	session.level = build_level()
-	session.add_child(session.level)
-	session.players = PlayerSpawner.new()
-	session.players.name = "PlayerSpawner"
-	session.players._parent = session.level
-	session.add_child(session.players)
-	session.interactions = InteractionSync.new()
-	session.interactions.session = session
-	session.add_child(session.interactions)
-	root.add_child(session)
-	session.set_physics_process(false)
-	session.set_process_unhandled_input(false)
+	var session: GameSession = CoopSide.make(self, side_name, [&"interactions", &"loot"], build_level())
 	_sessions.append(session)
 	return session
 
@@ -172,14 +133,7 @@ func _add_door(level: Level, door_name: String, area: StringName, cost: int, at:
 
 
 func add_player(session: GameSession, peer_id: int) -> Player:
-	var player: Player = PLAYER.instantiate() as Player
-	player.name = str(peer_id)
-	player.net_id = peer_id
-	player.session = session
-	player.set_multiplayer_authority(peer_id)
-	session.level.add_child(player)
-	player.set_physics_process(false)
-	return player
+	return CoopSide.add_player(session, peer_id)
 
 
 func on_server(peer_id: int = client_id) -> Player:

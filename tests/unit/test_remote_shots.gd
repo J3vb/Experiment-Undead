@@ -1,7 +1,6 @@
 ## Real ENet peers relay one cosmetic shot, with no owner echo or gameplay changes.
 extends GutTest
 
-const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
 const _NO_HITS: PackedVector3Array = []
 const _NO_KINDS: PackedByteArray = []
 
@@ -11,31 +10,16 @@ var _sessions: Array[GameSession] = []
 
 
 func _make_side(side_name: String) -> Node:
-	var root: Node = TwoPeers.make_side(self, side_name)
-	var world: Node3D = Node3D.new()
-	world.name = "World"
-	root.add_child(world)
-	var session: GameSession = GameSession.new()
-	session.rng.seed = 7
+	var session: GameSession = CoopSide.make(self, side_name, [&"remote_shots"])
 	_sessions.append(session)
-	var shots: RemoteShots = RemoteShots.new()
-	shots.name = "RemoteShots"
-	shots.session = session
-	session.remote_shots = shots
-	root.add_child(shots)
-	var spawner: PlayerSpawner = PlayerSpawner.new()
-	spawner.name = "PlayerSpawner"
-	spawner.player_scene = PLAYER
-	session.players = spawner
-	spawner.player_added.connect(
+	session.players.player_added.connect(
 		func(player: Player) -> void:
 			player.spawn(session, [Content.weapon(&"brenner_trench")])
 			player.set_physics_process(false)
-			shots.watch_player(player)
+			session.remote_shots.watch_player(player)
 	)
-	root.add_child(spawner)
-	_roots.append(root)
-	return root
+	_roots.append(session.get_parent())
+	return session.get_parent()
 
 
 func before_each() -> void:
@@ -47,15 +31,13 @@ func before_each() -> void:
 	for root: Node in [client, observer]:
 		assert_eq(TwoPeers.join(root, _port), OK)
 	for index: int in [1, 2, 0]:
-		var root: Node = _roots[index]
-		var spawner: PlayerSpawner = _sessions[index].players
-		spawner.setup(root.get_node("World") as Node3D, Transform3D.IDENTITY)
+		CoopSide.start_players(_sessions[index])
 	await wait_until(
 		func() -> bool:
 			return (
-				_roots[0].get_node("World").get_child_count() == 3
-				and _roots[1].get_node("World").get_child_count() == 3
-				and _roots[2].get_node("World").get_child_count() == 3
+				CoopSide.players(_sessions[0]).size() == 3
+				and CoopSide.players(_sessions[1]).size() == 3
+				and CoopSide.players(_sessions[2]).size() == 3
 			),
 		5.0,
 		"three peers see three players"
@@ -63,11 +45,9 @@ func before_each() -> void:
 
 
 func after_each() -> void:
-	_roots.reverse()
-	for root: Node in _roots:
-		TwoPeers.close_side(root)
+	_sessions.reverse()
 	for session: GameSession in _sessions:
-		session.free()
+		CoopSide.close(session)
 	_roots.clear()
 	_sessions.clear()
 
@@ -84,6 +64,7 @@ func test_client_shot_reaches_host_and_other_client_with_all_missed_pellets() ->
 	var other_effects: RemoteShotEffects = _effects(2, peer_id)
 	var weapon: Weapon = shooter.weapons.current
 	var health_before: float = server_copy.health.current
+	var points_before: int = server_copy.wallet.points
 	weapon.fire()
 	await wait_until(
 		func() -> bool: return _drawn(host_effects) and _drawn(other_effects), 3.0, "client shot relayed through server"
@@ -92,7 +73,7 @@ func test_client_shot_reaches_host_and_other_client_with_all_missed_pellets() ->
 	_assert_shot(host_effects, weapon.data)
 	_assert_shot(other_effects, weapon.data)
 	assert_eq(server_copy.health.current, health_before, "cosmetics do no damage")
-	assert_eq(server_copy.wallet.points, 0, "cosmetics award no points")
+	assert_eq(server_copy.wallet.points, points_before, "cosmetics award no points")
 	assert_eq(server_copy.weapons.current.instance.ammo_in_mag, weapon.data.magazine_size)
 	assert_eq(weapon.instance.ammo_in_mag, weapon.data.magazine_size - 1, "one shell for all pellets")
 	assert_true(_sessions[1].remote_shots._points.is_empty(), "shot flushes its endpoints")
