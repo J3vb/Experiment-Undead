@@ -2,21 +2,19 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ccwy7m20x6n7w"
-path.s3tc="res://.godot/imported/npc_quartermaster_BodyNormal.jpg-9a0f54cb8348f58bb7d1bba9c60a8055.s3tc.ctex"
+uid="uid://c0mawwi0ux41p"
+path="res://.godot/imported/npc_quartermaster_npc_quartermaster_albedo.jpg-c264376a8425145b32a883b7f6b3de77.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
-"md5": "69f481ec76b7c3e5a582b514103b3887"
+"md5": "4066a0a8865727f2320b3f31c621ce66"
 }
 
 [deps]
 
-source_file="res://assets/models/characters/npc_quartermaster_BodyNormal.jpg"
-dest_files=["res://.godot/imported/npc_quartermaster_BodyNormal.jpg-9a0f54cb8348f58bb7d1bba9c60a8055.s3tc.ctex"]
-
+source_file="res://assets/models/characters/npc_quartermaster_npc_quartermaster_albedo.jpg"
+dest_files=["res://.godot/imported/npc_quartermaster_npc_quartermaster_albedo.jpg-c264376a8425145b32a883b7f6b3de77.ctex"]
 [params]
 
 compress/mode=2
@@ -25,7 +23,7 @@ compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
-compress/normal_map=1
+compress/normal_map=0
 compress/channel_pack=0
 mipmaps/generate=true
 mipmaps/limit=-1

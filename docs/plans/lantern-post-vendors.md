@@ -182,6 +182,9 @@ step 5 must keep the hub at the F-74 target with 8 players.
 
 ### Step 1: Builder and the first vendor (Quartermaster)
 
+Replaced by F-80 step 3 (docs/plans/tripo-models.md, 2026-11-19): all four keepers are Tripo models from
+`tools/assets/tripo/vendors.json`; the code-built builder from PR #341 was removed. Steps 3-5 stay.
+
 The risky part first: a second head shape (older woman) and a long coat on the
 survivor pipeline. If it fails the look card, steps 2-5 change, not throw away.
 
@@ -205,6 +208,8 @@ survivor pipeline. If it fails the look card, steps 2-5 change, not throw away.
 - Done when: the look card is answered and the model passes Assets CI.
 
 ### Step 2: The other three vendors
+
+Replaced by F-80 step 3 (see step 1).
 
 - Build: looks for the Gunsmith (bald, thick grey-brown beard, ear defenders
   round the neck, tan canvas apron over olive overalls, rolled sleeves), the
