@@ -163,6 +163,13 @@ func test_rifle_red_dot_has_a_reticle_and_no_scope_camera() -> void:
 		return
 	assert_eq(reticle.get_parent().name, &"ReticleMount", "reticle sits on the model's mount")
 	assert_eq(reticle.layers, ScopeLens.VIEWMODEL_LAYER, "reticle is a viewmodel mesh")
+	assert_gte(
+		(reticle.mesh as QuadMesh).size.x, 0.004, "dot big enough to read at 1440p (play-test: 1.6 mm was invisible)"
+	)
+	var dot: StandardMaterial3D = reticle.material_override as StandardMaterial3D
+	assert_eq(dot.blend_mode, BaseMaterial3D.BLEND_MODE_MIX, "additive washed the dot out on bright walls")
+	var core: Color = (dot.albedo_texture as GradientTexture2D).gradient.sample(0.0)
+	assert_gt(core.r, core.g + 0.6, "the dot's centre is red, not white")
 
 
 func test_shotgun_pump_racks_with_the_left_hand_on_it() -> void:

@@ -6,10 +6,13 @@ const STABLE_DIRECTORY: String = "user://characters/"
 ## Test tags, main builds, the editor and tests save here so they never touch stable saves.
 const TEST_DIRECTORY: String = "user://characters-test/"
 const STASH_SIZE: int = 60
+const NAME_MAX: int = 16
+const DEFAULT_NAME: String = "Survivor"
+const GEAR_SLOTS: Array[StringName] = [&"vest", &"charm", &"implant"]
 const XP_RULES: XpRules = preload("res://content/progression/xp_rules.tres")
 
 var id: StringName = &""
-var display_name: String = "Survivor"
+var display_name: String = DEFAULT_NAME
 var total_xp: int = 0
 var skill_ranks: Dictionary = {}
 var stash: Array[Dictionary] = []
@@ -47,7 +50,7 @@ func to_dict() -> Dictionary:
 static func from_dict(data: Dictionary) -> CharacterProfile:
 	var profile: CharacterProfile = CharacterProfile.new()
 	profile.id = StringName(data.get("id", ""))
-	profile.display_name = data.get("display_name", "Survivor")
+	profile.display_name = clean_name(str(data.get("display_name", DEFAULT_NAME)))
 	profile.total_xp = int(data.get("total_xp", 0))
 	profile.skill_ranks = data.get("skill_ranks", {}).duplicate(true)
 	var saved_stash: Array = data.get("stash", [])
@@ -66,6 +69,15 @@ static func from_dict(data: Dictionary) -> CharacterProfile:
 	for key: String in ["id", "display_name", "total_xp", "skill_ranks", "stash", "loadout", "best_runs"]:
 		profile._unknown.erase(key)
 	return profile
+
+
+## A typed name cut to what every screen can show: Latin letters, digits, single
+## spaces and - _ . ' up to NAME_MAX. Nothing left gives the default name.
+static func clean_name(text: String) -> String:
+	var kept: String = RegEx.create_from_string("[^\\p{Latin}0-9 _.'\\-]").sub(text, "", true)
+	var cleaned: String = RegEx.create_from_string(" +").sub(kept, " ", true).strip_edges()
+	cleaned = cleaned.left(NAME_MAX).strip_edges()
+	return cleaned if not cleaned.is_empty() else DEFAULT_NAME
 
 
 ## Where characters are saved for this build. Stable releases use the stable

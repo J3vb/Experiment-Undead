@@ -1,6 +1,6 @@
 ## A boarded window. Zombies spawned behind it tear the planks off from
-## outside (+Z faces into the room), then climb through. Players repair one
-## plank per press from inside for points. The Blocker keeps players in; it
+## outside (+Z faces into the room), then climb through. Players hold interact
+## inside to repair a plank every HOLD_INTERVAL for points. The Blocker keeps players in; it
 ## sits on the barrier layer, which zombies and the navmesh bake ignore.
 ## Three attack slots line the window; extra zombies wait at queue points
 ## further back, and only one zombie vaults through at a time. Planks reach
@@ -10,6 +10,8 @@ extends Interactable
 
 const PLANKS: int = 6
 const REPAIR_TIME: float = 0.5
+## A little longer than REPAIR_TIME, so a held key never lands on the cooldown's last tick.
+const HOLD_INTERVAL: float = REPAIR_TIME + 0.1
 ## Where a zombie stands to tear planks, and where it lands after climbing in.
 const OUTSIDE_DEPTH: float = 0.8
 const INSIDE_DEPTH: float = 1.0
@@ -40,7 +42,11 @@ func _physics_process(delta: float) -> void:
 
 
 func get_prompt(_player: Player) -> String:
-	return "Repair barrier [F]" if planks < PLANKS else ""
+	return "Hold to repair barrier [F]" if planks < PLANKS else ""
+
+
+func hold_interval() -> float:
+	return HOLD_INTERVAL
 
 
 func interact(player: Player, _facts: Dictionary = {}) -> void:

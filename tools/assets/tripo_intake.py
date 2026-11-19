@@ -2,6 +2,7 @@
 
     python tools/assets/tripo_intake.py source.glb --kind prop --height 0.9 --name crate
     python tools/assets/tripo_intake.py odile.glb --kind character --name odile_brandt
+    python tools/assets/tripo_intake.py track.glb --length 6 --name track_section --folder props
 
 Joins the source meshes, turns the front to Blender -Y (Godot +Z), scales to height, puts the
 origin at the floor centre, decimates a copy to budget, unwraps it and bakes the source look into
@@ -24,6 +25,7 @@ from player_body.build import strip_icc
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT = os.path.join(REPO, "docs", "design", "reviews", "tripo-trial")
+MODELS = os.path.join(REPO, "assets", "models")
 KINDS = {"prop": (2_000, 1024, None), "large": (12_000, 2048, None), "character": (16_000, 2048, 1.8)}
 BAKED = "Baked"  # characters: "BodyBaked", the Body* finish the character checks expect
 CHANNELS = ("albedo", "roughness", "metal")
@@ -66,12 +68,12 @@ def world_bounds(obj) -> tuple:
     return Vector(points.min(axis=0)), Vector(points.max(axis=0))
 
 
-def place_matrix(obj, height: float, yaw_degrees: float) -> Matrix:
-    """Turn about Z, scale to height, then move the floor centre to the origin."""
+def place_matrix(obj, height: float, yaw_degrees: float, length: float = 0.0) -> Matrix:
+    """Turn about Z, scale to height (or the longest side to length), then move the floor centre to the origin."""
     turn = Matrix.Rotation(math.radians(yaw_degrees), 4, "Z")
     obj.data.transform(turn)
     lo, hi = world_bounds(obj)
-    scale = height / max(hi.z - lo.z, 1e-6)
+    scale = length / max(*(hi - lo), 1e-6) if length else height / max(hi.z - lo.z, 1e-6)
     centre = Vector(((lo.x + hi.x) / 2, (lo.y + hi.y) / 2, lo.z))
     move = Matrix.Scale(scale, 4) @ Matrix.Translation(-centre)
     obj.data.transform(move)
@@ -311,7 +313,7 @@ def run(args: argparse.Namespace) -> dict:
     budget, size, default_height = KINDS[args.kind]
     high, armature = load_source(args.source)
     source_tris = triangle_count(high)
-    placed = place_matrix(high, args.height or default_height or 1.0, args.yaw)
+    placed = place_matrix(high, args.height or default_height or 1.0, args.yaw, args.length)
     low = make_low(high, budget)
     unwrap(low)
     folder = os.path.join(args.out, args.name)
@@ -322,7 +324,7 @@ def run(args: argparse.Namespace) -> dict:
         low.data.materials[0].name = "Body" + BAKED
         keep = tripo_rig.rig(low, armature, placed)
     bpy.data.objects.remove(high)
-    model = os.path.join(folder, f"{args.name}.glb")
+    model = os.path.join(os.path.join(MODELS, args.folder) if args.folder else folder, f"{args.name}.glb")
     export(keep, model)
     strip_icc(model)
     return {"source_tris": source_tris, "tris": triangle_count(low), "model": model, **paths}
@@ -334,10 +336,12 @@ def parse(argv: list) -> argparse.Namespace:
     parser.add_argument("--kind", choices=sorted(KINDS), default="prop")
     parser.add_argument("--name", required=True)
     parser.add_argument("--height", type=float, default=0.0, help="metres; characters default to 1.80")
+    parser.add_argument("--length", type=float, default=0.0, help="metres for the longest side, instead of height")
     parser.add_argument("--yaw", type=float, default=0.0, help="degrees about up, to turn the front to Godot +Z")
     parser.add_argument("--size", type=int, default=0, help="map size; default 1024 props, 2048 characters")
     parser.add_argument("--samples", type=int, default=16)
-    parser.add_argument("--out", default=OUT)
+    parser.add_argument("--out", default=OUT, help="folder for the baked maps (and the model without --folder)")
+    parser.add_argument("--folder", default="", help="write the model to assets/models/<folder>/")
     return parser.parse_args(argv)
 
 

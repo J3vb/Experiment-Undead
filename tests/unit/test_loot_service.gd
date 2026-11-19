@@ -173,3 +173,11 @@ func test_luck_combines_gear_and_rounds_and_caps_at_one() -> void:
 	assert_eq(LootService.player_luck(owner_player, 1), 0.2)
 	assert_almost_eq(LootService.player_luck(owner_player, 20), 0.4, 0.0001)
 	assert_eq(LootService.player_luck(owner_player, 100), 1.0)
+
+
+func test_server_loads_every_loot_base_before_the_first_drop() -> void:
+	Content.reload()
+	add_child(service)
+	for type: StringName in [&"weapons", &"loot"]:
+		for id: StringName in Content.ids(type):
+			assert_true(Content._loaded.has(Content._by_type[type][id]), "%s %s loaded at start" % [type, id])

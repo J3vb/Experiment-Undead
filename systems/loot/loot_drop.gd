@@ -4,6 +4,10 @@ extends Interactable
 
 const LIFETIME: float = 60.0
 const HEIGHTS: Array[float] = [0.0, 1.0, 1.5, 2.0, 2.5, 3.0]
+## Emission above 1 so the ring and pillar bloom; unshaded drops ignored emission (play-test: too dim).
+const GLOW: float = 4.0
+const LAND_FLASH: float = 6.0
+const STEADY_LIGHT: float = 1.2
 
 var item: Dictionary = {}
 var pack: Pack
@@ -20,17 +24,25 @@ func _ready() -> void:
 	var data: RarityData = Content.get_item(&"loot", rarity) as RarityData
 	var rank: int = maxi(ItemRoller.RARITIES.find(rarity), 0)
 	var material: StandardMaterial3D = StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.albedo_color = data.colour
 	material.emission_enabled = true
 	material.emission = data.colour
-	material.emission_energy_multiplier = 2.0
+	material.emission_energy_multiplier = GLOW
 	($Ring as MeshInstance3D).material_override = material
 	var pillar: MeshInstance3D = $Pillar
 	pillar.visible = rank > 0
 	pillar.scale.y = maxf(HEIGHTS[rank], 0.01)
 	pillar.position.y = HEIGHTS[rank] / 2.0
 	pillar.material_override = material
+	_light_up(data.colour)
+
+
+## A rarity-coloured light that flashes when the item lands, then settles to a steady glow.
+func _light_up(colour: Color) -> void:
+	var light: OmniLight3D = $Glow as OmniLight3D
+	light.light_color = colour
+	light.light_energy = LAND_FLASH
+	create_tween().tween_property(light, ^"light_energy", STEADY_LIGHT, 1.2).set_ease(Tween.EASE_OUT)
 
 
 func get_prompt(viewer: Player) -> String:

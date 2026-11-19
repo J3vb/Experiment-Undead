@@ -1,6 +1,6 @@
 # Plan: Halcyon Labs concept pass (after the breakout)
 
-Status: Building
+Status: Done
 Roadmap: F-68 / issue #297 (look follow-ups)
 Phase: P4 (v0.1 Vertical slice)
 Size: L
@@ -401,12 +401,12 @@ the person on a decision card before the next step starts.
 ## Acceptance
 
 - [x] Every room has signage that names it with maps.md names (test): `test_halcyon_signs.gd` `test_every_area_has_its_name_sign`.
-- [ ] Mess Hall, Labs and Containment renders read as the post-breakout concept (person's card per step). Play-test #368; Fenlight growth signed off ("Keep as is", 2026-11-18).
+- [x] Mess Hall, Labs and Containment renders read as the post-breakout concept (person's card per step). Fenlight growth signed off ("Keep as is", 2026-11-18); whole look signed off by the person ("Signed off, close it", 2026-11-19).
 - [x] The map is no brighter outside the new Fenlight, fire and lamp spots (GPU brightness capture vs F-13 numbers).
-- [ ] Zombies are readable in Containment (GPU capture + person). Play-test #368.
+- [x] Zombies are readable in Containment (GPU capture + person). Containment +10.6 % brighter, green 29.1 to 32.7 (#365); look signed off 2026-11-19. Any readability problem from later play-tests gets its own issue.
 - [x] Mess Hall table loop, late ring and Brute arena still work (tests, soak green): `test_halcyon_labs.gd` `test_mess_hall_tables_make_a_loop`, `test_halcyon_doors.gd` `test_everything_open_lets_every_spawn_point_reach_the_start`, `test_halcyon_wreck.gd` `test_containment_wreck_keeps_the_brute_arena_and_its_approaches_clear`; soak green on #332 to #336 and #365.
 - [x] At least 120 fps avg at 1440p High with 24 zombies (GPU check).
-- [ ] #297 lines for bake, Containment, truck and vent ledge closed. Bake and Containment ticked on #297 (#365); truck and vent ledge wait on play-test #368.
+- [x] #297 lines for bake, Containment, truck and vent ledge closed. Bake and Containment (#365); truck fire and vent ledge confirmed in Forward+ renders, Mess Hall vine moved off the sign (#371). #297 closed 2026-11-19.
 
 ## Risks
 

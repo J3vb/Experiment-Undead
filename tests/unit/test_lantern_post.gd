@@ -22,6 +22,8 @@ const LANE_WIDTH: float = 3.6
 ## Tunnel pillar faces and how far players may walk in (tools/levels/lantern_post_scene.py TUNNEL_Z, TUNNEL_STOP).
 const TUNNEL_MOUTH_Z: float = -37.6
 const TUNNEL_WALK_DEPTH: float = 3.0
+const TOWN_LOOK: String = "res://levels/looks/lantern_post_night.tres"
+const SETTINGS_PATH: String = "user://test_lantern_post_settings.cfg"
 
 var _hub: Level
 
@@ -266,3 +268,23 @@ func test_fenlight_crates_carry_their_stencil() -> void:
 		texts.append((node as Label3D).text)
 	assert_eq(texts.size(), 2, "two Fenlight sample crates")
 	assert_has(texts, "FENLIGHT\nSAMPLES", "the crates read FENLIGHT SAMPLES")
+
+
+func test_graphics_preset_reaches_the_town_look() -> void:
+	var world: EnvironmentQuality = _hub.get_node("WorldEnvironment") as EnvironmentQuality
+	assert_not_null(world, "the town look follows the graphics settings")
+	if world == null:
+		return
+	assert_eq(world.look.resource_path, TOWN_LOOK, "the scene points at the shared town look")
+	var old_path: String = Settings.config_path
+	var old_values: Dictionary = Settings._values.duplicate(true)
+	Settings.config_path = SETTINGS_PATH
+	Settings.set_value(&"graphics", &"preset", Graphics.Preset.LOW)
+	assert_false(world.environment.ssao_enabled, "Low turns ambient occlusion off in town")
+	assert_false(world.environment.volumetric_fog_enabled, "Low turns volumetric fog off in town")
+	assert_true(world.look.ssao_enabled and world.look.volumetric_fog_enabled, "the shared look is unchanged")
+	Settings._values = old_values
+	Settings._apply_all()
+	Settings.config_path = old_path
+	if FileAccess.file_exists(SETTINGS_PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(SETTINGS_PATH))

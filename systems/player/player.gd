@@ -50,12 +50,12 @@ var focus: Interactable
 var serums: Array[SerumData] = []
 var stats: StatBlock = StatBlock.new()
 var moves: PlayerMoves = PlayerMoves.new()
+var interaction: PlayerInteract = PlayerInteract.new()
 ## Equipped item guns by uid. The server fills its copy from the owner's loadout.
 var item_guns: Dictionary[String, ItemInstance] = {}
 
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _fallback_rng: RandomNumberGenerator = RandomNumberGenerator.new()
-var _focus_query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.new()
 var _base_max_health: float = 100.0
 var _base_regen_delay: float = 0.0
 var _base_slots: int = 2
@@ -86,8 +86,6 @@ func _ready() -> void:
 	_base_max_health = health.max_health
 	_base_regen_delay = health.regen_delay
 	_base_slots = weapons.max_slots
-	_focus_query.collision_mask = Layers.INTERACTABLE | Layers.WORLD
-	_focus_query.collide_with_areas = true
 	_set_local(is_multiplayer_authority())
 	state_sync = PlayerStateSync.new()
 	add_child(state_sync)
@@ -139,13 +137,13 @@ func get_stat(stat: StringName, base: float = 1.0, other: StatBlock = null) -> f
 	return ItemInstance.stat_value(stats, stat, base, other, value)
 
 
-func equip_gear(items: Array[Dictionary]) -> void:
+func equip_gear(items: Array[Dictionary], heal: bool = true) -> void:
 	stats = StatBlock.new()
 	for equipped: Dictionary in items:
 		var item: ItemInstance = ItemInstance.new(equipped)
 		for modifier: Modifier in item.stats.modifiers:
 			stats.add_modifier(modifier.stat, modifier.op, modifier.value, modifier.source)
-	_refresh_stats()
+	_refresh_stats(heal)
 
 
 func has_serum(id: StringName) -> bool:
@@ -176,13 +174,13 @@ func lose_serums(only_second_wind: bool = false) -> void:
 	_refresh_stats()
 
 
-func _refresh_stats() -> void:
+func _refresh_stats(heal: bool = true) -> void:
 	if multiplayer.is_server():
 		var new_max: float = get_stat(&"max_health", _base_max_health)
 		var gained: float = new_max - health.max_health
 		health.max_health = new_max
 		health.current = minf(health.current, new_max)
-		health.heal(gained)
+		health.heal(gained if heal else 0.0)
 		health.regen_delay = maxf(
 			get_stat(&"regen_delay", _base_regen_delay), 0.001 if _base_regen_delay > 0.0 else 0.0
 		)
@@ -228,23 +226,11 @@ func apply_frame(frame: InputFrame, delta: float) -> void:
 		weapons.add_sway(frame.look)
 	_read_input(frame)
 	_tick_stamina(delta)
-	_update_focus()
-	if input_enabled and not is_downed and focus and frame.has(InputFrame.INTERACT):
-		if Net.is_authority() or focus.is_local():
-			focus.interact(self)
-		elif session:
-			session.interactions.request(self, focus)
+	interaction.update(self, frame, delta)
 	_move(delta, frame)
 	weapons.tick(delta)
 	var fov: float = weapons.get_ads_fov(camera_rig.base_fov)
 	camera_rig.update_feel(delta, is_crouching, is_sprinting, weapons.get_ads_progress(), fov, walk_speed)
-
-
-func _update_focus() -> void:
-	_focus_query.from = camera.global_position
-	_focus_query.to = _focus_query.from - camera.global_basis.z * interact_range
-	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(_focus_query)
-	focus = hit.get("collider") as Interactable if not hit.is_empty() else null
 
 
 func _read_input(frame: InputFrame) -> void:

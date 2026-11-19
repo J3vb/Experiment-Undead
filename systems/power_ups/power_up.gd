@@ -20,7 +20,23 @@ func _ready() -> void:
 	collision_mask = Layers.PLAYER
 	monitoring = multiplayer.is_server()
 	body_entered.connect(_on_body_entered)
-	($Visual/Label as Label3D).text = data.display_name.to_upper()
+	_apply_look()
+
+
+## Colour, size and label come from the data, so Resupply and an ammo pack never look alike.
+func _apply_look() -> void:
+	var label: Label3D = $Visual/Label as Label3D
+	label.text = data.display_name.to_upper()
+	label.modulate = data.color.lerp(Color.WHITE, 0.3)
+	($Visual/Light as OmniLight3D).light_color = data.color
+	var core: MeshInstance3D = $Visual/Core as MeshInstance3D
+	core.scale = Vector3.ONE * data.size
+	var glow: StandardMaterial3D = core.mesh.surface_get_material(0) as StandardMaterial3D if core.mesh else null
+	if glow:  # null in the dedicated server export, which strips visual resources
+		glow = glow.duplicate() as StandardMaterial3D
+		glow.albedo_color = data.color
+		glow.emission = data.color
+		core.material_override = glow
 
 
 func _physics_process(delta: float) -> void:

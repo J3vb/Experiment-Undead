@@ -1,6 +1,6 @@
 # Plan: Lantern Post to the concept art
 
-Status: Building
+Status: Done
 Roadmap: F-74 / issue none (follows F-50; first numbered F-68, renumbered because F-68 was taken by the Halcyon concept pass)
 Phase: P9 (pulled forward with F-50 for the co-op week goal)
 Size: L
@@ -240,15 +240,51 @@ colliders. The spawn line and the Deploy board stay where they are.
 - Tests: model checks; light budget test still passes.
 - Done when: CI green, the person approves the look (decision card), GPU
   agent reports fps at or above target.
+- GPU check (2026-11-19, RTX 4080 Super, 2560x1440, vsync off, 8 player
+  bodies on the spawn line, 10 s per spot): fps passes everywhere; draw calls
+  miss 600 because each player's flashlight casts shadows (about 1,400 of the
+  2,639 street-view calls; 1,235 with them off). First bake: 17.9 MiB
+  `lantern_post.exr`, ambient from the look's colour. 1% low = 99th
+  percentile frame time.
+
+  | Spot | Preset | Bake | Avg fps | 1% low | Draw calls | Primitives |
+  |---|---|---|---|---|---|---|
+  | Concept (-3, 2.2, 6) | High | before | 354 | 279 | 2,639 | 2,064,860 |
+  | Street fire | High | before | 329 | 263 | 2,267 | 1,539,554 |
+  | Deploy board | High | before | 506 | 366 | 259 | 173,160 |
+  | Overview | High | before | 484 | 359 | 2,778 | 2,313,442 |
+  | Concept | Low | before | 496 | 336 | 2,638 | 2,064,860 |
+  | Street fire | Low | before | 437 | 289 | 2,267 | 1,539,554 |
+  | Deploy board | Low | before | 612 | 368 | 262 | 173,160 |
+  | Overview | Low | before | 543 | 424 | 2,778 | 2,313,442 |
+  | Concept | High | after | 329 | 234 | 2,639 | 2,064,860 |
+  | Street fire | High | after | 302 | 235 | 2,267 | 1,539,554 |
+  | Deploy board | High | after | 468 | 323 | 259 | 173,160 |
+  | Overview | High | after | 395 | 294 | 2,778 | 2,313,442 |
+
+  Bake cost (medians of 3 interleaved runs): -1% concept, -9% fire, -12%
+  board, -16% overview. Low draws the same calls: its shadow setting only
+  shrinks the atlas. Follow-ups (2026-11-19): flashlights keep their
+  shadows and the bake's green spill and warmer gate wall stay (the person's
+  picks); the town environment now follows the graphics preset.
 
 ## Acceptance
 
-- [ ] The town reads as the concept art from the concept's camera spot
-      (side-by-side render, the person approves).
-- [ ] Ready-up on the Deploy board still sends the whole server to Halcyon
+- [x] The town reads as the concept art from the concept's camera spot
+      (side-by-side render, the person approves): look card after step 5
+      (2026-11-18); bake spill and warmer gate wall kept (2026-11-19).
+- [x] Ready-up on the Deploy board still sends the whole server to Halcyon
       Labs (existing `test_deploy_board.gd` and co-op tests pass unchanged).
-- [ ] 8 players fit on the spawn line (existing test).
-- [ ] 120 fps at 1440p High with 8 players on the GPU agent.
+- [x] 8 players fit on the spawn line (`test_lantern_post.gd`
+      `test_eight_players_fit_on_the_spawn_line`).
+- [x] 120 fps at 1440p High with 8 players on the GPU agent: 302-468 avg
+      baked (PR #374). Draw calls stay over 600 (flashlight shadows), the
+      person's pick on 2026-11-19.
+
+Built: step 1 #313, step 2 #321, step 3 #338, step 4 #340, step 5 #343,
+GPU check and first bake #374. Close-out: the town look now follows the
+graphics settings (`EnvironmentQuality`, so Low turns off ambient occlusion,
+reflections and fog in town too).
 
 ## Risks
 

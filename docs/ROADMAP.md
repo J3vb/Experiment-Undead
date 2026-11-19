@@ -39,7 +39,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-15 | Halcyon Labs detail props: Blender models for every room prop, story clutter, barricades | - | - | [ready](plans/halcyon-labs-props.md) | M | Done |
 | F-63 | Halcyon Labs door models: bulkheads, debris, shutters, vent grates, freezer door | - | - | [done](plans/halcyon-doors.md) | S | Done |
 | F-64 | Halcyon Labs wall-buy racks (gun on the wall) and Specimen Vault model | - | - | [done](plans/halcyon-wall-buys-vault.md) | S | Done |
-| F-68 | Halcyon Labs concept pass after the breakout: signage, Fenlight vines, wrecked rooms, ceilings, #297 look lines (stays dark) | #297 | - | [ready](plans/halcyon-concept-pass.md) | L | Building |
+| F-68 | Halcyon Labs concept pass after the breakout: signage, Fenlight vines, wrecked rooms, ceilings, #297 look lines (stays dark) | #297 | - | [done](plans/halcyon-concept-pass.md) | L | Done |
 | F-61 | Halcyon Labs atmosphere: dead and flickering lights, particles, fog, beacons, screens, sound spots, story decals | - | - | [ready](plans/halcyon-labs-atmosphere.md) | M | Done |
 | F-16 | Game feel: camera punch, hitstop, downed and death screen | - | - | [ready](plans/game-feel-slice.md) | M | Done |
 | F-65 | Client and server updates: clear version refusals, saves safe across channels, a launcher that installs and updates the game and a server, self-updating Docker servers (steps 1-5 before F-11) | - | - | [ready](plans/client-server-updates.md) | L | Building |
@@ -53,16 +53,20 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-50 | First Lantern Post hub: town blockout, Deploy board and ready-up vote (first slice of F-45, pulled forward for the co-op week goal) | #131 | F-02, F-47 step 4 (#255), co-op #256 | [done](plans/lantern-post-hub.md) | M | Done |
 | F-66 | Your own world, open to friends: Enter world into your own Lantern Post (listen server, UPnP), server browser with add by address and LAN discovery, no master server | - | F-02, F-50 | [ready](plans/join-any-game.md) | L | Done |
 | F-67 | Character select before Enter world: pick a preset survivor with a bio and 3 traits (ui-hud screen 3, concept art 2026-11-17) | - | F-66 step 2 | needed | M | Todo |
-| F-74 | Lantern Post to the concept art: ridge sky, timber lodges, market stalls, concrete Deploy gate, props | - | F-50 | [ready](plans/lantern-post-concept.md) | L | Building |
+| F-81 | Players set their own in-game name on the Character screen; teammates see it in co-op | - | F-66 | [done](plans/player-names.md) | S | Done |
+| F-74 | Lantern Post to the concept art: ridge sky, timber lodges, market stalls, concrete Deploy gate, props | - | F-50 | [done](plans/lantern-post-concept.md) | L | Done |
 | F-76 | Lantern Post vendors: the four stall keepers (Quartermaster, Gunsmith, Technician, Cordon liaison) as code-built NPCs with idle clips, head turn and talk lines; shop screens stay in F-45 | - | F-74 step 3 (#338), F-70 step 1 (#337) | [ready](plans/lantern-post-vendors.md) | L | Ready |
 | F-77 | Shared prop library for future maps: about 75 code-built props in eight families (barriers, military, industrial, rail, large pieces, hospital, outdoor, map hero pieces) plus a catalogue, so Act I maps and towns are assembly, not modelling | - | - | [ready](plans/prop-library.md) | L | Building |
 | F-78 | Tripo model trial: one Tripo prop and one vendor through a new intake (decimate, bake our three maps, fit our 22-bone skeleton, existing clips), side by side with code-built, report so the person can pick how F-76 and F-77 are made | - | - | [ready](plans/tripo-trial.md) | M | Ready |
 | F-80 | Props and vendors made in Tripo: Tripo API tool with manifests and image prompts, ADR for Tripo models, F-76 vendors and F-77 prop families built from Tripo instead of Blender scripts | - | F-78 | [ready](plans/tripo-models.md) | L | Building |
+| F-83 | Halcyon Labs machine models (Med Dispenser, Reforger, power switch, exfil hatch) from Tripo, about 12 Tripo room props in the bare rooms, and small life (fan, drips, PA crackle) | - | F-80 step 2 | [ready](plans/halcyon-machines-fill.md) | L | Ready |
 | F-70 | Player and gear to the concept art: bearded survivor body, headgear, gloves, backpack and boots models in three tiers (field, plated, Oriel), plate carrier vests, eye implant and vest vial | - | - | [ready](plans/player-gear-concept.md) | L | Building |
 | F-71 | Four new loot slots: headgear, gloves, backpack, boots (item bases, affix pools, drops, sets, save, inventory and character screen) | - | F-70 step 2 | [ready](plans/four-gear-slots.md) | M | Ready |
+| F-83 | Wear loot gear mid-run: Tab Pack overlay shows your character and gear slots, E wears a picked-up vest, charm or implant (solo play-test 2026-11-19) | - | - | [ready](plans/wear-gear-mid-run.md) | M | Building |
 | F-72 | The four starter guns to the concept art: worn black with tan and brass, Oriel marks, red dots, taped mags (rifle, Brenner, Kestrel, Talon) | - | - | [done](plans/guns-concept.md) | M | Done |
 | F-73 | Weapon stats panel: five bars (damage, fire rate, accuracy, range, control) computed from WeaponData, on wall-buys, the Vault and the inventory (look: [guns_concept.jpg](design/images/guns_concept.jpg)) | - | F-72 | needed | M | Todo |
 | F-75 | Baked texture maps for the four concept guns: high-detail bake (bevels, stipple, engraved marks, wear), 30,000-triangle gun budget, Forward+ lit previews, intake for handed-over .glb guns | - | F-72 step 2 (per gun: its F-72 step) | [ready](plans/baked-gun-textures.md) | L | Building (steps 1-2; 3-6 after the AR-17 look) |
+| F-83 | Real reload animations: left hand swaps magazines, charging handle on empty reloads, BR-12 loads shell by shell, sounds on each move (solo play-test 2026-11-19) | - | F-72 | [ready](plans/reload-animations.md) | M | Ready |
 
 ## Next: v0.2 Progression and loot
 

@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://systems/level/level.gd" id="level"]
 [ext_resource type="Script" path="res://systems/level/block.gd" id="block"]
 [ext_resource type="Environment" path="res://levels/looks/lantern_post_night.tres" id="look"]
+[ext_resource type="Script" path="res://systems/effects/environment_quality.gd" id="env_quality"]
 [ext_resource type="PackedScene" path="res://assets/models/town/street_lamp.glb" id="street_lamp"]
 [ext_resource type="PackedScene" path="res://assets/models/town/wall_lantern.glb" id="wall_lantern"]
 [ext_resource type="PackedScene" path="res://assets/models/town/signpost.glb" id="signpost"]
@@ -49,21 +50,53 @@
 [ext_resource type="PackedScene" path="res://levels/lantern_post/fire_barrel.tscn" id="fire_barrel_scene"]
 [ext_resource type="PackedScene" path="res://levels/lantern_post/snowfall.tscn" id="snowfall"]
 [ext_resource type="PackedScene" path="res://levels/lantern_post/chimney_smoke.tscn" id="chimney_smoke"]
+[ext_resource type="LightmapGIData" path="res://levels/lantern_post/lantern_post.lmbake" id="lightmap"]
 
 [sub_resource type="BoxMesh" id="box_town_dark_wood"]
 material = ExtResource("town_dark_wood")
+add_uv2 = true
 
 [sub_resource type="BoxMesh" id="box_town_plaster"]
 material = ExtResource("town_plaster")
+add_uv2 = true
 
 [sub_resource type="BoxMesh" id="box_town_slate"]
 material = ExtResource("town_slate")
+add_uv2 = true
 
 [sub_resource type="BoxMesh" id="box_town_snow"]
 material = ExtResource("town_snow")
+add_uv2 = true
+
+[sub_resource type="BoxShape3D" id="shape_0p15x1p9x0p15"]
+size = Vector3(0.15, 1.9, 0.15)
+
+[sub_resource type="BoxShape3D" id="shape_0p245x1p114x0p245"]
+size = Vector3(0.245, 1.114, 0.245)
+
+[sub_resource type="BoxShape3D" id="shape_0p2498x1p135x0p2498"]
+size = Vector3(0.2498, 1.135, 0.2498)
+
+[sub_resource type="BoxShape3D" id="shape_0p2621x1p191x0p2621"]
+size = Vector3(0.2621, 1.191, 0.2621)
 
 [sub_resource type="BoxShape3D" id="shape_0p26x3p2x0p26"]
 size = Vector3(0.26, 3.2, 0.26)
+
+[sub_resource type="BoxShape3D" id="shape_0p2x2p6x0p2"]
+size = Vector3(0.2, 2.6, 0.2)
+
+[sub_resource type="BoxShape3D" id="shape_0p3046x1p384x0p3046"]
+size = Vector3(0.3046, 1.384, 0.3046)
+
+[sub_resource type="BoxShape3D" id="shape_0p3274x1p488x0p3274"]
+size = Vector3(0.3274, 1.488, 0.3274)
+
+[sub_resource type="BoxShape3D" id="shape_0p3338x1p517x0p3338"]
+size = Vector3(0.3338, 1.517, 0.3338)
+
+[sub_resource type="BoxShape3D" id="shape_0p3429x1p559x0p3429"]
+size = Vector3(0.3429, 1.559, 0.3429)
 
 [sub_resource type="BoxShape3D" id="shape_0p3x8p6x0p3"]
 size = Vector3(0.3, 8.6, 0.3)
@@ -79,6 +112,9 @@ size = Vector3(0.6, 5, 1.4)
 
 [sub_resource type="BoxShape3D" id="shape_0p72x0p36x0p38"]
 size = Vector3(0.72, 0.36, 0.38)
+
+[sub_resource type="BoxShape3D" id="shape_0p92x0p49x0p62"]
+size = Vector3(0.92, 0.49, 0.62)
 
 [sub_resource type="BoxShape3D" id="shape_12p34x7x6p64"]
 size = Vector3(12.34, 7, 6.64)
@@ -107,6 +143,12 @@ size = Vector3(1, 0.8, 0.8)
 [sub_resource type="BoxShape3D" id="shape_1x3x3p75"]
 size = Vector3(1, 3, 3.75)
 
+[sub_resource type="BoxShape3D" id="shape_2p1x1x0p6"]
+size = Vector3(2.1, 1, 0.6)
+
+[sub_resource type="BoxShape3D" id="shape_3p2x2p5x0p54"]
+size = Vector3(3.2, 2.5, 0.54)
+
 [sub_resource type="BoxShape3D" id="shape_3p9x1x0p76"]
 size = Vector3(3.9, 1, 0.76)
 
@@ -115,6 +157,9 @@ size = Vector3(3.9, 2.6, 0.12)
 
 [sub_resource type="BoxShape3D" id="shape_3p9x2p6x2p6"]
 size = Vector3(3.9, 2.6, 2.6)
+
+[sub_resource type="BoxShape3D" id="shape_3x1p2x0p2"]
+size = Vector3(3, 1.2, 0.2)
 
 [sub_resource type="BoxShape3D" id="shape_4p1x2p6x2p8"]
 size = Vector3(4.1, 2.6, 2.8)
@@ -167,6 +212,7 @@ script = ExtResource("level")
 player_spawn = NodePath("PlayerSpawn")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+script = ExtResource("env_quality")
 environment = ExtResource("look")
 
 [node name="Ground" type="Node3D" parent="."]
@@ -190,6 +236,7 @@ size = Vector3(22, 0.04, 14)
 material = ExtResource("town_mud")
 
 [node name="SnowBanks" type="Node3D" parent="."]
+metadata/walk_through = "soft snow players wade through"
 
 [node name="Bank0" parent="SnowBanks" instance=ExtResource("snow_drift_b")]
 transform = Transform3D(-0.06034, 0, 0.9982, 0, 1, 0, -0.9982, 0, -0.06034, -4.56, -0.04, -33.14)
@@ -666,6 +713,12 @@ transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -7.41, 1.3, 
 [node name="Shape" type="CollisionShape3D" parent="Market/MissionsBlock1"]
 shape = SubResource("shape_3p9x2p6x0p12")
 
+[node name="MissionsBlock2" type="StaticBody3D" parent="Market"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -7.05, 1.25, -13.8)
+
+[node name="Shape" type="CollisionShape3D" parent="Market/MissionsBlock2"]
+shape = SubResource("shape_3p2x2p5x0p54")
+
 [node name="MissionsLight" type="OmniLight3D" parent="Market"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.75, 2.3, -13.8)
 light_color = Color(1, 0.58, 0.25, 1)
@@ -860,6 +913,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.37, 5.5, -5.4)
 
 [node name="Watchtower" parent="Cabins" instance=ExtResource("watchtower")]
 transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 8, 0, -35.6)
+metadata/walk_through = "open frame: its four legs have their own colliders"
 
 [node name="WatchtowerLeg0" type="StaticBody3D" parent="Cabins"]
 transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 9.578, 4.3, -37.15)
@@ -892,6 +946,7 @@ transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 5.5, 10.1, -
 transform = Transform3D(1, 0, 0, 0, 0.9004, 0.435, 0, -0.435, 0.9004, 0, 0, 0)
 light_color = Color(1, 0.9, 0.75, 1)
 light_energy = 6.0
+light_bake_mode = 0
 spot_range = 30.0
 spot_angle = 14.0
 
@@ -1107,9 +1162,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 2.1, -37.89)
 
 [node name="WallFlood0" parent="Gate" instance=ExtResource("floodlight")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.5, 7.3, -38.3)
+metadata/walk_through = "on top of the gate wall, out of reach"
 
 [node name="WallFlood1" parent="Gate" instance=ExtResource("floodlight")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, 7.3, -38.3)
+metadata/walk_through = "on top of the gate wall, out of reach"
 
 [node name="Tunnel" parent="Gate" instance=ExtResource("gate_tunnel")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -44.22)
@@ -1136,6 +1193,7 @@ shape = SubResource("shape_0p6x5x1p4")
 
 [node name="TunnelFlood0" parent="Gate" instance=ExtResource("floodlight")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.3, 9.1, -38.2)
+metadata/walk_through = "on top of the gate wall, out of reach"
 
 [node name="TunnelFloodLight0" type="SpotLight3D" parent="Gate"]
 transform = Transform3D(-0.9394, 0.2576, -0.2263, 0, 0.66, 0.7513, 0.3429, 0.7057, -0.62, -4.3, 9.9, -37.8)
@@ -1158,6 +1216,7 @@ shape = SubResource("shape_0p6x5x1p4")
 
 [node name="TunnelFlood1" parent="Gate" instance=ExtResource("floodlight")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.3, 9.1, -38.2)
+metadata/walk_through = "on top of the gate wall, out of reach"
 
 [node name="TunnelFloodLight1" type="SpotLight3D" parent="Gate"]
 transform = Transform3D(-0.9394, -0.2576, 0.2263, 0, 0.66, 0.7513, -0.3429, 0.7057, -0.62, 4.3, 9.9, -37.8)
@@ -1227,9 +1286,21 @@ material = ExtResource("town_stone")
 transform = Transform3D(0.15, 0, 0, 0, 1.9, 0, 0, 0, 0.15, 5.15, 1.4, 9)
 mesh = SubResource("box_town_dark_wood")
 
+[node name="WellPost0Block" type="StaticBody3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.15, 1.4, 9)
+
+[node name="Shape" type="CollisionShape3D" parent="Props/WellPost0Block"]
+shape = SubResource("shape_0p15x1p9x0p15")
+
 [node name="WellPost2" type="MeshInstance3D" parent="Props"]
 transform = Transform3D(0.15, 0, 0, 0, 1.9, 0, 0, 0, 0.15, 6.85, 1.4, 9)
 mesh = SubResource("box_town_dark_wood")
+
+[node name="WellPost2Block" type="StaticBody3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.85, 1.4, 9)
+
+[node name="Shape" type="CollisionShape3D" parent="Props/WellPost2Block"]
+shape = SubResource("shape_0p15x1p9x0p15")
 
 [node name="WellRoofA" type="MeshInstance3D" parent="Props"]
 transform = Transform3D(2.2, 0, 0, 0, 0.08776, -0.4315, 0, 0.04794, 0.7898, 6, 2.45, 8.65)
@@ -1437,6 +1508,12 @@ shape = SubResource("shape_1x0p8x0p8")
 [node name="FenlightCrate0" parent="Props" instance=ExtResource("fenlight_crate")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.5, 0.8, -30.2)
 
+[node name="FenlightCrate0Block" type="StaticBody3D" parent="Props"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.5, 1.045, -30.2)
+
+[node name="Shape" type="CollisionShape3D" parent="Props/FenlightCrate0Block"]
+shape = SubResource("shape_0p92x0p49x0p62")
+
 [node name="FenlightStencil0" type="Label3D" parent="Props"]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.08, 0.4, -30.2)
 pixel_size = 0.004
@@ -1456,6 +1533,12 @@ shape = SubResource("shape_1x0p8x0p8")
 
 [node name="FenlightCrate1" parent="Props" instance=ExtResource("fenlight_crate")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.5, 0.8, -31.3)
+
+[node name="FenlightCrate1Block" type="StaticBody3D" parent="Props"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.5, 1.045, -31.3)
+
+[node name="Shape" type="CollisionShape3D" parent="Props/FenlightCrate1Block"]
+shape = SubResource("shape_0p92x0p49x0p62")
 
 [node name="FenlightStencil1" type="Label3D" parent="Props"]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.08, 0.4, -31.3)
@@ -1527,76 +1610,226 @@ mesh = SubResource("box_town_dark_wood")
 [node name="Fence0" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -28.5)
 
+[node name="Fence0Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0.6, -28.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/Fence0Block"]
+shape = SubResource("shape_3x1p2x0p2")
+
 [node name="Fence1" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -25.5)
+
+[node name="Fence1Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0.6, -25.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/Fence1Block"]
+shape = SubResource("shape_3x1p2x0p2")
 
 [node name="Fence2" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -22.5)
 
+[node name="Fence2Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0.6, -22.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/Fence2Block"]
+shape = SubResource("shape_3x1p2x0p2")
+
 [node name="Fence3" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -19.5)
+
+[node name="Fence3Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0.6, -19.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/Fence3Block"]
+shape = SubResource("shape_3x1p2x0p2")
 
 [node name="Fence4" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -19.5)
 
+[node name="Fence4Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0.6, -19.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/Fence4Block"]
+shape = SubResource("shape_3x1p2x0p2")
+
 [node name="Fence5" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -16.5)
+
+[node name="Fence5Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0.6, -16.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/Fence5Block"]
+shape = SubResource("shape_3x1p2x0p2")
 
 [node name="Fence6" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -16.5)
 
+[node name="Fence6Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0.6, -16.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/Fence6Block"]
+shape = SubResource("shape_3x1p2x0p2")
+
 [node name="Fence7" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -13.5)
+
+[node name="Fence7Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0.6, -13.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/Fence7Block"]
+shape = SubResource("shape_3x1p2x0p2")
 
 [node name="Fence8" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -13.5)
 
+[node name="Fence8Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0.6, -13.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/Fence8Block"]
+shape = SubResource("shape_3x1p2x0p2")
+
 [node name="Fence9" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -10.5)
+
+[node name="Fence9Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0.6, -10.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/Fence9Block"]
+shape = SubResource("shape_3x1p2x0p2")
 
 [node name="Fence10" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -10.5)
 
+[node name="Fence10Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0.6, -10.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/Fence10Block"]
+shape = SubResource("shape_3x1p2x0p2")
+
 [node name="Fence11" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -7.5)
+
+[node name="Fence11Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0.6, -7.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/Fence11Block"]
+shape = SubResource("shape_3x1p2x0p2")
 
 [node name="Fence12" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -7.5)
 
+[node name="Fence12Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0.6, -7.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/Fence12Block"]
+shape = SubResource("shape_3x1p2x0p2")
+
 [node name="Fence13" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -4.5)
+
+[node name="Fence13Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0.6, -4.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/Fence13Block"]
+shape = SubResource("shape_3x1p2x0p2")
 
 [node name="Fence14" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -4.5)
 
+[node name="Fence14Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0.6, -4.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/Fence14Block"]
+shape = SubResource("shape_3x1p2x0p2")
+
 [node name="Fence15" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0, -1.5)
+
+[node name="Fence15Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -15.5, 0.6, -1.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/Fence15Block"]
+shape = SubResource("shape_3x1p2x0p2")
 
 [node name="Fence16" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0, -1.5)
 
+[node name="Fence16Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, 15.5, 0.6, -1.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/Fence16Block"]
+shape = SubResource("shape_3x1p2x0p2")
+
 [node name="PlazaFence17" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.5, 0, 13.2)
+
+[node name="PlazaFence17Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.5, 0.6, 13.2)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/PlazaFence17Block"]
+shape = SubResource("shape_3x1p2x0p2")
 
 [node name="PlazaFence18" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.5, 0, 13.2)
 
+[node name="PlazaFence18Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.5, 0.6, 13.2)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/PlazaFence18Block"]
+shape = SubResource("shape_3x1p2x0p2")
+
 [node name="PlazaFence19" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 0, 13.2)
+
+[node name="PlazaFence19Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 0.6, 13.2)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/PlazaFence19Block"]
+shape = SubResource("shape_3x1p2x0p2")
 
 [node name="PlazaFence20" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 0, 13.2)
 
+[node name="PlazaFence20Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 0.6, 13.2)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/PlazaFence20Block"]
+shape = SubResource("shape_3x1p2x0p2")
+
 [node name="PlazaFence21" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0, 13.2)
 
+[node name="PlazaFence21Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0.6, 13.2)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/PlazaFence21Block"]
+shape = SubResource("shape_3x1p2x0p2")
+
 [node name="PlazaFence22" parent="Fences" instance=ExtResource("fence_rail")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 0, 13.2)
+
+[node name="PlazaFence22Block" type="StaticBody3D" parent="Fences"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 0.6, 13.2)
+
+[node name="Shape" type="CollisionShape3D" parent="Fences/PlazaFence22Block"]
+shape = SubResource("shape_3x1p2x0p2")
 
 [node name="Signs" type="Node3D" parent="."]
 
 [node name="Signpost" parent="Signs" instance=ExtResource("signpost")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, -1)
+
+[node name="SignpostBlock" type="StaticBody3D" parent="Signs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1.3, -1)
+
+[node name="Shape" type="CollisionShape3D" parent="Signs/SignpostBlock"]
+shape = SubResource("shape_0p2x2p6x0p2")
+
+[node name="SignpostBoards" type="StaticBody3D" parent="Signs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 2.05, -0.9)
+
+[node name="Shape" type="CollisionShape3D" parent="Signs/SignpostBoards"]
+shape = SubResource("shape_2p1x1x0p6")
 
 [node name="SignGate" type="Label3D" parent="Signs"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.58, 2.25, -0.87)
@@ -1617,25 +1850,68 @@ text = "INFIRMARY"
 [node name="YardPine0_0" parent="Yards" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.5942, 0, 0.04127, 0, 0.5956, 0, -0.04127, 0, -0.5942, -20.17, 0, 0.8285)
 
+[node name="YardPine0_0Trunk" type="StaticBody3D" parent="Yards"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.17, 0.5956, 0.8285)
+
+[node name="Shape" type="CollisionShape3D" parent="Yards/YardPine0_0Trunk"]
+shape = SubResource("shape_0p2621x1p191x0p2621")
+
 [node name="YardPine0_1" parent="Yards" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.6988, 0, -0.3452, 0, 0.7794, 0, 0.3452, 0, -0.6988, -18.66, 0, -3.262)
+
+[node name="YardPine0_1Trunk" type="StaticBody3D" parent="Yards"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.66, 0.7794, -3.262)
+
+[node name="Shape" type="CollisionShape3D" parent="Yards/YardPine0_1Trunk"]
+shape = SubResource("shape_0p3429x1p559x0p3429")
 
 [node name="YardPine0_2" parent="Yards" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.6291, 0, -0.4239, 0, 0.7586, 0, 0.4239, 0, -0.6291, -22, 0, -19.57)
 
+[node name="YardPine0_2Trunk" type="StaticBody3D" parent="Yards"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 0.7586, -19.57)
+
+[node name="Shape" type="CollisionShape3D" parent="Yards/YardPine0_2Trunk"]
+shape = SubResource("shape_0p3338x1p517x0p3338")
+
 [node name="YardPine0_4" parent="Yards" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.3555, 0, -0.5939, 0, 0.6922, 0, 0.5939, 0, -0.3555, -21.86, 0, 9.455)
+
+[node name="YardPine0_4Trunk" type="StaticBody3D" parent="Yards"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.86, 0.6922, 9.455)
+
+[node name="Shape" type="CollisionShape3D" parent="Yards/YardPine0_4Trunk"]
+shape = SubResource("shape_0p3046x1p384x0p3046")
 
 [node name="YardPine1_0" parent="Yards" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.7434, 0, -0.03227, 0, 0.7441, 0, 0.03227, 0, 0.7434, 16.86, 0, -1.731)
 
+[node name="YardPine1_0Trunk" type="StaticBody3D" parent="Yards"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.86, 0.7441, -1.731)
+
+[node name="Shape" type="CollisionShape3D" parent="Yards/YardPine1_0Trunk"]
+shape = SubResource("shape_0p3274x1p488x0p3274")
+
 [node name="YardPine1_2" parent="Yards" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.5407, 0, 0.1327, 0, 0.5568, 0, -0.1327, 0, -0.5407, 18.81, 0, -3.242)
+
+[node name="YardPine1_2Trunk" type="StaticBody3D" parent="Yards"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.81, 0.5568, -3.242)
+
+[node name="Shape" type="CollisionShape3D" parent="Yards/YardPine1_2Trunk"]
+shape = SubResource("shape_0p245x1p114x0p245")
 
 [node name="YardPine1_3" parent="Yards" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.06489, 0, -0.564, 0, 0.5677, 0, 0.564, 0, 0.06489, 17.51, 0, -28.61)
 
+[node name="YardPine1_3Trunk" type="StaticBody3D" parent="Yards"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.51, 0.5677, -28.61)
+
+[node name="Shape" type="CollisionShape3D" parent="Yards/YardPine1_3Trunk"]
+shape = SubResource("shape_0p2498x1p135x0p2498")
+
 [node name="Pines" type="Node3D" parent="."]
+metadata/walk_through = "outside the town walls"
 
 [node name="Pine0" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.7182, 0, 0.2374, 0, 0.7564, 0, -0.2374, 0, -0.7182, -10.03, 0, 25.14)
@@ -1941,6 +2217,7 @@ transform = Transform3D(0.7897, 0, 0.5088, 0, 0.9394, 0, -0.5088, 0, 0.7897, -28
 transform = Transform3D(0.9686, 0, 0.9793, 0, 1.377, 0, -0.9793, 0, 0.9686, -40.29, 0, -34.25)
 
 [node name="Ridge" type="Node3D" parent="."]
+metadata/walk_through = "outside the town walls"
 
 [node name="Knoll" type="MeshInstance3D" parent="Ridge"]
 transform = Transform3D(12.89, 0, 4.673, 0, 3, 0, -5.452, 0, 11.05, 21, 0.5, -55)
@@ -1960,3 +2237,11 @@ transform = Transform3D(0.8253, -0.4423, 0.351, 0, 0.6216, 0.7833, -0.5646, -0.6
 light_color = Color(0.6, 0.7, 0.9, 1)
 light_energy = 0.35
 shadow_enabled = true
+
+[node name="LightmapGI" type="LightmapGI" parent="."]
+quality = 2
+texel_scale = 1.5
+environment_mode = 3
+environment_custom_color = Color(0.26, 0.3, 0.4, 1)
+environment_custom_energy = 0.75
+light_data = ExtResource("lightmap")

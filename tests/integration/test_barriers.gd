@@ -94,7 +94,8 @@ func test_repair_adds_a_plank_and_pays() -> void:
 	assert_eq(barrier.get_prompt(player), "", "nothing to repair")
 	barrier.tear_plank()
 	barrier.tear_plank()
-	assert_eq(barrier.get_prompt(player), "Repair barrier [F]")
+	assert_eq(barrier.get_prompt(player), "Hold to repair barrier [F]")
+	assert_gt(barrier.hold_interval(), Barrier.REPAIR_TIME, "a held key repairs without hitting the cooldown")
 	var points: int = player.wallet.points
 	barrier.interact(player)
 	assert_eq(barrier.planks, Barrier.PLANKS - 1)

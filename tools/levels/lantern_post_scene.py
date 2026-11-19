@@ -73,7 +73,11 @@ STALL_MODELS = {
         "shift": 0.0,
         "sign": (2.45, 1.75),
         "lantern": (-1.85, 1.95, 1.5),
-        "blocks": [((0, 0.5, 1.05), (3.9, 1.0, 0.76)), ((0, 1.3, -1.31), (3.9, 2.6, 0.12))],
+        "blocks": [
+            ((0, 0.5, 1.05), (3.9, 1.0, 0.76)),
+            ((0, 1.3, -1.31), (3.9, 2.6, 0.12)),
+            ((0, 1.25, -0.95), (3.2, 2.5, 0.54)),
+        ],
     },
     "stall_technician": {
         "shift": 0.66,
@@ -138,7 +142,12 @@ PROP_BLOCKS = {
     "supply_crate_small": (0.6, 0.5, 0.5),
     "ammo_case": (0.72, 0.36, 0.38),
     "firewood_stack": (1.9, 1.0, 0.85),
+    "fenlight_crate": (0.92, 0.49, 0.62),
 }
+FENCE_BLOCK = (3.0, 1.2, 0.2)
+# Visible models the player may pass through get a reason (tests/content/test_level_collision.gd).
+OUT_OF_REACH = "outside the town walls"
+UP_HIGH = "on top of the gate wall, out of reach"
 FIRES = [(-8.0, 4.0), (8.5, 4.5), (-2.4, -24.0), (3.0, -14.0)]
 BENCHES = [
     (-6.0, 12.0, 0.0),
@@ -226,10 +235,11 @@ def deco(name, parent, pos, size, mat, rot=None, mesh="box") -> None:
     used.add((mesh, mat))
 
 
-def inst(name, parent, pos, scene, yaw=0.0, scale=(1, 1, 1)) -> None:
+def inst(name, parent, pos, scene, yaw=0.0, scale=(1, 1, 1), walk_through="") -> None:
+    meta = f'metadata/walk_through = "{walk_through}"\n' if walk_through else ""
     nodes.append(
         f'[node name="{name}" parent="{parent}" instance=ExtResource("{scene}")]\n'
-        f"transform = {xform(pos, basis_rot(yaw), scale)}\n"
+        f"transform = {xform(pos, basis_rot(yaw), scale)}\n{meta}"
     )
 
 
@@ -240,8 +250,9 @@ def label(name, parent, pos, yaw, text, size=48, color="0.95, 0.85, 0.65, 1") ->
     )
 
 
-def group(name, parent=".") -> None:
-    nodes.append(f'[node name="{name}" type="Node3D" parent="{parent}"]\n')
+def group(name, parent=".", walk_through="") -> None:
+    meta = f'metadata/walk_through = "{walk_through}"\n' if walk_through else ""
+    nodes.append(f'[node name="{name}" type="Node3D" parent="{parent}"]\n{meta}')
 
 
 def omni(name, parent, pos, color, energy, rng, shadow=False) -> None:
@@ -252,11 +263,12 @@ def omni(name, parent, pos, color, energy, rng, shadow=False) -> None:
     )
 
 
-def spot(name, parent, pos, rot, energy, rng, angle, color=FLOOD) -> None:
-    """Unshadowed spot light shining along its -Z."""
+def spot(name, parent, pos, rot, energy, rng, angle, color=FLOOD, moves=False) -> None:
+    """Unshadowed spot light shining along its -Z. A light that moves stays out of the lightmap bake."""
+    bake = "light_bake_mode = 0\n" if moves else ""
     nodes.append(
         f'[node name="{name}" type="SpotLight3D" parent="{parent}"]\ntransform = {xform(pos, rot)}\n'
-        f"light_color = Color({color})\nlight_energy = {energy}\nspot_range = {rng}\nspot_angle = {angle}\n"
+        f"light_color = Color({color})\nlight_energy = {energy}\n{bake}spot_range = {rng}\nspot_angle = {angle}\n"
     )
 
 
@@ -274,9 +286,12 @@ def body(name, parent, pos, size, mat) -> None:
     )
 
 
-def pine(name, parent, x, z, h) -> None:
-    """A snowy pine_tree model (10 m) scaled by h, its base on the ground, turned at random."""
-    inst(name, parent, (x, 0, z), "pine_tree", random.uniform(0, math.tau), (h, h, h))  # cosmetic
+def pine(name, parent, x, z, h, trunk=False) -> None:
+    """A snowy pine_tree model (10 m) scaled by h, its base on the ground, turned at random.
+    trunk: a box collider round the trunk, for pines players can reach."""
+    inst(name, parent, (x, 0, z), "pine_tree", random.uniform(0, math.tau), (h, h, h))
+    if trunk:
+        collider(f"{name}Trunk", parent, (x, h, z), (0.44 * h, 2.0 * h, 0.44 * h))
 
 
 def build_ground() -> None:
@@ -284,7 +299,7 @@ def build_ground() -> None:
     block("Snow", "Ground", (0, -0.25, -12), (90, 0.5, 100), "town_snow")
     block("Street", "Ground", (0, 0.01, -14), (8, 0.04, 44), "town_mud")
     block("Plaza", "Ground", (0, 0.01, 6), (22, 0.04, 14), "town_mud")
-    group("SnowBanks")
+    group("SnowBanks", walk_through="soft snow players wade through")
     for k in range(18):
         side = -1 if k % 2 == 0 else 1
         z = -33 + k * 2.3 + random.uniform(-0.4, 0.4)
@@ -381,7 +396,7 @@ def _gate_wall() -> None:
     for k, x in enumerate(BANNERS_X):
         inst(f"Banner{k}", "Gate", (x, 2.1, GATE_Z + BANNER_BACK), "banner")
     for k, x in enumerate((-19.5, 19.5)):
-        inst(f"WallFlood{k}", "Gate", (x, 7.3, GATE_Z - 0.3), "floodlight")
+        inst(f"WallFlood{k}", "Gate", (x, 7.3, GATE_Z - 0.3), "floodlight", walk_through=UP_HIGH)
 
 
 def _gate_tunnel() -> None:
@@ -391,7 +406,7 @@ def _gate_tunnel() -> None:
     for k, s in enumerate((-1, 1)):
         collider(f"TunnelPillar{k}", "Gate", (s * 4.1, 4.5, TUNNEL_Z - 1.0), (1.8, 9.0, 2.0))
         collider(f"TunnelSide{k}", "Gate", (s * 3.3, 2.5, TUNNEL_Z - 2.7), (0.6, 5.0, 1.4))
-        inst(f"TunnelFlood{k}", "Gate", (s * 4.3, 9.1, TUNNEL_Z - 0.6), "floodlight")
+        inst(f"TunnelFlood{k}", "Gate", (s * 4.3, 9.1, TUNNEL_Z - 0.6), "floodlight", walk_through=UP_HIGH)
         aim = basis_rot(math.pi - s * 0.35, pitch=-0.85)
         spot(f"TunnelFloodLight{k}", "Gate", (s * 4.3, 9.9, TUNNEL_Z - 0.2), aim, 5.0, 22.0, 38.0)
     collider("TunnelStop", "Gate", (0, 2.7, TUNNEL_Z - TUNNEL_STOP - 0.1), (6.0, 5.4, 0.2))
@@ -421,6 +436,7 @@ def _plaza_well() -> None:
         block(f"Well{wk}", "Props", (6 + dx, 0.45, 9 + dz), (sx, 0.9, sz), "town_stone")
     for s in (-1, 1):
         deco(f"WellPost{s + 1}", "Props", (6 + s * 0.85, 1.4, 9), (0.15, 1.9, 0.15), "town_dark_wood")
+        collider(f"WellPost{s + 1}Block", "Props", (6 + s * 0.85, 1.4, 9), (0.15, 1.9, 0.15))
     deco("WellRoofA", "Props", (6, 2.45, 8.65), (2.2, 0.1, 0.9), "town_slate", basis_rot(pitch=0.5))
     deco("WellRoofB", "Props", (6, 2.45, 9.35), (2.2, 0.1, 0.9), "town_slate", basis_rot(pitch=-0.5))
 
@@ -450,7 +466,7 @@ def _crates() -> None:
         prop(f"Crate{k}", "Props", model, (x, y, z), yaw)
     for k, (x, z) in enumerate(FENLIGHT_CRATES):
         prop(f"FenlightBase{k}", "Props", "supply_crate_large", (x, 0, z), LODGE_YAW)
-        inst(f"FenlightCrate{k}", "Props", (x, 0.8, z), "fenlight_crate", LODGE_YAW)
+        prop(f"FenlightCrate{k}", "Props", "fenlight_crate", (x, 0.8, z), LODGE_YAW)
         label(f"FenlightStencil{k}", "Props", (x + 0.42, 0.4, z), LODGE_YAW, "FENLIGHT\\nSAMPLES", 36, STENCIL)
     mid_z = sum(z for _, z in FENLIGHT_CRATES) / len(FENLIGHT_CRATES)
     lit("FenlightGlow", "Props", (FENLIGHT_CRATES[0][0] + 0.3, 1.6, mid_z), 0.8, 3.5, color=GREEN)
@@ -475,15 +491,22 @@ def build_fences_and_signs() -> None:
         for sx in (-1, 1):
             if sx < 0 and fz < -21:
                 continue  # the Common Room lodge stands there
-            inst(f"Fence{fk}", "Fences", (sx * 15.5, 0, fz + 1.5), "fence_rail", math.pi / 2)
+            fence(f"Fence{fk}", (sx * 15.5, fz + 1.5), math.pi / 2)
             fk += 1
     for fx in (-10.5, -7.5, -4.5, 4.5, 7.5, 10.5):
-        inst(f"PlazaFence{fk}", "Fences", (fx, 0, 13.2), "fence_rail", 0.0)
+        fence(f"PlazaFence{fk}", (fx, 13.2), 0.0)
         fk += 1
     group("Signs")
     inst("Signpost", "Signs", (-3.0, 0, -1.0), "signpost", 0.0)
+    collider("SignpostBlock", "Signs", (-3.0, 1.3, -1.0), (0.2, 2.6, 0.2))
+    collider("SignpostBoards", "Signs", (-3.0, 2.05, -0.9), (2.1, 1.0, 0.6))
     label("SignGate", "Signs", (-2.58, 2.25, -0.87), 0.0, "DEPLOY GATE", 26)
     label("SignInfirmary", "Signs", (-3.42, 1.85, -0.87), 0.0, "INFIRMARY", 26)
+
+
+def fence(name: str, at: tuple, yaw: float) -> None:
+    inst(name, "Fences", (at[0], 0, at[1]), "fence_rail", yaw)
+    collider(f"{name}Block", "Fences", (at[0], FENCE_BLOCK[1] / 2, at[1]), FENCE_BLOCK, yaw)
 
 
 def _sacks() -> None:
@@ -548,7 +571,7 @@ def _watchtower_sweep() -> None:
     """The tower floodlight's beam sweeps between the gate and the street: an AnimationPlayer loop, no script."""
     pivot = xform(_on_east(TOWER, (1.3, 10.1, 2.5)), basis_rot(sum(SWEEP) / 2))
     nodes.append(f'[node name="WatchtowerSweep" type="Node3D" parent="Cabins"]\ntransform = {pivot}\n')
-    spot("Beam", "Cabins/WatchtowerSweep", (0, 0, 0), basis_rot(pitch=-0.45), 6.0, 30.0, 14.0)
+    spot("Beam", "Cabins/WatchtowerSweep", (0, 0, 0), basis_rot(pitch=-0.45), 6.0, 30.0, 14.0, moves=True)
     nodes.append(
         '[node name="Sweep" type="AnimationPlayer" parent="Cabins/WatchtowerSweep"]\n'
         'libraries = {\n&"": SubResource("sweep_library")\n}\nautoplay = &"sweep"\n'
@@ -560,7 +583,8 @@ def build_east_side() -> None:
     group("Cabins")
     for k, cabin in enumerate(CABINS):
         _cabin(k, *cabin)
-    inst("Watchtower", "Cabins", (TOWER[0], 0, TOWER[1]), "watchtower", EAST_YAW)
+    legs = "open frame: its four legs have their own colliders"
+    inst("Watchtower", "Cabins", (TOWER[0], 0, TOWER[1]), "watchtower", EAST_YAW, walk_through=legs)
     for k, (sx, sz) in enumerate(((-1, -1), (1, -1), (-1, 1), (1, 1))):
         leg = _on_east(TOWER, (sx * 1.55, 4.3, sz * 1.55 - 0.028))
         collider(f"WatchtowerLeg{k}", "Cabins", leg, (0.3, 8.6, 0.3), EAST_YAW)
@@ -578,8 +602,8 @@ def build_yards_and_pines() -> None:
             x = sx * random.uniform(16.5 if sx > 0 else 18.5, 22.5)
             z = random.uniform(-34, 12)
             if min(math.dist((x, z), shed) for shed in SHEDS) > 3.5:
-                pine(f"YardPine{k}_{t}", "Yards", x, z, random.uniform(0.55, 0.85))
-    group("Pines")
+                pine(f"YardPine{k}_{t}", "Yards", x, z, random.uniform(0.55, 0.85), trunk=True)
+    group("Pines", walk_through=OUT_OF_REACH)
     pk = 0
     for _ in range(170):
         x = random.uniform(-46, 46)
@@ -595,7 +619,7 @@ def build_yards_and_pines() -> None:
 
 def build_ridge() -> None:
     """Radio mast (G5) with red beacons on a snowy knoll north-east of the gate, and the falling snow."""
-    group("Ridge")
+    group("Ridge", walk_through=OUT_OF_REACH)
     mx, mz = 21.0, -55.0
     deco("Knoll", "Ridge", (mx, 0.5, mz), (14, 3, 12), "town_snow", basis_rot(0.4))
     inst("RadioMast", "Ridge", (mx, 2.0, mz), "radio_mast", 0.4)
@@ -610,6 +634,16 @@ def build_spawn_and_moon() -> None:
         '[node name="Moon" type="DirectionalLight3D" parent="."]\ntransform = '
         + xform((0, 20, 0), basis_rot(yaw=0.6, pitch=-0.9))
         + "\nlight_color = Color(0.6, 0.7, 0.9, 1)\nlight_energy = 0.35\nshadow_enabled = true\n"
+    )
+
+
+def build_lightmap() -> None:
+    """Baked light for the static town (Halcyon Labs settings). Pines, fire flames and the sweep beam stay out.
+    The bake's ambient is the look's ambient colour (lantern_post_night.tres), not the dark night sky."""
+    nodes.append(
+        '[node name="LightmapGI" type="LightmapGI" parent="."]\nquality = 2\ntexel_scale = 1.5\n'
+        "environment_mode = 3\nenvironment_custom_color = Color(0.26, 0.3, 0.4, 1)\n"
+        'environment_custom_energy = 0.75\nlight_data = ExtResource("lightmap")\n'
     )
 
 
@@ -629,6 +663,7 @@ def header() -> str:
         '[ext_resource type="Script" path="res://systems/level/level.gd" id="level"]',
         '[ext_resource type="Script" path="res://systems/level/block.gd" id="block"]',
         '[ext_resource type="Environment" path="res://levels/looks/lantern_post_night.tres" id="look"]',
+        '[ext_resource type="Script" path="res://systems/effects/environment_quality.gd" id="env_quality"]',
     ]
     ext += [f'[ext_resource type="PackedScene" path="res://assets/models/town/{sc}.glb" id="{sc}"]' for sc in SCENES]
     ext += [
@@ -648,8 +683,11 @@ def header() -> str:
     )
     for fx in ("snowfall", "chimney_smoke"):
         ext.append(f'[ext_resource type="PackedScene" path="res://levels/lantern_post/{fx}.tscn" id="{fx}"]')
+    ext.append(
+        '[ext_resource type="LightmapGIData" path="res://levels/lantern_post/lantern_post.lmbake" id="lightmap"]'
+    )
     subs = [
-        f'[sub_resource type="BoxMesh" id="{mesh}_{mat}"]\nmaterial = ExtResource("{mat}")\n'
+        f'[sub_resource type="BoxMesh" id="{mesh}_{mat}"]\nmaterial = ExtResource("{mat}")\nadd_uv2 = true\n'
         for mesh, mat in sorted(used)
     ]
     subs += [f'[sub_resource type="BoxShape3D" id="{key}"]\nsize = {size}\n' for key, size in sorted(shapes.items())]
@@ -662,7 +700,7 @@ def header() -> str:
         + '\n[node name="LanternPost" type="Node3D" node_paths=PackedStringArray("player_spawn")]\n'
         'script = ExtResource("level")\nplayer_spawn = NodePath("PlayerSpawn")\n\n'
         '[node name="WorldEnvironment" type="WorldEnvironment" parent="."]\n'
-        'environment = ExtResource("look")\n\n'
+        'script = ExtResource("env_quality")\nenvironment = ExtResource("look")\n\n'
     )
 
 
@@ -685,6 +723,7 @@ def build() -> str:
     build_yards_and_pines()
     build_ridge()
     build_spawn_and_moon()
+    build_lightmap()
     return header() + "\n".join(nodes)
 
 

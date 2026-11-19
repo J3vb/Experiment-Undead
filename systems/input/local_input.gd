@@ -118,6 +118,8 @@ func _held_buttons() -> int:
 		b |= InputFrame.ALT_FIRE
 	if Input.is_action_pressed(&"fire"):
 		b |= InputFrame.FIRE
+	if Input.is_action_pressed(&"interact"):
+		b |= InputFrame.INTERACT_HELD
 	if _active(&"ads", _ads_on):
 		b |= InputFrame.ADS
 	if _active(&"sprint", _sprint_on):

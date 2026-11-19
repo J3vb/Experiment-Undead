@@ -51,6 +51,10 @@ static func unequip(profile: CharacterProfile, slot: StringName) -> bool:
 	return false
 
 
+static func is_gear(item: Dictionary) -> bool:
+	return slot_for(item) in CharacterProfile.GEAR_SLOTS
+
+
 static func slot_for(item: Dictionary) -> StringName:
 	var base: StringName = StringName(item.get("base", ""))
 	if Content.has(&"loot", base):

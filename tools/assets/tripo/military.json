@@ -1,0 +1,9 @@
+[
+  {"name": "army_truck", "folder": "props_large", "kind": "large", "length": 7.5, "yaw": 0, "image": "tripo/sources/military/army_truck.png"},
+  {"name": "armoured_car", "folder": "props_large", "kind": "large", "length": 5.5, "yaw": 0, "image": "tripo/sources/military/armoured_car.png"},
+  {"name": "field_tent", "folder": "props", "kind": "prop", "length": 5.0, "yaw": 0, "image": "tripo/sources/military/field_tent.png"},
+  {"name": "field_table", "folder": "props", "kind": "prop", "length": 1.8, "yaw": 0, "image": "tripo/sources/military/field_table.png"},
+  {"name": "portable_generator", "folder": "props", "kind": "prop", "length": 0.9, "yaw": 0, "image": "tripo/sources/military/portable_generator.png"},
+  {"name": "floodlight_tripod", "folder": "props", "kind": "prop", "height": 2.5, "yaw": 0, "image": "tripo/sources/military/floodlight_tripod.png"},
+  {"name": "body_tarp", "folder": "props", "kind": "prop", "length": 1.9, "yaw": 0, "image": "tripo/sources/military/body_tarp.png"}
+]
