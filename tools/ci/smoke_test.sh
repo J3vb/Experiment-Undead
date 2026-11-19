@@ -18,6 +18,13 @@ if [ "$code" -ne 0 ] || grep -qE "$errors" client.log; then
   fail=1
 fi
 
+echo "::group::Content survives export"
+if ! timeout 60 linux/ExperimentUndead.x86_64 --headless -s "$(git rev-parse --show-toplevel)/tools/ci/export_content_check.gd"; then
+  echo "::error::Exported content lost data (see the lines above)"
+  fail=1
+fi
+echo "::endgroup::"
+
 echo "::group::Server boot, join and stop"
 stop="$(mktemp -u)"
 EU_STOP_FILE="$stop" server/ExperimentUndead-server.x86_64 --headless > server.log 2>&1 &

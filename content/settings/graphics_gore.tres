@@ -10,5 +10,5 @@ key = &"gore"
 label = "Gore"
 hint = "Blood bursts, floor pools and head pops. Reduced shows less blood and no head pops; Off shows dust instead."
 kind = &"choice"
-options = PackedStringArray("Off", "Reduced", "Full")
+options = Array[String](["Off", "Reduced", "Full"])
 order = 190
