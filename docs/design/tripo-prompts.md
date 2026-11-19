@@ -37,9 +37,11 @@ Rules for every prompt:
 
 ## Vendors (F-76)
 
+All four made in Tripo Studio by the person; intake from `tools/assets/tripo/vendors.json` (F-80 step 3, 0 API credits).
+
 | Model | Prompt after the style line |
 |---|---|
-| npc_quartermaster | Done in the F-78 trial (Odile Brandt). |
+| npc_quartermaster | Done in the F-78 trial (Odile Brandt). Made 2026-11-19 at 1.66 m. |
 | npc_gunsmith | Teun Maes, man in his 50s, bald, thick grey-brown beard, ear defenders hanging round his neck, tan canvas apron over olive work overalls, sleeves rolled to the elbow, strong forearms, heavy work boots. |
 | npc_technician | Dr. Lien Corvelyn, woman in her 30s, short black hair, blue-grey radio headset, dark padded parka under a stained grey lab coat with a patch scratched off the chest, tired eyes, boots. |
 | npc_cordon_liaison | Lieutenant Raes, man in his 40s, snow-grey military parka, officer fur hat with a small round metal badge, black armband with a plain white band, holding a rugged tablet at his side, gloves, boots. |

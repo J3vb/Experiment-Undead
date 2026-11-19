@@ -84,6 +84,7 @@ Agent picks the person may change.
 
 - **Gun feel:** falloff ranges, spread, recoil and empty reloads not in `roster.csv` (Kestrel, Talon, vault batch A1, Bastion, batch B rifles, Wren, Siphon, Cryo Lance, Synapse). Talon head x3.0 and Atlas Auto's strong DPS wait for play-tests.
 - **Siphon:** 10 m/s orb, 3 s well, at most 12 zombies, 6 m pull, two live wells per player, Vault weight 0.05.
+- **Wearing gear mid-run:** the piece you take off goes into the same Pack slot; swaps never heal; vest icons show the rest-pose shoulder pads ([plan](plans/wear-gear-mid-run.md)).
 - **FOV:** horizontal degrees at 16:9, 70-120, default 110 (about 78 vertical); ADS FOV stays vertical.
 - **Serums:** every Med Dispenser needs power; no limit on Serums held. Scavenger ammo pack chance 5% (10% gave too much ammo in the first play-test).
 - **Exfil and sprint:** the 60 s exfil hold pauses, not resets, when nobody is in range; sprint refills over 3 s after stopping early.
@@ -100,4 +101,5 @@ Agent picks the person may change.
 - **Hold to repair:** one plank every 0.6 s while interact is held, tap still works; the 0.3 s hold-to-buy in `controls.md` is not built.
 - **Player names:** up to 16 Latin letters, digits, spaces and - _ . ' ; default "Survivor"; duplicates allowed; set on the Character screen before joining. See [player-names](plans/player-names.md).
 - **Halcyon machines (F-83):** one Med Dispenser model for all 8 Serums with one teal glow (no per-Serum colour); exfil hatch model squashed to 14 cm over the old thin floor box so players walk over it; Reforger glow is a thin front strip. [plan](plans/halcyon-machines-fill.md)
+- **Stall keeper heights (provisional):** Odile 1.66 m, Teun 1.80 m, Lien 1.68 m, Raes 1.73 m (`height` in [vendors.json](../tools/assets/tripo/vendors.json)); the code-built Quartermaster and `town_npcs/` builder are gone. [tripo-models](plans/tripo-models.md)
 - **Reload motion (F-83):** empty reloads press the bolt catch above the well for every gun (no charging-handle pull: crossing the receiver flipped the elbow); the tactical swap shows the same magazine low in frame. Feel check in step 4. [reload-animations](plans/reload-animations.md)
