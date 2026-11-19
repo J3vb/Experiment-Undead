@@ -275,3 +275,19 @@ def test_large_kind_fits_the_building_budget():
     assert tris <= check_models.BUDGETS["town_large"][0]
     assert tris <= check_models.BUDGETS["props_large"][0]
     assert (size, height) == (2048, None)
+
+
+def test_length_scales_the_longest_side_and_folder_writes_into_assets(tmp_path, monkeypatch):
+    """Snapping pieces (track, guard rail, fence) are sized by length, and --folder skips the copy step."""
+    source = str(tmp_path / "source.glb")
+    prop_source(source)
+    monkeypatch.setattr(tripo_intake, "MODELS", str(tmp_path / "models"))
+    argv = [source, "--name", "rail", "--length", "3.0", "--folder", "props", "--out", str(tmp_path / "maps")]
+    args = tripo_intake.parse(argv)
+    args.size, args.samples = 128, 1
+    summary = tripo_intake.run(args)
+    assert summary["model"] == str(tmp_path / "models" / "props" / "rail.glb")
+    lo, hi = check_models.bounds(check_models.load_glb(summary["model"]))
+    assert max(hi - lo) == pytest.approx(3.0, abs=0.02)
+    assert lo.z == pytest.approx(0.0, abs=0.01)
+    assert os.path.isfile(str(tmp_path / "maps" / "rail" / "rail_albedo.png"))

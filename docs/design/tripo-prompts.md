@@ -5,6 +5,16 @@ first, approved by the person, then sent to Tripo (image to 3D). Sizes and
 families come from [prop-library.md](../plans/prop-library.md); vendor looks
 from [lore.md](lore.md#the-stall-keepers).
 
+## Making a model
+
+Save the approved image as `tripo/sources/<family>/<name>.png` in the project
+files, add the row to `tools/assets/tripo/<family>.json`, then run
+`python tools/assets/tripo_make.py tools/assets/tripo/<family>.json --only <name>`.
+It uploads the image, waits for Tripo, rigs characters (Mixamo preset),
+downloads the source, runs the intake into `assets/models/<folder>/`, writes the
+task id, source and `made` back to the row, and prints the credits. The cloud
+needs `api.tripo3d.ai` and `tripo-data.rg1.data.tripo3d.com` allowed.
+
 ## Style line (start of every prompt)
 
 Props: `Single game asset, centred, full object in frame, plain light grey
