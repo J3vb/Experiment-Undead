@@ -109,8 +109,7 @@ Not in (non-goals, and where each one goes instead):
 | systems/loot/loot_service.gd | changed | `_equip_from_pack` also handles gear: swap into `session.profile.loadout`, Pack slot gets the old piece, `ItemLoadout.apply_gear`, look, send_loadout |
 | systems/loot/pack.gd | changed | new `replace(index, item)` (emits `changed`) |
 | systems/progression/character_profile.gd | changed | new `GEAR_SLOTS: Array[StringName] = [&"vest", &"charm", &"implant"]` (the name F-71 planned; F-71 adds its four slots here) |
-| systems/loot/item_loadout.gd | changed | gear loop (line 8) uses `CharacterProfile.GEAR_SLOTS`; new `apply_gear(player, loadout)` for swaps (`equip_gear(gear, false)`, then `refit_item_guns`); new `refit_item_guns(player)` |
-| systems/weapons/weapon_holder.gd | changed | new `refit(weapon, data)`: swaps a held gun's data in place, ammo capped to the new magazine, keeps the gun in hand and any reload, no `weapon_acquired` |
+| systems/loot/item_loadout.gd | changed | gear loop (line 8) uses `CharacterProfile.GEAR_SLOTS`; new `apply_gear(player, loadout)` for swaps (`equip_gear(gear, false)`, then `refit_item_guns`); new `refit_item_guns(player)`: sets each held item gun's `instance.data` in place (same base, new numbers), ammo capped to the new magazine, gun stays in hand, reload not cancelled, no `weapon_acquired` |
 | systems/loot/inventory.gd | changed | new `is_gear(item)` (`slot_for(item) in CharacterProfile.GEAR_SLOTS`) |
 | systems/player/player.gd | changed | `equip_gear(items, heal = true)`; `_refresh_stats(heal)` skips `health.heal(gained)` when false |
 | systems/net/loadout_sync.gd | changed | `_apply_loadout` heals only on its first apply for this Player (`_applied` flag); every later apply (swaps, gun pickups) passes `heal = false`; `_loadout_problem` rejects a gear slot that appears twice or a non-gear base (`slot_for`) |
@@ -133,7 +132,6 @@ only swaps a constant (no growth). `systems/player/player.gd` (349, limit
 - `Pack.replace(index: int, item: Dictionary) -> bool` (new): swaps one item.
 - `CharacterProfile.GEAR_SLOTS: Array[StringName] = [&"vest", &"charm", &"implant"]`
   (new); F-71 appends its four slots here.
-- `WeaponHolder.refit(weapon: Weapon, data: WeaponData)` (new).
 - `Player.equip_gear(items: Array[Dictionary], heal: bool = true)`.
 - No Resource types, `.tres` files or network messages change.
 - Save format change: none (loadout keys exist; values change at bank time).
@@ -166,7 +164,7 @@ under 1 ms on the 4080 target.
 
 - Build: `Pack.replace`; `CharacterProfile.GEAR_SLOTS` and `Inventory.is_gear`;
   `ItemLoadout.apply_gear` and `refit_item_guns` (held item guns get new data
-  in place through `WeaponHolder.refit`: same gun in hand, ammo kept and
+  in place: same gun in hand, ammo kept and
   capped, reload not cancelled, no pickup event); `Player.equip_gear(items,
   heal)`; `LoadoutSync` heals only on its first apply per Player and rejects
   doubled or non-gear slots;
