@@ -1,7 +1,7 @@
 # Plan: Wear loot gear mid-run from the Pack
 
 Status: Building
-Roadmap: F-83 / issue none (solo play-test 2026-11-19)
+Roadmap: F-84 / issue none (solo play-test 2026-11-19)
 Phase: P6
 Size: M
 Approved by: the person on decision card and reference image (layout, 2026-11-19); plan review by a separate Claude reviewer on PR #380 (Codex out of quota), 3 blocking findings fixed
