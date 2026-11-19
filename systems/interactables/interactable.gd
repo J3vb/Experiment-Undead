@@ -28,6 +28,11 @@ func interact(_player: Player, _facts: Dictionary = {}) -> void:
 	pass
 
 
+## Seconds between uses while interact is held; 0 means one use per press.
+func hold_interval() -> float:
+	return 0.0
+
+
 ## True for personal things the client handles alone (its own loot).
 func is_local() -> bool:
 	return false
@@ -59,9 +64,10 @@ func retire() -> void:
 
 
 ## Buy or denied sound; types without purchase sounds (switch, barrier, hatch) stay silent.
+## Mashing interact while broke does not restart the denied sound before it ends.
 func play_result(paid: bool) -> void:
 	var sound: AudioStreamPlayer3D = get_node_or_null(^"BuySound" if paid else ^"DeniedSound") as AudioStreamPlayer3D
-	if sound:
+	if sound and (paid or not sound.playing):
 		sound.play()
 
 
