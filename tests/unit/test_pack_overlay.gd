@@ -295,3 +295,13 @@ func test_wearing_a_pack_vest_updates_the_slot_box_and_compares_with_the_worn_on
 
 func _vest(uid: String) -> Dictionary:
 	return {"uid": uid, "base": "vest_light", "rar": "rare", "ilvl": 10, "aff": []}
+
+
+func test_pack_slots_and_card_show_the_item_icon() -> void:
+	service.pack.add(_vest("icon_vest"))
+	overlay._select(0)
+	var expected: Texture2D = ItemTooltip.icon_for(_vest("icon_vest"))
+	assert_not_null(expected)
+	assert_eq(overlay.slots[0].icon, expected)
+	assert_eq(overlay.tooltip.icon.texture, expected)
+	assert_null(overlay.slots[1].icon, "an empty slot has no icon")

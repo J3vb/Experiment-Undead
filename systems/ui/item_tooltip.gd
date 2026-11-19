@@ -10,10 +10,13 @@ const SHAPES: Array[String] = ["●", "▲", "■", "◆", "⬟", "⚠"]
 const STAT_NAMES: Array[String] = ["Damage", "Fire rate /m", "Magazine", "Handling"]
 const STAT_LIMITS: Array[float] = [150.0, 1200.0, 100.0, 1.0]
 
+static var _icons: Dictionary[StringName, Texture2D] = {}
+
 var _item: Dictionary = {}
 var _equipped: Dictionary = {}
 var _comparing: bool = false
 
+@onready var icon: TextureRect = $Box/Icon
 @onready var item_name: Label = $Box/Name
 @onready var rarity_label: Label = $Box/Identity/Rarity
 @onready var level_label: Label = $Box/Identity/Level
@@ -59,6 +62,17 @@ func _refresh() -> void:
 			comparison.text = "No item equipped in this slot"
 
 
+## The rendered picture of the item's base (tools/render_item_icons.gd), or null for an empty or unknown item.
+static func icon_for(item: Dictionary) -> Texture2D:
+	var base: StringName = StringName(str(item.get("base", "")))
+	if base == &"":
+		return null
+	if not _icons.has(base):
+		var path: String = "res://assets/textures/ui/icons/%s.png" % base
+		_icons[base] = load(path) as Texture2D if ResourceLoader.exists(path) else null
+	return _icons[base]
+
+
 func _fill_header() -> void:
 	var rarity: StringName = StringName(_item.get("rar", "common"))
 	var colour: Color = TEXT
@@ -70,6 +84,8 @@ func _fill_header() -> void:
 	border.border_color = colour if not _item.is_empty() else Color("2c3b44")
 	add_theme_stylebox_override("panel", border)
 	item_name.text = _display_name(_item) if not _item.is_empty() else "Select an item"
+	icon.texture = icon_for(_item)
+	icon.visible = icon.texture != null
 	item_name.add_theme_color_override("font_color", colour)
 	var rank: int = maxi(ItemRoller.RARITIES.find(rarity), 0)
 	rarity_label.text = "%s %s %s" % [SHAPES[rank], String(rarity).capitalize(), "•".repeat(rank + 1)]

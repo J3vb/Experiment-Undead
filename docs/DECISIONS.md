@@ -84,6 +84,7 @@ Agent picks the person may change.
 
 - **Gun feel:** falloff ranges, spread, recoil and empty reloads not in `roster.csv` (Kestrel, Talon, vault batch A1, Bastion, batch B rifles, Wren, Siphon, Cryo Lance, Synapse). Talon head x3.0 and Atlas Auto's strong DPS wait for play-tests.
 - **Siphon:** 10 m/s orb, 3 s well, at most 12 zombies, 6 m pull, two live wells per player, Vault weight 0.05.
+- **Wearing gear mid-run:** the piece you take off goes into the same Pack slot; swaps never heal; vest icons show the rest-pose shoulder pads ([plan](plans/wear-gear-mid-run.md)).
 - **FOV:** horizontal degrees at 16:9, 70-120, default 110 (about 78 vertical); ADS FOV stays vertical.
 - **Serums:** every Med Dispenser needs power; no limit on Serums held. Scavenger ammo pack chance 5% (10% gave too much ammo in the first play-test).
 - **Exfil and sprint:** the 60 s exfil hold pauses, not resets, when nobody is in range; sprint refills over 3 s after stopping early.

@@ -82,6 +82,8 @@ func _box() -> Button:
 	button.custom_minimum_size = Vector2(0, 64)
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	button.expand_icon = true
+	button.add_theme_constant_override("icon_max_width", 56)
 	return button
 
 
@@ -90,6 +92,7 @@ func _paint(button: Button, item: Dictionary, label: String, name_text: String =
 	var rarity: String = item.get("rar", "common")
 	var rank: int = maxi(ItemRoller.RARITIES.find(StringName(rarity)), 0)
 	var shown: String = name_text if not name_text.is_empty() else LootDrop.item_name(item)
+	button.icon = ItemTooltip.icon_for(item)
 	button.text = "%s\n%s" % [label, "Empty" if empty else "%s %s" % [ItemTooltip.SHAPES[rank], shown]]
 	var style: StyleBoxFlat = StyleBoxFlat.new()
 	style.bg_color = Color("121a20", 0.94)
