@@ -1,11 +1,13 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://systems/interactables/exfil_hatch.gd" id="1"]
-[ext_resource type="Script" path="res://systems/level/block.gd" id="2"]
-[ext_resource type="Material" path="res://levels/materials/rust.tres" id="3"]
+[ext_resource type="PackedScene" path="res://assets/models/machines/exfil_hatch.glb" id="2"]
 
 [sub_resource type="BoxShape3D" id="area"]
 size = Vector3(3, 0.3, 3)
+
+[sub_resource type="BoxShape3D" id="body"]
+size = Vector3(3, 0.06, 3)
 
 [sub_resource type="StandardMaterial3D" id="glow"]
 albedo_color = Color(0.45, 1, 0.35, 1)
@@ -25,9 +27,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
 shape = SubResource("area")
 
 [node name="Body" type="StaticBody3D" parent="."]
-script = ExtResource("2")
-size = Vector3(3, 0.06, 3)
-material = ExtResource("3")
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape3D" parent="Body"]
+shape = SubResource("body")
+
+[node name="Model" parent="Body" instance=ExtResource("2")]
+transform = Transform3D(1.04, 0, 0, 0, 0.2, 0, 0, 0, 1, 0, -0.03, 0)
 
 [node name="Glow" type="Node3D" parent="."]
 visible = false
