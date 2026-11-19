@@ -1,7 +1,7 @@
 # Plan: Real reload animations
 
 Status: Building
-Roadmap: F-86 (was F-83, a number three plans took the same day) / solo play-test 2026-11-19
+Roadmap: F-85 (was F-83, a number three plans took the same day) / solo play-test 2026-11-19
 Phase: P1
 Size: M
 Approved by: the person (decision card, 2026-11-19, all 4 steps)
