@@ -19,7 +19,10 @@ if [ "$code" -ne 0 ] || grep -qE "$errors" client.log; then
 fi
 
 echo "::group::Content survives export"
-if ! timeout 60 linux/ExperimentUndead.x86_64 --headless -s "$(git rev-parse --show-toplevel)/tools/ci/export_content_check.gd"; then
+# Release templates ignore -s, so the editor binary runs the check against the exported pack.
+godot_bin="$(command -v godot || echo "$HOME/godot/godot")"
+if ! timeout 60 "$godot_bin" --headless --main-pack linux/ExperimentUndead.pck \
+    -s "$(git rev-parse --show-toplevel)/tools/ci/export_content_check.gd"; then
   echo "::error::Exported content lost data (see the lines above)"
   fail=1
 fi
