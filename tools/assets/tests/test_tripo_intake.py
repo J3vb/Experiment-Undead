@@ -291,3 +291,43 @@ def test_length_scales_the_longest_side_and_folder_writes_into_assets(tmp_path, 
     assert max(hi - lo) == pytest.approx(3.0, abs=0.02)
     assert lo.z == pytest.approx(0.0, abs=0.01)
     assert os.path.isfile(str(tmp_path / "maps" / "rail" / "rail_albedo.png"))
+
+
+def test_make_low_stays_on_budget_and_keeps_the_bottom_on_the_floor():
+    """Hundreds of small islands: the collapse moves the lowest point, so the copy is put back on the floor."""
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bm = bmesh.new()
+    for i in range(300):
+        sphere = bmesh.ops.create_icosphere(bm, subdivisions=3, radius=0.02)
+        for vert in sphere["verts"]:
+            vert.co += Vector(((i % 20) * 0.06, (i // 20) * 0.06, 0.02 + (i % 7) * 0.01))
+    mesh = bpy.data.meshes.new("islands")
+    bm.to_mesh(mesh)
+    bm.free()
+    obj = bpy.data.objects.new("islands", mesh)
+    bpy.context.collection.objects.link(obj)
+    low = tripo_intake.make_low(obj, 2_000)
+    assert tripo_intake.triangle_count(low) <= 2_000
+    assert tripo_intake.world_bounds(low)[0].z == pytest.approx(0.0, abs=1e-6)
+
+
+def test_make_low_gets_past_edges_shared_by_three_faces():
+    """Fins standing on a grid share its edges with two floor faces; the collapse alone stalls far above budget."""
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bm = bmesh.new()
+    size = 40
+    grid = [[bm.verts.new((x * 0.05, y * 0.05, 0.0)) for x in range(size + 1)] for y in range(size + 1)]
+    for y in range(size):
+        for x in range(size):
+            bm.faces.new((grid[y][x], grid[y][x + 1], grid[y + 1][x + 1], grid[y + 1][x]))
+    up = Vector((0.0, 0.0, 0.05))
+    for y in range(1, size):
+        for x in range(size):
+            a, b = grid[y][x], grid[y][x + 1]
+            bm.faces.new((a, b, bm.verts.new(b.co + up), bm.verts.new(a.co + up)))
+    mesh = bpy.data.meshes.new("fins")
+    bm.to_mesh(mesh)
+    bm.free()
+    obj = bpy.data.objects.new("fins", mesh)
+    bpy.context.collection.objects.link(obj)
+    assert tripo_intake.triangle_count(tripo_intake.make_low(obj, 600)) <= 600
