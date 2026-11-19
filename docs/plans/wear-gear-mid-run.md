@@ -1,0 +1,218 @@
+# Plan: Wear loot gear mid-run from the Pack
+
+Status: Review
+Roadmap: F-83 / issue none (solo play-test 2026-11-19)
+Phase: P6
+Size: M
+Approved by:
+Lore link: docs/design/lore.md#gear-and-abilities, rows Vests, Charms, Implants (salvaged armour and keepsakes you strap on in the field); one provisional line added for swapping implant modules in the field
+
+## Goal
+
+A vest, charm or implant you pick up in a run can be worn right away from the
+Tab Pack overlay, and the overlay shows your character with its gear slots.
+Serves "Every run makes you stronger": a good drop changes the run you are in,
+not only the next one. Asked for in the person's solo play-test (2026-11-19).
+
+## Scope
+
+In:
+
+- Pack overlay: the Equip key (`pack_equip`, E) on a gear item wears it. The
+  piece it replaces goes into the same Pack slot (a swap, so the Pack never
+  overflows). An empty worn slot just takes the item out of the Pack.
+- The worn gear counts at once: stats (server and owner), look (teammates see
+  it through the existing LookSync), and the profile loadout saved at the end
+  of the run.
+- Pack overlay layout: a character column with a live 3D preview of your
+  character (the existing `GearRig` in a `SubViewport`, as the character
+  screen does) and one button per gear slot, plus the two guns in your hands.
+  Selecting a slot shows the worn piece in the tooltip; selecting a Pack gear
+  item compares it with the worn piece in its slot.
+- Slots come from one list, so F-71's four new slots appear without new code
+  in the overlay.
+- No free heals: changing gear mid-run never heals. Max health still moves
+  with the gear; current health is only capped.
+- Held item guns are rebuilt after a gear change, so gear affixes that change
+  gun numbers (damage, magazine) apply to guns already in your hands.
+
+Not in (non-goals, and where each one goes instead):
+
+- Taking a piece off into an empty Pack slot without a replacement: not needed
+  for the ask (later, if play-tests want it).
+- Equipping stash items mid-run: the stash stays a town thing (F-45).
+- Gun loadout slots (primary, sidearm) in the overlay: guns already go "into
+  hands" today; the saved gun loadout still changes only in town.
+- Pausing the game while the overlay is open: the overlay stays a quick check
+  with the match running (ui-hud screen 11).
+- New slots, their bases and models: F-71 and F-70.
+
+## Ready to build
+
+```
+### Ready to build
+- Foundations touched (numbers from docs/FOUNDATIONS.md): 3 saves (profile
+  loadout changes in memory, saved by the existing bank), 5 UI router (the
+  overlay already uses UI.hold_mouse). Any of them shaky or missing? no
+- Decision records that apply (docs/adr/): 0003 trusted-client co-op, 0010
+  personal loot kept on death, 0011 one UI router. Does this go against one? no
+- Co-op:
+  - Who decides: the owning client owns its Pack and loadout (ADR 0003, as
+    today); the server rebuilds stats from what the owner sends.
+  - How a client triggers it: the existing LoadoutSync.send_loadout /
+    submit_loadout (pattern 5). The server already checks the gear count and
+    dict shape. No new RPC, no protocol bump.
+  - What other players see, and how it reaches them: the new look through the
+    existing GearRig.look_changed -> LookSync relay (sent only when it changes).
+  - Works on a dedicated server with no local player: yes (it only receives
+    submit_loadout, as at spawn).
+- Data: no new ids or numbers. Gear slots come from GearBaseData.slot via
+  Inventory.slot_for. Code compares against a specific id anywhere: no
+- Save: changes what is saved? no new fields. The loadout keys already exist;
+  the bank after the run saves the swapped loadout. Renames or removes a saved
+  id: no
+- Events and UI: no new Events. New screens: n.a. (Pack overlay changes)
+- Input through InputFrame, gameplay in _physics_process, randomness from the
+  session RNG: yes (the swap runs in LootService._physics_process like the gun
+  equip; no randomness)
+- Tests: unit (loot service swap, no-heal, pack replace, overlay slots),
+  integration (a client wears a vest mid-run and the server's copy gains its
+  max health; bank saves the swapped loadout).
+- Logging: Log.warn `gear_equip_refused` when an equip is asked with no
+  profile or a non-gear item (catalogue in docs/LOGGING.md).
+- Performance: the preview SubViewport renders only while the overlay is open
+  (UPDATE_DISABLED when closed). Stats rebuild only on a swap.
+- Lore link: Vests, Charms, Implants rows; one provisional line for field
+  implant swaps.
+- Out of scope: stash access mid-run, unequip to empty, pausing.
+```
+
+## Design references
+
+- docs/design/game-design.md "What you carry": the Pack line ("Guns you pick
+  up can be equipped right away") gains gear. Change log row added.
+- docs/design/ui-hud.md "11. Pack overlay": half-screen panel, game keeps
+  running, mouse look paused. Mockup docs/design/images/ui_pack_overlay.jpg.
+- docs/design/ui-hud.md "Character screen" mockup ui_character_screen.jpg for
+  the slot buttons and preview style.
+- docs/design/gear-visuals.md: you always look like what you wear (no
+  transmog), so the look must follow a mid-run swap.
+- docs/adr/0010-personal-loot-kept-on-death.md: everything worn or in the Pack
+  is banked at every run exit.
+- docs/plans/four-gear-slots.md: F-71 grows the slot list to seven gear slots.
+
+## Systems touched
+
+| Folder or file | New / changed | What changes |
+|---|---|---|
+| systems/loot/loot_service.gd | changed | `_equip_from_pack` also handles gear: swap into `session.profile.loadout`, Pack slot gets the old piece, `ItemLoadout.apply_gear`, look, send_loadout |
+| systems/loot/pack.gd | changed | new `replace(index, item)` (emits `changed`) |
+| systems/loot/item_loadout.gd | changed | new `apply_gear(player, loadout)` split out of `apply` (gear list, `equip_gear`, rebuild held item guns) |
+| systems/loot/inventory.gd | changed | new `GEAR_SLOTS` list and `is_gear(item)`; character screen uses it instead of its own list |
+| systems/player/player.gd | changed | `equip_gear(items, heal)`: no heal for mid-run swaps |
+| systems/net/loadout_sync.gd | changed | server path passes `heal = false` after spawn |
+| systems/ui/pack_overlay.gd | changed | label "Wear" vs "Into hands"; character column moves to new `pack_character.gd` |
+| systems/ui/pack_character.gd | new | character column: preview SubViewport with GearRig, slot buttons, guns in hands |
+| systems/ui/character_screen.gd | changed | uses `Inventory.GEAR_SLOTS` |
+
+Autoloads, managers or base classes added: none.
+
+Files over 300 lines this plan grows: `systems/ui/character_screen.gd` (341)
+only swaps a constant (no growth). `pack_overlay.gd` (240) stays under 300 by
+putting the character column in its own script.
+
+## Data
+
+- `Pack.replace(index: int, item: Dictionary) -> bool` (new): swaps one item.
+- `Inventory.GEAR_SLOTS: Array[StringName] = [&"vest", &"charm", &"implant"]`
+  (new); F-71 appends its four slots here.
+- `Player.equip_gear(items: Array[Dictionary], heal: bool = true)`.
+- No Resource types, `.tres` files or network messages change.
+- Save format change: none (loadout keys exist; values change at bank time).
+- Content checks to add in `tests/content/`: none (no new data).
+
+## Co-op behaviour
+
+- Who owns the state: the owning client owns Pack and profile loadout; the
+  server owns the stats it rebuilds from the sent loadout (as at spawn).
+- What clients send, what the server sends back: the owner calls
+  `LoadoutSync.send_loadout()` (gear dicts + item guns, existing message). The
+  server answers nothing; it rebuilds `stats` and max health. Look goes owner
+  -> server -> others through LookSync.
+- What a client sees that the host sees too: the new worn look on the body.
+  Only the owner sees its Pack and the overlay.
+- Late joiner: gets the current look from LookSync's join snapshot (existing).
+- Dedicated server: no overlay, no Pack; it only applies `submit_loadout`.
+
+## Performance
+
+One 3D preview of one character, drawn only while the overlay is open
+(SubViewport `UPDATE_WHEN_VISIBLE`, 512 px tall). Nothing per frame when
+closed. A swap rebuilds a StatBlock and up to `max_slots` gun datas once.
+Budget: no measurable change with the overlay closed; overlay open may cost
+under 1 ms on the 4080 target.
+
+## Steps
+
+### Step 1: Wear gear from the Pack (rules, co-op, save)
+
+- Build: `Pack.replace`; `Inventory.GEAR_SLOTS` and `is_gear`;
+  `ItemLoadout.apply_gear` (split out of `apply`, also rebuilds held item guns
+  with their ammo); `Player.equip_gear(items, heal)` with no heal on swaps;
+  `LootService._equip_from_pack` wears a gear item (swap with the worn piece
+  into the same Pack slot, update `session.profile.loadout`, apply gear,
+  `gear_rig.apply(LookBuilder.from_equipped(...))`, `send_loadout()`);
+  refuse when downed, dead, match over or no profile (`gear_equip_refused`).
+  Pack overlay button reads "Wear" for gear, "Into hands" for guns.
+  Lore row, game-design Pack line and change log, LOGGING catalogue line.
+- Files: systems/loot/{pack,inventory,item_loadout,loot_service}.gd,
+  systems/player/player.gd, systems/net/loadout_sync.gd,
+  systems/ui/pack_overlay.gd, systems/ui/character_screen.gd,
+  docs/design/{game-design,lore}.md, docs/LOGGING.md, docs/DECISIONS.md.
+- Tests: tests/unit/test_pack.gd (replace), tests/unit/test_loot_service.gd
+  (vest swap: Pack slot holds the old vest, loadout holds the new one, refused
+  when downed), tests/unit/test_item_loadout.gd (swapping a +health vest off
+  and on does not heal; held item gun gets the new damage), integration
+  (client wears a vest, server's player max health changes; bank saves the
+  new loadout and puts the old vest in the stash).
+- Done when: in solo, E on a Pack vest wears it, the stats and body change at
+  once, and after the run the stash has the old vest and the loadout the new.
+
+### Step 2: Character column in the Tab overlay
+
+- Build: `pack_character.gd`: a column inside the half-screen panel with the
+  live preview (SubViewport + body + GearRig, rebuilt look on every swap, no
+  turntable input), one button per `Inventory.GEAR_SLOTS` entry in rarity
+  colours, and the guns in your hands. Focus and mouse select a slot to show
+  the worn piece; a selected Pack gear item compares with its worn piece
+  (`ItemTooltip.set_comparing`). Preview stops rendering when closed. Update
+  ui-hud screen 11 text and re-render the mockup.
+- Files: systems/ui/pack_character.gd (new), systems/ui/pack_overlay.gd,
+  docs/design/ui-hud.md, docs/design/images/ui_pack_overlay.jpg.
+- Tests: tests/unit/test_pack_overlay.gd (one slot button per gear slot,
+  labels follow a swap, the preview viewport is disabled while closed),
+  test_scripts_compile covers the new script.
+- Done when: Tab shows the character in its worn gear with three slots, a swap
+  updates the body and slots in the same frame, and the finish-feature check
+  passes.
+
+## Acceptance
+
+- [ ] E on a Pack gear item wears it, the old piece takes its Pack slot (test).
+- [ ] Swapping gear never heals (test).
+- [ ] A client's swap changes the server's stats for that player (integration test).
+- [ ] The run's bank saves the new loadout and the old piece (integration test).
+- [ ] Tab shows the character and gear slots, and teammates see the new look (play-test).
+
+## Risks
+
+- Free heals by swapping a health vest: fixed in step 1 and tested.
+- Gun affixes on gear left stale on held guns: step 1 rebuilds held item guns.
+- A full stash at bank time drops the old piece like any Pack item: same as
+  today's rule (results screen shows "loot lost"); not new.
+- The 3D preview costs frames mid-fight: renders only while open, small size;
+  checked in the step 2 play-test with `--print-fps`.
+
+## Open decisions
+
+- [ ] Tab overlay layout: character column inside the half-screen panel (game stays visible on the right) or a full-screen character view (recommended: half-screen, keeps "quick check, not a safe spot")
