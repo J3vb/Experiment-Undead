@@ -73,6 +73,7 @@ Each says when to fix it.
 - **Halcyon surfaces:** no lettered stencils or arrows, one planar projection instead of triplanar. Fix when: signage. [halcyon-surfaces](plans/halcyon-surfaces.md)
 - **Lightmaps:** Halcyon Labs at texel scale 1.5 (not 2), F-68 bake 19.3 MiB, test budget 20 MiB (the person's call); 197-439 avg fps at 1440p High, 24 zombies. Lantern Post has no bake yet. Fix when: Git LFS or the GPU bake step. [plan](plans/halcyon-concept-pass.md)
 - **Lantern Post stalls:** Technician, Gunsmith and Trader are Tripo models with our own sign boards; Missions keeps the code-built frame until a Tripo version exists; the Deploy gate stays code-built (person's pick 2026-11-19). [tripo-models](plans/tripo-models.md)
+- **Lantern Post walls:** the whole town wall is the concrete Deploy gate wall (gate_wall sections), not the palisade of the concept; the sky mountains are three peaked ranges (person's pick 2026-11-19). [hub plan](plans/lantern-post-hub.md)
 - **Wall guns:** BR-12 keeps its stock wrist (no pistol grip); surface detail is the shared shader at 8,000 tris. Fix when: F-75 baked gun textures. [guns-concept](plans/guns-concept.md)
 - **Damage numbers:** Siphon shows none (damage is server-side); a host can show overkill from later pellets. Fix when: a player asks for them.
 - **No Git LFS:** binaries in plain git; the lines to switch it on are in `.gitattributes`. Fix when: asset packs arrive.

@@ -179,6 +179,36 @@ func test_gate_wall_closes_the_north_end() -> void:
 		assert_false(hit.is_empty(), "the gate stops a player at x %.1f" % x)
 
 
+func test_concrete_wall_closes_the_west_east_and_south_sides() -> void:
+	await wait_physics_frames(2)
+	var space: PhysicsDirectSpaceState3D = _hub.get_world_3d().direct_space_state
+	var rays: Array[Array] = []
+	for z: float in [-34.0, -20.0, -4.0, 12.0]:
+		rays.append([Vector3(18.0, CHEST_HEIGHT, z), Vector3(32.0, CHEST_HEIGHT, z)])
+		rays.append([Vector3(-18.0, CHEST_HEIGHT, z), Vector3(-32.0, CHEST_HEIGHT, z)])
+	for x: float in [-22.0, -8.0, 0.0, 8.0, 22.0]:
+		rays.append([Vector3(x, CHEST_HEIGHT, 8.0), Vector3(x, CHEST_HEIGHT, 22.0)])
+	for ray_ends: Array in rays:
+		var ray: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
+			ray_ends[0] as Vector3, ray_ends[1] as Vector3, Layers.WORLD
+		)
+		assert_false(space.intersect_ray(ray).is_empty(), "the town wall stops a player at %s" % str(ray_ends[1]))
+	var sections: int = (
+		_hub
+		. get_node("Walls")
+		. find_children("*", "", false, false)
+		. filter(func(n: Node) -> bool: return not n is StaticBody3D)
+		. size()
+	)
+	assert_eq(sections, 21, "21 gate_wall sections ring the west, east and south sides")
+
+
+func test_no_pine_stands_in_the_deploy_tunnel() -> void:
+	for pine: Node in _hub.get_node("Pines").get_children():
+		var at: Vector3 = (pine as Node3D).position
+		assert_false(absf(at.x) < 9.0 and at.z > -55.0, "%s keeps out of the tunnel" % pine.name)
+
+
 func test_gate_has_a_deploy_sign_and_banners() -> void:
 	var texts: Array[String] = []
 	for node: Node in _hub.get_node("Gate").find_children("*", "Label3D", true, false):
