@@ -12,15 +12,11 @@ var _dye_colors: Dictionary[int, Color] = {}
 
 
 func _init() -> void:
-	_visuals = Content.ids(&"gear_visuals")
-	_visuals.sort()
-	var looks: Array = Content.ids(&"looks")
-	looks.sort()
-	for id: StringName in looks:
+	_visuals = Content.sorted_ids(&"gear_visuals")
+	for id: StringName in Content.sorted_ids(&"looks"):
 		if Content.get_item(&"looks", id) is RarityLook:
 			_rarities.append(id)
-	_dyes = Content.ids(&"dyes")
-	_dyes.sort()
+	_dyes = Content.sorted_ids(&"dyes")
 	for index: int in _dyes.size():
 		var color: Variant = Content.get_item(&"dyes", _dyes[index]).get("color")
 		if color is Color:

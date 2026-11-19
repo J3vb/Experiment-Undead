@@ -33,11 +33,9 @@ static func roll_weapon(
 	if rarity == null:
 		return {}
 	var level: int = clampi(item_level, 1, 50)
-	var ids: Array = Content.ids(&"loot")
-	ids.sort()
 	var affixes: Array[AffixData] = []
 	var ammo: Array[AffixData] = []
-	for id: StringName in ids:
+	for id: StringName in Content.sorted_ids(&"loot"):
 		var affix: AffixData = Content.get_item(&"loot", id) as AffixData
 		if affix == null:
 			continue
@@ -71,10 +69,8 @@ static func roll_gear(
 	if rarity == null:
 		return {}
 	var level: int = clampi(item_level, 1, 50)
-	var ids: Array = Content.ids(&"loot")
-	ids.sort()
 	var affixes: Array[AffixData] = []
-	for id: StringName in ids:
+	for id: StringName in Content.sorted_ids(&"loot"):
 		var affix: AffixData = Content.get_item(&"loot", id) as AffixData
 		if affix == null or affix.kind == "implicit":
 			continue

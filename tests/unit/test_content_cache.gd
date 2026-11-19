@@ -26,3 +26,10 @@ func test_reload_lets_go_of_kept_instances() -> void:
 	var held: int = item.get_reference_count()
 	Content.reload()
 	assert_eq(item.get_reference_count(), held - 1)
+
+
+func test_sorted_ids_are_in_name_order() -> void:
+	var expected: PackedStringArray = PackedStringArray(Content.ids(&"weapons"))
+	expected.sort()
+	assert_eq(PackedStringArray(Content.sorted_ids(&"weapons")), expected)
+	assert_eq(Content.sorted_ids(&"no_such_type"), [] as Array[StringName])

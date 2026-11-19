@@ -33,11 +33,7 @@ class Profile:
 
 
 static func weapon_ids() -> Array[StringName]:
-	var ids: Array[StringName] = []
-	for id: StringName in Content.ids(&"grips"):
-		ids.append(id)
-	ids.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
-	return ids
+	return Content.sorted_ids(&"grips")
 
 
 static func profile(data: WeaponData) -> Profile:
