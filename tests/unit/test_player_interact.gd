@@ -1,4 +1,4 @@
-## Interact uses a target once per press, or on a timer while held for targets
+## PlayerInteract uses a target once per press, or on a timer while held for targets
 ## that repeat (barrier repair).
 extends GutTest
 
