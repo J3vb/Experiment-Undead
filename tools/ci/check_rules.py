@@ -324,6 +324,8 @@ def check_doc_comment(root: Path) -> list[str]:
 def check_no_triple_copy(root: Path) -> list[str]:
     blocks = defaultdict(list)
     for path, lines in text_files(root, (*GAME_DIRS, "tools/")):
+        if path.endswith(".import"):  # Godot writes these sidecars; there is nothing to share.
+            continue
         run = []
         for number, line in enumerate(lines, 1):
             stripped = line.strip()

@@ -162,7 +162,8 @@ In tracked text files in game code and `tools/`, a block of eight or more
 consecutive code lines cannot occur in three places after trimming each line's
 surrounding whitespace and ignoring blank and full-line comments. Scenes and
 resources count too; adding spacing or comment lines cannot hide a copy.
-Tests are excluded. Two copies are fine; the third is evidence for sharing.
+Tests and Godot's `.import` sidecars (written by the engine) are excluded.
+Two copies are fine; the third is evidence for sharing.
 
 - Good third use: `apply_shared_visuals(mesh)`
 - Bad third copy's opening line: `material = StandardMaterial3D.new()`
