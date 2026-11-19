@@ -1,10 +1,10 @@
 # Plan: Halcyon Labs machine models and fuller rooms
 
-Status: Review
+Status: Approved
 Roadmap: F-83
 Phase: P5 (art)
 Size: L
-Approved by:
+Approved by: the person (decision card "Approve, build it", 2026-11-19), plan PR #382
 Lore link: machines from docs/design/lore.md "Machines" (every machine is leftover Oriel equipment that Fenlight has grown into; power switch restarts the backup generators; exfil is a Lantern Post pickup crew's hatch). Room props from "Maps, rooms and props" (each room tells one small story: Guard Post is Oriel security, Generator Hall the backup power, Labs where HALCYON grew Fenlight).
 
 ## Goal
@@ -220,5 +220,6 @@ Manifests keep task ids, so a good model is never paid for twice.
 
 ## Open decisions
 
-- [ ] Approve this plan and the four machine images (board in the project
-  files: halcyon-machines-tripo/board.jpg).
+- [x] Approve this plan and the four machine images (board in the project
+  files: halcyon-machines-tripo/board.jpg): approved 2026-11-19; stripes
+  redone in hazard orange before modelling.
