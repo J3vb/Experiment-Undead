@@ -1,10 +1,10 @@
 # Plan: Real reload animations
 
-Status: Review
+Status: Approved
 Roadmap: F-83 / solo play-test 2026-11-19
 Phase: P1
 Size: M
-Approved by:
+Approved by: the person (decision card, 2026-11-19, all 4 steps)
 Lore link: none: moves parts of guns that are already in the game (magazines, bolts, the BR-12 shells on its stock holder); no new thing for the world to explain
 
 ## Goal
@@ -229,6 +229,7 @@ extra IK target per frame, no nodes created, no allocations. Budget: under
 - Files: tools/ render script (reuse look_shot.gd / gun_lineup.gd),
   plan and roadmap status.
 - Tests: none new beyond fixes.
+- The feel check goes to the person as a decision card with the clips.
 - Done when: the person signs off the feel, plan Done.
 
 ## Acceptance
@@ -253,4 +254,4 @@ extra IK target per frame, no nodes created, no allocations. Budget: under
 
 ## Open decisions
 
-- none (the feel check in step 4 goes to the person as a decision card)
+- none
