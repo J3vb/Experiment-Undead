@@ -99,3 +99,4 @@ Agent picks the person may change.
 - **Power-up drops:** 1% per kill, at most 1 a round (GDD 2.5%, 4), while Resupply is the deck's only power-up; raise with F-26. Resupply glows big and green, the ammo pack small and orange.
 - **Hold to repair:** one plank every 0.6 s while interact is held, tap still works; the 0.3 s hold-to-buy in `controls.md` is not built.
 - **Player names:** up to 16 Latin letters, digits, spaces and - _ . ' ; default "Survivor"; duplicates allowed; set on the Character screen before joining. See [player-names](plans/player-names.md).
+- **Reload motion (F-83):** empty reloads press the bolt catch above the well for every gun (no charging-handle pull: crossing the receiver flipped the elbow); the tactical swap shows the same magazine low in frame. Feel check in step 4. [reload-animations](plans/reload-animations.md)
