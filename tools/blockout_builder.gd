@@ -93,12 +93,34 @@ static func _build_prop(root: Node3D, prop: Dictionary) -> void:
 	if not prop.has("model"):
 		_block(root, props, prop["id"], size, at, prop["material"])
 		return
+	var body: StaticBody3D = _collider(root, props, prop["id"], size, at)
+	var model: Node3D = _model(root, body, model_path(prop["model"], "props"), float(prop.get("turn", 0.0)))
+	model.position.y = -size.y * 0.5
+
+
+## Visual-only models (signs, cables, clutter), never in the navmesh. at = [x, bottom above the room
+## floor, z] in map coordinates. Optional "block" (a prop box) adds an invisible collider, <id>Block.
+static func _build_dressing(root: Node3D, item: Dictionary) -> void:
+	var room: Node3D = root.get_node(NodePath(item["room"])) as Node3D
+	var dressing: Node3D = _group(root, room, "Dressing")
+	var a: Array = item["at"]
+	var model: Node3D = _model(root, dressing, model_path(item["model"], "dressing"), float(item.get("turn", 0.0)))
+	model.name = item["id"]
+	model.position = Vector3(a[0], room.position.y + float(a[1]), a[2]) - room.position
+	if item.has("block"):
+		var b: Array = item["block"]
+		var size: Vector3 = Vector3(b[3], b[4], b[5])
+		var at: Vector3 = Vector3(b[0], room.position.y + float(b[1]) + size.y * 0.5, b[2]) - room.position
+		_collider(root, dressing, "%sBlock" % item["id"], size, at)
+
+
+static func _collider(root: Node3D, parent: Node3D, label: String, size: Vector3, at: Vector3) -> StaticBody3D:
 	var body: StaticBody3D = StaticBody3D.new()
-	body.name = prop["id"]
+	body.name = label
 	body.collision_layer = Layers.WORLD
 	body.collision_mask = 0
 	body.position = at
-	props.add_child(body)
+	parent.add_child(body)
 	body.owner = root
 	var shape: CollisionShape3D = CollisionShape3D.new()
 	shape.name = "Shape"
@@ -107,19 +129,7 @@ static func _build_prop(root: Node3D, prop: Dictionary) -> void:
 	shape.shape = box
 	body.add_child(shape)
 	shape.owner = root
-	var model: Node3D = _model(root, body, model_path(prop["model"], "props"), float(prop.get("turn", 0.0)))
-	model.position.y = -size.y * 0.5
-
-
-## Visual-only models (signs, cables, clutter): no collider, never in the navmesh.
-## at = [x, bottom above the room floor, z] in map coordinates.
-static func _build_dressing(root: Node3D, item: Dictionary) -> void:
-	var room: Node3D = root.get_node(NodePath(item["room"])) as Node3D
-	var dressing: Node3D = _group(root, room, "Dressing")
-	var a: Array = item["at"]
-	var model: Node3D = _model(root, dressing, model_path(item["model"], "dressing"), float(item.get("turn", 0.0)))
-	model.name = item["id"]
-	model.position = Vector3(a[0], room.position.y + float(a[1]), a[2]) - room.position
+	return body
 
 
 static func model_path(model: String, folder: String) -> String:

@@ -21,11 +21,14 @@ var worst_frame_ms: float = 0.0
 var long_frames: int = 0
 var min_fps: float = INF
 var low_fps_warnings: int = 0
+## Shader pipelines compiled while drawing (not at load): each one can freeze a frame.
+var draw_compiles: int = 0
 
 var _second_time: float = 0.0
 var _second_frames: int = 0
 var _second_long: int = 0
 var _second_worst: float = 0.0
+var _compiles_seen: int = 0
 var _low_seconds: int = 0
 var _sample_time: float = 0.0
 var _last_orphans: int = 0
@@ -69,8 +72,12 @@ func record_frame(delta: float) -> void:
 
 func _end_second() -> void:
 	var fps: float = _second_frames / _second_time
+	var compiles: int = _new_draw_compiles()
 	if _second_long > 0:
-		Log.warn(&"perf", &"long_frames", {"count": _second_long, "worst_ms": snappedf(_second_worst, 0.1)})
+		var data: Dictionary = {"count": _second_long, "worst_ms": snappedf(_second_worst, 0.1)}
+		data["draw_compiles"] = compiles
+		data["enemies"] = get_tree().get_node_count_in_group(&"enemies")
+		Log.warn(&"perf", &"long_frames", data)
 	if _check_fps and Engine.get_process_frames() > 120:
 		min_fps = minf(min_fps, fps)
 		_low_seconds = _low_seconds + 1 if fps < LOW_FPS else 0
@@ -110,8 +117,18 @@ func snapshot() -> Dictionary:
 	}
 
 
+## Draw-time pipeline compiles since the last call.
+func _new_draw_compiles() -> int:
+	var total: int = int(Performance.get_monitor(Performance.PIPELINE_COMPILATIONS_DRAW))
+	var fresh: int = total - _compiles_seen
+	_compiles_seen = total
+	draw_compiles += fresh
+	return fresh
+
+
 func report() -> Dictionary:
 	return {
+		"draw_compiles": draw_compiles,
 		"worst_frame_ms": snappedf(worst_frame_ms, 0.1),
 		"long_frames": long_frames,
 		"min_fps": snappedf(min_fps, 0.1) if min_fps != INF else -1.0,

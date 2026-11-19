@@ -33,7 +33,6 @@ These win over the design docs (see `docs/design/README.md`).
 Each says when to fix it.
 
 - **Navmesh** bakes at load from the blocks. Fix when: the Halcyon layout settles (switch to a baked `.tres`).
-- **Door navmesh rebake** runs on the main thread (threaded bakes never finished on CI), one short hitch per purchase. Fix when: it shows in profiling (per-area regions).
 - **Specimen Vault:** a fixed per-map `pool` weighted by `crate_weight`, no rarity, affixes or unlock levels; no navmesh rebake when it moves. Fix when: loot reaches the Vault.
 - **Zombie AI tiers:** only the re-path interval is tiered. Fix when: the performance pass adds frame-skip and off-screen checks.
 - **No Pool autoload:** impacts reuse a 48-node ring; zombies are freed after the corpse fades. Fix when: a stutter is measured. [hot-path-allocations](plans/hot-path-allocations.md)
