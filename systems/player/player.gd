@@ -139,13 +139,13 @@ func get_stat(stat: StringName, base: float = 1.0, other: StatBlock = null) -> f
 	return ItemInstance.stat_value(stats, stat, base, other, value)
 
 
-func equip_gear(items: Array[Dictionary]) -> void:
+func equip_gear(items: Array[Dictionary], heal: bool = true) -> void:
 	stats = StatBlock.new()
 	for equipped: Dictionary in items:
 		var item: ItemInstance = ItemInstance.new(equipped)
 		for modifier: Modifier in item.stats.modifiers:
 			stats.add_modifier(modifier.stat, modifier.op, modifier.value, modifier.source)
-	_refresh_stats()
+	_refresh_stats(heal)
 
 
 func has_serum(id: StringName) -> bool:
@@ -176,13 +176,13 @@ func lose_serums(only_second_wind: bool = false) -> void:
 	_refresh_stats()
 
 
-func _refresh_stats() -> void:
+func _refresh_stats(heal: bool = true) -> void:
 	if multiplayer.is_server():
 		var new_max: float = get_stat(&"max_health", _base_max_health)
 		var gained: float = new_max - health.max_health
 		health.max_health = new_max
 		health.current = minf(health.current, new_max)
-		health.heal(gained)
+		health.heal(gained if heal else 0.0)
 		health.regen_delay = maxf(
 			get_stat(&"regen_delay", _base_regen_delay), 0.001 if _base_regen_delay > 0.0 else 0.0
 		)

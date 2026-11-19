@@ -328,7 +328,7 @@ stay a plain game score. The drop reasons below are provisional picks.
 | --- | --- |
 | Vests | Body armour salvaged from Oriel security, the army and the Cordon. Light, medium and heavy frames. |
 | Charms | Keepsakes taken from the zone: dog tags, a sample vial, a coin, a key card, a dosimeter. Salvagers hang them on the gun for luck. |
-| Implants | HALCYON's soldier program: a forearm module and a neck port that feed the body tiny doses of tamed Fenlight. Dr. Corvelyn fits them at the Technician stall. *(provisional)* |
+| Implants | HALCYON's soldier program: a forearm module and a neck port that feed the body tiny doses of tamed Fenlight. Dr. Corvelyn fits the neck port once at the Technician stall; the forearm modules click in and out, so salvagers swap them in the field. *(provisional)* |
 | Rarity | How much use and Fenlight an item has seen. Prototype = live Fenlight (bio-green). |
 | Legendaries | Named items with a past. Each name hints at a place or person from the lore (Lantern Fall, Choir Mark, Quarantine Shell). |
 | Sets | Each set belongs to one map's story. Proposed: Containment Detail = Halcyon (Oriel security), Fenlight Circuit = Kessel Dam (the power line), Lamplighter = Grauwald (the night nurses), Marrow Junction gets a rail or evacuation set later. *(proposed; affixes.md still says Lamplighter on map 1)* |

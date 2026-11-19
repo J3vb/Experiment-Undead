@@ -251,3 +251,12 @@ func test_unknown_rarity_and_affix_from_a_newer_save_show_as_common_without_erro
 	assert_eq(overlay.tooltip.item_name.text, "Lantern Rig")
 	assert_true(overlay.tooltip.visible)
 	overlay.set_open(false)
+
+
+func test_equip_button_says_wear_for_gear_and_into_hands_for_guns() -> void:
+	service.pack.add({"uid": "vest", "base": "vest_light", "rar": "rare"})
+	service.pack.add({"uid": "gun", "base": "rifle_ar", "rar": "rare"})
+	overlay._select(0)
+	assert_eq(overlay.equip_button.text, "E · Wear")
+	overlay._select(1)
+	assert_eq(overlay.equip_button.text, "E · Into hands")
