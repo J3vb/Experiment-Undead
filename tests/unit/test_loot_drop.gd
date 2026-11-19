@@ -1,4 +1,4 @@
-## Personal drop pickup, full-Pack refusal and sixty-second expiry.
+## Personal drop pickup, full-Pack refusal, sixty-second expiry and the landing glow.
 extends GutTest
 
 const SCENE: PackedScene = preload("res://systems/loot/loot_drop.tscn")
@@ -61,3 +61,15 @@ func test_out_of_range_and_downed_cannot_pick_up() -> void:
 	drop.interact(player)
 	assert_true(pack.items.is_empty())
 	assert_false(drop.is_queued_for_deletion())
+
+
+func test_drop_glows_and_flashes_on_landing() -> void:
+	var ring: StandardMaterial3D = (drop.get_node(^"Ring") as MeshInstance3D).material_override as StandardMaterial3D
+	assert_ne(ring.shading_mode, BaseMaterial3D.SHADING_MODE_UNSHADED, "unshaded ignores emission")
+	assert_gt(ring.emission_energy_multiplier, 1.0, "bright enough to bloom")
+	var light: OmniLight3D = drop.get_node(^"Glow") as OmniLight3D
+	var rare: Color = (Content.get_item(&"loot", &"rare") as RarityData).colour
+	assert_eq(light.light_color, rare, "light in the rarity colour")
+	assert_gt(light.light_energy, LootDrop.STEADY_LIGHT, "flash on landing")
+	await wait_seconds(1.4)
+	assert_almost_eq(light.light_energy, LootDrop.STEADY_LIGHT, 0.01, "settles to a steady glow")
