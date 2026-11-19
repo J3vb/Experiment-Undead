@@ -216,6 +216,30 @@ underneath. The item card stays on the right half with the match visible.
   sides and the Pack below, a swap updates the body and slots in the same
   frame, and the finish-feature check passes.
 
+### Step 3: Item icons
+
+Asked by the person 2026-11-19: every item in the Pack, the slots and the
+stash shows a picture of what it is, not only a name and rarity mark.
+
+- Build: `tools/render_item_icons.gd` (new, run headless with a window via
+  xvfb, like `tools/gun_lineup.gd` and `tools/gear_booth.gd`): renders each
+  loot gun (`WeaponData.viewmodel_scene`, side view) and each gear base (its
+  `GearBaseData.visual_id` scene, front view) on a transparent background to
+  `assets/textures/ui/icons/<base id>.png` (128 x 128). The script is the
+  source; the PNGs are committed outputs. `ItemTooltip` gets one static
+  `icon_for(item) -> Texture2D` (rarity colour stays on the border and shape
+  mark). Pack grid, slot boxes, the item card and the character screen stash
+  buttons show the icon.
+- Files: tools/render_item_icons.gd (new), assets/textures/ui/icons/*.png
+  (new), systems/ui/item_tooltip.gd, systems/ui/pack_character.gd,
+  systems/ui/pack_overlay.gd, systems/ui/character_screen.gd,
+  docs/design/ui-hud.md.
+- Tests: tests/content/test_item_icons.gd (new: every loot gun and gear base
+  has an icon file of 128 x 128 with transparency); tests/unit/test_pack_overlay.gd
+  (a Pack slot with a vest shows the vest icon).
+- Done when: Pack, slots, card and stash show a picture per item, and a new
+  gun or gear base fails the content test until its icon is rendered.
+
 ## Acceptance
 
 - [ ] E on a Pack gear item wears it, the old piece takes its Pack slot (test).
@@ -223,6 +247,7 @@ underneath. The item card stays on the right half with the match visible.
 - [ ] A client's swap changes the server's stats for that player (integration test).
 - [ ] The run's bank saves the new loadout and the old piece (integration test).
 - [ ] Tab shows the character and gear slots, and teammates see the new look (play-test).
+- [ ] Every loot gun and gear base has an icon shown in the Pack, slots, card and stash (content test).
 
 ## Risks
 
@@ -236,4 +261,5 @@ underneath. The item card stays on the right half with the match visible.
 ## Open decisions
 
 - [x] Tab overlay layout: half screen, game visible (the person, decision card 2026-11-19)
+- [x] Item icons: a picture per item in Pack, slots and stash (the person, 2026-11-19)
 - [x] Arrangement: character on top with slots on its sides, Pack items underneath (the person, reference image 2026-11-19)
