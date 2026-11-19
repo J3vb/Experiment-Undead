@@ -291,6 +291,12 @@ class CheckRulesTests(unittest.TestCase):
         files["levels/c.tscn"] = block
         self.check("no-triple-copy", files, 3)
 
+    def test_copy_detection_skips_godot_import_files(self):
+        block = "".join(f"compress/setting_{number}=0\n" for number in range(8))
+        names = ("levels/a/map.exr.import", "levels/b/map.exr.import", "levels/c/prop.glb.import")
+        self.check("no-triple-copy", {name: block for name in names})
+        self.check("no-triple-copy", {"levels/a.tres": block, "levels/b.tres": block, "levels/c.tres": block}, 3)
+
     def test_long_copy_reports_each_place_once(self):
         block = "".join(f"step_{number}()\n" for number in range(12))
         files = {f"systems/{name}.gd": "# Purpose.\n" + block for name in ("a", "b", "c")}
