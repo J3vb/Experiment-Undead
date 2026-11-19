@@ -364,16 +364,49 @@ the person on a decision card before the next step starts.
   room). Until this bake runs, the new props and the ceiling layer have no
   lightmap and the Fenlight glow does not reach baked surfaces, so the ceilings
   barely show in cloud renders.
+- Built (2026-11-19): re-baked on the RTX 4080 Super (High, 3 bounces,
+  denoiser, texel 1.5, 14 s). `map.exr` + `map.lmbake` grew from 16.2 to
+  19.3 MiB (13 to 15 atlas slices; the 8 ceiling models take about 9 % of the
+  atlas), so the person raised the test budget from 18 to 20 MiB. At energy
+  1.4 and range 6 m the glow only added 1 % to Containment, so the person
+  asked for more: the 3 glow lights are now energy 2.0, range 9 m (still
+  Static, no shadow, same colour). Fps at 2560x1440 High, 24 zombies, 10 s
+  per spot, median of 5 runs before and 3 after:
+
+  | Spot | Avg before | Avg after | 1% low before | 1% low after | Draw calls |
+  |---|---|---|---|---|---|
+  | Mess Hall | 271 | 266 (-2 %) | 187 | 175 | 1481 / 1475 |
+  | Main Corridor | 204 | 197 (-3 %) | 144 | 131 | 2125 / 2124 |
+  | Containment | 397 | 398 (0 %) | 226 | 228 | 461 / 464 |
+  | Labs | 442 | 439 (-1 %) | 253 | 239 | 212 / 212 |
+
+  Brightness (average 0-255 of the 8 room shots, Forward+, taken 3 s after
+  power-on; `room_shots.gd` itself shoots 12 frames after power-on, inside
+  the 0.6 s light wave, so its Dock and Guard Post shots swing ±40 %):
+
+  | Room | Before | After | Change |
+  |---|---|---|---|
+  | Loading Dock | 28.6 | 28.8 | +0.5 % |
+  | Guard Post | 24.1 | 24.2 | +0.2 % |
+  | Mess Hall | 35.6 | 35.5 | -0.4 % |
+  | Main Corridor | 37.6 | 37.5 | -0.2 % |
+  | Generator Hall | 16.2 | 16.3 | +0.2 % |
+  | Labs | 47.6 | 47.6 | -0.2 % |
+  | Coolant Tunnel | 29.1 | 30.5 | +4.8 % |
+  | Containment Wing | 26.1 | 28.8 | +10.6 % (green 29.1 to 32.7) |
+
+  The Coolant Tunnel's rise is the Labs doorway mist at the end of the shot,
+  not the tunnel walls.
 
 ## Acceptance
 
-- [ ] Every room has signage that names it with maps.md names (test).
-- [ ] Mess Hall, Labs and Containment renders read as the post-breakout concept (person's card per step).
-- [ ] The map is no brighter outside the new Fenlight, fire and lamp spots (GPU brightness capture vs F-13 numbers).
-- [ ] Zombies are readable in Containment (GPU capture + person).
-- [ ] Mess Hall table loop, late ring and Brute arena still work (tests, soak green).
-- [ ] At least 120 fps avg at 1440p High with 24 zombies (GPU check).
-- [ ] #297 lines for bake, Containment, truck and vent ledge closed.
+- [x] Every room has signage that names it with maps.md names (test): `test_halcyon_signs.gd` `test_every_area_has_its_name_sign`.
+- [ ] Mess Hall, Labs and Containment renders read as the post-breakout concept (person's card per step). Play-test #368; Fenlight growth signed off ("Keep as is", 2026-11-18).
+- [x] The map is no brighter outside the new Fenlight, fire and lamp spots (GPU brightness capture vs F-13 numbers).
+- [ ] Zombies are readable in Containment (GPU capture + person). Play-test #368.
+- [x] Mess Hall table loop, late ring and Brute arena still work (tests, soak green): `test_halcyon_labs.gd` `test_mess_hall_tables_make_a_loop`, `test_halcyon_doors.gd` `test_everything_open_lets_every_spawn_point_reach_the_start`, `test_halcyon_wreck.gd` `test_containment_wreck_keeps_the_brute_arena_and_its_approaches_clear`; soak green on #332 to #336 and #365.
+- [x] At least 120 fps avg at 1440p High with 24 zombies (GPU check).
+- [ ] #297 lines for bake, Containment, truck and vent ledge closed. Bake and Containment ticked on #297 (#365); truck and vent ledge wait on play-test #368.
 
 ## Risks
 

@@ -25,7 +25,7 @@ const CONTAINMENT: Vector3 = Vector3(70, -3, 20)
 const PROP_CLEARANCE: float = 1.5
 const MAX_SHADOWED_PER_ROOM: int = 2
 const LIGHTMAP_FILES: Array[String] = ["res://levels/halcyon_labs/map.exr", "res://levels/halcyon_labs/map.lmbake"]
-const MAX_LIGHTMAP_BYTES: int = 18 * 1024 * 1024
+const MAX_LIGHTMAP_BYTES: int = 20 * 1024 * 1024
 
 
 func _spawn_points(level: Node) -> Array[ZombieSpawnPoint]:

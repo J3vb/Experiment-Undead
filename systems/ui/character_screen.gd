@@ -176,7 +176,7 @@ func _comes_before(left: int, right: int) -> bool:
 func _refresh() -> void:
 	if profile == null:
 		return
-	%Name.text = profile.display_name
+	(%Name as NameField).open(profile)
 	%Level.text = "Level %d" % profile.level
 	var indices: Array[int] = visible_stash_indices()
 	var count: int = 0
@@ -269,7 +269,7 @@ func _activate_selected() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if not is_visible_in_tree() or profile == null:
+	if not is_visible_in_tree() or profile == null or %Name.has_focus():
 		return
 	if event is InputEventKey and event.echo:
 		return
@@ -329,6 +329,7 @@ func _preview_input(event: InputEvent) -> void:
 func _close() -> void:
 	if profile == null or _closing:
 		return
+	(%Name as NameField).apply()
 	var error: Error = profile.save()
 	if error != OK and not _save_failed:
 		_save_failed = true

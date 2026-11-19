@@ -71,7 +71,8 @@ Each says when to fix it.
 - **Character screen:** no drag and drop, junk marking or extra tabs. Fix when: the stash UI pass.
 - **Debug console:** no god mode. Fix when: a public damage-immunity API exists.
 - **Halcyon surfaces:** no lettered stencils or arrows, one planar projection instead of triplanar. Fix when: signage. [halcyon-surfaces](plans/halcyon-surfaces.md)
-- **Lightmaps:** Halcyon Labs at texel scale 1.5 (not 2), test budget 18 MiB (the person's call); Lantern Post has no bake yet. Fix when: Git LFS or the GPU bake step. [HOW_TO_ADD](HOW_TO_ADD.md)
+- **Lightmaps:** Halcyon Labs at texel scale 1.5 (not 2), F-68 bake 19.3 MiB, test budget 20 MiB (the person's call); 197-439 avg fps at 1440p High, 24 zombies. Lantern Post first bake 17.9 MiB. Fix when: Git LFS or the GPU bake step. [plan](plans/halcyon-concept-pass.md)
+- **Lantern Post to the concept art:** bake ambient is the look colour, not the sky; 1440p, 8 players, avg fps 302-468 baked High, 437-612 Low. Street view 2,639 draw calls, not 600: the 8 player flashlights cast shadows. Fix when: flashlight pick. [plan](plans/lantern-post-concept.md)
 - **Lantern Post stalls:** Technician, Gunsmith and Trader are Tripo models with our own sign boards; Missions keeps the code-built frame until a Tripo version exists; the Deploy gate stays code-built (person's pick 2026-11-19). [tripo-models](plans/tripo-models.md)
 - **Wall guns:** BR-12 keeps its stock wrist (no pistol grip); surface detail is the shared shader at 8,000 tris. Fix when: F-75 baked gun textures. [guns-concept](plans/guns-concept.md)
 - **Damage numbers:** Siphon shows none (damage is server-side); a host can show overkill from later pellets. Fix when: a player asks for them.
@@ -92,5 +93,7 @@ Agent picks the person may change.
 - **Halcyon atmosphere:** spark gaps 3-9 s and a 30 s Containment klaxon. Emergency lights at 30% red-orange, back on in a 0.6 s ragged wave.
 - **Footsteps:** one step per 0.5 s walking, 0.34 s sprinting, 0.72 s crouched; landings silent under 3 m/s.
 - **HUD:** XP bar placement, the 90 px / 0.6 s level-up ring, a 3-row drop feed; "Crits only" damage numbers show headshots until a crit stat exists.
+- **Halcyon concept pass (F-68):** kitchen fires as the Mess Hall's warm accent, the existing hazard orange (not yellow) on the tank railings, the catwalk office not walkable, pods at leak-glow strength, one steel material on the ceiling models. Play-test #368.
 - **Model looks:** skinned zombies, gear finishes, vest frames, first-person arms, teammate clips and the launcher screen are agent looks until the person sees them.
 - **Tripo settings:** `tripo_make.py` asks for model v3.1, PBR, detailed texture, standard geometry (a 0.9 m prop: 40 credits); `body_tarp` goes in `props/`, not `dressing/` (intake prop budget 2,000). [tripo-models](plans/tripo-models.md)
+- **Player names:** up to 16 Latin letters, digits, spaces and - _ . ' ; default "Survivor"; duplicates allowed; set on the Character screen before joining. See [player-names](plans/player-names.md).

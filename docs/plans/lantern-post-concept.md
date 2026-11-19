@@ -240,6 +240,31 @@ colliders. The spawn line and the Deploy board stay where they are.
 - Tests: model checks; light budget test still passes.
 - Done when: CI green, the person approves the look (decision card), GPU
   agent reports fps at or above target.
+- GPU check (2026-11-19, RTX 4080 Super, 2560x1440, vsync off, 8 player
+  bodies on the spawn line, 10 s per spot): fps passes everywhere; draw calls
+  miss 600 because each player's flashlight casts shadows (about 1,400 of the
+  2,639 street-view calls; 1,235 with them off). First bake: 17.9 MiB
+  `lantern_post.exr`, ambient from the look's colour. 1% low = 99th
+  percentile frame time.
+
+  | Spot | Preset | Bake | Avg fps | 1% low | Draw calls | Primitives |
+  |---|---|---|---|---|---|---|
+  | Concept (-3, 2.2, 6) | High | before | 354 | 279 | 2,639 | 2,064,860 |
+  | Street fire | High | before | 329 | 263 | 2,267 | 1,539,554 |
+  | Deploy board | High | before | 506 | 366 | 259 | 173,160 |
+  | Overview | High | before | 484 | 359 | 2,778 | 2,313,442 |
+  | Concept | Low | before | 496 | 336 | 2,638 | 2,064,860 |
+  | Street fire | Low | before | 437 | 289 | 2,267 | 1,539,554 |
+  | Deploy board | Low | before | 612 | 368 | 262 | 173,160 |
+  | Overview | Low | before | 543 | 424 | 2,778 | 2,313,442 |
+  | Concept | High | after | 329 | 234 | 2,639 | 2,064,860 |
+  | Street fire | High | after | 302 | 235 | 2,267 | 1,539,554 |
+  | Deploy board | High | after | 468 | 323 | 259 | 173,160 |
+  | Overview | High | after | 395 | 294 | 2,778 | 2,313,442 |
+
+  Bake cost (medians of 3 interleaved runs): -1% concept, -9% fire, -12%
+  board, -16% overview. Low draws the same calls: its shadow setting only
+  shrinks the atlas.
 
 ## Acceptance
 

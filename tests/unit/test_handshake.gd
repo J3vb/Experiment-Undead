@@ -20,6 +20,16 @@ class OddHello:
 		return {"t": "hello", "protocol": 99, "version": "9.9.9", "colour": "green", "perks": [1, 2]}
 
 
+## A client from an older or edited build that sends a long name with markup in it.
+class MessyName:
+	extends Handshake
+
+	func hello() -> Dictionary:
+		var data: Dictionary = super.hello()
+		data["name"] = "  [b]Scout[/b]   of the long ridge road  "
+		return data
+
+
 func _make_side(side_name: String, handshake: Handshake = null) -> Node:
 	if handshake == null:
 		handshake = Handshake.new()
@@ -105,6 +115,15 @@ func test_matching_hello_spawns_the_player_on_both_peers() -> void:
 	assert_not_null(client_spawner.find_player(peer_id))
 	assert_signal_emitted_with_parameters(server_handshake, "accepted", [peer_id])
 	assert_signal_not_emitted(client_handshake, "refused")
+
+
+func test_server_cleans_the_name_in_a_hello() -> void:
+	var messy_root: Node = _make_side("MessyNameClient", MessyName.new())
+	_join(messy_root)
+	var peer_id: int = messy_root.multiplayer.get_unique_id()
+	await wait_until(func() -> bool: return server_spawner.find_player(peer_id) != null, 5.0, "messy client admitted")
+	assert_eq(server_handshake.player_name(peer_id), "bScoutb of the l")
+	assert_eq(server_handshake.player_name(1), "Host")
 
 
 func test_wrong_protocol_is_refused_with_both_versions_without_spawning() -> void:

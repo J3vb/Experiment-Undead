@@ -62,6 +62,16 @@ func ids(type: StringName) -> Array:
 	return _by_type.get(type, {}).keys()
 
 
+## Ids in name order, the same on every machine. Array.sort() on StringNames orders them by memory address.
+func sorted_ids(type: StringName) -> Array[StringName]:
+	var names: PackedStringArray = PackedStringArray(ids(type))
+	names.sort()
+	var sorted: Array[StringName] = []
+	for id: String in names:
+		sorted.append(StringName(id))
+	return sorted
+
+
 func weapon(id: StringName) -> WeaponData:
 	return get_item(&"weapons", id) as WeaponData
 
