@@ -32,19 +32,36 @@ const SHADOWED_LIGHTS_PER_ROOM: int = 2
 func _initialize() -> void:
 	var args: PackedStringArray = OS.get_cmdline_user_args()
 	var map_id: String = args[0] if not args.is_empty() else "halcyon_labs"
-	var root: Node3D = build(load_layout(map_id))
+	var layout: Dictionary = load_layout(map_id)
+	if layout.is_empty():
+		push_error("levels/%s/layout.json is missing, not valid JSON or has no rooms" % map_id)
+		quit(1)
+		return
+	var root: Node3D = build(layout)
 	var packed: PackedScene = PackedScene.new()
-	packed.pack(root)
+	var err: Error = packed.pack(root)
 	var out: String = "res://levels/%s/blockout.tscn" % map_id
-	var err: Error = ResourceSaver.save(packed, out)
+	if err == OK:
+		err = ResourceSaver.save(packed, out)
 	print("saved %s (%s)" % [out, error_string(err)])
 	root.free()
 	quit(0 if err == OK else 1)
 
 
+## Empty when the file is missing, not valid JSON or has no "rooms" list.
 static func load_layout(map_id: String) -> Dictionary:
-	var text: String = FileAccess.get_file_as_string("res://levels/%s/layout.json" % map_id)
-	return JSON.parse_string(text) as Dictionary
+	var path: String = "res://levels/%s/layout.json" % map_id
+	if not FileAccess.file_exists(path):
+		return {}
+	return parse_layout(FileAccess.get_file_as_string(path))
+
+
+static func parse_layout(text: String) -> Dictionary:
+	var json: JSON = JSON.new()
+	if json.parse(text) != OK or typeof(json.data) != TYPE_DICTIONARY:
+		return {}
+	var layout: Dictionary = json.data
+	return layout if layout.get("rooms") is Array else {}
 
 
 static func build(layout: Dictionary) -> Node3D:
