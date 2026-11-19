@@ -1,8 +1,7 @@
 """Surface looks for the player body: each part gets a detailed material, baked to three texture maps.
 
 Colour, normal and roughness are baked from procedural materials (weave, wrinkles, strands, wear,
-stitching, dirt), so the game model keeps its triangle count and gains the fine detail. A town NPC
-passes its own looks table in the same shape as LOOKS.
+stitching, dirt), so the game model keeps its triangle count and gains the fine detail.
 """
 
 import math

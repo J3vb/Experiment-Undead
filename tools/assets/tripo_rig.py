@@ -169,12 +169,13 @@ def eyes_marker(arm, low) -> object:
     bpy.context.collection.objects.link(eyes)
     eyes.parent, eyes.parent_type, eyes.parent_bone = arm, "BONE", "head"
     head = arm.data.bones["head"].head_local
+    eye_z = head.z + EYE_HEIGHT - character_rig.BONES["head"][1][2]
     front = min(
-        (v.co.y for v in low.data.vertices if abs(v.co.z - EYE_HEIGHT) < 0.03 and abs(v.co.x) < 0.04),
+        (v.co.y for v in low.data.vertices if abs(v.co.z - eye_z) < 0.03 and abs(v.co.x) < 0.04),
         default=head.y - EYE_FRONT,
     )
     bpy.context.view_layer.update()
-    eyes.matrix_world = Matrix.Translation(Vector((0.0, min(front, head.y - 0.02), EYE_HEIGHT)))
+    eyes.matrix_world = Matrix.Translation(Vector((0.0, min(front, head.y - 0.02), eye_z)))
     return eyes
 
 

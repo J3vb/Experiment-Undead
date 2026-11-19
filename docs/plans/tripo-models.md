@@ -164,7 +164,7 @@ keep today's gate" (decision card, 2026-11-19).
   by the person first, then `tripo_make.py`. Line-up render of all four.
   F-76 steps 3-5 (clips, Vendor node, close-out) stay as planned.
 - Tests: character checks on the four files (22 bones, budget, Eyes).
-- Done when: line-up approved by the person.
+- Done when: line-up approved by the person. Done 2026-11-19: line-up approved as shown (decision card), PR #379.
 
 ### Step 4: Prop families (changes F-77 steps 2-9)
 
@@ -179,7 +179,7 @@ keep today's gate" (decision card, 2026-11-19).
 
 - [ ] ADR 0017 and the CREDITS line merged with the first Tripo model (stalls).
 - [ ] `tripo_make.py` makes a model end to end from a manifest row.
-- [ ] Four vendors from Tripo pass character checks and play our clips.
+- [x] Four vendors from Tripo pass character checks and play our clips.
 - [ ] Every F-77 family is built from a manifest, boards approved.
 
 ## Risks

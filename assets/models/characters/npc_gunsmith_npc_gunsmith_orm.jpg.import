@@ -2,21 +2,19 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b0nrxh5h3k6mv"
-path.s3tc="res://.godot/imported/npc_quartermaster_BodyColor.jpg-ee35da5bcd633f2e251884c50c336a5c.s3tc.ctex"
+uid="uid://enhua5m7l2vr"
+path="res://.godot/imported/npc_gunsmith_npc_gunsmith_orm.jpg-878cde3b11014b68e9d68d1ec61cce3c.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
-"md5": "900089b29b6e693431ee136db88ebb5d"
+"md5": "c316194ff8c89250e4abcae4aa011260"
 }
 
 [deps]
 
-source_file="res://assets/models/characters/npc_quartermaster_BodyColor.jpg"
-dest_files=["res://.godot/imported/npc_quartermaster_BodyColor.jpg-ee35da5bcd633f2e251884c50c336a5c.s3tc.ctex"]
-
+source_file="res://assets/models/characters/npc_gunsmith_npc_gunsmith_orm.jpg"
+dest_files=["res://.godot/imported/npc_gunsmith_npc_gunsmith_orm.jpg-878cde3b11014b68e9d68d1ec61cce3c.ctex"]
 [params]
 
 compress/mode=2
@@ -25,7 +23,7 @@ compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
-compress/normal_map=0
+compress/normal_map=2
 compress/channel_pack=0
 mipmaps/generate=true
 mipmaps/limit=-1
