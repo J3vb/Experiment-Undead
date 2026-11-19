@@ -77,9 +77,9 @@ func _wear_from_pack(item: Dictionary, index: int) -> void:
 		return
 	var slot: String = String(Inventory.slot_for(item))
 	var worn: Dictionary = session.profile.loadout.get(slot, {})
-	pack.replace(index, worn)
 	session.profile.loadout[slot] = item.duplicate(true)
 	ItemLoadout.apply_gear(player, session.profile.loadout)
+	pack.replace(index, worn)
 	player.gear_rig.apply(LookBuilder.from_equipped(session.profile.loadout))
 	player.loadout_sync.send_loadout()
 	Log.info(&"loot", &"gear_worn", {"uid": item.get("uid"), "slot": slot})

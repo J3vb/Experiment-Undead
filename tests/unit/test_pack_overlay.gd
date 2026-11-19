@@ -260,3 +260,37 @@ func test_equip_button_says_wear_for_gear_and_into_hands_for_guns() -> void:
 	assert_eq(overlay.equip_button.text, "E · Wear")
 	overlay._select(1)
 	assert_eq(overlay.equip_button.text, "E · Into hands")
+
+
+func test_character_view_has_one_box_per_gear_slot_above_the_pack_grid() -> void:
+	assert_eq(overlay.character.slot_buttons.keys(), CharacterProfile.GEAR_SLOTS)
+	var box: Node = overlay.character.get_parent()
+	assert_lt(overlay.character.get_index(), overlay.slots[0].get_parent().get_index(), "Pack grid sits underneath")
+	assert_eq(box, overlay.slots[0].get_parent().get_parent())
+
+
+func test_preview_only_renders_while_the_pack_is_open() -> void:
+	assert_eq(overlay.character.viewport.render_target_update_mode, SubViewport.UPDATE_DISABLED)
+	overlay.set_open(true)
+	assert_eq(overlay.character.viewport.render_target_update_mode, SubViewport.UPDATE_ALWAYS)
+	overlay.set_open(false)
+	assert_eq(overlay.character.viewport.render_target_update_mode, SubViewport.UPDATE_DISABLED)
+
+
+func test_wearing_a_pack_vest_updates_the_slot_box_and_compares_with_the_worn_one() -> void:
+	session.profile = CharacterProfile.from_dict({"id": "pack_view", "loadout": {"vest": _vest("old_vest")}})
+	service.pack.add(_vest("new_vest"))
+	overlay.set_open(true)
+	overlay._select(0)
+	assert_eq(overlay.tooltip._equipped.get("uid"), "old_vest")
+	assert_true(overlay.tooltip._comparing)
+	service._equip_from_pack("new_vest")
+	assert_eq(session.profile.loadout["vest"]["uid"], "new_vest")
+	assert_string_contains(overlay.character.slot_buttons[&"vest"].text, "Vest")
+	assert_eq(overlay.character.worn(&"vest").get("uid"), "new_vest")
+	assert_eq(service.pack.items[0]["uid"], "old_vest")
+	overlay.set_open(false)
+
+
+func _vest(uid: String) -> Dictionary:
+	return {"uid": uid, "base": "vest_light", "rar": "rare", "ilvl": 10, "aff": []}
