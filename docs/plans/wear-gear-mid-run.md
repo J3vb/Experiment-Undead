@@ -178,23 +178,31 @@ under 1 ms on the 4080 target.
 - Done when: in solo, E on a Pack vest wears it, the stats and body change at
   once, and after the run the stash has the old vest and the loadout the new.
 
-### Step 2: Character column in the Tab overlay
+### Step 2: Character view in the Tab overlay
 
-- Build: `pack_character.gd`: a column inside the half-screen panel with the
-  live preview (SubViewport + body + GearRig, rebuilt look on every swap, no
-  turntable input), one button per `Inventory.GEAR_SLOTS` entry in rarity
-  colours, and the guns in your hands. Focus and mouse select a slot to show
-  the worn piece; a selected Pack gear item compares with its worn piece
-  (`ItemTooltip.set_comparing`). Preview stops rendering when closed. Update
-  ui-hud screen 11 text and re-render the mockup.
+Layout (the person's reference, 2026-11-19: a loot-game character sheet; not
+committed, it is another game's art): inside the half-screen panel, the top
+part is your character standing in the middle with gear slot boxes down the
+left side and the two guns in your hands down the right side, plus a narrow
+column with Level and Max health. The six Pack items sit in a grid
+underneath. The item card stays on the right half with the match visible.
+
+- Build: `pack_character.gd`: the top part (SubViewport + body + GearRig,
+  look rebuilt on every swap, no turntable input), one square slot box per
+  `Inventory.GEAR_SLOTS` entry with rarity border and shape, the guns in
+  hands, Level and Max health. The Pack grid moves under it. Focus and mouse
+  select a slot to show the worn piece; a selected Pack gear item compares
+  with its worn piece (`ItemTooltip.set_comparing`). Preview stops rendering
+  when closed. Update ui-hud screen 11 text and re-render the mockup in our
+  Cold Containment look.
 - Files: systems/ui/pack_character.gd (new), systems/ui/pack_overlay.gd,
   docs/design/ui-hud.md, docs/design/images/ui_pack_overlay.jpg.
-- Tests: tests/unit/test_pack_overlay.gd (one slot button per gear slot,
-  labels follow a swap, the preview viewport is disabled while closed),
-  test_scripts_compile covers the new script.
-- Done when: Tab shows the character in its worn gear with three slots, a swap
-  updates the body and slots in the same frame, and the finish-feature check
-  passes.
+- Tests: tests/unit/test_pack_overlay.gd (one slot box per gear slot, labels
+  follow a swap, the Pack grid sits under the character, the preview viewport
+  is disabled while closed), test_scripts_compile covers the new script.
+- Done when: Tab shows the character in its worn gear with its slots on the
+  sides and the Pack below, a swap updates the body and slots in the same
+  frame, and the finish-feature check passes.
 
 ## Acceptance
 
@@ -215,4 +223,5 @@ under 1 ms on the 4080 target.
 
 ## Open decisions
 
-- [ ] Tab overlay layout: character column inside the half-screen panel (game stays visible on the right) or a full-screen character view (recommended: half-screen, keeps "quick check, not a safe spot")
+- [x] Tab overlay layout: half screen, game visible (the person, decision card 2026-11-19)
+- [x] Arrangement: character on top with slots on its sides, Pack items underneath (the person, reference image 2026-11-19)
