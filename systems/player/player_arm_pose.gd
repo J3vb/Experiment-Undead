@@ -2,6 +2,8 @@
 class_name PlayerArmPose
 extends RefCounted
 
+const RELAXED_BEND: float = 24.0
+
 var _flex_positive: bool = true
 var _skeleton: Skeleton3D
 var _upper: PackedInt32Array = []
@@ -34,13 +36,14 @@ func pose(
 	profile: PlayerArmProfiles.Profile,
 	weapon_transform: Transform3D,
 	pump_delta: Vector3 = Vector3.ZERO,
-	sprint: float = 0.0
+	sprint: float = 0.0,
+	relax: float = 0.0
 ) -> void:
 	var travel: Vector3 = weapon_transform.origin - profile.hip_position
 	var right_lift: Vector3 = _shoulder_offset(profile.right, travel) + profile.right.shoulder_sprint_offset * sprint
 	var left_lift: Vector3 = _shoulder_offset(profile.left, travel) + profile.left.shoulder_sprint_offset * sprint
 	_arm(0, profile.right, weapon_transform, Vector3.ZERO, right_lift)
-	_arm(1, profile.left, weapon_transform, pump_delta, left_lift)
+	_arm(1, profile.left, weapon_transform, pump_delta, left_lift, relax)
 
 
 func _shoulder_offset(grip: PlayerArmProfiles.Hand, travel: Vector3) -> Vector3:
@@ -52,8 +55,14 @@ func _shoulder_offset(grip: PlayerArmProfiles.Hand, travel: Vector3) -> Vector3:
 	return lift
 
 
+## relax (0-1) lets a hand that has left its grip turn toward its forearm, so the wrist stays within RELAXED_BEND.
 func _arm(
-	index: int, grip: PlayerArmProfiles.Hand, weapon_transform: Transform3D, part_delta: Vector3, lift: Vector3
+	index: int,
+	grip: PlayerArmProfiles.Hand,
+	weapon_transform: Transform3D,
+	part_delta: Vector3,
+	lift: Vector3,
+	relax: float = 0.0
 ) -> void:
 	var rotation: Basis = weapon_transform.basis * grip.rotation
 	var target: Transform3D = Transform3D(
@@ -63,10 +72,41 @@ func _arm(
 	var dorsal: Vector3 = rotation * Vector3.FORWARD
 	var shoulder: Vector3 = grip.shoulder + lift
 	var elbow: Vector3 = _elbow(index, shoulder, target.origin, palm, dorsal)
+	if relax > 0.0:
+		elbow = _toward_hanging(index, shoulder, target.origin, elbow, relax)
 	var forearm: Vector3 = target.origin - elbow
+	if relax > 0.0:
+		target.basis = _relaxed(target.basis, forearm, relax)
+		palm = target.basis.y.normalized()
+		dorsal = target.basis * _hand_rest[index].basis.inverse() * Vector3.FORWARD
 	_set_bone(_upper[index], _upper_rest[index], shoulder, elbow - shoulder, dorsal)
 	_set_bone(_lower[index], _lower_rest[index], elbow, forearm, _forearm_dorsal(forearm, palm, dorsal))
 	_skeleton.set_bone_global_pose(_hand[index], target)
+
+
+## Turns the elbow around the shoulder-wrist axis toward hanging out and down, so it cannot pop between poles
+## while the hand follows reload key poses that the grip-based search was never tuned for.
+func _toward_hanging(index: int, shoulder: Vector3, wrist: Vector3, elbow: Vector3, relax: float) -> Vector3:
+	var axis: Vector3 = (wrist - shoulder).normalized()
+	var center: Vector3 = shoulder + axis * axis.dot(elbow - shoulder)
+	var current: Vector3 = elbow - center
+	var outward: Vector3 = Vector3(1.0 if index == 0 else -1.0, -1.0, 0.0)
+	var hanging: Vector3 = outward - axis * outward.dot(axis)
+	if hanging.length_squared() < .000001 or current.length_squared() < .000001:
+		return elbow
+	var angle: float = current.signed_angle_to(hanging, axis)
+	return center + current.rotated(axis, angle * relax)
+
+
+func _relaxed(hand: Basis, forearm: Vector3, relax: float) -> Basis:
+	var palm: Vector3 = hand.y.normalized()
+	var forward: Vector3 = forearm.normalized()
+	var bend: float = palm.angle_to(forward)
+	var limit: float = lerpf(PI, deg_to_rad(RELAXED_BEND), relax)
+	var axis: Vector3 = palm.cross(forward)
+	if bend <= limit or axis.length_squared() < .000001:
+		return hand
+	return Basis(axis.normalized(), bend - limit) * hand
 
 
 func _elbow(index: int, shoulder: Vector3, wrist: Vector3, palm: Vector3, dorsal: Vector3) -> Vector3:

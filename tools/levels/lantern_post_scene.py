@@ -119,16 +119,20 @@ SODIUM = "1, 0.58, 0.25, 1"
 FLOOD = "1, 0.9, 0.75, 1"
 GREEN = "0.553, 1, 0.227, 1"
 STENCIL = "0.78, 0.78, 0.72, 1"
-WALL_H = 3.6
 # Deploy gate (asset list G1-G5). The concrete wall's face is at GATE_Z; the tunnel pillars stand a little proud.
 GATE_Z = -38.0
-GATE_WALL_X = (-17.0, -9.0, 9.0, 17.0)
+GATE_WALL_X = (-25.0, -17.0, -9.0, 9.0, 17.0, 25.0)
 GATE_WALL_FRONT = 0.925  # wall body face, in the gate_wall model's own space (+Z)
 TUNNEL_Z = -37.6  # tunnel pillar faces
 TUNNEL_FRONT = 6.62  # pillar face, in the gate_tunnel model's own space (+Z)
 TUNNEL_STOP = 3.0  # players can walk this far into the tunnel
 BANNER_BACK = 0.1075  # wall plate behind a banner's origin
 BANNERS_X = (-17.0, -6.6, 11.4, 17.0)  # east of the tunnel the watchtower stands in front of the wall
+# The rest of the town wall is the same gate_wall sections; their inner faces stand on these lines.
+RING_X = 25.0
+RING_SOUTH_Z = 15.0
+RING_SIDE_Z = (-35.5, -27.5, -19.5, -11.5, -3.5, 4.5, 12.5)  # 8 m sections, ends tucked into the north and south walls
+RING_SOUTH_X = (-24.0, -16.0, -8.0, 0.0, 8.0, 16.0, 24.0)
 SWEEP = (math.pi / 2 - 0.7, math.pi / 2 + 0.7)  # watchtower spotlight yaw range: gate to street
 # Camp props (asset list P1-P13). Collider sizes in each model's own space (width, height, depth).
 PROP_BLOCKS = {
@@ -306,23 +310,22 @@ def build_ground() -> None:
         inst(f"Bank{k}", "SnowBanks", pos, drift, math.pi / 2 + random.uniform(-0.2, 0.2))
 
 
+def _ring_wall(name: str, face: tuple, yaw: float) -> None:
+    """One gate_wall section with its front face on `face` (x, z), turned by `yaw` to face into the town."""
+    nx, nz = math.sin(yaw), math.cos(yaw)
+    at = (face[0] - nx * GATE_WALL_FRONT, 0, face[1] - nz * GATE_WALL_FRONT)
+    inst(name, "Walls", at, "gate_wall", yaw)
+    collider(f"{name}Block", "Walls", (face[0] - nx * 1.2, 3.5, face[1] - nz * 1.2), (8.0, 7.0, 2.4), yaw)
+
+
 def build_walls() -> None:
+    """The west, east and south town walls: the same concrete gate_wall sections as the Deploy gate."""
     group("Walls")
-    for name, pos, size in [
-        ("NorthWest", (-23.5, WALL_H / 2, -39), (5, WALL_H, 0.6)),
-        ("NorthEast", (23.5, WALL_H / 2, -39), (5, WALL_H, 0.6)),
-        ("South", (0, WALL_H / 2, 16), (52, WALL_H, 0.6)),
-        ("West", (-26, WALL_H / 2, -11), (0.6, WALL_H, 54)),
-        ("East", (26, WALL_H / 2, -11), (0.6, WALL_H, 54)),
-    ]:
-        block(name, "Walls", pos, size, "town_planks")
-        long_x = size[0] > size[2]
-        length = size[0] if long_x else size[2]
-        for i in range(int(length / 3) + 1):
-            off = -(length / 2) + i * 3
-            p = (pos[0] + off, WALL_H / 2 + 0.25, pos[2]) if long_x else (pos[0], WALL_H / 2 + 0.25, pos[2] + off)
-            deco(f"{name}Post{i}", "Walls", p, (0.32, WALL_H + 0.5, 0.32), "town_dark_wood")
-        deco(f"{name}Cap", "Walls", (pos[0], WALL_H + 0.05, pos[2]), (size[0] + 0.1, 0.1, size[2] + 0.3), "town_snow")
+    for k, z in enumerate(RING_SIDE_Z):
+        _ring_wall(f"West{k}", (-RING_X, z), LODGE_YAW)
+        _ring_wall(f"East{k}", (RING_X, z), EAST_YAW)
+    for k, x in enumerate(RING_SOUTH_X):
+        _ring_wall(f"South{k}", (x, RING_SOUTH_Z), math.pi)
 
 
 def _on_lodge(centre, local) -> tuple:
@@ -386,7 +389,7 @@ def build_lamps() -> None:
 
 
 def _gate_wall() -> None:
-    """Four concrete wall sections either side of the tunnel, a box collider each, banners hung on the face."""
+    """Six concrete wall sections either side of the tunnel, a box collider each, banners hung on the face."""
     for k, x in enumerate(GATE_WALL_X):
         inst(f"Wall{k}", "Gate", (x, 0, GATE_Z - GATE_WALL_FRONT), "gate_wall")
         collider(f"Wall{k}Block", "Gate", (x, 3.5, GATE_Z - 1.2), (8.0, 7.0, 2.4))
@@ -596,7 +599,7 @@ def build_east_side() -> None:
 def build_yards_and_pines() -> None:
     for k, sx in enumerate((-1, 1)):
         for t in range(5):
-            x = sx * random.uniform(16.5 if sx > 0 else 18.5, 24.5)
+            x = sx * random.uniform(16.5 if sx > 0 else 18.5, 22.5)
             z = random.uniform(-34, 12)
             if min(math.dist((x, z), shed) for shed in SHEDS) > 3.5:
                 pine(f"YardPine{k}_{t}", "Yards", x, z, random.uniform(0.55, 0.85), trunk=True)
@@ -605,8 +608,10 @@ def build_yards_and_pines() -> None:
     for _ in range(170):
         x = random.uniform(-46, 46)
         z = random.uniform(-62, 38)
-        if -28 < x < 28 and -40 < z < 18:
-            continue
+        if -29 < x < 29 and -42 < z < 19:
+            continue  # inside the town walls
+        if -9 < x < 9 and z > -55:
+            continue  # inside or on top of the Deploy tunnel
         pine(f"Pine{pk}", "Pines", x, z, random.uniform(7, 14) / 10)
         pk += 1
     counts["pines"] = pk
