@@ -193,3 +193,26 @@ func test_cancelled_reload_plays_no_later_moves() -> void:
 	assert_eq(heard, [WeaponPose.CUES[&"mag_out"]] as Array[AudioStream])
 	RoundReload.cancel(weapon)
 	assert_eq(_heard_during_reload(player, 1.0), heard, "nothing new after the cancel")
+
+
+func test_sprint_cancel_eases_the_hand_back_to_its_grip() -> void:
+	var player: Player = _player_with(&"rifle_ar")
+	var weapon: Weapon = player.weapons.current
+	var view: PlayerArmView = player.weapons.arm_view
+	var hand: int = view.skeleton.find_bone("hand_L")
+	weapon.instance.ammo_in_mag = 3
+	assert_true(weapon.start_reload())
+	weapon._reload_timer = weapon._reload_duration * 0.6
+	weapon.pose.update(1.0)
+	view.update_pose()
+	assert_gt(weapon.pose.reload_relax(), 0.9, "hand on the magazine mid-reload")
+	RoundReload.cancel(weapon)
+	var last: Vector3 = weapon.transform.affine_inverse() * view.skeleton.get_bone_global_pose(hand).origin
+	var start_gap: float = last.distance_to(view.profile.left.wrist)
+	for i: int in 30:
+		weapon.pose.update(1.0 / 60.0)
+		view.update_pose()
+		var now: Vector3 = weapon.transform.affine_inverse() * view.skeleton.get_bone_global_pose(hand).origin
+		assert_lt(now.distance_to(last), start_gap * 0.4, "eases, no pop, at frame %d" % i)
+		last = now
+	assert_almost_eq(last, view.profile.left.wrist, Vector3.ONE * 0.005, "back on the grip after half a second")

@@ -69,21 +69,21 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ExperimentUndead-${{ steps.version.outputs.safe }}-windows
+          name: Fenlight-${{ steps.version.outputs.safe }}-windows
           path: build/windows/
           retention-days: ${{ inputs.retention-days }}
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ExperimentUndead-${{ steps.version.outputs.safe }}-linux
+          name: Fenlight-${{ steps.version.outputs.safe }}-linux
           path: build/linux/
           retention-days: ${{ inputs.retention-days }}
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ExperimentUndead-${{ steps.version.outputs.safe }}-server
+          name: Fenlight-${{ steps.version.outputs.safe }}-server
           path: build/server/
           retention-days: 1
           if-no-files-found: error

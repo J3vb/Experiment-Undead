@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PowerUpData" format=3]
+
+[ext_resource type="Script" path="res://systems/power_ups/power_up_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"purge"
+display_name = "Purge"
+effect = 5
+color = Color(0.23921569, 0.49019608, 1, 1)
+size = 1.2
+team_points = 400

@@ -44,7 +44,7 @@ func test_three_rows_get_their_controls_and_hints() -> void:
 	var slider: SettingData = _row(&"audio", &"music_volume", &"slider", "Music hint")
 	slider.display_scale = 100.0
 	var choice: SettingData = _row(&"graphics", &"shadows", &"choice", "Shadow hint")
-	choice.options = PackedStringArray(["Low", "Medium", "High", "Ultra"])
+	choice.options = ["Low", "Medium", "High", "Ultra"] as Array[String]
 	var toggle: SettingData = _row(&"graphics", &"glow", &"toggle", "Glow hint")
 	var page: SettingsPage = _page([slider, choice, toggle] as Array[SettingData])
 	assert_eq(page.rows.size(), 3)
@@ -99,8 +99,8 @@ func test_text_row_saves_on_enter_and_caps_the_length() -> void:
 
 func test_option_values_save_typed_values() -> void:
 	var row: SettingData = _row(&"graphics", &"max_fps", &"choice", "hint")
-	row.options = PackedStringArray(["60", "Unlimited"])
-	row.option_values = PackedStringArray(["60", "0"])
+	row.options = ["60", "Unlimited"] as Array[String]
+	row.option_values = ["60", "0"] as Array[String]
 	var option: OptionButton = _page([row] as Array[SettingData]).control_for(&"max_fps") as OptionButton
 	assert_eq(option.selected, 1, "default 0 shows Unlimited")
 	option.item_selected.emit(0)
@@ -110,7 +110,7 @@ func test_option_values_save_typed_values() -> void:
 
 func test_fsr2_shows_taa_on_the_aa_row() -> void:
 	var row: SettingData = _row(&"graphics", &"aa", &"choice", "hint")
-	row.options = PackedStringArray(["Off", "FXAA", "MSAA 2x", "MSAA 4x", "TAA"])
+	row.options = ["Off", "FXAA", "MSAA 2x", "MSAA 4x", "TAA"] as Array[String]
 	var option: OptionButton = _page([row] as Array[SettingData]).control_for(&"aa") as OptionButton
 	assert_eq(option.selected, Graphics.Aa.MSAA_4X)
 	Settings.set_value(&"graphics", &"upscaler", Graphics.Upscaler.FSR2)
@@ -125,7 +125,7 @@ func test_unknown_key_is_left_out() -> void:
 
 func test_confirm_rows_signal_the_old_value() -> void:
 	var row: SettingData = _row(&"graphics", &"display_mode", &"choice", "hint")
-	row.options = PackedStringArray(["Windowed", "Borderless", "Fullscreen"])
+	row.options = ["Windowed", "Borderless", "Fullscreen"] as Array[String]
 	row.needs_confirm = true
 	var page: SettingsPage = _page([row] as Array[SettingData])
 	watch_signals(page)

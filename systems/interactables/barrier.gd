@@ -45,14 +45,19 @@ func get_prompt(_player: Player) -> String:
 	return "Hold to repair barrier [F]" if planks < PLANKS else ""
 
 
-func hold_interval() -> float:
-	return HOLD_INTERVAL
+## Carpenter's repair_speed shortens both the hold and the server's cooldown.
+func hold_interval(player: Player) -> float:
+	return HOLD_INTERVAL / _repair_speed(player)
+
+
+func _repair_speed(player: Player) -> float:
+	return maxf(player.get_stat(&"repair_speed"), 0.01)
 
 
 func interact(player: Player, _facts: Dictionary = {}) -> void:
 	if planks >= PLANKS or _repair_cooldown > 0.0:
 		return
-	_repair_cooldown = REPAIR_TIME
+	_repair_cooldown = REPAIR_TIME / _repair_speed(player)
 	_set_planks(planks + 1)
 	($RepairSound as AudioStreamPlayer3D).play()
 	if player.session:
@@ -63,6 +68,13 @@ func tear_plank() -> void:
 	if planks > 0:
 		_set_planks(planks - 1)
 		($TearSound as AudioStreamPlayer3D).play()
+
+
+## Server: back to full planks (Scrap Kit); clients get the planks through InteractionSync.
+func rebuild() -> void:
+	if planks < PLANKS:
+		_set_planks(PLANKS)
+		($RepairSound as AudioStreamPlayer3D).play()
 
 
 func is_broken() -> bool:

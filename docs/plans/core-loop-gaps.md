@@ -88,7 +88,8 @@ Not in (and where it goes):
   `best_runs: {}`) and a test that loads a version-1 sample. Renames or
   removes a saved id: no.
 - Events and UI: new `Events.zombie_relocated(zombie)` (server only, for logs
-  and tests). No new screens; the results screen gets one label.
+  and tests). As built: no signal; the relocate only logs, and tests count the
+  log events (`tests/unit/test_zombie_relocate.gd`). No new screens; the results screen gets one label.
 - Input through InputFrame, gameplay in _physics_process, randomness from the
   session RNG: yes. New InputFrame bits: MELEE, SLOT_1..3; crouch toggle is
   resolved in LocalInput so the frame still carries "crouching".
@@ -130,7 +131,7 @@ Not in (and where it goes):
 | systems/waves/spawner.gd | changed | speed from the mix; `relocate(zombie)` picks an out-of-sight marker |
 | systems/waves/wave_director.gd | changed | last-zombies timer |
 | systems/enemies/enemy_data.gd | changed | `uses_speed_mix: bool` |
-| systems/enemies/zombie.gd, zombie_stuck_watch.gd | changed | unreachable/far timers trigger relocate; `sprint_now()` |
+| systems/enemies/zombie.gd, zombie_stuck_watch.gd | changed | unreachable/far timers trigger relocate; `hurry()` (planned as `sprint_now()`) |
 | content/waves/default_waves.tres, content/enemies/*.tres | changed | new fields; Runner removed from the mix and deleted |
 | systems/weapons/weapon_holder.gd, weapon.gd | changed | swap delay, slot select, reload cancel |
 | systems/weapons/weapon_data.gd | changed | `Slot.MELEE` |
@@ -150,8 +151,8 @@ node owns).
 
 - `WaveRules` (changed): replaces `count_linear`, `count_quadratic`,
   `extra_per_player`, `health_growth_per_round`, `speed_growth_per_round`,
-  `max_speed_multiplier`, `damage_growth_per_round`, `spawn_interval_step`
-  with: `early_counts: PackedInt32Array = [6, 8, 13, 18]`, `count_a: float =
+  `max_speed_multiplier`, `damage_growth_per_round` (as built it stays, set to 0),
+  `spawn_interval_step` with: `early_counts: PackedInt32Array = [6, 8, 13, 18]`, `count_a: float =
   0.09`, `count_b: float = 0.6`, `count_c: float = 15.0`,
   `coop_count_per_player: float = 0.5`, `max_alive_per_extra_player: int = 6`,
   `base_health: float = 120.0`, `health_step: float = 90.0`,
@@ -204,7 +205,8 @@ node owns).
 Speed roll: one RNG call per spawn. Relocate: two float timers per zombie in
 the existing chase tick, one sight ray per relocate attempt (at most once per
 second per stuck zombie). Last-zombies check: one int compare per director
-tick. Knife: one cached `PhysicsRayQueryParameters3D` per swing. Budget: no
+tick. Knife: one `PhysicsRayQueryParameters3D` per swing (as built: `Melee` is
+a RefCounted object that makes a new query each swing; once per swing, so small). Budget: no
 measurable change at 24 zombies.
 
 ## Steps
@@ -243,9 +245,9 @@ measurable change at 24 zombies.
   to CHASING (windows are skipped: it re-enters as a chaser). Falling below the
   kill height relocates at once. `WaveDirector` starts a 30 s timer when
   spawning is done and 1-2 zombies are alive; when it fires, those zombies
-  `sprint_now()` (Sprint tier 5.6 m/s, groan volume +6 dB). Server only.
+  `hurry()` (as built; planned as `sprint_now()`; Sprint tier 5.6 m/s, groan volume +6 dB). Server only.
 - Files: systems/enemies/zombie.gd, zombie_stuck_watch.gd,
-  systems/waves/spawner.gd, wave_director.gd, core/events.gd (one signal),
+  systems/waves/spawner.gd, wave_director.gd (core/events.gd not needed, no signal),
   docs/LOGGING.md catalogue, tests.
 - Tests: `tests/unit/test_zombie_relocate.gd` (new): a zombie with an
   unreachable target relocates after 20 s simulated, keeps health, emits
@@ -322,7 +324,7 @@ measurable change at 24 zombies.
   `record_run(map, round, kills) -> bool` (true when it is a new best).
   Recording does not use the XP banking hook, because a client's final XP
   grant can arrive before the results: a new `_record_best_run(stats)` runs in
-  `GameSession._receive_match_end()` (results received, on every peer with a
+  `GameSession._receive_match_end()` (as built: in `systems/game/match_end.gd`) (results received, on every peer with a
   local character, skipped on a dedicated server) and uses the server's
   `stats["round"]` and `stats["kills"]` (the squad's kills, which the server
   already sends), then saves the profile once and sets `stats["new_best"]`.

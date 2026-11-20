@@ -27,6 +27,7 @@ import finish
 import library_barriers
 import machine_models
 import prop_models
+import throwable_models
 import town_buildings
 import town_cabins
 import town_camp
@@ -142,12 +143,30 @@ def gun(module: str, func: str = "build"):
 
     def build() -> None:
         getattr(importlib.import_module(module), func)(sys.modules[__name__])
+        for obj in bpy.context.scene.objects:
+            if obj.type == "MESH":
+                plain_colors(obj)
 
     return build
 
 
+def plain_colors(obj) -> None:
+    """Gives a mesh with no `Color` attribute a plain white one (alpha 1: no rarity inlay)."""
+    if obj.data.color_attributes.get("Color") is not None:
+        return
+    colors = obj.data.color_attributes.new("Color", "FLOAT_COLOR", "CORNER")
+    for color in colors.data:
+        color.color = (1.0, 1.0, 1.0, 1.0)
+
+
 def join_into(target, parts: list) -> None:
-    """Merges `parts` into `target` so the static body is one mesh (fewer draw calls)."""
+    """Merges `parts` into `target` so the static body is one mesh (fewer draw calls).
+    If any of them has a `Color` attribute, the others get plain white first: Blender would fill them with
+    zero alpha, which the gun shader reads as rarity inlay."""
+    objs = [obj for obj in (target, *parts) if obj.type == "MESH"]
+    if any(obj.data.color_attributes.get("Color") is not None for obj in objs):
+        for obj in objs:
+            plain_colors(obj)
     bpy.ops.object.select_all(action="DESELECT")
     for obj in parts:
         obj.select_set(True)
@@ -271,6 +290,7 @@ MODELS.update(town_camp.MODELS)
 MODELS.update(library_barriers.MODELS)
 MODELS.update(door_models.MODELS)
 MODELS.update(machine_models.MODELS)
+MODELS.update(throwable_models.MODELS)
 
 
 def export(path: str) -> None:

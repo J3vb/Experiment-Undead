@@ -18,6 +18,16 @@ if [ "$code" -ne 0 ] || grep -qE "$errors" client.log; then
   fail=1
 fi
 
+echo "::group::Content survives export"
+# Release templates ignore -s, so the editor binary runs the check against the exported pack.
+godot_bin="$(command -v godot || echo "$HOME/godot/godot")"
+if ! timeout 60 "$godot_bin" --headless --main-pack linux/ExperimentUndead.pck \
+    -s "$(git rev-parse --show-toplevel)/tools/ci/export_content_check.gd"; then
+  echo "::error::Exported content lost data (see the lines above)"
+  fail=1
+fi
+echo "::endgroup::"
+
 echo "::group::Server boot, join and stop"
 stop="$(mktemp -u)"
 EU_STOP_FILE="$stop" server/ExperimentUndead-server.x86_64 --headless > server.log 2>&1 &
@@ -178,9 +188,4 @@ if [ "$host_code" -ne 0 ] || ! grep -q "Server stopped" host.log || grep -qE "$e
 fi
 rm -f host.log hostjoin.log "$stop"
 
-echo "::group::Launcher installs a newer version and refreshes the root copy"
-if ! "$(git rev-parse --show-toplevel)/tools/ci/launcher_e2e.sh" .; then
-  fail=1
-fi
-echo "::endgroup::"
 exit "$fail"

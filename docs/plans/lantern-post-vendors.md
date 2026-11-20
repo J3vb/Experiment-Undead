@@ -18,6 +18,12 @@ from. Serves the "a place worth coming home to" side of the loot pillar.
 
 ## Scope
 
+Superseded for models: F-80 step 3 (PR #379, [tripo-models.md](tripo-models.md))
+replaced the code-built NPC pipeline below with Tripo keepers from
+`tools/assets/tripo/vendors.json` under ADR 0017. ADR 0016, the `player_body`
+refactor, `tools/assets/town_npcs/*`, the costume pieces and the
+`character_checks` changes were not kept. Clips, `Vendor` and `VendorData` stand.
+
 In:
 
 - Who the four vendors are, how they look and what they will do: written into
@@ -54,6 +60,8 @@ Not in (non-goals, and where each one goes instead):
 ## Ready to build
 
 ### Ready to build
+
+As built: the model rows below follow ADR 0017 (Tripo), not ADR 0016; see Scope.
 - Foundations touched (numbers from docs/FOUNDATIONS.md): 2 interactions (the
   Vendor is an F-02 Interactable). Any of them shaky or missing? No.
 - Decision records that apply (docs/adr/): 0003 trusted client, 0008
@@ -111,6 +119,9 @@ Not in (non-goals, and where each one goes instead):
 
 ## Systems touched
 
+As built: the ADR 0016, `player_body`, `town_npcs/` and `character_checks` rows
+were replaced by F-80 step 3 (`tools/assets/tripo/vendors.json`, ADR 0017).
+
 | Folder or file | New / changed | What changes |
 |---|---|---|
 | docs/adr/0016-baked-town-npcs.md | new | Town NPC bodies may carry the three baked maps |
@@ -138,7 +149,7 @@ Autoloads, managers or base classes added: none. `Vendor` extends the existing
 | Field | Type | Default | Read by |
 |---|---|---|---|
 | `display_name` | String | "" | prompt and line label |
-| `title` | String | "" | prompt ("Odile Brandt, Quartermaster") |
+| `title` | String | "" | not read by game code (as built, the prompt is "Talk to <name> [F]" from `display_name`) |
 | `stall` | StringName | &"" | generator: which stall sign it stands in (TRADER, ...) |
 | `model` | PackedScene | null | vendor scene |
 | `idle_clip` | StringName | &"counter_idle" | vendor scene |
@@ -169,11 +180,12 @@ names so a recast later changes only the data.
 ## Performance
 
 Hub only, no zombies. Four skinned meshes at up to 16,000 triangles and four
-materials each: 16 draw calls plus their shadow passes, under the hub's current
+materials each (as built: Tripo keepers, ADR 0017): 16 draw calls plus their shadow passes, under the hub's current
 headroom (hub had no fps issue in F-50). Head turn uses Godot's
 `LookAtModifier3D` with its target moved in `_process` only while a local
-player is within 4 m; the nearest-player search runs every 0.25 s from a
-cached `players` group array, no allocations. No new lights (the hub shadow
+player is within 4 m; the nearest-player search runs every 0.25 s (as built it
+calls `get_nodes_in_group` each time the peer has no own player, which is
+always on a dedicated server: a small allocation, not a hot path). No new lights (the hub shadow
 budget is full); the Technician monitors stay emissive. Each `.glb` is about
 3 MB with JPEG maps (four files, about 12 MB, no Git LFS). The fps check in
 step 5 must keep the hub at the F-74 target with 8 players.
@@ -248,6 +260,9 @@ Replaced by F-80 step 3 (see step 1).
   `LookAtModifier3D`), four `.tres` files with the lines from lore.md, the
   generator places one vendor per stall behind the counter (spot per stall in
   `STALLS`), regenerated `lantern_post.tscn`.
+- Since F-80 (2026-11-19): the Tripo stalls have no room behind the counter, so each keeper stands inside
+  on a hidden step (spot per stall in `STALL_MODELS["keeper"]`), and `Vendor.reach` stretches the talk area
+  just past the stall's one big collider. Town checks live in `tests/unit/test_lantern_post_keepers.gd`.
 - Files: systems/hub/vendor_data.gd, systems/hub/vendor.gd, vendor.tscn,
   content/vendors/*.tres, tools/levels/lantern_post_scene.py,
   levels/lantern_post/lantern_post.tscn, docs/LOGGING.md.
@@ -268,15 +283,23 @@ Replaced by F-80 step 3 (see step 1).
   /mnt/project-files/lantern-post-vendors/ (renders and the GPU prompt).
 - Tests: none new beyond fixes (each fix with a test).
 - Done when: the person has seen the renders, fps target held.
+- Look check (2026-11-20, cloud Forward+ software render): all four keepers
+  read behind their counters in their own idle, warm-lit like the concept's
+  market row; Raes's face at MISSIONS is the darkest of the four (lit from
+  the hanging lantern above), kept as is. Market row with the keepers: 662
+  draw calls and 751k primitives at 100 fov, 649 and 552k without (13 calls,
+  about 50k triangles per keeper). Renders `f76_step5_keepers_close.jpg` and
+  `f76_step5_market_row.jpg` in the project files. GPU fps check: prompt
+  `f76-step5-gpu-fps-prompt.md` for the person's PC, result goes here.
 
 ## Acceptance
 
-- [ ] Four named vendors stand behind the four stall counters, each in their
-      own idle (test_lantern_post, render).
+- [x] Four named vendors stand behind the four stall counters, each in their
+      own idle (test_lantern_post_keepers, step 5 render).
 - [ ] Walking up turns their head to you; talking plays the greet and shows
       their next line, only for you (test_vendor, co-op play-test).
-- [ ] Every NPC model passes the character checks and has all five clips
-      (Assets CI).
+- [x] Every NPC model passes the character checks and has all five clips
+      (Assets CI, tests/content/test_tripo_vendors.gd).
 - [ ] Hub fps target held with 8 players and the vendors in (GPU agent).
 - [ ] The person approved the look on the step 1 and step 2 renders.
 

@@ -42,7 +42,8 @@ In:
 Not in (non-goals, and where each one goes instead):
 
 - Halcyon Labs kit, doors, machines, guns, player body and zombies: they stay
-  code-built (done features; a later plan can move them).
+  code-built (done features; a later plan can move them), except the four
+  F-83 machines, which moved to Tripo (ADR 0017, `tools/assets/tripo/halcyon.json`).
 - Shared map materials on Tripo props (`prop_import.gd` slots): Tripo props
   keep their own baked material; snow or clean comes from the prompt.
 - Animation in Tripo: our clips stay (they play on Tripo bodies, F-78).
@@ -143,7 +144,7 @@ keep today's gate" (decision card, 2026-11-19).
 - Tests: `tests/content/test_tripo_stalls.gd` (one lightmapped mesh on the
   origin, frame width, baked maps), scene generator test, catalogue rows,
   Assets CI checks and validator.
-- Done when: CI green; before and after shots in the PR.
+- Done when: CI green; before and after shots in the PR. Done 2026-11-19, PR #359.
 
 ### Step 2: API tool and prompts
 
@@ -155,7 +156,7 @@ keep today's gate" (decision card, 2026-11-19).
   sources folder, failed task stops with the Tripo message, missing key stops
   with a clear message. `--length` test in `test_tripo_intake.py`.
 - Done when: CI green; with the key and `api.tripo3d.ai` allowed, one test
-  prop goes end to end in the cloud.
+  prop goes end to end in the cloud. Done 2026-11-19, PR #364.
 
 ### Step 3: Vendors (changes F-76 steps 1-2)
 
@@ -177,8 +178,8 @@ keep today's gate" (decision card, 2026-11-19).
 
 ## Acceptance
 
-- [ ] ADR 0017 and the CREDITS line merged with the first Tripo model (stalls).
-- [ ] `tripo_make.py` makes a model end to end from a manifest row.
+- [x] ADR 0017 and the CREDITS line merged with the first Tripo model (stalls). PR #359.
+- [x] `tripo_make.py` makes a model end to end from a manifest row. The 16 `halcyon.json` rows (PRs #388, #395).
 - [x] Four vendors from Tripo pass character checks and play our clips.
 - [ ] Every F-77 family is built from a manifest, boards approved.
 

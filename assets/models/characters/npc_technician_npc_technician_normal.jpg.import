@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dkfce5bpbdv60"
-path="res://.godot/imported/npc_technician_npc_technician_normal.jpg-55018eecd2d61cff2734698bb5487eb3.ctex"
+path.s3tc="res://.godot/imported/npc_technician_npc_technician_normal.jpg-55018eecd2d61cff2734698bb5487eb3.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "6e8e31e7d0113afe18518e127ffd2a4c"
@@ -14,7 +15,8 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/characters/npc_technician_npc_technician_normal.jpg"
-dest_files=["res://.godot/imported/npc_technician_npc_technician_normal.jpg-55018eecd2d61cff2734698bb5487eb3.ctex"]
+dest_files=["res://.godot/imported/npc_technician_npc_technician_normal.jpg-55018eecd2d61cff2734698bb5487eb3.s3tc.ctex"]
+
 [params]
 
 compress/mode=2

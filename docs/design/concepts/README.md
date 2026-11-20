@@ -62,3 +62,15 @@ Fenlight is.
 ## Game screens (2026-11-17)
 
 [screens/screens_concept.jpg](screens/screens_concept.jpg) is the person's concept art for four screens: main menu with Enter World, match HUD, server browser and character select. The UI mockups in `../images/ui_*.jpg` and [ui-hud.md](../ui-hud.md) follow it, except where the game has no such system (no master server, so no Official/Community/Modded lists or Region filter; no minimap, armour, medkits or seasons). The profile card's name was replaced with "Survivor": never put a real person's name in a screen.
+
+## Front-end screens (2026-11-20)
+
+The person's painted concepts for the menus, in `screens/`. Look targets, not
+assets: the game uses clean full-size backdrops in `assets/ui/backdrops/`.
+Plan: [front-end-concept.md](../../plans/front-end-concept.md) (F-88).
+
+| Screen | Concept | Shows |
+|---|---|---|
+| Main menu | [main_menu_concept.jpg](screens/main_menu_concept.jpg) | FENLIGHT logo with green veins, left menu with an orange brush on the selected item, Lantern Post at night in snow under a green aurora, lantern and wooden sign |
+| Loadout | [loadout_concept.jpg](screens/loadout_concept.jpg) | Armoury table under a hanging lamp: rifle, green serum, Oriel crate; LOADOUT heading and a left tab list |
+| Research (F-21 skill tree) | [research_concept.jpg](screens/research_concept.jpg) | Fenlight specimen tank on the left, node graph on the right: green unlocked nodes, grey locked nodes, padlock |

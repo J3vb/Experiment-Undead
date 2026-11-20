@@ -3,8 +3,8 @@ class_name Crosshair
 extends Control
 
 @export var color: Color = Color(1, 1, 1, 0.85)
-@export var line_length: float = 9.0
-@export var thickness: float = 2.0
+@export var line_length: float = 7.0
+@export var thickness: float = 1.5
 @export var min_gap: float = 4.0
 
 ## 0 hides the four lines (aiming, sprinting, down); the centre dot setting keeps a dot.

@@ -1,6 +1,8 @@
-# Experiment Undead
+# Fenlight
 
 Wave-based zombie survival FPS built in Godot 4.7 (Forward+). Original game.
+
+**Stage: Early Alpha.** Expect missing features, placeholder art and bugs.
 
 ## Run it
 

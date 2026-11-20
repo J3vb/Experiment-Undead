@@ -24,6 +24,8 @@ extends Resource
 @export var attack_cooldown: float = 1.2
 ## Seconds to tear one plank off a window barrier.
 @export var plank_time: float = 1.5
+## Any explosive hit kills it at once (the Bloater, zombie-ai.md).
+@export var burst_by_explosives: bool = false
 
 @export_group("Loot")
 ## Chance this enemy drops loot on each kill. Below 0 = the zombie round curve in LootService.

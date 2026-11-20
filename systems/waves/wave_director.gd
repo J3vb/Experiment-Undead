@@ -6,7 +6,7 @@ class_name WaveDirector
 extends Node
 
 enum Phase { IDLE, INTERMISSION, SPAWNING, CLEARING }
-enum Message { STARTED, ENDED, INTERMISSION }
+enum Message { STARTED, ENDED, INTERMISSION, BLACKOUT }
 
 ## The last LAST_FEW zombies of a round sprint after LAST_FEW_TIME seconds (zombie-ai.md).
 const LAST_FEW: int = 2
@@ -19,6 +19,8 @@ var phase: Phase = Phase.IDLE
 var round_number: int = 0
 var to_spawn: int = 0
 var total_kills: int = 0
+## The lights are out (a Blackout round). The server decides; every peer gets it with each round message.
+var blackout: bool = false
 var session: GameSession
 var _timer: float = 0.0
 var _last_few_time: float = 0.0
@@ -46,6 +48,24 @@ func stop() -> void:
 func skip_to_round(n: int) -> void:
 	round_number = n - 1
 	_begin_round()
+
+
+## Server: turns the lights out or back on for every peer.
+func set_blackout(on: bool) -> void:
+	if not multiplayer.is_server():
+		return
+	_apply_blackout(on)
+	_relay(Message.BLACKOUT, 0.0)
+
+
+func _apply_blackout(on: bool) -> void:
+	if on == blackout:
+		return
+	blackout = on
+	if on:
+		Events.blackout_started.emit(round_number)
+	else:
+		Events.blackout_ended.emit(round_number)
 
 
 func _physics_process(delta: float) -> void:
@@ -118,14 +138,16 @@ func _player_count() -> int:
 
 func _relay(kind: Message, value: float) -> void:
 	if is_inside_tree() and _runs_loop() and not multiplayer.get_peers().is_empty():
-		_receive_round.rpc(kind, round_number, value)
+		_receive_round.rpc(kind, round_number, value, blackout)
 
 
 @rpc("authority", "call_remote", "reliable")
-func _receive_round(kind: int, number: int, value: float) -> void:
+func _receive_round(kind: int, number: int, value: float, server_blackout: bool) -> void:
 	if not _from_server():
 		return
 	round_number = number
+	if kind != Message.ENDED:
+		_apply_blackout(server_blackout)
 	match kind:
 		Message.STARTED:
 			phase = Phase.SPAWNING
@@ -133,6 +155,7 @@ func _receive_round(kind: int, number: int, value: float) -> void:
 		Message.ENDED:
 			phase = Phase.CLEARING
 			Events.round_ended.emit(number)
+			_apply_blackout(server_blackout)
 		Message.INTERMISSION:
 			phase = Phase.INTERMISSION
 			Events.intermission_started.emit(number + 1, value)
@@ -147,16 +170,18 @@ func _ask_round_state() -> void:
 @rpc("any_peer", "call_remote", "reliable")
 func _request_round_state() -> void:
 	if multiplayer.is_server():
-		_receive_round_state.rpc_id(multiplayer.get_remote_sender_id(), phase, round_number, maxf(_timer, 0.0))
+		var sender: int = multiplayer.get_remote_sender_id()
+		_receive_round_state.rpc_id(sender, phase, round_number, maxf(_timer, 0.0), blackout)
 
 
 ## Late joiner: catch the HUD and music up with the round in progress.
 @rpc("authority", "call_remote", "reliable")
-func _receive_round_state(server_phase: int, number: int, time_left: float) -> void:
+func _receive_round_state(server_phase: int, number: int, time_left: float, server_blackout: bool) -> void:
 	if not _from_server():
 		return
 	phase = server_phase as Phase
 	round_number = number
+	_apply_blackout(server_blackout)
 	if phase == Phase.INTERMISSION:
 		Events.intermission_started.emit(number + 1, time_left)
 	elif phase != Phase.IDLE:

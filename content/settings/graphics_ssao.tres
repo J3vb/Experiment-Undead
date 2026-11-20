@@ -10,5 +10,5 @@ key = &"ssao"
 label = "Ambient occlusion"
 hint = "Soft contact shadows in corners and under objects."
 kind = &"choice"
-options = PackedStringArray("Off", "Low", "Medium", "High")
+options = Array[String](["Off", "Low", "Medium", "High"])
 order = 100

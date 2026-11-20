@@ -14,7 +14,7 @@ func _ready() -> void:
 	theme.merge_with(MENU_THEME)
 
 
-func setup(title: String, tips: PackedStringArray) -> void:
+func setup(title: String, tips: Array[String]) -> void:
 	title_label.text = title
 	tip_label.text = tips[randi() % tips.size()] if not tips.is_empty() else ""  # cosmetic
 

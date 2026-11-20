@@ -16,6 +16,13 @@ const ORPHAN_LIMIT: int = 200
 ## A round with enemies alive and no kill for this long is stalled
 ## (often one zombie stuck out of reach).
 const STALL_SECONDS: float = 90.0
+const COMPILE_MONITORS: Array[Performance.Monitor] = [
+	Performance.PIPELINE_COMPILATIONS_CANVAS,
+	Performance.PIPELINE_COMPILATIONS_MESH,
+	Performance.PIPELINE_COMPILATIONS_SURFACE,
+	Performance.PIPELINE_COMPILATIONS_DRAW,
+	Performance.PIPELINE_COMPILATIONS_SPECIALIZATION,
+]
 
 var worst_frame_ms: float = 0.0
 var long_frames: int = 0
@@ -29,6 +36,7 @@ var _second_frames: int = 0
 var _second_long: int = 0
 var _second_worst: float = 0.0
 var _compiles_seen: int = 0
+var _all_compiles_seen: int = 0
 var _low_seconds: int = 0
 var _sample_time: float = 0.0
 var _last_orphans: int = 0
@@ -76,6 +84,7 @@ func _end_second() -> void:
 	if _second_long > 0:
 		var data: Dictionary = {"count": _second_long, "worst_ms": snappedf(_second_worst, 0.1)}
 		data["draw_compiles"] = compiles
+		data["all_compiles"] = _new_all_compiles()
 		data["enemies"] = get_tree().get_node_count_in_group(&"enemies")
 		Log.warn(&"perf", &"long_frames", data)
 	if _check_fps and Engine.get_process_frames() > 120:
@@ -123,6 +132,16 @@ func _new_draw_compiles() -> int:
 	var fresh: int = total - _compiles_seen
 	_compiles_seen = total
 	draw_compiles += fresh
+	return fresh
+
+
+## Pipeline compiles of every kind (load, surface, canvas, draw) since the last long-frame line.
+func _new_all_compiles() -> int:
+	var total: int = 0
+	for monitor: Performance.Monitor in COMPILE_MONITORS:
+		total += int(Performance.get_monitor(monitor))
+	var fresh: int = total - _all_compiles_seen
+	_all_compiles_seen = total
 	return fresh
 
 

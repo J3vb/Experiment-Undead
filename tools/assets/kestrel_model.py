@@ -253,6 +253,4 @@ def build_kestrel_smg(m):
     stock(m, receiver, metal, black, tan)
     moving_parts(m, receiver, metal, black, markings)
     barrel(m, receiver, metal, black)
-    for side in (-1, 1):
-        strip = g.slab("Inlay", g.rounded(-0.112, 0.029, 0.098, 0.031, 0.0008), 0.001, metal, x=side * 0.025)
-        m.join_into(receiver, [g.mark_inlay(strip)])
+    g.add_inlays(m, receiver, g.rounded(-0.112, 0.029, 0.098, 0.031, 0.0008), 0.001, 0.025, metal)

@@ -15,3 +15,4 @@ requires = Array[StringName]([])
 branch_points_needed = 0
 stat = &"max_health"
 per_rank = 10.0
+op = "flat"

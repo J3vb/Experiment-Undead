@@ -82,7 +82,7 @@ FINDINGS_SCHEMA = {
     "required": ["findings"],
     "additionalProperties": False,
 }
-SYSTEM_PROMPT = """You review the code of Experiment Undead, a wave-based zombie FPS in Godot 4.7.2 (typed \
+SYSTEM_PROMPT = """You review the code of Fenlight, a wave-based zombie FPS in Godot 4.7.2 (typed \
 GDScript) with Python Blender/CI tools. It has co-op with a dedicated headless server.
 
 Report only real problems you can point at in the files you were given: a concrete file and line, what goes \

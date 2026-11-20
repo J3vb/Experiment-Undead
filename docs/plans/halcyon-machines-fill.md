@@ -9,6 +9,9 @@ Lore link: machines from docs/design/lore.md "Machines" (every machine is leftov
 
 ## Goal
 
+Git note: the F-83 commits are #388 and #395 (and step 4). #385, #387 and #386
+are labelled F-83 by mistake; they are F-84 and F-85 work.
+
 From the person's solo play-test (2026-11-19): the Med Dispensers, Reforger,
 power switch and exfil hatch are still grey boxes, and the rooms feel empty.
 The four machines get real models made in Tripo, and the bare rooms get more
@@ -24,8 +27,9 @@ In:
   `tripo/sources/<family>/<name>.jpg` for the person to approve before the
   model is paid for. `--images` makes images only.
 - Four machine models in `assets/models/machines/`: `med_dispenser` (one
-  model for all 8 Serums; the existing per-Serum glow strip and label stay
-  as separate nodes), `reforger`, `power_switch`, `exfil_hatch`.
+  model for all 8 Serums with one teal glow for every Serum, as DECISIONS.md
+  records for F-83; PR #388 removed the per-Serum `GlowBack` line, the label
+  stays), `reforger`, `power_switch`, `exfil_hatch`.
 - About 12 Tripo room props (list in step 3) placed in the barest rooms
   (Main Corridor, Generator Hall, Guard Post, Labs floor), plus more copies of
   existing code-built props and dressing where they fit.
@@ -58,7 +62,7 @@ Not in (non-goals, and where each one goes instead):
 - Events and UI: none
 - Input through InputFrame, gameplay in _physics_process, session RNG: n.a.
   (fan spin and drip timing are visual, in _process, not gameplay)
-- Tests: test_tripo_make.py (image task faked), tests/content/test_halcyon_machines.gd,
+- Tests: test_tripo_make.py (image task faked), tests/content/test_machine_models.gd,
   existing halcyon prop/clearance tests, Assets CI checks.
 - Logging: n.a. (offline tool prints credits per model).
 - Performance: see Performance.
@@ -89,7 +93,7 @@ Not in (non-goals, and where each one goes instead):
 | levels/halcyon_labs/layout.json, blockout.tscn | changed | new prop rows (regenerated) |
 | levels/halcyon_labs/atmosphere.tscn | changed | fan, drips, PA speaker, papers |
 | tools/generate_sfx.py, assets/audio/ | changed | drip and PA crackle sounds |
-| tests/content/test_halcyon_machines.gd | new | machine scene checks |
+| tests/content/test_machine_models.gd | changed | machine scene checks (planned as a new test_halcyon_machines.gd) |
 
 Autoloads, managers or base classes added: none.
 
@@ -141,6 +145,9 @@ and four images). Measured: image 5, text model 30. Budget for this plan
 | 3 room props | 12 | 12 + 4 redos | about 440 |
 | Reserve for redos | | | about 330 |
 
+As spent: image to model cost 40 credits per model, not 30 (PR #388), and
+step 3 spent 540 against its budget of about 440 (PR #395).
+
 Manifests keep task ids, so a good model is never paid for twice.
 
 ## Steps
@@ -164,12 +171,13 @@ Manifests keep task ids, so a good model is never paid for twice.
 - Build: `tripo_make.py --only` the four machines; intake to
   `assets/models/machines/` (light_baking 3 like the other machines). Each
   scene swaps its Block `Body` for a StaticBody3D with a box collider plus the
-  model; glow strips, labels and sounds stay. Exfil hatch lies flat and is
+  model; labels and sounds stay (one teal glow, see Scope). Exfil hatch lies flat and is
   walkable (3 x 3 m, under 0.2 m tall). Before and after shots per room.
-- Files: assets/models/machines/, the four machine scenes, check_models.py
-  JOINTS rows, assets.yml outputs, turnarounds, tests/content/test_halcyon_machines.gd.
-- Tests: test_halcyon_machines.gd: each scene has its model, one collider
-  matching the old Body size, glow nodes still found by the scripts; existing
+- Files: assets/models/machines/, the four machine scenes, turnarounds,
+  tests/content/test_machine_models.gd (as built; F-79 step 10 made the
+  check_models.py JOINTS rows and assets.yml outputs unnecessary).
+- Tests: test_machine_models.gd: each scene has its model, each model fills its
+  collider box (colliders and interaction areas were refit in PR #388), glow nodes still found by the scripts; existing
   machine unit tests stay green; Assets CI budgets.
 - Done when: CI green; shots in the PR; the person signs off the look.
 
@@ -191,9 +199,10 @@ Manifests keep task ids, so a good model is never paid for twice.
 
 ### Step 4: Small life
 
-- Build: slow ceiling fan in the Mess Hall, dripping water in the Coolant
-  Tunnel and Containment, a PA speaker in the Main Corridor that crackles
-  every 20 to 40 s, papers lifting near a Labs vent. All in atmosphere.tscn,
+- Build: slow ceiling fan in the Mess Hall, a PA speaker in the Main Corridor
+  that crackles every 20 to 40 s, papers lifting near a Labs vent (the Coolant
+  Tunnel and Containment drips already exist from F-61, `Drips/*` in
+  atmosphere.tscn). All in atmosphere.tscn,
   power-on and power-off groups as F-61 did.
 - Files: levels/halcyon_labs/atmosphere.tscn, tools/generate_sfx.py,
   assets/audio/, tests/unit/test_halcyon_atmosphere.gd (or existing atmosphere test).
