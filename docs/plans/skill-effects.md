@@ -44,13 +44,21 @@ Not in (non-goals, and where each one goes instead):
   F-22, F-24, F-26). Same for gear's `ability_cooldown`, `explosion_guard` and
   `power_up_duration` affixes.
 - Execution Line's "Brutes under 5%" (later: F-30 Brute).
+- The gear `skill_rank` affix ("+1 rank to a named skill") and the
+  `bonus_skill_ranks` cap: they change how many ranks a node can hold, which
+  is tree logic (later: F-21).
+- Gear's `all_damage` (`dmg_pct`) on wall guns: it reaches item guns only
+  today and stays that way (DECISIONS line in step 2); a damage change on
+  every gun is a balance call for the loot pass, not this feature.
 - Item-gun-only stats (damage, magazine, pellets, falloff, hip fire) on wall
-  guns: gear does not roll them, so nothing changes. Only `recoil_pct` and
-  `deep_reserve` move to all guns.
+  guns. Only `recoil_pct` and `deep_reserve` move to all guns.
 
 ## Ready to build
 
 ### Ready to build
+- Roadmap Needs: F-11 (the v0.1.0 release) is still Todo. The person said on
+  2026-11-20 to move on to v0.2; nothing here depends on the release build,
+  so planning and building go ahead. The release ships whatever is merged.
 - Foundations touched (numbers from docs/FOUNDATIONS.md): 2 data ids (skills
   are `.tres`), 3 server-side item effects (stats on the server's player copy),
   6 co-op messages (`LoadoutSync`). None shaky: item-effects-server already
@@ -108,25 +116,28 @@ Not in (non-goals, and where each one goes instead):
 | systems/net/loadout_sync.gd | changed | sends and checks ranks |
 | core/build.gd | changed | `PROTOCOL_VERSION` +1 |
 | systems/game/game_session.gd | changed | sets the profile player's ranks before the loadout goes out |
-| systems/weapons/weapon_holder.gd | changed | guns are fitted to the player's stats |
+| systems/weapons/weapon_holder.gd | changed | non-item guns get recoil and reserve from the player's stats |
+| systems/loot/item_instance.gd | changed | `fit_player_gun` (recoil and reserve only) |
+| systems/interactables/interactable.gd, systems/player/player_interact.gd | changed | `hold_interval(player)` |
+| systems/net/hit_claims.gd | changed | Execution Line |
+| content/loot/affixes/gear/points_earned.tres | changed | text says "points earned", not "from kills" |
 | systems/loot/item_loadout.gd | changed | `refit_item_guns` refits every gun |
 | systems/economy/economy.gd | changed | points earned, with a per-player remainder |
 | systems/interactables/barrier.gd | changed | repair speed |
 | systems/player/revive.gd | changed | revive speed, Undying charge |
-| systems/damage/hit_zone.gd | changed | Execution Line |
 | systems/interactables/specimen_vault.gd | changed | Bargain Hunter price |
 | systems/power_ups/power_up_drops.gd | changed | Chain Supply |
 
 Autoloads, managers or base classes added: none. `SkillEffects` is a static
 helper next to `SkillTree` (same shape), not a service node.
 
-Files over 300 lines this plan grows: `systems/player/player.gd` (335). Step 4
-moves Last Stand into `systems/player/revive.gd` (163 lines, owns going down
-and getting up) instead of growing player.gd; step 3's sprint line replaces an
-existing one. If player.gd still passes 350, step 1 moves `_refresh_stats` and
-`equip_gear` into `skill_effects.gd`'s neighbour by job, not a helper class.
-`systems/interactables/specimen_vault.gd` and `power_up_drops.gd` stay under
-300.
+Files over 300 lines this plan grows: `systems/player/player.gd` (335).
+Step 1 first moves the Serum functions (`has_serum`, `add_serum`,
+`lose_serums`, `can_self_revive`) out of player.gd into
+`systems/player/revive.gd` (163 lines; Serums are lost and used when going
+down), so player.gd drops to about 310 before the skill fields, the skill fold
+and the Last Stand check go in. The skill fold itself lives in
+`SkillEffects.add_to`; Last Stand's state lives in Revive.
 
 ## Data
 
@@ -156,7 +167,9 @@ existing one. If player.gd still passes 350, step 1 moves `_refresh_stats` and
 
 - Caps added to `stat_caps.tres` (values are the stack result with base 1.0,
   or units): `reload_pct` 1.6, `recoil_pct` 1.5, `max_health` 400,
-  `points_earned` 1.5. These caps hold for gear too, as the design says.
+  `points_earned` 1.5. They cap skills plus gear. Serum multipliers sit
+  outside the capped value in `ItemInstance.stat_value` (Quickhands alone is
+  +67% reload); whether Serums go past the caps is an open decision below.
 - `SkillNodeData.rule: Rule = Rule.NONE`, enum `NONE, DEAD_CENTER,
   EXECUTION_LINE, LAST_STAND, UNDYING, BARGAIN_HUNTER, CHAIN_SUPPLY`. Code
   checks the rule, never the skill id, the same pattern as
@@ -172,9 +185,11 @@ existing one. If player.gd still passes 350, step 1 moves `_refresh_stats` and
 - Save format change: none. `CharacterProfile.skill_ranks` stays a dict of
   id to rank; `SkillEffects.ranks_from()` turns JSON String keys into
   StringName and drops unknown ids and bad ranks.
-- Content checks to add in `tests/content/`: new `test_skill_content.gd`:
-  every skill with a stat has a known op, per_rank > 0, and its stat is in the
-  table's list; each rule value is used by exactly one skill.
+- Content checks in `tests/content/`: extend the existing `test_skills.gd`
+  (it asserts the old stat names and that row 3/4 nodes have no stat, so it
+  must change in step 1): new stat names and ops, Undying is the one keystone
+  or capstone with a stat, each rule value is used by exactly one skill.
+  `test_loot_content.gd` asserts the exact caps dictionary: add the 4 caps.
 
 ## Co-op behaviour
 
@@ -209,7 +224,8 @@ allocation.
 
 ### Step 1: Ranks into the stat stack, solo and co-op
 
-- Build: `SkillNodeData.op` and `rule`. New `systems/progression/skill_effects.gd`:
+- Build: move the Serum functions from player.gd to revive.gd (callers
+  updated). `SkillNodeData.op` and `rule`. New `systems/progression/skill_effects.gd`:
   `add_to(stats, ranks)`, `rules_for(ranks)`, `ranks_from(raw)`,
   `ranks_problem(ranks) -> String`. `Player.skill_ranks`; `equip_gear` adds
   skill modifiers (source `&"skill"`) after gear, so any rebuild (respec,
@@ -218,12 +234,15 @@ allocation.
   server checks and applies them; protocol bump. Fill every skill `.tres` with
   the table's stat and op, and the six rule skills with their rule. Add the 4 caps. Rewrite the DECISIONS "Skill tree"
   line. Roadmap row to Building.
-- Files: systems/progression/skill_node_data.gd, systems/progression/skill_effects.gd (new), content/skills/*.tres, content/loot/stat_caps.tres, systems/player/player.gd, systems/net/loadout_sync.gd, systems/game/game_session.gd, core/build.gd, docs/DECISIONS.md, docs/ROADMAP.md.
+- Files: systems/progression/skill_node_data.gd, systems/progression/skill_effects.gd (new), content/skills/*.tres, content/loot/stat_caps.tres, systems/player/player.gd, systems/player/revive.gd, Serum callers (player_state_sync.gd, match_end.gd, med_dispenser.gd as found), systems/net/loadout_sync.gd, systems/game/game_session.gd, core/build.gd, tests/content/test_skills.gd, tests/content/test_loot_content.gd, docs/DECISIONS.md, docs/ROADMAP.md.
 - Tests: new `tests/unit/test_skill_effects.gd`: for each of Quick Draw, Weak
   Spot, Fast Hands, Thick Skin, Second Breath, Lucky Find the stat the player
-  reads changes by the table value per rank; respec (empty ranks, re-equip)
+  reads changes by the table value per rank (Lucky Find through
+  `LootService.player_luck`, since `get_stat(&"loot_luck")` is capped at 1.0);
+  respec (empty ranks, re-equip)
   puts it back; gear plus skill stack and hit the cap; `ranks_from` drops
-  unknown ids and clamps. New `tests/content/test_skill_content.gd`.
+  unknown ids and clamps. `tests/content/test_skills.gd` and
+  `test_loot_content.gd` updated as in Data.
   `tests/unit/test_item_effects_coop.gd`: a client's sent ranks raise the
   server copy's max health; a bad rank set is refused and logged.
 - Done when: a player with ranks in the save has the six "exists" skills
@@ -231,33 +250,48 @@ allocation.
 
 ### Step 2: Recoil and reserve ammo on every gun
 
-- Build: `WeaponHolder.give` and `replace` fit non-item guns to the player's
-  stats with `ItemInstance.new({}).weapon_data(base, player.stats)` (the same
-  code item guns use); item guns keep their own path so nothing is counted
-  twice. `ItemLoadout.refit_item_guns` becomes `refit_guns` and refits every
-  gun from its Content base (`Content.weapon(data.id)`) after a stat change,
-  keeping ammo capped. Steady Hands, Deep Pockets and gear's recoil and Mule
+- Build: new static `ItemInstance.fit_player_gun(base, player_stats)`:
+  a copy with only the `recoil_pct` scale and `deep_reserve` applied, the same
+  maths as `weapon_data`. `WeaponHolder.give(data, fit: bool = true)` and
+  `replace(old, data, fit: bool = true)` use it when `fit`;
+  `ItemLoadout.equip_weapon` passes `false` because its data is already fitted
+  (`weapon.item` is set only after `give`, so the holder cannot tell). Every
+  other caller (wall buy grant, Vault, Reforger, spawn loadout, the
+  PlayerStateSync pistol) keeps the default. `refit_item_guns` becomes
+  `refit_guns`: item guns as today, other guns re-fitted from
+  `Content.weapon(data.id)`, ammo capped. DECISIONS line: gear `dmg_pct` stays
+  item-gun only. Hit bounds are unchanged (recoil and reserve do not touch
+  damage). Steady Hands, Deep Pockets and gear's recoil and Mule
   affixes now reach wall guns, the starter pistol, Vault and Reforged guns.
-- Files: systems/weapons/weapon_holder.gd, systems/loot/item_loadout.gd, systems/player/player.gd (calls refit after `equip_gear`).
+- Files: systems/loot/item_instance.gd, systems/weapons/weapon_holder.gd, systems/loot/item_loadout.gd, systems/player/player.gd (calls refit after `equip_gear`), docs/DECISIONS.md.
 - Tests: `tests/unit/test_skill_effects.gd`: Steady Hands 3 scales a wall gun's
   recoil pattern by 0.85; Deep Pockets 2 gives +20% max reserve on a wall gun
-  and on an item gun once (not twice); a respec puts both back.
+  and on an item gun once (not twice); a wall gun's damage is unchanged with
+  an `all_damage` vest; a respec puts both back.
 - Done when: both skills change wall and item guns; reserve stays capped on
   refit; CI green.
 
 ### Step 3: Sprint, points, repair and revive speed
 
 - Build: `Player._move` multiplies sprint speed by `get_stat(&"sprint_speed")`.
-  Economy pays hits, kills, round clears and repairs times
-  `get_stat(&"points_earned")`, keeping each player's fraction so 5% of 10
-  stays 5% over time. Barrier repair time divides by
-  `get_stat(&"repair_speed")`. Revive hold time divides by the reviver's
-  `get_stat(&"fast_revive")` (gear's Fast revive affix starts working too).
-- Files: systems/player/player.gd, systems/economy/economy.gd, systems/interactables/barrier.gd, systems/player/revive.gd.
+  Economy gets one `_pay(player, amount)` that multiplies by
+  `get_stat(&"points_earned")` and keeps each player's fraction (5% of 10
+  stays 5% over time); hits, kills and round clears use it. Repairs use it
+  before the per-round repair cap, so the cap stays the cap. The revive
+  reward and refunds do not. The `points_earned` gear affix text changes from
+  "from kills" to "points earned". Carpenter: `Interactable.hold_interval()`
+  becomes `hold_interval(player)`; Barrier divides both `HOLD_INTERVAL` and
+  `REPAIR_TIME` by `get_stat(&"repair_speed")`, so the client repeats faster
+  and the server accepts it. Revive: the server's `_elapsed` and the owner's
+  progress bar both scale by the reviver's `get_stat(&"fast_revive")` (gear's
+  Fast revive affix starts working too).
+- Files: systems/player/player.gd, systems/economy/economy.gd, systems/interactables/interactable.gd, systems/interactables/barrier.gd, systems/player/player_interact.gd, systems/player/revive.gd, content/loot/affixes/gear/points_earned.tres.
 - Tests: `tests/unit/test_skill_effects.gd`: Light Feet 2 sprint speed x1.10,
   walk unchanged; Scrounger 3 pays 115 points over ten 10-point hits; Carpenter
-  2 repair time / 1.6; Undying revive hold 3 s to 2 s. Server-only: a client
-  copy does not pay points.
+  2 repairs a barrier faster through `PlayerInteract` (interval and server
+  cooldown both / 1.6); Undying revive hold 3 s to 2 s on the server and on
+  the owner's bar; the repair cap still holds with Scrounger. Server-only: a
+  client copy does not pay points.
 - Done when: the four stats change play; CI green.
 
 ### Step 4: Server rule skills
@@ -266,16 +300,20 @@ allocation.
   round leaves the player at 1 health with 2 s where damage is ignored; reset
   on `Events.round_started`. Undying: one self-revive charge per run; when
   downed with a charge and no Second Wind, the charge works like Second Wind
-  and is used up (`can_self_revive` counts it so the squad is not out).
-  Execution Line: `HitZone.receive_hit` on the server kills a zombie already
-  under 15% health when the attacker has the skill. Bargain Hunter:
-  `SpecimenVault` charges and shows 750 for a player with it. Rule state lives
+  and is used up (`can_self_revive` counts it so the squad is not out). An
+  Undying revive still costs every Serum, as going down always does.
+  Execution Line: `HitClaims.apply_server_hit` (server only, already has the
+  zombie and attacker) kills a zombie already under 15% health when the
+  attacker has the skill. Bargain Hunter: `SpecimenVault` charges and shows
+  `cost - 200` (950 to 750, keeps per-map `cost`), stores the price paid per
+  roll and refunds that, not `cost`. Rule state lives
   in `Revive` (going down and getting up) to keep player.gd under its limit.
-- Files: systems/player/revive.gd, systems/player/player.gd (calls only), systems/damage/hit_zone.gd, systems/interactables/specimen_vault.gd.
+- Files: systems/player/revive.gd, systems/player/player.gd (calls only), systems/net/hit_claims.gd, systems/net/player_state_sync.gd (Undying in `down_player`), systems/interactables/specimen_vault.gd.
 - Tests: `tests/unit/test_skill_effects.gd`: Last Stand once per round and
   immunity ends after 2 s; Undying charge self-revives once per run and keeps
   the match going; Execution Line kills at 14% and not at 16%, and not without
-  the skill; Bargain Hunter pays 750, others 950. A co-op test: the server
+  the skill; Bargain Hunter pays 750, others 950, and a refunded roll gives
+  back 750, not 950; an Undying revive empties Serums. A co-op test: the server
   applies Last Stand from a client's sent ranks.
 - Done when: all four rules work on the server, solo and co-op; CI green.
 
@@ -283,14 +321,18 @@ allocation.
 
 - Build: Dead Center: the owner adds 1 round to the gun in hand (up to its
   magazine) on a confirmed headshot kill (`Events.hit_confirmed`, which
-  clients already raise for their own kills). Chain Supply: when the killer
+  clients already raise for their own kills), only when
+  `player.is_multiplayer_authority()` (the server also raises it for clients'
+  players). Chain Supply: when the killer
   has it and a power-up drops, a 25% `GameSession.rng` roll drops a second,
-  different one from the deck (none if the deck has only one kind). Tick
+  different one from the deck (none if the deck has only one kind). The second
+  drop does not count toward `max_per_round`. Tick
   Acceptance, set `Status: Done`, roadmap row Done, DECISIONS lines for the
   provisional picks below. Run `finish-feature`.
 - Files: systems/weapons/weapon_holder.gd, systems/power_ups/power_up_drops.gd, docs/plans/skill-effects.md, docs/ROADMAP.md, docs/DECISIONS.md.
 - Tests: `tests/unit/test_skill_effects.gd`: Dead Center refunds on a headshot
-  kill, not a body kill, never past a full magazine; Chain Supply with a fixed
+  kill, not a body kill, never past a full magazine, not on the server's copy
+  of a client; Chain Supply with a fixed
   seed drops a second, different power-up and never the same one.
 - Done when: every skill in `content/skills/` has a test on what it changes;
   CI green (`quality`, `test`, `soak`).
@@ -317,6 +359,10 @@ allocation.
   current item changes.
 - F-71 (four new gear slots) adds `recoil_pct` on gloves and also needs it on
   every gun. Step 2 here fixes that for both; F-71 should build after it.
+- Review (Claude, fresh context, 2026-11-20; Codex out of quota) found:
+  double fit of item guns, damage leaking to wall guns, Carpenter not reaching
+  the client's hold interval, Serums over the reload cap, old content tests,
+  Bargain Hunter refund. All fixed above.
 - Players cannot spend points until F-21, so the effects are only seen in
   tests and edited saves until then.
 
@@ -331,7 +377,11 @@ Provisional picks (reversible, written to DECISIONS in step 5):
   not power-up rewards (none pay points today).
 - Undying's charge is used only when Second Wind is not held, so the two never
   stack into one revive.
+- Scrounger boosts hits, kills, round clears and repairs (under the repair
+  cap), not the revive reward.
 
 For the person:
 
-- none
+- [ ] Do Serums go past the design caps? Today Quickhands alone gives +67%
+  reload, over the +60% cap. Recommended: caps hold skills plus gear, Serums
+  stack on top (short, paid run boosts; no Serum changes).
