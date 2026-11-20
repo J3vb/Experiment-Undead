@@ -123,7 +123,9 @@ func test_power_ups_are_valid() -> void:
 			assert_true(PowerUpData.Effect.values().has(power_up.effect), path + " has a known effect")
 			assert_false(power_up.display_name.is_empty(), path + " has a name for the HUD flash")
 			assert_gte(power_up.duration, 0.0, path + " duration is 0 (instant) or more")
-			if power_up.effect == PowerUpData.Effect.PAYDAY:
+			assert_gte(power_up.team_points, 0, path + " team points are 0 or more")
+			assert_true(power_up.deck_chance > 0.0 and power_up.deck_chance <= 1.0, path + " deck chance in (0, 1]")
+			if power_up.effect in [PowerUpData.Effect.PAYDAY, PowerUpData.Effect.OVERKILL, PowerUpData.Effect.STASIS]:
 				assert_gt(power_up.duration, 0.0, path + " is timed, so it needs a duration")
 	var ammo: PowerUpData = load("res://content/power_ups/ammo_pack.tres") as PowerUpData
 	assert_eq(ammo.effect, PowerUpData.Effect.AMMO_PACK, "the Scavenger pack adds a magazine, not a full refill")

@@ -41,9 +41,10 @@ Tags with a dash (`v0.2.0-rc.1`) become pre-releases and do not move `latest`.
   exe has no launcher screen any more: started by hand, it opens the main menu.
 - **Restart to update:** "your game is older" offers a button only when the separate
   launcher started the game (`--launcher-exe=<path>`). It starts the launcher, which updates.
-- **Frozen from v0.1.0 (the launcher depends on them):** asset names
-  `ExperimentUndead-<version>-windows.zip`, `-linux.zip`, `-server.zip`; zip root holds
-  the exe and its pck; tags `vX.Y.Z` and `vX.Y.Z-test.N`; GitHub's `digest` field.
+- **Frozen from v0.1.0 (the launcher depends on them):** asset names end in
+  `-windows.zip`, `-linux.zip`, `-server.zip` (today `Fenlight-<version>-windows.zip`; before
+  the rename they started `ExperimentUndead-`, and the launcher only reads the end); zip root
+  holds `ExperimentUndead.exe` / `.x86_64` and its pck (file names kept through the rename); tags `vX.Y.Z` and `vX.Y.Z-test.N`; GitHub's `digest` field.
 - **Cut a test build:** tag `v0.1.0-test.1` on main and push it. Save version bumps go to
   test first. A bad release is fixed by releasing a newer one (roll forward), never by
   deleting the old one.
@@ -55,15 +56,15 @@ Tags with a dash (`v0.2.0-rc.1`) become pre-releases and do not move `latest`.
 The launcher is its own program in `launcher/` (Tauri 2, ADR 0018). The game has no
 launcher screen of its own (removed in F-82 step 3).
 
-- **Install:** download `ExperimentUndead-Setup-<version>.exe` from Releases and run it.
-  It installs per user (no admin) to `%LOCALAPPDATA%\Experiment Undead Launcher\`, with a
+- **Install:** download `Fenlight-Setup-<version>.exe` from Releases and run it.
+  It installs per user (no admin) to `%LOCALAPPDATA%\Fenlight Launcher\`, with a
   Start menu and desktop shortcut and an uninstall entry. Windows SmartScreen warns once
   (the exe is not code-signed): **More info**, **Run anyway**.
 - **Game files:** the launcher installs the game into
   `%LOCALAPPDATA%\com.experimentundead.launcher\game\versions\<version>\` (SHA-256 checked,
   the 2 newest kept). Its settings (`launcher.json`) and log (`launcher.log`) sit in that
   same folder. Uninstalling with "Delete the application data" ticked removes the game too.
-- **Launcher updates:** each release also carries `ExperimentUndead-Setup-<version>.exe.sig`
+- **Launcher updates:** each release also carries `Fenlight-Setup-<version>.exe.sig`
   and `latest.json`. On start the launcher reads `latest.json` from the newest release on its
   channel; when it is newer, it downloads the setup exe, checks its signature against the
   public key built into the launcher, installs it quietly and restarts.
@@ -77,7 +78,8 @@ launcher screen of its own (removed in F-82 step 3).
   launcher's data folder (Open logs). Stop writes the stop file; closing the launcher while
   hosting asks, then stops the server. Players, the host too, join from Servers in the game;
   Play keeps the launcher open while it hosts. The version a server runs is never deleted.
-- **Frozen from v0.1.0:** `ExperimentUndead-Setup-<version>.exe`, its `.sig`, `latest.json`.
+- **Frozen from v0.1.0:** `latest.json` and the `.sig` beside the setup exe it names
+  (`Fenlight-Setup-<version>.exe`; `ExperimentUndead-Setup-` before the rename).
 - **Version:** the release workflow stamps the tag's version into the launcher
   (`tools/ci/launcher_release.py stamp`); builds outside a release say `0.0.0`.
 
@@ -110,8 +112,8 @@ launcher screen of its own (removed in F-82 step 3).
 
 ## Crash logs
 
-- Logs: `%APPDATA%\Godot\app_userdata\Experiment Undead\logs` on Windows,
-  `~/.local/share/godot/app_userdata/Experiment Undead/logs` on Linux. Godot
+- Logs: `%APPDATA%\Godot\app_userdata\Fenlight\logs` on Windows,
+  `~/.local/share/godot/app_userdata/Fenlight/logs` on Linux. Godot
   keeps the last few runs. The first lines hold version, commit, OS and GPU.
 - If the game did not quit cleanly, the next start shows "Last session crashed"
   with the log folder in the HUD corner.

@@ -10,9 +10,9 @@ Folder `user://logs/`:
 
 | Platform | Folder |
 |---|---|
-| Windows | `%APPDATA%\Godot\app_userdata\Experiment Undead\logs\` |
-| Linux | `~/.local/share/godot/app_userdata/Experiment Undead/logs/` |
-| Docker / Unraid server | `/data/godot/app_userdata/Experiment Undead/logs/` (the `/data` volume) |
+| Windows | `%APPDATA%\Godot\app_userdata\Fenlight\logs\` |
+| Linux | `~/.local/share/godot/app_userdata/Fenlight/logs/` |
+| Docker / Unraid server | `/data/godot/app_userdata/Fenlight/logs/` (the `/data` volume) |
 
 Per run (the last 20 runs are kept):
 
@@ -93,6 +93,8 @@ The server also prints every warning and error to stdout as
 | `progression.profile_save_failed` | warn | Character could not be saved; `id`, `path`, `error` (Godot Error code). Check folder permissions and disk space |
 | `progression.profile_unreadable` | warn | Existing character is unreadable or malformed; file stays untouched, this match uses a temporary character. `id`, `path`; inspect nearby engine errors |
 | `save.profile_newer` | warn | A character file was saved by a newer game version (`id`, `path`, `version` = its save_version). The file stays untouched, the main menu tells the player to update, and this run uses a temporary character. Happens after going back to an older build |
+| `save.old_name_data_copied` | info | First run after the rename to Fenlight: the player's settings, saved servers and characters were copied from the old `Experiment Undead` user folder (`files`, `from`). The old folder stays as a backup. Once per PC |
+| `save.old_name_copy_failed` | warn | One file from the old `Experiment Undead` user folder could not be copied (`path`, `error`). The player may miss that setting or character; copy it by hand from the old folder |
 | `settings.binding_unknown_action` | warn | `user://settings.cfg` has a key binding for an action the game no longer has (`action`); it is ignored. Normal after an action is renamed or removed |
 | `settings.binding_malformed` | warn | A saved key binding is not a list of up to 2 `{"type": "key", "physical": n}` / `{"type": "mouse", "button": n}` entries, or names Esc (`action`); that action uses its default keys |
 | `settings.display_mode_failed` | warn | The window refused the chosen display mode (`mode`: 0 Windowed, 1 Borderless, 2 Fullscreen). Usually the OS or driver does not allow exclusive fullscreen; pick Borderless |
@@ -103,6 +105,7 @@ The server also prints every warning and error to stdout as
 | `net.join_failed` | warn | Client side: the pending join could not start (`error`, a Godot error string), so the game goes back to the main menu. Usually a bad address or a port the OS would not open |
 | `net.connection_lost` | warn | Client side: the server disconnected, the connection failed or the server refused authentication. Run XP is banked and the game goes back to the main menu. Look at the server's log for the same time |
 | `net.round_state_ignored` | warn | A round message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
+| `power_ups.crate_expired_unopened` | warn | A Supply Crate vanished before anyone opened it (`name`). Often means players miss it or cannot reach it |
 | `power_ups.timer_ignored` | warn | A power-up timer message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
 | `net.interaction_rejected` | warn | Server refused a client's interact request (`peer`, `reason`, `path`): `player_not_alive`, `match_over`, `unknown_path`, `out_of_range`, `grant_pending` (last gun grant not applied yet), `bad_facts` (gun facts with wrong fields or ids). At most one per second. Many `out_of_range` = `InteractionSync.REACH_SLACK` too tight |
 | `net.deploy_refused` | warn | The hub's deploy vote or `deploy()` was refused (`place`, `reason` or `hub`): an unknown place id on a deploy board, or a deploy outside the hub. A board with a typo in `place` |
@@ -118,8 +121,9 @@ The server also prints every warning and error to stdout as
 | `net.go_to_place` | info | This peer loads another place (`place`, `online`) |
 | `net.join_switches_place` | info | A joining client loaded another place than the server's and switches before spawning (`from`, `to`) |
 | `throwables.grenade_lost` | warn | A grenade fell below the map before it went off (`at`): a hole in the level collision |
-| `net.hit_claim_rejected` | warn | Server refused a client's hit or gravity well claim (`peer`, `reason`): `player_not_alive`, `zombie_not_alive`, `hit_out_of_bounds`, `zone_missing`, `claims_too_fast`, `well_out_of_bounds`, `well_wrong_weapon` (well or orb request named a gun whose `effect` is not WELL: a mismatched build or a cheat). At most one per second |
+| `net.hit_claim_rejected` | warn | Server refused a client's hit, gravity well or grenade claim (`peer`, `reason`): `player_not_alive`, `zombie_not_alive`, `hit_out_of_bounds`, `zone_missing`, `claims_too_fast`, `well_out_of_bounds`, `well_wrong_weapon` (well or orb request named a gun whose `effect` is not WELL: a mismatched build or a cheat), `grenade_not_alive`, `grenade_none_left` (the client's count was out of date), `grenade_bad_throw` (origin, speed or fuse out of range), `grenade_too_fast`. At most one per second |
 | `net.loadout_rejected` | warn | Server refused a client's equipped loadout (`peer`, `reason`): `not_a_dictionary`, `too_much_gear` (more gear than `CharacterProfile.GEAR_SLOTS`), `too_many_guns` (more than the player's weapon slots), `unknown_gun` (gun base not in content), `not_gear` (a worn piece that is not vest, charm or implant), `slot_twice` (two pieces for one slot). The server keeps the last good loadout; check that both builds have the same content |
+| `net.skills_rejected` | warn | Server refused a client's skill ranks sent with its loadout (`peer`, `reason`): `unknown_skill` (id not in `content/skills/`), `bad_rank` (not an int from 1 to the node's `max_ranks`), `too_many_points` (more than 54). The whole loadout is ignored; check that both builds have the same skills content |
 | `loot.gear_worn` | info | The owner wore a Pack gear item mid-run (`uid`, `slot`); the old piece went into its Pack slot |
 | `loot.gear_equip_refused` | warn | A Pack gear item could not be worn (`uid`, `banked`): the run was already banked or there is no character profile (soak bots, tests). In a normal run this should never appear |
 | `net.interaction_rate_limited` | warn | A client sent interact requests less than 0.1 s apart; extra ones are refused. At most one per second |

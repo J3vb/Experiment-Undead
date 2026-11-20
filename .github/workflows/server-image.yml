@@ -27,7 +27,7 @@ jobs:
       - name: Download server build
         uses: actions/download-artifact@v4
         with:
-          pattern: ExperimentUndead-*-server
+          pattern: Fenlight-*-server
           path: deploy/server/server
           merge-multiple: true
 

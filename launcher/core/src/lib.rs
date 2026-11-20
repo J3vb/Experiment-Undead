@@ -1,4 +1,4 @@
-//! Release feed, version compare, game installer and server host for the Experiment Undead launcher.
+//! Release feed, version compare, game installer and server host for the Fenlight launcher.
 //! No window code here, so it builds and tests on any machine.
 
 pub mod feed;

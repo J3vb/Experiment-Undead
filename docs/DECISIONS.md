@@ -46,19 +46,21 @@ Each says when to fix it.
 - **Whole-tube reloads:** Brenner, Hollis and Atlas reload in one timed action. Fix when: real reload animations exist.
 - **Reforger** has Tier I only and swaps instantly. Fix when: Tiers II (ammo mods) and III get a roadmap row.
 - **Frag numbers** (3 s fuse, 15 m/s throw, 7 m blast with full damage inside 1.5 m, own damage up to 60, no friendly fire) are provisional picks; the 1000 centre damage is the person's. Fix when: the frag play-test. [frag-grenades](plans/frag-grenades.md)
-- **Grenades in co-op:** nobody can throw in co-op yet (solo only). Fix when: F-24 step 2. [frag-grenades](plans/frag-grenades.md)
-- **Grenade HUD:** no grenade slot, cook sound or blast effect yet; the frag is a grey ball. Fix when: F-24 steps 3 and 4. [frag-grenades](plans/frag-grenades.md)
-- **Power-ups:** Resupply, Payday and the Scavenger ammo pack so far; Scavenger's +1 grenade waits. Fix when: F-24 grenades and F-26 steps 2-4.
+- **Frag blast** is code-built (flash, fireball, smoke; no .tscn, like HeadPop) on the Weapons bus; the frag in the hand has no throwing-arm swing, only a left-hand hold and flick. Fix when: the frag play-test asks for more. [frag-grenades](plans/frag-grenades.md)
+- **Power-ups:** Scavenger's +1 grenade waits; no voice line, tint or drop arpeggio on pickup. Fix when: F-24 grenades, F-04 audio follow-up.
 - **Window barriers:** no slot timeout (move to another barrier after 4 s), no real sill. Fix when: co-op crowding at a window needs it.
 - **Emergency lighting:** dimmed red ceiling lights only, no separate fixtures or sound. Fix when: the sound world step.
 - **Stuck zombies:** relocate replaces the AI doc's repath sidestep and navmesh snap; no louder groan for the last zombies (voice is local). Fix when: relocates show in soak logs.
 - **Slide** keeps the normal 0.18 s sprint-out block before hip fire (weapon.gd was at its size limit). Fix when: weapon.gd is split (F-79 step 7).
 - **Co-op hit bounds** use Content weapon data, not the held inventory (weapon switching is local). Fix when: a server checks loadouts (P8).
 - **Loadout trust:** the server does not check that a client owns the gear it sends (friends-only servers). Fix when: public servers (P8). [item-effects-server](plans/item-effects-server.md)
+- **All-guns gear stats (F-71 step 1):** non-item guns get gear damage, recoil and reserve through F-20's `ItemInstance.fit_player_gun` and `ItemLoadout.refit_guns`, not a new `Weapon.refit`; swap time also reads the raised gun's own handling line. [four-gear-slots](plans/four-gear-slots.md)
+- **Skill rules (provisional):** Execution Line checks health before the hit; Dead Center refunds a round to the gun in hand on any headshot kill; Undying works only without Second Wind and costs every Serum; Scrounger skips the revive reward. [skill-effects](plans/skill-effects.md)
+- **Skills waiting on their feature:** Gadgeteer and Sturdy only add their stat; Execution Line has no Brute rule. Overtime lengthens timed power-ups by the collector's seconds (team-wide timer). Fix when: F-22, F-24, F-30. [skill-effects](plans/skill-effects.md)
 - **Hold-to-buy** stays a tap. Fix when: accidental buys show in play-tests.
 - **Loot extras:** no supply or exfil caches, no gun comparison in the pickup prompt, no trading; traits, sets and `proc` lines save but do not run. Fix when: their loot batches.
 - **Run loadout:** the equipped Primary is not given at spawn (the round-5 Drop Locker is not built). Fix when: the Drop Locker.
-- **Skill tree:** no stat effects, Trainer screen or prerequisites; the 15/25-point gates cannot be reached with only the named nodes. Fix when: the skills feature.
+- **Skill tree:** no Trainer screen or prerequisites; the 15/25-point gates cannot be reached with only the named nodes. Skill effects are being built ([skill-effects](plans/skill-effects.md)). Fix when: F-21.
 - **Teammate animations:** one two-handed rifle pose and one reload clip for every gun; a remote muzzle flash plays at the owner's first-person muzzle. Fix when: F-41 follow-ups.
 - **First-person hands:** fingers are fixed curls, no trigger-pull or magazine clips; the Corvid bolt only kicks back. Fix when: real clips.
 - **Player body:** some cloth clipping in motion, a soft face, a ragged beard bit near the ear. Fix when: F-70 step 6. [ADR 0015](adr/0015-baked-player-body.md)
@@ -100,11 +102,14 @@ Agent picks the person may change.
 - **Halcyon atmosphere:** spark gaps 3-9 s and a 30 s Containment klaxon. Emergency lights at 30% red-orange, back on in a 0.6 s ragged wave.
 - **Footsteps:** one step per 0.5 s walking, 0.34 s sprinting, 0.72 s crouched; landings silent under 3 m/s.
 - **HUD:** XP bar placement, the 90 px / 0.6 s level-up ring, a 3-row drop feed; "Crits only" damage numbers show headshots until a crit stat exists.
+- **HUD vitals (provisional):** 5 health segments of max/5 each, no health number or portrait (the 2026-11-20 concept has none). [hud-concept](plans/hud-concept.md)
 - **Halcyon concept pass (F-68):** kitchen fires as the Mess Hall's warm accent, the existing hazard orange (not yellow) on the tank railings, the catwalk office not walkable, pods at leak-glow strength, one steel material on the ceiling models. Look signed off 2026-11-19.
 - **Model looks:** skinned zombies, gear finishes, vest frames, first-person arms, teammate clips and the launcher screen are agent looks until the person sees them.
 - **Tripo settings:** `tripo_make.py` asks for model v3.1, PBR, detailed texture, standard geometry (a 0.9 m prop: 40 credits); `body_tarp` goes in `props/`, not `dressing/` (intake prop budget 2,000). [tripo-models](plans/tripo-models.md)
-- **Power-up drops:** 1% per kill, at most 1 a round (GDD 2.5%, 4), while Resupply is the deck's only power-up; raise with F-26. Resupply glows big and green, the ammo pack small and orange.
+- **Supply Crate:** a plain box with a teal strip, not a model; anyone opens it, only the opener takes the gun; it rolls the level Vault's pool for free and vanishes 25 s after landing unless opened. [more-power-ups](plans/more-power-ups.md)
 - **Power-up timers:** team-wide, a re-pickup resets to full time; Payday doubles hit and kill points only (not repairs or the round bonus); only kills by a player roll drops. [more-power-ups](plans/more-power-ups.md)
+- **Overkill and Stasis:** Overkill raises a hit to the zombie's health after Synapse and Cryo (their splash stays normal); Stasis freezes only zombies alive at pickup, hits on them do normal damage and never Cryo-freeze or shatter. [more-power-ups](plans/more-power-ups.md)
+- **Purge and Scrap Kit:** Purge kills have no attacker (no kill points, XP, loot or drop rolls; the round still counts them); team points go to every player and are not doubled by Payday; Purge glows Rare blue #3D7DFF since bio-green is Resupply's. [more-power-ups](plans/more-power-ups.md)
 - **Hold to repair:** one plank every 0.6 s while interact is held, tap still works; the 0.3 s hold-to-buy in `controls.md` is not built.
 - **Player names:** up to 16 Latin letters, digits, spaces and - _ . ' ; default "Survivor"; duplicates allowed; set on the Character screen before joining. See [player-names](plans/player-names.md).
 - **Halcyon machines (F-83):** one Med Dispenser model for all 8 Serums with one teal glow (no per-Serum colour); exfil hatch model squashed to 14 cm over the old thin floor box so players walk over it; Reforger glow is a thin front strip. [plan](plans/halcyon-machines-fill.md)
@@ -113,5 +118,6 @@ Agent picks the person may change.
 - **Keeper spots (F-76, provisional):** the Tripo stalls are packed to chest height, so each keeper stands inside the stall on a hidden 0.2-0.3 m step (Missions on the floor); the talk area reaches 0.25 m past the stall collider. Card asked. [lantern-post-vendors](plans/lantern-post-vendors.md)
 - **Reload motion (F-85):** empty reloads press the bolt catch above the well for every gun (no charging-handle pull: crossing the receiver flipped the elbow); the tactical swap shows the same magazine low in frame. Feel signed off 2026-11-20. [reload-animations](plans/reload-animations.md)
 - **BR-12 Reforged reload (F-85):** keeps the base shell times like every Reforged gun keeps its reload, so its 9 shells take 5.1 s from empty (was 3.6 s for a full reload). [reload-animations](plans/reload-animations.md)
-- **Launcher game folder (F-82):** the game lives in the launcher's own app data folder (`%LOCALAPPDATA%\com.experimentundead.launcher\game\`), not `Experiment Undead\`, so Tauri's uninstaller "delete app data" box removes it with no custom NSIS code. [separate-launcher](plans/separate-launcher.md)
+- **Launcher game folder (F-82):** the game lives in the launcher's own app data folder (`%LOCALAPPDATA%\com.experimentundead.launcher\game\`), not `Fenlight\`, so Tauri's uninstaller "delete app data" box removes it with no custom NSIS code. [separate-launcher](plans/separate-launcher.md)
 - **First-person charm:** hangs from a `CharmMount` on the left rail just in front of the support hand, out of the ADS sight line; hidden while a sidearm is in hand; a spring swing, no physics. [gear-first-person](plans/gear-first-person.md)
+- **Rename to Fenlight:** players see Fenlight; game exe/pck names, the launcher app id and data folder, and the `experiment-undead-server` image keep the old name so installs and servers keep working. Saves copy over once. [RELEASING](RELEASING.md)

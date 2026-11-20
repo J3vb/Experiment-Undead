@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Script" path="res://systems/ui/hud.gd" id="1"]
 [ext_resource type="Script" path="res://systems/net/coop_hud.gd" id="coop"]
@@ -25,6 +25,8 @@
 [ext_resource type="PackedScene" path="res://systems/ui/loot_feed.tscn" id="loot_feed"]
 
 [ext_resource type="Script" path="res://systems/ui/power_up_timers.gd" id="power_up_timers"]
+[ext_resource type="Script" path="res://systems/ui/grenade_slot.gd" id="grenade_slot"]
+[ext_resource type="Script" path="res://systems/ui/hud/vitals_panel.gd" id="vitals_panel"]
 
 [sub_resource type="FontVariation" id="round_bold"]
 base_font = ExtResource("round_font")
@@ -150,7 +152,7 @@ anchor_left = 0.7
 anchor_top = 1.0
 anchor_right = 0.975
 anchor_bottom = 1.0
-offset_top = -260.0
+offset_top = -296.0
 offset_bottom = -28.0
 grow_vertical = 0
 theme_override_constants/separation = 0
@@ -169,6 +171,12 @@ theme_type_variation = &"LabelMono"
 theme_override_font_sizes/font_size = 44
 text = "0"
 horizontal_alignment = 2
+
+[node name="GrenadeSlot" type="Control" parent="Root/Loadout"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("grenade_slot")
 
 [node name="WeaponLabel" type="Label" parent="Root/Loadout"]
 layout_mode = 2
@@ -201,28 +209,23 @@ anchor_left = 0.025
 anchor_top = 1.0
 anchor_right = 0.3
 anchor_bottom = 1.0
-offset_top = -100.0
-offset_bottom = -28.0
+offset_top = -180.0
+offset_bottom = -44.0
 grow_vertical = 0
-theme_override_constants/separation = 14
+theme_override_constants/separation = 10
 alignment = 2
-
-[node name="Health" type="ProgressBar" parent="Root/Vitals"]
-custom_minimum_size = Vector2(0, 8)
-layout_mode = 2
-mouse_filter = 2
-modulate = Color(0.949, 0.929, 0.878, 1)
-theme_override_styles/background = SubResource("bar_bg")
-theme_override_styles/fill = SubResource("bar_fill")
-max_value = 1.0
-step = 0.001
-value = 1.0
-show_percentage = false
 
 [node name="Serums" type="HBoxContainer" parent="Root/Vitals"]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 theme_override_constants/separation = 8
+
+[node name="VitalsPanel" type="Control" parent="Root/Vitals"]
+custom_minimum_size = Vector2(360, 72)
+layout_mode = 2
+size_flags_horizontal = 0
+mouse_filter = 2
+script = ExtResource("vitals_panel")
 
 [node name="ExfilBox" type="PanelContainer" parent="Root"]
 visible = false

@@ -1,5 +1,6 @@
 ## Frag grenades (docs/plans/frag-grenades.md, step 1): cook timer, throw, refill,
-## blast falloff, walls, the thrower's own damage cap, no teammate damage, Bloater burst.
+## blast falloff, walls, the thrower's own damage cap, no teammate damage, Bloater burst,
+## and (step 3) cook sounds and blast shake.
 extends GutTest
 
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
@@ -220,3 +221,31 @@ func test_soak_bot_throws_one_frag_a_round_only_at_far_zombies() -> void:
 	assert_false(bot.call("_wants_frag", eye + Vector3(0, 0, -5)), "too close: the bot would hurt itself")
 	thrower.count = 1
 	assert_false(bot.call("_wants_frag", eye + Vector3(0, 0, -10)), "only the first frag of the round")
+
+
+func test_cook_plays_pin_then_ticks_every_half_second() -> void:
+	thrower.tick(_frame(true), 0.0)
+	var audio: AudioStreamPlayer = thrower.get_child(0) as AudioStreamPlayer
+	assert_eq(audio.stream, GrenadeThrower.PIN_SOUND, "pin pull on the press")
+	thrower.tick(_frame(true), 0.4)
+	assert_eq(audio.stream, GrenadeThrower.PIN_SOUND, "no tick before 0.5 s")
+	thrower.tick(_frame(true), 0.2)
+	assert_eq(audio.stream, GrenadeThrower.TICK_SOUND, "tick at 0.5 s")
+
+
+func test_blast_shake_falls_off_to_zero_at_fifteen_metres() -> void:
+	assert_almost_eq(BlastEffect.shake_at(0.0), 0.6, 0.001)
+	assert_almost_eq(BlastEffect.shake_at(7.5), 0.3, 0.001)
+	assert_almost_eq(BlastEffect.shake_at(15.0), 0.0, 0.001)
+	assert_almost_eq(BlastEffect.shake_at(40.0), 0.0, 0.001)
+
+
+func test_blast_shake_follows_the_explosions_slider_and_skips_other_cameras() -> void:
+	var saved: Variant = Settings.get_value(&"comfort", &"shake_hits")
+	Settings._values[&"comfort"][&"shake_hits"] = 0.5
+	var other: Player = _player(Vector3(0, -50, 0))
+	player.camera.current = true
+	BlastEffect.shake_local_players(get_tree(), player.camera.global_position)
+	Settings._values[&"comfort"][&"shake_hits"] = saved
+	assert_almost_eq(player.camera_rig.get_trauma(), 0.3, 0.001, "0.6 at the blast, halved by the slider")
+	assert_eq(other.camera_rig.get_trauma(), 0.0, "a camera nobody looks through is not shaken")

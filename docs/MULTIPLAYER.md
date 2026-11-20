@@ -69,7 +69,8 @@ server (ADR 0004). `Net.is_authority()` is only for code that has no node
 multiplayer in the game, so the second half adds nothing.
 
 **2. A client asks the server** (reference: `InteractionSync.request` and
-`request_interact`). A public `request_x()` runs the change directly when
+`request_interact`; `GrenadeClaims.request_throw` also shows the owner a
+cosmetic copy at once and relays the throw and blast, pattern 6). A public `request_x()` runs the change directly when
 this peer is the server, and sends `request_x_on_server.rpc_id(1, ...)` from
 a client. The handler is `@rpc("any_peer", "call_remote", "reliable")` and
 keeps this order:

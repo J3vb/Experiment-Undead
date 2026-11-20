@@ -11,7 +11,7 @@ class Target:
 	var uses: int = 0
 	var interval: float = 0.0
 
-	func hold_interval() -> float:
+	func hold_interval(_player: Player) -> float:
 		return interval
 
 	func interact(_player: Player, _facts: Dictionary = {}) -> void:

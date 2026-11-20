@@ -71,10 +71,10 @@ func test_drop_cap_per_round() -> void:
 	assert_eq(_pickups().size(), drops.max_per_round + 1, "the cap resets each round")
 
 
-func test_ammo_drop_rates_after_the_first_play_test() -> void:
+func test_drop_rates_match_the_design() -> void:
 	var fresh: PowerUpDrops = PowerUpDrops.new()
-	assert_eq(fresh.drop_chance, 0.01, "the deck is not full yet, so drops stay below the GDD 2.5%")
-	assert_eq(fresh.max_per_round, 1)
+	assert_eq(fresh.drop_chance, 0.025, "the GDD 2.5% per kill")
+	assert_eq(fresh.max_per_round, 4, "the GDD 4 a round")
 	assert_eq(fresh.ammo_pack_chance, 0.05, "Scavenger packs halved")
 	fresh.free()
 
@@ -147,3 +147,54 @@ func test_ammo_pack_adds_one_magazine_to_every_gun() -> void:
 	pack.collect(player)
 	for weapon: Weapon in player.weapons.weapons:
 		assert_eq(weapon.instance.ammo_reserve, weapon.data.magazine_size)
+
+
+func test_purge_mid_round_never_stalls_the_round() -> void:
+	session.director.set_physics_process(false)
+	session.director.round_number = 1
+	session.director.phase = WaveDirector.Phase.SPAWNING
+	session.loot.drop_chance_override = 1.0
+	var walker: EnemyData = Content.get_item(&"enemies", &"zombie_walker") as EnemyData
+	for i: int in 2:
+		session.spawner.spawn(walker, 1, session.director.rules)
+	watch_signals(Events)
+	drops._spawn(Content.get_item(&"power_ups", &"purge") as PowerUpData, Vector3(40, 0, 40)).collect(player)
+	assert_eq(session.spawner.alive_count(), 0, "Purge killed both")
+	assert_signal_not_emitted(Events, "loot_dropped", "no loot from Purge kills")
+	await wait_physics_frames(2)
+	assert_signal_not_emitted(Events, "round_ended", "more zombies still to come")
+	var last: Zombie = session.spawner.spawn(walker, 1, session.director.rules)
+	session.director.phase = WaveDirector.Phase.CLEARING
+	last.health.take_damage(DamageInfo.create(last.health.current + 1.0, player))
+	await wait_physics_frames(2)
+	assert_signal_emitted_with_parameters(Events, "round_ended", [1])
+	assert_eq(session.director.total_kills, 3, "Purge kills still count for the round")
+
+
+func _chain_kills(kills: int) -> void:
+	player.skill_ranks = {&"chain_supply": 1}
+	player.equip_gear([])
+	drops.drop_chance = 1.0
+	for i: int in kills:
+		Events.round_started.emit(i + 2, 10)
+		var corpse: Node3D = Node3D.new()
+		add_child_autofree(corpse)
+		corpse.global_position = Vector3(40, 0, 40)
+		Events.enemy_killed.emit(corpse, DamageInfo.create(1.0, player))
+
+
+func test_chain_supply_drops_a_second_different_power_up_outside_the_cap() -> void:
+	drops.power_ups = [Content.get_item(&"power_ups", &"resupply") as PowerUpData, drops.ammo_pack]
+	_chain_kills(20)
+	var kinds: Dictionary[StringName, int] = {}
+	for pickup: PowerUp in _pickups():
+		kinds[pickup.data.id] = kinds.get(pickup.data.id, 0) + 1
+	assert_gt(_pickups().size(), 20, "some kills chained a second drop")
+	assert_lt(_pickups().size(), 40, "not every kill chains (25%)")
+	assert_eq(drops.dropped_this_round, 1, "the chained drop is not counted in the cap")
+
+
+func test_chain_supply_never_repeats_the_only_kind() -> void:
+	drops.power_ups = [Content.get_item(&"power_ups", &"resupply") as PowerUpData]
+	_chain_kills(20)
+	assert_eq(_pickups().size(), 20)

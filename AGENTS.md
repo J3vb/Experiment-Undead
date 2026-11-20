@@ -1,6 +1,6 @@
 # Rules for coding agents (Codex, Claude, others)
 
-Experiment Undead is an original wave-based zombie FPS in **Godot 4.7.2**,
+Fenlight is an original wave-based zombie FPS in **Godot 4.7.2**,
 written in **typed GDScript**, with RPG progression and co-op on self-hosted
 servers of up to 8 players. Every line of code must work in co-op.
 
