@@ -5,7 +5,6 @@ extends CanvasLayer
 const BLOOD_RED: Color = Color("c8202a")
 const OFF_WHITE: Color = Color("f2ede0")
 var _toast_tween: Tween
-var _round_tween: Tween
 var _prompt_text: String = ""
 var _player: Player
 var _hurt: float = 0.0
@@ -21,7 +20,7 @@ var _squad: SquadCards
 @onready var crosshair: Crosshair = $Root/Crosshair
 @onready var hit_marker: HitMarker = $Root/HitMarker
 @onready var vignette: ColorRect = $Root/DamageVignette
-@onready var round_label: Label = $Root/RoundInfo/RoundLabel
+@onready var round_counter: RoundCounter = $Root/RoundInfo
 @onready var points_label: Label = $Root/Loadout/PointsLabel
 @onready var points_delta: Label = $Root/Loadout/PointsDelta
 @onready var weapon_label: Label = $Root/Loadout/WeaponLabel
@@ -30,6 +29,7 @@ var _squad: SquadCards
 @onready var exfil_bar: ProgressBar = $Root/ExfilBox/Box/Hold
 @onready var exfil_time: Label = $Root/ExfilBox/Box/Time
 @onready var prompt_box: PanelContainer = $Root/Prompt
+@onready var world_prompt: WorldPrompt = $Root/WorldPrompt
 @onready var prompt_key: Label = $Root/Prompt/Row/Key
 @onready var prompt_price: Label = $Root/Prompt/Row/Price
 @onready var hint_label: Label = $Root/HintLabel
@@ -48,8 +48,8 @@ func _ready() -> void:
 	center_label.modulate.a = 0.0
 	points_delta.modulate.a = 0.0
 	hint_label.text = ""
-	round_label.text = ""
 	prompt_key.text = Settings.key_name(&"interact")
+	world_prompt.box = prompt_box
 	Settings.changed.connect(_on_setting_changed)
 	_damage_effects = Settings.get_value(&"comfort", &"damage_effects")
 	$Root.add_child(VersionLabel.new())
@@ -225,12 +225,6 @@ func _on_player_revived(player: Player) -> void:
 
 
 func _on_round_started(round_number: int, _count: int) -> void:
-	if _round_tween:
-		_round_tween.kill()
-	round_label.text = str(round_number)
-	round_label.modulate = Color.WHITE
-	_round_tween = create_tween()
-	_round_tween.tween_property(round_label, "modulate", BLOOD_RED, 1.0)
 	_flash_center("ROUND %d" % round_number, 3.0)
 	round_sound.play()
 
@@ -241,13 +235,6 @@ func _on_round_ended(round_number: int) -> void:
 
 
 func _on_intermission(next_round: int, duration: float) -> void:
-	if next_round > 1:
-		round_label.text = str(next_round - 1)
-	if _round_tween:
-		_round_tween.kill()
-	_round_tween = create_tween().set_loops()
-	_round_tween.tween_property(round_label, "modulate:a", 0.3, 0.8)
-	_round_tween.tween_property(round_label, "modulate:a", 1.0, 0.8)
 	if next_round == 1:
 		_flash_center("SURVIVE", duration)
 

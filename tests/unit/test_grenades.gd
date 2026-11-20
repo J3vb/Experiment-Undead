@@ -249,3 +249,11 @@ func test_blast_shake_follows_the_explosions_slider_and_skips_other_cameras() ->
 	Settings._values[&"comfort"][&"shake_hits"] = saved
 	assert_almost_eq(player.camera_rig.get_trauma(), 0.3, 0.001, "0.6 at the blast, halved by the slider")
 	assert_eq(other.camera_rig.get_trauma(), 0.0, "a camera nobody looks through is not shaken")
+
+
+func test_grenade_still_goes_off_after_its_thrower_is_freed() -> void:
+	var zombie: Zombie = _zombie(Vector3(1, -50, 0))
+	var grenade: Grenade = Grenade.spawn(root, frag, player, Vector3(0, -50, 0), Vector3.ZERO, 5.0)
+	player.free()
+	grenade.go_off()
+	assert_lt(zombie.health.current, 1000.0, "the blast still hurts zombies with no thrower left")

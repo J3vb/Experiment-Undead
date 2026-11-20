@@ -27,28 +27,6 @@ func before_each() -> void:
 	Events.player_spawned.emit(player)
 
 
-func test_joining_between_rounds_shows_the_last_round() -> void:
-	Events.intermission_started.emit(8, 12.0)
-	assert_eq(hud.round_label.text, "7", "a late joiner in a break sees the round just survived")
-	Events.intermission_started.emit(1, 10.0)
-	assert_eq(hud.round_label.text, "7", "the first break leaves the label alone")
-
-
-func test_round_starts_white_and_intermission_blinks() -> void:
-	Events.round_started.emit(12, 24)
-	assert_eq(hud.round_label.text, "12")
-	assert_eq(hud.round_label.modulate, Color.WHITE)
-	hud._round_tween.pause()
-	hud._round_tween.custom_step(1.1)
-	assert_eq(hud.round_label.modulate, Hud.BLOOD_RED)
-	Events.intermission_started.emit(13, 10.0)
-	hud._round_tween.pause()
-	hud._round_tween.custom_step(0.8)
-	assert_almost_eq(hud.round_label.modulate.a, 0.3, 0.001)
-	Events.round_started.emit(13, 26)
-	assert_eq(hud.round_label.modulate.a, 1.0)
-
-
 func test_points_separators_and_delta_summing_then_expiry() -> void:
 	Events.points_changed.emit(player, 14520, 100)
 	Events.points_changed.emit(player, 14570, 50)

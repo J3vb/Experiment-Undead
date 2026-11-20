@@ -1,6 +1,6 @@
 # Plan: Existing zombies to Tripo models
 
-Status: Approved
+Status: Building
 Roadmap: F-86 / issue none (person's ask in the project thread, 2026-11-20)
 Phase: P4
 Size: M
@@ -141,16 +141,17 @@ tween. Checked by the existing benchmark job (24 zombies).
 
 - Build: intake `bloater`, `shambler` (lab tech) and `shambler_guard` with
   `--kind zombie` and manifest rows. `ZombieRig.extra_models` and the look pick
-  `([model] + extra_models)[look % size]`, where `look` (default 0, so `ZombieRig.new()` in tools still works) is `hash(net_id)` set in `Zombie.setup()` before the rig enters the tree. `hash` because `Net.allocate_id` is one counter for every zombie type, so a plain `% 2` with an alternating Walker/Bloater mix would give every Walker the same look. Delete `_attach_belly` and `_belly`. Bloater pod shader through
-  `zombie_import.gd`: green-only glow (like the Glower veins) and an
-  `instance uniform float pulse` that pushes the pod area out along the normal;
-  `pulse_belly()` tweens `instance_shader_parameters/pulse` on the `Body` mesh; the pod mask comes from `textureLod` of the albedo in `vertex()`. Shambler looks get a plain baked material. Fit the Body hit zones and capsules to the new
+  `([model] + extra_models)[look % size]`, where `look` (default 0, so `ZombieRig.new()` in tools still works) is `hash(net_id)` set in `Zombie.setup()` before the rig enters the tree. `hash` because `Net.allocate_id` is one counter for every zombie type, so a plain `% 2` with an alternating Walker/Bloater mix would give every Walker the same look. Delete `_attach_belly` and `_belly`. All Tripo zombies import through
+  `zombie_import.gd` and share the Glower vein glow (lore: every Lit has faint green eyes and veins; changed
+  while building, see DECISIONS). `glower_veins.gdshader` gets an `instance uniform float pulse` that pushes
+  the green area out along the normal, gated by `ZombieRig.pulse_size` (Bloater only);
+  `pulse_belly()` tweens `instance_shader_parameters/pulse` on the `Body` mesh; the pod mask comes from `textureLod` of the albedo in `vertex()`. Fit the Body hit zones and capsules to the new
   heights. Turnarounds approved in `docs/design/turnarounds/zombies/`. ADR 0017
   line: these three zombies are Tripo now.
 - Files: assets/models/zombies/* (and their .glb.import), tools/assets/tripo/zombies.json,
   systems/enemies/zombie_rig.gd, zombie.gd, zombie.tscn, bloater.tscn, glower.tscn,
   tools/assets/zombie_import.gd, zombie_checks.py, build_models.py,
-  assets/materials/bloater_pods.gdshader, tests/content/test_zombie_finish.gd,
+  assets/materials/glower_veins.gdshader, tests/content/test_zombie_finish.gd,
   test_model_finish.gd, tests/unit/test_gear_import.gd,
   docs/adr/0017-tripo-models.md, docs/design/turnarounds/zombies/.
 - Tests: test_zombie_rig.gd: Walkers with two looks values get the two looks; a Bloater and a Glower with any look keep their own model;

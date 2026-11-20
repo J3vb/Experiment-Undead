@@ -147,7 +147,7 @@ Left to right: Shambler (lab coat), Crawler, Stalker, Bloater, Brute, Glower.
 | Shambler | Upright, arms reaching, staff clothing | Grey-green skin, dull institutional clothes | Faint green eyes |
 | Crawler | Flat to the ground, legs missing | Like Shambler, darker | Scrape trail decal |
 | Stalker | Thin, long arms, crouched, walls and ceiling | Pale, almost white | Eyes flare before a pounce |
-| Bloater | Round, wide, slow | Translucent green-glowing belly | Belly pulses faster when hurt |
+| Bloater | Round, wide, slow | Belly of green-glowing gas pods | Pods swell when hit |
 | Brute | 1.5x player height, huge shoulders, metal head plate | Dark, rust-brown plate | Plate sparks and cracks |
 | Glower | Thin, fast, hunched | Full-body green veins | Lights the room, Blackout only |
 
@@ -162,6 +162,7 @@ Full UI tokens and every screen: [ui-hud.md](ui-hud.md).
 | Round red | `#C3201B` | Round number, damage arcs, low-health vignette |
 | Headshot gold | `#FFC845` | Head hitmarker, point gains |
 | Warning orange | `#FF8A1C` | Ammo at 25% (same as Legendary on purpose) |
+| Menu brush | `#D9662B` | Brush stroke behind the selected front-end menu row (F-88); darker than Legendary so it never reads as loot |
 | Empty red | `#FF3B30` | Empty mag, cannot afford |
 | Brass | `#E3CF9A` | XP bar, level-up, skill points |
 | Panel | `#0B0F10` at 85% | Menu and tooltip backgrounds, 1 px light border |

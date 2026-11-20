@@ -63,6 +63,8 @@ Keep it simple check, GUT is our test runner, co-op follows `docs/MULTIPLAYER.md
 numbers come from the balance sheet. Ignore their links to skills we did not copy.
 Do not edit these folders; update them by copying a newer upstream release.
 
+**EGM** (`.agents/plugins/egm/`, Google, Apache-2.0): fresh-context plan reviewers, enabled by the session hook. Run `egm-review` on size M/L plans and `egm-drift-report docs/plans/`; our template and rules win.
+
 Edit skills in `.agents/skills/` only, then run
 `python tools/ci/check_skills_mirror.py --fix`. CI fails if the copies differ.
 

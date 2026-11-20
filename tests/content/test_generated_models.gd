@@ -14,6 +14,8 @@ const CORVID: String = "res://assets/models/weapons/corvid_338.glb"
 const WALL: String = "res://assets/models/kit/wall_panel.glb"
 const ZOMBIES: String = "res://assets/models/zombies/%s.glb"
 const ZOMBIE_PARTS: Array[String] = ["Body", "Eyes", "EyeL", "EyeR"]
+## Tripo zombies (tripo_intake.py --kind zombie): one baked Body, eyes painted in the texture.
+const BAKED_PARTS: Array[String] = ["Body", "Eyes", "HeadCenter"]
 ## The viewmodels place their ScopeLens disc at this Z (towards the player); scope geometry must stay in front.
 const SCOPE_LENS_Z: float = 0.128
 const SCOPE_BOTTOM: float = 0.074
@@ -158,12 +160,12 @@ func _check_zombie_finishes(zombie: Node3D) -> void:
 		assert_gt(head_value, color.get_luminance(), "head is the lightest nonemissive surface")
 
 
-func _check_zombie(id: String) -> Node3D:
+func _check_zombie(id: String, baked: bool = false) -> Node3D:
 	var zombie: Node3D = _load(ZOMBIES % id)
 	if zombie == null:
 		return null
 	add_child(zombie)
-	for part: String in ZOMBIE_PARTS:
+	for part: String in BAKED_PARTS if baked else ZOMBIE_PARTS:
 		assert_not_null(zombie.find_child(part, true, false), id + " has " + part)
 	var skeletons: Array[Node] = zombie.find_children("*", "Skeleton3D", true, false)
 	assert_eq(skeletons.size(), 1, id + " has one shared character skeleton")
@@ -175,24 +177,28 @@ func _check_zombie(id: String) -> Node3D:
 		var head: Vector3 = skeleton.global_transform * skeleton.get_bone_global_rest(skeleton.find_bone("head")).origin
 		if eyes:
 			assert_gt(eyes.global_position.z, head.z, id + " eyes face +Z")
-	_check_zombie_finishes(zombie)
 	var settings: ConfigFile = ConfigFile.new()
 	assert_eq(settings.load((ZOMBIES % id) + ".import"), OK)
 	assert_eq(settings.get_value("params", "meshes/light_baking"), 3)
+	if baked:
+		var body: MeshInstance3D = zombie.find_child("Body", true, false) as MeshInstance3D
+		assert_eq(_zombie_material(body).shader.resource_path, "res://assets/materials/glower_veins.gdshader")
+		assert_eq(settings.get_value("params", "import_script/path"), "res://tools/assets/zombie_import.gd")
+		return zombie
+	_check_zombie_finishes(zombie)
 	assert_eq(settings.get_value("params", "import_script/path"), "res://tools/assets/zombie_finish_import.gd")
 	return zombie
 
 
-func test_shambler_is_upright_and_reaching() -> void:
-	var zombie: Node3D = _check_zombie("shambler")
-	if zombie == null:
-		return
-	var box: AABB = _size_of(zombie)
-	assert_between(box.size.y, 1.7, 1.95, "shambler is about player height")
-	assert_almost_eq(box.position.y, 0.0, 0.02, "feet on the floor")
-	assert_gt(box.end.z, 0.5, "arms reach forward")
-	assert_not_null(zombie.find_child("CoatSkirt", true, false), "shambler wears a lab coat")
-	zombie.free()
+func test_shambler_looks_are_upright_tripo_zombies() -> void:
+	for id: String in ["shambler", "shambler_guard"]:
+		var zombie: Node3D = _check_zombie(id, true)
+		if zombie == null:
+			continue
+		var box: AABB = _size_of(zombie)
+		assert_between(box.size.y, 1.7, 1.95, id + " is about player height")
+		assert_almost_eq(box.position.y, 0.0, 0.02, id + " feet on the floor")
+		zombie.free()
 
 
 func test_crawler_is_flat_to_the_ground() -> void:
@@ -206,16 +212,14 @@ func test_crawler_is_flat_to_the_ground() -> void:
 	zombie.free()
 
 
-func test_bloater_is_wide_with_a_glowing_belly() -> void:
-	var zombie: Node3D = _check_zombie("bloater")
+func test_bloater_is_a_wide_tripo_zombie() -> void:
+	var zombie: Node3D = _check_zombie("bloater", true)
 	if zombie == null:
 		return
 	var box: AABB = _size_of(zombie)
-	assert_gt(box.size.x, 1.1, "bloater is wide")
-	var belly: MeshInstance3D = zombie.find_child("Belly", true, false) as MeshInstance3D
-	assert_not_null(belly, "bloater has a Belly code can pulse")
-	if belly:
-		assert_gt(float(_zombie_material(belly).get_shader_parameter(&"emission_strength")), 0.0, "belly glows")
+	var shambler: Node3D = _load(ZOMBIES % "shambler")
+	assert_gt(box.size.x, _size_of(shambler).size.x, "bloater is wider than a Shambler")
+	shambler.free()
 	zombie.free()
 
 

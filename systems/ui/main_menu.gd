@@ -1,5 +1,5 @@
-## Front end: Enter world opens your own world, Servers joins someone else's. Shared settings
-## and plain-word network errors.
+## Front end over the painted Lantern Post backdrop: Play opens your own world, Servers joins
+## someone else's. Shared settings and plain-word network errors.
 class_name MainMenu
 extends Control
 
@@ -7,9 +7,17 @@ const CREDITS: String = """Atkinson Hyperlegible Next and Mono, `assets/fonts/`
 Braille Institute of America, Applied Design Works
 https://github.com/googlefonts/atkinson-hyperlegible-next · SIL OFL 1.1
 
+Bebas Neue (FENLIGHT logo only), `tools/assets/fonts/`
+The Bebas Neue Project Authors, Dharma Type
+https://github.com/dharmatype/Bebas-Neue · SIL OFL 1.1
+
 GUT (Godot Unit Test) 9.7.1, `addons/gut/`
 Butch Wesley and contributors
 https://github.com/bitwes/Gut · MIT
+
+Shambler, Shambler guard and Bloater zombies, `assets/models/zombies/{shambler,shambler_guard,bloater}.glb`
+Made for this project with Tripo AI (image to 3D, paid plan)
+https://www.tripo3d.ai · Owned by this project, commercial use
 
 Glower zombie, `assets/models/zombies/glower.glb`
 Made for this project with Tripo AI (image to 3D, paid plan)
@@ -19,9 +27,15 @@ Lantern Post market stalls, `assets/models/town_large/stall_*.glb`
 Made for this project with Tripo AI (image to 3D, paid plan)
 https://www.tripo3d.ai · Owned by this project, commercial use
 
+Main menu backdrop (Lantern Post at night), `assets/ui/backdrops/main_menu.jpg`
+Made for this project with an AI image tool (ADR 0019)
+Painted concept art · Owned by this project, commercial use
+
 MakeHuman base mesh (head only), `tools/assets/player_body/base_head.obj`
 Data Collection AB, Joel Palmius, Jonas Hauquier
 https://github.com/makehumancommunity/makehuman · CC0 1.0"""
+
+const MUSIC_FADE_SECONDS: float = 4.0
 
 const NEWER_SAVE: String = (
 	"This character was saved by a newer version of the game. "
@@ -34,6 +48,8 @@ var _panel_tween: Tween
 var _drift_time: float = 0.0
 ## Character waiting for the newer-save message to close before its screen opens.
 var _pending_profile: CharacterProfile
+## Hub scene loading in the background so PLAY and joins skip a cold load. Empty once collected.
+var _hub_path: String = ""
 
 @onready var menu: VBoxContainer = $Screens/Root/Menu
 @onready var enter_button: Button = $Screens/Root/Menu/EnterWorld
@@ -42,14 +58,18 @@ var _pending_profile: CharacterProfile
 @onready var settings_button: Button = $Screens/Root/Menu/Settings
 @onready var credits_button: Button = $Screens/Root/Menu/Credits
 @onready var credits_panel: PanelContainer = $Screens/Root/CreditsPanel
-@onready var camera: Camera3D = $Camera3D
+@onready var backdrop: TextureRect = $Screens/Root/Backdrop
+@onready var snow: CPUParticles2D = $Screens/Root/Snow
+@onready var research_button: Button = $Screens/Root/Menu/Research
 @onready var error_dialog: NetErrorDialog = $NetErrorDialog
+@onready var music: AudioStreamPlayer = $Music
 
 
 func _ready() -> void:
 	if _hand_over():
 		return
 	Net.cancel_place_change()
+	_fade_in_music()
 	_bind_gamepad()
 	Net.world.close()
 	enter_button.pressed.connect(enter_world)
@@ -62,7 +82,13 @@ func _ready() -> void:
 	$Screens/Root/CreditsPanel/Box/Back.pressed.connect(_close_credits)
 	$Screens/Root/CreditsPanel/Box/Text.text = CREDITS
 	$Screens/Root.add_child(VersionLabel.new())
+	if backdrop.texture == null:
+		Log.warn(&"ui", &"menu_backdrop_missing", {"screen": "main_menu"})
+	for row: Button in menu.get_children().filter(func(node: Node) -> bool: return node is Button):
+		row.mouse_entered.connect(row.grab_focus)
 	enter_button.grab_focus()
+	if get_tree().current_scene == self:
+		warm_hub()
 	if not Net.last_error.is_empty():
 		_show_error(Net.last_error["reason"], Net.last_error["details"])
 		Net.last_error.clear()
@@ -106,10 +132,26 @@ static func parse_launch(args: PackedStringArray) -> Dictionary:
 	return {}
 
 
+func _fade_in_music() -> void:
+	var target: float = music.volume_linear
+	music.volume_linear = 0.0
+	create_tween().tween_property(music, "volume_linear", target, MUSIC_FADE_SECONDS)
+
+
+## Slow backdrop drift and falling snow; Reduce motion holds both still.
 func _process(delta: float) -> void:
-	_drift_time += delta
-	camera.position.x = 24.0 + sin(_drift_time * 0.2) * 0.15
-	camera.rotation.y = sin(_drift_time * 0.15) * 0.015
+	var still: bool = Settings.get_value(&"accessibility", &"reduce_motion")
+	snow.emitting = not still
+	snow.visible = not still
+	if not still:
+		_drift_time += delta
+	var drift: Vector2 = (
+		Vector2.ZERO if still else Vector2(sin(_drift_time * 0.2) * 10.0, sin(_drift_time * 0.13) * 4.0)
+	)
+	backdrop.offset_left = drift.x
+	backdrop.offset_right = drift.x
+	backdrop.offset_top = drift.y
+	backdrop.offset_bottom = drift.y
 
 
 func _input(event: InputEvent) -> void:
@@ -124,6 +166,18 @@ func _input(event: InputEvent) -> void:
 
 ## Your own Lantern Post: open to friends on the saved port, or offline when it cannot be
 ## (the pause screen says why). Nothing here joins anyone else's game.
+## The old menu kept the Halcyon Labs map loaded, which warmed the hub's shared files by accident.
+func warm_hub() -> void:
+	_hub_path = (Content.get_item(&"screens", &"hub") as ScreenData).scene
+	ResourceLoader.load_threaded_request(_hub_path)
+
+
+func _exit_tree() -> void:
+	if not _hub_path.is_empty():
+		ResourceLoader.load_threaded_get(_hub_path)
+		_hub_path = ""
+
+
 func enter_world() -> void:
 	Net.world.open(int(Settings.get_value(&"network", &"last_port")))
 	Net.place = &"hub"

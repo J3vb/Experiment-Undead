@@ -16,7 +16,7 @@ MAX_COMPLEXITY = 10
 LINE_LENGTH = "120"
 LOGIC_DIRS = ("core/", "systems/")
 # Third-party code kept as published: Godot addons and the vendored agent skills.
-VENDORED = ("addons/", ".agents/skills/", ".claude/skills/")
+VENDORED = ("addons/", ".agents/skills/", ".agents/plugins/", ".claude/skills/")
 FUNC_RE = re.compile(r"^(\s*)(static\s+)?func\s+(\w+)")
 COMPLEXITY_RE = re.compile(r"^\s*F\s+(\d+):\d+\s+(\S+)\s+-\s+[A-F]\s+\((\d+)\)\s*$")
 

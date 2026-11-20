@@ -90,6 +90,7 @@ Each says when to fix it.
 
 Agent picks the person may change.
 
+- **EGM plugin:** vendored at `.agents/plugins/egm/` and enabled per machine by the session hook (local settings, no machine path committed). The Codex repo marketplace source path is an agent pick, not yet tried in Codex. [CREDITS](CREDITS.md)
 - **Gun feel:** falloff ranges, spread, recoil and empty reloads not in `roster.csv` (Kestrel, Talon, vault batch A1, Bastion, batch B rifles, Wren, Siphon, Cryo Lance, Synapse). Talon head x3.0 and Atlas Auto's strong DPS wait for play-tests.
 - **Siphon:** 10 m/s orb, 3 s well, at most 12 zombies, 6 m pull, two live wells per player, Vault weight 0.05.
 - **Wearing gear mid-run:** the piece you take off goes into the same Pack slot; swaps never heal; vest icons show the rest-pose shoulder pads ([plan](plans/wear-gear-mid-run.md)).
@@ -105,8 +106,10 @@ Agent picks the person may change.
 - **HUD:** XP bar placement, the 90 px / 0.6 s level-up ring, a 3-row drop feed; "Crits only" damage numbers show headshots until a crit stat exists.
 - **HUD vitals (provisional):** 5 health segments of max/5 each, no health number or portrait (the 2026-11-20 concept has none). [hud-concept](plans/hud-concept.md)
 - **HUD gun icons (provisional):** one silhouette per gun class (pistol, smg, rifle, shotgun, lmg, sniper, special, knife), not per gun; Reforged copies share it. [hud-concept](plans/hud-concept.md)
+- **HUD round counter and compass (provisional):** "ROUND n" top right at 40 px (ui-hud token says 72, the concept is smaller); compass north = world -Z on every map; both hidden until the first round. [hud-concept](plans/hud-concept.md)
 - **Halcyon concept pass (F-68):** kitchen fires as the Mess Hall's warm accent, the existing hazard orange (not yellow) on the tank railings, the catwalk office not walkable, pods at leak-glow strength, one steel material on the ceiling models. Look signed off 2026-11-19.
 - **Glower (F-28):** 1.7 m tall; veins glow bio-green at strength 2 where the baked albedo is green; chitter, swipe and death sounds generated in `zombie_sfx.py` (no free pack download from the cloud). [blackout-glowers](plans/blackout-glowers.md)
+- **Blackout darkness (F-28):** a Blackout takes the LightmapGI data off (works in Forward+ and Compatibility) and drops ambient light to 25%; ceiling and emergency lights go fully dark; Fenlight leaks, fire, signs and flashlights stay. [blackout-glowers](plans/blackout-glowers.md)
 - **Model looks:** skinned zombies, gear finishes, vest frames, first-person arms, teammate clips and the launcher screen are agent looks until the person sees them.
 - **Tripo settings:** `tripo_make.py` asks for model v3.1, PBR, detailed texture, standard geometry (a 0.9 m prop: 40 credits); `body_tarp` goes in `props/`, not `dressing/` (intake prop budget 2,000). [tripo-models](plans/tripo-models.md)
 - **Supply Crate:** a plain box with a teal strip, not a model; anyone opens it, only the opener takes the gun; it rolls the level Vault's pool for free and vanishes 25 s after landing unless opened. [more-power-ups](plans/more-power-ups.md)
@@ -116,6 +119,7 @@ Agent picks the person may change.
 - **Hold to repair:** one plank every 0.6 s while interact is held, tap still works; the 0.3 s hold-to-buy in `controls.md` is not built.
 - **Player names:** up to 16 Latin letters, digits, spaces and - _ . ' ; default "Survivor"; duplicates allowed; set on the Character screen before joining. See [player-names](plans/player-names.md).
 - **Halcyon machines (F-83):** one Med Dispenser model for all 8 Serums with one teal glow (no per-Serum colour); exfil hatch model squashed to 14 cm over the old thin floor box so players walk over it; Reforger glow is a thin front strip. [plan](plans/halcyon-machines-fill.md)
+- **Halcyon small life (F-83 step 4):** drips already existed (F-61), so only fan, PA and papers are new; PA crackles on a fixed 29 s timer, not a random 20-40 s; fan turns with an AnimationPlayer like the beacons, not _process. [plan](plans/halcyon-machines-fill.md)
 - **Stall keeper heights (provisional):** Odile 1.66 m, Teun 1.80 m, Lien 1.68 m, Raes 1.73 m (`height` in [vendors.json](../tools/assets/tripo/vendors.json)); the code-built Quartermaster and `town_npcs/` builder are gone. [tripo-models](plans/tripo-models.md)
 - **Stall keeper clips (F-76):** keepers carry only the five keeper clips (`clips: keeper`), not the 12 player clips; hand spots scale with arm length, counter hands palm down. Look is an agent pick until the person sees the GIFs. [lantern-post-vendors](plans/lantern-post-vendors.md)
 - **Keeper spots (F-76, provisional):** the Tripo stalls are packed to chest height, so each keeper stands inside the stall on a hidden 0.2-0.3 m step (Missions on the floor); the talk area reaches 0.25 m past the stall collider. Card asked. [lantern-post-vendors](plans/lantern-post-vendors.md)
@@ -125,5 +129,7 @@ Agent picks the person may change.
 - **First-person charm:** hangs from a `CharmMount` on the left rail just in front of the support hand, out of the ADS sight line; hidden while a sidearm is in hand; a spring swing, no physics. [gear-first-person](plans/gear-first-person.md)
 - Content fingerprint skips Texture2D fields (HUD icons): the dedicated server export strips textures, so their paths differ and joins were refused. Textures are client art only ([F-87](plans/hud-concept.md)).
 - **Rename to Fenlight:** players see Fenlight; game exe/pck names, the launcher app id and data folder, and the `experiment-undead-server` image keep the old name so installs and servers keep working. Saves copy over once. [RELEASING](RELEASING.md)
+- **Menu brush colour (F-88):** the concept art's orange brush on the selected menu row is burnt orange #D9662B, not Legendary #FF8A1C, and the restyled menus drop the one-green-main-button rule. Provisional. [front-end-concept](plans/front-end-concept.md)
 - **Server drain (F-65 step 8, F-82 step 4b):** the game side (drain file, `SERVER_UPDATING`, exit code 3) is built with the launcher's hosted-server updates; the Docker entrypoint's auto-update half of step 8 is still to build. [client-server-updates](plans/client-server-updates.md)
 - **Launcher look (F-82 step 5, provisional):** news is `launcher/news/news.json` read from `main` (built-in copy offline); the backdrop is the Grauwald keyshot (Halcyon has no outside render yet); Host a server is its own sidebar page. [separate-launcher](plans/separate-launcher.md)
+- **Tripo Shamblers, Bloater (F-86, provisional):** Walkers show the lab tech or guard look from `hash(net_id)`; all Tripo zombies share the vein glow; Bloater pods swell 5 cm on a hit (shader, no Belly mesh). [tripo-zombies](plans/tripo-zombies.md)

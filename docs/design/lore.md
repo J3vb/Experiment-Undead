@@ -309,6 +309,7 @@ some guns have codes and some have names.
 | Thing | Story reason |
 | --- | --- |
 | Frag grenades | Army and Cordon issue, from the same crates as the wall guns: the evacuation force left them on Day 3 and Cordon patrols still drop them. Two fit in a vest pouch, which is why you carry two and find more each round in the kit the Lit still carry. *(provisional)* |
+| HUD compass | The wrist compass in every survivor's Cordon-issue kit; Halcyon's steel throws it a little, which nobody minds in a wave fight. North on every map is the map's -Z side. *(provisional)* |
 
 ### Power-ups, points and buying from walls
 
@@ -383,6 +384,11 @@ stay a plain game score. The drop reasons below are provisional picks.
   own. Their story comes from where a map places them: army trucks at Kessel
   and Marrow are the Day 3 evacuation convoy, the hospital train car is the
   evacuation train, hospital furniture at Grauwald is 1950s sanatorium stock.
+- **Small life in Halcyon** (F-83). The Mess Hall ceiling fan still turns on
+  the trickle from the backup line. The Main Corridor PA is Oriel's site speaker
+  on its own battery: it only crackles, the evacuation call it once played is
+  long gone (no words). Papers by the Labs bench lift in the draught from the
+  air handling the generators keep alive. *(provisional)*
 - **New maps** follow the chapter checklist in The long campaign.
 - **The launcher** (F-82) sits outside the fiction: it shows the game's name,
   the tagline "The cold kept it asleep.", news and patch notes. Any art

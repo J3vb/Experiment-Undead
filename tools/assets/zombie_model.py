@@ -324,16 +324,6 @@ def _build(kind):
     _finish_meshes(armature, kind)
 
 
-def build_shambler():
-    """Gaunt worker, hanging torn coat, institutional clothes and one lost shoe."""
-    _build("shambler")
-
-
 def build_crawler():
     """Low dragging worker with a full skeleton and no leg mesh below its stumps."""
     _build("crawler")
-
-
-def build_bloater():
-    """Swollen silhouette with a rigid spine_01 glowing belly and small green eyes."""
-    _build("bloater")
