@@ -16,10 +16,6 @@ const FINISHES: Dictionary[String, int] = {
 	"GearPolymer": 3,
 	"GearRubber": 4,
 	"GearLiquid": 6,
-	"ZombieSkin": 7,
-	"ZombieCloth": 8,
-	"ZombieShoe": 9,
-	"ZombieGlow": 10,
 }
 ## Player clips that cycle; glTF has no loop flag. Names match LOOPS in player_clips.py.
 const LOOP_CLIPS: Array[StringName] = [
@@ -72,9 +68,6 @@ static func _loop_clips(player: AnimationPlayer) -> void:
 static func finish_material(source: BaseMaterial3D) -> ShaderMaterial:
 	var mat_name: String = source.resource_name if source else ""
 	var finish_name: String = mat_name
-	for zombie_finish: String in ["ZombieSkin", "ZombieCloth", "ZombieShoe", "ZombieGlow"]:
-		if mat_name.begins_with(zombie_finish):
-			finish_name = zombie_finish
 	if not FINISHES.has(finish_name) and finish_name != "GearGlass":
 		push_error("gear material '%s' has no finish; add it to FINISHES" % mat_name)
 	var material: ShaderMaterial = ShaderMaterial.new()
@@ -84,7 +77,4 @@ static func finish_material(source: BaseMaterial3D) -> ShaderMaterial:
 	if finish_name == "GearGlass":
 		return material
 	material.set_shader_parameter(&"finish", FINISHES.get(finish_name, 0))
-	if finish_name == "ZombieGlow":
-		material.set_shader_parameter(&"emission_color", source.emission)
-		material.set_shader_parameter(&"emission_strength", source.emission_energy_multiplier)
 	return material

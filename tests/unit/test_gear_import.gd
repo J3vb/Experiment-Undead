@@ -11,10 +11,6 @@ const FINISHES: Dictionary[String, int] = {
 	"GearPlate": 2,
 	"GearPolymer": 3,
 	"GearRubber": 4,
-	"ZombieSkin": 7,
-	"ZombieCloth": 8,
-	"ZombieShoe": 9,
-	"ZombieGlow": 10,
 }
 
 
@@ -63,42 +59,6 @@ func test_missing_material_reports_an_error_and_uses_plain_fabric() -> void:
 	assert_eq(material.get_shader_parameter(&"finish"), 0)
 	assert_eq(material.get_shader_parameter(&"albedo"), Color.WHITE)
 	assert_push_error("gear material '' has no finish")
-
-
-func test_zombie_variants_preserve_the_head_and_clothing_palette() -> void:
-	var variants: Dictionary[String, Color] = {
-		"ZombieSkinHead": Color("#B9C2B0"),
-		"ZombieSkin": Color("#8E9887"),
-		"ZombieSkinBloater": Color("#4A5446"),
-		"ZombieClothCoat": Color("#8A918C"),
-		"ZombieClothShirt": Color("#2F393B"),
-		"ZombieClothTrousers": Color("#1C2122"),
-		"ZombieShoe": Color("#0E1010"),
-	}
-	for mat_name: String in variants:
-		var source: StandardMaterial3D = StandardMaterial3D.new()
-		source.resource_name = mat_name
-		source.albedo_color = variants[mat_name]
-		var material: ShaderMaterial = IMPORTER.finish_material(source)
-		assert_eq(material.get_shader_parameter(&"albedo"), variants[mat_name])
-		assert_between(material.get_shader_parameter(&"finish"), 7, 9)
-		assert_null(material.get_shader_parameter(&"emission_strength"), "only bio-green finishes emit")
-	assert_push_error_count(0)
-
-
-func test_zombie_glow_uses_source_emission_without_requiring_a_rarity_zone() -> void:
-	var source: StandardMaterial3D = StandardMaterial3D.new()
-	source.resource_name = "ZombieGlow"
-	source.albedo_color = Color("#8DFF3A")
-	source.emission_enabled = true
-	source.emission = source.albedo_color * 0.6
-	source.emission_energy_multiplier = 1.4
-	var material: ShaderMaterial = IMPORTER.finish_material(source)
-	assert_eq(material.get_shader_parameter(&"finish"), 10)
-	assert_almost_eq(material.get_shader_parameter(&"emission_strength"), 1.4, 0.001)
-	assert_eq(material.get_shader_parameter(&"emission_color"), source.emission)
-	assert_eq(material.get_shader_parameter(&"albedo"), source.albedo_color)
-	assert_push_error_count(0)
 
 
 func test_vest_imports_share_four_finishes_across_shell_and_first_person_cuffs() -> void:

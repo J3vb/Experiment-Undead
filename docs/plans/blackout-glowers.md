@@ -187,7 +187,7 @@ checked in step 2 (dark, horde) and in the step 3 soak.
 
 - Build: `tripo_intake.py --kind zombie` (9,000-tri budget, our skeleton through
   `tripo_rig.py`, material `ZombieBaked`). The intake adds a `HeadCenter` marker on
-  the head bone (ZombieRig `_attach_head` reads it; today only `zombie_model.py` makes
+  the head bone (ZombieRig `_attach_head` reads it; then only the code-built zombie script made
   it). Each `zombie_checks.py` / `check_models.py` rule for a baked zombie, decided:
   - `JOINTS` and `TRIANGLES` rows for `glower`, `stalker`, `brute`: added.
   - Separate `Body`, `EyeL`, `EyeR` meshes: skipped for `ZombieBaked` (one baked

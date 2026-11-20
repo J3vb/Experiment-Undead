@@ -12,8 +12,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import bpy
 
 # isort: split
+import bmesh
 import check_models
 import pytest
+import tripo_crawler
 import tripo_intake
 import zombie_checks
 
@@ -81,3 +83,26 @@ def test_baked_zombie_rules_want_one_body_mesh_and_only_the_baked_material():
     assert any("one mesh named 'Body'" in error for error in errors)
     assert any("only the ZombieBaked material" in error for error in errors)
     assert any("HeadCenter" in error for error in errors)
+
+
+def test_crawler_pass_cuts_the_legs_and_caps_them_facing_out():
+    objects = check_models.load_glb(_model(ROWS[1]))
+    arm = next(obj for obj in objects if obj.type == "ARMATURE")
+    body = next(obj for obj in objects if obj.name == "Body")
+    tripo_intake.weld(body)
+    cut = tripo_crawler.cut_legs(arm, body)
+    tripo_crawler.stumps_on_pelvis(arm, body)
+    mesh = bmesh.new()
+    mesh.from_mesh(body.data)
+    groups = {g.index: g.name for g in body.vertex_groups}
+    for vert in mesh.verts:
+        if vert.co.z < cut - 0.001:
+            weights = body.data.vertices[vert.index].groups
+            top = max(weights, key=lambda item: item.weight)
+            assert groups[top.group].startswith(tripo_crawler.ARMS), "only hands may hang below the cut"
+    assert not [e for e in mesh.edges if e.is_boundary and all(abs(v.co.z - cut) < 0.05 for v in e.verts)]
+    caps = [f for f in mesh.faces if len(f.verts) > 3]
+    assert len(caps) == 2, "one cap per thigh (Tripo bodies are all triangles, caps are n-gons)"
+    assert all(f.normal.z < -0.5 for f in caps), "caps face down, out of the stump"
+    mesh.free()
+    assert not any(name.startswith(tripo_crawler.LEGS) for name in groups.values())

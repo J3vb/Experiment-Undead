@@ -177,11 +177,20 @@ tween. Checked by the existing benchmark job (24 zombies).
 
 ### Step 3: Delete the code-built zombies
 
-- Built together with step 2 (PR for step 2): once the Crawler was Tripo, every code-built zombie test lost its
-  subject, so splitting would have left dead tests for one PR. Deleted `zombie_model.py`, `zombie_details.py`,
-  `zombie_finish_import.gd`, `zombie_finish.gdshader`, their tests and build_models entries, and the
-  non-baked branch of `zombie_checks.py`. Follow-up: the `Zombie*` finishes in `gear_import.gd` and
-  `gear.gdshader` are now unused (not touched here, they are gear files).
+- Build: remove `zombie_model.py`, `zombie_details.py`, `zombie_finish_import.gd`,
+  `assets/materials/zombie_finish.gdshader`, `test_zombie_finish.gd`, the zombie cases in
+  `test_gear_import.gd`, the non-baked branch of `zombie_checks.py`, their tests, the
+  `zombie_model.py` comments in `zombie_rig.gd` and `tripo_rig.py`, and the code-built
+  paths in `zombie_pose_capture.gd`; point `zombie_lineup.gd`, `zombie_review.gd` and
+  the look reference scene at the new models; update CREDITS and the model list.
+- Files: tools/assets/*, tools/zombie_*.gd, levels/look_reference/, docs/.
+- Tests: check_outputs and test_scripts_compile pass with the builder gone.
+- Done when: no code path builds a zombie in Blender; roadmap row Done.
+- Built (with step 2, one PR): once the Crawler was Tripo, every code-built zombie test lost its subject, so the
+  steps went together. Deleted the files above, the non-baked branch of `zombie_checks.py`, and the now-unused
+  `Zombie*` finishes in `gear_import.gd` / `gear.gdshader` with their tests. Checked, nothing left to change:
+  `zombie_pose_capture.gd`, `zombie_review.gd`, `zombie_lineup.gd` and `levels/look_reference/` load the zombies
+  by file name, so they show the Tripo models already.
 
 ## Acceptance
 
@@ -189,7 +198,7 @@ tween. Checked by the existing benchmark job (24 zombies).
 - [x] Head pop, blood pool, belly pulse and Bloater burst still work (tests).
 - [x] Crawler model is Tripo and its crawl poses pass the clearance test.
 - [x] No code-built zombie builder left.
-- [x] The person has seen the lineup render.
+- [x] Lineup render posted to the person in the build thread (step 1 and step 2 renders).
 
 ## Risks
 

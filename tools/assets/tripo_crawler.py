@@ -14,7 +14,7 @@ LEGS = ("thigh_", "shin_", "foot_")
 ARMS = ("upperarm_", "forearm_", "hand_")
 # Where along the thigh (hip 0, knee 1) the legs are cut.
 CUT = 0.5
-# Prone rest, from zombie_model.py's crawler: the pelvis tips forward and drops; the arms reach out on the floor.
+# Prone rest (the old code-built Crawler's numbers): the pelvis tips forward and drops; the arms reach out on the floor.
 TIP = 1.2
 SHIFT = Vector((0.0, 0.35, 0.0))
 UPPER_ARM = Vector((0.7, -0.55, -0.4))
@@ -28,6 +28,34 @@ def _dominant(obj, vertex) -> str:
     return obj.vertex_groups[best.group].name if best else ""
 
 
+def _against_rim(face, caps) -> bool:
+    """True when a cap winds the same way as the body face it meets, so its normal points into the leg."""
+    for loop in face.loops:
+        other = next((lp for lp in loop.edge.link_loops if lp.face not in caps), None)
+        if other is not None:
+            return other.vert == loop.vert
+    return False
+
+
+def _slivers(edge_of_cut: set) -> list:
+    """Loose bits the cut left behind: face islands whose every vertex sat next to a deleted one."""
+    seen, doomed = set(), []
+    for start in edge_of_cut:
+        if start in seen:
+            continue
+        island, todo = {start}, [start]
+        while todo:
+            vert = todo.pop()
+            for other in {o for face in vert.link_faces for o in face.verts}:
+                if other not in island:
+                    island.add(other)
+                    todo.append(other)
+        seen |= island
+        if island <= edge_of_cut:
+            doomed += island
+    return doomed
+
+
 def cut_legs(arm, low) -> float:
     """Deletes the leg below mid-thigh (never the hands), caps the hole; returns the cut height."""
     bones = arm.data.bones
@@ -36,10 +64,15 @@ def cut_legs(arm, low) -> float:
     mesh = bmesh.new()
     mesh.from_mesh(low.data)
     mesh.verts.ensure_lookup_table()
-    bmesh.ops.delete(mesh, geom=[mesh.verts[i] for i in doomed], context="VERTS")
-    rim = [e for e in mesh.edges if e.is_boundary and all(v.co.z < cut + 0.04 for v in e.verts)]
-    caps = bmesh.ops.holes_fill(mesh, edges=rim, sides=0)["faces"]
     uv = mesh.loops.layers.uv.active
+    assert uv is not None, "Tripo meshes carry UVs; the caps copy them from the rim"
+    doomed_verts = [mesh.verts[i] for i in doomed]
+    edge_of_cut = {o for v in doomed_verts for e in v.link_edges for o in e.verts} - set(doomed_verts)
+    bmesh.ops.delete(mesh, geom=doomed_verts, context="VERTS")
+    bmesh.ops.delete(mesh, geom=_slivers(edge_of_cut), context="VERTS")
+    rim = [e for e in mesh.edges if e.is_valid and e.is_boundary and all(v in edge_of_cut for v in e.verts)]
+    caps = bmesh.ops.holes_fill(mesh, edges=rim, sides=0)["faces"]
+    bmesh.ops.reverse_faces(mesh, faces=[face for face in caps if _against_rim(face, caps)])
     for face in caps:
         for loop in face.loops:
             other = next((lp for lp in loop.vert.link_loops if lp.face not in caps), None)
@@ -78,13 +111,11 @@ def lay_prone(arm, low) -> None:
     tip = Matrix.Translation(pivot) @ Matrix.Rotation(TIP, 4, "X") @ Matrix.Translation(-pivot)
     pelvis.matrix = Matrix.Translation(SHIFT) @ tip @ pelvis.matrix
     bpy.context.view_layer.update()
-    tripo_rig._aim(arm, arm.pose.bones["head"], Vector((0.0, 0.0, 1.0)))
+    tripo_rig.aim(arm, arm.pose.bones["head"], Vector((0.0, 0.0, 1.0)))
     for side, sign in (("L", 1.0), ("R", -1.0)):
         flip = Vector((sign, 1.0, 1.0))
-        tripo_rig._aim(arm, arm.pose.bones[f"upperarm_{side}"], UPPER_ARM * flip)
-        forearm = FOREARM.copy()
-        forearm.x *= sign
-        tripo_rig._aim(arm, arm.pose.bones[f"forearm_{side}"], forearm)
+        tripo_rig.aim(arm, arm.pose.bones[f"upperarm_{side}"], UPPER_ARM * flip)
+        tripo_rig.aim(arm, arm.pose.bones[f"forearm_{side}"], FOREARM * flip)
     drop = _lowest(low) - FLOOR_GAP
     pelvis.matrix = Matrix.Translation((0.0, 0.0, -drop)) @ pelvis.matrix
     bpy.context.view_layer.update()

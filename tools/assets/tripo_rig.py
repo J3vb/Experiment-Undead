@@ -54,7 +54,7 @@ def _targets() -> dict:
     return targets
 
 
-def _aim(arm, pbone, world_dir: Vector) -> None:
+def aim(arm, pbone, world_dir: Vector) -> None:
     """Turns a pose bone about its head so it points along `world_dir`."""
     to_arm = arm.matrix_world.to_3x3().inverted()
     current = pbone.matrix.to_3x3() @ Vector((0.0, 1.0, 0.0))
@@ -120,7 +120,7 @@ def a_pose(arm, meshes: list) -> None:
         for part in ("arm", "forearm"):
             pbone = bones.get(f"{word.lower()}{part}")
             if pbone is not None:
-                _aim(arm, pbone, direction)
+                aim(arm, pbone, direction)
         _turn_thumb_up(arm, bones, word.lower(), direction)
         _curl_fingers(arm, bones, word.lower(), direction)
     for obj in meshes:
