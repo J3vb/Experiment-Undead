@@ -23,6 +23,19 @@ MATS = [
     "iron",
 ]
 SCENES = ["street_lamp", "wall_lantern", "signpost"]
+
+
+def _vendors() -> dict:
+    """Stall sign -> vendor id, read from the `stall` field of each content/vendors/<id>.tres."""
+    found = {}
+    for path in sorted((ROOT / "content/vendors").glob("*.tres")):
+        for row in path.read_text().splitlines():
+            if row.startswith("stall = "):
+                found[row.split('"')[1]] = path.stem
+    return found
+
+
+VENDORS = _vendors()
 MARKET = ["stall_frame", "stall_sign", "missions_board"]
 GATE = ["banner", "floodlight"]
 CAMP = [
@@ -66,13 +79,16 @@ STALLS = {
 STALL_X = -6.1
 STALL_PITCH = 4.4
 STALL_SOUTH_Z = -13.8
+KEEPER_REACH_PAST = 0.25  # the keeper's talk area sticks out this far past the stall's collider front
 # Stall model -> back shift (z, so every back lines up with the frame's), sign board (bottom y, front z),
-# hanging lantern spot or None, colliders in the model's own space (front +Z): (centre, size).
+# hanging lantern spot or None, colliders in the model's own space (front +Z): (centre, size), and the keeper
+# spot (z, lift): the Tripo stalls are packed to chest height, so their keeper stands inside on a hidden step.
 STALL_MODELS = {
     "stall_frame": {
         "shift": 0.0,
         "sign": (2.45, 1.75),
         "lantern": (-1.85, 1.95, 1.5),
+        "keeper": (0.0, 0.0),
         "blocks": [
             ((0, 0.5, 1.05), (3.9, 1.0, 0.76)),
             ((0, 1.3, -1.31), (3.9, 2.6, 0.12)),
@@ -83,18 +99,21 @@ STALL_MODELS = {
         "shift": 0.66,
         "sign": (2.0, 1.78),
         "lantern": None,
+        "keeper": (0.1, 0.3),
         "blocks": [((0, 1.3, -0.22), (4.1, 2.6, 3.56))],
     },
     "stall_gunsmith": {
         "shift": 0.25,
         "sign": (2.1, 1.62),
         "lantern": None,
+        "keeper": (-0.2, 0.2),
         "blocks": [((0, 1.3, -0.09), (4.1, 2.6, 2.8))],
     },
     "stall_trader": {
         "shift": -0.07,
         "sign": (2.0, 1.35),
         "lantern": None,
+        "keeper": (0.35, 0.3),
         "blocks": [((0, 1.3, 0.02), (4.2, 2.6, 1.6))],
     },
 }
@@ -534,6 +553,14 @@ def _stall(k: int, name: str) -> None:
     for b, (centre, size) in enumerate(spec["blocks"]):
         collider(f"{tag}Block{b}", "Market", _on_lodge(at, centre), size, LODGE_YAW)
     lit(f"{tag}Light", "Market", _on_lodge(at, (0, 2.3, sign_z + 0.6)), 1.8, 6.0)
+    if name in VENDORS:
+        keeper_z, lift = spec["keeper"]
+        reach = max(c[2] + size[2] / 2 for c, size in spec["blocks"]) - keeper_z + KEEPER_REACH_PAST
+        nodes.append(
+            f'[node name="{tag}Keeper" parent="Market" instance=ExtResource("vendor")]\n'
+            f"transform = {xform(_on_lodge(at, (0, lift, keeper_z)), basis_rot(LODGE_YAW))}\n"
+            f'data = ExtResource("vendor_{VENDORS[name]}")\nreach = {fmt(reach)}\n'
+        )
     if spec["lantern"]:
         inst(f"{tag}Lantern", "Market", _on_lodge(at, spec["lantern"]), "lantern_hanging", LODGE_YAW)
 
@@ -675,6 +702,11 @@ def header() -> str:
     ]
     ext += [f'[ext_resource type="Material" path="res://levels/materials/{m}.tres" id="{m}"]' for m in MATS]
     ext.append('[ext_resource type="PackedScene" path="res://systems/hub/deploy_board.tscn" id="deploy_board"]')
+    ext.append('[ext_resource type="PackedScene" path="res://systems/hub/vendor.tscn" id="vendor"]')
+    ext += [
+        f'[ext_resource type="Resource" path="res://content/vendors/{v}.tres" id="vendor_{v}"]'
+        for v in sorted(VENDORS.values())
+    ]
     ext.append(
         '[ext_resource type="PackedScene" path="res://systems/hub/deploy_vote_panel.tscn" id="deploy_vote_panel"]'
     )
