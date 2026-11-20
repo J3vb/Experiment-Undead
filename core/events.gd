@@ -15,6 +15,12 @@ signal round_ended(round_number: int)
 ## Countdown to the next round started.
 ## Peers: every peer. The server emits it; WaveDirector relays it to clients and late joiners.
 signal intermission_started(next_round: int, duration: float)
+## The lights failed: a Blackout round (or the debug console) turned the facility dark.
+## Peers: every peer. The server emits it; WaveDirector relays it to clients and late joiners.
+signal blackout_started(round_number: int)
+## The lights came back after a Blackout.
+## Peers: every peer. The server emits it; WaveDirector relays it to clients.
+signal blackout_ended(round_number: int)
 
 ## An enemy entered the world.
 ## Peers: every peer (clients when the spawner replicates the zombie).
