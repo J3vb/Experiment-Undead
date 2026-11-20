@@ -15,6 +15,10 @@ GUT (Godot Unit Test) 9.7.1, `addons/gut/`
 Butch Wesley and contributors
 https://github.com/bitwes/Gut · MIT
 
+Glower zombie, `assets/models/zombies/glower.glb`
+Made for this project with Tripo AI (image to 3D, paid plan)
+https://www.tripo3d.ai · Owned by this project, commercial use
+
 Lantern Post market stalls, `assets/models/town_large/stall_*.glb`
 Made for this project with Tripo AI (image to 3D, paid plan)
 https://www.tripo3d.ai · Owned by this project, commercial use
