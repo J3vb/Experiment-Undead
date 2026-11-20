@@ -136,3 +136,11 @@ func test_row_and_column_are_unique_inside_a_branch() -> void:
 		var key: String = "%s/%d/%d" % [node.branch, node.row, node.column]
 		assert_false(seen.has(key), "%s shares its place with %s" % [node_id, seen.get(key, &"")])
 		seen[key] = node_id
+
+
+func test_every_skill_has_its_line_icon() -> void:
+	for node_id: StringName in Content.ids(&"skills"):
+		var node: SkillNodeData = Content.get_item(&"skills", node_id) as SkillNodeData
+		assert_not_null(node.icon, String(node_id) + " has an icon")
+		if node.icon:
+			assert_eq(node.icon.resource_path, "res://assets/ui/skills/%s.svg" % node_id)

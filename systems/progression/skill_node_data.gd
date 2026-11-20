@@ -19,3 +19,5 @@ enum Rule { NONE, DEAD_CENTER, EXECUTION_LINE, LAST_STAND, UNDYING, BARGAIN_HUNT
 ## How per_rank joins the stack: "increased" (percent, adds), "more" (percent, multiplies) or "flat" (units).
 @export var op: String = "increased"
 @export var rule: Rule = Rule.NONE
+## White line icon on the Research tile (assets/ui/skills/<id>.svg), tinted at run time.
+@export var icon: Texture2D

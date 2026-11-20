@@ -57,7 +57,7 @@ func test_adding_ranks_spends_points_and_shows_on_the_tile() -> void:
 
 func test_a_locked_keystone_takes_no_click_and_says_why() -> void:
 	var tile: SkillTile = screen.tiles[&"dead_center"]
-	assert_true(tile.text.contains("Needs 8 in branch"))
+	assert_true(tile.text.contains("Locked (8)"))
 	tile.pressed.emit()
 	assert_false(screen.pending.has(&"dead_center"))
 
@@ -112,3 +112,55 @@ func test_over_budget_save_shows_reset_message() -> void:
 	assert_true(screen.status.text.contains("Reset all"))
 	screen.add_rank(&"deep_pockets")
 	assert_false(screen.pending.has(&"deep_pockets"))
+
+
+func test_tiles_show_owned_open_and_locked_states() -> void:
+	screen.add_rank(&"steady_hands")
+	assert_eq(screen.tiles[&"steady_hands"].state, &"owned")
+	assert_eq(screen.tiles[&"quick_draw"].state, &"open")
+	assert_eq(screen.tiles[&"dead_center"].state, &"locked")
+	assert_eq(screen.tiles[&"steady_hands"].icon, (Content.get_item(&"skills", &"steady_hands") as SkillNodeData).icon)
+	var owned: StyleBoxFlat = screen.tiles[&"steady_hands"].get_theme_stylebox(&"normal") as StyleBoxFlat
+	assert_eq(owned.border_color, SkillTile.GREEN, "owned skills glow bio-green")
+	assert_gt(
+		screen.tiles[&"dead_center"].custom_minimum_size.x,
+		screen.tiles[&"steady_hands"].custom_minimum_size.x,
+		"keystones are drawn larger"
+	)
+
+
+func test_links_join_each_row_to_the_next_and_follow_the_gate() -> void:
+	var into_keystone: Dictionary = {}
+	for link: Dictionary in screen.links.links:
+		if (link["to"] as SkillTile).node.id == &"dead_center":
+			into_keystone = link
+	assert_false(into_keystone.is_empty(), "a link runs into the Marksman keystone")
+	var sources: Array[StringName] = []
+	for tile: SkillTile in into_keystone["from_row"]:
+		sources.append(tile.node.id)
+	assert_eq(sources, [&"deep_pockets"] as Array[StringName], "from the row before it")
+	assert_false(screen.links.reachable(into_keystone))
+	for i: int in 8:
+		screen.add_rank([&"steady_hands", &"quick_draw", &"weak_spot"][i % 3])
+	assert_true(screen.links.reachable(into_keystone), "8 points in Marksman open the keystone")
+	var lane_firsts: int = 0
+	for link: Dictionary in screen.links.links:
+		if (link["to"] as SkillTile).node.row == 0:
+			lane_firsts += 1
+	assert_eq(lane_firsts, 0, "nothing runs into the first row")
+
+
+func test_reduce_motion_holds_the_tank_glow_still() -> void:
+	var settings: Dictionary = Settings._values.duplicate(true)
+	var config_path: String = Settings.config_path
+	Settings.config_path = "user://test_research_screen_settings.cfg"
+	Settings.set_value(&"accessibility", &"reduce_motion", true)
+	var still: ResearchScreen = SCREEN.instantiate() as ResearchScreen
+	add_child_autofree(still)
+	await wait_process_frames(3)
+	assert_almost_eq(still.glow.modulate.a, 0.8, 0.001)
+	Settings._values = settings
+	Settings.config_path = config_path
+	Settings._apply_all()
+	if FileAccess.file_exists("user://test_research_screen_settings.cfg"):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path("user://test_research_screen_settings.cfg"))

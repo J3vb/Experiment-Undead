@@ -17,6 +17,8 @@ var _branch_labels: Dictionary[StringName, Label] = {}
 var _warned: bool = false
 
 @onready var lanes: VBoxContainer = %Lanes
+@onready var links: SkillLinks = %Links
+@onready var glow: TextureRect = %TankGlow
 @onready var points_label: Label = %Points
 @onready var detail: Label = %Detail
 @onready var status: Label = %Status
@@ -24,6 +26,8 @@ var _warned: bool = false
 
 func _ready() -> void:
 	_build_lanes()
+	lanes.resized.connect(links.queue_redraw)
+	_pulse_glow()
 	%Confirm.pressed.connect(confirm)
 	%Reset.pressed.connect(reset_all)
 	%Back.pressed.connect(back)
@@ -50,14 +54,16 @@ func first_tile() -> SkillTile:
 
 
 func _build_lanes() -> void:
+	var all_rows: Array = []
 	for branch: StringName in BRANCHES:
 		var lane: HBoxContainer = HBoxContainer.new()
 		lane.name = String(branch)
-		lane.add_theme_constant_override(&"separation", 24)
+		lane.add_theme_constant_override(&"separation", 36)
 		lanes.add_child(lane)
 		var label: Label = Label.new()
-		label.custom_minimum_size = Vector2(200, 0)
+		label.custom_minimum_size = Vector2(160, 0)
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		label.add_theme_color_override(&"font_color", SkillTile.TEAL)
 		lane.add_child(label)
 		_branch_labels[branch] = label
 		var rows: Array[VBoxContainer] = []
@@ -70,6 +76,21 @@ func _build_lanes() -> void:
 			var node: SkillNodeData = Content.get_item(&"skills", node_id) as SkillNodeData
 			if node.branch == branch:
 				_add_tile(node, rows[clampi(node.row, 0, ROWS - 1)])
+		var lane_rows: Array = []
+		for column: VBoxContainer in rows:
+			lane_rows.append(column.get_children())
+		all_rows.append(lane_rows)
+	links.set_rows(all_rows)
+
+
+## The Fenlight tank glow breathes slowly; Reduce motion holds it still.
+func _pulse_glow() -> void:
+	glow.modulate.a = 0.8
+	if Settings.get_value(&"accessibility", &"reduce_motion"):
+		return
+	var tween: Tween = create_tween().set_loops()
+	tween.tween_property(glow, "modulate:a", 1.0, 2.4).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(glow, "modulate:a", 0.6, 2.4).set_trans(Tween.TRANS_SINE)
 
 
 func _add_tile(node: SkillNodeData, column: VBoxContainer) -> void:
@@ -78,6 +99,7 @@ func _add_tile(node: SkillNodeData, column: VBoxContainer) -> void:
 	tile.focus_entered.connect(_show_detail.bind(node.id))
 	tile.mouse_entered.connect(tile.grab_focus)
 	tile.gui_input.connect(_tile_input.bind(node.id))
+	tile.item_rect_changed.connect(links.queue_redraw)
 	column.add_child(tile)
 	var index: int = 0
 	while index < column.get_child_count() - 1:
@@ -163,6 +185,7 @@ func _refresh() -> void:
 			SkillTree.points_in_branch(pending, tile.node.branch) - rank >= tile.node.branch_points_needed
 		)
 		tile.show_rank(rank, not gate_met)
+	links.queue_redraw()
 	%Confirm.disabled = pending == saved
 	var focused: Control = get_viewport().gui_get_focus_owner() if is_inside_tree() else null
 	if focused is SkillTile:
