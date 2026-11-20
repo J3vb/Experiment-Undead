@@ -84,6 +84,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-25 | Mantle | #120 | F-11 | [ready](plans/mantle.md) | M | Building |
 | F-26 | More power-ups in the drop deck | #118 | F-11 | [needed](plans/more-power-ups.md) | M | Done |
 | F-27 | Crawler | #121 | F-24 | needed | M | Todo |
+| F-86 | Existing zombies (Shambler, Crawler, Bloater) to the person's Tripo models, same poses, hit zones and gore | - | F-28 step 1 | [review](plans/tripo-zombies.md) | M | Planning |
 | F-28 | Blackout rounds and Glowers | #122 | F-11 | [ready](plans/blackout-glowers.md) | M | Ready |
 | F-29 | Stalker | #123 | F-11, F-28 | [ready](plans/stalker.md) | L | Ready |
 | F-30 | Brute | #124 | F-11, F-29 | [ready](plans/brute.md) | L | Ready |
