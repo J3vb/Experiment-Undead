@@ -4,6 +4,7 @@ extends GutTest
 
 const WALKER: String = "res://content/enemies/zombie_walker.tres"
 const BLOATER: String = "res://content/enemies/zombie_bloater.tres"
+const GLOWER: String = "res://content/enemies/zombie_glower.tres"
 
 
 func _spawn(path: String) -> Zombie:
@@ -48,6 +49,25 @@ func test_head_zone_follows_the_head_bone_when_it_turns() -> void:
 	assert_almost_eq(zombie.head_zone.global_position.distance_to(expected.origin), 0.0, 0.001)
 	assert_false(zombie.head_zone.global_basis.is_equal_approx(before.basis), "head zone turns with the head bone")
 	assert_gt(zombie.head_zone.global_position.distance_to(before.origin), 0.01, "head center follows the turn")
+
+
+func test_glower_tripo_model_has_every_posed_bone_and_a_head_zone() -> void:
+	var zombie: Zombie = _spawn(GLOWER)
+	zombie.set_physics_process(false)
+	for part: StringName in ZombieRig.PARTS:
+		assert_true(zombie.visual.has_part(part), "Glower model has " + part)
+	assert_eq(_skeleton(zombie.visual).get_bone_count(), 22, "Glower shares the character skeleton")
+	assert_eq(zombie.head_zone.get_parent(), zombie.visual.head, "head zone is on the Glower's head center")
+	zombie.visual.position = Vector3.ZERO
+	var height: float = zombie.head_zone.global_position.y - zombie.global_position.y
+	assert_between(height, 1.4, 1.75, "head zone sits at the 1.7 m Glower's head height")
+	var forward: float = (zombie.head_zone.global_position - zombie.global_position).dot(-zombie.global_basis.z)
+	assert_gt(forward, 0.0, "Glower faces the zombie's forward (-Z)")
+	var mesh: MeshInstance3D = zombie.visual.find_child("Body", true, false) as MeshInstance3D
+	var glow: ShaderMaterial = mesh.mesh.surface_get_material(0) as ShaderMaterial
+	assert_not_null(glow, "import gives the Glower its vein-glow material")
+	assert_eq(glow.shader.resource_path, "res://assets/materials/glower_veins.gdshader")
+	assert_not_null(glow.get_shader_parameter(&"albedo_tex"), "glow reads the baked albedo")
 
 
 func test_walk_swings_legs_in_opposite_directions() -> void:

@@ -3,9 +3,35 @@
 import character_checks
 import gear_paint
 
-JOINTS = {"shambler": {}, "crawler": {}, "bloater": {}}
-TRIANGLES = {"shambler": (6_000, 8_000), "crawler": (6_000, 8_000), "bloater": (7_000, 9_000)}
+JOINTS = {"shambler": {}, "crawler": {}, "bloater": {}, "glower": {}, "stalker": {}, "brute": {}}
+TRIANGLES = {
+    "shambler": (6_000, 8_000),
+    "crawler": (6_000, 8_000),
+    "bloater": (7_000, 9_000),
+    "glower": (6_000, 9_000),
+    "stalker": (6_000, 9_000),
+    "brute": (6_000, 9_000),
+}
 FINISHES = ("ZombieSkin", "ZombieCloth", "ZombieShoe", "ZombieGlow")
+## Tripo zombies (tripo_intake.py --kind zombie): one baked mesh `Body`, eyes and pale head painted in its texture.
+BAKED = "ZombieBaked"
+
+
+def _is_baked(meshes) -> bool:
+    return any(mat and mat.name.startswith(BAKED) for obj in meshes for mat in obj.data.materials)
+
+
+def _check_baked(meshes) -> list:
+    """One `Body` mesh with only the ZombieBaked material. The head-lighter and zone rules are skipped: the head
+    tone is in the baked texture and zombies have no dye zones (DECISIONS "Gear looks")."""
+    errors = []
+    if [obj.name for obj in meshes] != ["Body"]:
+        errors.append(f"baked zombies are one mesh named 'Body', found {sorted(obj.name for obj in meshes)}")
+    for obj in meshes:
+        for material in obj.data.materials:
+            if material is None or not material.name.startswith(BAKED):
+                errors.append(f"{obj.name}: baked zombies use only the {BAKED} material")
+    return errors
 
 
 def _weights(obj, vertex):
@@ -75,7 +101,10 @@ def check(objects: list, stem: str) -> list:
     armatures = [obj for obj in objects if obj.type == "ARMATURE"]
     errors = character_checks._check_skin(meshes, armatures, "characters")
     errors += character_checks._check_facing(objects, armatures)
-    errors += _check_materials(meshes) + _check_special_parts(nodes, stem)
+    if _is_baked(meshes):
+        errors += _check_baked(meshes)
+    else:
+        errors += _check_materials(meshes) + _check_special_parts(nodes, stem)
     triangles = sum(len(face.vertices) - 2 for obj in meshes for face in obj.data.polygons)
     low, high = TRIANGLES[stem]
     if not low <= triangles <= high:
