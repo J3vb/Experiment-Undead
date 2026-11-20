@@ -25,7 +25,16 @@ func test_game_build_runs_as_server_and_stops_on_its_stop_file() -> void:
 	var previous_ready_file: String = OS.get_environment("EU_READY_FILE")
 	OS.set_environment("EU_READY_FILE", ProjectSettings.globalize_path(READY_FILE))
 	var args: PackedStringArray = ["--headless", "--path", ProjectSettings.globalize_path("res://")]
-	args.append_array(ServerHost.server_args(PORT, 3, ProjectSettings.globalize_path(STOP_FILE)).slice(1))
+	# The separate launcher's Host a server passes the same arguments (launcher/core/src/host.rs).
+	args.append_array(
+		[
+			"--",
+			"--server",
+			"--port=%d" % PORT,
+			"--max-players=3",
+			"--stop-file=" + ProjectSettings.globalize_path(STOP_FILE)
+		]
+	)
 	_pid = OS.create_process(OS.get_executable_path(), args)
 	if previous_ready_file.is_empty():
 		OS.unset_environment("EU_READY_FILE")

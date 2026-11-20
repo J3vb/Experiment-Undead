@@ -27,11 +27,16 @@ pub fn game_exe_name() -> &'static str {
 pub struct Installer {
     /// Folder that holds one folder per installed version.
     pub versions_dir: PathBuf,
+    /// Versions that are running (a hosted server) and must not be pruned.
+    pub in_use: Vec<String>,
 }
 
 impl Installer {
     pub fn new(versions_dir: PathBuf) -> Self {
-        Self { versions_dir }
+        Self {
+            versions_dir,
+            in_use: Vec::new(),
+        }
     }
 
     /// Complete version folders (a `.tmp` folder is a failed install), newest first.
@@ -88,7 +93,7 @@ impl Installer {
             let _ = fs::remove_dir_all(&temp_dir);
             return Err(format!("Could not finish installing {version}."));
         }
-        self.prune(&[]);
+        self.prune(&self.in_use);
         Ok(final_dir)
     }
 

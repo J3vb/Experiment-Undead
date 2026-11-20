@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="MantleRules" format=3]
+
+[ext_resource type="Script" path="res://systems/player/mantle_rules.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+min_height = 0.5
+max_height = 1.2
+reach = 0.45
+base_time = 0.22
+time_per_metre = 0.18

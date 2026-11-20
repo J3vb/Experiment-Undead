@@ -48,3 +48,6 @@ mesh = ExtResource("reticle_quad")
 [node name="HandLeft" parent="." instance=ExtResource("hand_left")]
 
 [node name="SleeveLeft" parent="." instance=ExtResource("sleeve_left")]
+
+[node name="CharmMount" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.044, 0.012, -0.303)

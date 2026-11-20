@@ -69,11 +69,27 @@ jobs:
       - name: Tests
         run: cargo test --workspace
 
-      - name: Build the launcher exe
-        run: cargo build --release -p experiment-undead-launcher
+      - name: Build the setup exe (unsigned updater files are only made on release tags)
+        run: npx -y @tauri-apps/cli@2.12.6 build --bundles nsis --config '{"bundle":{"createUpdaterArtifacts":false}}'
+
+      - name: Install, check and uninstall the setup exe quietly
+        shell: pwsh
+        run: |
+          $setup = Get-ChildItem target/release/bundle/nsis/*-setup.exe | Select-Object -First 1
+          Start-Process $setup.FullName -ArgumentList "/S" -Wait
+          $dir = Join-Path $env:LOCALAPPDATA "Fenlight Launcher"
+          $exe = Join-Path $dir "Fenlight-Launcher.exe"
+          if (-not (Test-Path $exe)) { Get-ChildItem $env:LOCALAPPDATA -Recurse -Filter *.exe -Depth 2 | Select-Object FullName; throw "launcher exe not installed at $exe" }
+          $menu = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs"
+          $link = Get-ChildItem $menu -Recurse -Filter "Fenlight Launcher*.lnk" | Select-Object -First 1
+          if (-not $link) { throw "no Start menu shortcut in $menu" }
+          Start-Process (Join-Path $dir "uninstall.exe") -ArgumentList "/S" -Wait
+          Start-Sleep -Seconds 5
+          if (Test-Path $exe) { throw "launcher exe still there after uninstall" }
+          Write-Output "Setup installed $exe with shortcut $($link.Name), uninstall removed it"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: experiment-undead-launcher-windows
-          path: launcher/target/release/experiment-undead-launcher.exe
+          name: fenlight-launcher-setup
+          path: launcher/target/release/bundle/nsis/*-setup.exe
           retention-days: 7

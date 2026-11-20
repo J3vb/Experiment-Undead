@@ -1,5 +1,5 @@
-## The owner's equipped gear and item guns, sent to the server on spawn and every Pack equip.
-## The server checks the loadout and rebuilds the player's gear stats and item guns from it.
+## The owner's equipped gear, item guns and skill ranks, sent to the server on spawn and every Pack equip.
+## The server checks the loadout and rebuilds the player's stats and item guns from it.
 ## Only the first loadout of a Player heals up to the new max health; later ones (mid-run swaps) only cap it.
 class_name LoadoutSync
 extends Node
@@ -27,14 +27,17 @@ func send_loadout() -> void:
 	for weapon: Weapon in _player.weapons.weapons:
 		if weapon.item:
 			guns.append(weapon.item.data)
+	var skills: Dictionary = {}
+	for node_id: StringName in _player.skill_ranks:
+		skills[String(node_id)] = _player.skill_ranks[node_id]
 	if multiplayer.is_server():
-		_apply_loadout(gear, guns)
+		_apply_loadout(gear, guns, _player.skill_ranks)
 	else:
-		submit_loadout.rpc_id(1, gear, guns)
+		submit_loadout.rpc_id(1, gear, guns, skills)
 
 
 @rpc("any_peer", "call_remote", "reliable")
-func submit_loadout(new_gear: Array, guns: Array) -> void:
+func submit_loadout(new_gear: Array, guns: Array, skills: Dictionary) -> void:
 	if not multiplayer.is_server() or multiplayer.get_remote_sender_id() != _player.get_multiplayer_authority():
 		return
 	var sender: int = multiplayer.get_remote_sender_id()
@@ -42,11 +45,15 @@ func submit_loadout(new_gear: Array, guns: Array) -> void:
 	if not reason.is_empty():
 		Log.warn(&"net", &"loadout_rejected", {"peer": sender, "reason": reason})
 		return
+	var skill_reason: String = SkillEffects.ranks_problem(skills)
+	if not skill_reason.is_empty():
+		Log.warn(&"net", &"skills_rejected", {"peer": sender, "reason": skill_reason})
+		return
 	var typed_gear: Array[Dictionary] = []
 	typed_gear.assign(new_gear)
 	var typed_guns: Array[Dictionary] = []
 	typed_guns.assign(guns)
-	_apply_loadout(typed_gear, typed_guns)
+	_apply_loadout(typed_gear, typed_guns, SkillEffects.ranks_from(skills))
 
 
 func _loadout_problem(new_gear: Array, guns: Array) -> String:
@@ -76,9 +83,10 @@ func _gear_problem(new_gear: Array) -> String:
 	return ""
 
 
-## Server: rebuilds the player's gear stats and item guns from scratch.
-func _apply_loadout(new_gear: Array[Dictionary], guns: Array[Dictionary]) -> void:
+## Server: rebuilds the player's stats (gear, then skills) and item guns from scratch.
+func _apply_loadout(new_gear: Array[Dictionary], guns: Array[Dictionary], ranks: Dictionary[StringName, int]) -> void:
 	gear = new_gear
+	_player.skill_ranks = ranks
 	_player.equip_gear(new_gear, not _applied)
 	_applied = true
 	_player.item_guns.clear()

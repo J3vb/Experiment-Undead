@@ -1,4 +1,4 @@
-# Experiment Undead: Sound Design
+# Fenlight: Sound Design
 
 Source: copy of the design doc as of Nov 14, 2026. Where this file and the code differ, the code and `docs/DECISIONS.md` win.
 

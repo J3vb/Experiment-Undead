@@ -47,3 +47,19 @@ func test_damage_aim_replays_from_the_same_session_seed() -> void:
 			assert_eq(-PlayerCamera.aim_of(player.camera).z, aim, "hitscan sees the same aim direction")
 			assert_eq(session.rng.state, final_state, "later gameplay receives the same random stream")
 	assert_ne(aim, Vector3.FORWARD, "the replay assertion includes an actual aiming change")
+
+
+func test_server_damage_reduction_shrinks_the_hit_but_not_the_shared_info() -> void:
+	var vest: Dictionary = {
+		"v": 1,
+		"uid": "dr_vest",
+		"base": "vest_medium",
+		"rar": "rare",
+		"ilvl": 30,
+		"aff": [["damage_reduction", 5, 1.0]]
+	}
+	player.equip_gear([vest])
+	var info: DamageInfo = DamageInfo.create(50.0, null)
+	player.take_damage(info)
+	assert_almost_eq(player.health.current, 55.0, 0.0001, "10% off a 50 hit")
+	assert_eq(info.amount, 50.0, "other receivers of the same hit see the full amount")

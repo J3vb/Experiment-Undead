@@ -41,3 +41,17 @@ fn garbage_entries_are_ignored() {
     let list: Vec<Value> = serde_json::from_str(r#"[1, "x", {"tag_name": 5}, {"tag_name": "v1.0.0"}]"#).unwrap();
     assert!(newest(&list, Channel::Test, WINDOWS_SUFFIX).is_none());
 }
+
+#[test]
+fn launcher_manifest_follows_the_channel() {
+    use launcher_core::feed::launcher_manifest_url;
+    assert_eq!(
+        launcher_manifest_url(&releases(), Channel::Stable).as_deref(),
+        Some("https://example.invalid/latest-0.1.1.json")
+    );
+    assert_eq!(
+        launcher_manifest_url(&releases(), Channel::Test).as_deref(),
+        Some("https://example.invalid/latest-0.2.0-test.1.json")
+    );
+    assert!(launcher_manifest_url(&releases()[2..], Channel::Test).is_none());
+}

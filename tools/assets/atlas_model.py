@@ -229,6 +229,4 @@ def build(m) -> None:
     front_parts(m, receiver, metal, black, olive)
     stock_parts(m, receiver, metal, black, olive)
     moving_parts(m, receiver, metal, black, olive)
-    for side in (-1, 1):
-        strip = g.slab("Inlay", g.rounded(-0.13, 0.052, 0.13, 0.054, 0.0008), 0.001, metal, x=side * 0.029)
-        m.join_into(receiver, [g.mark_inlay(strip)])
+    g.add_inlays(m, receiver, g.rounded(-0.13, 0.052, 0.13, 0.054, 0.0008), 0.001, 0.029, metal)

@@ -29,7 +29,7 @@ func interact(_player: Player, _facts: Dictionary = {}) -> void:
 
 
 ## Seconds between uses while interact is held; 0 means one use per press.
-func hold_interval() -> float:
+func hold_interval(_player: Player) -> float:
 	return 0.0
 
 

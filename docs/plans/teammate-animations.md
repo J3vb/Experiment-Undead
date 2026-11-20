@@ -107,9 +107,9 @@ gameplay system, only the player body, its sync and the gun data.
 | systems/player/body_animator.gd | new | `BodyAnimator`: builds the AnimationTree, reads player state, sets its parameters |
 | systems/player/aim_pitch.gd | new | `AimPitch` (`SkeletonModifier3D`): bends upper spine and head by the look pitch after the clips |
 | systems/player/player.tscn | changed | BodyAnimator under Body; PoseSync gets three more properties (step 2, 3) |
-| systems/player/player.gd | changed | Owner fills `held_weapon` and `is_reloading` each physics tick (step 3) |
-| systems/gear/gear_rig.gd | changed | Arm lowering and head pitch removed (clips and AimPitch own them) |
-| systems/ui/character_screen.gd | changed | Plays the `idle` clip so the preview is not in A-pose (step 2) |
+| systems/player/player.gd | changed | Owner fills `held_weapon` and `is_reloading` each physics tick (step 3; as built these live on `Body/BodyAnimator` as `held_weapon` and `reload_time`) |
+| systems/gear/gear_rig.gd | changed | Head pitch removed (AimPitch owns it); as built the arm lowering stays for previews |
+| systems/ui/character_screen.gd | changed | Plays the `idle` clip so the preview is not in A-pose (step 2; as built previews keep GearRig's arm lowering instead) |
 | systems/net/player_state_sync.gd | changed | `_present()` stops overwriting `is_crouching` (step 2) |
 | systems/weapons/weapon_data.gd | changed | New `world_model: PackedScene` |
 | content/weapons/*.tres | changed | `world_model` set to each gun's .glb |
@@ -130,6 +130,9 @@ Autoloads, managers or base classes added: none. `AimPitch` extends Godot's
   - `held_weapon: StringName`, default `&""` (new, step 3): content id of the
     gun in hand
   - `is_reloading: bool`, default false (new, step 3)
+  - As built: both are synced as `Body/BodyAnimator:held_weapon` and
+    `BodyAnimator:reload_time` (a float, so the clip stretches to the real
+    reload), as `docs/MULTIPLAYER.md` describes.
 - Clip names (constants in BodyAnimator and player_clips.py, checked against
   each other by the content test): `idle`, `walk_fwd`, `walk_back`,
   `walk_left`, `walk_right`, `run`, `crouch_idle`, `crouch_walk`,
@@ -197,7 +200,9 @@ the soak machine; step 2 measures it with the existing `--print-fps` run.
   arm lowering is deleted. The character screen (`systems/ui/character_screen.gd`,
   which uses `player.glb` and GearRig without the Player scene) plays the
   `idle` clip on the model's AnimationPlayer instead, so it does not fall back
-  to the A-pose. PoseSync adds `is_crouching`; protocol bump. Remove the
+  to the A-pose. (As built: GearRig keeps its arm lowering for previews, tested
+  in `test_gear_rig.gd`, and the previews play no `idle` clip.) PoseSync adds
+  `is_crouching`; protocol bump. Remove the
   second crouch writer: `PlayerStateSync._present()` sets
   `_player.is_crouching = _player.is_downed` on every snapshot, which would
   clear a teammate's synced crouch whenever their health or points change.
@@ -226,7 +231,8 @@ the soak machine; step 2 measures it with the existing `--print-fps` run.
   `hand_R` with a BoneAttachment3D (swaps on change; when downed the held gun
   is the downed sidearm, so no special case), adds an upper-body
   OneShot for `fire` (filter: spine and arm bones) and a Blend2 for
-  `reload`. `RemoteShotEffects` calls `fire()` on the player's animator.
+  `reload` (as built: reload is a one-shot request with a speed scale from
+  `reload_time`). `RemoteShotEffects` calls `fire()` on the player's animator.
   PoseSync adds `held_weapon` and `is_reloading`; protocol bump. Close out:
   roadmap row Done, DECISIONS entry, MULTIPLAYER "Who owns what" row.
 - Files: systems/weapons/weapon_data.gd, content/weapons/*.tres,

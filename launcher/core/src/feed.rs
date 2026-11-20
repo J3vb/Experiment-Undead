@@ -11,7 +11,9 @@ pub const API_URL: &str = "https://api.github.com/repos/J3vb/Experiment-Undead/r
 pub const WINDOWS_SUFFIX: &str = "-windows.zip";
 pub const LINUX_SUFFIX: &str = "-linux.zip";
 const DIGEST_PREFIX: &str = "sha256:";
-pub const USER_AGENT: &str = "ExperimentUndead-launcher";
+pub const USER_AGENT: &str = "Fenlight-launcher";
+/// The launcher's update manifest, attached to each release next to the setup exe.
+pub const LAUNCHER_MANIFEST: &str = "latest.json";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -67,7 +69,25 @@ pub fn is_newer(version: &str, installed: &[String]) -> bool {
     installed.iter().all(|other| version::compare(version, other).is_gt())
 }
 
-fn installable(entry: &Value, channel: Channel, suffix: &str) -> Option<Release> {
+/// Download address of the launcher update manifest in the newest release on the channel that
+/// has one. Releases from before the separate launcher have none and are skipped.
+pub fn launcher_manifest_url(releases: &[Value], channel: Channel) -> Option<String> {
+    releases
+        .iter()
+        .filter_map(|entry| {
+            let version = release_version(entry, channel)?;
+            let asset = entry["assets"]
+                .as_array()?
+                .iter()
+                .find(|asset| asset["name"] == LAUNCHER_MANIFEST)?;
+            Some((version, asset["browser_download_url"].as_str()?.to_string()))
+        })
+        .max_by(|a, b| version::compare(&a.0, &b.0))
+        .map(|(_, url)| url)
+}
+
+/// The release's version when the channel may use it: no drafts, stable sees no pre-releases.
+fn release_version(entry: &Value, channel: Channel) -> Option<String> {
     let prerelease = entry["prerelease"].as_bool().unwrap_or(false);
     if entry["draft"].as_bool().unwrap_or(false) || (channel == Channel::Stable && prerelease) {
         return None;
@@ -76,6 +96,11 @@ fn installable(entry: &Value, channel: Channel, suffix: &str) -> Option<Release>
     if !version::is_release_version(&version) || (channel == Channel::Stable && version.contains('-')) {
         return None;
     }
+    Some(version)
+}
+
+fn installable(entry: &Value, channel: Channel, suffix: &str) -> Option<Release> {
+    let version = release_version(entry, channel)?;
     let asset = entry["assets"].as_array()?.iter().find(|asset| {
         let name = asset["name"].as_str().unwrap_or("");
         let digest = asset["digest"].as_str().unwrap_or("");

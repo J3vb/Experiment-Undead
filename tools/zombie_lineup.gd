@@ -1,4 +1,4 @@
-## Renders the code-built zombies side by side under the interior look and saves
+## Renders the zombies side by side under the interior look and saves
 ## screenshots/zombie_lineup.png, to compare with the style guide's lineup.
 ##   xvfb-run -s "-screen 0 1600x900x24" godot --path . --rendering-driver vulkan -s res://tools/zombie_lineup.gd
 extends SceneTree
@@ -6,7 +6,7 @@ extends SceneTree
 const STAGE: Script = preload("res://tools/lineup_stage.gd")
 const LOOK: String = "res://levels/looks/halcyon_interior.tres"
 const FLOOR: String = "res://levels/materials/wet_floor.tres"
-const ZOMBIES: Array[String] = ["shambler", "crawler", "bloater"]
+const ZOMBIES: Array[String] = ["shambler", "crawler", "bloater", "glower"]
 const OUT: String = "res://screenshots/zombie_lineup.png"
 
 
@@ -16,7 +16,7 @@ func _initialize() -> void:
 	for i: int in ZOMBIES.size():
 		var path: String = "res://assets/models/zombies/%s.glb" % ZOMBIES[i]
 		var zombie: Node3D = (load(path) as PackedScene).instantiate() as Node3D
-		zombie.position = Vector3((i - 1) * 1.6, 0, 0)
+		zombie.position = Vector3((i - 1.5) * 1.6, 0, 0)
 		zombie.rotation.y = -0.5
 		stage.add_child(zombie)
 	(STAGE.light(stage, Vector3(0, 3.2, 1.5), 3.0, Color("#CDEEE8"), 8.0) as OmniLight3D).shadow_enabled = true

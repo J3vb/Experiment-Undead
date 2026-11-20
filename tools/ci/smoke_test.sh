@@ -188,9 +188,4 @@ if [ "$host_code" -ne 0 ] || ! grep -q "Server stopped" host.log || grep -qE "$e
 fi
 rm -f host.log hostjoin.log "$stop"
 
-echo "::group::Launcher installs a newer version and refreshes the root copy"
-if ! "$(git rev-parse --show-toplevel)/tools/ci/launcher_e2e.sh" .; then
-  fail=1
-fi
-echo "::endgroup::"
 exit "$fail"

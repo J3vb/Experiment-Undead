@@ -15,6 +15,12 @@ signal round_ended(round_number: int)
 ## Countdown to the next round started.
 ## Peers: every peer. The server emits it; WaveDirector relays it to clients and late joiners.
 signal intermission_started(next_round: int, duration: float)
+## The lights failed: a Blackout round (or the debug console) turned the facility dark.
+## Peers: every peer. The server emits it; WaveDirector relays it to clients and late joiners.
+signal blackout_started(round_number: int)
+## The lights came back after a Blackout.
+## Peers: every peer. The server emits it; WaveDirector relays it to clients.
+signal blackout_ended(round_number: int)
 
 ## An enemy entered the world.
 ## Peers: every peer (clients when the spawner replicates the zombie).
@@ -72,6 +78,9 @@ signal serum_gained(player: Player, serum: SerumData)
 ## A player picked up a power-up (its effect runs on the PC that owns the guns).
 ## Peers: every peer. The server emits it; PowerUpDrops relays it to clients.
 signal power_up_collected(player: Player, power_up: PowerUpData)
+## A timed power-up (Payday) started or was reset, with seconds left; drives the HUD ring.
+## Peers: every peer. The server emits it; PowerUpDrops relays it to clients and late joiners.
+signal power_up_timer_started(power_up: PowerUpData, seconds: float)
 ## A player's shot landed on an enemy.
 ## Peers: the shooter's owner (on the claim, then again on the kill), and the
 ## server for Gravity Well hits it applies.

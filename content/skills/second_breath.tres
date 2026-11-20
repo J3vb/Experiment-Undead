@@ -15,3 +15,4 @@ requires = Array[StringName]([])
 branch_points_needed = 0
 stat = &"regen_delay"
 per_rank = 0.3
+op = "flat"

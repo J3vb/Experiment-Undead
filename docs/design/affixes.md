@@ -89,7 +89,7 @@ Each gear slot has its own job, so a player knows where to look for a stat. Vest
 | Regen delay | -X s before health regen | suffix | Vest | 0.3-1.0 s | 100 |
 | Grab escape (new) | Break free from grabs X% faster | suffix | Vest | 15-40% | 60 |
 | Fast revive (new) | Revive teammates X% faster | suffix | Vest | 15-40% | 60 |
-| Points earned (new) | +X% points from kills | prefix | Charm | 3-10% | 80 |
+| Points earned (new) | +X% points earned | prefix | Charm | 3-10% | 80 |
 | Loot luck | +X% loot luck | prefix | Charm | 5-20% | 80 |
 | Power-up duration | +X s power-up duration | suffix | Charm | 2-5 s | 90 |
 | Power-up chance (new) | +X% power-up drop chance | suffix | Charm | 5-15% | 60 |

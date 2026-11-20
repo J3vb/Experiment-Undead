@@ -35,6 +35,7 @@ var _held: Weapon
 func setup(player: Player, camera: Camera3D) -> void:
 	weapon_bob = Settings.get_value(&"comfort", &"weapon_bob")
 	Settings.changed.connect(_on_setting_changed)
+	Events.hit_confirmed.connect(_on_hit_confirmed)
 	_player = player
 	_camera = camera
 	melee.shooter = player
@@ -44,11 +45,12 @@ func setup(player: Player, camera: Camera3D) -> void:
 
 
 ## Adds a gun. When every slot is full it replaces the gun in hand.
-func give(data: WeaponData) -> Weapon:
+## fit: give it the player's damage, recoil and reserve stats; false for item guns, already fitted by their item.
+func give(data: WeaponData, fit: bool = true) -> Weapon:
 	if weapons.size() >= max_slots and current:
-		return replace_current(data)
+		return replace(current, data, fit)
 	var weapon: Weapon = WEAPON_SCENE.instantiate()
-	weapon.setup(WeaponInstance.new(data), _player, _camera)
+	weapon.setup(WeaponInstance.new(_fitted(data) if fit else data), _player, _camera)
 	add_child(weapon)
 	weapon.set_active(false)
 	weapon.ammo_changed.connect(_on_ammo_changed.bind(weapon))
@@ -67,10 +69,10 @@ func replace_current(data: WeaponData) -> Weapon:
 
 
 ## Swaps old for a new gun in old's slot (full ammo). Stays in hand only if old was.
-func replace(old: Weapon, data: WeaponData) -> Weapon:
+func replace(old: Weapon, data: WeaponData, fit: bool = true) -> Weapon:
 	var was_current: bool = old == current
 	var weapon: Weapon = WEAPON_SCENE.instantiate()
-	weapon.setup(WeaponInstance.new(data), _player, _camera)
+	weapon.setup(WeaponInstance.new(_fitted(data) if fit else data), _player, _camera)
 	add_child(weapon)
 	weapon.set_active(false)
 	weapon.ammo_changed.connect(_on_ammo_changed.bind(weapon))
@@ -86,6 +88,10 @@ func replace(old: Weapon, data: WeaponData) -> Weapon:
 	return weapon
 
 
+func _fitted(data: WeaponData) -> WeaponData:
+	return ItemInstance.fit_player_gun(data, _player.stats) if _player else data
+
+
 func equip(index: int) -> void:
 	if index < 0 or index >= weapons.size():
 		return
@@ -96,7 +102,8 @@ func equip(index: int) -> void:
 		current.trigger_held = false
 		current.aiming = false
 		current.ads_progress = 0.0
-		var swap: float = SWAP_TIME * (_player.get_stat(&"swap_time") if _player else 1.0)
+		var item_stats: StatBlock = weapons[index].item.stats if weapons[index].item else null
+		var swap: float = SWAP_TIME * (_player.get_stat(&"swap_time", 1.0, item_stats) if _player else 1.0)
 		if swap >= _swap_left:
 			_swap_time = swap
 			_swap_left = swap
@@ -116,6 +123,10 @@ func _bind_arm_view() -> void:
 		arm_view = PlayerArmView.new()
 		arm_view.name = "PlayerArmView"
 		add_child(arm_view)
+		if _player != null:
+			_player.gear_rig.look_changed.connect(arm_view.apply_look)
+			arm_view.apply_look(_player.gear_rig.look)
+	arm_view.thrower = _player.grenades if _player else null
 	arm_view.bind_weapon(current)
 
 
@@ -141,12 +152,18 @@ func cycle(direction: int) -> void:
 func swing() -> void:
 	if is_swapping():
 		return
+	lower(Melee.swing_time())
+	melee.swing()
+
+
+## Keeps the gun down and silent for seconds (knife swing, grenade cook): cancels a reload.
+func lower(seconds: float) -> void:
 	if current:
 		RoundReload.cancel(current)
 		current.trigger_held = false
-	_swap_time = Melee.swing_time()
-	_swap_left = _swap_time
-	melee.swing()
+	if seconds >= _swap_left:
+		_swap_time = seconds
+		_swap_left = seconds
 
 
 ## True while a freshly switched gun is still being raised.
@@ -240,6 +257,18 @@ func _process(delta: float) -> void:
 func _on_setting_changed(section: StringName, key: StringName, value: Variant) -> void:
 	if section == &"comfort" and key == &"weapon_bob":
 		weapon_bob = value
+
+
+## Dead Center: a confirmed headshot kill puts one round back in the gun in hand (owner only).
+func _on_hit_confirmed(player: Player, is_kill: bool, headshot: bool) -> void:
+	if player != _player or not (is_kill and headshot) or current == null:
+		return
+	if not _player.is_multiplayer_authority() or not _player.skill_rules.has(SkillNodeData.Rule.DEAD_CENTER):
+		return
+	if current.instance.ammo_in_mag >= current.data.magazine_size:
+		return
+	current.instance.ammo_in_mag += 1
+	current.ammo_changed.emit(current.instance.ammo_in_mag, current.instance.ammo_reserve)
 
 
 func _on_ammo_changed(in_mag: int, reserve: int, weapon: Weapon) -> void:

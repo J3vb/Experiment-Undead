@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://systems/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/hud/gun_rifle.svg" id="hud_icon"]
 [ext_resource type="Script" path="res://systems/weapons/recoil_data.gd" id="2"]
 [ext_resource type="PackedScene" path="res://systems/weapons/viewmodels/rifle_viewmodel.tscn" id="3"]
 [ext_resource type="AudioStream" path="res://assets/audio/rifle_fire.wav" id="4"]
@@ -22,6 +23,7 @@ repeat_last = 4
 
 [resource]
 script = ExtResource("1")
+hud_icon = ExtResource("hud_icon")
 id = &"rifle_ar_reforged"
 slot = 0
 loot_tags = Array[StringName]([&"rifle"])

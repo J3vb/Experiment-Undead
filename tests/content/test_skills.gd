@@ -1,4 +1,4 @@
-## Validates skill content, design values, prerequisite graphs and branch gates.
+## Validates skill content, design values, stack stat names, rules, prerequisite graphs and branch gates.
 extends GutTest
 
 const BRANCHES: Array[StringName] = [&"Marksman", &"Survivor", &"Tinkerer"]
@@ -26,27 +26,28 @@ func test_every_node_loads_and_has_valid_fields() -> void:
 			assert_between(node.row, 0, 2)
 		else:
 			assert_eq(node.row, 3 if node.branch_points_needed == 15 else 4)
-			assert_eq(node.stat, &"")
+			assert_ne(node.rule, SkillNodeData.Rule.NONE, String(node_id) + " keystones and capstones are rules")
+			assert_eq(node.stat != &"", node_id == &"undying", String(node_id) + " only Undying also has a stat")
 			assert_eq(node.max_ranks, 1)
 
 
 func test_named_normal_nodes_match_design_table() -> void:
-	# id: [branch, max ranks, stat, per-rank value in description units].
+	# id: [branch, max ranks, stack stat (gear affix names), per-rank value in description units, op].
 	var expected: Dictionary = {
-		&"steady_hands": [&"Marksman", 3, &"recoil", 5.0],
-		&"quick_draw": [&"Marksman", 3, &"ads_time", 5.0],
-		&"weak_spot": [&"Marksman", 3, &"head_damage", 5.0],
-		&"fast_hands": [&"Marksman", 3, &"reload_time", 5.0],
-		&"deep_pockets": [&"Marksman", 2, &"reserve_ammo", 10.0],
-		&"thick_skin": [&"Survivor", 3, &"max_health", 10.0],
-		&"second_breath": [&"Survivor", 3, &"regen_delay", 0.3],
-		&"light_feet": [&"Survivor", 2, &"sprint_speed", 5.0],
-		&"sturdy": [&"Survivor", 2, &"self_explosive_damage", 25.0],
-		&"scrounger": [&"Tinkerer", 3, &"points", 5.0],
-		&"lucky_find": [&"Tinkerer", 3, &"loot_luck", 5.0],
-		&"overtime": [&"Tinkerer", 2, &"power_up_duration", 3.0],
-		&"gadgeteer": [&"Tinkerer", 3, &"ability_cooldown", 8.0],
-		&"carpenter": [&"Tinkerer", 2, &"repair_speed", 30.0],
+		&"steady_hands": [&"Marksman", 3, &"recoil_pct", 5.0, "increased"],
+		&"quick_draw": [&"Marksman", 3, &"ads_pct", 5.0, "increased"],
+		&"weak_spot": [&"Marksman", 3, &"hs_pct", 5.0, "increased"],
+		&"fast_hands": [&"Marksman", 3, &"reload_pct", 5.0, "increased"],
+		&"deep_pockets": [&"Marksman", 2, &"deep_reserve", 10.0, "increased"],
+		&"thick_skin": [&"Survivor", 3, &"max_health", 10.0, "flat"],
+		&"second_breath": [&"Survivor", 3, &"regen_delay", 0.3, "flat"],
+		&"light_feet": [&"Survivor", 2, &"sprint_speed", 5.0, "increased"],
+		&"sturdy": [&"Survivor", 2, &"explosion_guard", 25.0, "increased"],
+		&"scrounger": [&"Tinkerer", 3, &"points_earned", 5.0, "increased"],
+		&"lucky_find": [&"Tinkerer", 3, &"loot_luck", 5.0, "increased"],
+		&"overtime": [&"Tinkerer", 2, &"power_up_duration", 3.0, "flat"],
+		&"gadgeteer": [&"Tinkerer", 3, &"ability_cooldown", 8.0, "increased"],
+		&"carpenter": [&"Tinkerer", 2, &"repair_speed", 30.0, "increased"],
 	}
 	for node_id: StringName in expected:
 		var node: SkillNodeData = Content.get_item(&"skills", node_id) as SkillNodeData
@@ -58,7 +59,21 @@ func test_named_normal_nodes_match_design_table() -> void:
 		assert_eq(node.max_ranks, values[1], String(node_id))
 		assert_eq(node.stat, values[2], String(node_id))
 		assert_almost_eq(node.per_rank, values[3], 0.0001, String(node_id))
+		assert_eq(node.op, values[4], String(node_id))
+		assert_eq(node.rule, SkillNodeData.Rule.NONE, String(node_id))
 		assert_eq(node.branch_points_needed, 0)
+
+
+func test_each_rule_belongs_to_exactly_one_skill() -> void:
+	var owners: Dictionary[int, StringName] = {}
+	for node_id: StringName in Content.sorted_ids(&"skills"):
+		var node: SkillNodeData = Content.get_item(&"skills", node_id) as SkillNodeData
+		if node.rule == SkillNodeData.Rule.NONE:
+			continue
+		assert_false(owners.has(node.rule), "%s and %s share a rule" % [owners.get(node.rule, &""), node_id])
+		owners[node.rule] = node_id
+	assert_eq(owners.size(), SkillNodeData.Rule.size() - 1, "every rule has its skill")
+	assert_eq(owners[SkillNodeData.Rule.UNDYING], &"undying")
 
 
 func test_each_branch_has_its_named_keystone_and_capstone() -> void:

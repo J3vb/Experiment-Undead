@@ -116,7 +116,7 @@ Not in (non-goals, and where each one goes instead):
 | core/settings.gd | changed | `accessibility/damage_numbers` default `"off"` |
 | core/events.gd | changed | `damage_dealt`, `loot_dropped` |
 | systems/weapons/weapon.gd, weapon_holder.gd, systems/net/hit_claims.gd | changed | `hit_landed` carries the DamageInfo and zone; holder relays `damage_dealt` |
-| systems/ui/damage_numbers.gd/.tscn | new | Pooled Label3D numbers |
+| systems/ui/damage_numbers.gd/.tscn | new | Pooled numbers (as built: a full-screen Control with 12 `Label`s placed with `camera.unproject_position`) |
 | systems/ui/level_up_burst.gd/.tscn | new | Brass ring behind the XP bar + sting |
 | systems/ui/loot_feed.gd/.tscn | new | Bottom-centre drop rows |
 | systems/loot/loot_service.gd | changed | `_receive_drop` emits `Events.loot_dropped` |
@@ -164,7 +164,7 @@ scene with one job that listens to Events itself, so `hud.gd` does not grow.
 
 ## Performance
 
-- Damage numbers: 12 Label3D nodes created in `_ready`, reused oldest-first; a hit
+- Damage numbers: 12 Label3D nodes (as built: 12 `Label`s on a Control) created in `_ready`, reused oldest-first; a hit
   only updates text, position and a tween. One Dictionary keyed by target instance id,
   cleared entries reused. At most 12 visible, as the design says.
 - Feed and burst: work only on their event; nothing per frame while idle.
@@ -206,7 +206,7 @@ scene with one job that listens to Events itself, so `hud.gd` does not grow.
   `hit_confirmed` as before plus `Events.damage_dealt(player, zombie, info)`, scaling a
   client-claim amount by `zone.damage_multiplier` so host and client show the same
   number (the host's `info` already has it from `receive_hit`). If the knife (PR #239)
-  has merged, its hit emits the same event. `DamageNumbers` (Node3D in hud.tscn): reads
+  has merged, its hit emits the same event. `DamageNumbers` (Node3D in hud.tscn; as built a full-screen Control): reads
   the setting live, ignores non-local players, shows `info.amount` rounded at
   `info.position` + 0.3 m up, Label3D billboard, fixed size, 14 px, no depth test,
   white or headshot gold; "crits" shows headshots only; same target within 120 ms adds
@@ -233,7 +233,8 @@ scene with one job that listens to Events itself, so `hud.gd` does not grow.
   a brass #E3CF9A ring that grows and fades and plays the sting on the UI bus. No
   screen effect. `LootService._receive_drop` emits `Events.loot_dropped(player, item)`
   after the drop is added. `LootFeed` (VBoxContainer bottom centre in hud.tscn): one
-  row per drop, "<Rarity> <item name>" (`RarityData` display name + `LootDrop.item_name`)
+  row per drop, "<Rarity> <item name>" (as built: shape glyph + capitalised rarity id,
+  since `RarityData` has no display name; then `LootDrop.item_name`)
   in `RarityData.colour`, newest on top, 3 rows max, each fades after 4 s.
 - Files: tools/generate_sfx.py, assets/audio/level_up.wav(+.import), core/events.gd,
   systems/loot/loot_service.gd, systems/ui/level_up_burst.gd/.tscn (new),

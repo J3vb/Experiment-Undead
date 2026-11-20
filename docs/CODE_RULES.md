@@ -102,7 +102,7 @@ needed node reference instead of depending on a particular scene hierarchy.
 ## 9. autoload-list
 
 Every `[autoload]` name in `project.godot` must appear in `ALLOWED_AUTOLOADS`:
-Events, Content, Net, Build, Log, Settings, Audio, Pool or Game. A new global
+Events, Content, Net, Build, Log, Settings, UI, Audio, Pool or Game. A new global
 owner must be visible in review and justified by the Keep it simple rules.
 
 - Good autoload entry: `Events="*res://core/events.gd"`

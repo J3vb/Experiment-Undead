@@ -28,6 +28,8 @@ MIXAMO = {
 SIDES = {"L": "Left", "R": "Right"}
 EYE_HEIGHT = 1.682
 EYE_FRONT = 0.115
+# The code-built zombies put HeadCenter 8 cm behind and just under the Eyes (zombie_model.py).
+HEAD_CENTER_BEHIND_EYES = (0.0, 0.08, -0.005)
 # Our player body's rest thumb, measured off player.glb: up and out along the arm's side, 31 degrees forward.
 THUMB_OUT = 0.86
 THUMB_FORWARD = 0.51
@@ -226,8 +228,19 @@ def keep_source_weights(low, arm) -> bool:
     return all(merged)
 
 
-def rig(low, source_armature, placed: Matrix, clips: str = "player") -> list:
-    """Skeleton, skinned mesh, Eyes and clips ("player" or "keeper"); returns the objects to export."""
+def head_center_marker(arm, eyes) -> object:
+    """The `HeadCenter` empty ZombieRig hangs the head hit zone on: on the head bone, behind the eyes."""
+    center = bpy.data.objects.new("HeadCenter", None)
+    bpy.context.collection.objects.link(center)
+    center.parent, center.parent_type, center.parent_bone = arm, "BONE", "head"
+    bpy.context.view_layer.update()
+    center.matrix_world = Matrix.Translation(eyes.matrix_world.translation + Vector(HEAD_CENTER_BEHIND_EYES))
+    return center
+
+
+def rig(low, source_armature, placed: Matrix, clips: str | None = "player") -> list:
+    """Skeleton, skinned mesh, Eyes and clips ("player", "keeper" or None for zombies, which ZombieRig poses in
+    code); returns [armature, mesh, Eyes]."""
     import npc_clips
     import player_clips
 
@@ -243,5 +256,6 @@ def rig(low, source_armature, placed: Matrix, clips: str = "player") -> list:
         character_rig.bind(low, arm, blend=0.08)
     low.parent = arm
     eyes = eyes_marker(arm, low)
-    {"player": player_clips, "keeper": npc_clips}[clips].build_clips(arm)
+    if clips:
+        {"player": player_clips, "keeper": npc_clips}[clips].build_clips(arm)
     return [arm, low, eyes]

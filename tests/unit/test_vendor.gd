@@ -81,6 +81,14 @@ func test_head_ignores_a_remote_player_in_range() -> void:
 	assert_almost_eq(vendor.look_target.global_position, vendor.to_global(Vector3(0, 1.55, 2.5)), Vector3.ONE * 0.01)
 
 
+func test_head_lets_go_of_a_player_that_left_the_town() -> void:
+	player.global_position = vendor.global_position + Vector3(1.0, 0, 2.0)
+	vendor.update_look()
+	remove_child(player)
+	vendor.update_look()
+	assert_almost_eq(vendor.look_target.global_position, vendor.to_global(Vector3(0, 1.55, 2.5)), Vector3.ONE * 0.01)
+
+
 func test_a_missing_idle_clip_leaves_the_keeper_still_without_errors() -> void:
 	var broken: VendorData = DATA.duplicate() as VendorData
 	broken.idle_clip = &"no_such_clip"

@@ -1,6 +1,6 @@
 # Rules for coding agents (Codex, Claude, others)
 
-Experiment Undead is an original wave-based zombie FPS in **Godot 4.7.2**,
+Fenlight is an original wave-based zombie FPS in **Godot 4.7.2**,
 written in **typed GDScript**, with RPG progression and co-op on self-hosted
 servers of up to 8 players. Every line of code must work in co-op.
 
@@ -143,8 +143,8 @@ readings of a task are possible, pick the one with less code. Examples and the l
    (move the zombie's attack logic to its own function), not by layer (no
    `ZombieAttackHelper`, `ZombieAttackManager`).
 5. **New autoload:** only the ones in the architecture doc's autoload table
-   (Events, Content, Settings, Audio, Pool, Game, Net), and only when your task
-   actually needs it. Any other autoload: stop and ask in the PR. Add exactly
+   (Events, Content, Settings, Audio, Pool, Game, Net, plus Build, Log, UI),
+   and only when your task actually needs it. Any other autoload: stop and ask in the PR. Add exactly
    one line at the end of the `[autoload]` block in `project.godot`.
 6. **New manager / director / service node:** only if it owns state or a rule
    that no existing node owns. If it would just pass calls through, put the code
