@@ -298,25 +298,20 @@ billboard_mode = 2
 material = SubResource("leak_drip_mat")
 size = Vector2(0.012, 0.05)
 
-[sub_resource type="StandardMaterial3D" id="small_life_metal"]
-albedo_color = Color(0.42, 0.45, 0.45, 1)
-metallic = 0.5
-roughness = 0.55
-
 [sub_resource type="CylinderMesh" id="fan_rod_mesh"]
-material = SubResource("small_life_metal")
+material = ExtResource("pipe")
 top_radius = 0.025
 bottom_radius = 0.025
 height = 2.8
 
 [sub_resource type="CylinderMesh" id="fan_hub_mesh"]
-material = SubResource("small_life_metal")
+material = ExtResource("pipe")
 top_radius = 0.1
 bottom_radius = 0.14
 height = 0.16
 
 [sub_resource type="BoxMesh" id="fan_blade_mesh"]
-material = SubResource("small_life_metal")
+material = ExtResource("pipe")
 size = Vector3(0.75, 0.015, 0.16)
 
 [sub_resource type="Animation" id="fan_turn"]
@@ -342,13 +337,13 @@ _data = {
 }
 
 [sub_resource type="CylinderMesh" id="pa_horn_mesh"]
-material = SubResource("small_life_metal")
+material = ExtResource("pipe")
 top_radius = 0.05
 bottom_radius = 0.2
 height = 0.3
 
 [sub_resource type="BoxMesh" id="pa_bracket_mesh"]
-material = SubResource("small_life_metal")
+material = ExtResource("pipe")
 size = Vector3(0.08, 0.08, 0.22)
 
 [sub_resource type="StandardMaterial3D" id="paper_mat"]
