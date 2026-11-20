@@ -80,7 +80,8 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 |---|---|---|---|---|---|---|
 | F-88 | Front-end screens to the concept art: FENLIGHT logo, brush-stroke menu, painted main menu and Loadout backdrops, Loadout tabs (concept art 2026-11-20) | - | - | [ready](plans/front-end-concept.md) | M | Building |
 | F-20 | Skill effects (through the stat stack) | #113 | F-11 | [ready](plans/skill-effects.md) | M | Done |
-| F-21 | Skill tree screen (look target: [research_concept.jpg](design/concepts/screens/research_concept.jpg)) | #112 | F-20 | [review](plans/skill-tree-screen.md) | M | Planning |
+| F-21 | Skill tree screen (look target: [research_concept.jpg](design/concepts/screens/research_concept.jpg)) | #112 | F-20 | [ready](plans/skill-tree-screen.md) | M | Ready |
+| F-90 | More skill nodes: about 5 per branch so each holds about 30 points, keystone and capstone gates back to 15 and 25 (the person's pick 2026-11-20) | - | F-21 | needed | M | Todo |
 | F-22 | Field abilities | #114 | F-20 | needed | M | Todo |
 | F-23 | Levelling pace check | #115 | F-20, F-22 | issue | S | Todo |
 | F-24 | Frag grenades | #119 | F-11 | [ready](plans/frag-grenades.md) | M | Building (all 4 steps merged; play-test left) |

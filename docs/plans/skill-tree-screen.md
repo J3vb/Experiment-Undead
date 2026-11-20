@@ -1,10 +1,10 @@
 # Plan: Skill tree screen (Research)
 
-Status: Review
+Status: Approved
 Roadmap: F-21 / issue #112
 Phase: P5
 Size: M
-Approved by:
+Approved by: plan PR #464 (fresh Claude review, 4 blocking findings fixed); the person approved the plan and picked the gates on decision cards (2026-11-20)
 Lore link: docs/design/lore.md#front-end-screens: Research is Dr. Corvelyn's lab, where the Fenlight samples you bring back are studied and teach you the salvager trades (provisional row, already there). The three branches are the "Skill branches" row. The bio-green lines and tank are the Fenlight samples themselves, so the look-rules "bio-green only for the experiment" rule holds.
 
 ## Goal
@@ -49,8 +49,8 @@ Not in (non-goals, and where each one goes instead):
 - The field ability picker under the tree (later: F-22).
 - The gear `skill_rank` affix ("+1 rank to a named skill") and the
   `bonus_skill_ranks` cap (later: F-31, with the other loot traits).
-- More skill nodes to reach "about 30 points per branch" (only if the person
-  picks that option below; it becomes its own roadmap row and plan).
+- More skill nodes to reach "about 30 points per branch", and the gates back
+  to 15/25 (later: F-90).
 - A painted lab backdrop: waits on a clean, text-free image from the person,
   like the Loadout armoury backdrop. Until then a dark shade with a code-drawn
   green glow where the tank sits.
@@ -250,9 +250,7 @@ Risky part first: the undo and gate rules, and the save round-trip.
 
 ## Open decisions
 
-- [ ] Keystone and capstone gates: the design's 15 and 25 points in a branch
-      cannot be reached (Marksman has 14 regular points, Survivor 10,
-      Tinkerer 13), and the whole tree is 43 points against 54 earned, so a
-      maxed character owns everything. Options: lower the gates to 8 and 11
-      now; add about 5 nodes per branch first and keep 15/25; or lower now
-      and add nodes later. Asked on a decision card.
+- [x] Keystone and capstone gates (15/25 cannot be reached; the tree is 43
+      points against 54 earned): lower the gates to 8 and 11 now; a later
+      row (F-90) adds about 5 nodes per branch and puts them back to 15/25.
+      The person's pick, 2026-11-20.
