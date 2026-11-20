@@ -59,3 +59,14 @@ func test_feedback_rules_in_range() -> void:
 	assert_between(rules.downed_saturation, 0.0, 1.0)
 	assert_between(rules.downed_vignette, 0.0, 1.0)
 	assert_gt(rules.death_fade_s, 0.0)
+
+
+func test_mantle_rules_match_the_design() -> void:
+	var rules: MantleRules = load(FEEL_DIR.path_join("mantle_rules.tres")) as MantleRules
+	assert_not_null(rules, "mantle_rules.tres is a MantleRules")
+	assert_between(rules.min_height, 0.01, rules.max_height - 0.01, "0 < min_height < max_height")
+	assert_eq(rules.max_height, 1.2, "game-design.md Movement: mantle up to 1.2 m")
+	assert_gt(rules.reach, 0.0)
+	assert_gt(rules.base_time, 0.0)
+	assert_gt(rules.time_per_metre, 0.0)
+	assert_lt(rules.duration(rules.max_height), 0.6, "the longest mantle is under 0.6 s")

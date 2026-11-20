@@ -35,3 +35,12 @@ func test_down_screen_sounds_load() -> void:
 		if sound:
 			assert_gt(sound.get_length(), 0.0, name)
 			assert_eq(sound.loop_mode, AudioStreamWAV.LOOP_DISABLED, name)
+
+
+func test_mantle_sound_loads() -> void:
+	var sound: AudioStreamWAV = load("res://assets/audio/player_mantle.wav") as AudioStreamWAV
+	assert_not_null(sound)
+	if sound:
+		assert_between(sound.get_length(), 0.1, 0.5)
+		assert_eq(sound.stereo, false, "mono")
+		assert_eq(sound.loop_mode, AudioStreamWAV.LOOP_DISABLED)

@@ -168,7 +168,7 @@ Settings is at its size limit and applying render options is its own job.
   - The existing video keys (vsync, max_fps, show_fps) move to graphics in
     step 1, with the same old-key fallback on load as fov.
   - accessibility / text_scale / 1.0 ; toggle_ads / false ;
-    toggle_sprint / false ; toggle_crouch / false ; reduce_motion / false.
+    toggle_sprint / false ; toggle_crouch / true (DECISIONS.md: crouch stays a toggle by default) ; reduce_motion / false.
   - comfort / head_bob / 0.6 ; weapon_bob / 1.0 ; sprint_fov / true ;
     damage_effects / 1.0 ; centre_dot / false. (shake_own_gun, shake_hits,
     flash_reduction come from the game feel thread.)
@@ -287,7 +287,8 @@ prompt (after step 2) measures all four presets at the four test spots.
 - Build: text size (root `content_scale_factor`, 0.8 to 1.5, applied by the
   UI autoload); hold or toggle for aim, sprint and crouch in LocalInput
   (toggle flips on press, clears on death and when the match ends); reduce
-  motion (settings and pause fades skip the 12 px slide). Row for
+  motion (as built: the settings screen, main menu and results skip their slide;
+  the pause screen has no slide). Row for
   `accessibility/damage_numbers` ("off", "crits", "all"; labels Off, Crits
   only, All) only if that key is already in Settings.DEFAULTS on main; it
   is supplied by the damage numbers work (step 2 of the "level-up, damage

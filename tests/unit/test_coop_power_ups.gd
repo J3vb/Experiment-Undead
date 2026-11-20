@@ -1,13 +1,26 @@
 ## Two ENet peers: server drops appear on the client, the server decides who
-## collects them, and the ammo lands on the PC that owns the guns.
+## collects them, the ammo lands on the PC that owns the guns, and timed
+## power-ups reach every client and late joiner.
 extends "res://tests/unit/coop_interaction_fixture.gd"
 
 const RESUPPLY: String = "res://content/power_ups/resupply.tres"
 const AMMO_PACK: String = "res://content/power_ups/ammo_pack.tres"
+const PAYDAY: String = "res://content/power_ups/payday.tres"
+const OVERKILL: PowerUpData = preload("res://content/power_ups/overkill.tres")
+const STASIS: PowerUpData = preload("res://content/power_ups/stasis.tres")
+const WALKER: EnemyData = preload("res://content/enemies/zombie_walker.tres")
+const WAVES: WaveRules = preload("res://content/waves/default_waves.tres")
+const RIFLE: WeaponData = preload("res://content/weapons/rifle_ar.tres")
 
 
 func port() -> int:
 	return 24715
+
+
+func make_side(side_name: String) -> GameSession:
+	var session: GameSession = CoopSide.make(self, side_name, [&"interactions", &"hit_claims"], build_level())
+	_sessions.append(session)
+	return session
 
 
 func before_each() -> void:
@@ -96,3 +109,72 @@ func test_late_joiner_sees_a_live_drop_with_its_age() -> void:
 	await join(late)
 	await wait_until(func() -> bool: return _pickups(late).size() == 1, 3.0, "the joiner got the drop")
 	assert_almost_eq(_pickups(late)[0].age, 21.0, 0.5, "already blinking for the joiner")
+
+
+func test_a_payday_timer_reaches_the_client() -> void:
+	var payday: PowerUpData = load(PAYDAY) as PowerUpData
+	var pickup: PowerUp = await _drop(PAYDAY, Vector3(3, 0, 3))
+	watch_signals(Events)
+	pickup.collect(on_server())
+	await wait_until(
+		func() -> bool: return get_signal_emit_count(Events, "power_up_timer_started") == 2, 3.0, "timer relayed"
+	)
+	assert_eq(get_signal_parameters(Events, "power_up_timer_started")[0], payday)
+	assert_true(_drops(server).is_active(PowerUpData.Effect.PAYDAY))
+	var row: PowerUpTimers = client.hud.get_node(^"Root/PowerUpTimers") as PowerUpTimers
+	assert_almost_eq(row.time_left(payday), 30.0, 0.5, "the client's HUD shows the ring")
+
+
+func test_payday_doubles_a_client_players_kill_points() -> void:
+	var killer: Player = on_server()
+	killer.wallet.set_points(0)
+	_drops(server).start_timer(load(PAYDAY) as PowerUpData)
+	var corpse: Node3D = Node3D.new()
+	add_child_autofree(corpse)
+	_drops(server).drop_chance = 0.0
+	Events.enemy_killed.emit(corpse, DamageInfo.create(1.0, killer))
+	assert_eq(killer.wallet.points, server.economy.rules.points_per_kill * Economy.PAYDAY_MULTIPLIER)
+
+
+func test_late_joiner_gets_the_time_left() -> void:
+	var payday: PowerUpData = load(PAYDAY) as PowerUpData
+	_drops(server).start_timer(payday)
+	_drops(server)._physics_process(12.0)
+	late = make_side("InteractLate")
+	add_player(late, client_id)
+	_drops(late).session = late
+	_drops(late).setup(late.level)
+	await join(late)
+	var row: PowerUpTimers = late.hud.get_node(^"Root/PowerUpTimers") as PowerUpTimers
+	await wait_until(func() -> bool: return row.time_left(payday) > 0.0, 3.0, "the joiner asked for timers")
+	assert_almost_eq(row.time_left(payday), 18.0, 0.5, "the joiner's ring shows the time left, not a full one")
+
+
+func _zombie_pair(round_number: int) -> Array[Zombie]:
+	CoopSide.add_spawn_point(server, Vector3(0, 0, -4))
+	var zombie: Zombie = server.spawner.spawn(WALKER, round_number, WAVES)
+	zombie.set_physics_process(false)
+	zombie.position = Vector3(0, 0, -4)
+	zombie.state = Zombie.State.CHASING
+	var path: NodePath = NodePath(String(zombie.name))
+	await wait_until(func() -> bool: return client.spawner.has_node(path), 3.0, "zombie replicated")
+	return [zombie, client.spawner.get_node(path) as Zombie]
+
+
+func test_a_client_sees_stasis_and_its_ice() -> void:
+	var pair: Array[Zombie] = await _zombie_pair(1)
+	_drops(server).start_timer(STASIS)
+	await wait_until(func() -> bool: return pair[1].stasis, 3.0, "stasis synced")
+	var mesh: MeshInstance3D = pair[1].visual.find_children("*", "MeshInstance3D", true, false)[0]
+	assert_not_null(mesh.material_overlay, "the client shows the ice")
+	_drops(server)._physics_process(STASIS.duration + 0.5)
+	await wait_until(func() -> bool: return not pair[1].stasis, 3.0, "stasis end synced")
+
+
+func test_a_clients_hit_claim_kills_under_overkill() -> void:
+	var pair: Array[Zombie] = await _zombie_pair(20)
+	_drops(server).start_timer(OVERKILL)
+	var claims: HitClaims = client.hit_claims
+	claims.claim_hit.rpc_id(1, pair[0].name, DamageInfo.Zone.BODY, RIFLE.damage, RIFLE.id, pair[0].global_position)
+	await wait_until(func() -> bool: return pair[0].health.is_dead, 3.0, "one claimed body shot killed")
+	assert_true(pair[0].health.is_dead)

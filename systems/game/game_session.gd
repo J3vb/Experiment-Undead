@@ -57,6 +57,7 @@ func _ready() -> void:
 	director.rules = wave_rules
 	director.session = self
 	power_up_drops.session = self
+	economy.drops = power_up_drops
 	if has_local_player and not profile_id.is_empty():
 		profile = CharacterProfile.load_or_create(profile_id)
 		start_total_xp = profile.total_xp

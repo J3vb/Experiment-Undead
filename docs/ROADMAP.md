@@ -52,7 +52,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-11 | Release v0.1.0 | #111 | F-10, F-65 steps 1-4, F-82 steps 1-4 | issue | S | Todo |
 | F-40 | Round state and power-ups in co-op (rest of #126 after F-02) | #126 | F-02 | [done](plans/coop-round-state-power-ups.md) | M | Done |
 | F-47 | A full co-op match: co-op soak, pause, squad cards, hub and deploy flow | #213 | F-40 | [plan](plans/coop-full-match.md) | L | Done |
-| F-48 | Full settings screen: Graphics page with presets, then Accessibility and Comfort | - | F-05 | [ready](plans/full-settings.md) | L | Done |
+| F-48 | Full settings screen: Graphics page with presets, then Accessibility and Comfort | - | F-05 | [done](plans/full-settings.md) | L | Done |
 | F-49 | HUD feedback and loading: loading screen, damage numbers, level-up burst, drop feed | - | - | [done](plans/hud-feedback-loading.md) | M | Done |
 | F-50 | First Lantern Post hub: town blockout, Deploy board and ready-up vote (first slice of F-45, pulled forward for the co-op week goal) | #131 | F-02, F-47 step 4 (#255), co-op #256 | [done](plans/lantern-post-hub.md) | M | Done |
 | F-66 | Your own world, open to friends: Enter world into your own Lantern Post (listen server, UPnP), server browser with add by address and LAN discovery, no master server | - | F-02, F-50 | [ready](plans/join-any-game.md) | L | Done |
@@ -80,13 +80,13 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-21 | Skill tree screen | #112 | F-20 | needed | M | Todo |
 | F-22 | Field abilities | #114 | F-20 | needed | M | Todo |
 | F-23 | Levelling pace check | #115 | F-20, F-22 | issue | S | Todo |
-| F-24 | Frag grenades | #119 | F-11 | needed | M | Todo |
-| F-25 | Mantle | #120 | F-11 | needed | M | Todo |
-| F-26 | More power-ups in the drop deck | #118 | F-11 | [needed](plans/more-power-ups.md) | M | Ready |
+| F-24 | Frag grenades | #119 | F-11 | [needed](plans/frag-grenades.md) | M | Building |
+| F-25 | Mantle | #120 | F-11 | [ready](plans/mantle.md) | M | Building |
+| F-26 | More power-ups in the drop deck | #118 | F-11 | [needed](plans/more-power-ups.md) | M | Building |
 | F-27 | Crawler | #121 | F-24 | needed | M | Todo |
-| F-28 | Blackout rounds and Glowers | #122 | F-11 | needed | M | Todo |
-| F-29 | Stalker | #123 | F-11 | needed | L | Todo |
-| F-30 | Brute | #124 | F-11 | needed | L | Todo |
+| F-28 | Blackout rounds and Glowers | #122 | F-11 | [ready](plans/blackout-glowers.md) | M | Ready |
+| F-29 | Stalker | #123 | F-11, F-28 | [ready](plans/stalker.md) | L | Ready |
+| F-30 | Brute | #124 | F-11, F-29 | [ready](plans/brute.md) | L | Ready |
 | F-31 | Legendaries and traits | #116 | F-20 | needed | L | Todo |
 | F-32 | Item sets (needs set lore first) | #117 | F-31 | needed | M | Todo |
 | F-33 | Run length target: solo runs end between round 15 and 30 | #125 | F-27..F-30 | issue | S | Todo |
@@ -96,7 +96,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | Id | Feature | Issue | Needs | Plan | Size | Status |
 |---|---|---|---|---|---|---|
 | F-41 | Third-person walk, run and downed animations | #128 | F-11 | [needed](plans/teammate-animations.md) | L | Done |
-| F-42 | Gear in first person | #129 | F-11 | needed | M | Todo |
+| F-42 | Gear in first person | #129 | F-84 (F-11 waived 2026-11-20, see plan) | [done](plans/gear-first-person.md) | M | Done |
 | F-43 | 4-player play-test to round 20 | #127 | F-47, F-41 | issue | S | Todo |
 | F-44 | Finish the server package | #130 | F-43 | needed | L | Todo |
 | F-45 | Town hub Lantern Post (split into features when it starts) | #131 | F-44 | needed | L | Todo |

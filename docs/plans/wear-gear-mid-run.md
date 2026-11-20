@@ -117,7 +117,7 @@ Not in (non-goals, and where each one goes instead):
 | systems/ui/pack_character.gd | new | character column: preview SubViewport with GearRig, slot buttons, guns in hands |
 | systems/ui/character_screen.gd | changed | `SLOTS` becomes `[&"primary", &"sidearm"] + CharacterProfile.GEAR_SLOTS`; the gear filter (line 148) uses `Inventory.is_gear` |
 
-`systems/gear/look_builder.gd:5` and `CharacterLook.SLOTS` stay: they are the look's own list, and F-70/F-71 change them. F-83 builds before F-71 (F-71 waits on F-70 step 2); F-71 then extends `CharacterProfile.GEAR_SLOTS` instead of adding it.
+`systems/gear/look_builder.gd:5` and `CharacterLook.SLOTS` stay: they are the look's own list, and F-70/F-71 change them. F-84 builds before F-71 (F-71 waits on F-70 step 2); F-71 then extends `CharacterProfile.GEAR_SLOTS` instead of adding it.
 
 Autoloads, managers or base classes added: none.
 
@@ -201,7 +201,7 @@ underneath. The item card stays on the right half with the match visible.
 
 - Build: `pack_character.gd`: the top part (SubViewport + body + GearRig,
   look rebuilt on every swap, no turntable input), one square slot box per
-  `Inventory.GEAR_SLOTS` entry with rarity border and shape, the guns in
+  `CharacterProfile.GEAR_SLOTS` entry with rarity border and shape, the guns in
   hands, Level and Max health. The Pack grid moves under it. Focus and mouse
   select a slot to show the worn piece; a selected Pack gear item compares
   with its worn piece (`ItemTooltip.set_comparing`). Preview stops rendering

@@ -110,6 +110,7 @@ func _snapshot() -> Dictionary:
 		"serums": ids,
 		"name": _player.display_name,
 		"bleed": bleed_left,
+		"grenades": _player.grenades.count,
 	}
 
 
@@ -142,6 +143,7 @@ func _receive_state(state: Dictionary) -> void:
 	_player.wallet.set_points(state.points)
 	_player.display_name = state.get("name", "")
 	bleed_left = float(state.get("bleed", 0.0))
+	_player.grenades.count = int(state.get("grenades", _player.grenades.count))
 	_sync_serums(state.serums)
 	_player.health.health_changed.emit(_player.health.current, _player.health.max_health)
 	if damage > 0.0 and _player.is_multiplayer_authority():
