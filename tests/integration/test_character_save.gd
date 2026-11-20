@@ -4,6 +4,17 @@ extends GutTest
 const SESSION: PackedScene = preload("res://tests/integration/character_save_session.tscn")
 const ID: StringName = &"test_character_session"
 const START_XP: int = 450
+const EMPTY_LOADOUT: Dictionary = {
+	"primary": {},
+	"sidearm": {},
+	"vest": {},
+	"charm": {},
+	"implant": {},
+	"headgear": {},
+	"gloves": {},
+	"backpack": {},
+	"boots": {},
+}
 
 var session: GameSession
 var player: Player
@@ -122,7 +133,7 @@ func test_old_v1_save_banks_xp_with_empty_inventory() -> void:
 	assert_eq(loaded.stash.size(), 60)
 	for item: Dictionary in loaded.stash:
 		assert_eq(item, {})
-	assert_eq(loaded.loadout, {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}})
+	assert_eq(loaded.loadout, EMPTY_LOADOUT)
 	assert_eq(int(SaveFile.read(_path)["save_version"]), SaveFile.CURRENT_VERSION)
 
 

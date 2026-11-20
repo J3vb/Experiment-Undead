@@ -2,7 +2,11 @@
 extends GutTest
 
 const GATES: Array[int] = [1, 8, 15, 22, 30]
-const SLOTS: Array[StringName] = [&"vest", &"charm", &"implant"]
+const SLOTS: Array[StringName] = [&"vest", &"charm", &"implant", &"headgear", &"gloves", &"backpack", &"boots"]
+## Affix slot lists cover these until F-71 step 4 adds the new pools.
+const AFFIX_SLOTS: Array[StringName] = [&"vest", &"charm", &"implant"]
+## F-71 bases: drop_weight 0 until step 4; drawn once F-70 adds their GearVisual.
+const NEW_BASES: Array[StringName] = [&"headgear_cap", &"gloves_tactical", &"backpack_pack", &"boots_field"]
 const MODELS: Array[StringName] = [
 	&"vest_light",
 	&"vest_medium",
@@ -46,9 +50,9 @@ const RANGES: Dictionary[StringName, Vector3] = {
 }
 
 
-func test_thirteen_bases_are_indexed_and_reference_matching_visuals() -> void:
+func test_seventeen_bases_are_indexed_and_reference_matching_visuals() -> void:
 	var paths: PackedStringArray = _files("res://content/loot/gear")
-	assert_eq(paths.size(), 13)
+	assert_eq(paths.size(), 17)
 	var seen: Array[StringName] = []
 	for path: String in paths:
 		var base: GearBaseData = load(path) as GearBaseData
@@ -56,7 +60,7 @@ func test_thirteen_bases_are_indexed_and_reference_matching_visuals() -> void:
 		if base == null:
 			continue
 		assert_eq(String(base.id), path.get_file().get_basename())
-		assert_has(MODELS, base.id)
+		assert_true(MODELS.has(base.id) or NEW_BASES.has(base.id), String(base.id))
 		assert_false(seen.has(base.id), "base ids are unique")
 		seen.append(base.id)
 		assert_same(Content.get_item(&"loot", base.id), base)
@@ -65,13 +69,21 @@ func test_thirteen_bases_are_indexed_and_reference_matching_visuals() -> void:
 		assert_ne(base.display_name, "")
 		assert_false(base.loot_tags.is_empty())
 		assert_eq(base.unlock_level, 1, "provisional starting gear gate")
-		assert_eq(base.drop_weight, 100.0, "provisional equal base weights")
-		var visual: GearVisual = Content.get_item(&"gear_visuals", base.visual_id) as GearVisual
-		assert_not_null(visual, path + " visual exists")
+		assert_has(SLOTS, StringName(base.slot))
+		assert_ne(base.visual_id, &"", path + " names a visual")
+		if NEW_BASES.has(base.id):
+			assert_eq(base.drop_weight, 0.0, "new slots do not drop until F-71 step 4")
+			assert_eq(base.loot_tags.size(), 1)
+			assert_eq(base.loot_tags[0], StringName(base.slot))
+		else:
+			assert_eq(base.drop_weight, 100.0, "provisional equal base weights")
+		var visual: GearVisual = GearVisual.find(base.visual_id)
+		if not NEW_BASES.has(base.id):
+			assert_not_null(visual, path + " visual exists")
 		if visual != null:
 			assert_eq(visual.slot, StringName(base.slot))
 			assert_same(GearVisual.find(base.visual_id), visual)
-	assert_eq(seen.size(), MODELS.size())
+	assert_eq(seen.size(), MODELS.size() + NEW_BASES.size())
 
 
 func test_unknown_visual_and_fallback_slot_return_no_resource() -> void:
@@ -142,9 +154,9 @@ func test_gear_affix_ranges_weights_kinds_and_slots_match_the_tables() -> void:
 		assert_almost_eq(affix.tiers[4].high, float(values.y), 0.00001, String(id))
 		assert_eq(affix.weight, float(values.z), String(id))
 		assert_eq(affix.kind, "prefix" if prefixes.has(id) else "suffix", String(id))
-		var expected_slots: Array[StringName] = SLOTS.duplicate()
+		var expected_slots: Array[StringName] = AFFIX_SLOTS.duplicate()
 		if index < 18:
-			expected_slots.assign([SLOTS[floori(index / 6.0)]])
+			expected_slots.assign([AFFIX_SLOTS[floori(index / 6.0)]])
 		assert_eq(affix.slots, expected_slots, String(id))
 		assert_eq(affix.min_rarity, &"rare" if id in [&"skill_rank", &"extra_grenade", &"vault_favour"] else &"common")
 
