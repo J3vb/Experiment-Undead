@@ -26,9 +26,7 @@ func _ready() -> void:
 	register_command(&"help", _help, "help: list commands")
 	register_command(&"clear", func(_args: PackedStringArray) -> void: log_output.clear(), "clear: erase log")
 	register_command(&"seed", _seed, "seed: print the match RNG seed")
-	for name: StringName in [
-		&"give_points", &"set_round", &"skip_round", &"spawn", &"kill_all", &"timescale", &"blackout"
-	]:
+	for name: StringName in [&"give_points", &"set_round", &"skip_round", &"spawn", &"kill_all", &"timescale"]:
 		register_command(name, _change_game.bind(name), str(name) + _usage(name))
 	register_command(&"blackout", _blackout, "blackout on|off: lights out on every peer")
 
