@@ -96,3 +96,41 @@ func test_late_joiner_sees_a_live_drop_with_its_age() -> void:
 	await join(late)
 	await wait_until(func() -> bool: return _pickups(late).size() == 1, 3.0, "the joiner got the drop")
 	assert_almost_eq(_pickups(late)[0].age, 21.0, 0.5, "already blinking for the joiner")
+
+
+func _host_gun() -> Weapon:
+	var host: Player = add_player(server, 1)
+	add_player(client, 1)
+	var gun: Weapon = host.weapons.give(Content.weapon(&"kestrel_smg"))
+	gun.instance.ammo_in_mag = 1
+	gun.instance.ammo_reserve = 0
+	return gun
+
+
+func test_client_walking_into_a_drop_collects_it() -> void:
+	var gun: Weapon = _half_empty_gun()
+	var player: Player = on_server()
+	await _drop(AMMO_PACK, player.global_position)
+	await wait_until(func() -> bool: return gun.instance.ammo_reserve == gun.data.magazine_size, 3.0, "walk-in pickup")
+	assert_true(_pickups(server).is_empty(), "the server ended the pickup")
+
+
+func test_resupply_also_fills_the_hosts_own_guns() -> void:
+	var host_gun: Weapon = _host_gun()
+	var gun: Weapon = _half_empty_gun()
+	var pickup: PowerUp = await _drop(RESUPPLY, Vector3(3, 0, 3))
+	pickup.collect(on_server())
+	await wait_until(func() -> bool: return gun.instance.ammo_reserve == gun.data.max_reserve, 3.0, "client refilled")
+	assert_eq(host_gun.instance.ammo_reserve, host_gun.data.max_reserve, "the host's reserve is full")
+	assert_eq(host_gun.instance.ammo_in_mag, host_gun.data.magazine_size, "the host's magazine is full")
+
+
+func test_ammo_pack_leaves_other_players_guns_alone() -> void:
+	var host_gun: Weapon = _host_gun()
+	var gun: Weapon = _half_empty_gun()
+	var pickup: PowerUp = await _drop(AMMO_PACK, Vector3(3, 0, 3))
+	pickup.collect(on_server())
+	await wait_until(func() -> bool: return gun.instance.ammo_reserve == gun.data.magazine_size, 3.0, "pack granted")
+	await wait_physics_frames(3)
+	assert_eq(host_gun.instance.ammo_reserve, 0, "the host's reserve is unchanged")
+	assert_eq(host_gun.instance.ammo_in_mag, 1, "the host's magazine is unchanged")
