@@ -48,6 +48,8 @@ var _panel_tween: Tween
 var _drift_time: float = 0.0
 ## Character waiting for the newer-save message to close before its screen opens.
 var _pending_profile: CharacterProfile
+## The screen (&"character" or &"research") that opens once the newer-save message closes.
+var _pending_screen: StringName = &""
 ## Hub scene loading in the background so PLAY and joins skip a cold load. Empty once collected.
 var _hub_path: String = ""
 
@@ -75,7 +77,8 @@ func _ready() -> void:
 	enter_button.pressed.connect(enter_world)
 	servers_button.pressed.connect(_open_servers)
 	error_dialog.closed.connect(_close_error)
-	loadout_button.pressed.connect(_open_character)
+	loadout_button.pressed.connect(_open_profile_screen.bind(&"character"))
+	research_button.pressed.connect(_open_profile_screen.bind(&"research"))
 	settings_button.pressed.connect(_open_settings)
 	credits_button.pressed.connect(_open_credits)
 	$Screens/Root/Menu/Quit.pressed.connect(func() -> void: get_tree().quit())
@@ -228,7 +231,7 @@ func _close_error() -> void:
 	if _pending_profile:
 		var profile: CharacterProfile = _pending_profile
 		_pending_profile = null
-		(UI.push(&"character") as CharacterScreen).open(profile)
+		UI.push(_pending_screen).call(&"open", profile)
 	else:
 		enter_button.grab_focus()
 
@@ -258,14 +261,16 @@ func _close_credits() -> void:
 	credits_button.grab_focus()
 
 
-func _open_character() -> void:
+## Loadout and Research both open the local character; a newer save shows a message first.
+func _open_profile_screen(screen: StringName) -> void:
 	if not UI.top().is_empty():
 		return
 	var profile: CharacterProfile = CharacterProfile.load_or_create(&"solo")
 	if not profile.saved_by_newer_version:
-		(UI.push(&"character") as CharacterScreen).open(profile)
+		UI.push(screen).call(&"open", profile)
 		return
 	_pending_profile = profile
+	_pending_screen = screen
 	_show_error(&"newer_save")
 	error_dialog.message_label.text = NEWER_SAVE
 

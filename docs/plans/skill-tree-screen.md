@@ -1,6 +1,6 @@
 # Plan: Skill tree screen (Research)
 
-Status: Approved
+Status: Building
 Roadmap: F-21 / issue #112
 Phase: P5
 Size: M
@@ -28,7 +28,8 @@ In:
 - A detail panel for the focused tile: name, description, current and next
   rank value, gate.
 - Points left at the top, points spent above each lane.
-- Click / A adds a rank, right-click / B removes a rank added this visit.
+- Click / A adds a rank, right-click, Backspace or gamepad X removes a rank
+  added this visit (B stays Back, as on every screen).
   Nothing is saved until **Confirm**. Back with unsaved ranks asks once
   ("Discard changes?").
 - **Reset all**: clears every rank (a respec), saved on Confirm. Free and

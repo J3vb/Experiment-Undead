@@ -2,6 +2,9 @@
 extends GutTest
 
 const BRANCHES: Array[StringName] = [&"Marksman", &"Survivor", &"Tinkerer"]
+## Lowered from the design's 15 and 25 until F-90 adds nodes (the person's pick, 2026-11-20).
+const KEYSTONE_GATE: int = 8
+const CAPSTONE_GATE: int = 11
 
 
 func test_every_node_loads_and_has_valid_fields() -> void:
@@ -18,14 +21,14 @@ func test_every_node_loads_and_has_valid_fields() -> void:
 		assert_has(BRANCHES, node.branch)
 		assert_gte(node.max_ranks, 1)
 		assert_gte(node.column, 0)
-		assert_has([0, 15, 25], node.branch_points_needed)
+		assert_has([0, KEYSTONE_GATE, CAPSTONE_GATE], node.branch_points_needed)
 		if node.stat != &"":
 			assert_true(node.description.contains("{v}"), String(node_id) + " has per-rank text")
 			assert_gt(node.per_rank, 0.0)
 		if node.branch_points_needed == 0:
 			assert_between(node.row, 0, 2)
 		else:
-			assert_eq(node.row, 3 if node.branch_points_needed == 15 else 4)
+			assert_eq(node.row, 3 if node.branch_points_needed == KEYSTONE_GATE else 4)
 			assert_ne(node.rule, SkillNodeData.Rule.NONE, String(node_id) + " keystones and capstones are rules")
 			assert_eq(node.stat != &"", node_id == &"undying", String(node_id) + " only Undying also has a stat")
 			assert_eq(node.max_ranks, 1)
@@ -89,9 +92,9 @@ func test_each_branch_has_its_named_keystone_and_capstone() -> void:
 			var node: SkillNodeData = Content.get_item(&"skills", node_id) as SkillNodeData
 			if node.branch != branch:
 				continue
-			if node.branch_points_needed == 15:
+			if node.row == 3:
 				keystones.append(node_id)
-			elif node.branch_points_needed == 25:
+			elif node.row == 4:
 				capstones.append(node_id)
 		assert_eq(keystones, [expected[branch][0]], String(branch) + " keystone")
 		assert_eq(capstones, [expected[branch][1]], String(branch) + " capstone")
@@ -113,3 +116,23 @@ func _check_prerequisites(node_id: StringName, path: Array[StringName]) -> void:
 		assert_has(Content.ids(&"skills"), required_id, String(node_id) + " prerequisite exists")
 		if Content.ids(&"skills").has(required_id):
 			_check_prerequisites(required_id, next_path)
+
+
+func test_every_gate_can_be_reached_with_the_other_nodes_in_its_branch() -> void:
+	for node_id: StringName in Content.ids(&"skills"):
+		var node: SkillNodeData = Content.get_item(&"skills", node_id) as SkillNodeData
+		var others: int = 0
+		for other_id: StringName in Content.ids(&"skills"):
+			var other: SkillNodeData = Content.get_item(&"skills", other_id) as SkillNodeData
+			if other.branch == node.branch and other.id != node.id and other.row < node.row:
+				others += other.max_ranks
+		assert_gte(others, node.branch_points_needed, String(node_id) + " gate is reachable")
+
+
+func test_row_and_column_are_unique_inside_a_branch() -> void:
+	var seen: Dictionary[String, StringName] = {}
+	for node_id: StringName in Content.ids(&"skills"):
+		var node: SkillNodeData = Content.get_item(&"skills", node_id) as SkillNodeData
+		var key: String = "%s/%d/%d" % [node.branch, node.row, node.column]
+		assert_false(seen.has(key), "%s shares its place with %s" % [node_id, seen.get(key, &"")])
+		seen[key] = node_id
