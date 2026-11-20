@@ -48,8 +48,7 @@ Tags with a dash (`v0.2.0-rc.1`) become pre-releases and do not move `latest`.
   test first. A bad release is fixed by releasing a newer one (roll forward), never by
   deleting the old one.
 - Main builds count up from the last **stable** tag (`stamp_version.sh` ignores test tags).
-- **Host a server** still lives in the game's `systems/launcher/server_host.gd` until F-82
-  step 4 moves it into the separate launcher.
+- **Host a server** is a panel in the separate launcher (next section).
 
 ## The separate launcher (F-82)
 
@@ -72,6 +71,12 @@ launcher screen of its own (removed in F-82 step 3).
   password). Without it a release still gets the setup exe but no `.sig` or `latest.json`,
   so installed launchers do not update to it. Losing the key means every player reinstalls
   once from a new setup exe built with a new key; keep a copy in a password manager.
+- **Host a server:** the launcher's Host a server panel runs the newest installed game with
+  `--headless -- --server --port=<p> --max-players=<n> --stop-file=<f>` (port and player
+  limit saved in `launcher.json`). Its console output goes to `server\server.log` in the
+  launcher's data folder (Open logs). Stop writes the stop file; closing the launcher while
+  hosting asks, then stops the server. Players, the host too, join from Servers in the game;
+  Play keeps the launcher open while it hosts. The version a server runs is never deleted.
 - **Frozen from v0.1.0:** `ExperimentUndead-Setup-<version>.exe`, its `.sig`, `latest.json`.
 - **Version:** the release workflow stamps the tag's version into the launcher
   (`tools/ci/launcher_release.py stamp`); builds outside a release say `0.0.0`.

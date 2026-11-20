@@ -113,3 +113,18 @@ fn only_the_newest_folders_stay() {
     assert_eq!(installer.installed().len(), KEEP);
     assert!(versions.join("notes").exists());
 }
+
+#[test]
+fn installing_keeps_the_version_a_server_runs() {
+    let dir = common::temp_dir("in-use");
+    let mut installer = Installer::new(dir.join("versions"));
+    for version in ["0.1.0", "0.1.1"] {
+        std::fs::create_dir_all(installer.versions_dir.join(version)).unwrap();
+    }
+    installer.in_use = vec!["0.1.0".to_string()];
+    let zip_path = dir.join("game.zip");
+    std::fs::write(&zip_path, common::game_zip(game_exe_name())).unwrap();
+    let digest = sha256_file(&zip_path).unwrap();
+    installer.install_zip(&zip_path, &digest, "0.1.2").expect("installed");
+    assert_eq!(installer.installed(), vec!["0.1.2", "0.1.1", "0.1.0"]);
+}
