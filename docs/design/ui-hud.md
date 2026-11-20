@@ -28,6 +28,8 @@ Two-way arrows are screens that open on top and close with Esc or B. The first-l
 
 Menus look like containment-facility terminals: dark blue-black glass panels, thin teal-grey borders, and one bright accent per screen. Bio-green is for the experiment (Prototype loot, power-ups, the Vault) and for **one main action button per screen** (Enter World, Join Server, Select Character, the launcher's PLAY), as in the concept art (the person, 2026-11-17). Every other button, focus ring and selected row stays teal.
 
+**Front-end menus (concept art 2026-11-20, F-88).** The main menu and Loadout follow the newer menu art: the FENLIGHT logo (`assets/ui/fenlight_logo.png`, drawn by `tools/assets/menu_art.py`) top left, a left column of spaced capitals with no icons, and a burnt orange brush stroke behind the hovered or focused row (theme variation `MenuBrush` in `systems/ui/theme.tres`). These screens have no green main button and no teal bar; the rest of the front end keeps the older layout below until it is restyled.
+
 **Front-end layout (from the concept art).** Front-end screens use a left column of menu rows or tabs, each with a small line icon, and the selected row gets a teal bar on its left edge. Content sits in large glass panels. The one main action is a wide green button with dark text and a soft green glow, at the bottom right of the screen's content or at the top of the menu column.
 
 | Token | Hex | Used for |
@@ -43,6 +45,7 @@ Menus look like containment-facility terminals: dark blue-black glass panels, th
 | danger | #C3201B | Round number, damage, death, delete |
 | headshot | #FFC845 | Headshot hitmarker and kill numbers |
 | xp | #E3CF9A | XP bar and level-up (brass) |
+| brush | #D9662B | Brush stroke behind the selected row on the restyled front-end menus (darker than Legendary #FF8A1C so it does not read as loot) |
 | experiment | #8DFF3A | Prototype, power-ups, Vault, and the one main action button per screen (gradient #A6FF66 to #6FD626, text bg\_deep) |
 
 Rarity colours come from the style guide: Common #D9D9D2, Uncommon #3FE0C8, Rare #3D7DFF, Epic #A64DFF, Legendary #FF8A1C, Prototype #8DFF3A. Each item shows rarity four ways: border colour, rarity shape (circle for Common up to hazard triangle for Prototype), rarity name in the tooltip, and 1 to 6 pips.

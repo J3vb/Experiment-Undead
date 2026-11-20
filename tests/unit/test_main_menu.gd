@@ -37,7 +37,9 @@ func test_enter_world_has_default_focus_and_existing_match_target() -> void:
 	var match_screen: ScreenData = Content.get_item(&"screens", &"match") as ScreenData
 	assert_true(ResourceLoader.exists(match_screen.scene))
 	assert_eq(match_screen.scene, "res://systems/game/game_session.tscn")
-	assert_eq(menu.enter_button.get_theme_font("font"), menu.get_theme_font("font"))
+	var row_font: FontVariation = menu.enter_button.get_theme_font("font") as FontVariation
+	var body_font: FontVariation = menu.get_theme_font("font") as FontVariation
+	assert_eq(row_font.base_font, body_font.base_font, "menu rows use Atkinson Hyperlegible, spaced out")
 	assert_eq(menu.get_node("Backdrop").process_mode, Node.PROCESS_MODE_DISABLED)
 
 
@@ -107,9 +109,9 @@ func test_menu_rows_are_focusable_in_keyboard_and_gamepad_order() -> void:
 		menu.credits_button,
 		menu.get_node("Screens/Root/Menu/Quit") as Button,
 	]
-	assert_eq(menu.enter_button.text, "Enter World")
-	assert_eq(menu.servers_button.text, "Servers")
-	assert_eq((buttons[-1] as Button).text, "Exit")
+	assert_eq(menu.enter_button.text, "ENTER WORLD")
+	assert_eq(menu.servers_button.text, "SERVERS")
+	assert_eq((buttons[-1] as Button).text, "EXIT")
 	assert_null(menu.get_node_or_null("Screens/Root/Menu/Play"), "no Play solo: Enter world is the one way in")
 	assert_null(menu.get_node_or_null("Screens/Root/HostPanel"), "no Host panel: your world is open by default")
 	for index: int in range(buttons.size()):
@@ -247,3 +249,17 @@ func test_command_line_launch_runs_once_per_process() -> void:
 	assert_true(MainMenu.launch_consumed, "the first menu used up the launch arguments")
 	menu._launch_from_command_line(PackedStringArray(["--host=24634"]))
 	assert_false(Net.is_online(), "a later menu does not host or join again")
+
+
+## F-88 step 1: the FENLIGHT logo replaces the old wordmark and every row wears the brush look.
+func test_logo_and_brush_rows() -> void:
+	var logo: TextureRect = menu.get_node("Screens/Root/Logo") as TextureRect
+	assert_eq(logo.texture.resource_path, "res://assets/ui/fenlight_logo.png")
+	assert_null(menu.get_node_or_null("Screens/Root/Title"), "the EXPERIMENT / UNDEAD labels are gone")
+	for button: Button in menu.menu.get_children().filter(func(node: Node) -> bool: return node is Button):
+		assert_eq(button.theme_type_variation, &"MenuBrush", button.name)
+		var focus: StyleBoxTexture = button.get_theme_stylebox("focus") as StyleBoxTexture
+		assert_not_null(focus, button.name + " focus is the brush stroke")
+		assert_eq(focus.texture.resource_path, "res://assets/ui/brush_stroke.png")
+		assert_true(button.get_theme_stylebox("normal") is StyleBoxEmpty, button.name)
+		assert_eq(button.text, button.text.to_upper(), button.name)

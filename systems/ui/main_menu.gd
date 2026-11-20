@@ -7,6 +7,10 @@ const CREDITS: String = """Atkinson Hyperlegible Next and Mono, `assets/fonts/`
 Braille Institute of America, Applied Design Works
 https://github.com/googlefonts/atkinson-hyperlegible-next · SIL OFL 1.1
 
+Bebas Neue (FENLIGHT logo only), `tools/assets/fonts/`
+The Bebas Neue Project Authors, Dharma Type
+https://github.com/dharmatype/Bebas-Neue · SIL OFL 1.1
+
 GUT (Godot Unit Test) 9.7.1, `addons/gut/`
 Butch Wesley and contributors
 https://github.com/bitwes/Gut · MIT
