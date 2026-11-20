@@ -1,5 +1,5 @@
 // Infected skin, institutional cloth and rubber use their source palette and AO.
-// No rarity or dye inputs: the shared eye/belly material has one instance flag.
+// No rarity or dye inputs.
 shader_type spatial;
 
 const int CLOTH = 8;
@@ -13,7 +13,6 @@ uniform bool pale_head = false;
 uniform bool decay = false;
 uniform vec3 emission_color : source_color = vec3(0.0);
 uniform float emission_strength : hint_range(0.0, 2.0) = 0.0;
-instance uniform bool belly = false;
 
 varying vec3 obj_pos;
 varying vec3 obj_normal;
@@ -76,14 +75,6 @@ void fragment() {
 		shade = 1.0;
 		rough = 0.6;
 		emission = emission_color * clamp(emission_strength, 0.0, 2.0);
-		if (belly) {
-			float line = sin((p.x + p.y) * 40.0 + broad * 5.0) * sin((p.z - p.x) * 31.0 + fleck * 3.0);
-			float footprint = max(fwidth(line), 0.015);
-			float veins = 1.0 - smoothstep(0.04 - footprint, 0.04 + footprint, abs(line));
-			veins = mix(0.12, veins, 1.0 - smoothstep(0.15, 0.8, footprint));
-			shade = 0.18 + veins * 0.035;
-			emission *= 0.04 + veins * 0.10;
-		}
 	} else if (decay) {
 		shade = 0.30 + broad * 0.10;
 		rough = 0.65 - smoothstep(0.65, 0.9, fleck) * 0.10;

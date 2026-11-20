@@ -14,7 +14,7 @@ from mathutils import Matrix, Quaternion, Vector
 from mathutils.bvhtree import BVHTree
 
 
-@pytest.fixture(params=["shambler", "crawler", "bloater"])
+@pytest.fixture(params=["crawler"])
 def hands(request):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     skeleton = character_rig.build_armature()

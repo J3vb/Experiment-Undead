@@ -74,6 +74,8 @@ func setup(
 ) -> void:
 	data = p_data
 	net_id = p_net_id
+	# Before the rig is ready (`visual` is @onready): every peer picks the same look from the synced id.
+	($Visual as ZombieRig).look = hash(net_id)
 	_max_health = data.max_health * health_mult
 	_speed = data.move_speed * speed_mult
 	if not data.uses_speed_mix:

@@ -17,20 +17,16 @@ import check_models
 import pytest
 import zombie_details
 from mathutils import Vector
-from zombie_model import build_bloater, build_crawler, build_shambler
+from zombie_model import build_crawler
 
-BUILDERS = {"shambler": build_shambler, "crawler": build_crawler, "bloater": build_bloater}
+BUILDERS = {"crawler": build_crawler}
 # Captured before the review from 109bb6d, quantized to 1 mm / 0.001 basis units
 # to tolerate glTF floating-point round trips while detecting moved joint frames.
 REST_DIGESTS = {
-    "shambler": "7cc3d394eb7248a75751407711bba29a38d2770459efcd5e8fa9fd3d83e325d6",
     "crawler": "28ec7421d3aee53cf2c604d2df857add957a6ed9e57fd0300f8e7e3ad18885d8",
-    "bloater": "e0e844dab39065a2c93a59f8b813a6027ea1fe1694540e162b1c596c68373e70",
 }
 MARKERS = {
-    "shambler": {"Eyes": (0, -0.17117195, 1.68908620), "HeadCenter": (0, -0.09114612, 1.69365335)},
     "crawler": {"Eyes": (0, -0.36946622, 0.52777958), "HeadCenter": (0, -0.28946623, 0.52277958)},
-    "bloater": {"Eyes": (0, -0.12070337, 1.70068741), "HeadCenter": (0, -0.04056747, 1.69888878)},
 }
 
 

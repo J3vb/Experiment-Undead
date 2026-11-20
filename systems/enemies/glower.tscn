@@ -18,6 +18,7 @@ shape = SubResource("capsule")
 
 [node name="Visual" parent="." index="1"]
 model = ExtResource("2")
+extra_models = Array[PackedScene]([])
 
 [node name="Body" parent="HitZones" index="1"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)

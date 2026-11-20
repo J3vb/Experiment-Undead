@@ -1,4 +1,4 @@
-"""Tripo zombies (tools/assets/tripo/zombies.json, F-28 step 1): intake `--kind zombie` output passes the zombie rules.
+"""Tripo zombies (tools/assets/tripo/zombies.json, F-28 step 1, F-86): intake `--kind zombie` output passes the rules.
 
 Run from the repo root: python -m pytest tools/assets/tests/test_tripo_zombies.py
 """
@@ -33,7 +33,7 @@ def test_zombie_kind_matches_the_zombie_folder_budget():
 
 
 def test_manifest_rows_are_zombies_with_rules():
-    assert [row["name"] for row in ROWS] == ["glower"]
+    assert [row["name"] for row in ROWS] == ["glower", "shambler", "shambler_guard", "bloater"]
     for row in ROWS:
         assert row["kind"] == "zombie" and row["folder"] == "zombies"
         assert row["name"] in zombie_checks.JOINTS and row["name"] in zombie_checks.TRIANGLES

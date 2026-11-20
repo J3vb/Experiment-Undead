@@ -1,5 +1,5 @@
-## Import script for the Glower (tripo_intake.py --kind zombie): its one ZombieBaked material becomes a shared
-## vein-glow ShaderMaterial (bio-green where its albedo is green). Set per file in the .glb.import.
+## Import script for Tripo zombies (tripo_intake.py --kind zombie: Glower, Shamblers, Bloater): their one
+## ZombieBaked material becomes a shared vein-glow ShaderMaterial (bio-green where the albedo is green).
 @tool
 extends EditorScenePostImport
 
