@@ -102,3 +102,11 @@ func test_hud_ring_counts_down_and_goes() -> void:
 	assert_almost_eq(row.time_left(PAYDAY), 30.0, 0.001, "ring refills on a re-pickup")
 	row._process(31.0)
 	assert_eq(row.time_left(PAYDAY), 0.0, "ring gone")
+
+
+func test_overtime_lengthens_the_collectors_timed_power_ups() -> void:
+	player.skill_ranks = {&"overtime": 2}
+	player.equip_gear([])
+	var pickup: PowerUp = drops.drop(PAYDAY, Vector3(40, 0, 40))
+	drops.on_collected(pickup, player)
+	assert_almost_eq(drops.time_left(PAYDAY), 36.0, 0.001, "30 s + 3 s per rank")

@@ -114,6 +114,21 @@ live state belongs in objects such as `WeaponInstance`.
     choosing another throwable needs a small code change and a plan.
 4. Add a lore row (`design/lore.md`, "Grenades and field kit") and extend `tests/content/test_throwables.gd`.
 
+## A skill
+
+1. Stat skill: a new `content/skills/<id>.tres` (`SkillNodeData`) with `stat` set to a stack
+    stat name gear affixes use (`recoil_pct`, `hs_pct`, `reload_pct`, `max_health`, ...), `op`
+    (`increased` percent, `more` percent, `flat` units) and `per_rank` in the description's units
+    (`{v}` in the text). No code: `SkillEffects.add_to` folds it into the player's `StatBlock`.
+2. A stat nothing reads yet needs one `get_stat(&"<stat>")` where the rule lives (the server for
+    shared state, the owner for its own guns and movement), plus a cap in `content/loot/stat_caps.tres`
+    if the design gives one.
+3. Rule skill: add a value to `SkillNodeData.Rule`, set `rule` in the `.tres`, and check
+    `player.skill_rules.has(SkillNodeData.Rule.<NAME>)` where it applies. Never check the skill id.
+4. Ranks reach the server with the loadout (`LoadoutSync`); nothing else to sync.
+5. Extend `tests/content/test_skills.gd` and add a test in `tests/unit/test_skill_effects.gd`,
+    `test_skill_effects_play.gd` or `test_skill_rules.gd` that fails without the skill.
+
 ## A buyable or machine
 
 1. Reuse `systems/interactables/door.tscn`, `wall_buy.tscn`, `med_dispenser.tscn`,
