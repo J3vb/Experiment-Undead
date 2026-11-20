@@ -164,3 +164,34 @@ func test_reduce_motion_holds_the_tank_glow_still() -> void:
 	Settings._apply_all()
 	if FileAccess.file_exists("user://test_research_screen_settings.cfg"):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path("user://test_research_screen_settings.cfg"))
+
+
+func test_holding_escape_only_warns() -> void:
+	screen.add_rank(&"steady_hands")
+	var press: InputEventKey = InputEventKey.new()
+	press.physical_keycode = KEY_ESCAPE
+	press.pressed = true
+	screen._input(press)
+	var repeat: InputEventKey = press.duplicate() as InputEventKey
+	repeat.echo = true
+	screen._input(repeat)
+	screen._input(repeat)
+	assert_eq(closes, 0, "key repeat never discards new ranks")
+	assert_true(screen.has_unsaved_changes())
+
+
+func test_confirm_after_a_warning_resets_the_back_button() -> void:
+	screen.add_rank(&"steady_hands")
+	screen.back()
+	assert_eq(screen.get_node("%Back").text, "Discard changes")
+	screen.confirm()
+	assert_eq(screen.get_node("%Back").text, "Back")
+
+
+func test_a_rank_added_after_reset_all_can_come_off_again() -> void:
+	screen.add_rank(&"steady_hands")
+	screen.confirm()
+	screen.reset_all()
+	screen.add_rank(&"steady_hands")
+	screen.remove_rank(&"steady_hands")
+	assert_false(screen.pending.has(&"steady_hands"))
