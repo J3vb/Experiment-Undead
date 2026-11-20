@@ -188,7 +188,7 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
 - Build: Tauri NSIS bundle (`installMode: currentUser`, Start menu and
   desktop shortcut, uninstall entry), product name "Fenlight
   Launcher". Updater plugin with the public key in `tauri.conf.json` and the
-  endpoint `https://github.com/J3vb/Experiment-Undead/releases/latest/download/latest.json`
+  endpoint `https://github.com/J3vb/Fenlight/releases/latest/download/latest.json`
   for stable; test reads `latest.json` from the newest pre-release through
   the Releases API. `release.yml` builds on `windows-latest` with
   `TAURI_SIGNING_PRIVATE_KEY` and attaches the setup, `.sig` and
