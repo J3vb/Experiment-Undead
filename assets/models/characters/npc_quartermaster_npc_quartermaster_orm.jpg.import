@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bfnq6dlqeb6lh"
-path="res://.godot/imported/npc_quartermaster_npc_quartermaster_orm.jpg-2257453cffcf0cc855d8ad5ff4a8810e.ctex"
+path.s3tc="res://.godot/imported/npc_quartermaster_npc_quartermaster_orm.jpg-2257453cffcf0cc855d8ad5ff4a8810e.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "759bf63137c7a330a115560119dda158"
@@ -14,7 +15,8 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/characters/npc_quartermaster_npc_quartermaster_orm.jpg"
-dest_files=["res://.godot/imported/npc_quartermaster_npc_quartermaster_orm.jpg-2257453cffcf0cc855d8ad5ff4a8810e.ctex"]
+dest_files=["res://.godot/imported/npc_quartermaster_npc_quartermaster_orm.jpg-2257453cffcf0cc855d8ad5ff4a8810e.s3tc.ctex"]
+
 [params]
 
 compress/mode=2
