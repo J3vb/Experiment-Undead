@@ -10,6 +10,8 @@ const TIMING_STATS: Dictionary[StringName, StringName] = {
 	&"swap_time": &"handling_pct",
 }
 
+static var _unknown_warned: Dictionary[StringName, bool] = {}
+
 var data: Dictionary
 var stats: StatBlock = StatBlock.new()
 
@@ -21,6 +23,22 @@ func _init(item: Dictionary) -> void:
 	var implicit: Variant = data.get("imp")
 	if implicit is Array:
 		_load_implicit(implicit)
+	var named: LegendaryData = legendary_of(data)
+	if named:
+		_add_trait(named, float(data.trait[1]))
+
+
+## The item's Legendary, or null for no trait or a trait id this build does not know (warned once).
+static func legendary_of(item: Dictionary) -> LegendaryData:
+	var line: Variant = item.get("trait")
+	if not line is Array or line.size() != 2:
+		return null
+	var id: StringName = StringName(str(line[0]))
+	var named: LegendaryData = Content.get_item(&"loot", id) as LegendaryData if Content.has(&"loot", id) else null
+	if named == null and not _unknown_warned.has(id):
+		_unknown_warned[id] = true
+		Log.warn(&"loot", &"unknown_legendary", {"id": id, "uid": item.get("uid", "")})
+	return named
 
 
 func value(stat: StringName, base: float = 1.0, extra: StatBlock = null) -> float:
@@ -130,3 +148,8 @@ func _add(affix: AffixData, rolled: float) -> void:
 	elif affix.op == "flat" and affix.stat == &"regen_delay":
 		rolled = -rolled
 	stats.add_modifier(affix.stat, affix.op, rolled, StringName(data.get("uid", "")))
+
+
+func _add_trait(named: LegendaryData, q: float) -> void:
+	var rolled: float = ItemRoller.trait_value(named, q)
+	stats.add_modifier(named.stat, "flat", rolled, StringName(data.get("uid", "")))

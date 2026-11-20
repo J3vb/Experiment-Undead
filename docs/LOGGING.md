@@ -131,6 +131,7 @@ The server also prints every warning and error to stdout as
 | `net.skills_rejected` | warn | Server refused a client's skill ranks sent with its loadout (`peer`, `reason`): `unknown_skill` (id not in `content/skills/`), `bad_rank` (not an int from 1 to the node's `max_ranks`), `too_many_points` (more than 54). The whole loadout is ignored; check that both builds have the same skills content |
 | `loot.gear_worn` | info | The owner wore a Pack gear item mid-run (`uid`, `slot`); the old piece went into its Pack slot |
 | `loot.gear_equip_refused` | warn | A Pack gear item could not be worn (`uid`, `banked`): the run was already banked or there is no character profile (soak bots, tests). In a normal run this should never appear |
+| `loot.unknown_legendary` | warn | A saved item names a Legendary (`id`, `uid`) this build does not know (a save from a newer build or a removed Legendary). The item keeps its base name and no trait. Once per id |
 | `net.interaction_rate_limited` | warn | A client sent interact requests less than 0.1 s apart; extra ones are refused. At most one per second |
 | `ui.unknown_screen` | warn | `UI.push` or `UI.replace` got an id with no `content/screens/<id>.tres`; `id`. Nothing opens |
 | `ui.pop_empty` | warn | `UI.pop()` with no screen open: a screen emitted `closed` twice or something popped a screen it did not push |
