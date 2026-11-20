@@ -197,8 +197,11 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
 - Files: `launcher/src-tauri/tauri.conf.json`, `src/main.rs`,
   `.github/workflows/release.yml`, `tools/ci/make_latest_json.py` (new),
   `tools/ci/test_make_latest_json.py` (new), `tools/ci/test_workflows.py`,
-  `docs/RELEASING.md`.
+  `tools/ci/stamp_version.sh` and `tools/ci/test_stamp_version.py` (the
+  "Launcher version" rule: also write the version into `tauri.conf.json`;
+  the launcher reports it instead of `CARGO_PKG_VERSION`), `docs/RELEASING.md`.
 - Tests: `test_make_latest_json.py` (version, notes, URL, signature);
+  `test_stamp_version.py` (the game and launcher get the same version);
   `test_workflows.py` (release attaches the three files); the release job
   installs the setup with `/S`, checks the exe and shortcut, then uninstalls
   and checks they are gone.

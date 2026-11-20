@@ -36,7 +36,9 @@ hand.
 - Code-built models stay where Tripo is weak (snap-together kit pieces) and for
   done features until a plan moves them. F-83
   ([halcyon-machines-fill.md](../plans/halcyon-machines-fill.md)) moves the
-  Halcyon Labs Med Dispenser, Reforger, power switch and exfil hatch.
+  Halcyon Labs Med Dispenser, Reforger, power switch and exfil hatch, and adds
+  12 Tripo room props to its barest rooms (`assets/models/props/`, listed in
+  `tools/assets/tripo/halcyon.json`).
 - Input images may come from Tripo's own text to image (`tripo_make.py`, about
   5 credits each); the person approves them before any model is paid for.
 
