@@ -206,5 +206,6 @@ tween. Checked by the existing benchmark job (24 zombies).
 
 ## Open decisions
 
-- none (the person asked for all zombies on Tripo; the two Shambler looks and
-  the Crawler cut are provisional picks, listed in DECISIONS in their step).
+- none
+
+Provisional picks (listed in DECISIONS in their step): two Shambler looks picked from net_id; Crawler made from the lab tech Shambler with its legs cut.
