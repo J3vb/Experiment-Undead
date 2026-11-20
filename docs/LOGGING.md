@@ -103,6 +103,7 @@ The server also prints every warning and error to stdout as
 | `net.join_failed` | warn | Client side: the pending join could not start (`error`, a Godot error string), so the game goes back to the main menu. Usually a bad address or a port the OS would not open |
 | `net.connection_lost` | warn | Client side: the server disconnected, the connection failed or the server refused authentication. Run XP is banked and the game goes back to the main menu. Look at the server's log for the same time |
 | `net.round_state_ignored` | warn | A round message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
+| `power_ups.timer_ignored` | warn | A power-up timer message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
 | `net.interaction_rejected` | warn | Server refused a client's interact request (`peer`, `reason`, `path`): `player_not_alive`, `match_over`, `unknown_path`, `out_of_range`, `grant_pending` (last gun grant not applied yet), `bad_facts` (gun facts with wrong fields or ids). At most one per second. Many `out_of_range` = `InteractionSync.REACH_SLACK` too tight |
 | `net.deploy_refused` | warn | The hub's deploy vote or `deploy()` was refused (`place`, `reason` or `hub`): an unknown place id on a deploy board, or a deploy outside the hub. A board with a typo in `place` |
 | `net.place_change_kicked` | warn | A client was sent to another place but had not left after `Net.CONNECT_TIMEOUT`, so the server dropped it (`peer`). It never got the order: check the network |
@@ -131,13 +132,15 @@ The server also prints every warning and error to stdout as
 | `launcher.root_refreshed` / `root_refresh_failed` | info / warn | A started copy replaced the install folder's exe and pck (`version`, `tries`), or gave up after 15 s (`root`): the old copy was still running or the folder is read-only |
 | `launcher.server_started` / `server_stop_requested` / `server_exited` / `server_start_failed` | info / warn | The launcher's Host a server panel (`version`, `port`, `pid`, `exe`). A quick `server_exited` after start = port in use; read that server's own log |
 
-The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher.log` in its data folder (`%LOCALAPPDATA%\Experiment Undead\` on Windows): `{"t", "level", "event", "message"}`. The `launcher.*` lines above belong to the old built-in launcher and go away in F-82 step 3.
+The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher.log` in its data folder (`%LOCALAPPDATA%\com.experimentundead.launcher\` on Windows): `{"t", "level", "event", "message"}`. The `launcher.*` lines above belong to the old built-in launcher and go away in F-82 step 3.
 
 | Event | Level | Meaning |
 |---|---|---|
 | `check_failed` | warn | The launcher could not read the GitHub Releases list (`message` has the reason; "GitHub answered 403" = rate limit, 60 per hour per address). It plays the newest installed version offline |
 | `installed` | info | A release is downloaded, checked and unpacked into `game/versions/<version>/` (`message` = version) |
 | `install_failed` | warn | A download failed, was cancelled, had the wrong SHA-256, or could not be unpacked (`message` says which). Nothing was installed |
+| `self_updated` | info | The launcher installed a newer launcher from the release's `latest.json` (`message` = manifest URL) and restarts |
+| `self_update_failed` | warn | A launcher update could not be checked, downloaded or installed (`message`; "signature" = the setup exe was not signed with our key). The old launcher keeps running |
 | `ui.unknown_screen` | warn | `UI.push` or `UI.replace` got an id with no `content/screens/<id>.tres`; `id`. Nothing opens |
 | `ui.pop_empty` | warn | `UI.pop()` with no screen open: a screen emitted `closed` twice or something popped a screen it did not push |
 | `ui.loading_failed` | warn | A root behind a loading screen failed its threaded load; `scene`. The router falls back to a plain scene change |

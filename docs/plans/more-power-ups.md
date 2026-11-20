@@ -1,6 +1,6 @@
 # Plan: More power-ups in the drop deck
 
-Status: Approved
+Status: Building
 Roadmap: F-26 / issue #118
 Phase: P3
 Size: M

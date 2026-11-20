@@ -1,4 +1,4 @@
-## One imported first-person arm rig per weapon holder, showing the owner's worn vest cuffs and charm.
+## One imported first-person arm rig per weapon holder, showing the owner's worn vest cuffs, charm and implant.
 class_name PlayerArmView
 extends Node3D
 
@@ -157,6 +157,31 @@ func apply_look(look: CharacterLook) -> void:
 		_attach_cuffs(look.slots[&"vest"])
 	if look.slots.has(&"charm"):
 		_attach_charm(look.slots[&"charm"])
+	if look.slots.has(&"implant"):
+		_attach_implant(look.slots[&"implant"])
+
+
+func _attach_implant(entry: Dictionary) -> void:
+	var shown: Array = GearRig.resolve(&"implant", entry)
+	var visual: GearVisual = shown[0]
+	var finish: RarityLook = shown[1]
+	var piece: Node3D = visual.scene_for(finish.tier).instantiate() as Node3D
+	var port: Node = piece.find_child("Port", true, false)
+	if port == null or piece.find_child("Module", true, false) == null:
+		_warn_piece(visual.id)
+		piece.free()
+		return
+	port.free()
+	var attachment: BoneAttachment3D = BoneAttachment3D.new()
+	attachment.name = "Implant"
+	attachment.bone_name = "forearm_L"
+	skeleton.add_child(attachment)
+	attachment.add_child(piece)
+	var rest: Transform3D = skeleton.get_bone_global_rest(skeleton.find_bone("forearm_L"))
+	piece.basis = rest.basis.inverse() * Basis(Vector3.BACK, PI / 4.0)
+	_show_piece(
+		attachment, finish, entry.get("dyes", [CharacterLook.DEFAULT_DYE_MAIN, CharacterLook.DEFAULT_DYE_ACCENT])
+	)
 
 
 func _attach_charm(entry: Dictionary) -> void:

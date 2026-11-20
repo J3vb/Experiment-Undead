@@ -1,4 +1,4 @@
-## First-person gear review: hip and ADS shots of the arms, cuffs and charm per rarity (F-42 look-check).
+## First-person gear review: hip and ADS shots of the arms, cuffs, charm and implant per rarity (F-42 look-check).
 ## xvfb-run -a godot --path . --rendering-driver vulkan --rendering-method forward_plus
 ##   res://tools/fp_gear_review.tscn -- --out /tmp/fp-gear [--guns rifle_ar,talon_dmr] [--vest vest_heavy]
 extends "res://tools/weapon_review.gd"
@@ -33,6 +33,7 @@ func _capture_gear(model: String, vest: StringName, rarity: StringName) -> void:
 	if not rarity.is_empty():
 		look.slots[&"vest"] = {"visual_id": vest, "rarity": rarity}
 		look.slots[&"charm"] = {"visual_id": &"charm_dog_tags", "rarity": rarity}
+		look.slots[&"implant"] = {"visual_id": &"implant_reflex", "rarity": rarity}
 	holder.arm_view.apply_look(look)
 	var label: String = String(rarity) if not rarity.is_empty() else "no_vest"
 	for aimed: bool in [false, true]:
