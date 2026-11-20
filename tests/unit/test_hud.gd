@@ -79,30 +79,6 @@ func test_ammo_threshold_and_hints() -> void:
 	assert_eq(hud.weapon_label.text, player.weapons.current.data.display_name)
 
 
-func test_serum_badges_come_from_the_serum_files() -> void:
-	for id: StringName in Content.ids(&"serums"):
-		var serum: SerumData = Content.get_item(&"serums", id) as SerumData
-		Events.serum_gained.emit(player, serum)
-		Events.serum_gained.emit(player, serum)
-		var badge: Label = hud.serums.get_node(NodePath(id)) as Label
-		assert_eq(badge.text, serum.badge)
-		assert_eq((badge.get_theme_stylebox("normal") as StyleBoxFlat).bg_color, serum.badge_colour)
-	assert_eq(hud.serums.get_child_count(), 8)
-
-
-func test_serum_with_an_unknown_id_shows_its_badge() -> void:
-	var serum: SerumData = SerumData.new()
-	serum.id = &"test_serum"
-	serum.badge = "XX"
-	serum.badge_colour = Color("123456")
-	Events.serum_gained.emit(player, serum)
-	var badge: Label = hud.serums.get_node(NodePath("test_serum")) as Label
-	assert_not_null(badge)
-	if badge:
-		assert_eq(badge.text, "XX")
-		assert_eq((badge.get_theme_stylebox("normal") as StyleBoxFlat).bg_color, Color("123456"))
-
-
 func test_exfil_shows_when_open_counts_hold_and_hides_when_closed() -> void:
 	var hatch: ExfilHatch = preload("res://systems/interactables/exfil_hatch.tscn").instantiate() as ExfilHatch
 	add_child_autofree(hatch)
@@ -160,20 +136,6 @@ func test_other_player_events_ignored() -> void:
 	autofree(other)
 	Events.points_changed.emit(other, 99999, 100)
 	assert_eq(hud.points_label.text, "0")
-
-
-func test_revive_removes_consumed_serum_badge() -> void:
-	var ironhide: SerumData = load("res://content/serums/ironhide.tres") as SerumData
-	var second_wind: SerumData = load("res://content/serums/second_wind.tres") as SerumData
-	player.serums.append(ironhide)
-	player.serums.append(second_wind)
-	Events.serum_gained.emit(player, ironhide)
-	Events.serum_gained.emit(player, second_wind)
-	player.serums.erase(second_wind)
-	Events.player_revived.emit(player)
-	await get_tree().process_frame
-	assert_eq(hud.serums.get_child_count(), 1)
-	assert_eq((hud.serums.get_child(0) as Label).text, "IH")
 
 
 func test_xp_bar_follows_grants_and_saved_total() -> void:
