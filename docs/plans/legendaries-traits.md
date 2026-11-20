@@ -1,10 +1,10 @@
 # Plan: Legendaries and traits
 
-Status: Review
+Status: Approved
 Roadmap: F-31 / issue #116
 Phase: P6
 Size: L
-Approved by:
+Approved by: plan PR #466 (fresh Claude review, Codex out of quota), the person on the approval card (2026-11-20)
 Lore link: docs/design/lore.md#story-links-for-game-content, "Legendaries" row: named items with a past, each name hinting at a place or person from the lore. Each Legendary gets a one-line flavour text in that spirit. One rename (Second Wind becomes Last Rites, below) to fix the name clash the lore audit flagged.
 
 ## Goal
@@ -28,22 +28,22 @@ In:
 
 | Legendary | Base (id) | Trait | Range | Runs on | Step |
 |---|---|---|---|---|---|
-| Tidewater | Vanguard AR (`rifle_ar`) | Each hit on the same zombie +X% damage, up to 10 stacks; a new target keeps half | 3-5% | server | 1 |
-| Lantern Fall | Vanguard AR (`rifle_ar`) | Headshot kills explode for X% of weapon damage | 25-40% | server | 2 |
-| Ricochet | Mako PDW (`mako_pdw`) | Headshots bounce to the nearest zombie within 8 m for X% damage | 40-70% | server | 2 |
-| Choir Mark | Talon DMR (`talon_dmr`) | Kills mark zombies within 6 m for 4 s; marked zombies take +X% damage from the whole squad | 15-25% | server | 2 |
-| Bloodline | Kestrel SMG (`kestrel_smg`) | Hits heal X% of damage dealt while you are below half health | 2-4% | server | 2 |
-| Black Ledger | Charm (`charm_keycard`) | Carrying more than 10,000 points gives +X% damage | 5-10% | server | 2 |
-| Bottomless | Kestrel SMG (`kestrel_smg`) | Every Xth kill refills the magazine | 15th-10th | owner | 3 |
-| Overpressure | Brenner Trench (`brenner_trench`) | First shot after a reload fires X times the pellets | 1.6-2x | owner | 3 |
-| Dead Man's Hand | Hollis .44 (`hollis_44`) | The last round in the magazine deals X times damage and always staggers | 3-5x | owner | 3 |
-| Cold Snap | Atlas Auto (`atlas_auto`) | Reloading an empty magazine freezes zombies within X m for 2 s | 3-5 m | owner asks, server freezes | 3 |
-| Quarantine Shell | Vest (`vest_heavy`) | The first hit every X s is fully blocked | 10-6 s | server | 4 |
-| Iron Lung | Vest (`vest_medium`) | Health regen starts at once after a kill streak of X | 6-4 | server | 4 |
-| Last Rites (was Second Wind) | Warden P9 (`pistol_service`) | While downed, X kills with this gun revive you, once per round | 8-5 | server | 4 |
-| Twin Pin | Implant (`implant_relay`) | Frags split into 2 smaller frags at X% damage each | 55-70% | server | 5 |
+| Tidewater | Vanguard AR (`rifle_ar`) | Each hit on the same zombie +X% damage, up to 10 stacks; a new target keeps half | 3-5% | server | 2 |
+| Lantern Fall | Vanguard AR (`rifle_ar`) | Headshot kills explode for X% of weapon damage | 25-40% | server | 3 |
+| Ricochet | Mako PDW (`mako_pdw`) | Headshots bounce to the nearest zombie within 8 m for X% damage | 40-70% | server | 3 |
+| Choir Mark | Talon DMR (`talon_dmr`) | Kills mark zombies within 6 m for 4 s; marked zombies take +X% damage from the whole squad | 15-25% | server | 3 |
+| Bloodline | Kestrel SMG (`kestrel_smg`) | Hits heal X% of damage dealt while you are below half health | 2-4% | server | 3 |
+| Black Ledger | Charm (`charm_keycard`) | Carrying more than 10,000 points gives +X% damage | 5-10% | server | 3 |
+| Bottomless | Kestrel SMG (`kestrel_smg`) | Every Xth kill refills the magazine | 15th-10th | owner | 4 |
+| Overpressure | Brenner Trench (`brenner_trench`) | First shot after a reload fires X times the pellets | 1.6-2x | owner | 4 |
+| Dead Man's Hand | Hollis .44 (`hollis_44`) | The last round in the magazine deals X times damage (the "always staggers" part waits for F-90: zombies have no stagger yet) | 3-5x | owner | 4 |
+| Cold Snap | Atlas Auto (`atlas_auto`) | Reloading an empty magazine freezes zombies within X m for 2 s | 3-5 m | owner asks, server freezes | 4 |
+| Quarantine Shell | Vest (`vest_heavy`) | The first hit every X s is fully blocked | 10-6 s | server | 5 |
+| Iron Lung | Vest (`vest_medium`) | Health regen starts at once after a kill streak of X | 6-4 | server | 5 |
+| Last Rites (was Second Wind) | Warden P9 (`pistol_service`) | While downed, X kills with this gun revive you, once per round | 8-5 | server | 5 |
+| Twin Pin | Implant (`implant_relay`) | Frags split into 2 smaller frags at X% damage each | 55-70% | server | 6 |
 
-- From step 5: a Legendary roll only picks bases that have a Legendary, as
+- From step 6: a Legendary roll only picks bases that have a Legendary, as
   affixes.md says ("each Legendary drops only on its base"). Until then,
   bases without one keep rolling unnamed Legendaries (as today), so drops do
   not shrink to one gun while the steps land.
@@ -76,7 +76,7 @@ Not in (non-goals, and where each one goes instead):
 - Foundations touched (numbers from docs/FOUNDATIONS.md): 2 ids in data (all
   trait numbers and bases in `.tres`), 3 item effects where the server applies
   the hit (`HitClaims.apply_server_hit` already has the attacker and the item
-  uid), 6 co-op messages (one new owner-to-server request in step 3). None
+  uid), 6 co-op messages (one new owner-to-server request in step 4). None
   shaky.
 - Decision records that apply (docs/adr/): 0003 trusted-client co-op. Owner
   traits that change the owner's own gun (magazine, pellets, last-round
@@ -136,26 +136,36 @@ Not in (non-goals, and where each one goes instead):
 | systems/loot/legendary_data.gd | new | `LegendaryData` resource |
 | content/loot/legendaries/*.tres | new | one per Legendary (14 over the steps) |
 | systems/loot/item_roller.gd | changed | adds the trait to Legendary rolls |
-| systems/loot/item_instance.gd | changed | loads the trait as a stat line; `legendary()`; `display_name()` |
+| systems/loot/item_instance.gd | changed | loads the trait as a stat line; `legendary()` |
+| systems/loot/loot_drop.gd | changed | `item_name` returns the Legendary's name |
+| systems/loot/item_loadout.gd | changed | Bloodline beside Leech in `apply_hit` |
 | systems/loot/legendary_traits.gd | new | server node: per-player trait state and the server-side trait effects |
-| systems/game/game_session.gd | changed | creates `LegendaryTraits` next to `HitClaims` |
-| systems/net/hit_claims.gd | changed | calls `LegendaryTraits` in `apply_server_hit`; wider bounds for Overpressure and Dead Man's Hand items |
+| systems/game/game_session.gd | changed | creates `LegendaryTraits` on every peer next to `HitClaims` |
+| systems/net/hit_claims.gd | changed | one `LegendaryTraits.on_hit` call in `apply_server_hit`; `claim_hit` scales the item's WeaponData for Overpressure and Dead Man's Hand |
 | systems/weapons/weapon_instance.gd | changed | owner-side kill count and "first shot after reload" flag |
-| systems/weapons/weapon.gd, systems/weapons/weapon_holder.gd | changed | owner traits (step 3) |
-| systems/player/revive.gd | changed | Quarantine Shell block, Last Rites |
-| systems/throwables/*.gd | changed | Twin Pin split (step 5) |
-| systems/loot/loot_service.gd | changed | Legendary rolls pick only bases with a Legendary (step 5) |
-| systems/ui/item_tooltip.gd, systems/ui/loot_feed.gd, results screen | changed | Legendary name and trait line |
-| core/build.gd | changed | `PROTOCOL_VERSION` +1 in step 3 (new RPC) |
+| systems/weapons/weapon.gd, systems/weapons/weapon_holder.gd | changed | owner traits (step 4) |
+| systems/player/revive.gd | changed | takes the go-down rule from player.gd; Quarantine Shell, Last Rites |
+| systems/player/player.gd | changed | lines moved out to Revive only (step 5) |
+| systems/damage/health_component.gd | changed | public `start_regen_now()` for Iron Lung |
+| systems/weapons/effects/frost.gd | changed | `hold(zombie, seconds)`: frozen without shatter |
+| systems/throwables/*.gd | changed | Twin Pin split (step 6) |
+| systems/loot/loot_service.gd | changed | Legendary rolls pick only bases with a Legendary (step 6) |
+| systems/ui/item_tooltip.gd, systems/ui/character_screen.gd, systems/ui/results_screen.gd | changed | trait line; names through `LootDrop.item_name` |
+| core/build.gd | changed | `PROTOCOL_VERSION` +1 in step 4 (new RPC) |
 
 Autoloads, managers or base classes added: `LegendaryTraits` node (Keep it
 simple 6: it owns state no node owns today, the per-player Tidewater stacks,
-Choir marks, Quarantine timers and Last Rites counts). No base class: traits
-are not one script each (see Data).
+Choir marks and Cold Snap cooldowns). No base class: traits are not one
+script each (see Data). Split by job so no file passes 350: hit and kill
+traits in `legendary_traits.gd`, owner gun traits in
+`systems/weapons/owner_traits.gd`, player traits (Quarantine Shell, Iron
+Lung, Last Rites) in `Revive`, Twin Pin in the throwables code.
 
 Files over 300 lines this plan grows: `systems/player/player.gd` (350, at the
-limit) is not touched; player-side trait checks go in `Revive` and
-`LegendaryTraits`. `weapon.gd` (288) and `weapon_holder.gd` (296) get one or
+limit) only shrinks: step 5 moves the go-down rule (`_on_died`,
+`can_self_revive`) into `Revive` before Last Rites uses it. `claim_hit` is
+about 54 lines and `apply_server_hit` near complexity 10, so each gets one
+call, not inline trait code. `weapon.gd` (288) and `weapon_holder.gd` (296) get one or
 two calls each; the owner logic lives in a new small
 `systems/weapons/owner_traits.gd` (static functions) so neither passes 350.
 
@@ -186,7 +196,7 @@ two calls each; the owner logic lives in a new small
   on one base (Vanguard AR, Kestrel SMG) pick evenly with the roller's RNG.
 - Save format change: none. `v` stays 1. Old Legendaries have
   `"trait": null` and stay as they are.
-- Network: drops already send the whole dict. Step 3 adds one RPC
+- Network: drops already send the whole dict. Step 4 adds one RPC
   (`request_cold_snap(item_uid: String)`), protocol +1 (one above main's
   value when that step merges).
 - Content checks in `tests/content/test_legendaries.gd` (new): every
@@ -230,126 +240,161 @@ does. No per-frame cost, no allocation per hit beyond the existing
 
 ## Steps
 
-### Step 1: Legendary data, roll, save, tooltip and Tidewater
+### Step 1: Legendary data, roll, save and names
 
-- Build: `LegendaryData`; `content/loot/legendaries/tidewater.tres`.
-  `ItemRoller.roll_weapon` and `roll_gear`: for rarity `legendary` on a base
-  with Legendaries, pick one with the RNG and add `[id, q]`. `ItemInstance`
-  loads the trait as a flat stat line (unknown id: no line, one `Log.warn`),
-  adds `legendary() -> LegendaryData` and static `display_name(item)` (the
-  tooltip, loot feed and results screen all call it). Tooltip: trait line on
-  top in Legendary orange with a diamond, value from the roll; Alt shows the
-  range like other lines. New `LegendaryTraits` node (server) created by
-  `GameSession` next to `HitClaims`; `apply_server_hit` calls
-  `traits.scale_hit(zombie, info)` before `receive_hit`. Tidewater: per
-  attacker, `[zombie id, stacks]`; each hit with that item adds a stack up
-  to 10, a new target keeps half (rounded down); the hit's damage is multiplied
-  by `1 + stacks * value / 100` (a "more" multiplier, after bounds checks).
-  DECISIONS: rewrite "Loot extras" (traits now run), add "TraitData merged
-  into LegendaryData" and "trait = stat line". Roadmap row: Building.
-- Files: systems/loot/legendary_data.gd (new), content/loot/legendaries/tidewater.tres (new), systems/loot/item_roller.gd, systems/loot/item_instance.gd, systems/loot/legendary_traits.gd (new), systems/game/game_session.gd, systems/net/hit_claims.gd, systems/ui/item_tooltip.gd, systems/ui/loot_feed.gd, the results screen script, docs/DECISIONS.md, docs/ROADMAP.md.
+- Build: `LegendaryData`; `content/loot/legendaries/tidewater.tres` (its stat
+  does nothing until step 2). `ItemRoller.roll_weapon` and `roll_gear`: for
+  rarity `legendary` on a base with Legendaries, after the affixes (so seeded
+  tests keep their outputs), pick one with the RNG and add `[id, q]`.
+  `ItemInstance` loads the trait as a flat stat line (unknown id: no line, one
+  `Log.warn`) and adds `legendary() -> LegendaryData`.
+  `LootDrop.item_name` returns the Legendary's name (it already feeds the loot
+  feed, pickup prompt, Pack overlay and Pack character view);
+  `CharacterScreen._item_name` and the results screen call it instead of their
+  own copies. Tooltip: trait line on top in Legendary orange with a diamond,
+  value from the roll; Alt shows the range like other lines. DECISIONS:
+  "Loot extras" says traits roll (they run from step 2), "TraitData merged
+  into LegendaryData", "trait = stat line", "an unknown trait shows no line"
+  (affixes.md wants a greyed "Inactive bonus" line; nothing shows one for
+  affixes either). Roadmap row: Building.
+- Files: systems/loot/legendary_data.gd (new), content/loot/legendaries/tidewater.tres (new), systems/loot/item_roller.gd, systems/loot/item_instance.gd, systems/loot/loot_drop.gd, systems/ui/item_tooltip.gd, systems/ui/character_screen.gd, systems/ui/results_screen.gd, docs/DECISIONS.md, docs/ROADMAP.md.
 - Tests: `tests/unit/test_item_roller.gd`: a seeded Legendary AR gets
   `trait = ["tidewater", q]` with q in 0..1, a Rare gets null, a Legendary on a
-  base without one gets null. `tests/unit/test_item_instance.gd`: the trait
-  value at q 0 and 1, "lower is better" maths, an unknown trait id loads with
-  no line and no error, save round trip keeps the trait.
-  `tests/content/test_legendaries.gd` (new, checks in Data).
-  `tests/unit/test_legendary_traits.gd` (new): Tidewater stacks to 10 and no
-  further, switching target keeps half, another gun adds nothing, a client's
-  claim gets the bonus on the server (co-op). `tests/unit/test_item_tooltip.gd`:
-  a Legendary shows its name and the trait line first.
-- Done when: a Legendary AR drops as Tidewater with a working trait in solo
-  and co-op; CI green.
+  base without one gets null, earlier seeded outputs unchanged.
+  `tests/unit/test_item_instance.gd`: the trait value at q 0 and 1, "lower is
+  better" maths, an unknown id loads with no line and no error, save round
+  trip keeps the trait. `tests/content/test_legendaries.gd` (new, checks in
+  Data; the known-stat list is `LegendaryTraits.STATS` from step 2, so step 1
+  checks against a list in the test and step 2 points it at the constant).
+  `tests/unit/test_item_tooltip.gd` and the loot feed test: a Legendary shows
+  its name and the trait line first.
+- Done when: a Legendary AR drops named Tidewater with its trait line; CI
+  green.
 
-### Step 2: Server hit and kill traits
+### Step 2: LegendaryTraits node and Tidewater
+
+- Build: new `LegendaryTraits` node, created on every peer in
+  `GameSession._setup_shooting` next to `HitClaims` and named
+  `"LegendaryTraits"` (the step 4 RPC needs the same path on all peers);
+  state and effects run only on the server. `apply_server_hit` makes one call,
+  `traits.on_hit(zombie, info)`, before `receive_hit` (keeps it under
+  complexity 10). Tidewater: per attacker `[zombie id, stacks]`; each hit with
+  that item adds a stack up to 10, a new target keeps half (rounded down); the
+  hit is multiplied by `1 + stacks * value / 100` (a "more" multiplier, after
+  the bounds check). `STATS` constant.
+- Files: systems/loot/legendary_traits.gd (new), systems/game/game_session.gd, systems/net/hit_claims.gd, tests/content/test_legendaries.gd.
+- Tests: `tests/unit/test_legendary_traits.gd` (new): Tidewater stacks to 10
+  and no further, switching target keeps half, another gun adds nothing, a
+  client's claim gets the bonus on the server (co-op).
+- Done when: Tidewater works in solo and co-op; CI green.
+
+### Step 3: Server hit and kill traits
 
 - Build: four gun traits and one gear trait in `LegendaryTraits`, all on the
   server. Lantern Fall: a headshot kill with the item damages zombies within
   `LANTERN_FALL_RADIUS` for value% of the gun's damage, and shows the frag
   blast on every peer through `GrenadeClaims.broadcast_blast` (already
-  server-to-all). Ricochet: a headshot also hits the nearest
-  other zombie within 8 m for value% of the hit, shown with
-  `Chain.show_arcs`. Choir Mark: a kill marks zombies within 6 m for 4 s;
-  any player's hit on a marked zombie is multiplied by `1 + value / 100`.
-  Bloodline: a hit heals the attacker value% of damage dealt while under half
-  health. Black Ledger (gear): more than 10,000 points multiplies the
-  player's hits by `1 + value / 100`. Bonus hits from Lantern Fall and
-  Ricochet do not trigger traits again (no chains of chains).
-- Files: systems/loot/legendary_traits.gd, systems/net/grenade_claims.gd (call only), content/loot/legendaries/{lantern_fall,ricochet,choir_mark,bloodline,black_ledger}.tres, systems/net/hit_claims.gd (kill hook only if `Events.enemy_killed` is not enough).
-- Tests: `tests/unit/test_legendary_traits.gd`: each trait's effect at a fixed
-  value (blast hits a zombie at 3 m and not at 6 m; ricochet picks the nearest
-  in 8 m and none past it; marks expire after 4 s and boost another player's
+  server-to-all). Ricochet: a headshot also hits the nearest other zombie
+  within 8 m for value% of the hit, shown with `Chain.show_arcs`. Choir Mark:
+  a kill marks zombies within 6 m for 4 s; any player's hit on a marked
+  zombie is multiplied by `1 + value / 100`. Black Ledger (gear): more than
+  10,000 points multiplies the player's hits by `1 + value / 100`. Bloodline:
+  a hit heals the attacker value% of damage dealt while under half health; it
+  sits beside Leech in `ItemLoadout.apply_hit`. Bonus hits from Lantern Fall
+  and Ricochet carry an empty `item_uid`, so they pay no per-hit points, no
+  Leech and trigger no trait again.
+- Files: systems/loot/legendary_traits.gd, systems/loot/item_loadout.gd, systems/net/grenade_claims.gd (call only), content/loot/legendaries/{lantern_fall,ricochet,choir_mark,bloodline,black_ledger}.tres.
+- Tests: `tests/unit/test_legendary_traits.gd`: each trait at a fixed value
+  (blast hits a zombie at 3 m and not at 6 m; ricochet picks the nearest in
+  8 m and none past it; marks expire after 4 s and boost another player's
   hit; Bloodline heals at 40% health and not at 60%; Black Ledger at 10,001
-  points and not at 10,000); a bonus hit does not trigger Lantern Fall again;
-  one trait from a client's claim (co-op).
+  points and not at 10,000); a bonus hit pays no points and does not trigger
+  Lantern Fall again; one trait from a client's claim (co-op).
 - Done when: five more Legendaries drop and work in solo and co-op; CI green.
 
-### Step 3: Owner gun traits and Cold Snap
+### Step 4: Owner gun traits and Cold Snap
 
 - Build: new `systems/weapons/owner_traits.gd` (static, owner only, like Dead
   Center). Bottomless: `WeaponInstance.trait_kills` counts confirmed kills
   with the gun in hand; at value kills the magazine refills from reserve
-  (`refill_magazine`) and the count resets. Overpressure: a reload sets
-  `WeaponInstance.charged`; the next shot fires `round(pellets * value)`
-  pellets and clears it. Dead Man's Hand: the shot that empties the magazine
-  multiplies its damage by value and sets a stagger flag on the `DamageInfo`.
-  Cold Snap: starting a reload with an empty magazine sends
-  `LegendaryTraits.request_cold_snap(uid)`; the server checks sender owns the
-  item, it has the trait, and one reload time has passed since the last one,
-  then freezes every zombie within value m for 2 s (`Frost` gets a
-  `freeze(zombie, seconds)` entry so the frozen flag, pose and shatter rules
-  stay in one place). Server bounds: `HitClaims._valid_hit` and `take_claim`
-  widen only for an item with Dead Man's Hand or Overpressure (Co-op
-  behaviour). Protocol +1.
+  (`refill_magazine`) and the count resets. Overpressure: a reload that adds at
+  least one round (a full reload, or one shell on the Brenner's shell-by-shell
+  reload) sets `WeaponInstance.charged`; the next shot fires
+  `round(pellets * value)` pellets and clears it. Dead Man's Hand: the shot
+  that empties the magazine multiplies its damage by value (the design's
+  "always staggers" waits for a stagger mechanic, F-90). Cold Snap: starting a
+  reload with an empty magazine sends `request_cold_snap(uid)` to the server
+  (MULTIPLAYER.md request/handler shape); the server checks the sender owns
+  the item, it has the trait, and one reload time has passed since the last
+  one, then freezes every zombie within value m for 2 s through a new
+  `Frost.hold(zombie, seconds)`: a hold sets the synced frozen flag and pose
+  but does not shatter, so only the Cryo Lance shatters. Server bounds: in
+  `claim_hit`, an item with Dead Man's Hand or Overpressure gets its
+  duplicated `WeaponData` (from `item.weapon_data()`) scaled (damage by the
+  Dead Man's Hand value, pellets by the Overpressure value), so
+  `_valid_hit` and `take_claim` keep their signatures. Protocol +1.
 - Files: systems/weapons/owner_traits.gd (new), systems/weapons/weapon_instance.gd, systems/weapons/weapon.gd, systems/weapons/weapon_holder.gd, systems/weapons/effects/frost.gd, systems/loot/legendary_traits.gd, systems/net/hit_claims.gd, core/build.gd, content/loot/legendaries/{bottomless,overpressure,dead_mans_hand,cold_snap}.tres.
 - Tests: `tests/unit/test_owner_traits.gd` (new): Bottomless refills on the
-  value-th kill only; Overpressure fires more pellets once after a reload;
-  Dead Man's Hand multiplies only the last round; none of them run on the
-  server's copy of a client. `tests/unit/test_hit_claims.gd`: a 4x claim from
-  a Dead Man's Hand item passes, the same claim from a plain Hollis is
-  rejected; Overpressure pellets pass the claim rate. `test_legendary_traits.gd`:
-  Cold Snap freezes in range only, a second request inside the cooldown and a
-  request for someone else's uid are refused and logged (co-op, from a client).
+  value-th kill only; Overpressure fires more pellets once after a reload and
+  once after one Brenner shell; Dead Man's Hand multiplies only the last
+  round; none run on the server's copy of a client. `tests/unit/test_hit_claims.gd`:
+  a 4x claim from a Dead Man's Hand item passes, the same claim from a plain
+  Hollis is rejected; Overpressure pellets pass the claim rate.
+  `test_legendary_traits.gd`: Cold Snap freezes in range only, a held zombie
+  takes normal damage (no shatter), a second request inside the cooldown and a
+  request for someone else's uid are refused and logged (co-op, from a
+  client).
 - Done when: four owner traits work in solo and co-op; CI green (`test`,
   `quality`, `soak`, `coop-soak`).
 
-### Step 4: Player traits and the Last Rites rename
+### Step 5: Player traits and Last Rites
 
-- Build: Quarantine Shell: `Revive.absorbs` (server) asks
-  `LegendaryTraits.blocks(player, info)`: the first hit after value s since
-  the last block is ignored. Iron Lung: value kills in a row without taking
-  damage start health regen at once (skip the regen delay). Last Rites (the
-  Warden P9 Legendary, renamed from Second Wind): while downed, value kills
-  with that item gun get the player up, once per round, the same way a Second
-  Wind self-revive does (`Revive.second_wind`). The downed pistol must be the
-  Legendary Warden when the player holds one (`PlayerStateSync` keeps an owned
-  pistol today; check and fix if a plain one replaces it). Lore: rename note
-  in lore.md's open question (Second Wind clash fixed; Overkill and Overclock
-  left for F-90).
-- Files: systems/player/revive.gd, systems/loot/legendary_traits.gd, systems/net/player_state_sync.gd (only if the pistol check needs it), content/loot/legendaries/{quarantine_shell,iron_lung,last_rites}.tres, docs/design/lore.md.
-- Tests: `test_legendary_traits.gd`: Quarantine Shell blocks once per window;
-  Iron Lung skips the delay after the streak and a hit resets the streak; Last
-  Rites revives after value downed kills, only once per round, only with that
-  gun, and a co-op client's Last Rites works through its claims.
-- Done when: three more Legendaries work in solo and co-op; CI green.
+- Build: first move the "go down or die" rule out of `Player._on_died` and
+  `Player.can_self_revive` into `Revive` (`Revive.can_get_up()`), so
+  player.gd shrinks before anything is added; `MatchEnd.check_squad` keeps
+  calling through the player. Player traits live in `Revive`, not
+  `LegendaryTraits`, which keeps both files under 350. Quarantine Shell:
+  `Revive.absorbs` (server) ignores the first hit after value s since the
+  last block. Last Rites (the Warden P9 Legendary, renamed from Second Wind):
+  a player holding it goes down instead of dying (solo too); while downed,
+  value kills with that item gun get them up through
+  `state_sync.revive_player()`, once per round, without touching Serums or
+  the Undying charge; `can_get_up()` counts an unused Last Rites, so the squad
+  is not out. The downed pistol is the Legendary Warden when the player holds
+  one (`PlayerStateSync` keeps an owned pistol; checked and fixed if a plain
+  one replaces it). Iron Lung: value kills in a row without taking damage
+  skip the regen delay; `HealthComponent` gets a public `start_regen_now()`
+  and the streak resets on `Events.player_damaged`. Lore: open question on
+  name clashes updated.
+- Files: systems/player/player.gd (lines moved out only), systems/player/revive.gd, systems/game/match_end.gd (only if the call changes), systems/damage/health_component.gd, systems/net/player_state_sync.gd (only if the pistol check needs it), content/loot/legendaries/{quarantine_shell,iron_lung,last_rites}.tres, docs/design/lore.md.
+- Tests: `tests/unit/test_legendary_traits.gd` or `test_skill_rules.gd`:
+  Quarantine Shell blocks once per window; Iron Lung skips the delay after the
+  streak and a hit resets the streak; Last Rites puts a solo player down and
+  gets them up after value downed kills, once per round, only with that gun,
+  Serums and Undying untouched; the run does not end while a downed player has
+  an unused Last Rites; a co-op client's Last Rites works through its claims.
+  Existing Second Wind and Undying tests still pass unchanged.
+- Done when: three more Legendaries work in solo and co-op; player.gd no
+  longer than before; CI green.
 
-### Step 5: Twin Pin, Legendary-only bases and close-out
+### Step 6: Twin Pin, Legendary-only bases and close-out
 
-- Build: Twin Pin: when a frag thrown by a player whose stats have the trait
-  goes off, two smaller frags spawn beside it and go off after a short fuse at
-  value% damage each; they do not split again. `LootService.eligible_bases`:
-  for rarity `legendary`, only bases with a Legendary. Roadmap: F-31 Done, new
-  row F-90 "More Legendaries" (Furnace, Overkill, Overclock, Gambler's Coin
-  and the 9 new-base traits, with the two renames). Tick Acceptance, Status
-  Done, DECISIONS lines for the provisional picks. Run `finish-feature`.
+- Build: Twin Pin, in the throwables code: when a frag thrown by a player
+  whose stats have the trait goes off, two smaller frags spawn beside it and
+  go off after `TWIN_PIN_FUSE` (0.4 s) at value% damage and half the radius; they do not split again and hurt the thrower like any frag.
+  `LootService.eligible_bases`: for rarity `legendary`, only bases with a
+  Legendary. Roadmap: F-31 Done, new row F-90 "More Legendaries" (Furnace,
+  Overkill, Overclock, Gambler's Coin, Dead Man's Hand stagger and the 9
+  new-base traits, with the two renames). Tick Acceptance, Status Done,
+  DECISIONS lines for the provisional picks. Run `finish-feature`.
 - Files: systems/throwables/*.gd (the frag's go-off), systems/loot/loot_service.gd, content/loot/legendaries/twin_pin.tres, docs/plans/legendaries-traits.md, docs/ROADMAP.md, docs/DECISIONS.md.
-- Tests: `tests/unit/test_frag*.gd` or `test_legendary_traits.gd`: a Twin Pin
-  frag makes two child blasts at value% damage, a plain frag none, children
-  never split. `tests/unit/test_loot_service.gd` (or the existing drop test):
-  a seeded Legendary drop is always on a base with a Legendary and carries a
-  trait; lower rarities still use every base.
-- Done when: every Legendary in `content/loot/legendaries/` has an effect test;
-  CI green (`quality`, `test`, `soak`).
+- Tests: frag test or `test_legendary_traits.gd`: a Twin Pin frag makes two
+  child blasts at value% damage, a plain frag none, children never split.
+  `tests/unit/test_loot_service.gd`: a seeded Legendary drop is always on a
+  base with a Legendary and carries a trait; lower rarities still use every
+  base.
+- Done when: every Legendary in `content/loot/legendaries/` has an effect
+  test; CI green (`quality`, `test`, `soak`).
 
 ## Acceptance
 
@@ -358,31 +403,42 @@ does. No per-frame cost, no allocation per hit beyond the existing
 - [ ] Each trait has an effect test - `test_legendary_traits.gd`, `test_owner_traits.gd`
 - [ ] Every trait works for a co-op client (server traits through claims, owner traits on the owner only) - co-op cases in the same files
 - [ ] Tooltip shows the name and the trait line first in Legendary orange - `test_item_tooltip.gd`
-- [ ] A Legendary drop always has a trait (after step 5) - drop test
+- [ ] A Legendary drop always has a trait (after step 6) - drop test
 - [ ] Soak passes with no new warnings - CI `soak` and `coop-soak` on the step PRs
 
 ## Risks
 
 - Trait damage passing hit bounds. Server traits multiply after the bounds
   check, so bounds stay as they are; only Dead Man's Hand and Overpressure
-  widen them, and only for an item that has the trait (step 3 tests both ways).
+  widen them, and only for an item that has the trait (step 4 tests both ways).
 - Owner traits running twice (owner and the server's copy). Every owner hook
   checks `is_multiplayer_authority()` like Dead Center; tests cover the server
   copy.
 - Lantern Fall and Ricochet chaining into each other or into Chain/Frost
-  effects. Bonus hits carry a flag and skip trait hooks; tested in step 2.
-- `player.gd` is at 350 lines. Nothing in this plan edits it.
-- Protocol clash with other open PRs in step 3: merge main first and take one
+  effects. Bonus hits carry an empty `item_uid`, so they skip trait hooks,
+per-hit points and Leech; tested in step 3.
+- Cold Snap freezing a crowd that any bullet then shatters (Frost's shatter
+  kills outright). Step 4 adds a hold that does not shatter.
+- `player.gd` is at 350 lines. Step 5 moves lines out before adding any.
+- Protocol clash with other open PRs in step 4: merge main first and take one
   above main's value.
 - Only one Legendary exists after step 1, but bases without one keep rolling
-  unnamed Legendaries until step 5, so drops are not all Tidewater meanwhile.
+  unnamed Legendaries until step 6, so drops are not all Tidewater meanwhile.
 
 ## Open decisions
 
 Provisional picks (reversible, written to DECISIONS when built):
 
 - [x] Provisional: Second Wind (Warden P9) is renamed Last Rites to end the clash with the
-  Second Wind Serum. Overkill and Overclock get new names when F-90 builds them.
+  Second Wind Serum (name confirmed with the person on a card before step 5).
+  Overkill and Overclock get new names when F-90 builds them.
+- [x] Provisional: Cold Snap holds zombies frozen without the Cryo Lance's shatter.
+- [x] Provisional: Dead Man's Hand ships without "always staggers" (no stagger mechanic yet); F-90.
+- [x] Provisional: Overpressure charges on any reload that adds a round, one Brenner shell included.
+- [x] Provisional: Twin Pin child frags use `TWIN_PIN_FUSE` 0.4 s and half the frag radius (no
+  design numbers), tuned in play-test.
+- [x] Provisional: an unknown trait id shows no line (affixes.md's greyed "Inactive bonus"
+  line is not built for affixes either).
 - [x] Provisional: gear Legendary bases are Quarantine Shell on the heavy vest, Iron Lung on the
   medium vest, Black Ledger on the key card charm, Twin Pin on the relay implant
   (affixes.md names only the slot).
@@ -394,6 +450,8 @@ Provisional picks (reversible, written to DECISIONS when built):
 
 For the person:
 
-- [ ] Approve this plan (size L): 14 Legendaries in 5 steps, the 13 others
-  (Furnace, Overkill, Overclock, Gambler's Coin, 9 new-base traits) moved to a
-  new roadmap row F-90.
+- [x] Approve this plan (size L): 14 Legendaries, the 13 others (Furnace,
+  Overkill, Overclock, Gambler's Coin, 9 new-base traits) moved to a new
+  roadmap row F-90: approved as written (the person, decision card
+  2026-11-20). Review fixes after the card: step 1 split in two (6 steps),
+  Cold Snap hold, stagger deferred, player.gd lines moved out first.
