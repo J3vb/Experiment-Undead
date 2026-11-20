@@ -147,7 +147,7 @@ Left to right: Shambler (lab coat), Crawler, Stalker, Bloater, Brute, Glower.
 | Shambler | Upright, arms reaching, staff clothing | Grey-green skin, dull institutional clothes | Faint green eyes |
 | Crawler | Flat to the ground, legs missing | Like Shambler, darker | Scrape trail decal |
 | Stalker | Thin, long arms, crouched, walls and ceiling | Pale, almost white | Eyes flare before a pounce |
-| Bloater | Round, wide, slow | Translucent green-glowing belly | Belly pulses faster when hurt |
+| Bloater | Round, wide, slow | Belly of green-glowing gas pods | Pods swell when hit |
 | Brute | 1.5x player height, huge shoulders, metal head plate | Dark, rust-brown plate | Plate sparks and cracks |
 | Glower | Thin, fast, hunched | Full-body green veins | Lights the room, Blackout only |
 
