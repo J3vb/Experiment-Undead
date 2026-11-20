@@ -85,8 +85,8 @@ func _wear_from_pack(item: Dictionary, index: int) -> void:
 	Log.info(&"loot", &"gear_worn", {"uid": item.get("uid"), "slot": slot})
 
 
-func _on_enemy_killed(enemy: Node3D, _info: DamageInfo) -> void:
-	if not multiplayer.is_server() or session.is_over or session.match_end.xp_banked:
+func _on_enemy_killed(enemy: Node3D, info: DamageInfo) -> void:
+	if not multiplayer.is_server() or session.is_over or session.match_end.xp_banked or info.attacker == null:
 		return
 	var zombie: Zombie = enemy as Zombie
 	if zombie == null or zombie.data == null or not session.spawner.is_ancestor_of(zombie):
