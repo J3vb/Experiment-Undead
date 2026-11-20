@@ -429,8 +429,8 @@ per-hit points and Leech; tested in step 3.
 
 Provisional picks (reversible, written to DECISIONS when built):
 
-- [x] Provisional: Second Wind (Warden P9) is renamed Last Rites to end the clash with the
-  Second Wind Serum (name confirmed with the person on a card before step 5).
+- [x] Second Wind (Warden P9) is renamed Last Rites to end the clash with the
+  Second Wind Serum (name chosen by the person, decision card 2026-11-20).
   Overkill and Overclock get new names when F-90 builds them.
 - [x] Provisional: Cold Snap holds zombies frozen without the Cryo Lance's shatter.
 - [x] Provisional: Dead Man's Hand ships without "always staggers" (no stagger mechanic yet); F-90.
