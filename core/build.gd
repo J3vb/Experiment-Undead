@@ -4,6 +4,8 @@ extends Node
 
 ## Bump when client/server messages change. Mismatched peers are refused.
 const PROTOCOL_VERSION: int = 21
+## Development stage shown next to the version.
+const STAGE: String = "Early Alpha"
 const VERSION_FILE: String = "res://version.json"
 const CRASH_MARKER: String = "user://running.lock"
 ## A server started from the launcher shares the client's user folder, so it keeps its own marker.
@@ -49,6 +51,10 @@ func display_version() -> String:
 	if commit == "editor":
 		return "dev (editor)"
 	return "v%s" % version
+
+
+func stage_version() -> String:
+	return "%s %s" % [STAGE, display_version()]
 
 
 func crash_marker() -> String:

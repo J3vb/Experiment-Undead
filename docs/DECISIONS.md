@@ -10,6 +10,7 @@ Read the entries for the systems you touch, not the whole file.
 
 These win over the design docs (see `docs/design/README.md`).
 
+- **v0.2 before the v0.1.0 tag:** the person played v0.1 solo (2026-11-19) and asked to start v0.2 on 2026-11-20, so roadmap rows that need F-11 may start once F-10 is Done. Game stage is Early Alpha. [ROADMAP](ROADMAP.md)
 - **Gun damage:** every gun deals balance-sheet damage x 0.57 (AR 60 -> 34), the prototype's scale, until a balance pass resets the TTK targets. [gun-roster](design/gun-roster.md)
 - **Prices:** doors and Serums use the design doc's base prices, not the balance sheet's provisional x2.5. Reforger 5000, refill 2500, Reforged wall ammo 4000 (sheet).
 - **Look reference:** AgX instead of ACES; ambient energy 0.2 instead of 0.35 (baked bounce fills shadows); fog albedo light teal-grey, because Godot's fog albedo is the scatter colour. [look-rules](design/look-rules.md)

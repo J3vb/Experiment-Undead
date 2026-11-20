@@ -28,6 +28,7 @@ func test_reads_version_file() -> void:
 	assert_eq(b.version, "0.1.0")
 	assert_eq(b.commit, "abc1234")
 	assert_eq(b.display_version(), "v0.1.0")
+	assert_eq(b.stage_version(), "Early Alpha v0.1.0")
 	b.free()
 
 
@@ -35,6 +36,7 @@ func test_editor_version_without_file() -> void:
 	var b: Node = BuildScript.new()
 	b.load_version_file("user://does_not_exist.json")
 	assert_eq(b.display_version(), "dev (editor)")
+	assert_eq(b.stage_version(), "Early Alpha dev (editor)")
 	b.free()
 
 
