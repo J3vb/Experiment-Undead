@@ -29,6 +29,7 @@ var _squad: SquadCards
 @onready var exfil_bar: ProgressBar = $Root/ExfilBox/Box/Hold
 @onready var exfil_time: Label = $Root/ExfilBox/Box/Time
 @onready var prompt_box: PanelContainer = $Root/Prompt
+@onready var world_prompt: WorldPrompt = $Root/WorldPrompt
 @onready var prompt_key: Label = $Root/Prompt/Row/Key
 @onready var prompt_price: Label = $Root/Prompt/Row/Price
 @onready var hint_label: Label = $Root/HintLabel
@@ -48,6 +49,7 @@ func _ready() -> void:
 	points_delta.modulate.a = 0.0
 	hint_label.text = ""
 	prompt_key.text = Settings.key_name(&"interact")
+	world_prompt.box = prompt_box
 	Settings.changed.connect(_on_setting_changed)
 	_damage_effects = Settings.get_value(&"comfort", &"damage_effects")
 	$Root.add_child(VersionLabel.new())
