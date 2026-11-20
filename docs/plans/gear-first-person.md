@@ -1,6 +1,6 @@
 # Plan: Gear in first person
 
-Status: Approved
+Status: Building
 Roadmap: F-42 / issue #129
 Phase: P7, pulled forward 2026-11-20: the person called the v0.1 solo play-test done and asked to go on with v0.2 features. F-11 (the v0.1.0 release) is not needed: this is client-side visuals only, on the gear swap path from F-84.
 Size: M
