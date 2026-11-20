@@ -103,7 +103,7 @@ Not in (non-goals, and where each one goes instead):
 
 | Folder or file | New / changed | What changes |
 |---|---|---|
-| tools/assets/player_body_model.py (+ new `player_head_model.py` if over 350 lines) | changed / new | Survivor head and field clothes |
+| tools/assets/player_body/ (as built, ADR 0015; replaces the planned `player_body_model.py` changes) | new | Survivor head and field clothes, same four material names |
 | tools/assets/headgear_model.py, glove_model.py, backpack_model.py, boot_model.py | new | Three tiers per piece |
 | tools/assets/vest_model.py | changed | Plate carrier, pouches, VialClip socket |
 | tools/assets/implant_model.py | changed | Eye plate per type plus vial |
@@ -198,6 +198,10 @@ the 120 fps target on the RTX 4080 Super. Gloves, boots and headgear hide past
 - Tests: test_look_sync.gd / codec test: 7-slot look encodes to 35 bytes and
   back; a 15-byte payload resets all slots. test_gear_rig.gd: Common, Rare and
   Legendary headgear pick tier 0, 1, 2; bad id falls back with no error.
+- As built (PR #337, with step 1): `RarityLook.tier`, `GearVisual.tier_scenes`
+  and `scene_for`, and the GearRig tier pick, tested in `test_gear_rig.gd` and
+  `test_gear_content.gd`. Still to build: the four new `CharacterLook.SLOTS`,
+  the 35-byte codec, `headgear_model.py` and `headgear_cap.tres`.
   Content checks from Data.
 - Done when: the booth shows the three helmets on the new body.
 

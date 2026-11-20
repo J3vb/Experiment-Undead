@@ -82,7 +82,7 @@ Not in (non-goals, and where each one goes instead):
 
 | Folder or file | New / changed | What changes |
 |---|---|---|
-| systems/net/player_state_sync.gd | changed | `submit_loadout` RPC (owner -> server), server applies gear and stores item guns; server hit hook on `Events.enemy_damaged` |
+| systems/net/player_state_sync.gd | changed | (moved to `systems/net/loadout_sync.gd` `LoadoutSync` in easy-changes step 3) `submit_loadout` RPC (owner -> server), server applies gear and stores item guns; server hit hook on `Events.enemy_damaged` |
 | systems/player/player.gd | changed | `item_guns: Dictionary[String, ItemInstance]` (uid -> item), filled on the server |
 | systems/loot/item_loadout.gd | changed | Public `equip_weapon(player, item, carried)`, `apply_hit(player, item)`; `apply()` uses them; no more `hit_landed` binding |
 | systems/loot/pack_overlay.gd | changed | `_equip()` only asks `LootService.request_equip(uid)`; ammo carry map moves out |
@@ -105,7 +105,9 @@ state), `LootService` (Pack and run state), `ItemLoadout` (item wiring).
   side: the owner's equipped item guns. On the owner it mirrors what it holds.
 - Network messages:
   - `PlayerStateSync.submit_loadout(gear: Array, guns: Array)` owner ->
-    server, reliable. `gear` is up to 3 item dicts (vest, charm, implant),
+    server, reliable (as built: moved to `LoadoutSync.submit_loadout` in
+    easy-changes step 3, and the gear limit is now `CharacterProfile.GEAR_SLOTS`
+    from four-gear-slots). `gear` is up to 3 item dicts (vest, charm, implant),
     `guns` up to `weapon_slots` item dicts. Sent on spawn and after every
     equip. Server rebuilds from scratch each time (no deltas). Rejected and
     logged when not an Array of Dictionaries, too many entries, or a gun base

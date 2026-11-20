@@ -250,7 +250,8 @@ Hall), checked in the step 5 fps check:
 - Build: generated sounds in ambience_sfx.py (spark crackle, steam hiss loop,
   hum loop, klaxon burst, drip loop). AudioStreamPlayer3D spots in
   atmosphere.tscn on the Ambient bus: crackle played by SparkSpot on each
-  burst, hiss on steam, hums on monitors and generators (`after_power`),
+  burst, hiss on steam, hums on monitors and generators (`after_power`; as built: generators and
+  guard monitors only),
   klaxon from the west alarm beacon every 30 s (a plain autostart Timer wired
   to `play` in the scene, no script), drips by the drip particles.
 - Files: tools/assets/ambience_sfx.py, assets/audio/ambience/*, atmosphere.tscn,

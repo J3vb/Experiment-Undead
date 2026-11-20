@@ -82,6 +82,9 @@ G1-G5 in `tools/assets/town_gate.py`, P1-P13 in `tools/assets/town_camp.py` (ste
 
 ## 2. Market row (stalls, `town`)
 
+Since F-80 the Technician, Gunsmith and Trader stalls are Tripo models; only
+MISSIONS keeps `stall_frame`. See `docs/plans/tripo-models.md` step 1.
+
 | # | Model id | What | Size (m) | Notes |
 |---|---|---|---|---|
 | S1 | `stall_frame` | Timber stall: four posts, counter, sloped canvas awning with snow, hanging lamp | 4 x 3 x 3.2 | Base for the four stalls; sign board is a separate model |

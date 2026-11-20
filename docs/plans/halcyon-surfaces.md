@@ -70,7 +70,7 @@ Not in (non-goals, and where each one goes instead):
   Renames or removes a saved id: no
 - Events and UI: none. New screens: n.a.
 - Input through InputFrame, gameplay in _physics_process, randomness from the session RNG: n.a. (no gameplay code)
-- Tests: tests/content/test_halcyon_surfaces.gd (new), tests/content/test_shared_materials.gd (extended),
+- Tests: tests/content/test_halcyon_surfaces.gd (new), tests/content/test_shared_materials.gd,
   tools/assets/tests/test_surface_textures.py (new), existing blockout freshness test.
 - Logging: none (no runtime code).
 - Performance: nothing per frame in code. Shader cost: 3 extra texture samples on grime surfaces. Budget below.
@@ -161,8 +161,8 @@ Autoloads, managers or base classes added: none.
 - Tests: `test_surface_textures.py` (edges of every set match within a
   small tolerance, sizes, folder budget); `test_halcyon_surfaces.gd` (fails if
   a surface not on the allow-list is flat, and if an allow-listed surface is
-  no longer flat so the list must shrink); `test_shared_materials.gd`
-  checks the new texture parameters.
+  no longer flat so the list must shrink, and it checks the new texture
+  parameters; as built, not `test_shared_materials.gd`).
 - Done when: room shots show textured ceilings and upper walls in every
   room; decision card on the look sent to the person with before/after.
 
