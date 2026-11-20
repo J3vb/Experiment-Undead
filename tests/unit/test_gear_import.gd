@@ -102,7 +102,7 @@ func test_zombie_glow_uses_source_emission_without_requiring_a_rarity_zone() -> 
 
 
 func test_zombie_imports_use_only_zombie_finishes_and_main_paint_zones() -> void:
-	for kind: String in ["shambler", "crawler", "bloater"]:
+	for kind: String in ["crawler"]:
 		var packed: PackedScene = load("res://assets/models/zombies/%s.glb" % kind) as PackedScene
 		assert_not_null(packed, kind + " imports")
 		if packed == null:

@@ -53,7 +53,7 @@ def test_committed_model_passes(name):
     assert check_models.check_model(path) == []
 
 
-@pytest.mark.parametrize("name", ["wall_panel", "rifle_ar", "shambler"])
+@pytest.mark.parametrize("name", ["wall_panel", "rifle_ar", "crawler"])
 def test_fresh_build_passes(tmp_path, name):
     assert broken(tmp_path, name) == []
 
@@ -151,28 +151,21 @@ def test_zombie_facing_backwards(tmp_path):
     def turn(objects):
         objects["Skeleton"].rotation_euler.z = math.pi
 
-    assert has(broken(tmp_path, "shambler", turn), "Eyes must sit in front of the head")
+    assert has(broken(tmp_path, "crawler", turn), "Eyes must sit in front of the head")
 
 
 def test_missing_zombie_bone(tmp_path):
     def rename(objects):
         objects["Skeleton"].data.bones["upperarm_L"].name = "left_upperarm"
 
-    assert has(broken(tmp_path, "shambler", rename), "missing bones upperarm_L")
-
-
-def test_belly_with_wrong_bone(tmp_path):
-    def rebind(objects):
-        character_rig.bind_rigid(objects["Belly"], objects["Skeleton"], "spine_02")
-
-    assert has(broken(tmp_path, "bloater", rebind), "Belly must be bound rigidly to spine_01")
+    assert has(broken(tmp_path, "crawler", rename), "missing bones upperarm_L")
 
 
 def test_eyes_with_wrong_bone_parent(tmp_path):
     def reparent(objects):
         objects["Eyes"].parent_bone = "neck"
 
-    assert has(broken(tmp_path, "shambler", reparent), "Eyes must be a child of the head bone")
+    assert has(broken(tmp_path, "crawler", reparent), "Eyes must be a child of the head bone")
 
 
 @pytest.mark.parametrize(

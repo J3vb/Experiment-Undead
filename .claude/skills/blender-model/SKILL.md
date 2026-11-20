@@ -46,8 +46,9 @@ A new model is one `build_<name>()` function plus one line in `MODELS`
 - Every part that code swings is its own object with its **origin at the
   joint** (shoulder, hip, knee, neck). Use `attach(obj, pivot, parent)` and
   `limb()`. Zombie part names code needs: `Hips`, `Torso`, `Head`, `EyeL`,
-  `EyeR`, `ArmL`, `ArmR`, plus `LegL`, `LegR` (not Crawler) and `Belly`
-  (Bloater). `check_models.py` lists them in `JOINTS`.
+  `EyeR`, `ArmL`, `ArmR`, plus `LegL`, `LegR` (not Crawler). Tripo zombies
+  (Shamblers, Bloater, Glower) come from `tripo_intake.py --kind zombie`
+  instead. `check_models.py` lists them in `JOINTS`.
 - Kit pieces: origin at floor level on the wall's back edge, sized to the 2 m
   grid (wall panel is 2.0 x 0.2 x 2.7).
 

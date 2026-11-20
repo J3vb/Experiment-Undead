@@ -8,14 +8,11 @@ const FINISHED: Array[String] = [
 	"weapons/kestrel_smg",
 	"weapons/talon_dmr",
 	"weapons/shotgun_brenner",
-	"zombies/shambler",
 	"zombies/crawler",
-	"zombies/bloater",
 ]
 const GLOWING: Dictionary[String, String] = {
 	"weapons/rifle_ar": "SightGlass",
-	"zombies/shambler": "EyeL",
-	"zombies/bloater": "Belly",
+	"zombies/crawler": "EyeL",
 }
 const GUN_SHADER: String = "res://assets/materials/gun_finish.gdshader"
 const GEAR_SHADER: String = "res://assets/materials/gear.gdshader"

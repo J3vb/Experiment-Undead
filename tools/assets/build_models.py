@@ -275,9 +275,7 @@ MODELS = {
     "siphon": ("weapons/siphon.glb", gun("siphon_model")),
     "coachman_2b": ("weapons/coachman_2b.glb", gun("coachman_model")),
     "grubber_sawnoff": ("weapons/grubber_sawnoff.glb", gun("grubber_model")),
-    "shambler": ("zombies/shambler.glb", zombie_model.build_shambler),
     "crawler": ("zombies/crawler.glb", zombie_model.build_crawler),
-    "bloater": ("zombies/bloater.glb", zombie_model.build_bloater),
 }
 MODELS.update(character_models.MODELS)
 MODELS.update(prop_models.MODELS)

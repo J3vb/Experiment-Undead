@@ -1,5 +1,4 @@
 ## Zombie-only finish keeps source colours, main-zone AO and shared materials.
-## The Belly instance dims the shared glow finish without adding a material slot.
 @tool
 extends EditorScenePostImport
 
@@ -11,7 +10,6 @@ func _post_import(scene: Node) -> Object:
 	var materials: Dictionary[BaseMaterial3D, ShaderMaterial] = {}
 	for node: Node in scene.find_children("*", "MeshInstance3D", true, false):
 		var instance: MeshInstance3D = node as MeshInstance3D
-		instance.set_instance_shader_parameter(&"belly", instance.name == &"Belly")
 		for surface: int in instance.mesh.get_surface_count():
 			var current: Material = instance.mesh.surface_get_material(surface)
 			if current is ShaderMaterial and (current as ShaderMaterial).shader == SHADER:
