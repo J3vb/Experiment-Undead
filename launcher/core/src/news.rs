@@ -5,7 +5,7 @@
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
-pub const NEWS_URL: &str = "https://raw.githubusercontent.com/J3vb/Experiment-Undead/main/launcher/news/news.json";
+pub const NEWS_URL: &str = "https://raw.githubusercontent.com/J3vb/Fenlight/main/launcher/news/news.json";
 /// The news built into this launcher.
 pub const BUILT_IN: &str = include_str!("../../news/news.json");
 /// Picture shown for an item whose picture this launcher does not have.
