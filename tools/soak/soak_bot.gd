@@ -1,5 +1,6 @@
 ## Balance bot for the soak: backs away from close zombies, turns toward the nearest zombie it can see,
-## holds fire, reloads, buys one wall gun (and its ammo) from anywhere once it can pay.
+## holds fire, reloads, throws one frag a round at a far zombie,
+## buys one wall gun (and its ammo) from anywhere once it can pay.
 ## A zombie it cannot see for HUNT_AFTER seconds is killed outright, standing in for
 ## the player walking over to it (zombies can stall out of sight, see the soak notes).
 extends Node
@@ -49,9 +50,20 @@ func _physics_process(delta: float) -> void:
 		var trigger_down: bool = gun.data.fire_mode == WeaponData.FireMode.AUTO or _ticks % 2 == 0
 		if frame.look.length() < 0.05 and trigger_down:
 			frame.buttons |= InputFrame.FIRE
+		if frame.look.length() < 0.05 and _wants_frag(target):
+			frame.buttons |= InputFrame.LETHAL
 	if gun.instance.ammo_in_mag == 0 and gun.instance.ammo_reserve > 0 and not gun.is_reloading():
 		frame.buttons |= InputFrame.RELOAD
 	player.apply_frame(frame, delta)
+
+
+## One frag a round (the first of a full carry), only at a zombie far enough not to hurt the bot.
+## Pressed for one tick, so the next tick releases it with almost the whole fuse.
+func _wants_frag(target: Vector3) -> bool:
+	var grenades: GrenadeThrower = player.grenades
+	if grenades.cooking or grenades.count < grenades.data.carry:
+		return false
+	return player.camera.global_position.distance_to(target) > grenades.data.radius + 1.0
 
 
 func _shop() -> void:

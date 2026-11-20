@@ -45,6 +45,9 @@ Each says when to fix it.
 - **Crawler** is not spawned: by design it is made when explosives take a Shambler's legs. Fix when: grenades exist (F-24, F-27).
 - **Whole-tube reloads:** Brenner, Hollis and Atlas reload in one timed action. Fix when: real reload animations exist.
 - **Reforger** has Tier I only and swaps instantly. Fix when: Tiers II (ammo mods) and III get a roadmap row.
+- **Frag numbers** (3 s fuse, 15 m/s throw, 7 m blast with full damage inside 1.5 m, own damage up to 60, no friendly fire) are provisional picks; the 1000 centre damage is the person's. Fix when: the frag play-test. [frag-grenades](plans/frag-grenades.md)
+- **Grenades in co-op:** nobody can throw in co-op yet (solo only). Fix when: F-24 step 2. [frag-grenades](plans/frag-grenades.md)
+- **Grenade HUD:** no grenade slot, cook sound or blast effect yet; the frag is a grey ball. Fix when: F-24 steps 3 and 4. [frag-grenades](plans/frag-grenades.md)
 - **Power-ups:** Resupply, Payday, Overkill, Stasis and the Scavenger ammo pack so far; Scavenger's +1 grenade waits. Fix when: F-24 grenades and F-26 steps 3-4.
 - **Window barriers:** no slot timeout (move to another barrier after 4 s), no real sill. Fix when: co-op crowding at a window needs it.
 - **Emergency lighting:** dimmed red ceiling lights only, no separate fixtures or sound. Fix when: the sound world step.
@@ -71,12 +74,12 @@ Each says when to fix it.
 - **Game feel:** the gun in hand when a kill confirm arrives picks the hitstop class; the killed zombie's pose does not freeze; viewmodel kick stays in WeaponData. Fix when: F-42.
 - **Character screen:** no drag and drop, junk marking or extra tabs. Fix when: the stash UI pass.
 - **Debug console:** no god mode. Fix when: a public damage-immunity API exists.
-- **Halcyon surfaces:** no lettered stencils or arrows, one planar projection instead of triplanar. Fix when: signage. [halcyon-surfaces](plans/halcyon-surfaces.md)
+- **Halcyon surfaces:** one planar projection instead of triplanar. Fix when: a surface shows stretching. [halcyon-surfaces](plans/halcyon-surfaces.md)
 - **Lightmaps:** Halcyon Labs at texel scale 1.5 (not 2), F-68 bake 19.3 MiB, test budget 20 MiB (the person's call); 197-439 avg fps at 1440p High, 24 zombies. Lantern Post first bake 17.9 MiB. Fix when: Git LFS or the GPU bake step. [plan](plans/halcyon-concept-pass.md)
 - **Lantern Post to the concept art:** bake ambient is the look colour, not the sky; avg fps 302-468 baked High. Street view 2,639 draw calls, not 600: each player's flashlight keeps its shadow (person's pick 2026-11-19, fps is 2.5x target). [plan](plans/lantern-post-concept.md)
 - **Lantern Post stalls:** Technician, Gunsmith and Trader are Tripo models with our own sign boards; Missions keeps the code-built frame until a Tripo version exists; the Deploy gate stays code-built (person's pick 2026-11-19). [tripo-models](plans/tripo-models.md)
 - **Lantern Post walls:** the whole town wall is the concrete Deploy gate wall (gate_wall sections), not the palisade of the concept; the sky mountains are three peaked ranges (person's pick 2026-11-19). [hub plan](plans/lantern-post-hub.md)
-- **Wall guns:** BR-12 keeps its stock wrist (no pistol grip); surface detail is the shared shader at 8,000 tris. Fix when: F-75 baked gun textures. [guns-concept](plans/guns-concept.md)
+- **Wall guns:** BR-12 keeps its stock wrist (no pistol grip); VX-9, BR-12 and MR-28 still use the shared surface shader (AR-17 is baked). Fix when: F-75 bakes them. [guns-concept](plans/guns-concept.md)
 - **Damage numbers:** Siphon shows none (damage is server-side); a host can show overkill from later pellets. Fix when: a player asks for them.
 - **No Git LFS:** binaries in plain git; the lines to switch it on are in `.gitattributes`. Fix when: asset packs arrive.
 
@@ -111,4 +114,5 @@ Agent picks the person may change.
 - **Keeper spots (F-76, provisional):** the Tripo stalls are packed to chest height, so each keeper stands inside the stall on a hidden 0.2-0.3 m step (Missions on the floor); the talk area reaches 0.25 m past the stall collider. Card asked. [lantern-post-vendors](plans/lantern-post-vendors.md)
 - **Reload motion (F-85):** empty reloads press the bolt catch above the well for every gun (no charging-handle pull: crossing the receiver flipped the elbow); the tactical swap shows the same magazine low in frame. Feel signed off 2026-11-20. [reload-animations](plans/reload-animations.md)
 - **BR-12 Reforged reload (F-85):** keeps the base shell times like every Reforged gun keeps its reload, so its 9 shells take 5.1 s from empty (was 3.6 s for a full reload). [reload-animations](plans/reload-animations.md)
+- **Launcher game folder (F-82):** the game lives in the launcher's own app data folder (`%LOCALAPPDATA%\com.experimentundead.launcher\game\`), not `Experiment Undead\`, so Tauri's uninstaller "delete app data" box removes it with no custom NSIS code. [separate-launcher](plans/separate-launcher.md)
 - **First-person charm:** hangs from a `CharmMount` on the left rail just in front of the support hand, out of the ADS sight line; hidden while a sidearm is in hand; a spring swing, no physics. [gear-first-person](plans/gear-first-person.md)
