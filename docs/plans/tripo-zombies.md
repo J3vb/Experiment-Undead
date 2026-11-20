@@ -47,7 +47,7 @@ Not in (non-goals, and where each one goes instead):
 ### Ready to build
 - Foundations touched: 2 (content as data: model scenes in .tscn/.tres), 7 (no
   per-frame allocations). Any of them shaky or missing? no. Needs the zombie
-  intake from F-28 step 1 (PR #422, green, merging first).
+  intake from F-28 step 1 (PR #422, green). This plan is approved only after #422 merges.
 - Decision records that apply: 0008 code-built art (superseded for these models
   by 0017), 0017 Tripo models ("code-built stay for done features until a plan
   moves them": this plan moves the three zombies; step 1 adds the line to 0017),
@@ -92,15 +92,18 @@ Not in (non-goals, and where each one goes instead):
 | tools/assets/tripo/zombies.json | changed | manifest rows for the four models |
 | tools/assets/tripo_intake.py / tripo_rig.py | changed | crawler option (cut legs, prone rest, `Crawler` marker), step 2 only |
 | systems/enemies/zombie_rig.gd | changed | `extra_models` export, look picked from net_id; belly pulse through the shader parameter |
-| systems/enemies/zombie.gd | changed | passes net_id to the rig before it is ready (one line) |
-| systems/enemies/zombie.tscn, bloater.tscn | changed | hit zone sizes fitted to the new bodies; zombie.tscn lists the guard look |
-| tools/assets/zombie_import.gd, assets/materials/ | changed / new | Bloater pod glow + pulse shader on its baked material |
-| tools/assets/zombie_model.py, zombie_details.py and tests | deleted | step 3, once all three are swapped |
+| systems/enemies/zombie.gd | changed | `setup()` sets `($Visual as ZombieRig).look = hash(net_id)` (`visual` is @onready, still null there; `_ready` is too late) |
+| systems/enemies/zombie.tscn, bloater.tscn, glower.tscn | changed | hit zone sizes fitted to the new bodies; zombie.tscn lists the guard look; bloater.tscn and glower.tscn override `extra_models = []` so they never inherit the Shambler looks |
+| tools/assets/zombie_import.gd, assets/materials/ | changed / new | Bloater pod glow + pulse shader on its baked material; the Shambler looks get a plain baked material (no vein glow) |
+| tools/assets/zombie_checks.py | changed | `shambler_guard` stem; shambler/crawler/bloater budgets 9,000; step 2 lets crawler stumps through (reweighted to pelvis) |
+| tools/assets/build_models.py | changed | shambler and bloater entries removed in step 1, crawler in step 2 (one source per .glb) |
+| tests for the code-built finish | changed / deleted | step 1: test_zombie_finish.gd, test_model_finish.gd, test_gear_import.gd zombie cases and test_zombie_rig.gd `CoatSkirt` lose their shambler/bloater cases; the .glb.import files switch from zombie_finish_import.gd to zombie_import.gd |
+| tools/assets/zombie_model.py, zombie_details.py, zombie_finish_import.gd, zombie_finish.gdshader and tests | deleted | step 3, once all three are swapped |
 
 Autoloads, managers or base classes added: none.
 
 Files over 300 lines this plan grows: `systems/enemies/zombie_rig.gd` (314).
-Step 1 keeps it under 350 by moving nothing in; if F-29 step 1 has split it
+Step 1 deletes `_attach_belly` and `_belly` (about 20 lines), which pays for the look pick and the shader pulse; if F-29 step 1 has split it
 first, the change goes into the split file. If a step would pass 350 lines, it
 moves the crawl poses to `zombie_crawl_pose.gd` first (split by job).
 
@@ -138,17 +141,19 @@ tween. Checked by the existing benchmark job (24 zombies).
 
 - Build: intake `bloater`, `shambler` (lab tech) and `shambler_guard` with
   `--kind zombie` and manifest rows. `ZombieRig.extra_models` and the look pick
-  `([model] + extra_models)[net_id % size]`. Bloater pod shader through
+  `([model] + extra_models)[look % size]`, where `look` (default 0, so `ZombieRig.new()` in tools still works) is `hash(net_id)` set in `Zombie.setup()` before the rig enters the tree. `hash` because `Net.allocate_id` is one counter for every zombie type, so a plain `% 2` with an alternating Walker/Bloater mix would give every Walker the same look. Delete `_attach_belly` and `_belly`. Bloater pod shader through
   `zombie_import.gd`: green-only glow (like the Glower veins) and an
   `instance uniform float pulse` that pushes the pod area out along the normal;
-  `pulse_belly()` tweens it. Fit the Body hit zones and capsules to the new
+  `pulse_belly()` tweens `instance_shader_parameters/pulse` on the `Body` mesh; the pod mask comes from `textureLod` of the albedo in `vertex()`. Shambler looks get a plain baked material. Fit the Body hit zones and capsules to the new
   heights. Turnarounds approved in `docs/design/turnarounds/zombies/`. ADR 0017
   line: these three zombies are Tripo now.
-- Files: assets/models/zombies/*, tools/assets/tripo/zombies.json,
-  systems/enemies/zombie_rig.gd, zombie.gd, zombie.tscn, bloater.tscn,
-  tools/assets/zombie_import.gd, assets/materials/bloater_pods.gdshader,
+- Files: assets/models/zombies/* (and their .glb.import), tools/assets/tripo/zombies.json,
+  systems/enemies/zombie_rig.gd, zombie.gd, zombie.tscn, bloater.tscn, glower.tscn,
+  tools/assets/zombie_import.gd, zombie_checks.py, build_models.py,
+  assets/materials/bloater_pods.gdshader, tests/content/test_zombie_finish.gd,
+  test_model_finish.gd, tests/unit/test_gear_import.gd,
   docs/adr/0017-tripo-models.md, docs/design/turnarounds/zombies/.
-- Tests: test_zombie_rig.gd: a Walker with net_id 0 and 1 gets the two looks;
+- Tests: test_zombie_rig.gd: Walkers with two looks values get the two looks; a Bloater and a Glower with any look keep their own model;
   every posed bone exists on each; the head zone sits on the head; a hit sets
   the Bloater pulse parameter and it returns to 0; head pop still shrinks the
   head. test_tripo_zombies.py: the three models pass the model rules, heights
@@ -161,7 +166,7 @@ tween. Checked by the existing benchmark job (24 zombies).
 - Build: intake option `--crawler` for zombies: drop vertices weighted mostly to
   shin and foot bones, cap the cut, set thigh/shin/foot to non-deform, rest
   the pelvis prone the way `zombie_model._rest_pose` does, add the `Crawler`
-  marker. Output `crawler.glb` from `shambler_labtech.glb`.
+  marker, reweight the thigh stumps to the pelvis (zombie_checks rejects thigh weights). Output `crawler.glb` from `shambler_labtech.glb`. Remove the crawler entry from build_models.py.
 - Files: tools/assets/tripo_intake.py, tripo_rig.py, tools/assets/tripo/zombies.json,
   assets/models/zombies/crawler.glb (+ maps), docs/design/turnarounds/zombies/crawler.png.
 - Tests: test_tripo_zombies.py: no vertex below the cut, Crawler marker present,
@@ -171,8 +176,11 @@ tween. Checked by the existing benchmark job (24 zombies).
 
 ### Step 3: Delete the code-built zombies
 
-- Build: remove `zombie_model.py`, `zombie_details.py`, their tests and their
-  build_models.py entries; point `zombie_lineup.gd`, `zombie_review.gd` and
+- Build: remove `zombie_model.py`, `zombie_details.py`, `zombie_finish_import.gd`,
+  `assets/materials/zombie_finish.gdshader`, `test_zombie_finish.gd`, the zombie cases in
+  `test_gear_import.gd`, the non-baked branch of `zombie_checks.py`, their tests, the
+  `zombie_model.py` comments in `zombie_rig.gd` and `tripo_rig.py`, and the code-built
+  paths in `zombie_pose_capture.gd`; point `zombie_lineup.gd`, `zombie_review.gd` and
   the look reference scene at the new models; update CREDITS and the model list.
 - Files: tools/assets/*, tools/zombie_*.gd, levels/look_reference/, docs/.
 - Tests: check_outputs and test_scripts_compile pass with the builder gone.
