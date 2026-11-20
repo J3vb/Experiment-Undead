@@ -207,6 +207,8 @@ def fetch(api: Tripo, row: dict, family: str, files: str, save) -> float:
 def intake_args(row: dict, files: str) -> list:
     args = [os.path.join(files, row["source"]), "--kind", row["kind"], "--name", row["name"]]
     args += ["--folder", row["folder"], "--yaw", str(row.get("yaw", 0))]
+    if row.get("crawler"):
+        args.append("--crawler")
     if row.get("clips"):
         args += ["--clips", row["clips"]]
     if row.get("length"):

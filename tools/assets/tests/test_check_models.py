@@ -35,6 +35,17 @@ def broken(tmp_path, name: str, change=None, folder: str = "") -> list:
     return check_models.check_model(path)
 
 
+def broken_zombie(tmp_path, change) -> list:
+    """Loads the committed Tripo Shambler, applies `change`, exports it and returns the check errors."""
+    build_models.reset_scene()
+    check_models.load_glb(os.path.join(check_models.REPO, "assets", "models", "zombies", "shambler.glb"))
+    change(bpy.data.objects)
+    bpy.context.view_layer.update()
+    path = str(tmp_path / "zombies" / "shambler.glb")
+    build_models.export(path)
+    return check_models.check_model(path)
+
+
 def edit_mesh(obj, edit) -> None:
     bm = bmesh.new()
     bm.from_mesh(obj.data)
@@ -53,7 +64,7 @@ def test_committed_model_passes(name):
     assert check_models.check_model(path) == []
 
 
-@pytest.mark.parametrize("name", ["wall_panel", "rifle_ar", "crawler"])
+@pytest.mark.parametrize("name", ["wall_panel", "rifle_ar"])
 def test_fresh_build_passes(tmp_path, name):
     assert broken(tmp_path, name) == []
 
@@ -149,23 +160,25 @@ def test_gun_facing_backwards(tmp_path):
 
 def test_zombie_facing_backwards(tmp_path):
     def turn(objects):
-        objects["Skeleton"].rotation_euler.z = math.pi
+        skeleton = objects["Skeleton"]
+        skeleton.rotation_mode = "XYZ"
+        skeleton.rotation_euler.z += math.pi
 
-    assert has(broken(tmp_path, "crawler", turn), "Eyes must sit in front of the head")
+    assert has(broken_zombie(tmp_path, turn), "Eyes must sit in front of the head")
 
 
 def test_missing_zombie_bone(tmp_path):
     def rename(objects):
         objects["Skeleton"].data.bones["upperarm_L"].name = "left_upperarm"
 
-    assert has(broken(tmp_path, "crawler", rename), "missing bones upperarm_L")
+    assert has(broken_zombie(tmp_path, rename), "missing bones upperarm_L")
 
 
 def test_eyes_with_wrong_bone_parent(tmp_path):
     def reparent(objects):
         objects["Eyes"].parent_bone = "neck"
 
-    assert has(broken(tmp_path, "crawler", reparent), "Eyes must be a child of the head bone")
+    assert has(broken_zombie(tmp_path, reparent), "Eyes must be a child of the head bone")
 
 
 @pytest.mark.parametrize(

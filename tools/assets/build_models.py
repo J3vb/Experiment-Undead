@@ -34,7 +34,6 @@ import town_camp
 import town_gate
 import town_market
 import town_props
-import zombie_model
 from mathutils import Vector
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -275,7 +274,6 @@ MODELS = {
     "siphon": ("weapons/siphon.glb", gun("siphon_model")),
     "coachman_2b": ("weapons/coachman_2b.glb", gun("coachman_model")),
     "grubber_sawnoff": ("weapons/grubber_sawnoff.glb", gun("grubber_model")),
-    "crawler": ("zombies/crawler.glb", zombie_model.build_crawler),
 }
 MODELS.update(character_models.MODELS)
 MODELS.update(prop_models.MODELS)

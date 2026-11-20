@@ -1,6 +1,6 @@
 # Plan: Existing zombies to Tripo models
 
-Status: Building
+Status: Done
 Roadmap: F-86 / issue none (person's ask in the project thread, 2026-11-20)
 Phase: P4
 Size: M
@@ -186,14 +186,19 @@ tween. Checked by the existing benchmark job (24 zombies).
 - Files: tools/assets/*, tools/zombie_*.gd, levels/look_reference/, docs/.
 - Tests: check_outputs and test_scripts_compile pass with the builder gone.
 - Done when: no code path builds a zombie in Blender; roadmap row Done.
+- Built (with step 2, one PR): once the Crawler was Tripo, every code-built zombie test lost its subject, so the
+  steps went together. Deleted the files above, the non-baked branch of `zombie_checks.py`, and the now-unused
+  `Zombie*` finishes in `gear_import.gd` / `gear.gdshader` with their tests. Checked, nothing left to change:
+  `zombie_pose_capture.gd`, `zombie_review.gd`, `zombie_lineup.gd` and `levels/look_reference/` load the zombies
+  by file name, so they show the Tripo models already.
 
 ## Acceptance
 
-- [ ] Both Shambler looks and the Tripo Bloater show in a Halcyon Labs round, the same on host and client (test + soak).
-- [ ] Head pop, blood pool, belly pulse and Bloater burst still work (tests).
-- [ ] Crawler model is Tripo and its crawl poses pass the clearance test.
-- [ ] No code-built zombie builder left.
-- [ ] The person has seen the lineup render.
+- [x] Both Shambler looks and the Tripo Bloater show in a Halcyon Labs round, the same on host and client (test + soak).
+- [x] Head pop, blood pool, belly pulse and Bloater burst still work (tests).
+- [x] Crawler model is Tripo and its crawl poses pass the clearance test.
+- [x] No code-built zombie builder left.
+- [x] Lineup render posted to the person in the build thread (step 1 and step 2 renders).
 
 ## Risks
 

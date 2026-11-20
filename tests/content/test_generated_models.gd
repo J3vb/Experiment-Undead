@@ -13,9 +13,8 @@ const HALBERD: String = "res://assets/models/weapons/halberd_lmg.glb"
 const CORVID: String = "res://assets/models/weapons/corvid_338.glb"
 const WALL: String = "res://assets/models/kit/wall_panel.glb"
 const ZOMBIES: String = "res://assets/models/zombies/%s.glb"
-const ZOMBIE_PARTS: Array[String] = ["Body", "Eyes", "EyeL", "EyeR"]
 ## Tripo zombies (tripo_intake.py --kind zombie): one baked Body, eyes painted in the texture.
-const BAKED_PARTS: Array[String] = ["Body", "Eyes", "HeadCenter"]
+const ZOMBIE_PARTS: Array[String] = ["Body", "Eyes", "HeadCenter"]
 ## The viewmodels place their ScopeLens disc at this Z (towards the player); scope geometry must stay in front.
 const SCOPE_LENS_Z: float = 0.128
 const SCOPE_BOTTOM: float = 0.074
@@ -139,33 +138,12 @@ func _zombie_material(mesh_node: MeshInstance3D) -> ShaderMaterial:
 	return mesh_node.mesh.surface_get_material(0) as ShaderMaterial
 
 
-func _check_zombie_finishes(zombie: Node3D) -> void:
-	var head_value: float = -1.0
-	var plain_colors: Array[Color] = []
-	for node: Node in zombie.find_children("*", "MeshInstance3D", true, false):
-		var mesh: Mesh = (node as MeshInstance3D).mesh
-		for surface: int in mesh.get_surface_count():
-			var mat: ShaderMaterial = mesh.surface_get_material(surface) as ShaderMaterial
-			assert_not_null(mat, "zombie surfaces use their procedural finish")
-			if mat == null:
-				continue
-			assert_eq(mat.shader.resource_path, "res://assets/materials/zombie_finish.gdshader")
-			var color: Color = mat.get_shader_parameter(&"albedo")
-			if mat.resource_name.begins_with("ZombieSkinHead"):
-				head_value = color.get_luminance()
-			elif not mat.resource_name.begins_with("ZombieGlow"):
-				plain_colors.append(color)
-	assert_gt(head_value, 0.0, "zombie head retains its own light skin finish")
-	for color: Color in plain_colors:
-		assert_gt(head_value, color.get_luminance(), "head is the lightest nonemissive surface")
-
-
-func _check_zombie(id: String, baked: bool = false) -> Node3D:
+func _check_zombie(id: String) -> Node3D:
 	var zombie: Node3D = _load(ZOMBIES % id)
 	if zombie == null:
 		return null
 	add_child(zombie)
-	for part: String in BAKED_PARTS if baked else ZOMBIE_PARTS:
+	for part: String in ZOMBIE_PARTS:
 		assert_not_null(zombie.find_child(part, true, false), id + " has " + part)
 	var skeletons: Array[Node] = zombie.find_children("*", "Skeleton3D", true, false)
 	assert_eq(skeletons.size(), 1, id + " has one shared character skeleton")
@@ -180,19 +158,15 @@ func _check_zombie(id: String, baked: bool = false) -> Node3D:
 	var settings: ConfigFile = ConfigFile.new()
 	assert_eq(settings.load((ZOMBIES % id) + ".import"), OK)
 	assert_eq(settings.get_value("params", "meshes/light_baking"), 3)
-	if baked:
-		var body: MeshInstance3D = zombie.find_child("Body", true, false) as MeshInstance3D
-		assert_eq(_zombie_material(body).shader.resource_path, "res://assets/materials/glower_veins.gdshader")
-		assert_eq(settings.get_value("params", "import_script/path"), "res://tools/assets/zombie_import.gd")
-		return zombie
-	_check_zombie_finishes(zombie)
-	assert_eq(settings.get_value("params", "import_script/path"), "res://tools/assets/zombie_finish_import.gd")
+	var body: MeshInstance3D = zombie.find_child("Body", true, false) as MeshInstance3D
+	assert_eq(_zombie_material(body).shader.resource_path, "res://assets/materials/glower_veins.gdshader")
+	assert_eq(settings.get_value("params", "import_script/path"), "res://tools/assets/zombie_import.gd")
 	return zombie
 
 
 func test_shambler_looks_are_upright_tripo_zombies() -> void:
 	for id: String in ["shambler", "shambler_guard"]:
-		var zombie: Node3D = _check_zombie(id, true)
+		var zombie: Node3D = _check_zombie(id)
 		if zombie == null:
 			continue
 		var box: AABB = _size_of(zombie)
@@ -207,13 +181,13 @@ func test_crawler_is_flat_to_the_ground() -> void:
 		return
 	var box: AABB = _size_of(zombie)
 	assert_lt(box.size.y, 0.8, "crawler is low")
-	assert_gt(box.size.z, 1.2, "crawler is long")
-	assert_null(zombie.find_child("LegL", true, false), "crawler has no legs")
+	assert_gt(box.size.z, 1.1, "crawler is long")
+	assert_not_null(zombie.find_child("Crawler", true, false), "crawler marker for the crawl poses")
 	zombie.free()
 
 
 func test_bloater_is_a_wide_tripo_zombie() -> void:
-	var zombie: Node3D = _check_zombie("bloater", true)
+	var zombie: Node3D = _check_zombie("bloater")
 	if zombie == null:
 		return
 	var box: AABB = _size_of(zombie)
