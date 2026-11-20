@@ -1,10 +1,10 @@
 # Plan: Gear in first person
 
-Status: Review
+Status: Approved
 Roadmap: F-42 / issue #129
 Phase: P7, pulled forward 2026-11-20: the person called the v0.1 solo play-test done and asked to go on with v0.2 features. F-11 (the v0.1.0 release) is not needed: this is client-side visuals only, on the gear swap path from F-84.
 Size: M
-Approved by:
+Approved by: plan review on PR #406 (Claude reviewer, Codex out of quota); the person on the implant card (2026-11-20)
 Lore link: lore.md "Story links for game content": Vests (salvaged body armour, its sleeve cuffs), Charms ("Salvagers hang them on the gun for luck"), Implants (forearm module).
 
 ## Goal
@@ -25,8 +25,8 @@ In:
 - The worn charm hangs from a `CharmMount` marker on every primary viewmodel,
   with a small swing. Sidearm viewmodels have no mount, so the charm is not
   shown while a sidearm is in hand (gear-visuals.md: charm on the primary).
-- The worn implant's forearm module on the left first-person forearm (step 3,
-  only if the implant decision keeps the forearm module).
+- The worn implant's forearm module on the left first-person forearm (step 3).
+  The person picked forearm only (2026-11-20): no eye plate.
 - A booth render of hip and ADS views per rarity for the look-check.
 
 Not in (non-goals, and where each one goes instead):
@@ -200,10 +200,9 @@ keeps two floats; no allocations. One player's view only, never per zombie.
 
 ### Step 3: Implant on the left forearm, and close-out
 
-- Build (per the open decision): if the forearm module stays, the worn implant's
-  module attaches to `forearm_L` of the first-person arms with its rarity look
-  (the neck port is not shown in first person). If the implant becomes an eye
-  plate only, this step builds nothing for the implant and records that.
+- Build: the worn implant's module attaches to `forearm_L` of the first-person
+  arms with its rarity look, viewmodel layer and no shadows (the neck port is
+  not shown in first person).
   Close-out: gear-visuals.md first-person section and slot table (Implant row)
   updated to the decision, DECISIONS lines,
   roadmap row Done, issue #129 ticked, renders sent to the person.
@@ -226,8 +225,8 @@ keeps two floats; no allocations. One player's view only, never per zombie.
   review tool renders every primary at hip and ADS in step 1 and 2 before merge.
 - F-70 vest tier scenes may drop the `CuffFP_*` nodes: the content check fails
   if any vest scene lacks them.
-- F-70 step 5 moves the implant to the eye: the open decision settles it before
-  step 3 is built; the PR that settles it updates gear-visuals.md and F-70's plan.
+- F-70 step 5 planned an eye plate: settled 2026-11-20 (forearm only); this plan
+  PR updates F-70's step 5 to match.
 - F-70 step 6 (sleeve materials on `player_arms`) must keep the Common
   `GearLook.apply` on the arm mesh, so the cuffs and arms keep separate looks.
 - A charm in view while aiming could distract: it hangs on the left side, below
@@ -235,5 +234,5 @@ keeps two floats; no allocations. One player's view only, never per zombie.
 
 ## Open decisions
 
-- [ ] Implant placement: eye plate and forearm module (recommended), forearm
-      only, or eye plate only (asked on a card 2026-11-20).
+- [x] Implant placement: forearm only; the concept's eye plate is dropped (the
+      person, 2026-11-20).
