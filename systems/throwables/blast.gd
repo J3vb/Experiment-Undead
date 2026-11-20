@@ -81,6 +81,6 @@ static func _hit_thrower(
 
 static func _confirm(attacker: Player, killed: bool) -> void:
 	if attacker.session and attacker.session.hit_claims:
-		attacker.session.hit_claims.confirm_well_hit(attacker, killed)
+		attacker.session.hit_claims.confirm_area_hit(attacker, killed)
 	else:
 		Events.hit_confirmed.emit(attacker, killed, false)

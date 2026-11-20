@@ -163,7 +163,7 @@ func apply_server_hit(hit_zone: HitZone, info: DamageInfo) -> void:
 ## Defer past the normal hit marker; primary kills already confirm themselves.
 func _confirm_secondary_kill(zombie: Zombie, info: DamageInfo, killed: bool) -> void:
 	if killed and not zombie.health.is_dead and info.attacker is Player:
-		confirm_well_hit.call_deferred(info.attacker as Player, true)
+		confirm_area_hit.call_deferred(info.attacker as Player, true)
 
 
 func _valid_hit(player: Player, weapon: WeaponData, amount: float, point: Vector3, impulse: Vector3) -> bool:
@@ -219,16 +219,16 @@ func _forget_peer(peer_id: int) -> void:
 	_claims.erase(peer_id)
 
 
-func confirm_well_hit(player: Player, killed: bool) -> void:
+func confirm_area_hit(player: Player, killed: bool) -> void:
 	if not multiplayer.is_server() or not is_instance_valid(player):
 		return
 	Events.hit_confirmed.emit(player, killed, false)
 	if player.net_id != multiplayer.get_unique_id() and multiplayer.get_peers().has(player.net_id):
-		well_hit.rpc_id(player.net_id, killed)
+		area_hit.rpc_id(player.net_id, killed)
 
 
 @rpc("authority", "call_remote", "reliable")
-func well_hit(killed: bool) -> void:
+func area_hit(killed: bool) -> void:
 	var player: Player = session.players.find_player(multiplayer.get_unique_id())
 	if player:
 		Events.hit_confirmed.emit(player, killed, false)
