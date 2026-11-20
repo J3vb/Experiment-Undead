@@ -115,10 +115,17 @@ func _create(spawn_data: Array) -> Node:
 
 ## Server: runs the effect, then everyone hears and sees the pickup go.
 func on_collected(pickup: PowerUp, collector: Player) -> void:
+	match pickup.data.effect:
+		PowerUpData.Effect.RESUPPLY, PowerUpData.Effect.AMMO_PACK:
+			_grant_ammo(pickup.data, collector)
+		PowerUpData.Effect.PURGE:
+			PowerUpEffects.purge(session.spawner)
+		PowerUpData.Effect.SCRAP_KIT:
+			PowerUpEffects.rebuild_barriers(session.level)
 	if pickup.data.duration > 0.0:
 		start_timer(pickup.data)
-	else:
-		_grant_ammo(pickup.data, collector)
+	for player: Player in session.get_players() if pickup.data.team_points > 0 else []:
+		player.wallet.add(pickup.data.team_points)
 	if not multiplayer.get_peers().is_empty():
 		_receive_collected.rpc(pickup.name, pickup.data.id, collector.net_id)
 

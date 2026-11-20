@@ -178,3 +178,23 @@ func test_a_clients_hit_claim_kills_under_overkill() -> void:
 	claims.claim_hit.rpc_id(1, pair[0].name, DamageInfo.Zone.BODY, RIFLE.damage, RIFLE.id, pair[0].global_position)
 	await wait_until(func() -> bool: return pair[0].health.is_dead, 3.0, "one claimed body shot killed")
 	assert_true(pair[0].health.is_dead)
+
+
+func test_purge_and_scrap_kit_reach_the_client() -> void:
+	var pair: Array[Zombie] = await _zombie_pair(1)
+	var barrier: Barrier = target(server, "Barrier") as Barrier
+	barrier._set_planks(0)
+	var copy: Barrier = target(client, "Barrier") as Barrier
+	await wait_until(func() -> bool: return copy.planks == 0, 3.0, "broken barrier synced")
+	_drops(server)._spawn(load("res://content/power_ups/purge.tres") as PowerUpData, Vector3(3, 0, 3)).collect(
+		on_server()
+	)
+	_drops(server)._spawn(load("res://content/power_ups/scrap_kit.tres") as PowerUpData, Vector3(3, 0, 3)).collect(
+		on_server()
+	)
+	await wait_until(func() -> bool: return pair[1].state == Zombie.State.DEAD, 3.0, "Purge death synced")
+	await wait_until(func() -> bool: return copy.planks == Barrier.PLANKS, 3.0, "rebuilt planks synced")
+	await wait_until(
+		func() -> bool: return on_client().wallet.points == on_server().wallet.points, 3.0, "team points synced"
+	)
+	assert_eq(on_server().wallet.points, 600, "+400 and +200 for the client player")
