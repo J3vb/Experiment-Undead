@@ -1,10 +1,14 @@
 ## Holds a nearby teammate's revive on the server; owners send only start/cancel intent.
+## Also the server's going-down rules: Second Wind, Undying's charge and Last Stand.
 class_name Revive
 extends Node
 
 const RANGE: float = 1.5
 const HOLD_TIME: float = 3.0
 const REWARD: int = 50
+## Last Stand: a killing blow leaves this much health, then damage is ignored for IMMUNE_TIME.
+const LAST_STAND_HEALTH: float = 1.0
+const LAST_STAND_IMMUNE_TIME: float = 2.0
 
 var progress: float = 0.0
 var _player: Player
@@ -12,6 +16,9 @@ var _requested: Player
 var _active: Player
 var _elapsed: float = 0.0
 var _local_elapsed: float = 0.0
+var _last_stand_used: bool = false
+var _immune_left: float = 0.0
+var _undying_used: bool = false
 
 
 func _init() -> void:
@@ -21,10 +28,34 @@ func _init() -> void:
 
 func _ready() -> void:
 	_player = get_parent() as Player
+	Events.round_started.connect(_on_round_started)
+
+
+## Server: true when this hit is ignored (Last Stand immunity). A killing blow with
+## Last Stand unused this round is cut to leave LAST_STAND_HEALTH.
+func absorbs(info: DamageInfo) -> bool:
+	if _immune_left > 0.0:
+		return true
+	var rule: bool = _player.skill_rules.has(SkillNodeData.Rule.LAST_STAND)
+	if rule and not _last_stand_used and info.amount >= _player.health.current:
+		_last_stand_used = true
+		_immune_left = LAST_STAND_IMMUNE_TIME
+		info.amount = maxf(_player.health.current - LAST_STAND_HEALTH, 0.0)
+	return false
+
+
+## Undying: one self-revive per run when Second Wind is not held.
+func has_undying_charge() -> bool:
+	return _player.skill_rules.has(SkillNodeData.Rule.UNDYING) and not _undying_used
+
+
+func _on_round_started(_round_number: int, _count: int) -> void:
+	_last_stand_used = false
 
 
 ## Server: Second Wind keeps the player down for second_wind_time, then gets them up.
-## It uses up Second Wind only. In co-op the player is already downed by PlayerStateSync.
+## It uses up Second Wind only; without it, Undying's charge is used and every Serum is lost.
+## In co-op the player is already downed by PlayerStateSync.
 func second_wind() -> void:
 	var coop: bool = _player.state_sync.is_coop()
 	if not coop:
@@ -34,7 +65,11 @@ func second_wind() -> void:
 	await get_tree().create_timer(_player.second_wind_time, false, true).timeout
 	if not _player.is_downed or _player.is_dead:
 		return
-	_player.lose_serums(true)
+	if _player.has_serum(&"second_wind"):
+		_player.lose_serums(true)
+	else:
+		_undying_used = true
+		_player.lose_serums()
 	if coop:
 		_player.state_sync.revive_player()
 		return
@@ -110,6 +145,7 @@ func can_revive(target: Player) -> bool:
 
 
 func _physics_process(delta: float) -> void:
+	_immune_left = maxf(_immune_left - delta, 0.0)
 	if multiplayer.multiplayer_peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED:
 		return
 	if not multiplayer.is_server() or not is_instance_valid(_active):

@@ -133,7 +133,7 @@ func is_alive() -> bool:
 
 
 func take_damage(info: DamageInfo) -> void:
-	if multiplayer.is_server() and is_alive() and not (session and session.is_over):
+	if multiplayer.is_server() and is_alive() and not (session and session.is_over) and not revive.absorbs(info):
 		health.take_damage(info)
 
 
@@ -165,7 +165,7 @@ func has_serum(id: StringName) -> bool:
 
 ## Down with Second Wind still waiting to get them up: the squad is not out yet.
 func can_self_revive() -> bool:
-	return is_downed and not is_dead and has_serum(&"second_wind")
+	return is_downed and not is_dead and (has_serum(&"second_wind") or revive.has_undying_charge())
 
 
 func add_serum(serum: SerumData) -> void:
@@ -335,7 +335,7 @@ func _on_points_changed(total: int, delta: int) -> void:
 func _on_died(_info: DamageInfo) -> void:
 	if not multiplayer.is_server():
 		return
-	var second_wind: bool = has_serum(&"second_wind")
+	var second_wind: bool = has_serum(&"second_wind") or revive.has_undying_charge()
 	if state_sync.is_coop():
 		state_sync.down_player(second_wind)
 		return
