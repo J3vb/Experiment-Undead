@@ -109,7 +109,7 @@ Not in (and where it goes):
 | levels/materials/town_sky.gdshader | new (step 1) | Night sky: gradient, stars, aurora bands; no textures |
 | levels/materials/town_surface.gdshader + town_mud.tres | changed / new (step 1) | Wet mud road with puddles and snow edges |
 | levels/lantern_post/snowfall.tscn, chimney_smoke.tscn | new (step 1) | `GPUParticles3D` snow around the camera area and smoke columns |
-| tools/assets/town_props.py, town_buildings.py, town_market.py, town_gate.py | changed / new (steps 2-5) | Blender model scripts, added to `build_models.py` MODELS like the Halcyon prop scripts |
+| tools/assets/town_props.py, town_camp.py (step 5 props, as built), town_buildings.py, town_market.py, town_gate.py | changed / new (steps 2-5) | Blender model scripts, added to `build_models.py` MODELS like the Halcyon prop scripts |
 | assets/models/town/*.glb (+ .import), docs/design/turnarounds/town/*.png | new | Lodge kit, stalls, gate, props; `.import` uses `prop_import.gd` with `light_baking=2` |
 | tools/assets/prop_import.gd | changed (step 2) | New shared slots `Canvas`, `Logs`, `Snow`, `Banner` pointing at new `levels/materials/town_*.tres` |
 | tools/assets/check_models.py, tools/turnarounds.py, .github/workflows/assets.yml | changed | Town budget raised for the gate and lodges (see Performance); turnaround reference becomes the concept image; output list |
@@ -171,7 +171,8 @@ target), and the Low preset must stay playable.
   `levels/materials/town_surface.gdshader`, `levels/materials/town_mud.tres`,
   `tools/hub_shot.gd`, `tests/unit/test_lantern_post.gd`.
 - Tests: `test_lantern_post.gd` adds: running the generator reproduces the
-  committed scene (scene is not hand-edited); the Deploy board stands at
+  committed scene (scene is not hand-edited; as built this check is the Python
+  test `tools/ci/test_lantern_post_scene.py`); the Deploy board stands at
   `DeployBoardSpot` and a ray from the spawn to the board at chest height hits
   nothing; shadowed lights at most 6 and real-time lights at most 30. Existing
   spawn-line tests stay.
@@ -208,6 +209,8 @@ colliders. The spawn line and the Deploy board stay where they are.
   Missions board, Trader goods, gun wall, workbench, tech desk). Signs are
   Label3D on the sign model: MISSIONS, TRADER "Buy / Sell", GUNSMITH
   "Upgrades / Mods", TECHNICIAN "Serums / Gear". The rest of the old houses go.
+  Later change (F-80): three stalls are now Tripo models and only MISSIONS keeps
+  `stall_frame`; see [tripo-models.md](tripo-models.md) step 1.
   Adds the stall-name line and a Change log row to game-design.md.
 - Files: `tools/assets/town_buildings.py`, `tools/assets/town_market.py`, model lists,
   `assets/models/town/*`, turnarounds, generator, scene, tests, `docs/design/game-design.md`.
@@ -230,12 +233,13 @@ colliders. The spawn line and the Deploy board stay where they are.
 
 ### Step 5: Props, light pass, close-out
 
-- Build: P1-P14 in `town_props.py` (fire barrel with flame particles and one
+- Build: P1-P14 in `town_props.py` (as built: P1-P13 in `town_camp.py`; `town_props.py`
+  keeps the F-50 lamps, windows and signpost) (fire barrel with flame particles and one
   flickering light each, benches, crates, ammo cases, Fenlight crates with
   glowing jars, lanterns, string lights, fence rails, drifts, firewood, snowy
   pines). Light pass against the concept; draw-call count in the PR; GPU fps
   and bake prompt into `/mnt/project-files/lantern-post/`.
-- Files: `tools/assets/town_props.py`, model lists, assets, generator, scene,
+- Files: `tools/assets/town_camp.py` (planned as `town_props.py`), model lists, assets, generator, scene,
   tests, docs (`DECISIONS.md`, this plan to Done, roadmap row Done).
 - Tests: model checks; light budget test still passes.
 - Done when: CI green, the person approves the look (decision card), GPU

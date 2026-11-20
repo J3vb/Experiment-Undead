@@ -94,7 +94,7 @@ Not in (and where each goes):
 - Input through InputFrame, gameplay in _physics_process, randomness from the session RNG:
   n.a. (no gameplay code); bake noise uses fixed seeds
 - Tests: check_models.py budget, tools/assets/tests (bake, intake), tools/ci stale-bake test,
-  tests/content/test_generated_models.gd and test_gun_finish.gd, turnarounds
+  tests/content/test_gun_finish.gd (Baked material and maps), turnarounds
 - Logging: none (no runtime system)
 - Performance: see Performance; GPU agent fps check in step 5
 - Out of scope: other 18 guns, characters, balance
@@ -122,7 +122,7 @@ Not in (and where each goes):
 | `tools/weapon_review.gd` | changed | `--guns` filter; run in Forward+ for lit renders |
 | `.claude/hooks/session-start.sh` | changed | Install Mesa's software Vulkan (lavapipe) so cloud threads render Forward+ |
 | `tools/assets/gun_bake.py` | new | High-detail pass, chamfer, UVs, per-part bake, map packing, bake record |
-| `tools/assets/build_models.py` | changed | Baked guns run the bake after their script |
+| `tools/assets/build_models.py` | changed | Skips baked guns; `gun_bake.py` builds them |
 | `assets/materials/gun_finish.gdshader` | changed | `baked` mode: albedo, normal and ORM maps through UV |
 | `tools/assets/gun_finish_import.gd` | changed | `Baked` material name: shader in baked mode with `<id>_*` maps |
 | `assets/textures/weapons/<id>_{albedo,normal,orm}.png` | new | Bake output (generated, never hand-edited) |
@@ -147,7 +147,7 @@ Autoloads, managers or base classes added: none.
   asks for a re-bake but one that does not leaves it alone. Read by
   `tools/ci/test_gun_bakes.py` and `tools/assets/tests/test_gun_bake.py`.
 - Save format change: none.
-- Content checks: `tests/content/test_generated_models.gd` checks the four
+- Content checks: `tests/content/test_gun_finish.gd` checks the four
   guns use the `Baked` material with all three maps loaded, and keep their
   node names and ADS rays.
 

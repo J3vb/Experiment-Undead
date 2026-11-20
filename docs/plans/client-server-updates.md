@@ -163,7 +163,8 @@ to end. This is how most self-hosted game server images update.
   with a fake release server. The old-client check runs a real released
   client against the new server.
 - Logging: `net.join_refused` gains `older`; new `save.profile_newer`,
-  `launcher.check_failed`, `launcher.installed`, `launcher.install_failed`,
+  `launcher.releases_unreachable` (planned as `check_failed`), `launcher.version_installed`
+  (planned as `installed`), `launcher.install_failed`,
   `launcher.root_refreshed`, `server.drain_started`,
   `server.update_restart`; the runner prints its update checks to the
   Docker log.
@@ -295,10 +296,11 @@ unauthenticated limit even with several servers on one home IP).
 
 ## Steps
 
-> 2026-11-20: the person asked for a separate launcher program. Steps 4-6 and 9 (the
-> built-in launcher, its installer, Host a server and launcher-hosted server updates) are
-> replaced by F-82 (`docs/plans/separate-launcher.md`, ADR 0018). Step 3 of F-82 removed
-> the launcher screen, ReleaseFeed and VersionInstaller from the game.
+Status per step (2026-11-20): step 1 built (PR #302), step 2 built (PR #301),
+step 3 built (PR #329), steps 4-6 built (PR #331). F-82
+([separate-launcher.md](separate-launcher.md)) replaces the in-game launcher
+of steps 4-6, and step 9; F-82 step 3 removed the launcher screen,
+ReleaseFeed and VersionInstaller from the game. Steps 7 and 8 are not built yet.
 
 Steps 1, 2, 4 and 7 do not depend on each other. Steps 1-5 must merge before
 Release v0.1.0 (F-11): whatever handshake, save layout and launcher v0.1.0
@@ -636,19 +638,20 @@ root copy, so v0.1.0 players get the Host panel with their next update.
 
 ## Acceptance
 
-- [ ] A client one version behind or ahead of the server gets a refusal that
+- [x] A client one version behind or ahead of the server gets a refusal that
   says which side to update, never a timeout (step 1 tests, step 3 old-client
-  check).
-- [ ] Test and dev builds never change stable characters (step 2 test).
-- [ ] A save from a newer version shows a message and is never overwritten
-  (step 2 test).
-- [ ] Deleting or renaming a saved content id, or lowering the save version,
-  fails CI (step 3 tests).
+  check). `tests/unit/test_handshake.gd`, `test_build.gd`.
+- [x] Test and dev builds never change stable characters (step 2 test).
+  `tests/unit/test_character_profile.gd`.
+- [x] A save from a newer version shows a message and is never overwritten
+  (step 2 test). `test_character_profile.gd`.
+- [x] Deleting or renaming a saved content id, or lowering the save version,
+  fails CI (step 3 tests). `tools/ci/test_check_saved_ids.py`.
 - [ ] A player who unzipped v0.1.0 on Windows gets v0.1.1 by starting the
   game, without overwriting running files (step 5 end-to-end test, and a
   play-test by the person).
-- [ ] A broken or partial download never leaves a version folder behind
-  (step 4 tests).
+- [x] A broken or partial download never leaves a version folder behind
+  (step 4 tests). `tests/unit/test_version_installer.gd`.
 - [ ] A player can install, start and stop a server from the
   launcher on Windows, with no second download (step 6 tests and a play-test
   by the person), and that server moves to a new release after its match

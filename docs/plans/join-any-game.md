@@ -133,7 +133,8 @@ Not in (non-goals, and where each one goes instead):
 
 | Folder or file | New / changed | What changes |
 |---|---|---|
-| `core/net.gd` | changed | `is_coop()`, `coop_changed(on)`, `open_world(port)` (listen or offline fallback), `open_state` for the pause screen, owns `PortOpener` and `ServerInfo` |
+| `core/net.gd` | changed | `is_coop()`, `coop_changed(on)`, owns `ServerInfo` (`Net.info`) and `Net.world` |
+| `systems/net/own_world.gd` | new (as built) | `OwnWorld`: `Net.world.open(port)` (listen or offline fallback), `Net.world.state` for the pause screen, owns `PortOpener` |
 | `systems/net/player_state_sync.gd`, `systems/player/revive.gd`, `systems/player/player.gd` | changed | solo/co-op checks read `Net.is_coop()`; downed rule stored per down |
 | `systems/ui/pause_screen.gd`, `.tscn` | changed | freeze only while alone; unfreeze when a friend connects; address line + Copy |
 | `systems/ui/results_screen.gd`, `systems/ui/hud.gd` | changed | button and revive text follow `Net.is_coop()` |
@@ -177,7 +178,7 @@ info socket, which nothing else owns). `ServerList` owns the saved list.
 - LAN discovery: broadcast the query to 255.255.255.255 on info ports 8777 to
   8784 (game ports 7777 to 7784); rows are keyed by the reply's source IP and
   port, so one server found twice shows once.
-- `Net.open_state` (not saved, not sent): `{"status": open|offline_busy|
+- `Net.world.state` (not saved, not sent): `{"status": open|offline_busy|
   offline_off, "port", "router": pending|opened|no_router|failed|cgnat|off,
   "address"}`.
 - Network messages in the match: none new; protocol version unchanged.
@@ -255,9 +256,9 @@ frame.
 
 ### Step 2: Enter world
 
-- Build: `Net.open_world(port)`: when `network/open_to_friends` is on, calls
+- Build: `Net.world.open(port)` (`OwnWorld`, `systems/net/own_world.gd`): when `network/open_to_friends` is on, calls
   `host(port)`; on failure logs `net.port_busy` and stays offline; sets
-  `open_state`. Main menu: one big **Enter world** button (default focus)
+  `Net.world.state`. Main menu: one big **Enter world** button (default focus)
   that calls it with `network/last_port` and goes to the hub
   (`UI.replace(&"hub")`); **Play online** opens the browser (until step 5 it
   opens the existing Join panel, so joining keeps working). Play solo, Host
@@ -286,8 +287,8 @@ frame.
 
 ### Step 3: Router port and address
 
-- Build: `PortOpener` (`RefCounted`, owned by `Net`): when `network/upnp` is
-  on, the first `open_world` of a game run starts a `Thread` that runs
+- Build: `PortOpener` (`RefCounted`, owned by `OwnWorld`): when `network/upnp` is
+  on, the first `Net.world.open` of a game run starts a `Thread` that runs
   `UPNP.discover()`, takes the valid gateway, maps the game port and the info
   port (UDP, lease 3600 s, falling back to 0 if the router refuses a lease),
   and reads the external address. Results: `opened`, `cgnat` (external
@@ -310,7 +311,7 @@ frame.
   everything else, so CI never runs a real discovery): success gives `opened`
   and the address; 100.64.x.x gives `cgnat`; no gateway gives `no_router`
   with the LAN address; a refused lease retries with 0; a refused mapping
-  gives `failed`; a second `open_world` in the same run does not map again;
+  gives `failed`; a second `Net.world.open` in the same run does not map again;
   quitting removes both mappings once. Pause screen shows the line and Copy
   puts `address:port` on the clipboard.
 - Done when: on a home router with UPnP, the pause screen shows the internet
@@ -320,7 +321,7 @@ frame.
 
 - Build: `ServerInfo` (new, `extends Node`): a child of Net with
   `PROCESS_MODE_ALWAYS`, so a paused solo world still answers. Net only calls
-  `start(port, name)` in `open_world` and `stop()` in `leave`; the dedicated
+  `start(port, name)` in `Net.world.open` and `stop()` in `leave`; the dedicated
   server calls the same. While bound to game port + 1000 it polls its
   `PacketPeerUDP` in its own `_physics_process` (off while unbound), answers
   queries with the reply above under the per-source and total caps, and builds
@@ -424,7 +425,7 @@ frame.
   the Deploy board; the soak and tests keep using `--host` / scene flags.
 - **Soak plays offline** (`tools/soak/soak_run.gd` builds the session
   directly) while real games are listen servers. Step 1 tests cover a lone
-  listen server; a follow-up issue makes the soak run through `open_world`.
+  listen server; a follow-up issue makes the soak run through `Net.world.open`.
 - **Merge order with F-65 (PR #299).** Both add a roadmap row and an ADR; the
   second to merge renumbers. The info reply carries `version` and `protocol`
   so the browser can warn before F-65's handshake refuses.
