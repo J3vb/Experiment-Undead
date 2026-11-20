@@ -100,6 +100,13 @@ func test_host_leave_delivers_the_intentional_shutdown_reason() -> void:
 	assert_false(Net.is_online())
 
 
+func test_a_draining_server_tells_its_players_it_is_updating() -> void:
+	await _start_server("updating")
+	await _join_and_wait_for_error()
+	assert_eq(Net.last_error.get("reason"), &"server_updating")
+	assert_false(Net.is_online())
+
+
 func test_other_disconnects_report_a_lost_connection() -> void:
 	await _start_server("lost")
 	await _join_and_wait_for_error()

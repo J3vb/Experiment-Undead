@@ -70,8 +70,10 @@ func _on_connected(peer_id: int) -> void:
 	if _scenario == "quit":
 		await create_timer(0.2).timeout
 		quit()
-	elif _scenario == "ended":
+	elif _scenario == "ended" or _scenario == "updating":
 		await create_timer(0.2).timeout
+		if _scenario == "updating":
+			_net.end_reason = "server_updating"
 		_net.leave()
 	elif _scenario == "lost":
 		await create_timer(0.2).timeout

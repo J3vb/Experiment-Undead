@@ -239,10 +239,11 @@ func restart() -> void:
 	(deploy_vote.back_to_hub if Net.is_coop(multiplayer) or Net.changing_place else Net.world.reload).call()
 
 
-func quit_game() -> void:
+## exit_code 3 tells the launcher or Docker runner to restart on a newer version.
+func quit_game(exit_code: int = 0) -> void:
 	if _quitting:
 		return
 	_quitting = true
 	match_end.bank_run_xp()
 	await progression.wait_for_run_grants()
-	get_tree().quit()
+	get_tree().quit(exit_code)
