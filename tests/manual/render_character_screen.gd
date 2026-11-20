@@ -17,10 +17,20 @@ func _ready() -> void:
 	profile.total_xp = CharacterProfile.XP_RULES.total_xp_for_level(14)
 	for index: int in 48:
 		profile.stash[index] = _item(index)
-	for index: int in CharacterScreen.SLOTS.size():
-		var base: String = ["talon_dmr", "pistol_service", "vest_medium", "charm_dog_tags", "implant_reflex"][index]
-		var rarity: String = ["epic", "rare", "rare", "epic", "legendary"][index]
-		profile.loadout[CharacterScreen.SLOTS[index]] = _item(index).merged({"base": base, "rar": rarity}, true)
+	var worn: Dictionary = {
+		&"primary": ["talon_dmr", "epic"],
+		&"sidearm": ["pistol_service", "rare"],
+		&"vest": ["vest_medium", "rare"],
+		&"charm": ["charm_dog_tags", "epic"],
+		&"implant": ["implant_reflex", "legendary"],
+		&"headgear": ["headgear_cap", "uncommon"],
+		&"gloves": ["gloves_tactical", "common"],
+		&"backpack": ["backpack_pack", "rare"],
+		&"boots": ["boots_field", "epic"]
+	}
+	for index: int in CharacterProfile.SLOTS.size():
+		var slot: StringName = CharacterProfile.SLOTS[index]
+		profile.loadout[slot] = _item(index).merged({"base": worn[slot][0], "rar": worn[slot][1]}, true)
 	profile.loadout[&"primary"]["aff"] = [["reload_pct", 2, 0.0], ["mag_pct", 3, 1.0]]
 	var screen: CharacterScreen = SCREEN.instantiate() as CharacterScreen
 	add_child(screen)

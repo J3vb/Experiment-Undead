@@ -4,13 +4,11 @@ extends Control
 
 signal closed
 
-const SLOTS: Array[StringName] = [&"primary", &"sidearm", &"vest", &"charm", &"implant"]
 const ACCENT: Color = Color("7fd6e0")
 const DIM: Color = Color("8fa3a8")
 
 var profile: CharacterProfile
 var stash_buttons: Array[Button] = []
-var slot_buttons: Array[Button] = []
 var selected_stash: int = -1
 var selected_slot: StringName = &""
 var _comparing: bool = false
@@ -20,6 +18,7 @@ var _save_failed: bool = false
 
 @onready var rig: GearRig = %GearRig
 @onready var tooltip: ItemTooltip = %ItemTooltip
+@onready var slots: LoadoutSlots = %LoadoutSlots
 
 
 func _ready() -> void:
@@ -55,7 +54,7 @@ func open(character: CharacterProfile) -> void:
 	show()
 	_refresh()
 	if visible_stash_indices().is_empty():
-		slot_buttons[0].grab_focus()
+		slots.buttons[0].grab_focus()
 	else:
 		stash_buttons[0].grab_focus()
 
@@ -82,17 +81,12 @@ func _style_controls() -> void:
 
 
 func _build_buttons() -> void:
-	for slot: StringName in SLOTS:
-		var button: Button = Button.new()
-		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		button.set_meta("slot", slot)
-		button.add_theme_font_size_override("font_size", 20)
+	for button: Button in slots.buttons:
+		var slot: StringName = slots.slot_of(button)
 		button.mouse_entered.connect(_inspect.bind(-1, slot))
 		button.focus_entered.connect(_inspect.bind(-1, slot))
 		button.pressed.connect(_inspect.bind(-1, slot))
 		button.gui_input.connect(_item_input.bind(button))
-		%Slots.add_child(button)
-		slot_buttons.append(button)
 	for cell: int in CharacterProfile.STASH_SIZE:
 		var button: Button = Button.new()
 		button.custom_minimum_size = Vector2(48, 66)
@@ -112,7 +106,7 @@ func _build_buttons() -> void:
 
 func _wire_focus() -> void:
 	var order: Array[Control] = []
-	order.assign(slot_buttons)
+	order.assign(slots.buttons)
 	order.append_array([%Category, %Rarity, %Sort])
 	order.append_array(stash_buttons)
 	order.append(%Back)
@@ -122,16 +116,12 @@ func _wire_focus() -> void:
 	for cell: int in stash_buttons.size():
 		var button: Button = stash_buttons[cell]
 		button.focus_neighbor_left = button.get_path_to(
-			slot_buttons[mini(cell / 10, 4)] if cell % 10 == 0 else stash_buttons[cell - 1]
+			slots.beside_stash(cell / 10) if cell % 10 == 0 else stash_buttons[cell - 1]
 		)
 		button.focus_neighbor_right = button.get_path_to(%Back if cell % 10 == 9 else stash_buttons[cell + 1])
 		button.focus_neighbor_top = button.get_path_to(%Sort if cell < 10 else stash_buttons[cell - 10])
 		button.focus_neighbor_bottom = button.get_path_to(%Back if cell >= 50 else stash_buttons[cell + 10])
-	for index: int in slot_buttons.size():
-		var button: Button = slot_buttons[index]
-		button.focus_neighbor_top = button.get_path_to(%Back if index == 0 else slot_buttons[index - 1])
-		button.focus_neighbor_bottom = button.get_path_to(%Back if index == 4 else slot_buttons[index + 1])
-		button.focus_neighbor_right = button.get_path_to(stash_buttons[index * 10])
+	slots.wire_focus(stash_buttons, %Back)
 	%Category.focus_neighbor_bottom = %Category.get_path_to(%Sort)
 	%Rarity.focus_neighbor_bottom = %Rarity.get_path_to(%Sort)
 	%Sort.focus_neighbor_bottom = %Sort.get_path_to(stash_buttons[0])
@@ -186,10 +176,10 @@ func _refresh() -> void:
 	for item: Dictionary in profile.stash:
 		count += 0 if item.is_empty() else 1
 	%Count.text = "Stash %d / 60" % count
-	for index: int in SLOTS.size():
-		var item: Dictionary = profile.loadout[SLOTS[index]]
-		_paint_button(slot_buttons[index], item)
-		slot_buttons[index].text = "%s: %s" % [String(SLOTS[index]).capitalize(), _item_name(item)]
+	for button: Button in slots.buttons:
+		var item: Dictionary = profile.loadout[slots.slot_of(button)]
+		_paint_button(button, item)
+		slots.label(button, _item_name(item))
 	for cell: int in stash_buttons.size():
 		var index: int = indices[cell] if cell < indices.size() else -1
 		stash_buttons[cell].set_meta("stash_index", index)
