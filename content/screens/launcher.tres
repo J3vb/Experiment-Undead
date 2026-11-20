@@ -1,9 +1,0 @@
-[gd_resource type="Resource" script_class="ScreenData" format=3]
-
-[ext_resource type="Script" path="res://systems/ui/screen_data.gd" id="1_screen"]
-
-[resource]
-script = ExtResource("1_screen")
-scene = "res://systems/launcher/launcher_screen.tscn"
-root = true
-title = "Launcher"

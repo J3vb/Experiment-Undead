@@ -29,27 +29,18 @@ the server must stop cleanly before anything is uploaded.
 
 Tags with a dash (`v0.2.0-rc.1`) become pre-releases and do not move `latest`.
 
-## Launcher, channels and updates (F-65 steps 4-6)
+## Channels (F-65)
 
 | Channel | Tag | Who gets it |
 |---|---|---|
 | stable | `v0.1.0` | everyone (launcher default) |
 | test | `v0.1.0-test.1` (GitHub pre-release) | players who pick "Test builds" in the launcher |
-| dev | none (main builds, `0.1.1-dev.N+sha`) | Actions artifacts only; never shows the launcher |
+| dev | none (main builds, `0.1.1-dev.N+sha`) | Actions artifacts only; never shows in the launcher |
 
-- **Install:** download `ExperimentUndead-<version>-windows.zip` from Releases, unzip it
-  anywhere you own (not Program Files), run `ExperimentUndead.exe`. That copy is the
-  launcher.
-- **Update:** the launcher reads the GitHub Releases list, downloads the newest zip for
-  its channel into `versions/<version>/` next to the exe (SHA-256 checked, complete or
-  not at all, the 2 newest kept), and Play starts it with `--from-launcher`. That copy
-  then refreshes the root exe and pck, so the next start is already new. Offline it
-  plays the newest installed version.
-- **Host a server:** the launcher's Host a server panel runs the newest installed build
-  with `--headless -- --server --port=<p> --max-players=<n> --stop-file=<f>`. Players
-  (the host too) join from Servers in the main menu. Closing the launcher stops it.
-- **Restart to update:** "your game is older" in a release build offers a button that
-  starts the root copy, which updates.
+- Players install and update the game with the separate launcher (next section). The game
+  exe has no launcher screen any more: started by hand, it opens the main menu.
+- **Restart to update:** "your game is older" offers a button only when the separate
+  launcher started the game (`--launcher-exe=<path>`). It starts the launcher, which updates.
 - **Frozen from v0.1.0 (the launcher depends on them):** asset names
   `ExperimentUndead-<version>-windows.zip`, `-linux.zip`, `-server.zip`; zip root holds
   the exe and its pck; tags `vX.Y.Z` and `vX.Y.Z-test.N`; GitHub's `digest` field.
@@ -57,13 +48,13 @@ Tags with a dash (`v0.2.0-rc.1`) become pre-releases and do not move `latest`.
   test first. A bad release is fixed by releasing a newer one (roll forward), never by
   deleting the old one.
 - Main builds count up from the last **stable** tag (`stamp_version.sh` ignores test tags).
-- Test hooks: `--launcher` (open it in any build), `--releases-api=<url>`,
-  `--launcher-autoplay` (smoke test only).
+- **Host a server** still lives in the game's `systems/launcher/server_host.gd` until F-82
+  step 4 moves it into the separate launcher.
 
 ## The separate launcher (F-82)
 
-The launcher is its own program in `launcher/` (Tauri 2, ADR 0018). Until F-82 step 3 the
-game still has its old built-in launcher too.
+The launcher is its own program in `launcher/` (Tauri 2, ADR 0018). The game has no
+launcher screen of its own (removed in F-82 step 3).
 
 - **Install:** download `ExperimentUndead-Setup-<version>.exe` from Releases and run it.
   It installs per user (no admin) to `%LOCALAPPDATA%\Experiment Undead Launcher\`, with a

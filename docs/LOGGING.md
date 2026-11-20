@@ -123,19 +123,12 @@ The server also prints every warning and error to stdout as
 | `loot.gear_worn` | info | The owner wore a Pack gear item mid-run (`uid`, `slot`); the old piece went into its Pack slot |
 | `loot.gear_equip_refused` | warn | A Pack gear item could not be worn (`uid`, `banked`): the run was already banked or there is no character profile (soak bots, tests). In a normal run this should never appear |
 | `net.interaction_rate_limited` | warn | A client sent interact requests less than 0.1 s apart; extra ones are refused. At most one per second |
-| `launcher.download_failed` | warn | A release zip did not download (`version`, `result` = HTTPRequest result code, `code` = HTTP status). No network, GitHub down or a moved asset |
-| `launcher.digest_mismatch` | warn | A downloaded zip's SHA-256 is not the release's digest (`version`); nothing was installed. A cut-off download or a replaced asset |
-| `launcher.install_failed` | warn | A checked zip could not be unpacked into `versions/` (`version`, `folder`): a read-only install folder (Program Files) or a full disk |
-| `launcher.version_installed` | info | A release is unpacked and ready in `versions/<version>/` |
-| `launcher.releases_unreachable` | warn | The launcher could not read the GitHub Releases list (`result`, `code`; 403 = GitHub rate limit, 60 per hour per address); it plays offline |
-| `launcher.version_started` / `start_failed` | info / warn | Play started an installed version (`version`, `pid`) or could not (`exe`): a deleted or blocked versions folder |
-| `launcher.root_refreshed` / `root_refresh_failed` | info / warn | A started copy replaced the install folder's exe and pck (`version`, `tries`), or gave up after 15 s (`root`): the old copy was still running or the folder is read-only |
 | `launcher.server_started` / `server_stop_requested` / `server_exited` / `server_start_failed` | info / warn | The launcher's Host a server panel (`version`, `port`, `pid`, `exe`). A quick `server_exited` after start = port in use; read that server's own log |
 | `ui.unknown_screen` | warn | `UI.push` or `UI.replace` got an id with no `content/screens/<id>.tres`; `id`. Nothing opens |
 | `ui.pop_empty` | warn | `UI.pop()` with no screen open: a screen emitted `closed` twice or something popped a screen it did not push |
 | `ui.loading_failed` | warn | A root behind a loading screen failed its threaded load; `scene`. The router falls back to a plain scene change |
 
-The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher.log` in its data folder (`%LOCALAPPDATA%\com.experimentundead.launcher\` on Windows): `{"t", "level", "event", "message"}`. The `launcher.*` lines above belong to the old built-in launcher and go away in F-82 step 3.
+The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher.log` in its data folder (`%LOCALAPPDATA%\com.experimentundead.launcher\` on Windows): `{"t", "level", "event", "message"}`. The `launcher.server_*` lines above come from the game's old Host a server code, which moves into the launcher in F-82 step 4.
 
 | Event | Level | Meaning |
 |---|---|---|

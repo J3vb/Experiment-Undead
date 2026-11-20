@@ -358,3 +358,9 @@ tt = t(0.22)
 slide = lowpass(rng.standard_normal(len(tt)), 0.25) * np.exp(-tt * 18) * 0.5
 save("reload_shell_in.wav", slide + handling(0.22, [(0.07, 1300, 80, 0.8)]), peak=0.7)
 save("reload_pump.wav", handling(0.45, [(0.0, 600, 35, 0.8), (0.03, 1500, 90, 0.4), (0.2, 900, 40, 1.0)]), peak=0.85)
+
+# Mantle: palms slap a ledge, then a cloth and kit rustle as the body rolls over (F-25). Own seed.
+rng = np.random.default_rng(25)
+tt = t(0.42)
+rustle = lowpass(rng.standard_normal(len(tt)), 0.12) * np.exp(-((tt - 0.2) ** 2) / 0.006) * 0.6
+save("player_mantle.wav", rustle + handling(0.42, [(0.0, 260, 40, 1.0), (0.015, 1400, 120, 0.35)]), peak=0.7)
