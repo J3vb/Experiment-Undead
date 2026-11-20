@@ -90,6 +90,7 @@ Agent picks the person may change.
 - **FOV:** horizontal degrees at 16:9, 70-120, default 110 (about 78 vertical); ADS FOV stays vertical.
 - **Serums:** every Med Dispenser needs power; no limit on Serums held. Scavenger ammo pack chance 5% (10% gave too much ammo in the first play-test).
 - **Exfil and sprint:** the 60 s exfil hold pauses, not resets, when nobody is in range; sprint refills over 3 s after stopping early.
+- **Mantle:** reach 0.45 m, 0.22 s + 0.18 s per metre (longest under 0.6 s), 0.3 s window after a jump press, 60% of it rising, leaves at half walk speed. [mantle](plans/mantle.md)
 - **Crouch** stays a toggle by default; aim and sprint default to hold.
 - **Gear bases:** names (Lantern Rig ... Pell Relay), all unlocked at level 1 with drop weight 100. Skill tree rows and columns are provisional too.
 - **Signal in the Static:** pitches 0.75 / 1.0 / 1.3, an 8 s hum gap, no hint text.
