@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Experiment Undead"
+config/name="Fenlight"
 config/description="Wave-based zombie survival FPS."
 run/main_scene="res://systems/ui/main_menu.tscn"
 run/main_scene.dedicated_server="res://systems/net/dedicated_server.tscn"
@@ -160,6 +160,11 @@ weapon_slot_3={
 melee={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":86,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
+]
+}
+lethal={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":71,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null), Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"button_index":10,"pressure":0.0,"pressed":false,"script":null)
 ]
 }
 pack_toggle={

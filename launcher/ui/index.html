@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fenlight</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Fen<span>light</span></h1>
+      <p class="tagline">The cold kept it asleep.</p>
+    </header>
+    <section class="notes">
+      <h2 id="headline">Checking for updates…</h2>
+      <pre id="notes"></pre>
+    </section>
+    <section class="host">
+      <h2>Host a server</h2>
+      <div class="host-row">
+        <label>Port <input id="host-port" type="number" min="1" max="65535" value="7777"></label>
+        <label>Max players
+          <select id="host-players">
+            <option>1</option><option>2</option><option>3</option><option>4</option>
+            <option>5</option><option>6</option><option>7</option><option selected>8</option>
+          </select>
+        </label>
+        <button id="host-toggle">Start server</button>
+        <button id="host-logs" class="quiet">Open logs</button>
+      </div>
+      <p id="host-status"></p>
+      <p class="hint" id="host-hint"></p>
+    </section>
+    <footer>
+      <button id="play" disabled>Play</button>
+      <div class="version">
+        <label for="channel">Game version</label>
+        <select id="channel">
+          <option value="stable">Stable</option>
+          <option value="test">Test builds</option>
+        </select>
+        <p id="status"></p>
+      </div>
+      <div class="install">
+        <progress id="progress" max="100" value="0" hidden></progress>
+        <button id="cancel" hidden>Cancel</button>
+        <p id="folder"></p>
+      </div>
+    </footer>
+  </main>
+  <div id="close-ask" class="overlay" hidden>
+    <div class="dialog">
+      <p>Your server is still running. Closing the launcher stops it and disconnects everyone on it.</p>
+      <button id="close-stop">Stop server and close</button>
+      <button id="close-keep" class="quiet">Keep running</button>
+    </div>
+  </div>
+  <script src="app.js"></script>
+  <script src="host.js"></script>
+</body>
+</html>

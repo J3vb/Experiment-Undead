@@ -77,7 +77,7 @@ func _process(delta: float) -> void:
 
 ## Points the head at this peer's player inside LOOK_RANGE, else straight ahead.
 func update_look() -> void:
-	if not is_instance_valid(_me):
+	if not is_instance_valid(_me) or not _me.is_inside_tree():
 		_me = _find_me()
 	var near: bool = _me != null and _me.global_position.distance_to(global_position) <= LOOK_RANGE
 	look_target.global_position = _me.camera.global_position if near else _ahead.global_position

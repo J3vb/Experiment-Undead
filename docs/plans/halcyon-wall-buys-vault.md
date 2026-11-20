@@ -127,7 +127,7 @@ Not in (non-goals, and where each one goes instead):
 | tools/assets/build_models.py | changed | merges `machine_models.MODELS` |
 | tools/assets/check_models.py | changed | `machines` budget (2,000 / 4), `JOINTS` lines |
 | tools/turnarounds.py | changed | `machines` reference image |
-| .github/workflows/assets.yml | changed | machine files in the required-output list |
+| .github/workflows/assets.yml | changed | machine files in the required-output list (replaced by `tools/assets/check_outputs.py` via `build_models.MODELS` in F-79 step 10) |
 | assets/models/machines/ (*.glb + .import) | new | exported models, `light_baking=3`, `prop_import.gd` |
 | docs/design/turnarounds/machines/ | new | approved turnarounds |
 | systems/interactables/wall_buy.gd | changed | hangs `weapon.world_model` on `Board/GunMount` |
@@ -142,7 +142,8 @@ Autoloads, managers or base classes added: none.
 ## Data
 
 - Model files: `res://assets/models/machines/<name>.glb`, placed by hand in
-  map.tscn (wall-buys) and specimen_vault.tscn (Vault).
+  map.tscn (wall-buys) and specimen_vault.tscn (Vault). Later, F-83 added four
+  Tripo machines to the same folder (`tools/assets/tripo/halcyon.json`).
 - The gun on a rack is `WeaponData.world_model`, already required for every
   gun by `test_content.gd`.
 - Save format change: none.

@@ -297,6 +297,4 @@ def build(m) -> None:
     barrel = handguard(m, receiver, metal, black, polymer)
     brake_and_sights(m, receiver, barrel, metal, black)
     moving_parts(m, receiver, metal, black)
-    for side in (-1, 1):
-        inlay = g.slab("Inlay", g.rounded(-0.166, 0.048, 0.105, 0.051, 0.001), 0.001, metal, x=side * 0.0312)
-        m.join_into(receiver, [g.mark_inlay(inlay)])
+    g.add_inlays(m, receiver, g.rounded(-0.166, 0.048, 0.105, 0.051, 0.001), 0.001, 0.0312, metal)

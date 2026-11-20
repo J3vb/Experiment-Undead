@@ -1,6 +1,6 @@
 # 0018. A separate launcher program
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-11-19
 - **Decided by:** the person (a separate program that installs and updates
   the game, 2026-11-19); the toolkit (Tauri) and the Windows installer by the person on

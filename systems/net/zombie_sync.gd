@@ -11,6 +11,7 @@ const SYNCED: Array[NodePath] = [
 	^".:state_time",
 	^".:entry:vault_time",
 	^".:frozen",
+	^".:stasis",
 	^".:head_popped"
 ]
 ## Seconds between updates; the visual rig smooths the gaps.

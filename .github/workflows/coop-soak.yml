@@ -85,6 +85,6 @@ jobs:
           name: coop-soak-logs
           path: |
             coop-soak/*.json
-            coop-soak/*/godot/app_userdata/Experiment Undead/logs/
+            coop-soak/*/godot/app_userdata/Fenlight/logs/
             coop-soak.log
           if-no-files-found: warn

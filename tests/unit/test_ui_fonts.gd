@@ -24,9 +24,12 @@ func test_label_mono_variation_uses_mono_font() -> void:
 func test_hud_numbers_use_mono() -> void:
 	var hud: Hud = HUD.instantiate() as Hud
 	add_child_autofree(hud)
-	for path: String in ["Root/Loadout/Ammo/AmmoLabel", "Root/Loadout/PointsLabel", "Root/RoundInfo/RoundLabel"]:
+	for path: String in ["Root/Loadout/PointsLabel", "Root/RoundInfo/RoundLabel"]:
 		var label: Label = hud.get_node(path) as Label
 		assert_eq(label.theme_type_variation, &"LabelMono", path)
+	var panel: WeaponPanel = hud.get_node("Root/Loadout/WeaponPanel") as WeaponPanel
+	assert_eq(panel.ammo_label.theme_type_variation, &"LabelMono")
+	assert_eq(panel.reserve_label.theme_type_variation, &"LabelMono")
 	var name_label: Label = hud.get_node("Root/RoundInfo/MapName") as Label
 	var text: FontVariation = name_label.get_theme_font(&"font") as FontVariation
 	assert_eq(text.base_font.get_font_name(), "Atkinson Hyperlegible Next")

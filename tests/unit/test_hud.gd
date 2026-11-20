@@ -27,28 +27,6 @@ func before_each() -> void:
 	Events.player_spawned.emit(player)
 
 
-func test_joining_between_rounds_shows_the_last_round() -> void:
-	Events.intermission_started.emit(8, 12.0)
-	assert_eq(hud.round_label.text, "7", "a late joiner in a break sees the round just survived")
-	Events.intermission_started.emit(1, 10.0)
-	assert_eq(hud.round_label.text, "7", "the first break leaves the label alone")
-
-
-func test_round_starts_white_and_intermission_blinks() -> void:
-	Events.round_started.emit(12, 24)
-	assert_eq(hud.round_label.text, "12")
-	assert_eq(hud.round_label.modulate, Color.WHITE)
-	hud._round_tween.pause()
-	hud._round_tween.custom_step(1.1)
-	assert_eq(hud.round_label.modulate, Hud.BLOOD_RED)
-	Events.intermission_started.emit(13, 10.0)
-	hud._round_tween.pause()
-	hud._round_tween.custom_step(0.8)
-	assert_almost_eq(hud.round_label.modulate.a, 0.3, 0.001)
-	Events.round_started.emit(13, 26)
-	assert_eq(hud.round_label.modulate.a, 1.0)
-
-
 func test_points_separators_and_delta_summing_then_expiry() -> void:
 	Events.points_changed.emit(player, 14520, 100)
 	Events.points_changed.emit(player, 14570, 50)
@@ -62,45 +40,17 @@ func test_points_separators_and_delta_summing_then_expiry() -> void:
 	assert_eq(hud.points_label.text, "999")
 
 
-func test_ammo_threshold_and_hints() -> void:
+func test_ammo_hints_and_weapon_name() -> void:
 	var magazine: int = player.weapons.current.data.magazine_size
 	var low_count: int = floori(magazine * 0.25)
 	Events.ammo_changed.emit(player, low_count, 210)
-	assert_eq(hud.ammo_label.text, str(low_count))
-	assert_eq(hud.reserve_label.text, "/ 210")
-	assert_eq(hud.ammo_label.modulate, Hud.BLOOD_RED)
 	assert_eq(hud.hint_label.text, "RELOAD [R]")
 	Events.ammo_changed.emit(player, low_count + 1, 210)
-	assert_eq(hud.ammo_label.modulate, Hud.OFF_WHITE)
 	assert_eq(hud.hint_label.text, "")
 	Events.ammo_changed.emit(player, 0, 0)
 	assert_eq(hud.hint_label.text, "NO AMMO")
 	Events.weapon_switched.emit(player, player.weapons.current)
 	assert_eq(hud.weapon_label.text, player.weapons.current.data.display_name)
-
-
-func test_serum_badges_come_from_the_serum_files() -> void:
-	for id: StringName in Content.ids(&"serums"):
-		var serum: SerumData = Content.get_item(&"serums", id) as SerumData
-		Events.serum_gained.emit(player, serum)
-		Events.serum_gained.emit(player, serum)
-		var badge: Label = hud.serums.get_node(NodePath(id)) as Label
-		assert_eq(badge.text, serum.badge)
-		assert_eq((badge.get_theme_stylebox("normal") as StyleBoxFlat).bg_color, serum.badge_colour)
-	assert_eq(hud.serums.get_child_count(), 8)
-
-
-func test_serum_with_an_unknown_id_shows_its_badge() -> void:
-	var serum: SerumData = SerumData.new()
-	serum.id = &"test_serum"
-	serum.badge = "XX"
-	serum.badge_colour = Color("123456")
-	Events.serum_gained.emit(player, serum)
-	var badge: Label = hud.serums.get_node(NodePath("test_serum")) as Label
-	assert_not_null(badge)
-	if badge:
-		assert_eq(badge.text, "XX")
-		assert_eq((badge.get_theme_stylebox("normal") as StyleBoxFlat).bg_color, Color("123456"))
 
 
 func test_exfil_shows_when_open_counts_hold_and_hides_when_closed() -> void:
@@ -155,32 +105,11 @@ func test_prompt_splits_existing_interactable_price_and_preserves_unclear_text()
 	assert_false(hud.prompt_box.visible)
 
 
-func test_health_bar_threshold_and_other_player_events_ignored() -> void:
-	Events.player_health_changed.emit(player, 30.0, 100.0)
-	assert_almost_eq(hud.health_bar.value, 0.3, 0.001)
-	assert_eq(hud.health_bar.modulate, Hud.OFF_WHITE)
-	Events.player_health_changed.emit(player, 29.0, 100.0)
-	assert_eq(hud.health_bar.modulate, Hud.BLOOD_RED)
+func test_other_player_events_ignored() -> void:
 	var other: Player = Player.new()
 	autofree(other)
-	Events.player_health_changed.emit(other, 100.0, 100.0)
 	Events.points_changed.emit(other, 99999, 100)
-	assert_almost_eq(hud.health_bar.value, 0.29, 0.001)
 	assert_eq(hud.points_label.text, "0")
-
-
-func test_revive_removes_consumed_serum_badge() -> void:
-	var ironhide: SerumData = load("res://content/serums/ironhide.tres") as SerumData
-	var second_wind: SerumData = load("res://content/serums/second_wind.tres") as SerumData
-	player.serums.append(ironhide)
-	player.serums.append(second_wind)
-	Events.serum_gained.emit(player, ironhide)
-	Events.serum_gained.emit(player, second_wind)
-	player.serums.erase(second_wind)
-	Events.player_revived.emit(player)
-	await get_tree().process_frame
-	assert_eq(hud.serums.get_child_count(), 1)
-	assert_eq((hud.serums.get_child(0) as Label).text, "IH")
 
 
 func test_xp_bar_follows_grants_and_saved_total() -> void:

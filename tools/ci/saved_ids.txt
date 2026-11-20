@@ -48,11 +48,15 @@ content/loot/affixes/sprint_duration
 content/loot/affixes/stagger_pct
 content/loot/affixes/tactical_recharge
 content/loot/affixes/vault_favour
+content/loot/gear/backpack_pack
+content/loot/gear/boots_field
 content/loot/gear/charm_coin
 content/loot/gear/charm_dog_tags
 content/loot/gear/charm_dosimeter
 content/loot/gear/charm_keycard
 content/loot/gear/charm_vial
+content/loot/gear/gloves_tactical
+content/loot/gear/headgear_cap
 content/loot/gear/implant_lung
 content/loot/gear/implant_ocular
 content/loot/gear/implant_reflex

@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bvnoa18vvk77j"
-path="res://.godot/imported/npc_technician_npc_technician_albedo.jpg-dae7fc549107bc0a0f9266a14bdf4c6a.ctex"
+path.s3tc="res://.godot/imported/npc_technician_npc_technician_albedo.jpg-dae7fc549107bc0a0f9266a14bdf4c6a.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "11ec9785c1671f2029cc65b9df2932ed"
@@ -14,7 +15,8 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/characters/npc_technician_npc_technician_albedo.jpg"
-dest_files=["res://.godot/imported/npc_technician_npc_technician_albedo.jpg-dae7fc549107bc0a0f9266a14bdf4c6a.ctex"]
+dest_files=["res://.godot/imported/npc_technician_npc_technician_albedo.jpg-dae7fc549107bc0a0f9266a14bdf4c6a.s3tc.ctex"]
+
 [params]
 
 compress/mode=2

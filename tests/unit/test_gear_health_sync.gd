@@ -115,6 +115,16 @@ func test_client_loadout_raises_server_health_and_records_item_guns() -> void:
 	assert_eq(client.health.current, 140.0)
 
 
+func test_client_damage_reduction_gear_shrinks_hits_on_the_server_copy() -> void:
+	var vest: Dictionary = {"v": 1, "uid": "dr_vest", "base": "vest_medium", "aff": [["damage_reduction", 5, 1.0]]}
+	client.loadout_sync.gear = [vest]
+	client.loadout_sync.send_loadout()
+	await wait_until(func() -> bool: return server.get_stat(&"damage_reduction") > 1.0, 3.0, "loadout reached server")
+	server.take_damage(DamageInfo.create(50.0, null))
+	assert_almost_eq(server.health.current, 55.0, 0.0001)
+	await wait_until(func() -> bool: return is_equal_approx(client.health.current, 55.0), 3.0, "owner sees 55")
+
+
 func test_new_loadout_without_the_vest_drops_max_health() -> void:
 	client.loadout_sync.gear = [_vest()]
 	client.loadout_sync.send_loadout()
@@ -128,9 +138,9 @@ func test_new_loadout_without_the_vest_drops_max_health() -> void:
 
 func test_malformed_loadouts_are_rejected_logged_and_change_nothing() -> void:
 	var before: int = Log.event_counts.get("net.loadout_rejected", 0)
-	client.loadout_sync.submit_loadout.rpc_id(1, ["vest"], [])
-	client.loadout_sync.submit_loadout.rpc_id(1, [_vest(), _vest(), _vest(), _vest()], [])
-	client.loadout_sync.submit_loadout.rpc_id(1, [_vest()], [_gun("not_a_gun")])
+	client.loadout_sync.submit_loadout.rpc_id(1, ["vest"], [], {})
+	client.loadout_sync.submit_loadout.rpc_id(1, _all_seven() + [_piece("vest_light", [])], [], {})
+	client.loadout_sync.submit_loadout.rpc_id(1, [_vest()], [_gun("not_a_gun")], {})
 	await wait_until(
 		func() -> bool: return Log.event_counts.get("net.loadout_rejected", 0) == before + 3, 3.0, "all rejected"
 	)
@@ -140,7 +150,7 @@ func test_malformed_loadouts_are_rejected_logged_and_change_nothing() -> void:
 
 func test_loadout_handler_on_a_client_returns_before_anything_else() -> void:
 	var before: int = Log.event_counts.get("net.loadout_rejected", 0)
-	client.loadout_sync.submit_loadout([_vest()], [_gun()])
+	client.loadout_sync.submit_loadout([_vest()], [_gun()], {})
 	await wait_physics_frames(3)
 	assert_eq(client.health.max_health, 100.0, "only the server applies a loadout")
 	assert_true(client.item_guns.is_empty())
@@ -172,13 +182,82 @@ func test_later_loadouts_only_cap_health_so_a_vest_swap_never_heals() -> void:
 	assert_eq(server.health.current, 100.0, "the swap back did not heal")
 
 
+func _piece(base: String, affixes: Array) -> Dictionary:
+	return {"v": 1, "uid": "piece_" + base, "base": base, "rar": "rare", "ilvl": 30, "aff": affixes}
+
+
+func _all_seven() -> Array[Dictionary]:
+	var health: Array = [["test_max_health", 1, 1.0]]
+	var pieces: Array[Dictionary] = [_vest(), _piece("headgear_cap", health)]
+	for base: String in ["charm_coin", "implant_relay", "gloves_tactical", "backpack_pack", "boots_field"]:
+		pieces.append(_piece(base, []))
+	return pieces
+
+
+func test_client_with_all_seven_gear_slots_filled_reaches_the_server_copy() -> void:
+	client.loadout_sync.gear = _all_seven()
+	client.loadout_sync.send_loadout()
+	await wait_until(func() -> bool: return server.health.max_health == 180.0, 3.0, "vest and cap health on server")
+	assert_eq(server.loadout_sync.gear.size(), 7)
+	await wait_until(func() -> bool: return client.health.max_health == 180.0, 3.0, "owner sees it")
+
+
+func test_saved_headgear_reloads_and_its_health_reaches_the_server_copy() -> void:
+	var profile: CharacterProfile = CharacterProfile.new()
+	profile.id = &"test_gear_sync_headgear"
+	profile.loadout["headgear"] = _piece("headgear_cap", [["test_max_health", 1, 1.0]])
+	assert_eq(profile.save(), OK)
+	var loaded: CharacterProfile = CharacterProfile.load_or_create(profile.id)
+	DirAccess.remove_absolute(
+		ProjectSettings.globalize_path(CharacterProfile.directory() + "test_gear_sync_headgear.json")
+	)
+	client.loadout_sync.gear = ItemLoadout.worn_gear(loaded.loadout)
+	assert_eq(client.loadout_sync.gear.size(), 1)
+	client.loadout_sync.send_loadout()
+	await wait_until(func() -> bool: return server.health.max_health == 140.0, 3.0, "cap health on server")
+
+
+func test_two_headgear_pieces_are_rejected() -> void:
+	var before: int = Log.event_counts.get("net.loadout_rejected", 0)
+	var second: Dictionary = _piece("headgear_cap", [])
+	second["uid"] = "second_cap"
+	client.loadout_sync.submit_loadout.rpc_id(1, [_piece("headgear_cap", []), second], [], {})
+	await wait_until(
+		func() -> bool: return Log.event_counts.get("net.loadout_rejected", 0) == before + 1, 3.0, "refused"
+	)
+	assert_true(server.loadout_sync.gear.is_empty())
+
+
 func test_two_pieces_for_one_slot_or_a_gun_as_gear_are_rejected() -> void:
 	var before: int = Log.event_counts.get("net.loadout_rejected", 0)
 	var second: Dictionary = _vest()
 	second["uid"] = "second_vest"
-	client.loadout_sync.submit_loadout.rpc_id(1, [_vest(), second], [])
-	client.loadout_sync.submit_loadout.rpc_id(1, [_gun()], [])
+	client.loadout_sync.submit_loadout.rpc_id(1, [_vest(), second], [], {})
+	client.loadout_sync.submit_loadout.rpc_id(1, [_gun()], [], {})
 	await wait_until(
 		func() -> bool: return Log.event_counts.get("net.loadout_rejected", 0) == before + 2, 3.0, "both rejected"
 	)
 	assert_eq(server.health.max_health, 100.0)
+
+
+func test_client_skill_ranks_reach_the_server_copy_and_respec_removes_them() -> void:
+	client.skill_ranks = {&"thick_skin": 3}
+	client.loadout_sync.gear = [_vest()]
+	client.loadout_sync.send_loadout()
+	await wait_until(func() -> bool: return server.health.max_health == 170.0, 3.0, "vest plus Thick Skin 3")
+	assert_eq(server.skill_ranks, {&"thick_skin": 3} as Dictionary[StringName, int])
+	client.skill_ranks = {}
+	client.loadout_sync.send_loadout()
+	await wait_until(func() -> bool: return server.health.max_health == 140.0, 3.0, "respec drops the skill")
+
+
+func test_bad_skill_ranks_are_rejected_logged_and_change_nothing() -> void:
+	var before: int = Log.event_counts.get("net.skills_rejected", 0)
+	client.loadout_sync.submit_loadout.rpc_id(1, [], [], {"thick_skin": 4})
+	client.loadout_sync.submit_loadout.rpc_id(1, [], [], {"no_such_skill": 1})
+	client.loadout_sync.submit_loadout.rpc_id(1, [], [], {"thick_skin": "3"})
+	await wait_until(
+		func() -> bool: return Log.event_counts.get("net.skills_rejected", 0) == before + 3, 3.0, "all rejected"
+	)
+	assert_eq(server.health.max_health, 100.0)
+	assert_true(server.skill_ranks.is_empty())

@@ -2,7 +2,7 @@
 class_name DamageInfo
 extends RefCounted
 
-enum Type { BULLET, MELEE }
+enum Type { BULLET, MELEE, EXPLOSIVE }
 enum Zone { BODY, HEAD, LIMB }
 
 var amount: float = 0.0
@@ -23,6 +23,18 @@ static func create(p_amount: float, p_attacker: Node, p_type: Type = Type.BULLET
 	info.attacker = p_attacker
 	info.damage_type = p_type
 	return info
+
+
+## A copy with amount times factor; the original stays as it was for its other receivers.
+func scaled(factor: float) -> DamageInfo:
+	var copy: DamageInfo = DamageInfo.create(amount * factor, attacker, damage_type)
+	copy.weapon_id = weapon_id
+	copy.item_uid = item_uid
+	copy.hit_zone = hit_zone
+	copy.position = position
+	copy.normal = normal
+	copy.impulse = impulse
+	return copy
 
 
 func is_headshot() -> bool:

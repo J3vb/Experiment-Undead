@@ -84,6 +84,17 @@ func test_enemies_are_valid() -> void:
 			z.free()
 
 
+func test_glower_matches_the_design() -> void:
+	var glower: EnemyData = load("res://content/enemies/zombie_glower.tres") as EnemyData
+	assert_eq(glower.max_health, 40.0, "0.4x the Walker's 100")
+	assert_eq(glower.move_speed, 5.0, "5 m/s")
+	assert_false(glower.uses_speed_mix, "fixed speed, not the round's speed mix")
+	assert_eq(glower.attack_damage, 20.0)
+	assert_eq(glower.xp_reward, 10)
+	assert_eq(glower.groan_sounds.size(), 3, "chitter idles")
+	assert_not_null(glower.attack_sound, "swipe")
+
+
 func test_wave_rules_are_valid() -> void:
 	for path: String in _files("waves"):
 		var r: WaveRules = load(path) as WaveRules
@@ -112,13 +123,21 @@ func test_serums_are_valid() -> void:
 
 
 func test_power_ups_are_valid() -> void:
+	var colors: Array[Color] = []
 	for path: String in _files("power_ups"):
 		var power_up: PowerUpData = load(path) as PowerUpData
 		assert_not_null(power_up, path + " is PowerUpData")
 		if power_up:
+			assert_does_not_have(colors, power_up.color, path + " has its own colour")
+			colors.append(power_up.color)
 			assert_eq(String(power_up.id), path.get_file().get_basename(), path + " id matches file name")
 			assert_true(PowerUpData.Effect.values().has(power_up.effect), path + " has a known effect")
 			assert_false(power_up.display_name.is_empty(), path + " has a name for the HUD flash")
+			assert_gte(power_up.duration, 0.0, path + " duration is 0 (instant) or more")
+			assert_gte(power_up.team_points, 0, path + " team points are 0 or more")
+			assert_true(power_up.deck_chance > 0.0 and power_up.deck_chance <= 1.0, path + " deck chance in (0, 1]")
+			if power_up.effect in [PowerUpData.Effect.PAYDAY, PowerUpData.Effect.OVERKILL, PowerUpData.Effect.STASIS]:
+				assert_gt(power_up.duration, 0.0, path + " is timed, so it needs a duration")
 	var ammo: PowerUpData = load("res://content/power_ups/ammo_pack.tres") as PowerUpData
 	assert_eq(ammo.effect, PowerUpData.Effect.AMMO_PACK, "the Scavenger pack adds a magazine, not a full refill")
 

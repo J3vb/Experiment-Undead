@@ -178,8 +178,4 @@ def build(m) -> None:
     forepiece(m, receiver, metal, wood, checker)
     controls(m, receiver, metal, black)
     sights(m, receiver, metal, black)
-    inlays = [
-        g.slab(f"Inlay{side}", g.rounded(-0.055, 0.021, 0.01, 0.023, 0.0007), 0.0007, metal, x=side * 0.0263)
-        for side in (-1, 1)
-    ]
-    m.join_into(receiver, [g.mark_inlay(strip) for strip in inlays])
+    g.add_inlays(m, receiver, g.rounded(-0.055, 0.021, 0.01, 0.023, 0.0007), 0.0007, 0.0263, metal)

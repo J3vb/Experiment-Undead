@@ -1,4 +1,4 @@
-## Every ScreenData points at a scene that instances. The roots are the launcher, the main menu,
+## Every ScreenData points at a scene that instances. The roots are the main menu,
 ## the hub, the match and the dedicated server.
 extends GutTest
 
@@ -38,7 +38,7 @@ func test_five_roots_and_only_the_places_capture_the_mouse() -> void:
 		assert_eq(data.captures_mouse, id in [&"match", &"hub"], "%s captures_mouse" % id)
 	var names: PackedStringArray = PackedStringArray(roots)
 	names.sort()
-	assert_eq(names, PackedStringArray(["dedicated_server", "hub", "launcher", "main_menu", "match"]))
+	assert_eq(names, PackedStringArray(["dedicated_server", "hub", "main_menu", "match"]))
 	assert_eq((Content.get_item(&"screens", &"main_menu") as ScreenData).scene, "res://systems/ui/main_menu.tscn")
 	assert_eq((Content.get_item(&"screens", &"match") as ScreenData).scene, "res://systems/game/game_session.tscn")
 	assert_eq((Content.get_item(&"screens", &"hub") as ScreenData).scene, "res://systems/game/hub_session.tscn")

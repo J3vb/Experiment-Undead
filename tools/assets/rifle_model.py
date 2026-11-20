@@ -286,6 +286,4 @@ def build(m) -> None:
     bolt = g.slab("Bolt", g.rounded(-0.015, 0.012, 0.045, 0.026, 0.003), 0.002, metal, x=0.022)
     m.attach(bolt, (0.0275, 0.015, 0.019), receiver)
     m.marker("Muzzle", (0, 0.627, AXIS_Z), parent=receiver)
-    for side in (-1, 1):
-        inlay = g.slab("Inlay", g.rounded(-0.145, 0.038, 0.14, 0.040, 0.001), 0.001, metal, x=side * 0.0252)
-        m.join_into(receiver, [g.mark_inlay(inlay)])
+    g.add_inlays(m, receiver, g.rounded(-0.145, 0.038, 0.14, 0.040, 0.001), 0.001, 0.0252, metal)

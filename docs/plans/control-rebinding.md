@@ -87,7 +87,7 @@ Not in (non-goals, and where each one goes instead):
 
 | Folder or file | New / changed | What changes |
 |---|---|---|
-| core/settings.gd | changed | load, save, apply and reset bindings; conflict lookup; `event_label()` |
+| core/settings.gd | changed | load, save, apply and reset bindings; conflict lookup (labels as built: `InputEvents.label()` in `core/input_events.gd`, not `Settings.event_label()`) |
 | systems/ui/key_bindings.gd + .tscn | new | the list of binding rows on the Controls tab, listen mode, Swap/Cancel |
 | systems/ui/settings_screen.tscn | changed | Controls tab wrapped in a ScrollContainer, key bindings scene added |
 | systems/ui/settings_screen.gd | changed | only if the scroll wrap moves node paths |
@@ -136,7 +136,7 @@ change. The rows (about 18) are built once in `_ready` of the bindings scene.
   gets this slot's old key), `reset_binding(action)` (puts each default key
   back with the same swap rule, so if another action took a default key it
   gets this action's current key in that slot; nothing ends up on two
-  actions), and `event_label(event)`
+  actions), and `event_label(event)` (as built: `InputEvents.label()`)
   (local letter for keys, "Mouse 1" style names for buttons and wheel).
   Load applies saved bindings on start (keep controller events, replace
   keyboard/mouse events). `reset_to_defaults()` also resets bindings.
@@ -174,18 +174,20 @@ change. The rows (about 18) are built once in `_ready` of the bindings scene.
 
 ### Step 2: Controls tab rebinding rows
 
-- Build: `systems/ui/key_bindings.tscn/.gd`: one row per action (display
+- Build: `systems/ui/key_bindings.gd` (as built: a scripted `KeyBindings` node
+  inside settings_screen.tscn, no own `.tscn`): one row per action (display
   name, Main button, Backup button, Reset button), built from InputMap in
-  `_ready` with a display-name constant. Clicking a slot shows "Press a key"
+  `_ready` with a display-name constant (`KeyBindings.NAMES`; an action missing
+  from it, like `melee`, falls back to its capitalised id). Clicking a slot shows "Press a key"
   and listens in `_input` (child before the screen, so Esc cancels the rebind
   instead of closing Settings). The mouse click that started listening is
   ignored (listen starts on the next press). A free key binds at once; a taken
   key shows "<key> is used by <action>" with Swap and Cancel. Esc cancels.
   The Controls tab gets a ScrollContainer so all rows fit at 1080p. Labels use
-  `Settings.event_label()`; rows refresh on `Settings.changed`. Keyboard and
+  `InputEvents.label()`; rows refresh on `Settings.changed`. Keyboard and
   controller focus moves through the rows. Then the finish-feature checks:
   roadmap F-05 Done, issue #105 ticked, DECISIONS.md entry, plan Done.
-- Files: systems/ui/key_bindings.gd, systems/ui/key_bindings.tscn (new), systems/ui/settings_screen.tscn, systems/ui/settings_screen.gd (if paths move), tests/unit/test_key_bindings.gd (new), tests/unit/test_settings_screen.gd (if paths move), docs/ROADMAP.md, docs/DECISIONS.md, docs/design/controls.md, docs/plans/control-rebinding.md.
+- Files: systems/ui/key_bindings.gd (new; no key_bindings.tscn, the node lives in settings_screen.tscn), systems/ui/settings_screen.tscn, systems/ui/settings_screen.gd (if paths move), tests/unit/test_key_bindings.gd (new), tests/unit/test_settings_screen.gd (if paths move), docs/ROADMAP.md, docs/DECISIONS.md, docs/design/controls.md, docs/plans/control-rebinding.md.
 - Tests: `test_key_bindings.gd`: every rebindable action has a row and pause
   has none; pressing a free key in listen mode rebinds and saves; Esc in
   listen mode cancels and does not close Settings; a taken key shows the

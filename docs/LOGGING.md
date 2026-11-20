@@ -10,9 +10,9 @@ Folder `user://logs/`:
 
 | Platform | Folder |
 |---|---|
-| Windows | `%APPDATA%\Godot\app_userdata\Experiment Undead\logs\` |
-| Linux | `~/.local/share/godot/app_userdata/Experiment Undead/logs/` |
-| Docker / Unraid server | `/data/godot/app_userdata/Experiment Undead/logs/` (the `/data` volume) |
+| Windows | `%APPDATA%\Godot\app_userdata\Fenlight\logs\` |
+| Linux | `~/.local/share/godot/app_userdata/Fenlight/logs/` |
+| Docker / Unraid server | `/data/godot/app_userdata/Fenlight/logs/` (the `/data` volume) |
 
 Per run (the last 20 runs are kept):
 
@@ -70,6 +70,8 @@ The server also prints every warning and error to stdout as
 | `engine.engine_warning` | warn | `push_warning` or an engine warning |
 | `player.body_clips_missing` | warn | The player model has no third-person clips, so teammates show a still body; rebuild `player.glb` |
 | `player.world_model_missing` | warn | A teammate holds a gun whose `WeaponData` has no `world_model`, so its hands are empty; set the field in the gun's `.tres` |
+| `player.mantle_landed_blocked` | warn | A mantle ended with the player inside world collision: the ledge clearance check missed something. `at` = the landing spot; check the geometry there |
+| `hud.hud_icon_missing` | warn | The local player got a Serum (`serum`) or gun with no HUD icon, so its slot shows badge letters or no gun picture; set `icon` / `hud_icon` in its `.tres`. Once per id |
 | `vendor.vendor_clip_missing` | warn | A Lantern Post stall keeper's model has no clip named by its `VendorData.idle_clip`, so they stand in rest pose; re-export the keeper (`tools/assets/tripo/vendors.json`, `clips: keeper`) or fix the data |
 | `perf.long_frames` | warn | Frames over 50 ms in the last second (`count`, `worst_ms`, `draw_compiles`: shader pipelines compiled while drawing that second, `all_compiles`: pipelines of any kind since the last line, `enemies`). Hitch at load is normal; in a round it is not. `draw_compiles` > 0 means a first-use shader stutter |
 | `perf.low_fps` | warn | Under 50 fps for 3 s in a row (windowed builds only), with a health snapshot |
@@ -88,19 +90,26 @@ The server also prints every warning and error to stdout as
 | `player.player_spawned` / `player_died` | info | Player `net_id`, spawn position |
 | `player.weapon_has_no_grip` | warn | A gun has no `GripData`, so it shows no first-person arms. `weapon` id; once per gun per run. Add `content/grips/<base id>.tres` and set the gun's `grip` |
 | `player.reload_motion_unreachable` | warn | The left arm cannot reach a reload key pose, so the forearm stretches off the hand. `weapon` id, `gap` in metres; once per gun per run. Move the gun's reload pose in `WeaponPose` or the grab offsets in `ReloadMotion` |
+| `gear.fp_piece_missing` | warn | A worn gear model has no first-person piece (a vest scene without `CuffFP_L`/`CuffFP_R`), so the first-person arms show nothing for it. `visual` id; once per visual per run. Rebuild the model with its first-person pieces |
 | `progression.profile_save_failed` | warn | Character could not be saved; `id`, `path`, `error` (Godot Error code). Check folder permissions and disk space |
 | `progression.profile_unreadable` | warn | Existing character is unreadable or malformed; file stays untouched, this match uses a temporary character. `id`, `path`; inspect nearby engine errors |
 | `save.profile_newer` | warn | A character file was saved by a newer game version (`id`, `path`, `version` = its save_version). The file stays untouched, the main menu tells the player to update, and this run uses a temporary character. Happens after going back to an older build |
+| `save.old_name_data_copied` | info | First run after the rename to Fenlight: the player's settings, saved servers and characters were copied from the old `Experiment Undead` user folder (`files`, `from`). The old folder stays as a backup. Once per PC |
+| `save.old_name_copy_failed` | warn | One file from the old `Experiment Undead` user folder could not be copied (`path`, `error`). The player may miss that setting or character; copy it by hand from the old folder |
 | `settings.binding_unknown_action` | warn | `user://settings.cfg` has a key binding for an action the game no longer has (`action`); it is ignored. Normal after an action is renamed or removed |
 | `settings.binding_malformed` | warn | A saved key binding is not a list of up to 2 `{"type": "key", "physical": n}` / `{"type": "mouse", "button": n}` entries, or names Esc (`action`); that action uses its default keys |
 | `settings.display_mode_failed` | warn | The window refused the chosen display mode (`mode`: 0 Windowed, 1 Borderless, 2 Fullscreen). Usually the OS or driver does not allow exclusive fullscreen; pick Borderless |
 | `settings.row_unknown_key` | warn | A `content/settings/*.tres` row names a `section`/`key` that `Settings.DEFAULTS` does not have; the row is left off the settings screen. Fix the row or add the key |
 | `game.game_over` | info | Final stats |
 | `net.peer_connected` / `peer_disconnected` | info | Server side, peer id |
-| `net.join_refused` | info | Client side: the server refused the hello (`reason`: `WRONG_VERSION`, `CONTENT_MISMATCH`, `SERVER_FULL`, or `REFUSED` for a code from a newer server; `older`: `client`, `server` or empty for dev builds; `message`, `client_protocol`, `server_protocol`). `older` says which side to update |
+| `net.join_refused` | info | Client side: the server refused the hello (`reason`: `WRONG_VERSION`, `CONTENT_MISMATCH`, `SERVER_FULL`, `SERVER_UPDATING`, or `REFUSED` for a code from a newer server; `older`: `client`, `server` or empty for dev builds; `message`, `client_protocol`, `server_protocol`). `older` says which side to update |
 | `net.join_failed` | warn | Client side: the pending join could not start (`error`, a Godot error string), so the game goes back to the main menu. Usually a bad address or a port the OS would not open |
 | `net.connection_lost` | warn | Client side: the server disconnected, the connection failed or the server refused authentication. Run XP is banked and the game goes back to the main menu. Look at the server's log for the same time |
+| `server.drain_started` | info | A dedicated server saw its drain file (`--drain-file=` / `EU_DRAIN_FILE`): a newer release is installed (`place`, `players`). A match plays on; the hub refuses new players with `SERVER_UPDATING` |
+| `server.update_restart` | info | A draining server quits with exit code 3 (`place`): its hub had players (they get the "updating" notice) or it stayed empty for `EMPTY_GRACE`. The launcher restarts it on the newer version |
 | `net.round_state_ignored` | warn | A round message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
+| `power_ups.crate_expired_unopened` | warn | A Supply Crate vanished before anyone opened it (`name`). Often means players miss it or cannot reach it |
+| `power_ups.timer_ignored` | warn | A power-up timer message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
 | `net.interaction_rejected` | warn | Server refused a client's interact request (`peer`, `reason`, `path`): `player_not_alive`, `match_over`, `unknown_path`, `out_of_range`, `grant_pending` (last gun grant not applied yet), `bad_facts` (gun facts with wrong fields or ids). At most one per second. Many `out_of_range` = `InteractionSync.REACH_SLACK` too tight |
 | `net.deploy_refused` | warn | The hub's deploy vote or `deploy()` was refused (`place`, `reason` or `hub`): an unknown place id on a deploy board, or a deploy outside the hub. A board with a typo in `place` |
 | `net.place_change_kicked` | warn | A client was sent to another place but had not left after `Net.CONNECT_TIMEOUT`, so the server dropped it (`peer`). It never got the order: check the network |
@@ -114,22 +123,32 @@ The server also prints every warning and error to stdout as
 | `net.coop_started` / `coop_ended` | info | The first friend joined this world, or the last one left (`peers`): the solo or co-op rules now apply (`Net.is_coop()`) |
 | `net.go_to_place` | info | This peer loads another place (`place`, `online`) |
 | `net.join_switches_place` | info | A joining client loaded another place than the server's and switches before spawning (`from`, `to`) |
-| `net.hit_claim_rejected` | warn | Server refused a client's hit or gravity well claim (`peer`, `reason`): `player_not_alive`, `zombie_not_alive`, `hit_out_of_bounds`, `zone_missing`, `claims_too_fast`, `well_out_of_bounds`, `well_wrong_weapon` (well or orb request named a gun whose `effect` is not WELL: a mismatched build or a cheat). At most one per second |
+| `throwables.grenade_lost` | warn | A grenade fell below the map before it went off (`at`): a hole in the level collision |
+| `net.hit_claim_rejected` | warn | Server refused a client's hit, gravity well or grenade claim (`peer`, `reason`): `player_not_alive`, `zombie_not_alive`, `hit_out_of_bounds`, `zone_missing`, `claims_too_fast`, `well_out_of_bounds`, `well_wrong_weapon` (well or orb request named a gun whose `effect` is not WELL: a mismatched build or a cheat), `grenade_not_alive`, `grenade_none_left` (the client's count was out of date), `grenade_bad_throw` (origin, speed or fuse out of range), `grenade_too_fast`. At most one per second |
 | `net.loadout_rejected` | warn | Server refused a client's equipped loadout (`peer`, `reason`): `not_a_dictionary`, `too_much_gear` (more gear than `CharacterProfile.GEAR_SLOTS`), `too_many_guns` (more than the player's weapon slots), `unknown_gun` (gun base not in content), `not_gear` (a worn piece that is not vest, charm or implant), `slot_twice` (two pieces for one slot). The server keeps the last good loadout; check that both builds have the same content |
+| `net.skills_rejected` | warn | Server refused a client's skill ranks sent with its loadout (`peer`, `reason`): `unknown_skill` (id not in `content/skills/`), `bad_rank` (not an int from 1 to the node's `max_ranks`), `too_many_points` (more than 54). The whole loadout is ignored; check that both builds have the same skills content |
 | `loot.gear_worn` | info | The owner wore a Pack gear item mid-run (`uid`, `slot`); the old piece went into its Pack slot |
 | `loot.gear_equip_refused` | warn | A Pack gear item could not be worn (`uid`, `banked`): the run was already banked or there is no character profile (soak bots, tests). In a normal run this should never appear |
 | `net.interaction_rate_limited` | warn | A client sent interact requests less than 0.1 s apart; extra ones are refused. At most one per second |
-| `launcher.download_failed` | warn | A release zip did not download (`version`, `result` = HTTPRequest result code, `code` = HTTP status). No network, GitHub down or a moved asset |
-| `launcher.digest_mismatch` | warn | A downloaded zip's SHA-256 is not the release's digest (`version`); nothing was installed. A cut-off download or a replaced asset |
-| `launcher.install_failed` | warn | A checked zip could not be unpacked into `versions/` (`version`, `folder`): a read-only install folder (Program Files) or a full disk |
-| `launcher.version_installed` | info | A release is unpacked and ready in `versions/<version>/` |
-| `launcher.releases_unreachable` | warn | The launcher could not read the GitHub Releases list (`result`, `code`; 403 = GitHub rate limit, 60 per hour per address); it plays offline |
-| `launcher.version_started` / `start_failed` | info / warn | Play started an installed version (`version`, `pid`) or could not (`exe`): a deleted or blocked versions folder |
-| `launcher.root_refreshed` / `root_refresh_failed` | info / warn | A started copy replaced the install folder's exe and pck (`version`, `tries`), or gave up after 15 s (`root`): the old copy was still running or the folder is read-only |
-| `launcher.server_started` / `server_stop_requested` / `server_exited` / `server_start_failed` | info / warn | The launcher's Host a server panel (`version`, `port`, `pid`, `exe`). A quick `server_exited` after start = port in use; read that server's own log |
 | `ui.unknown_screen` | warn | `UI.push` or `UI.replace` got an id with no `content/screens/<id>.tres`; `id`. Nothing opens |
 | `ui.pop_empty` | warn | `UI.pop()` with no screen open: a screen emitted `closed` twice or something popped a screen it did not push |
 | `ui.loading_failed` | warn | A root behind a loading screen failed its threaded load; `scene`. The router falls back to a plain scene change |
+
+The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher.log` in its data folder (`%LOCALAPPDATA%\com.experimentundead.launcher\` on Windows): `{"t", "level", "event", "message"}`. A hosted server writes its own game log, and its console output goes to `server/server.log` there (Open logs).
+
+| Event | Level | Meaning |
+|---|---|---|
+| `check_failed` | warn | The launcher could not read the GitHub Releases list (`message` has the reason; "GitHub answered 403" = rate limit, 60 per hour per address). It plays the newest installed version offline |
+| `installed` | info | A release is downloaded, checked and unpacked into `game/versions/<version>/` (`message` = version) |
+| `install_failed` | warn | A download failed, was cancelled, had the wrong SHA-256, or could not be unpacked (`message` says which). Nothing was installed |
+| `self_updated` | info | The launcher installed a newer launcher from the release's `latest.json` (`message` = manifest URL) and restarts |
+| `self_update_failed` | warn | A launcher update could not be checked, downloaded or installed (`message`; "signature" = the setup exe was not signed with our key). The old launcher keeps running |
+| `server_started` | info | Host a server started the newest installed game as a server (`message` = version and port) |
+| `server_start_failed` | warn | The server exe could not start (`message`): the game is missing or damaged. Reinstall it |
+| `server_stop_requested` | info | The player pressed Stop server; the server quits on its stop file within a second |
+| `server_exited` | info | The hosted server quit and was not restarted (`message` = exit code, or "launcher closed"). A quick exit after `server_started` = port in use; read `server/server.log` |
+| `server_draining` | info | A newer game is installed (`message` = version) and the drain file asks the hosted server to finish its match. No `server_update_restarted` within a match's length = the server never drained; read `server/server.log` |
+| `server_update_restarted` | info | The hosted server drained (exit code 3) and runs again on the newer version (`message`), same port and player limit |
 
 ## Adding log lines (rules for agents)
 

@@ -232,8 +232,4 @@ def build(m) -> None:
     slide = slide_body(metal, black)
     m.attach(slide, (0, -0.035, BORE_Z), bolt)
     sights(m, slide, black, metal)
-    inlays = []
-    for side in (-1, 1):
-        strip = g.slab("Inlay", g.rounded(0.06, 0.027, 0.146, 0.029, 0.0008), 0.0006, metal, x=side * 0.016)
-        inlays.append(g.mark_inlay(strip))
-    m.join_into(slide, inlays)
+    g.add_inlays(m, slide, g.rounded(0.06, 0.027, 0.146, 0.029, 0.0008), 0.0006, 0.016, metal)

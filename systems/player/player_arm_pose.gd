@@ -14,6 +14,9 @@ var _lower_rest: Array[Transform3D] = []
 var _hand_rest: Array[Transform3D] = []
 var _upper_length: PackedFloat32Array = []
 var _lower_length: PackedFloat32Array = []
+## Left hand turned to hold something (a frag) instead of its grip, blended in by hold_weight.
+var _hold_rotation: Basis = Basis.IDENTITY
+var _hold_weight: float = 0.0
 
 
 func _init(skeleton: Skeleton3D) -> void:
@@ -46,6 +49,13 @@ func pose(
 	_arm(1, profile.left, weapon_transform, pump_delta, left_lift, relax)
 
 
+## Turns the left hand so its fingers point along `fingers` with the back of the hand toward `back`
+## (skeleton space), blended over its grip by weight. Weight 0 gives the grip back.
+func set_left_hold(fingers: Vector3, back: Vector3, weight: float) -> void:
+	_hold_weight = clampf(weight, 0.0, 1.0)
+	_hold_rotation = _basis(fingers, back) * _basis(_hand_rest[1].basis.y, Vector3.FORWARD).inverse()
+
+
 func _shoulder_offset(grip: PlayerArmProfiles.Hand, travel: Vector3) -> Vector3:
 	var rise: float = clampf(travel.y * 1.5, 0, .07)
 	var lift: Vector3 = Vector3(0, minf(rise, grip.shoulder_lift.x), 0)
@@ -65,6 +75,8 @@ func _arm(
 	relax: float = 0.0
 ) -> void:
 	var rotation: Basis = weapon_transform.basis * grip.rotation
+	if index == 1 and _hold_weight > 0.0:
+		rotation = rotation.orthonormalized().slerp(_hold_rotation, _hold_weight)
 	var target: Transform3D = Transform3D(
 		rotation * _hand_rest[index].basis, weapon_transform * (grip.wrist + part_delta)
 	)

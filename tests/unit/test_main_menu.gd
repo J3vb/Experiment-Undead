@@ -41,6 +41,13 @@ func test_enter_world_has_default_focus_and_existing_match_target() -> void:
 	assert_eq(menu.get_node("Backdrop").process_mode, Node.PROCESS_MODE_DISABLED)
 
 
+## The separate launcher (F-82) replaced the launcher screen: a release build opens the main menu.
+func test_no_launcher_screen_in_the_game() -> void:
+	assert_false(Content.has(&"screens", &"launcher"))
+	assert_false(ResourceLoader.exists("res://systems/launcher/launcher_screen.tscn"))
+	assert_true(menu.menu.visible, "the main menu shows itself, nothing replaces it")
+
+
 func test_credits_include_every_asset_from_the_credit_table() -> void:
 	var source: String = FileAccess.get_file_as_string("res://docs/CREDITS.md")
 	assert_false(source.is_empty())

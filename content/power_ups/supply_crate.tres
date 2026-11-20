@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PowerUpData" format=3]
+
+[ext_resource type="Script" path="res://systems/power_ups/power_up_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"supply_crate"
+display_name = "Supply Crate"
+effect = 7
+color = Color(0.24705882, 0.8784314, 0.78431374, 1)
+size = 1.2
+deck_chance = 0.333

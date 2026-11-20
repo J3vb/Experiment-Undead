@@ -24,7 +24,8 @@ In:
   exports `.glb` files into `assets/models/props/`. Finished with
   `finish.finish()` (baked AO, weighted normals) like the guns. Materials
   are embedded in the `.glb` (palette colours times baked AO), not mapped to
-  `levels/materials/` (the texture thread owns those). Monitor screens are a
+  `levels/materials/` (the texture thread owns those). Later changed:
+  `tools/assets/prop_import.gd` now maps every named slot to a shared material. Monitor screens are a
   separate surface with its own material named `Screen`, so the atmosphere
   thread can override it with its screen shader. Dressing models export to
   `assets/models/dressing/` (own budget folder).
@@ -123,7 +124,7 @@ Not in (non-goals, and where each one goes instead):
 | tools/assets/prop_parts.py | new (step 2) | shared shapes once a third prop needs them (Keep it simple rule 2) |
 | tools/assets/build_models.py | changed | merges `prop_models.MODELS` |
 | tools/assets/check_models.py | changed | `props` (2,000 tris, 4 materials) and `dressing` (1,000, 4) budgets, origin limit 0.05 m for both, `JOINTS` entries |
-| .github/workflows/assets.yml | changed | new props and dressing files in the required-output list |
+| .github/workflows/assets.yml | changed | new props and dressing files in the required-output list (replaced by `tools/assets/check_outputs.py` via `build_models.MODELS` in F-79 step 10) |
 | assets/models/props/, assets/models/dressing/ (*.glb + .import) | new | exported models, `light_baking=2`, vertex shading import script |
 | tools/blockout_builder.gd | changed | `_build_prop()` instances `"model"`; new `_build_dressing()` |
 | levels/halcyon_labs/layout.json | changed | `model` on props, new props and `dressing` |
@@ -255,7 +256,7 @@ No run-time code. Budget, checked by tests and `check_models.py`:
 - [x] Nav, clearance, spawn and table-loop tests pass unchanged.
 - [x] Prop and dressing caps hold.
 - [x] The person picked the look on each area's decision card (one card after the Labs: keep this style for every area).
-- [ ] fps check after the re-bake holds 120 fps at 1440p (the person's PC).
+- [x] fps check after the re-bake holds 120 fps at 1440p (the person's PC). Met in the F-13 re-bake (PR #296) and again in F-68 step 7 (PR #365).
       Open: runs with the F-13 GPU re-bake prompt
       (`/mnt/project-files/halcyon-labs/f13-rebake-and-fps-prompt.md`).
 
