@@ -168,6 +168,7 @@ func _on_player_added(player: Player) -> void:
 	player.display_name = handshake.player_name(player.net_id) if named else ""
 	player.spawn(self, starting_loadout)
 	if player == profile_player and profile:
+		player.skill_ranks = SkillEffects.ranks_from(profile.skill_ranks)
 		var loadout: Variant = profile.to_dict().get("loadout", {})
 		if loadout is Dictionary:
 			ItemLoadout.apply(player, loadout)

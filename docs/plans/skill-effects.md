@@ -1,6 +1,6 @@
 # Plan: Skill effects
 
-Status: Approved
+Status: Building
 Roadmap: F-20 / issue #113
 Phase: P5
 Size: M
@@ -132,12 +132,11 @@ Autoloads, managers or base classes added: none. `SkillEffects` is a static
 helper next to `SkillTree` (same shape), not a service node.
 
 Files over 300 lines this plan grows: `systems/player/player.gd` (335).
-Step 1 first moves the Serum functions (`has_serum`, `add_serum`,
-`lose_serums`, `can_self_revive`) out of player.gd into
-`systems/player/revive.gd` (163 lines; Serums are lost and used when going
-down), so player.gd drops to about 310 before the skill fields, the skill fold
-and the Last Stand check go in. The skill fold itself lives in
-`SkillEffects.add_to`; Last Stand's state lives in Revive.
+Changed in step 1: moving the Serum functions out would touch 61 call sites
+for a few lines, so it was dropped. player.gd gets only the two skill fields
+and the skill fold (341 after step 1); later steps add one refit call and the
+Last Stand check (about 345, under 350). The skill logic lives in
+`SkillEffects`; Last Stand's state lives in Revive.
 
 ## Data
 
@@ -224,8 +223,7 @@ allocation.
 
 ### Step 1: Ranks into the stat stack, solo and co-op
 
-- Build: move the Serum functions from player.gd to revive.gd (callers
-  updated). `SkillNodeData.op` and `rule`. New `systems/progression/skill_effects.gd`:
+- Build: `SkillNodeData.op` and `rule`. New `systems/progression/skill_effects.gd`:
   `add_to(stats, ranks)`, `rules_for(ranks)`, `ranks_from(raw)`,
   `ranks_problem(ranks) -> String`. `Player.skill_ranks`; `equip_gear` adds
   skill modifiers (source `&"skill"`) after gear, so any rebuild (respec,
@@ -234,7 +232,7 @@ allocation.
   server checks and applies them; protocol bump. Fill every skill `.tres` with
   the table's stat and op, and the six rule skills with their rule. Add the 4 caps. Rewrite the DECISIONS "Skill tree"
   line. Roadmap row to Building.
-- Files: systems/progression/skill_node_data.gd, systems/progression/skill_effects.gd (new), content/skills/*.tres, content/loot/stat_caps.tres, systems/player/player.gd, systems/player/revive.gd, Serum callers (player_state_sync.gd, match_end.gd, med_dispenser.gd as found), systems/net/loadout_sync.gd, systems/game/game_session.gd, core/build.gd, tests/content/test_skills.gd, tests/content/test_loot_content.gd, docs/DECISIONS.md, docs/ROADMAP.md.
+- Files: systems/progression/skill_node_data.gd, systems/progression/skill_effects.gd (new), content/skills/*.tres, content/loot/stat_caps.tres, systems/player/player.gd, systems/net/loadout_sync.gd, systems/game/game_session.gd, core/build.gd, tests/content/test_skills.gd, tests/content/test_loot_content.gd, docs/DECISIONS.md, docs/ROADMAP.md.
 - Tests: new `tests/unit/test_skill_effects.gd`: for each of Quick Draw, Weak
   Spot, Fast Hands, Thick Skin, Second Breath, Lucky Find the stat the player
   reads changes by the table value per rank (Lucky Find through

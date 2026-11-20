@@ -51,6 +51,9 @@ var focus: Interactable
 ## Serums bought this run. Their multipliers are read through get_stat().
 var serums: Array[SerumData] = []
 var stats: StatBlock = StatBlock.new()
+## Skill ranks (owner's save; server copy from LoadoutSync), folded into stats by equip_gear (a respec too).
+var skill_ranks: Dictionary[StringName, int] = {}
+var skill_rules: Dictionary[int, bool] = {}
 var moves: PlayerMoves = PlayerMoves.new()
 var mantle: PlayerMantle = PlayerMantle.new()
 var interaction: PlayerInteract = PlayerInteract.new()
@@ -148,6 +151,8 @@ func equip_gear(items: Array[Dictionary], heal: bool = true) -> void:
 		var item: ItemInstance = ItemInstance.new(equipped)
 		for modifier: Modifier in item.stats.modifiers:
 			stats.add_modifier(modifier.stat, modifier.op, modifier.value, modifier.source)
+	SkillEffects.add_to(stats, skill_ranks)
+	skill_rules = SkillEffects.rules_for(skill_ranks)
 	_refresh_stats(heal)
 
 

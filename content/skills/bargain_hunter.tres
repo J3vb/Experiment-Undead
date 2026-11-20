@@ -15,3 +15,4 @@ requires = Array[StringName]([])
 branch_points_needed = 15
 stat = &""
 per_rank = 0.0
+rule = 5

@@ -33,6 +33,10 @@ func test_stat_caps_match_the_affix_design_table() -> void:
 			&"bonus_skill_ranks": 3.0,
 			&"fire_rate_pct": 0.3,
 			&"leech": 6.0,
+			&"reload_pct": 1.6,
+			&"recoil_pct": 1.5,
+			&"max_health": 400.0,
+			&"points_earned": 1.5,
 		}
 	)
 
