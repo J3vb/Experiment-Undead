@@ -19,7 +19,7 @@ Every gun and gear piece rolls up to 4 affixes from slot pools, each affix in on
 
 ## Item model
 
-An item is a base (which gun or gear piece), a rarity, an item level and a short list of rolled affixes. Five slots carry affixes: Primary, Sidearm, Vest, Charm and Implant.
+An item is a base (which gun or gear piece), a rarity, an item level and a short list of rolled affixes. Nine slots carry affixes: Primary, Sidearm, Vest, Charm, Implant, Headgear, Gloves, Backpack and Boots.
 
 - **Item level** = the round it dropped in, capped at 50 (unchanged from the design doc). It decides which affix tiers can roll.
 - **Rarity** decides how many affixes, the tier bonus, and whether a trait rolls.
