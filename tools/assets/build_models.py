@@ -27,6 +27,7 @@ import finish
 import library_barriers
 import machine_models
 import prop_models
+import throwable_models
 import town_buildings
 import town_cabins
 import town_camp
@@ -289,6 +290,7 @@ MODELS.update(town_camp.MODELS)
 MODELS.update(library_barriers.MODELS)
 MODELS.update(door_models.MODELS)
 MODELS.update(machine_models.MODELS)
+MODELS.update(throwable_models.MODELS)
 
 
 def export(path: str) -> None:

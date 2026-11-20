@@ -103,6 +103,17 @@ live state belongs in objects such as `WeaponInstance`.
 7. Done when content validates, the intended players receive the effect once,
     and drops still obey their round cap and pickup lifetime.
 
+## A throwable
+
+1. Create `content/throwables/<id>.tres` (`ThrowableData`, `systems/throwables/throwable_data.gd`),
+    `id` matching the filename; follow `frag.tres`. Numbers come from the balance sheet.
+2. Point `scene` at a RigidBody3D scene with `systems/throwables/grenade.gd` (copy `grenade.tscn`) and
+    the model built in `tools/assets/throwable_models.py` (`assets/models/throwables/`, light_baking 3).
+3. Throws, the server check (`GrenadeClaims`), the blast (`Blast`, `BlastEffect`), the HUD slot and the
+    first-person hold work from the data. Today the lethal slot always holds `GrenadeThrower.FRAG`;
+    choosing another throwable needs a small code change and a plan.
+4. Add a lore row (`design/lore.md`, "Grenades and field kit") and extend `tests/content/test_throwables.gd`.
+
 ## A buyable or machine
 
 1. Reuse `systems/interactables/door.tscn`, `wall_buy.tscn`, `med_dispenser.tscn`,
