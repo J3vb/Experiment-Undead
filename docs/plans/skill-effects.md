@@ -1,10 +1,10 @@
 # Plan: Skill effects
 
-Status: Review
+Status: Approved
 Roadmap: F-20 / issue #113
 Phase: P5
 Size: M
-Approved by:
+Approved by: plan PR #409 (fresh Claude review, Codex out of quota), the person on the Serum cap card (2026-11-20)
 Lore link: none: no new thing the player sees or reads. The 20 skills, their names and texts already exist in `content/skills/`, and the branches have their story reason in docs/design/lore.md (Skill branches row). The skill tree screen (F-21) shows them.
 
 ## Goal
@@ -168,8 +168,8 @@ and the Last Stand check go in. The skill fold itself lives in
 - Caps added to `stat_caps.tres` (values are the stack result with base 1.0,
   or units): `reload_pct` 1.6, `recoil_pct` 1.5, `max_health` 400,
   `points_earned` 1.5. They cap skills plus gear. Serum multipliers sit
-  outside the capped value in `ItemInstance.stat_value` (Quickhands alone is
-  +67% reload); whether Serums go past the caps is an open decision below.
+  outside the capped value in `ItemInstance.stat_value` and stay there:
+  Serums stack on top of the caps (the person's pick, Open decisions).
 - `SkillNodeData.rule: Rule = Rule.NONE`, enum `NONE, DEAD_CENTER,
   EXECUTION_LINE, LAST_STAND, UNDYING, BARGAIN_HUNTER, CHAIN_SUPPLY`. Code
   checks the rule, never the skill id, the same pattern as
@@ -370,18 +370,16 @@ allocation.
 
 Provisional picks (reversible, written to DECISIONS in step 5):
 
-- Execution Line checks health before the hit (the design's "a zombie under
+- [x] Provisional: Execution Line checks health before the hit (the design's "a zombie under
   15% health"), not after.
-- Dead Center refunds into the gun in hand, capped at its magazine.
-- Scrounger boosts every point source (hits, kills, round clear, repairs),
-  not power-up rewards (none pay points today).
-- Undying's charge is used only when Second Wind is not held, so the two never
+- [x] Provisional: Dead Center refunds into the gun in hand, capped at its magazine.
+- [x] Provisional: Undying's charge is used only when Second Wind is not held, so the two never
   stack into one revive.
-- Scrounger boosts hits, kills, round clears and repairs (under the repair
+- [x] Provisional: Scrounger boosts hits, kills, round clears and repairs (under the repair
   cap), not the revive reward.
 
 For the person:
 
-- [ ] Do Serums go past the design caps? Today Quickhands alone gives +67%
-  reload, over the +60% cap. Recommended: caps hold skills plus gear, Serums
-  stack on top (short, paid run boosts; no Serum changes).
+- [x] Do Serums go past the design caps? Serums stack on top: the caps hold
+  skills plus gear, Serums multiply after (the person, decision card
+  2026-11-20).

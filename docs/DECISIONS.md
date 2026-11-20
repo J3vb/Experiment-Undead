@@ -26,6 +26,7 @@ These win over the design docs (see `docs/design/README.md`).
 - **Text size:** 80 to 150%, not 200%, until layouts are checked at that size. Font options (Lexend, OpenDyslexic) wait. [full-settings](plans/full-settings.md)
 - **Shotgun hitstop:** the "< 4 m" condition is dropped (`hit_confirmed` has no distance); the "shake from your gun" slider at 0 also turns hitstop off. [game-feel-slice](plans/game-feel-slice.md)
 - **Log autoload:** `Log` is an autoload although the architecture doc's table does not list it. [LOGGING](LOGGING.md)
+- **Stat caps:** the design's caps (reload +60%, recoil -50%, max health 400, points +50%, luck +100%) hold skills plus gear; Serum multipliers stack on top (the person's pick). [skill-effects](plans/skill-effects.md)
 - **Second Wind:** solo only; "solo" means alone in the world (`Net.is_coop()` false), so a lone listen server plays as solo. [join-any-game](plans/join-any-game.md)
 
 ## Simplified on purpose
