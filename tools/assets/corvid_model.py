@@ -226,6 +226,4 @@ def build(m) -> None:
     scope_parts(m, receiver, metal, black, glass)
     barrel_parts(m, receiver, metal, black)
     moving_parts(m, receiver, metal, black)
-    for side in (-1, 1):
-        inlay = g.slab("Inlay", g.rounded(-0.14, 0.041, 0.09, 0.043, 0.001), 0.001, metal, x=side * 0.0132)
-        m.join_into(receiver, [g.mark_inlay(inlay)])
+    g.add_inlays(m, receiver, g.rounded(-0.14, 0.041, 0.09, 0.043, 0.001), 0.001, 0.0132, metal)

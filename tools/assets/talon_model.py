@@ -285,6 +285,4 @@ def build_talon_dmr(m) -> None:
     scope_parts(m, receiver, knurled, black, glass, metal)
     barrel_parts(m, receiver, metal, black)
     moving_parts(m, receiver, metal, black, black)
-    for side in (-1, 1):
-        inlay = g.slab("Inlay", g.rounded(-0.15, 0.041, 0.145, 0.043, 0.001), 0.001, metal, x=side * 0.0282)
-        m.join_into(receiver, [g.mark_inlay(inlay)])
+    g.add_inlays(m, receiver, g.rounded(-0.15, 0.041, 0.145, 0.043, 0.001), 0.001, 0.0282, metal)

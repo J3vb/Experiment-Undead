@@ -312,8 +312,4 @@ def build(m) -> None:
     barrel(m, receiver, metal, black)
     sights(m, receiver, metal, black)
     bolt(m, receiver, metal, black)
-    inlays = []
-    for side in (-1, 1):
-        strip = g.slab("Inlay", g.rounded(-0.13, 0.043, 0.12, 0.045, 0.0008), 0.0006, metal, x=side * 0.026)
-        inlays.append(g.mark_inlay(strip))
-    m.join_into(receiver, inlays)
+    g.add_inlays(m, receiver, g.rounded(-0.13, 0.043, 0.12, 0.045, 0.0008), 0.0006, 0.026, metal)

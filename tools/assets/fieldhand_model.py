@@ -32,8 +32,6 @@ def action(metal, black):
         for y, z in ((-0.135, -0.01), (-0.09, 0.008), (0.108, -0.014)):
             ends = sorted((side * 0.0235, side * 0.025))
             parts.append(g.lathe("ActionScrew", [(0.0035, p) for p in ends], (0, y, z), black, 12, axis="x"))
-        strip = g.slab("Inlay", g.rounded(-0.13, 0.018, -0.03, 0.02, 0.0008), 0.001, metal, x=side * 0.0237)
-        parts.append(g.mark_inlay(strip))
     return receiver, parts
 
 
@@ -184,3 +182,4 @@ def build(m) -> None:
     barrel(m, receiver, metal, black)
     sights(m, receiver, black)
     moving_parts(m, receiver, metal, black)
+    g.add_inlays(m, receiver, g.rounded(-0.13, 0.018, -0.03, 0.02, 0.0008), 0.001, 0.0237, metal)

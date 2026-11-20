@@ -180,6 +180,4 @@ def build(m) -> None:
     pump(m, black, tan, body)
     load_shell(m, markings, body)
     m.marker("Muzzle", (0, 0.625, BORE_Z), parent=body)
-    for side in (-1, 1):
-        strip = g.slab("Inlay", g.rounded(-0.028, 0.040, 0.096, 0.042, 0.0008), 0.001, metal, x=side * 0.025)
-        m.join_into(body, [g.mark_inlay(strip)])
+    g.add_inlays(m, body, g.rounded(-0.028, 0.040, 0.096, 0.042, 0.0008), 0.001, 0.025, metal)
