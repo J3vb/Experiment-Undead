@@ -86,6 +86,7 @@ The server also prints every warning and error to stdout as
 | `waves.round_started` | info | Round number, enemies this round, health snapshot |
 | `waves.round_ended` | info | Round cleared |
 | `waves.round_stalled` | warn | 90 s in a round with no kill; lists where the living zombies are |
+| `waves.blackout_pack_waiting` | warn | A Blackout pack (`pack` Glowers, `round`) waited over 10 s for room under the alive cap. Zombies are stuck alive somewhere or the cap is too low for the pack size |
 | `waves.spawn_points_missing` | warn | The Spawner found no marker in its `spawn_group` (`spawn_group`), so no zombie spawns. The map has no spawn markers in that group, or the group name in the Spawner is wrong |
 | `player.player_spawned` / `player_died` | info | Player `net_id`, spawn position |
 | `player.weapon_has_no_grip` | warn | A gun has no `GripData`, so it shows no first-person arms. `weapon` id; once per gun per run. Add `content/grips/<base id>.tres` and set the gun's `grip` |

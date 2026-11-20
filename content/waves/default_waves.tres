@@ -5,6 +5,8 @@
 [ext_resource type="Resource" path="res://content/enemies/zombie_walker.tres" id="3"]
 [ext_resource type="Resource" path="res://content/enemies/zombie_bloater.tres" id="5"]
 [ext_resource type="Script" path="res://systems/waves/speed_band.gd" id="6"]
+[ext_resource type="Resource" path="res://content/enemies/zombie_glower.tres" id="7"]
+[ext_resource type="Resource" path="res://content/power_ups/resupply.tres" id="8"]
 
 [sub_resource type="Resource" id="walker"]
 script = ExtResource("2")
@@ -71,3 +73,11 @@ damage_growth_per_round = 0.0
 speed_tiers = PackedFloat64Array(1.2, 2.6, 4.2, 5.6)
 speed_bands = Array[ExtResource("6")]([SubResource("band_1"), SubResource("band_4"), SubResource("band_7"), SubResource("band_10"), SubResource("band_15"), SubResource("band_20")])
 min_spawn_distance = 12.0
+blackout_enemy = ExtResource("7")
+blackout_first_round = 6
+blackout_gap_min = 5
+blackout_gap_max = 7
+blackout_count_mult = 1.5
+pack_min = 4
+pack_max = 6
+blackout_reward = ExtResource("8")

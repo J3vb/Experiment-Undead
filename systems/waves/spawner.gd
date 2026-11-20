@@ -23,10 +23,10 @@ func _ready() -> void:
 	_net.spawned.connect(func(node: Node) -> void: Events.enemy_spawned.emit(node as Zombie))
 
 
-func spawn(enemy: EnemyData, round_number: int, rules: WaveRules) -> Zombie:
+func spawn(enemy: EnemyData, round_number: int, rules: WaveRules, at: Node3D = null) -> Zombie:
 	if not Net.is_authority() or enemy == null or enemy.scene == null:
 		return null
-	var marker: Node3D = _pick_marker(rules.min_spawn_distance)
+	var marker: Node3D = at if at else _pick_marker(rules.min_spawn_distance)
 	var point: Vector3 = _place(marker)
 	var spawn_point: ZombieSpawnPoint = marker as ZombieSpawnPoint
 	var barrier_path: NodePath = get_path_to(spawn_point.barrier) if spawn_point and spawn_point.barrier else ^""
@@ -43,6 +43,25 @@ func spawn(enemy: EnemyData, round_number: int, rules: WaveRules) -> Zombie:
 	zombie.rotation.y = session.rng.randf() * TAU
 	Events.enemy_spawned.emit(zombie)
 	return zombie
+
+
+## A Blackout pack: `size` enemies at one spawn point (small jitter), preferring a far enough point with no
+## window barrier so the pack arrives together. The first leads the rest; each gets a side (-1/+1) to split to
+## near the target.
+func spawn_pack(enemy: EnemyData, size: int, round_number: int, rules: WaveRules) -> Array[Zombie]:
+	var pack: Array[Zombie] = []
+	var marker: Node3D = _pick_marker(rules.min_spawn_distance, true)
+	if marker == null:
+		marker = _pick_marker(rules.min_spawn_distance)
+	for index: int in size:
+		var zombie: Zombie = spawn(enemy, round_number, rules, marker)
+		if zombie == null:
+			continue
+		zombie.pack_side = 1 if index % 2 == 0 else -1
+		if not pack.is_empty():
+			zombie.pack_leader = pack[0]
+		pack.append(zombie)
+	return pack
 
 
 ## Speed-mix enemies roll a design speed tier; others keep their own speed.
@@ -77,7 +96,7 @@ func alive_count() -> int:
 	return n
 
 
-func _pick_marker(min_distance: float) -> Node3D:
+func _pick_marker(min_distance: float, open_only: bool = false) -> Node3D:
 	var points: Array[Node] = get_tree().get_nodes_in_group(spawn_group)
 	if points.is_empty():
 		Log.warn(&"waves", &"spawn_points_missing", {"spawn_group": spawn_group})
@@ -88,11 +107,13 @@ func _pick_marker(min_distance: float) -> Node3D:
 	for node: Node in points:
 		var marker: Node3D = node as Node3D
 		var point: ZombieSpawnPoint = node as ZombieSpawnPoint
-		if marker == null or (point and point.min_players > players):
+		if marker == null or (point and point.min_players > players) or (open_only and point and point.barrier):
 			continue
 		usable.append(marker)
 		if _distance_to_nearest_player(marker.global_position) >= min_distance:
 			far_enough.append(marker)
+	if open_only and far_enough.is_empty():
+		return null
 	var pool: Array[Node3D] = far_enough if not far_enough.is_empty() else usable
 	if pool.is_empty():
 		return null

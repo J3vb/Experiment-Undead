@@ -42,6 +42,20 @@ extends Resource
 @export_group("Spawning")
 @export var min_spawn_distance: float = 10.0
 
+@export_group("Blackout")
+## Only this enemy spawns in a Blackout round, in packs from one spawn point. None = no Blackouts.
+@export var blackout_enemy: EnemyData
+@export var blackout_first_round: int = 6
+## Rounds between Blackouts, rolled from the session RNG.
+@export var blackout_gap_min: int = 5
+@export var blackout_gap_max: int = 7
+## A Blackout round's count is the normal count times this.
+@export var blackout_count_mult: float = 1.5
+@export var pack_min: int = 4
+@export var pack_max: int = 6
+## Dropped where the last zombie of a Blackout round died.
+@export var blackout_reward: PowerUpData
+
 
 func get_enemy_count(round_number: int, players: int = 1) -> int:
 	var count: int = 0
@@ -51,6 +65,22 @@ func get_enemy_count(round_number: int, players: int = 1) -> int:
 		var r: float = float(round_number)
 		count = floori(count_a * r * r + count_b * r + count_c + 0.000001)
 	return floori(count * (1.0 + coop_count_per_player * maxi(players - 1, 0)))
+
+
+## The Blackout rounds up to `up_to`: blackout_first_round, then a gap of blackout_gap_min..max each time.
+func roll_blackouts(rng: RandomNumberGenerator, up_to: int) -> PackedInt32Array:
+	var rounds: PackedInt32Array = PackedInt32Array()
+	if blackout_enemy == null:
+		return rounds
+	var next: int = blackout_first_round
+	while next <= up_to:
+		rounds.append(next)
+		next += maxi(rng.randi_range(blackout_gap_min, maxi(blackout_gap_max, blackout_gap_min)), 1)
+	return rounds
+
+
+func get_blackout_count(round_number: int, players: int = 1) -> int:
+	return floori(get_enemy_count(round_number, players) * blackout_count_mult + 0.000001)
 
 
 func get_max_alive(players: int = 1) -> int:
