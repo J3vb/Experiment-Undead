@@ -82,10 +82,12 @@ func _on_serum_gained(gainer: Player, serum: SerumData) -> void:
 func _drop_lost(changed: Player) -> void:
 	if changed != player:
 		return
+	var before: int = shown.size()
 	for index: int in range(shown.size() - 1, -1, -1):
 		if not player.has_serum(shown[index].id):
 			shown.remove_at(index)
-	_resize()
+	if shown.size() != before:
+		_resize()
 
 
 func _resize() -> void:

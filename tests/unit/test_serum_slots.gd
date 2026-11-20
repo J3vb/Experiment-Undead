@@ -62,17 +62,20 @@ func test_other_players_serums_ignored() -> void:
 	assert_eq(slots.shown.size(), 0)
 
 
-func test_missing_icon_falls_back_to_badge_and_draws() -> void:
+func test_missing_icon_warns_once_and_still_draws() -> void:
 	var serum: SerumData = SerumData.new()
 	serum.id = &"test_serum"
 	serum.badge = "XX"
 	player.serums.append(serum)
 	Events.serum_gained.emit(player, serum)
 	assert_eq(slots.shown_ids(), PackedStringArray(["test_serum"]))
+	assert_true(slots._warned.has(&"test_serum"), "a missing icon warns")
+	Events.serum_gained.emit(player, serum)
+	assert_eq(slots._warned.size(), 1, "and only once")
 	slots.size = Vector2(300.0, 44.0)
 	slots.queue_redraw()
 	await wait_process_frames(1)
-	assert_true(slots._warned.has(&"test_serum"), "a missing icon warns once")
+	assert_eq(slots.slot_count(), 4, "the badge-letter fallback draws without errors")
 
 
 func test_no_local_player_never_warns() -> void:
