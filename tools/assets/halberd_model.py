@@ -260,8 +260,4 @@ def build(m) -> None:
     handle_and_bipod(m, receiver, metal, black)
     stock_parts(m, receiver, metal, black, olive)
     moving_parts(m, receiver, metal, black, olive)
-    inlays = []
-    for side in (-1, 1):
-        strip = g.slab("Inlay", g.rounded(-0.09, 0.065, 0.09, 0.067, 0.0008), 0.0006, metal, x=side * 0.029)
-        inlays.append(g.mark_inlay(strip))
-    m.join_into(receiver, inlays)
+    g.add_inlays(m, receiver, g.rounded(-0.09, 0.065, 0.09, 0.067, 0.0008), 0.0006, 0.029, metal)

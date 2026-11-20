@@ -267,15 +267,6 @@ def trigger(m, receiver, metal, black):
     m.join_into(receiver, [catch])
 
 
-def inlay(m, slide_part, metal):
-    """Only two narrow side strips accept rarity tint; initialize the other meshes first."""
-    strips = []
-    for side in (-1, 1):
-        strip = g.slab("Inlay", g.rounded(0.045, 0.035, 0.129, 0.037, 0.0008), 0.0007, metal, x=side * 0.0171)
-        strips.append(g.mark_inlay(strip))
-    m.join_into(slide_part, strips)
-
-
 def build(m) -> None:
     """Build from the shared helpers, preserving animation names and the sight line."""
     metal = m.material("GunMetal", m.GUN_METAL, metallic=0.8, roughness=0.4)
@@ -290,4 +281,4 @@ def build(m) -> None:
     magazine(m, receiver, metal, black)
     brace(m, receiver, metal, black, polymer)
     trigger(m, receiver, metal, black)
-    inlay(m, slide_part, metal)
+    g.add_inlays(m, slide_part, g.rounded(0.045, 0.035, 0.129, 0.037, 0.0008), 0.0007, 0.0171, metal)
