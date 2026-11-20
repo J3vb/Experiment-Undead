@@ -150,3 +150,16 @@ func test_a_server_that_starts_in_the_match_stays_after_game_over() -> void:
 	Events.game_over.emit({})
 	await wait_seconds(DedicatedServer.RESULTS_GRACE + 0.3)
 	assert_eq(_server.session.get_instance_id(), match_id, "soak and test servers keep their match")
+
+
+func test_an_empty_dedicated_match_goes_back_to_the_hub() -> void:
+	OS.set_environment("EU_PORT", str(PORT))
+	_server = DedicatedServer.new()
+	get_tree().root.add_child(_server)
+	OS.unset_environment("EU_PORT")
+	await wait_until(func() -> bool: return is_instance_valid(_server.session) and _server.session.is_node_ready(), 5.0)
+	_server.session.deploy_vote.deploy(&"match")
+	await wait_until(func() -> bool: return not _server.session.is_hub and _server.session.is_node_ready(), 10.0)
+	var back: Callable = func() -> bool: return _server.session.is_hub and _server.session.is_node_ready()
+	await wait_until(back, DedicatedServer.EMPTY_GRACE + 5.0)
+	assert_true(_server.session.is_hub, "a squad that never rejoins leaves no empty match running")

@@ -21,6 +21,7 @@ func _ready() -> void:
 	_deadline.timeout.connect(_drop_leaving)
 	add_child(_deadline)
 	multiplayer.peer_disconnected.connect(_on_peer_left)
+	multiplayer.peer_connected.connect(_on_peer_joined)
 
 
 ## Call before sending the order. With nobody to wait for, finishes at once.
@@ -60,6 +61,15 @@ func _hold_hello(peer_id: int, packet: PackedByteArray) -> void:
 	_held_hellos.append([peer_id, packet])
 
 
+## A hello accepted just before the change connects now: send that peer away too.
+func _on_peer_joined(peer_id: int) -> void:
+	if pending.is_empty():
+		return
+	_leaving.append(peer_id)
+	if multiplayer.get_peers().has(peer_id):
+		Net.send_to_place(peer_id, pending)
+
+
 func _on_peer_left(peer_id: int) -> void:
 	_held_hellos = _held_hellos.filter(func(held: Array) -> bool: return held[0] != peer_id)
 	if _leaving.has(peer_id):
@@ -70,10 +80,10 @@ func _on_peer_left(peer_id: int) -> void:
 
 ## A client that never got the order is dropped, so its packets stop with the old session.
 func _drop_leaving() -> void:
-	for peer_id: int in _leaving:
+	for peer_id: int in _leaving.duplicate():
 		Log.warn(&"net", &"place_change_kicked", {"peer": peer_id})
 		if multiplayer.get_peers().has(peer_id):
-			(multiplayer as SceneMultiplayer).disconnect_peer(peer_id)
+			multiplayer.multiplayer_peer.disconnect_peer(peer_id)
 	_leaving.clear()
 	if not pending.is_empty():
 		_finish()

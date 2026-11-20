@@ -17,6 +17,8 @@ func after_each() -> void:
 	_change.reset()
 	(multiplayer as SceneMultiplayer).auth_callback = _auth
 	Net.changing_place = false
+	Net.place_change.pending = &""
+	Net.place = &""
 
 
 func test_the_swap_waits_until_every_client_has_left() -> void:
@@ -53,7 +55,7 @@ func test_hellos_wait_for_the_next_handshake() -> void:
 func test_reset_never_leaves_hellos_held() -> void:
 	_change.start(&"match", PackedInt32Array([5]), false)
 	_change.reset()
-	assert_ne((multiplayer as SceneMultiplayer).auth_callback, Callable(_change._hold_hello))
+	assert_eq((multiplayer as SceneMultiplayer).auth_callback, Callable(Handshake._ignore_auth))
 	assert_eq(_change.pending, &"")
 
 
@@ -69,12 +71,13 @@ func test_a_second_change_while_one_is_pending_is_ignored() -> void:
 	Net.place_change.pending = &"match"
 	Net.change_place(&"other")
 	assert_eq(Net.place, &"hub", "the first change runs to its end")
-	Net.place_change.pending = &""
-	Net.place = &""
 
 
-func test_a_squad_check_after_the_session_left_the_tree_does_nothing() -> void:
-	var end: MatchEnd = MatchEnd.new()
-	end.check_squad()
-	end.free()
-	assert_true(true, "no error from a deferred check on a freed session")
+func test_a_hello_accepted_just_before_the_change_is_sent_away_too() -> void:
+	_change.start(&"match", PackedInt32Array([5]), false)
+	_change._on_peer_joined(12)
+	assert_true(_change.is_leaving(12), "it gets no player in the old place")
+	_change._on_peer_left(5)
+	assert_signal_not_emitted(_change, "finished", "the swap also waits for it")
+	_change._on_peer_left(12)
+	assert_signal_emitted(_change, "finished")

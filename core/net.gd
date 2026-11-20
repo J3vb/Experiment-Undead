@@ -168,6 +168,11 @@ func change_place(next: StringName, host_goes: bool = false) -> void:
 		(multiplayer.multiplayer_peer as ENetMultiplayerPeer).host.flush()
 
 
+## Server: sends one more client to next (it connected while the change was pending).
+func send_to_place(peer_id: int, next: StringName) -> void:
+	_go_to_place.rpc_id(peer_id, next)
+
+
 func _on_place_change_finished(next: StringName, host_goes: bool) -> void:
 	place_changed.emit(next)
 	if host_goes:
