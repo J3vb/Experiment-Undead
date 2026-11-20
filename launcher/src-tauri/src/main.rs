@@ -254,6 +254,8 @@ fn main() {
                 busy: AtomicBool::new(false),
                 host: Mutex::new(Host::new(data_dir.join("server"))),
             });
+            let handle = app.handle().clone();
+            std::thread::spawn(move || host::watch(handle));
             Ok(())
         })
         .on_window_event(|window, event| {

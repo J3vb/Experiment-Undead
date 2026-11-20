@@ -73,11 +73,17 @@ launcher screen of its own (removed in F-82 step 3).
   so installed launchers do not update to it. Losing the key means every player reinstalls
   once from a new setup exe built with a new key; keep a copy in a password manager.
 - **Host a server:** the launcher's Host a server panel runs the newest installed game with
-  `--headless -- --server --port=<p> --max-players=<n> --stop-file=<f>` (port and player
+  `--headless -- --server --port=<p> --max-players=<n> --stop-file=<f> --drain-file=<d>` (port and player
   limit saved in `launcher.json`). Its console output goes to `server\server.log` in the
   launcher's data folder (Open logs). Stop writes the stop file; closing the launcher while
   hosting asks, then stops the server. Players, the host too, join from Servers in the game;
   Play keeps the launcher open while it hosts. The version a server runs is never deleted.
+- **Hosted servers update between matches:** while hosting, the launcher checks the channel
+  every 15 minutes and installs a newer release next to the running server, then writes the
+  drain file. The server finishes its match; in the hub it refuses new players ("restarting
+  for an update"), tells everyone there, and quits with exit code 3 (an empty server waits
+  12 s first). The launcher then starts the new version on the same port. Any other exit is
+  left alone. Players see a Restart to update button that opens the launcher.
 - **Frozen from v0.1.0:** `latest.json` and the `.sig` beside the setup exe it names
   (`Fenlight-Setup-<version>.exe`; `ExperimentUndead-Setup-` before the rename).
 - **Version:** the release workflow stamps the tag's version into the launcher

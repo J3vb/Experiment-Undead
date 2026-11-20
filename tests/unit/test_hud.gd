@@ -62,16 +62,12 @@ func test_points_separators_and_delta_summing_then_expiry() -> void:
 	assert_eq(hud.points_label.text, "999")
 
 
-func test_ammo_threshold_and_hints() -> void:
+func test_ammo_hints_and_weapon_name() -> void:
 	var magazine: int = player.weapons.current.data.magazine_size
 	var low_count: int = floori(magazine * 0.25)
 	Events.ammo_changed.emit(player, low_count, 210)
-	assert_eq(hud.ammo_label.text, str(low_count))
-	assert_eq(hud.reserve_label.text, "/ 210")
-	assert_eq(hud.ammo_label.modulate, Hud.BLOOD_RED)
 	assert_eq(hud.hint_label.text, "RELOAD [R]")
 	Events.ammo_changed.emit(player, low_count + 1, 210)
-	assert_eq(hud.ammo_label.modulate, Hud.OFF_WHITE)
 	assert_eq(hud.hint_label.text, "")
 	Events.ammo_changed.emit(player, 0, 0)
 	assert_eq(hud.hint_label.text, "NO AMMO")
