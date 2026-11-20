@@ -89,12 +89,12 @@ func inside_point() -> Vector3:
 	return global_position + global_basis.z * INSIDE_DEPTH
 
 
-## Where a drop lands when its zombie died at `from`, outside this window: just
+## Where a drop lands when its zombie died at `killed_at`, outside this window: just
 ## inside, in line with where it fell, so players can reach it.
-func drop_point(from: Vector3) -> Vector3:
-	var side: float = clampf(global_basis.x.dot(from - global_position), -SLOT_SPACING, SLOT_SPACING)
+func drop_point(killed_at: Vector3) -> Vector3:
+	var side: float = clampf(global_basis.x.dot(killed_at - global_position), -SLOT_SPACING, SLOT_SPACING)
 	var point: Vector3 = inside_point() + global_basis.x * side
-	point.y = from.y
+	point.y = killed_at.y
 	return point
 
 
