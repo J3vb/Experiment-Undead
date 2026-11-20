@@ -299,11 +299,12 @@ func test_slot_for_maps_every_gear_base_and_weapon() -> void:
 	assert_eq(Inventory.slot_for({}), &"")
 
 
+## Bases that roll today; the F-71 slots get their affix pools (and drop weight) in step 4.
 func _gear_bases() -> Array[GearBaseData]:
 	var bases: Array[GearBaseData] = []
 	for id: StringName in Content.ids(&"loot"):
 		var base: GearBaseData = Content.get_item(&"loot", id) as GearBaseData
-		if base != null:
+		if base != null and base.drop_weight > 0.0:
 			bases.append(base)
 	return bases
 

@@ -202,6 +202,21 @@ func test_client_with_all_seven_gear_slots_filled_reaches_the_server_copy() -> v
 	await wait_until(func() -> bool: return client.health.max_health == 180.0, 3.0, "owner sees it")
 
 
+func test_saved_headgear_reloads_and_its_health_reaches_the_server_copy() -> void:
+	var profile: CharacterProfile = CharacterProfile.new()
+	profile.id = &"test_gear_sync_headgear"
+	profile.loadout["headgear"] = _piece("headgear_cap", [["test_max_health", 1, 1.0]])
+	assert_eq(profile.save(), OK)
+	var loaded: CharacterProfile = CharacterProfile.load_or_create(profile.id)
+	DirAccess.remove_absolute(
+		ProjectSettings.globalize_path(CharacterProfile.directory() + "test_gear_sync_headgear.json")
+	)
+	client.loadout_sync.gear = ItemLoadout.worn_gear(loaded.loadout)
+	assert_eq(client.loadout_sync.gear.size(), 1)
+	client.loadout_sync.send_loadout()
+	await wait_until(func() -> bool: return server.health.max_health == 140.0, 3.0, "cap health on server")
+
+
 func test_two_headgear_pieces_are_rejected() -> void:
 	var before: int = Log.event_counts.get("net.loadout_rejected", 0)
 	var second: Dictionary = _piece("headgear_cap", [])
