@@ -130,8 +130,9 @@ func test_tiles_show_owned_open_and_locked_states() -> void:
 
 
 func test_links_join_each_row_to_the_next_and_follow_the_gate() -> void:
+	var links: SkillLinks = screen.links
 	var into_keystone: Dictionary = {}
-	for link: Dictionary in screen.links.links:
+	for link: Dictionary in links.links:
 		if (link["to"] as SkillTile).node.id == &"dead_center":
 			into_keystone = link
 	assert_false(into_keystone.is_empty(), "a link runs into the Marksman keystone")
@@ -139,12 +140,12 @@ func test_links_join_each_row_to_the_next_and_follow_the_gate() -> void:
 	for tile: SkillTile in into_keystone["from_row"]:
 		sources.append(tile.node.id)
 	assert_eq(sources, [&"deep_pockets"] as Array[StringName], "from the row before it")
-	assert_false(screen.links.reachable(into_keystone))
+	assert_false(links.reachable(into_keystone))
 	for i: int in 8:
 		screen.add_rank([&"steady_hands", &"quick_draw", &"weak_spot"][i % 3])
-	assert_true(screen.links.reachable(into_keystone), "8 points in Marksman open the keystone")
+	assert_true(links.reachable(into_keystone), "8 points in Marksman open the keystone")
 	var lane_firsts: int = 0
-	for link: Dictionary in screen.links.links:
+	for link: Dictionary in links.links:
 		if (link["to"] as SkillTile).node.row == 0:
 			lane_firsts += 1
 	assert_eq(lane_firsts, 0, "nothing runs into the first row")
