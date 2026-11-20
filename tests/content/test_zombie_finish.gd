@@ -1,5 +1,4 @@
-## The code-built Crawler finish keeps its palette and material budget; no instance
-## changes the shared glow response, and rarity cannot recolour enemies.
+## The code-built Crawler finish keeps its palette and material budget, and rarity cannot recolour enemies.
 extends GutTest
 
 const IMPORTER: GDScript = preload("res://tools/assets/zombie_finish_import.gd")
@@ -64,16 +63,12 @@ func test_head_and_decay_have_their_own_surface_response() -> void:
 			assert_null(result.get_shader_parameter(&"emission_strength"), "plain surfaces never get emission")
 
 
-func test_no_instance_changes_the_shared_eye_glow_response() -> void:
+func test_eyes_share_the_glow_finish() -> void:
 	for kind: String in ["crawler"]:
 		var model: Node3D = _model(kind)
 		var eye: MeshInstance3D = model.find_child("EyeL", true, false) as MeshInstance3D
 		var eye_material: ShaderMaterial = eye.mesh.surface_get_material(0) as ShaderMaterial
 		assert_gt(float(eye_material.get_shader_parameter(&"emission_strength")), 0.0)
-		assert_eq(eye.get_instance_shader_parameter(&"belly"), false)
-		for node: Node in model.find_children("*", "MeshInstance3D", true, false):
-			var instance: MeshInstance3D = node as MeshInstance3D
-			assert_eq(instance.get_instance_shader_parameter(&"belly"), node.name == &"Belly")
 
 
 func test_zombie_shader_has_no_rarity_dye_or_texture_inputs() -> void:

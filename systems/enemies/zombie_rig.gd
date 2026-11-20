@@ -45,6 +45,7 @@ var _axes: Dictionary[StringName, Quaternion] = {}
 var _offsets: Dictionary[StringName, Vector3] = {}
 var _hips_rest: Vector3 = Vector3.ZERO
 var _body_mesh: GeometryInstance3D
+var _pulse_tween: Tween
 var _phase: float = 0.0
 var _crawler: bool = false
 
@@ -69,6 +70,8 @@ func _ready() -> void:
 	_hips_rest = _skeleton.get_bone_pose_position(_bones[&"Hips"])
 	_attach_head(body)
 	_body_mesh = body.find_child("Body", true, false) as GeometryInstance3D
+	if _body_mesh and pulse_size > 0.0:
+		_body_mesh.extra_cull_margin = pulse_size
 
 
 func _cache_bone(part_name: StringName, bone_name: StringName) -> void:
@@ -285,8 +288,11 @@ func pose_dead() -> void:
 func pulse_belly() -> void:
 	if _body_mesh == null or pulse_size <= 0.0:
 		return
+	if _pulse_tween:
+		_pulse_tween.kill()
 	_set_pulse(pulse_size)
-	create_tween().tween_method(_set_pulse, pulse_size, 0.0, 0.25).set_trans(Tween.TRANS_ELASTIC)
+	_pulse_tween = create_tween()
+	_pulse_tween.tween_method(_set_pulse, pulse_size, 0.0, 0.25).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 
 
 func pulse_amount() -> float:

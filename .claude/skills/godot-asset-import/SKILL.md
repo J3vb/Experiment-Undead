@@ -52,7 +52,7 @@ model and checks size, axes and the parts code needs by name. When you add a
 model, add a test function like `test_shambler_is_upright_and_reaching` that:
 
 - checks every node code finds by name (`Magazine`, `Muzzle`, `Bolt`, `Head`,
-  `Belly`),
+  `HeadCenter`),
 - checks the size and which way it faces,
 - for a gun, adds it to the triangle budget and light baking checks
   (`test_rebuilt_guns_keep_rifle_triangle_budget_...`,
