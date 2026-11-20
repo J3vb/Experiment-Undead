@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://systems/ui/hud.gd" id="1"]
 [ext_resource type="Script" path="res://systems/net/coop_hud.gd" id="coop"]
@@ -23,6 +23,8 @@
 [ext_resource type="PackedScene" path="res://systems/ui/level_up_burst.tscn" id="level_up_burst"]
 
 [ext_resource type="PackedScene" path="res://systems/ui/loot_feed.tscn" id="loot_feed"]
+
+[ext_resource type="Script" path="res://systems/ui/power_up_timers.gd" id="power_up_timers"]
 
 [sub_resource type="FontVariation" id="round_bold"]
 base_font = ExtResource("round_font")
@@ -424,6 +426,22 @@ layout_mode = 1
 
 [node name="LootFeed" parent="Root" instance=ExtResource("loot_feed")]
 layout_mode = 1
+
+[node name="PowerUpTimers" type="Control" parent="Root"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -104.0
+offset_right = 300.0
+offset_bottom = -32.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+script = ExtResource("power_up_timers")
 
 [node name="Pack" type="Control" parent="Root"]
 layout_mode = 1
