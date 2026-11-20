@@ -271,15 +271,23 @@ Replaced by F-80 step 3 (see step 1).
   /mnt/project-files/lantern-post-vendors/ (renders and the GPU prompt).
 - Tests: none new beyond fixes (each fix with a test).
 - Done when: the person has seen the renders, fps target held.
+- Look check (2026-11-20, cloud Forward+ software render): all four keepers
+  read behind their counters in their own idle, warm-lit like the concept's
+  market row; Raes's face at MISSIONS is the darkest of the four (lit from
+  the hanging lantern above), kept as is. Market row with the keepers: 662
+  draw calls and 751k primitives at 100 fov, 649 and 552k without (13 calls,
+  about 50k triangles per keeper). Renders `f76_step5_keepers_close.jpg` and
+  `f76_step5_market_row.jpg` in the project files. GPU fps check: prompt
+  `f76-step5-gpu-fps-prompt.md` for the person's PC, result goes here.
 
 ## Acceptance
 
-- [ ] Four named vendors stand behind the four stall counters, each in their
-      own idle (test_lantern_post, render).
+- [x] Four named vendors stand behind the four stall counters, each in their
+      own idle (test_lantern_post_keepers, step 5 render).
 - [ ] Walking up turns their head to you; talking plays the greet and shows
       their next line, only for you (test_vendor, co-op play-test).
-- [ ] Every NPC model passes the character checks and has all five clips
-      (Assets CI).
+- [x] Every NPC model passes the character checks and has all five clips
+      (Assets CI, tests/content/test_tripo_vendors.gd).
 - [ ] Hub fps target held with 8 players and the vendors in (GPU agent).
 - [ ] The person approved the look on the step 1 and step 2 renders.
 
