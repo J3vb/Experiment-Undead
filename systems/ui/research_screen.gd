@@ -13,6 +13,8 @@ var saved: Dictionary[StringName, int] = {}
 var pending: Dictionary[StringName, int] = {}
 var tiles: Dictionary[StringName, SkillTile] = {}
 var _branch_labels: Dictionary[StringName, Label] = {}
+## Ranks at or below these stay unless Reset all: the save, or nothing after a Reset all.
+var _floor: Dictionary[StringName, int] = {}
 ## Set by the first Back with unsaved ranks; the second Back discards them.
 var _warned: bool = false
 
@@ -33,6 +35,7 @@ func open(character: CharacterProfile) -> void:
 	profile = character
 	saved = SkillEffects.ranks_from(profile.skill_ranks)
 	pending = saved.duplicate()
+	_floor = saved.duplicate()
 	_warned = false
 	status.text = ""
 	if SkillTree.points_available(profile.level, saved) < 0:
@@ -45,8 +48,11 @@ func open(character: CharacterProfile) -> void:
 
 ## The top-left tile of the first lane, where focus starts.
 func first_tile() -> SkillTile:
-	var lane: HBoxContainer = lanes.get_child(0) as HBoxContainer
-	return lane.get_child(1).get_child(0) as SkillTile
+	for node_id: StringName in Content.sorted_ids(&"skills"):
+		var node: SkillNodeData = tiles[node_id].node
+		if node.branch == BRANCHES[0] and node.row == 0 and node.column == 0:
+			return tiles[node_id]
+	return tiles[Content.sorted_ids(&"skills")[0]]
 
 
 func _build_lanes() -> void:
@@ -99,12 +105,13 @@ func add_rank(node_id: StringName) -> void:
 func remove_rank(node_id: StringName) -> void:
 	if profile == null:
 		return
-	pending = SkillTree.rank_down(pending, saved, node_id)
+	pending = SkillTree.rank_down(pending, _floor, node_id)
 	_changed()
 
 
 func reset_all() -> void:
 	pending = SkillTree.respec()
+	_floor = {}
 	_changed()
 
 
@@ -122,7 +129,9 @@ func confirm() -> void:
 		status.text = "Could not save (%s). Back twice closes without saving." % error_string(error)
 		return
 	saved = pending.duplicate()
+	_floor = saved.duplicate()
 	_warned = false
+	%Back.text = "Back"
 	status.text = "Saved."
 	_refresh()
 
@@ -176,7 +185,7 @@ func _show_detail(node_id: StringName) -> void:
 	var lines: PackedStringArray = [node.display_name, text, "Rank %d of %d" % [rank, node.max_ranks]]
 	if node.branch_points_needed > 0:
 		lines.append("Needs %d points in %s" % [node.branch_points_needed, node.branch])
-	if SkillTree.can_rank_down(pending, saved, node_id):
+	if SkillTree.can_rank_down(pending, _floor, node_id):
 		lines.append("Right-click, Backspace or X removes a new rank")
 	detail.text = "\n".join(lines)
 
@@ -194,6 +203,8 @@ func _tile_input(event: InputEvent, node_id: StringName) -> void:
 
 func _input(event: InputEvent) -> void:
 	if not is_visible_in_tree() or profile == null:
+		return
+	if event is InputEventKey and event.echo:
 		return
 	var escape: bool = event is InputEventKey and event.pressed and event.physical_keycode == KEY_ESCAPE
 	if event.is_action_pressed(&"ui_cancel") or escape:
