@@ -11,7 +11,7 @@ use std::path::Path;
 use std::sync::atomic::Ordering;
 use tauri::{AppHandle, State};
 
-const ISSUES_URL: &str = "https://github.com/J3vb/Experiment-Undead/issues";
+const ISSUES_URL: &str = "https://github.com/J3vb/Fenlight/issues";
 
 #[derive(Serialize)]
 pub struct Disk {
