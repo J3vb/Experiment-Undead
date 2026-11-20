@@ -52,9 +52,14 @@ func apply_frame(frame: InputFrame, delta: float) -> void:
 	set_held(frame.has(InputFrame.INTERACT))
 	if is_instance_valid(_requested) and can_revive(_requested):
 		_local_elapsed += delta
-		progress = minf(_local_elapsed / HOLD_TIME, 1.0)
+		progress = minf(_local_elapsed / hold_time(), 1.0)
 	else:
 		progress = 0.0
+
+
+## Seconds this player needs to revive someone; Undying and the Fast revive affix shorten it.
+func hold_time() -> float:
+	return HOLD_TIME / maxf(_player.get_stat(&"fast_revive"), 0.01)
 
 
 func set_held(held: bool) -> void:
@@ -115,7 +120,7 @@ func _physics_process(delta: float) -> void:
 		_notify_rejected(target_id)
 		return
 	_elapsed += delta
-	if _elapsed < HOLD_TIME:
+	if _elapsed < hold_time():
 		return
 	var revived: Player = _active
 	_begin(null)
