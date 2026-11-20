@@ -24,9 +24,7 @@ var _squad: SquadCards
 @onready var round_label: Label = $Root/RoundInfo/RoundLabel
 @onready var points_label: Label = $Root/Loadout/PointsLabel
 @onready var points_delta: Label = $Root/Loadout/PointsDelta
-@onready var ammo_label: Label = $Root/Loadout/Ammo/AmmoLabel
 @onready var weapon_label: Label = $Root/Loadout/WeaponLabel
-@onready var reserve_label: Label = $Root/Loadout/Ammo/ReserveLabel
 @onready var exfil_box: PanelContainer = $Root/ExfilBox
 @onready var exfil_title: Label = $Root/ExfilBox/Box/Title
 @onready var exfil_bar: ProgressBar = $Root/ExfilBox/Box/Hold
@@ -195,10 +193,7 @@ func _on_points_changed(player: Player, total: int, delta: int) -> void:
 func _on_ammo_changed(player: Player, in_mag: int, reserve: int) -> void:
 	if player != _player:
 		return
-	ammo_label.text = str(in_mag)
-	reserve_label.text = "/ %d" % reserve
 	var low: bool = _player.weapons.current and in_mag <= _player.weapons.current.data.magazine_size / 4
-	ammo_label.modulate = BLOOD_RED if low else OFF_WHITE
 	if in_mag == 0 and reserve == 0:
 		hint_label.text = "NO AMMO"
 	elif low and reserve > 0:

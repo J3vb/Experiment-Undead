@@ -183,7 +183,7 @@ Follows the design doc table. Additions (the concept art on 2026-11-17 added the
 - **Top right:** an objective list (exfil steps, map events, pinned contracts with a count, done ones ticked and struck through), then squad cards (name, health bar, down state with bleed-out timer).
 - **Bottom left:** the Serum slots in one row, and under it the vitals panel from the 2026-11-20 HUD concept ([hud_concept.jpg](concepts/screens/hud_concept.jpg)): an angled dark panel with a health cross and a 5-segment health bar (each segment a fifth of max health, red under 30%), and a runner with the sprint bar (orange while sprint cools down). The red vignette under 40 HP stays. Field ability icon and Pack count come with their features.
 - **Bottom centre:** power-up timers, and a small item drop feed ("Rare Talon DMR" in rarity colour) that fades after 4 s.
-- **Bottom right:** points, then the grenade and tactical slots (icon, count, key G and Q) next to the ammo panel (gun name with rarity shape, magazine big, reserve small).
+- **Bottom right:** points, the gun name small, then the weapon panel from the 2026-11-20 HUD concept: an angled dark panel with a white gun-class silhouette, magazine big (orange at a quarter, red when empty) and reserve small ("30 / 210"), a divider, and the frag icon with its count and key. The tactical slot joins it with its feature.
 - **Exfil:** from round 10, every 5 rounds, a marker and a 60 s hold bar appear at the top centre.
 - **Not taken from the concept:** a minimap (Halcyon Labs is small; later if a bigger map needs it), armour and medkits (the game has neither), and a zombies-remaining count.
 
