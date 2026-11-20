@@ -135,7 +135,8 @@ func _receive_hello(peer_id: int, hello_data: Dictionary) -> void:
 func _admit(peer_id: int, hello_data: Dictionary) -> void:
 	var level: Variant = hello_data.get("level")
 	if not (level is float or level is int) or not is_finite(float(level)):
-		return
+		Log.warn(&"net", &"hello_bad_level", {"peer": peer_id, "level": str(level)})
+		level = 1
 	_levels[peer_id] = clampi(int(level), 1, 50)
 	_names[peer_id] = CharacterProfile.clean_name(str(hello_data.get("name", "")))
 	_accepted[peer_id] = true

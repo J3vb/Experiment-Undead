@@ -9,8 +9,10 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::time::{Duration, Instant};
 
-/// Same as `Net.DEFAULT_PORT` and `Net.MAX_PLAYERS` in the game.
+/// Same as `Net.DEFAULT_PORT`, `PortOpener.MAX_PORT` and `Net.MAX_PLAYERS` in the game.
 pub const DEFAULT_PORT: u16 = 7777;
+/// The server browser asks game port + 1000, which must fit in 65535 too.
+pub const MAX_PORT: u16 = 64535;
 pub const MAX_PLAYERS: u8 = 8;
 pub const LOG_FILE: &str = "server.log";
 /// The game quits with this after draining: restart it on the newer version.
@@ -19,13 +21,13 @@ const STOP_FILE: &str = "server.stop";
 const DRAIN_FILE: &str = "server.drain";
 
 /// The game's command line for a headless server on `port` for at most `max_players`
-/// (clamped to 1-8), quitting when `stop_file` appears and draining when `drain_file` does.
+/// (port clamped to 1-`MAX_PORT`, players to 1-8), quitting when `stop_file` appears and draining when `drain_file` does.
 pub fn server_args(port: u16, max_players: u8, stop_file: &Path, drain_file: &Path) -> Vec<String> {
     vec![
         "--headless".into(),
         "--".into(),
         "--server".into(),
-        format!("--port={}", port.max(1)),
+        format!("--port={}", port.clamp(1, MAX_PORT)),
         format!("--max-players={}", max_players.clamp(1, MAX_PLAYERS)),
         format!("--stop-file={}", stop_file.display()),
         format!("--drain-file={}", drain_file.display()),

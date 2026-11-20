@@ -221,6 +221,15 @@ def check_ui_router_only(root: Path) -> list[str]:
     ]
 
 
+def check_content_has(root: Path) -> list[str]:
+    return [
+        problem(path, number, "content-has", "use Content.has(type, id); see docs/CODE_RULES.md")
+        for path, lines in text_files(root, GAME_DIRS, (".gd",))
+        for number, line in enumerate(lines, 1)
+        if re.search(r"\bContent\s*\.\s*ids\s*\([^)]*\)\s*\.\s*has\s*\(", code(line))
+    ]
+
+
 def check_no_absolute_paths(root: Path) -> list[str]:
     errors = []
     for path, lines in text_files(root, GAME_DIRS, (".gd",)):
@@ -517,6 +526,7 @@ RULES = [
     check_rpc_rules,
     check_log_catalogue,
     check_decisions_short,
+    check_content_has,
 ]
 
 

@@ -271,3 +271,12 @@ they can take in the catalogue by hand.
 
 - Good: `Log.warn(&"net", &"join_failed", {...})` with a `net.join_failed` row.
 - Bad: a new `Log.warn` event with no row in `docs/LOGGING.md`.
+
+## 21. content-has
+
+Ask whether a content id exists with `Content.has(type, id)`, never
+`Content.ids(type).has(id)`: `ids()` builds a new array on every call and the
+two spellings drift apart. Game code only; tests are not checked.
+
+- Good: `if Content.has(&"weapons", id):`
+- Bad: `if Content.ids(&"weapons").has(id):`

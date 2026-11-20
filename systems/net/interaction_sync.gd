@@ -178,7 +178,7 @@ func grant(player: Player, kind: Grant, data: WeaponData, from_id: StringName, f
 @rpc("authority", "call_remote", "reliable")
 func _receive_grant(kind: int, weapon_id: StringName, from_id: StringName, from_slot: int) -> void:
 	var player: Player = session.players.find_player(multiplayer.get_unique_id())
-	if player and Content.ids(&"weapons").has(weapon_id):
+	if player and Content.has(&"weapons", weapon_id):
 		apply_grant(player, kind as Grant, Content.weapon(weapon_id), from_id, from_slot)
 	_grant_applied.rpc_id(1)
 

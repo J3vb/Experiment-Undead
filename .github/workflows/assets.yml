@@ -5,6 +5,7 @@ on:
     paths:
       - "tools/assets/**"
       - "assets/models/**"
+      - "assets/textures/**"
       - ".github/workflows/assets.yml"
 
 jobs:

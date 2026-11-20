@@ -103,6 +103,7 @@ The server also prints every warning and error to stdout as
 | `game.game_over` | info | Final stats |
 | `net.peer_connected` / `peer_disconnected` | info | Server side, peer id |
 | `net.join_refused` | info | Client side: the server refused the hello (`reason`: `WRONG_VERSION`, `CONTENT_MISMATCH`, `SERVER_FULL`, `SERVER_UPDATING`, or `REFUSED` for a code from a newer server; `older`: `client`, `server` or empty for dev builds; `message`, `client_protocol`, `server_protocol`). `older` says which side to update |
+| `net.hello_bad_level` | warn | Server side: a matching hello had no number in `level` (`peer`, `level`); the player joins at level 1 instead of timing out. A broken or edited client build |
 | `net.join_failed` | warn | Client side: the pending join could not start (`error`, a Godot error string), so the game goes back to the main menu. Usually a bad address or a port the OS would not open |
 | `net.connection_lost` | warn | Client side: the server disconnected, the connection failed or the server refused authentication. Run XP is banked and the game goes back to the main menu. Look at the server's log for the same time |
 | `server.drain_started` | info | A dedicated server saw its drain file (`--drain-file=` / `EU_DRAIN_FILE`): a newer release is installed (`place`, `players`). A match plays on; the hub refuses new players with `SERVER_UPDATING` |
@@ -113,6 +114,8 @@ The server also prints every warning and error to stdout as
 | `net.interaction_rejected` | warn | Server refused a client's interact request (`peer`, `reason`, `path`): `player_not_alive`, `match_over`, `unknown_path`, `out_of_range`, `grant_pending` (last gun grant not applied yet), `bad_facts` (gun facts with wrong fields or ids). At most one per second. Many `out_of_range` = `InteractionSync.REACH_SLACK` too tight |
 | `net.deploy_refused` | warn | The hub's deploy vote or `deploy()` was refused (`place`, `reason` or `hub`): an unknown place id on a deploy board, or a deploy outside the hub. A board with a typo in `place` |
 | `net.place_change_kicked` | warn | A client was sent to another place but had not left after `Net.CONNECT_TIMEOUT`, so the server dropped it (`peer`). It never got the order: check the network |
+| `net.place_change_held` | info | Client side: the server changed place while this client shows the results screen (`place`); the connection closes quietly and "Back to hub" rejoins |
+| `net.match_reset` | info | Dedicated server went back to its start place with a fresh session (`reason`: `empty` after the last player left, or `game_over`; `place`) |
 | `net.place_changed` | info | The server changed place (`place`, `players` sent along) |
 | `net.port_busy` | warn | Enter world could not open the world's port (`port`), so the world runs offline and friends cannot join. Another game or server holds it: change the port in Settings > Network |
 | `net.upnp_opened` | info | The router opened the world's game and info ports (`port`) for an hour; renewed every 50 minutes while the game runs |

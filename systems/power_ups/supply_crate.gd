@@ -59,7 +59,7 @@ func check_facts(facts: Dictionary) -> bool:
 	if not (facts.get("held") is Array and facts.get("slot") is int):
 		return false
 	for id: Variant in facts.held:
-		if not (id is StringName and Content.ids(&"weapons").has(id)):
+		if not (id is StringName and Content.has(&"weapons", id as StringName)):
 			return false
 	return true
 
@@ -74,7 +74,7 @@ func net_state() -> Dictionary:
 func apply_net_state(net: Dictionary) -> void:
 	state = net.get("state", state)
 	var offer_id: StringName = net.get("offer", &"")
-	offer = Content.weapon(offer_id) if Content.ids(&"weapons").has(offer_id) else null
+	offer = Content.weapon(offer_id) if Content.has(&"weapons", offer_id) else null
 	opener_id = net.get("opener", 0)
 
 

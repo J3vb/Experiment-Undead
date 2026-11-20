@@ -30,6 +30,10 @@ var _empty_for: float = 0.0
 
 func _ready() -> void:
 	port = read_int_setting("port", "EU_PORT", Net.DEFAULT_PORT)
+	if not port_fits(port):
+		push_error("Port %d is outside 1-%d: the server browser asks game port + 1000" % [port, PortOpener.MAX_PORT])
+		get_tree().quit(1)
+		return
 	max_players = clampi(read_int_setting("max-players", "EU_MAX_PLAYERS", Net.MAX_PLAYERS), 1, Net.MAX_PLAYERS)
 	var err: Error = Net.host(port, max_players)
 	if err != OK:
@@ -109,6 +113,10 @@ func _return_later(reason: StringName, delay: float) -> void:
 		return
 	Log.info(&"net", &"match_reset", {"reason": reason, "place": String(start_place)})
 	Net.change_place(start_place)
+
+
+static func port_fits(at_port: int) -> bool:
+	return at_port >= 1 and at_port <= PortOpener.MAX_PORT
 
 
 ## Command line (--port=7777, after "--") wins over the environment variable.
