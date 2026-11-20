@@ -1,5 +1,6 @@
 ## Server power-up effects in solo: Overkill makes every hit kill for 30 s, Stasis stops
 ## zombies alive at pickup for 8 s, and neither mixes badly with Cryo or Synapse hits.
+## Purge kills every zombie with no kill credit; Scrap Kit rebuilds every barricade.
 extends GutTest
 
 const WALKER: EnemyData = preload("res://content/enemies/zombie_walker.tres")
@@ -9,6 +10,9 @@ const SYNAPSE: WeaponData = preload("res://content/weapons/synapse.tres")
 const RIFLE: WeaponData = preload("res://content/weapons/rifle_ar.tres")
 const OVERKILL: PowerUpData = preload("res://content/power_ups/overkill.tres")
 const STASIS: PowerUpData = preload("res://content/power_ups/stasis.tres")
+const PURGE: PowerUpData = preload("res://content/power_ups/purge.tres")
+const SCRAP_KIT: PowerUpData = preload("res://content/power_ups/scrap_kit.tres")
+const BARRIER: PackedScene = preload("res://systems/interactables/barrier.tscn")
 
 var session: GameSession
 var drops: PowerUpDrops
@@ -134,3 +138,44 @@ func test_power_up_effects_stasis_ignores_dead_zombies() -> void:
 	assert_true(alive.stasis)
 	PowerUpEffects.set_stasis(session.spawner, false)
 	assert_false(alive.stasis)
+
+
+func _collect(data: PowerUpData) -> void:
+	drops._spawn(data, Vector3(5, 0, 5)).collect(player)
+
+
+func test_purge_kills_every_live_zombie_without_kill_credit() -> void:
+	var zombies: Array[Zombie] = [_zombie(20), _zombie(20, Vector3(2, 0, -6)), _zombie(20, Vector3(-2, 0, -6))]
+	player.wallet.set_points(0)
+	watch_signals(Events)
+	_collect(PURGE)
+	for zombie: Zombie in zombies:
+		assert_true(zombie.health.is_dead, "every zombie dies")
+	assert_signal_emit_count(Events, "enemy_killed", 3)
+	assert_null((get_signal_parameters(Events, "enemy_killed")[1] as DamageInfo).attacker, "nobody gets the kill")
+	assert_eq(player.wallet.points, PURGE.team_points, "only the +400, no kill points")
+	assert_eq(session.progression.get_xp(player), 0, "no XP")
+	assert_eq(PURGE.team_points, 400)
+
+
+func test_purge_kills_roll_no_power_up_drops() -> void:
+	drops.drop_chance = 1.0
+	_zombie()
+	drops.dropped_this_round = 0
+	_collect(PURGE)
+	assert_eq(drops.dropped_this_round, 0)
+
+
+func test_scrap_kit_rebuilds_every_barricade_and_pays_the_team() -> void:
+	var broken: Barrier = BARRIER.instantiate() as Barrier
+	var half: Barrier = BARRIER.instantiate() as Barrier
+	session.level.add_child(broken)
+	session.level.add_child(half)
+	broken._set_planks(0)
+	half._set_planks(3)
+	player.wallet.set_points(0)
+	_collect(SCRAP_KIT)
+	assert_eq(broken.planks, Barrier.PLANKS)
+	assert_eq(half.planks, Barrier.PLANKS)
+	assert_eq(player.wallet.points, 200)
+	assert_eq(SCRAP_KIT.team_points, 200)

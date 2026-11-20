@@ -19,6 +19,14 @@ func before_each() -> void:
 	player = session.get_players()[0]
 
 
+func _live_grenades() -> int:
+	var live: int = 0
+	for child: Node in session.get_children():
+		if child is Grenade and not child.is_queued_for_deletion():
+			live += 1
+	return live
+
+
 func test_a_frag_kills_a_shambler_and_pays_the_thrower() -> void:
 	var zombie: Zombie = session.spawner.spawn(WALKER, 1, session.wave_rules)
 	zombie.set_physics_process(false)
@@ -27,9 +35,9 @@ func test_a_frag_kills_a_shambler_and_pays_the_thrower() -> void:
 	await wait_physics_frames(2)
 	var points: int = player.wallet.points
 	player.grenades.fuse_left = 0.4
-	var grenade: WeakRef = weakref(player.grenades.throw(Vector3.ZERO))
+	player.grenades.throw(Vector3.ZERO)
 	assert_eq(player.grenades.count, 1)
-	await wait_until(func() -> bool: return grenade.get_ref() == null, 3.0, "the frag went off")
+	await wait_until(func() -> bool: return _live_grenades() == 0, 3.0, "the frag went off")
 	assert_true(zombie.health.is_dead, "a frag at 2 m kills a round-1 Shambler")
 	assert_gt(player.wallet.points, points, "the kill pays the thrower")
 	assert_true(player.is_alive(), "the thrower survives their own frag")

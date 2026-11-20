@@ -65,6 +65,13 @@ func tear_plank() -> void:
 		($TearSound as AudioStreamPlayer3D).play()
 
 
+## Server: back to full planks (Scrap Kit); clients get the planks through InteractionSync.
+func rebuild() -> void:
+	if planks < PLANKS:
+		_set_planks(PLANKS)
+		($RepairSound as AudioStreamPlayer3D).play()
+
+
 func is_broken() -> bool:
 	return planks == 0
 

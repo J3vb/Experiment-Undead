@@ -147,3 +147,25 @@ func test_ammo_pack_adds_one_magazine_to_every_gun() -> void:
 	pack.collect(player)
 	for weapon: Weapon in player.weapons.weapons:
 		assert_eq(weapon.instance.ammo_reserve, weapon.data.magazine_size)
+
+
+func test_purge_mid_round_never_stalls_the_round() -> void:
+	session.director.set_physics_process(false)
+	session.director.round_number = 1
+	session.director.phase = WaveDirector.Phase.SPAWNING
+	session.loot.drop_chance_override = 1.0
+	var walker: EnemyData = Content.get_item(&"enemies", &"zombie_walker") as EnemyData
+	for i: int in 2:
+		session.spawner.spawn(walker, 1, session.director.rules)
+	watch_signals(Events)
+	drops._spawn(Content.get_item(&"power_ups", &"purge") as PowerUpData, Vector3(40, 0, 40)).collect(player)
+	assert_eq(session.spawner.alive_count(), 0, "Purge killed both")
+	assert_signal_not_emitted(Events, "loot_dropped", "no loot from Purge kills")
+	await wait_physics_frames(2)
+	assert_signal_not_emitted(Events, "round_ended", "more zombies still to come")
+	var last: Zombie = session.spawner.spawn(walker, 1, session.director.rules)
+	session.director.phase = WaveDirector.Phase.CLEARING
+	last.health.take_damage(DamageInfo.create(last.health.current + 1.0, player))
+	await wait_physics_frames(2)
+	assert_signal_emitted_with_parameters(Events, "round_ended", [1])
+	assert_eq(session.director.total_kills, 3, "Purge kills still count for the round")

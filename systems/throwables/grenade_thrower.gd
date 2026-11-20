@@ -42,10 +42,10 @@ func can_act() -> bool:
 	return _player.input_enabled and _player.is_alive() and not _player.is_downed and not (session and session.is_over)
 
 
-## Nobody throws in co-op until the request path exists (docs/plans/frag-grenades.md step 2).
+## A client checks its synced count; the server checks again (GrenadeClaims).
 func can_start() -> bool:
 	var in_hub: bool = _player.session != null and _player.session.is_hub
-	return count > 0 and not in_hub and can_act() and not Net.is_coop(multiplayer)
+	return count > 0 and not in_hub and can_act()
 
 
 func _cook(held: bool, delta: float) -> void:
@@ -65,16 +65,21 @@ func throw_velocity() -> Vector3:
 
 
 ## Throws with the fuse that is left; a zero velocity drops it where the player stands.
-func throw(velocity: Vector3) -> Grenade:
+## In a session the throw goes through GrenadeClaims, which owns the count; alone it is direct.
+func throw(velocity: Vector3) -> void:
 	cooking = false
-	count = maxi(count - 1, 0)
 	_player.weapons.lower(data.recover_time)
-	var parent: Node = _player.session if _player.session else _player.get_parent()
-	var grenade: Grenade = Grenade.spawn(
-		parent, data, _player, hand_position(velocity == Vector3.ZERO), velocity, fuse_left
-	)
-	_publish()
-	return grenade
+	var origin: Vector3 = hand_position(velocity == Vector3.ZERO)
+	var claims: GrenadeClaims = _claims()
+	if claims:
+		claims.request_throw(_player, origin, velocity, fuse_left)
+		return
+	count = maxi(count - 1, 0)
+	Grenade.spawn(_player.get_parent(), data, _player, origin, velocity, fuse_left)
+
+
+func _claims() -> GrenadeClaims:
+	return _player.session.get_node_or_null(^"GrenadeClaims") as GrenadeClaims if _player.session else null
 
 
 ## In front of the eyes, pulled back if a wall is closer than that.

@@ -131,7 +131,9 @@ func _setup_shooting() -> void:
 	remote_shots.name = "RemoteShots"
 	interactions = InteractionSync.new()
 	deploy_vote = DeployVote.new()
-	for system: Node in [hit_claims, WellClaims.new(), loot, remote_shots, interactions, deploy_vote]:
+	for system: Node in [
+		hit_claims, WellClaims.new(), GrenadeClaims.new(), loot, remote_shots, interactions, deploy_vote
+	]:
 		system.set("session", self)
 		add_child(system)
 	(hud.get_node("Root/Pack") as PackOverlay).setup(loot)
