@@ -295,6 +295,11 @@ unauthenticated limit even with several servers on one home IP).
 
 ## Steps
 
+> 2026-11-20: the person asked for a separate launcher program. Steps 4-6 and 9 (the
+> built-in launcher, its installer, Host a server and launcher-hosted server updates) are
+> replaced by F-82 (`docs/plans/separate-launcher.md`, ADR 0018). Step 3 of F-82 removed
+> the launcher screen, ReleaseFeed and VersionInstaller from the game.
+
 Steps 1, 2, 4 and 7 do not depend on each other. Steps 1-5 must merge before
 Release v0.1.0 (F-11): whatever handshake, save layout and launcher v0.1.0
 ships with is what every later version has to read, and a v0.1.0 without the

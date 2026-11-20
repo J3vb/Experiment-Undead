@@ -61,23 +61,33 @@ static func _version_text(details: Dictionary) -> String:
 func show_error(reason: StringName, details: Dictionary = {}) -> void:
 	connecting = false
 	message_label.text = message_for(reason, details)
-	update_button.visible = can_update(reason, details, Build.version)
+	update_button.visible = can_update(reason, details, launcher_exe(OS.get_cmdline_args()))
 	action_button.text = "OK"
 	show()
 	action_button.grab_focus()
 
 
-## "Your game is older" in a release build: the launcher in the install folder can update it.
-static func can_update(reason: StringName, details: Dictionary, version: String) -> bool:
+## "Your game is older" and the game was started by the separate launcher, which can update it.
+static func can_update(reason: StringName, details: Dictionary, launcher: String) -> bool:
 	return (
-		reason == &"wrong_version" and details.get("older", "") == "client" and ReleaseFeed.is_release_version(version)
+		reason == &"wrong_version"
+		and details.get("older", "") == "client"
+		and not launcher.is_empty()
+		and FileAccess.file_exists(launcher)
 	)
 
 
-## Starts the install folder's copy, which opens the launcher and updates, and quits.
+## The launcher exe that started this game (--launcher-exe=<path>), or "".
+static func launcher_exe(args: PackedStringArray) -> String:
+	for arg: String in args:
+		if arg.begins_with("--launcher-exe="):
+			return arg.trim_prefix("--launcher-exe=")
+	return ""
+
+
+## Starts the launcher, which installs the newer version, and quits.
 func _restart_to_update() -> void:
-	var exe: String = VersionInstaller.root_dir().path_join(VersionInstaller.exe_name())
-	if OS.create_process(exe, PackedStringArray()) >= 0:
+	if OS.create_process(launcher_exe(OS.get_cmdline_args()), PackedStringArray()) >= 0:
 		get_tree().quit()
 
 
