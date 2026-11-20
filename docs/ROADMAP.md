@@ -78,7 +78,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-22 | Field abilities | #114 | F-20 | needed | M | Todo |
 | F-23 | Levelling pace check | #115 | F-20, F-22 | issue | S | Todo |
 | F-24 | Frag grenades | #119 | F-11 | needed | M | Todo |
-| F-25 | Mantle | #120 | F-11 | [needed](plans/mantle.md) | M | Planning |
+| F-25 | Mantle | #120 | F-11 | [ready](plans/mantle.md) | M | Ready |
 | F-26 | More power-ups in the drop deck | #118 | F-11 | needed | M | Todo |
 | F-27 | Crawler | #121 | F-24 | needed | M | Todo |
 | F-28 | Blackout rounds and Glowers | #122 | F-11 | needed | M | Todo |
