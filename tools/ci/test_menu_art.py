@@ -18,7 +18,7 @@ def load_script():
     return module
 
 
-@unittest.skipUnless(HAS_IMAGING, "needs pillow and numpy (pip install -r tools/assets/requirements.txt)")
+@unittest.skipUnless(HAS_IMAGING, "needs pillow and numpy (the quality job installs both)")
 class MenuArtTest(unittest.TestCase):
     def test_committed_pngs_match_the_script(self) -> None:
         from PIL import Image

@@ -282,9 +282,17 @@ func test_backdrop_drifts_and_snow_falls_unless_reduce_motion() -> void:
 	Settings.set_value(&"accessibility", &"reduce_motion", false)
 	menu._process(5.0)
 	assert_true(menu.snow.emitting)
+	assert_true(menu.snow.visible)
 	assert_ne(menu.backdrop.offset_left, 0.0, "the backdrop drifts")
 	Settings.set_value(&"accessibility", &"reduce_motion", true)
 	menu._process(5.0)
 	assert_false(menu.snow.emitting)
+	assert_false(menu.snow.visible, "flakes already falling are hidden too")
 	assert_eq(menu.backdrop.offset_left, 0.0)
 	assert_eq(menu.backdrop.offset_top, 0.0)
+
+
+func test_hovering_a_row_moves_focus_so_only_one_brush_shows() -> void:
+	menu.loadout_button.mouse_entered.emit()
+	assert_true(menu.loadout_button.has_focus())
+	assert_false(menu.enter_button.has_focus())

@@ -70,6 +70,8 @@ func _ready() -> void:
 	$Screens/Root.add_child(VersionLabel.new())
 	if backdrop.texture == null:
 		Log.warn(&"ui", &"menu_backdrop_missing", {"screen": "main_menu"})
+	for row: Button in menu.get_children().filter(func(node: Node) -> bool: return node is Button):
+		row.mouse_entered.connect(row.grab_focus)
 	enter_button.grab_focus()
 	if not Net.last_error.is_empty():
 		_show_error(Net.last_error["reason"], Net.last_error["details"])
@@ -118,6 +120,7 @@ static func parse_launch(args: PackedStringArray) -> Dictionary:
 func _process(delta: float) -> void:
 	var still: bool = Settings.get_value(&"accessibility", &"reduce_motion")
 	snow.emitting = not still
+	snow.visible = not still
 	if not still:
 		_drift_time += delta
 	var drift: Vector2 = (

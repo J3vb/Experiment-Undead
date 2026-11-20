@@ -8,7 +8,7 @@ The game has 15 screens in 3 places: the front end (before you join a server), t
 
 **Rules every screen follows**
 
-1. **Two clicks to play.** From the main menu, Enter World puts you in your own town with your last character; from the town, the Deploy Gate is the only way into a match.
+1. **Two clicks to play.** From the main menu, PLAY (formerly Enter World) puts you in your own town with your last character; from the town, the Deploy Gate is the only way into a match.
 2. **Easy to read.** Atkinson Hyperlegible by default (Lexend and OpenDyslexic as options), body text never below 24 px at 1080p, left-aligned, no italics, no long all-caps text, short labels. A text size slider scales every screen, not only the HUD.
 3. **The middle of the HUD stays empty.** Only the crosshair, hitmarkers and the interaction prompt live in the centre.
 4. **Colour always has a second signal.** Rarity has a colour, a shape, a name and pips (Common circle with 1 pip up to Prototype hazard triangle with 6). Low ammo turns orange and shows LOW. This keeps colour-blind players covered.
@@ -26,7 +26,7 @@ Two-way arrows are screens that open on top and close with Esc or B. The first-l
 
 ## UI style
 
-Menus look like containment-facility terminals: dark blue-black glass panels, thin teal-grey borders, and one bright accent per screen. Bio-green is for the experiment (Prototype loot, power-ups, the Vault) and for **one main action button per screen** (Enter World, Join Server, Select Character, the launcher's PLAY), as in the concept art (the person, 2026-11-17). Every other button, focus ring and selected row stays teal.
+Menus look like containment-facility terminals: dark blue-black glass panels, thin teal-grey borders, and one bright accent per screen. Bio-green is for the experiment (Prototype loot, power-ups, the Vault) and for **one main action button per screen** (Join Server, Select Character, the launcher's PLAY), as in the concept art (the person, 2026-11-17). Every other button, focus ring and selected row stays teal.
 
 **Front-end menus (concept art 2026-11-20, F-88).** The main menu and Loadout follow the newer menu art: the FENLIGHT logo (`assets/ui/fenlight_logo.png`, drawn by `tools/assets/menu_art.py`) top left, a left column of spaced capitals with no icons, and a burnt orange brush stroke behind the hovered or focused row (theme variation `MenuBrush` in `systems/ui/theme.tres`). These screens have no green main button and no teal bar; the rest of the front end keeps the older layout below until it is restyled.
 
