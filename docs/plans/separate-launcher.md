@@ -293,7 +293,7 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
 - [ ] The game exe never shows a launcher screen (step 3 test).
 - [ ] A player hosts and stops a server from the launcher, and it updates
   between matches (step 4 tests).
-- [ ] The launcher matches the concept (step 5, the person's sign-off).
+- [x] The launcher matches the concept (step 5, the person's sign-off, 2026-11-20).
 
 ## Risks
 
