@@ -190,9 +190,7 @@ def controls(m, receiver, metal, black, grey, green):
         g.slab("FrontPost", [(0.363, 0.10), (0.369, 0.10), (0.367, SIGHT_Z), (0.365, SIGHT_Z)], 0.003, metal),
     ]
     m.join_into(receiver, sights)
-    for side in (-1, 1):
-        strip = g.slab("Inlay", g.rounded(-0.15, 0.07, 0.11, 0.072, 0.0008), 0.001, metal, x=side * 0.039)
-        m.join_into(receiver, [g.mark_inlay(strip)])
+    g.add_inlays(m, receiver, g.rounded(-0.15, 0.07, 0.11, 0.072, 0.0008), 0.001, 0.039, metal)
 
 
 def build(m) -> None:

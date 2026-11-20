@@ -11,10 +11,7 @@ SIGHT_Z = 0.105
 
 def glow_zone(obj):
     """Keep ordinary surfaces unpainted and encode this Prototype emitter separately from rarity inlay."""
-    g.mark_inlay(obj)
-    for color in obj.data.color_attributes["Color"].data:
-        color.color[3] = 1 / 3
-    return obj
+    return g.paint(obj, 1 / 3)
 
 
 def receiver_parts(metal, black, grey):
