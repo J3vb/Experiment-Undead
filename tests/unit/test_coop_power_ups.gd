@@ -6,10 +6,21 @@ extends "res://tests/unit/coop_interaction_fixture.gd"
 const RESUPPLY: String = "res://content/power_ups/resupply.tres"
 const AMMO_PACK: String = "res://content/power_ups/ammo_pack.tres"
 const PAYDAY: String = "res://content/power_ups/payday.tres"
+const OVERKILL: PowerUpData = preload("res://content/power_ups/overkill.tres")
+const STASIS: PowerUpData = preload("res://content/power_ups/stasis.tres")
+const WALKER: EnemyData = preload("res://content/enemies/zombie_walker.tres")
+const WAVES: WaveRules = preload("res://content/waves/default_waves.tres")
+const RIFLE: WeaponData = preload("res://content/weapons/rifle_ar.tres")
 
 
 func port() -> int:
 	return 24715
+
+
+func make_side(side_name: String) -> GameSession:
+	var session: GameSession = CoopSide.make(self, side_name, [&"interactions", &"hit_claims"], build_level())
+	_sessions.append(session)
+	return session
 
 
 func before_each() -> void:
@@ -137,3 +148,33 @@ func test_late_joiner_gets_the_time_left() -> void:
 	var row: PowerUpTimers = late.hud.get_node(^"Root/PowerUpTimers") as PowerUpTimers
 	await wait_until(func() -> bool: return row.time_left(payday) > 0.0, 3.0, "the joiner asked for timers")
 	assert_almost_eq(row.time_left(payday), 18.0, 0.5, "the joiner's ring shows the time left, not a full one")
+
+
+func _zombie_pair(round_number: int) -> Array[Zombie]:
+	CoopSide.add_spawn_point(server, Vector3(0, 0, -4))
+	var zombie: Zombie = server.spawner.spawn(WALKER, round_number, WAVES)
+	zombie.set_physics_process(false)
+	zombie.position = Vector3(0, 0, -4)
+	zombie.state = Zombie.State.CHASING
+	var path: NodePath = NodePath(String(zombie.name))
+	await wait_until(func() -> bool: return client.spawner.has_node(path), 3.0, "zombie replicated")
+	return [zombie, client.spawner.get_node(path) as Zombie]
+
+
+func test_a_client_sees_stasis_and_its_ice() -> void:
+	var pair: Array[Zombie] = await _zombie_pair(1)
+	_drops(server).start_timer(STASIS)
+	await wait_until(func() -> bool: return pair[1].stasis, 3.0, "stasis synced")
+	var mesh: MeshInstance3D = pair[1].visual.find_children("*", "MeshInstance3D", true, false)[0]
+	assert_not_null(mesh.material_overlay, "the client shows the ice")
+	_drops(server)._physics_process(STASIS.duration + 0.5)
+	await wait_until(func() -> bool: return not pair[1].stasis, 3.0, "stasis end synced")
+
+
+func test_a_clients_hit_claim_kills_under_overkill() -> void:
+	var pair: Array[Zombie] = await _zombie_pair(20)
+	_drops(server).start_timer(OVERKILL)
+	var claims: HitClaims = client.hit_claims
+	claims.claim_hit.rpc_id(1, pair[0].name, DamageInfo.Zone.BODY, RIFLE.damage, RIFLE.id, pair[0].global_position)
+	await wait_until(func() -> bool: return pair[0].health.is_dead, 3.0, "one claimed body shot killed")
+	assert_true(pair[0].health.is_dead)
