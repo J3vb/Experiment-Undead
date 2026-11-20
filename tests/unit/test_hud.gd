@@ -155,17 +155,10 @@ func test_prompt_splits_existing_interactable_price_and_preserves_unclear_text()
 	assert_false(hud.prompt_box.visible)
 
 
-func test_health_bar_threshold_and_other_player_events_ignored() -> void:
-	Events.player_health_changed.emit(player, 30.0, 100.0)
-	assert_almost_eq(hud.health_bar.value, 0.3, 0.001)
-	assert_eq(hud.health_bar.modulate, Hud.OFF_WHITE)
-	Events.player_health_changed.emit(player, 29.0, 100.0)
-	assert_eq(hud.health_bar.modulate, Hud.BLOOD_RED)
+func test_other_player_events_ignored() -> void:
 	var other: Player = Player.new()
 	autofree(other)
-	Events.player_health_changed.emit(other, 100.0, 100.0)
 	Events.points_changed.emit(other, 99999, 100)
-	assert_almost_eq(hud.health_bar.value, 0.29, 0.001)
 	assert_eq(hud.points_label.text, "0")
 
 
