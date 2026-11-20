@@ -93,6 +93,24 @@ func test_reopening_starts_on_weapons() -> void:
 	assert_eq(_visible_slot_ids(), [&"primary", &"sidearm"])
 
 
+func test_loadout_tabs_lists_all_five_and_opens_only_two() -> void:
+	assert_eq(LoadoutTabs.TABS.size(), 5)
+	assert_eq(screen.tabs.open_buttons().size(), 2)
+	assert_true(screen.tabs.button_for(&"serums").disabled)
+
+
+func test_character_stash_puts_items_with_a_missing_base_under_field_gear() -> void:
+	profile.stash[4] = _item("gone_from_content", "gone", "common")
+	var gear: Array[int] = CharacterStash.visible_indices(
+		profile, CharacterStash.Kind.GEAR, 0, CharacterStash.Order.RARITY
+	)
+	assert_true(gear.has(4))
+	var guns: Array[int] = CharacterStash.visible_indices(
+		profile, CharacterStash.Kind.WEAPONS, 0, CharacterStash.Order.RARITY
+	)
+	assert_false(guns.has(4))
+
+
 func _visible_slot_ids() -> Array[StringName]:
 	var ids: Array[StringName] = []
 	for button: Button in screen.slot_buttons:
