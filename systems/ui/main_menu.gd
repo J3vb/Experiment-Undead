@@ -42,6 +42,8 @@ var _panel_tween: Tween
 var _drift_time: float = 0.0
 ## Character waiting for the newer-save message to close before its screen opens.
 var _pending_profile: CharacterProfile
+## Hub scene loading in the background so PLAY and joins skip a cold load. Empty once collected.
+var _hub_path: String = ""
 
 @onready var menu: VBoxContainer = $Screens/Root/Menu
 @onready var enter_button: Button = $Screens/Root/Menu/EnterWorld
@@ -77,6 +79,8 @@ func _ready() -> void:
 	for row: Button in menu.get_children().filter(func(node: Node) -> bool: return node is Button):
 		row.mouse_entered.connect(row.grab_focus)
 	enter_button.grab_focus()
+	if get_tree().current_scene == self:
+		warm_hub()
 	if not Net.last_error.is_empty():
 		_show_error(Net.last_error["reason"], Net.last_error["details"])
 		Net.last_error.clear()
@@ -148,6 +152,18 @@ func _input(event: InputEvent) -> void:
 
 ## Your own Lantern Post: open to friends on the saved port, or offline when it cannot be
 ## (the pause screen says why). Nothing here joins anyone else's game.
+## The old menu kept the Halcyon Labs map loaded, which warmed the hub's shared files by accident.
+func warm_hub() -> void:
+	_hub_path = (Content.get_item(&"screens", &"hub") as ScreenData).scene
+	ResourceLoader.load_threaded_request(_hub_path)
+
+
+func _exit_tree() -> void:
+	if not _hub_path.is_empty():
+		ResourceLoader.load_threaded_get(_hub_path)
+		_hub_path = ""
+
+
 func enter_world() -> void:
 	Net.world.open(int(Settings.get_value(&"network", &"last_port")))
 	Net.place = &"hub"
