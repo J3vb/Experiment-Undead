@@ -23,7 +23,7 @@ func test_same_seed_produces_same_plain_dictionary_and_rng_state() -> void:
 		assert_eq(first.ilvl, 31)
 		assert_typeof(first.uid, TYPE_STRING)
 		if rarity == &"legendary":
-			assert_eq(first.trait[0], "tidewater")
+			assert_eq(ItemInstance.legendary_of(first).base_id, &"rifle_ar")
 			assert_between(float(first.trait[1]), 0.0, 1.0)
 		else:
 			assert_null(first.trait)
@@ -223,7 +223,10 @@ func test_gear_rolls_repeat_as_plain_item_dicts_without_implicit_ammo() -> void:
 			assert_eq(item.ilvl, 31)
 			assert_typeof(item.uid, TYPE_STRING)
 			assert_null(item.imp)
-			assert_null(item.trait)
+			if rarity == &"legendary" and not ItemRoller.legendaries_for(base.id).is_empty():
+				assert_eq(ItemInstance.legendary_of(item).base_id, base.id)
+			else:
+				assert_null(item.trait)
 			assert_null(item.set)
 			assert_eq(item.craft, {})
 			var saved: Dictionary = JSON.parse_string(JSON.stringify(item, "", true, true))

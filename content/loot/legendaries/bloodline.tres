@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="LegendaryData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/loot/legendary_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"bloodline"
+display_name = "Bloodline"
+base_id = &"kestrel_smg"
+stat = &"bloodline"
+text = "Below half health, hits heal {v}% of the damage dealt"
+low = 2.0
+high = 4.0
+step = 0.1
+flavour = "A field medic's gun, passed hand to hand at Lantern Post. It only keeps you going when you need it."

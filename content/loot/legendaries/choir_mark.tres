@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="LegendaryData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/loot/legendary_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"choir_mark"
+display_name = "Choir Mark"
+base_id = &"talon_dmr"
+stat = &"choir_mark"
+text = "Kills mark zombies within 6 m for 4 s: marked zombies take +{v}% damage from the squad"
+low = 15.0
+high = 25.0
+step = 1.0
+flavour = "Taken from a Cordon spotter who swore the Lit sing before they turn. Every kill with it marks the next voice."
