@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="Script" path="res://systems/ui/hud.gd" id="1"]
 [ext_resource type="Script" path="res://systems/net/coop_hud.gd" id="coop"]
@@ -25,6 +25,7 @@
 [ext_resource type="PackedScene" path="res://systems/ui/loot_feed.tscn" id="loot_feed"]
 
 [ext_resource type="Script" path="res://systems/ui/power_up_timers.gd" id="power_up_timers"]
+[ext_resource type="Script" path="res://systems/ui/grenade_slot.gd" id="grenade_slot"]
 
 [sub_resource type="FontVariation" id="round_bold"]
 base_font = ExtResource("round_font")
@@ -150,7 +151,7 @@ anchor_left = 0.7
 anchor_top = 1.0
 anchor_right = 0.975
 anchor_bottom = 1.0
-offset_top = -260.0
+offset_top = -296.0
 offset_bottom = -28.0
 grow_vertical = 0
 theme_override_constants/separation = 0
@@ -169,6 +170,12 @@ theme_type_variation = &"LabelMono"
 theme_override_font_sizes/font_size = 44
 text = "0"
 horizontal_alignment = 2
+
+[node name="GrenadeSlot" type="Control" parent="Root/Loadout"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("grenade_slot")
 
 [node name="WeaponLabel" type="Label" parent="Root/Loadout"]
 layout_mode = 2
