@@ -1,6 +1,6 @@
 # Plan: Skill effects
 
-Status: Building
+Status: Done
 Roadmap: F-20 / issue #113
 Phase: P5
 Size: M
@@ -337,12 +337,12 @@ allocation.
 
 ## Acceptance
 
-- [ ] Every skill in content/skills applies through the shared stat modifier stack (rule skills by id) - tests in `test_skill_effects.gd`
-- [ ] Each skill has a unit test on the stat or rule it changes
-- [ ] Respec (empty ranks) and a new loadout remove the effect - tested
-- [ ] A co-op client's ranks reach the server's copy and change server-side results - tested
-- [ ] Skills, gear and Serums stack and stop at the design caps - tested
-- [ ] Soak passes with no new warnings
+- [x] Every skill in content/skills applies through the shared stat modifier stack (rule skills by their `rule` value) - `tests/content/test_skills.gd`, `tests/unit/test_skill_effects.gd`
+- [x] Each skill has a unit test on the stat or rule it changes - `test_skill_effects.gd` (stats, gun fit), `test_skill_effects_play.gd` (Light Feet, Scrounger, Carpenter, Undying speed), `test_skill_rules.gd` (Last Stand, Undying, Bargain Hunter, Dead Center), `test_hit_claims.gd` (Execution Line), `test_specimen_vault.gd` (Bargain Hunter refund), `test_power_ups.gd` (Chain Supply). Overtime: `test_overtime_lengthens_the_collectors_timed_power_ups` (F-26's timers landed first, so step 5 wired it: the collector's seconds go on the team-wide timer). Gadgeteer and Sturdy: stat in the stack (`test_stat_only_for_later_features_still_sits_in_the_stack`); F-22 and F-24 read it.
+- [x] Respec (empty ranks) and a new loadout remove the effect - `test_respec_removes_every_skill_modifier`, `test_deep_pockets_raises_wall_gun_reserve_and_respec_puts_it_back`, `test_client_skill_ranks_reach_the_server_copy_and_respec_removes_them`
+- [x] A co-op client's ranks reach the server's copy and change server-side results - `test_gear_health_sync.gd`, `test_execution_line_from_a_client_kills_under_fifteen_percent_only`
+- [x] Skills, gear and Serums stack and stop at the design caps - `test_skills_stack_with_gear_and_stop_at_the_caps`, `test_serums_stack_on_top_of_the_caps`
+- [x] Soak passes with no new warnings - CI `soak` and `coop-soak` on the step PRs
 
 ## Risks
 
