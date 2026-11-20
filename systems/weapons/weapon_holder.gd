@@ -141,12 +141,18 @@ func cycle(direction: int) -> void:
 func swing() -> void:
 	if is_swapping():
 		return
+	lower(Melee.swing_time())
+	melee.swing()
+
+
+## Keeps the gun down and silent for seconds (knife swing, grenade cook): cancels a reload.
+func lower(seconds: float) -> void:
 	if current:
 		RoundReload.cancel(current)
 		current.trigger_held = false
-	_swap_time = Melee.swing_time()
-	_swap_left = _swap_time
-	melee.swing()
+	if seconds >= _swap_left:
+		_swap_time = seconds
+		_swap_left = seconds
 
 
 ## True while a freshly switched gun is still being raised.

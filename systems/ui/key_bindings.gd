@@ -11,6 +11,7 @@ const NAMES: Dictionary = {
 	&"sprint": "Sprint",
 	&"crouch": "Crouch",
 	&"reload": "Reload",
+	&"lethal": "Lethal (grenade)",
 	&"interact": "Interact, buy, repair",
 	&"weapon_next": "Next weapon",
 	&"weapon_prev": "Previous weapon",

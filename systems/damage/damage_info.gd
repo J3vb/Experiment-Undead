@@ -2,7 +2,7 @@
 class_name DamageInfo
 extends RefCounted
 
-enum Type { BULLET, MELEE }
+enum Type { BULLET, MELEE, EXPLOSIVE }
 enum Zone { BODY, HEAD, LIMB }
 
 var amount: float = 0.0

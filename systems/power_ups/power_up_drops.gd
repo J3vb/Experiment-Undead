@@ -73,6 +73,8 @@ func on_collected(pickup: PowerUp, collector: Player) -> void:
 	if pickup.data.effect == PowerUpData.Effect.RESUPPLY:
 		targets = session.get_players()
 	for player: Player in targets:
+		if pickup.data.effect == PowerUpData.Effect.RESUPPLY:
+			player.grenades.refill()
 		if player.net_id == multiplayer.get_unique_id():
 			PowerUp.apply_effect(player, pickup.data)
 		elif multiplayer.get_peers().has(player.net_id):
