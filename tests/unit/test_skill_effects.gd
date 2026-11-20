@@ -139,15 +139,35 @@ func test_deep_pockets_counts_once_on_an_item_gun() -> void:
 	assert_eq(weapon.data.max_reserve, 360, "fitted by the item only, not by the holder again")
 
 
-func test_all_damage_gear_leaves_wall_gun_damage_alone() -> void:
+func test_all_damage_gear_raises_wall_gun_damage_and_taking_it_off_puts_it_back() -> void:
 	var vest: Dictionary = {
 		"v": 1, "uid": "vest", "base": "vest_medium", "rar": "rare", "ilvl": 30, "aff": [["all_damage", 5, 1.0]]
 	}
+	var base: WeaponData = Content.weapon(&"rifle_ar")
+	var rifle: Weapon = _wall_rifle()
 	ItemLoadout.apply(player, {"vest": vest})
-	assert_gt(player.stats.value(&"dmg_pct"), 1.0, "the vest does roll damage")
-	assert_eq(_wall_rifle().data.damage, Content.weapon(&"rifle_ar").damage)
+	assert_almost_eq(rifle.data.damage, base.damage * 1.06, 0.0001)
+	assert_almost_eq(rifle.data.min_damage, base.min_damage * 1.06, 0.0001)
+	ItemLoadout.apply_gear(player, {})
+	assert_eq(rifle.data.damage, base.damage)
 
 
 func test_a_player_without_gun_stats_holds_the_shared_content_gun() -> void:
 	_rank({&"thick_skin": 3})
 	assert_eq(_wall_rifle().data, Content.weapon(&"rifle_ar"))
+
+
+func test_a_wall_gun_given_while_wearing_mule_and_recoil_gear_is_fitted_and_refits_back() -> void:
+	var vest: Dictionary = {
+		"v": 1, "uid": "vest", "base": "vest_medium", "aff": [["mule", 5, 1.0], ["recoil_pct", 5, 1.0]]
+	}
+	ItemLoadout.apply(player, {"vest": vest})
+	var base: WeaponData = Content.weapon(&"rifle_ar")
+	var rifle: Weapon = _wall_rifle()
+	assert_gt(rifle.data.max_reserve, base.max_reserve)
+	assert_eq(rifle.instance.ammo_reserve, rifle.data.starting_reserve, "starts with the raised reserve")
+	assert_gt(rifle.data.starting_reserve, base.starting_reserve)
+	assert_lt(rifle.data.recoil.pattern[0].length(), base.recoil.pattern[0].length(), "smaller kicks")
+	ItemLoadout.apply_gear(player, {})
+	assert_eq(rifle.data.max_reserve, base.max_reserve)
+	assert_eq(rifle.data.recoil.pattern, base.recoil.pattern)

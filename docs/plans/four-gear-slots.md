@@ -1,6 +1,6 @@
 # Plan: Four new loot slots (headgear, gloves, backpack, boots)
 
-Status: Approved
+Status: Building
 Roadmap: F-71 / issue none (split out of F-70, docs/plans/player-gear-concept.md)
 Phase: P6
 Size: M

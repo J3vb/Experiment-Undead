@@ -132,9 +132,10 @@ func is_alive() -> bool:
 	return not health.is_dead
 
 
+## Server: gear damage reduction (capped, read as 1 + reduction) shrinks a copy of the hit.
 func take_damage(info: DamageInfo) -> void:
 	if multiplayer.is_server() and is_alive() and not (session and session.is_over):
-		health.take_damage(info)
+		health.take_damage(info.scaled(2.0 - get_stat(&"damage_reduction")))
 
 
 ## Gear modifiers and the product of active Serum multipliers.
@@ -299,7 +300,6 @@ func _move(delta: float, frame: InputFrame) -> void:
 	speed *= lerpf(1.0, ads_speed_multiplier, weapons.get_ads_progress())
 	speed *= weapons.get_move_speed_multiplier()
 	speed *= get_stat(&"move_speed")
-
 	var wish: Vector3 = (transform.basis * Vector3(move_input.x, 0.0, move_input.y)).normalized() * speed
 	var horizontal: Vector3 = Vector3(velocity.x, 0.0, velocity.z)
 	var rate: float = air_accel

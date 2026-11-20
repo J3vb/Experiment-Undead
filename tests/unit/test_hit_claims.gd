@@ -310,3 +310,17 @@ func test_knife_claims_count_as_melee_within_reach() -> void:
 	var killed: Array = get_signal_parameters(Events, "enemy_killed")
 	assert_eq((killed[1] as DamageInfo).damage_type, DamageInfo.Type.MELEE)
 	assert_eq(claimant.wallet.points, before + 10 + 130, "hit points plus the melee kill")
+
+
+func test_wall_gun_claim_boosted_by_all_damage_gear_passes_only_while_worn() -> void:
+	var pair: Array[Zombie] = await _zombies()
+	var zombie: Zombie = pair[0]
+	var boosted: float = RIFLE.damage * RIFLE.head_multiplier * HitClaims.SLACK * 1.03
+	_claim(zombie.name, boosted)
+	await _flush_claims()
+	assert_eq(zombie.health.current, 100.0, "above the plain rifle's bound")
+	var vest: Dictionary = {"v": 1, "uid": "dmg_vest", "base": "vest_medium", "aff": [["all_damage", 5, 1.0]]}
+	claimant.equip_gear([vest])
+	_claim(zombie.name, boosted)
+	await wait_until(func() -> bool: return zombie.health.current < 100.0, 3.0, "boosted claim applied")
+	assert_lt(zombie.health.current, 100.0)

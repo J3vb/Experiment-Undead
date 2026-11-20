@@ -108,6 +108,8 @@ func claim_hit(
 	var weapon: WeaponData = _weapons.get(weapon_id)
 	if item and weapon:
 		weapon = item.weapon_data(weapon, player.stats)
+	elif weapon and weapon.slot != WeaponData.Slot.MELEE:
+		weapon = ItemInstance.fit_player_gun(weapon, player.stats)
 	if not _valid_hit(player, weapon, amount, point, impulse):
 		reject(sender, &"hit_out_of_bounds")
 		return

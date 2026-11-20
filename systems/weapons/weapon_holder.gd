@@ -44,7 +44,7 @@ func setup(player: Player, camera: Camera3D) -> void:
 
 
 ## Adds a gun. When every slot is full it replaces the gun in hand.
-## fit: give it the player's recoil and reserve stats; false for item guns, already fitted by their item.
+## fit: give it the player's damage, recoil and reserve stats; false for item guns, already fitted by their item.
 func give(data: WeaponData, fit: bool = true) -> Weapon:
 	if weapons.size() >= max_slots and current:
 		return replace(current, data, fit)
@@ -101,7 +101,8 @@ func equip(index: int) -> void:
 		current.trigger_held = false
 		current.aiming = false
 		current.ads_progress = 0.0
-		var swap: float = SWAP_TIME * (_player.get_stat(&"swap_time") if _player else 1.0)
+		var item_stats: StatBlock = weapons[index].item.stats if weapons[index].item else null
+		var swap: float = SWAP_TIME * (_player.get_stat(&"swap_time", 1.0, item_stats) if _player else 1.0)
 		if swap >= _swap_left:
 			_swap_time = swap
 			_swap_left = swap
