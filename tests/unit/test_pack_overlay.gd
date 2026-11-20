@@ -265,6 +265,7 @@ func test_equip_button_says_wear_for_gear_and_into_hands_for_guns() -> void:
 func test_character_view_has_one_box_per_gear_slot_above_the_pack_grid() -> void:
 	assert_true(overlay.character is PackCharacter)
 	assert_eq(overlay.character.slot_buttons.keys(), CharacterProfile.GEAR_SLOTS)
+	assert_eq(overlay.character.slot_buttons.size(), 7)
 	var box: Node = overlay.character.get_parent()
 	assert_lt(overlay.character.get_index(), overlay.slots[0].get_parent().get_index(), "Pack grid sits underneath")
 	assert_eq(box, overlay.slots[0].get_parent().get_parent())
@@ -305,3 +306,20 @@ func test_pack_slots_and_card_show_the_item_icon() -> void:
 	assert_eq(overlay.slots[0].icon, expected)
 	assert_eq(overlay.tooltip.icon.texture, expected)
 	assert_null(overlay.slots[1].icon, "an empty slot has no icon")
+
+
+func test_seven_gear_boxes_sit_in_two_columns() -> void:
+	var grid: GridContainer = overlay.character.get_node("%Slots") as GridContainer
+	assert_not_null(grid)
+	if grid == null:
+		return
+	assert_eq(grid.columns, 2)
+	assert_eq(grid.get_child_count(), 7)
+	overlay.set_open(true)
+	await wait_process_frames(2)
+	var lefts: Dictionary = {}
+	for button: Button in overlay.character.slot_buttons.values():
+		lefts[roundi(button.position.x)] = true
+	assert_eq(lefts.size(), 2, "boxes line up in two columns")
+	var boots: Button = overlay.character.slot_buttons[&"boots"]
+	assert_lt(boots.get_rect().end.y, overlay.character.size.y + 1.0, "the last box fits in the view")

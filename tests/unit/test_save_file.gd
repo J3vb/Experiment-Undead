@@ -4,7 +4,7 @@ const PATH: String = "user://test_save.json"
 
 
 func after_each() -> void:
-	for p: String in [PATH, PATH + ".tmp", PATH + ".v0.bak", PATH + ".v1.bak"]:
+	for p: String in [PATH, PATH + ".tmp", PATH + ".v0.bak", PATH + ".v1.bak", PATH + ".v2.bak"]:
 		if FileAccess.file_exists(p):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(p))
 
@@ -33,6 +33,14 @@ func test_unversioned_save_is_upgraded_and_backed_up() -> void:
 	assert_eq(int(data["xp"]), 5)
 	assert_eq(int(data[SaveFile.VERSION_KEY]), SaveFile.CURRENT_VERSION)
 	assert_true(FileAccess.file_exists(PATH + ".v0.bak"))
+
+
+func test_version_2_save_upgrades_to_3_unchanged_and_is_backed_up() -> void:
+	_write_raw('{"save_version": 2, "loadout": {"vest": {"uid": "v"}}, "best_runs": {}}')
+	var data: Dictionary = SaveFile.read(PATH)
+	assert_eq(int(data[SaveFile.VERSION_KEY]), 3)
+	assert_eq(data["loadout"], {"vest": {"uid": "v"}})
+	assert_true(FileAccess.file_exists(PATH + ".v2.bak"))
 
 
 func test_newer_save_is_refused() -> void:
@@ -72,7 +80,7 @@ func _step_add_b(d: Dictionary) -> Dictionary:
 func test_version_1_save_gains_empty_best_runs_and_keeps_its_fields() -> void:
 	_write_raw('{"save_version": 1, "id": "old", "total_xp": 400, "loadout": {}}')
 	var data: Dictionary = SaveFile.read(PATH)
-	assert_eq(int(data[SaveFile.VERSION_KEY]), 2)
+	assert_eq(int(data[SaveFile.VERSION_KEY]), SaveFile.CURRENT_VERSION)
 	assert_eq(data["best_runs"], {})
 	assert_eq(int(data["total_xp"]), 400)
 	assert_true(FileAccess.file_exists(PATH + ".v1.bak"))

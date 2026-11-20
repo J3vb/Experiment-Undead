@@ -3,7 +3,7 @@ class_name GearBaseData
 extends Resource
 
 @export var id: StringName = &""
-@export_enum("vest", "charm", "implant") var slot: String = "vest"
+@export_enum("vest", "charm", "implant", "headgear", "gloves", "backpack", "boots") var slot: String = "vest"
 @export var display_name: String = "Gear"
 @export var visual_id: StringName = &""
 @export var loot_tags: Array[StringName] = []

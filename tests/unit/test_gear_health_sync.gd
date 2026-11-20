@@ -139,7 +139,7 @@ func test_new_loadout_without_the_vest_drops_max_health() -> void:
 func test_malformed_loadouts_are_rejected_logged_and_change_nothing() -> void:
 	var before: int = Log.event_counts.get("net.loadout_rejected", 0)
 	client.loadout_sync.submit_loadout.rpc_id(1, ["vest"], [], {})
-	client.loadout_sync.submit_loadout.rpc_id(1, [_vest(), _vest(), _vest(), _vest()], [], {})
+	client.loadout_sync.submit_loadout.rpc_id(1, _all_seven() + [_piece("vest_light", [])], [], {})
 	client.loadout_sync.submit_loadout.rpc_id(1, [_vest()], [_gun("not_a_gun")], {})
 	await wait_until(
 		func() -> bool: return Log.event_counts.get("net.loadout_rejected", 0) == before + 3, 3.0, "all rejected"
@@ -180,6 +180,37 @@ func test_later_loadouts_only_cap_health_so_a_vest_swap_never_heals() -> void:
 	client.loadout_sync.send_loadout()
 	await wait_until(func() -> bool: return server.health.max_health == 140.0, 3.0, "vest back on")
 	assert_eq(server.health.current, 100.0, "the swap back did not heal")
+
+
+func _piece(base: String, affixes: Array) -> Dictionary:
+	return {"v": 1, "uid": "piece_" + base, "base": base, "rar": "rare", "ilvl": 30, "aff": affixes}
+
+
+func _all_seven() -> Array[Dictionary]:
+	var health: Array = [["test_max_health", 1, 1.0]]
+	var pieces: Array[Dictionary] = [_vest(), _piece("headgear_cap", health)]
+	for base: String in ["charm_coin", "implant_relay", "gloves_tactical", "backpack_pack", "boots_field"]:
+		pieces.append(_piece(base, []))
+	return pieces
+
+
+func test_client_with_all_seven_gear_slots_filled_reaches_the_server_copy() -> void:
+	client.loadout_sync.gear = _all_seven()
+	client.loadout_sync.send_loadout()
+	await wait_until(func() -> bool: return server.health.max_health == 180.0, 3.0, "vest and cap health on server")
+	assert_eq(server.loadout_sync.gear.size(), 7)
+	await wait_until(func() -> bool: return client.health.max_health == 180.0, 3.0, "owner sees it")
+
+
+func test_two_headgear_pieces_are_rejected() -> void:
+	var before: int = Log.event_counts.get("net.loadout_rejected", 0)
+	var second: Dictionary = _piece("headgear_cap", [])
+	second["uid"] = "second_cap"
+	client.loadout_sync.submit_loadout.rpc_id(1, [_piece("headgear_cap", []), second], [], {})
+	await wait_until(
+		func() -> bool: return Log.event_counts.get("net.loadout_rejected", 0) == before + 1, 3.0, "refused"
+	)
+	assert_true(server.loadout_sync.gear.is_empty())
 
 
 func test_two_pieces_for_one_slot_or_a_gun_as_gear_are_rejected() -> void:

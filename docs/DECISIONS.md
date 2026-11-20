@@ -55,6 +55,7 @@ Each says when to fix it.
 - **Co-op hit bounds** use Content weapon data, not the held inventory (weapon switching is local). Fix when: a server checks loadouts (P8).
 - **Loadout trust:** the server does not check that a client owns the gear it sends (friends-only servers). Fix when: public servers (P8). [item-effects-server](plans/item-effects-server.md)
 - **All-guns gear stats (F-71 step 1):** non-item guns get gear damage, recoil and reserve through F-20's `ItemInstance.fit_player_gun` and `ItemLoadout.refit_guns`, not a new `Weapon.refit`; swap time also reads the raised gun's own handling line. [four-gear-slots](plans/four-gear-slots.md)
+- **New slots before their pools (F-71 step 2):** the four new bases ship at `drop_weight` 0 with no affix pool or GearVisual: they equip, save and sync, but only drop after step 4 and show after F-70. [four-gear-slots](plans/four-gear-slots.md)
 - **Skill rules (provisional):** Execution Line checks health before the hit; Dead Center refunds a round to the gun in hand on any headshot kill; Undying works only without Second Wind and costs every Serum; Scrounger skips the revive reward. [skill-effects](plans/skill-effects.md)
 - **Skills waiting on their feature:** Gadgeteer and Sturdy only add their stat; Execution Line has no Brute rule. Overtime lengthens timed power-ups by the collector's seconds (team-wide timer). Fix when: F-22, F-24, F-30. [skill-effects](plans/skill-effects.md)
 - **Hold-to-buy** stays a tap. Fix when: accidental buys show in play-tests.
