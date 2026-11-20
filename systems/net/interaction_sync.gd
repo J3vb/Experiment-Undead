@@ -40,6 +40,11 @@ func _physics_process(delta: float) -> void:
 	_time += delta
 
 
+## An interactable made mid-match (a Supply Crate) sends its state changes like the map's own.
+func watch(target: Interactable) -> void:
+	target.state_changed.connect(_send_state.bind(target))
+
+
 ## Client side: ask the server to use focus for player.
 func request(player: Player, focus: Interactable) -> void:
 	request_interact.rpc_id(1, session.level.get_path_to(focus), focus.owner_facts(player))

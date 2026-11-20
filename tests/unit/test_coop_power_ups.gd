@@ -198,3 +198,59 @@ func test_purge_and_scrap_kit_reach_the_client() -> void:
 		func() -> bool: return on_client().wallet.points == on_server().wallet.points, 3.0, "team points synced"
 	)
 	assert_eq(on_server().wallet.points, 600, "+400 and +200 for the client player")
+
+
+func _crate(session: GameSession) -> SupplyCrate:
+	for node: Node in session.level.get_children():
+		if node is SupplyCrate and not node.is_queued_for_deletion():
+			return node as SupplyCrate
+	return null
+
+
+## Drops a Supply Crate pickup at (1, 0, 1), collects it on the server, waits for the client's crate.
+func _land_crate() -> void:
+	var pickup: PowerUp = await _drop("res://content/power_ups/supply_crate.tres", Vector3(1, 0, 1))
+	pickup.collect(on_server())
+	await wait_until(func() -> bool: return _crate(client) != null, 3.0, "crate reached the client")
+
+
+func test_a_client_opens_a_crate_and_takes_the_gun() -> void:
+	await _land_crate()
+	assert_eq(_crate(client).position, _crate(server).position)
+	assert_eq(_crate(server).pool, target(server, "Vault").get("pool"), "rolls the level Vault's guns")
+	client.interactions.request(on_client(), _crate(client))
+	await wait_until(func() -> bool: return _crate(client).state == SupplyCrate.State.ROLLING, 3.0, "rolling")
+	_crate(server)._timer = 0.0
+	await wait_until(func() -> bool: return _crate(client).state == SupplyCrate.State.OFFERING, 3.0, "offer")
+	var offer: WeaponData = _crate(server).offer
+	assert_eq(_crate(client).offer, offer)
+	assert_ne(_crate(client).get_prompt(on_client()), "", "the opener sees Take")
+	server.interactions._time += 1.0
+	client.interactions.request(on_client(), _crate(client))
+	await wait_until(func() -> bool: return on_client().weapons.weapons.size() == 1, 3.0, "gun granted")
+	assert_eq(on_client().weapons.current.data, offer)
+	await wait_until(func() -> bool: return _crate(client) == null, 3.0, "crate gone on the client")
+
+
+func test_a_late_joiner_sees_the_crate_and_cannot_take_its_gun() -> void:
+	await _land_crate()
+	client.interactions.request(on_client(), _crate(client))
+	await wait_until(func() -> bool: return _crate(server).state == SupplyCrate.State.ROLLING, 3.0, "rolling")
+	_crate(server)._timer = 0.0
+	late = make_side("InteractLate")
+	add_player(late, client_id)
+	_drops(late).session = late
+	_drops(late).setup(late.level)
+	await join(late)
+	var late_id: int = late.multiplayer.get_unique_id()
+	add_player(server, late_id)
+	add_player(client, late_id)
+	var other: Player = add_player(late, late_id)
+	await wait_until(func() -> bool: return _crate(late) != null, 3.0, "the joiner got the crate")
+	assert_eq(_crate(late).position, _crate(server).position, "where it landed")
+	await wait_until(func() -> bool: return _crate(late).state == SupplyCrate.State.OFFERING, 3.0, "late sees offer")
+	assert_eq(_crate(late).get_prompt(other), "", "not the opener")
+	late.interactions.request(other, _crate(late))
+	await wait_physics_frames(6)
+	assert_eq(_crate(server).state, SupplyCrate.State.OFFERING, "offer still waits for its opener")
+	assert_eq(other.weapons.weapons.size(), 0)
