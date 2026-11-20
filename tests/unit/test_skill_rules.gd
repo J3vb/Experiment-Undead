@@ -81,3 +81,37 @@ func test_bargain_hunter_vault_price() -> void:
 	assert_eq(vault.price(player), 950)
 	_rank({&"bargain_hunter": 1})
 	assert_eq(vault.price(player), 750)
+
+
+func _rifle_with(in_mag: int) -> Weapon:
+	var weapon: Weapon = player.weapons.give(Content.weapon(&"rifle_ar"))
+	weapon.instance.ammo_in_mag = in_mag
+	return weapon
+
+
+func test_dead_center_refunds_a_round_on_a_headshot_kill_only() -> void:
+	_rank({&"dead_center": 1})
+	var rifle: Weapon = _rifle_with(10)
+	Events.hit_confirmed.emit(player, true, true)
+	assert_eq(rifle.instance.ammo_in_mag, 11)
+	Events.hit_confirmed.emit(player, true, false)
+	Events.hit_confirmed.emit(player, false, true)
+	assert_eq(rifle.instance.ammo_in_mag, 11, "body kills and headshot hits refund nothing")
+
+
+func test_dead_center_never_overfills_and_needs_the_skill() -> void:
+	var rifle: Weapon = _rifle_with(10)
+	Events.hit_confirmed.emit(player, true, true)
+	assert_eq(rifle.instance.ammo_in_mag, 10, "no skill")
+	_rank({&"dead_center": 1})
+	rifle.instance.ammo_in_mag = rifle.data.magazine_size
+	Events.hit_confirmed.emit(player, true, true)
+	assert_eq(rifle.instance.ammo_in_mag, rifle.data.magazine_size)
+
+
+func test_dead_center_skips_the_server_copy_of_a_client() -> void:
+	_rank({&"dead_center": 1})
+	var rifle: Weapon = _rifle_with(10)
+	player.set_multiplayer_authority(7, false)
+	Events.hit_confirmed.emit(player, true, true)
+	assert_eq(rifle.instance.ammo_in_mag, 10)
