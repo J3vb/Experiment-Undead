@@ -47,3 +47,4 @@ change it), **replaced** (see the newer record).
 | [0015](0015-baked-player-body.md) | The player body may use baked texture maps | accepted |
 | [0016](0016-baked-town-npcs.md) | Town NPC bodies may use baked texture maps | accepted |
 | [0017](0017-tripo-models.md) | Models made in Tripo may go in assets/ | accepted |
+| [0019](0019-supplied-2d-menu-art.md) | Supplied painted art may go in assets/ui/ as menu backdrops | accepted |

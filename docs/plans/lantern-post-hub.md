@@ -22,6 +22,10 @@ between the two is in "Systems touched" and is the same in both plans.
 
 ## Scope
 
+The town look below (palisade walls, slate-roof houses, well, green gate sign)
+was superseded by F-74 ([lantern-post-concept.md](lantern-post-concept.md)):
+lodges, cabins and a concrete gate wall. The Deploy board and vote stand.
+
 In:
 
 - `levels/lantern_post/lantern_post.tscn`: a walled street with houses, lit
@@ -65,7 +69,7 @@ Not in (and where it goes):
   one? no
 - Co-op:
   - Who decides: server. The board's `interact()` runs only where
-    `Net.is_authority()` (InteractionSync); `DeployVote.toggle_ready()` is
+    `multiplayer.is_server()` (InteractionSync); `DeployVote.toggle_ready()` is
     server only and calls `deploy()` when everyone is ready.
   - How a client triggers it: presses interact on the board; InteractionSync
     sends the request, the server checks sender, range and rate (F-02) and

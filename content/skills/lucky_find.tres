@@ -15,3 +15,4 @@ requires = Array[StringName]([])
 branch_points_needed = 0
 stat = &"loot_luck"
 per_rank = 5.0
+op = "increased"

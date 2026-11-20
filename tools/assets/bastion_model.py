@@ -333,6 +333,4 @@ def build(m) -> None:
     m.join_into(bolt, [handle])
     m.attach(bolt, (0.043, -0.025, 0.018), body)
 
-    for side in (-1, 1):
-        inlay = g.slab("Inlay", g.rounded(-0.16, 0.057, 0.14, 0.059, 0.0008), 0.0008, metal, x=side * 0.0402)
-        m.join_into(body, [g.mark_inlay(inlay)])
+    g.add_inlays(m, body, g.rounded(-0.16, 0.057, 0.14, 0.059, 0.0008), 0.0008, 0.0402, metal)

@@ -182,7 +182,8 @@ Autoloads, managers or base classes added: none.
   on small dressing, `light_baking` 2 (Static Lightmaps), shadows from the bake.
 - Fenlight glow lights: Static bake mode (1), zero run-time cost.
 - Fires and new red lamps: no shadow, bake mode 0, distance fade 20 m (look
-  rules). At most 2 new real-time lights per room.
+  rules). At most 3 real-time lights per room (the shared cap in
+  `test_halcyon_atmosphere.gd`; the Mess Hall uses 3: `Stove`, `Pan` and the spark flash).
 - Mist: at most one FogVolume per room, only in Containment and the Labs
   research room. Particles stay under 400 per room, 1,500 per map.
 - Lightmap stays under the size budget in `test_map_has_baked_lightmaps_under_the_size_budget`.
@@ -262,7 +263,7 @@ the person on a decision card before the next step starts.
 - Built (2026-11-17): props `kitchen_line` (3.4 m, against the north wall
   between the corridor door and Second Wind), `overturned_table`,
   `vending_machine` (cracked `Screen` panel), `military_cases` (Corridor and
-  Dock), dressing `hanging_strip` (two in the Mess Hall, a spark spot under
+  Dock), dressing `hanging_strip` (one in the Mess Hall as built, `mess_strip_west`; a spark spot under
   the west one). Fires use a new shared `systems/effects/fire_spot.tscn`
   (flame and ember particles, an unshadowed orange light, FlickerLight):
   two on the stoves, and it replaces the truck wreckage's bare fire light so

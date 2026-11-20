@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="SerumData" format=3]
 
 [ext_resource type="Script" path="res://systems/serums/serum_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/hud/serum_deadeye.svg" id="icon"]
 
 [resource]
 script = ExtResource("1")
@@ -11,3 +12,4 @@ description = "Headshot damage +50%, aim 20% faster."
 multipliers = Dictionary[StringName, float]({&"head_damage": 1.5, &"ads_time": 0.8})
 badge = "DE"
 badge_colour = Color(0.458823529, 0.376470588, 0.494117647, 1)
+icon = ExtResource("icon")

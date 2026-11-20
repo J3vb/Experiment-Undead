@@ -11,7 +11,7 @@ signal place_changed(place: StringName)
 signal coop_changed(on: bool)
 
 ## Sent on the wire as ints: append only, never reorder.
-enum RefusalReason { WRONG_VERSION, CONTENT_MISMATCH, SERVER_FULL }
+enum RefusalReason { WRONG_VERSION, CONTENT_MISMATCH, SERVER_FULL, SERVER_UPDATING }
 
 const DEFAULT_PORT: int = 7777
 const MAX_PLAYERS: int = 8
@@ -25,6 +25,8 @@ var joining: bool = false
 var refusal_reason: int = -1
 var refusal_message: String = ""
 var player_limit: int = MAX_PLAYERS
+## What clients are told when this server closes: host_ended, or server_updating (drain).
+var end_reason: String = "host_ended"
 ## The screens id of the place this peer runs (hub, match). Empty when started outside the menu.
 var place: StringName = &""
 ## True from a place change order until the next host() or join(): the old session's
@@ -177,8 +179,7 @@ func _drop_leaving() -> void:
 	_leaving.clear()
 
 
-## Loads next on this peer. Online, the next session joins the same server again
-## (a listen host keeps its port open) when it starts.
+## Loads next on this peer. Online, the next session rejoins the same server when it starts.
 func go_to(next: StringName) -> void:
 	place = next
 	Log.info(&"net", &"go_to_place", {"place": String(next), "online": is_online()})
@@ -221,7 +222,7 @@ func _notify_host_ended() -> void:
 	var waiting: Array[ENetPacketPeer] = []
 	for peer_id: int in multiplayer.get_peers():
 		waiting.append(peer.get_peer(peer_id))
-	_host_ended_match.rpc()
+	_host_ended_match.rpc(end_reason)
 	peer.host.flush()
 	var until: int = Time.get_ticks_msec() + int(CONNECT_TIMEOUT * 1000.0)
 	while not waiting.is_empty() and Time.get_ticks_msec() < until:
@@ -332,8 +333,8 @@ func _record_error(reason: StringName, details: Dictionary) -> void:
 
 
 @rpc("authority", "reliable")
-func _host_ended_match() -> void:
-	_record_error(&"host_ended", {})
+func _host_ended_match(reason: String) -> void:
+	_record_error(StringName(reason), {})
 	leave()
 	multiplayer.server_disconnected.emit()
 

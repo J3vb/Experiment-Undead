@@ -7,6 +7,7 @@ static func apply(player: Player, loadout: Dictionary) -> void:
 	var gear: Array[Dictionary] = worn_gear(loadout)
 	player.loadout_sync.gear = gear
 	player.equip_gear(gear)
+	refit_guns(player, true)
 	var sidearm: Variant = loadout.get("sidearm")
 	if not sidearm is Dictionary:
 		return
@@ -21,12 +22,12 @@ static func apply(player: Player, loadout: Dictionary) -> void:
 	equip_weapon(player, ItemInstance.new(sidearm), null, replacing)
 
 
-## Mid-run swap: new gear stats without a heal, then held item guns pick up the new numbers.
+## Mid-run swap: new gear stats without a heal, then held guns pick up the new numbers.
 static func apply_gear(player: Player, loadout: Dictionary) -> void:
 	var gear: Array[Dictionary] = worn_gear(loadout)
 	player.loadout_sync.gear = gear
 	player.equip_gear(gear, false)
-	refit_item_guns(player)
+	refit_guns(player)
 
 
 static func worn_gear(loadout: Dictionary) -> Array[Dictionary]:
@@ -38,13 +39,20 @@ static func worn_gear(loadout: Dictionary) -> Array[Dictionary]:
 	return gear
 
 
-## Rebuilds each held item gun's numbers in place: same gun in hand, ammo kept (capped), no new pickup.
-static func refit_item_guns(player: Player) -> void:
+## Rebuilds each held gun's numbers in place: same gun in hand, ammo kept (capped), no new pickup.
+## Item guns refit from their item; other guns get the player's damage, recoil and reserve stats.
+## fresh (spawn): reserve restarts at the refitted starting reserve.
+static func refit_guns(player: Player, fresh: bool = false) -> void:
 	for weapon: Weapon in player.weapons.weapons:
-		if weapon.item == null:
+		if weapon.item:
+			var base: WeaponData = Content.weapon(StringName(weapon.item.data.get("base", "")))
+			weapon.instance.data = weapon.item.weapon_data(base, player.stats)
+		elif Content.has(&"weapons", weapon.data.id):
+			weapon.instance.data = ItemInstance.fit_player_gun(Content.weapon(weapon.data.id), player.stats)
+		else:
 			continue
-		var base: WeaponData = Content.weapon(StringName(weapon.item.data.get("base", "")))
-		weapon.instance.data = weapon.item.weapon_data(base, player.stats)
+		if fresh:
+			weapon.instance.ammo_reserve = weapon.instance.data.starting_reserve
 		weapon.instance.ammo_in_mag = mini(weapon.instance.ammo_in_mag, weapon.instance.data.magazine_size)
 		weapon.instance.ammo_reserve = mini(weapon.instance.ammo_reserve, weapon.instance.data.max_reserve)
 		weapon.ammo_changed.emit(weapon.instance.ammo_in_mag, weapon.instance.ammo_reserve)
@@ -58,7 +66,9 @@ static func equip_weapon(
 	var data: WeaponData = item.weapon_data(base, player.stats)
 	if replacing:
 		player.weapons.equip(player.weapons.weapons.find(replacing))
-	var weapon: Weapon = player.weapons.replace(replacing, data) if replacing else player.weapons.give(data)
+	var weapon: Weapon = (
+		player.weapons.replace(replacing, data, false) if replacing else player.weapons.give(data, false)
+	)
 	if carried:
 		weapon.instance.ammo_in_mag = mini(carried.ammo_in_mag, data.magazine_size)
 		weapon.instance.ammo_reserve = mini(carried.ammo_reserve, data.max_reserve)

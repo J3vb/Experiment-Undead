@@ -3,6 +3,17 @@ extends GutTest
 
 const ID: StringName = &"test_character_profile"
 const RULES: XpRules = preload("res://content/progression/xp_rules.tres")
+const EMPTY_LOADOUT: Dictionary = {
+	"primary": {},
+	"sidearm": {},
+	"vest": {},
+	"charm": {},
+	"implant": {},
+	"headgear": {},
+	"gloves": {},
+	"backpack": {},
+	"boots": {},
+}
 var _path: String = CharacterProfile.directory() + "test_character_profile.json"
 
 
@@ -45,7 +56,7 @@ func test_new_profile_has_60_empty_stash_slots_and_five_loadout_slots() -> void:
 	assert_eq(profile.stash.size(), 60)
 	for item: Dictionary in profile.stash:
 		assert_eq(item, {})
-	assert_eq(profile.loadout, {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}})
+	assert_eq(profile.loadout, EMPTY_LOADOUT)
 	profile.stash[0]["uid"] = "first"
 	profile.loadout["primary"]["uid"] = "equipped"
 	assert_eq(profile.stash[1], {})
@@ -85,7 +96,7 @@ func test_old_v1_save_defaults_to_empty_inventory_without_migration() -> void:
 	assert_eq(profile.stash.size(), 60)
 	for item: Dictionary in profile.stash:
 		assert_eq(item, {})
-	assert_eq(profile.loadout, {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}})
+	assert_eq(profile.loadout, EMPTY_LOADOUT)
 	assert_eq(profile.best_runs, {})
 	assert_eq(profile.save(), OK)
 	assert_eq(int(SaveFile.read(_path)["save_version"]), SaveFile.CURRENT_VERSION)
@@ -95,7 +106,7 @@ func test_legacy_empty_array_loadout_deserializes_without_changing_input() -> vo
 	var data: Dictionary = {"id": String(ID), "total_xp": 400, "loadout": []}
 	var profile: CharacterProfile = CharacterProfile.from_dict(data)
 	assert_eq(profile.total_xp, 400)
-	assert_eq(profile.loadout, {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}})
+	assert_eq(profile.loadout, EMPTY_LOADOUT)
 	assert_eq(data["loadout"], [])
 
 
@@ -123,7 +134,7 @@ func test_legacy_empty_array_save_keeps_xp_items_unknown_fields_and_can_save() -
 	assert_eq(int(saved["total_xp"]), int(data["total_xp"]) + 75)
 	assert_true(saved["future_flag"])
 	assert_eq(saved["stash"][0], before["stash"][0])
-	assert_eq(saved["loadout"], {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}})
+	assert_eq(saved["loadout"], EMPTY_LOADOUT)
 	assert_eq(int(saved["save_version"]), SaveFile.CURRENT_VERSION)
 
 
@@ -134,7 +145,7 @@ func test_legacy_v1_empty_loadout_array_keeps_xp_and_remains_saveable() -> void:
 	assert_eq(profile.stash.size(), 60)
 	for item: Dictionary in profile.stash:
 		assert_eq(item, {})
-	var empty_loadout: Dictionary = {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}}
+	var empty_loadout: Dictionary = EMPTY_LOADOUT
 	assert_eq(profile.loadout, empty_loadout)
 	var parsed: CharacterProfile = CharacterProfile.from_dict({"loadout": []})
 	assert_eq(parsed.loadout, empty_loadout)

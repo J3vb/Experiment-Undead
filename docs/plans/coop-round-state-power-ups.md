@@ -119,7 +119,8 @@ built-in MultiplayerSpawner child of PowerUpDrops (Keep it simple rule 8).
   - Pickups: `MultiplayerSpawner` spawn data `[pickup_id: int, data_id: StringName, position: Vector3]`,
     plus a spawn-only `MultiplayerSynchronizer` on each pickup that sends its current `age`
     whenever the pickup is spawned on a peer (also a late joiner, which gets the age at join time).
-  - `PowerUpDrops._receive_collected(data_id: StringName, collector_net_id: int, position: Vector3)` authority to all.
+  - `PowerUpDrops._receive_collected(pickup_name: String, data_id: StringName, collector_id: int)` authority to all
+    (as built: it sends the pickup's name and plays the sound from that node, not a position).
   - `PowerUpDrops._receive_effect(data_id: StringName)` authority to one owner.
 - Save format change: none.
 - Content checks to add in `tests/content/`: every power-up has a valid
@@ -228,18 +229,20 @@ frame is allocated. No measurable cost at 24 zombies and 4 players.
 
 ## Acceptance
 
-- [ ] A client sees the same round number, flashes and intermission as the host (step 1 test).
-- [ ] A late joiner sees the current round and live pickups (steps 1 and 2 tests).
-- [ ] Any player can collect a drop and the effect lands on the right players (step 2 test).
-- [ ] No content id literals left in `power_up.gd` (baseline shrinks).
-- [ ] Solo and the rounds 1-10 soak stay green.
+- [x] A client sees the same round number, flashes and intermission as the host (step 1 test). `tests/unit/test_coop_round_state.gd`, `test_hud.gd`.
+- [x] A late joiner sees the current round and live pickups (steps 1 and 2 tests). `test_coop_round_state.gd`, `test_coop_power_ups.gd`.
+- [x] Any player can collect a drop and the effect lands on the right players (step 2 test). `test_coop_power_ups.gd`, `test_health_watch.gd`.
+- [x] No content id literals left in `power_up.gd` (baseline shrinks). `tests/content/test_content.gd` power-up checks.
+- [x] Solo and the rounds 1-10 soak stay green. Required `soak` check.
 
 ## Risks
 
 - Client listeners of round events that assume the server. Step 1 checks each
   listener (list above) and puts the HealthWatch guard in the same PR.
 - Ordering between the despawn and the "collected" RPC. The collected message
-  carries data id and position, so it never needs the pickup node.
+  carries data id and position, so it never needs the pickup node. As built it
+  carries the pickup's name and plays the sound from that node; this works
+  because the RPC goes out before the pickup is freed.
 - A client freeing a replicated node breaks the spawner. Step 2 makes the
   client copy passive and tests the timeout path.
 

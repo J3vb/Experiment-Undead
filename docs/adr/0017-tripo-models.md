@@ -37,6 +37,8 @@ hand.
   done features until a plan moves them. F-83
   ([halcyon-machines-fill.md](../plans/halcyon-machines-fill.md)) moves the
   Halcyon Labs Med Dispenser, Reforger, power switch and exfil hatch.
+- The three v0.2 zombies (Glower, Stalker, Brute) are Tripo: `tripo_intake.py --kind zombie` puts them on our
+  skeleton with one `ZombieBaked` material ([blackout-glowers](../plans/blackout-glowers.md) step 1).
 - Input images may come from Tripo's own text to image (`tripo_make.py`, about
   5 credits each); the person approves them before any model is paid for.
 

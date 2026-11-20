@@ -148,17 +148,19 @@ def cut(obj, cutters: list):
     return obj
 
 
-def mark_inlay(obj):
-    """Marks the last-built strip with alpha zero, initializing this gun's unpainted meshes to alpha one."""
-    for part in bpy.context.scene.objects:
-        if part.type != "MESH" or part.data.color_attributes.get("Color") is not None:
-            continue
-        colors = part.data.color_attributes.new("Color", "FLOAT_COLOR", "CORNER")
-        for color in colors.data:
-            color.color = (1.0, 1.0, 1.0, 1.0)
-    for color in obj.data.color_attributes["Color"].data:
-        color.color[3] = 0.0
+def paint(obj, alpha: float):
+    """Gives only `obj` a white `Color` attribute with this alpha (0 = rarity inlay, 1 = plain).
+    `join_into` fills the parts it joins that have no colour with plain white, so build order does not matter."""
+    colors = obj.data.color_attributes.get("Color") or obj.data.color_attributes.new("Color", "FLOAT_COLOR", "CORNER")
+    for color in colors.data:
+        color.color = (1.0, 1.0, 1.0, alpha)
     return obj
+
+
+def add_inlays(m, target, outline: list, width: float, x: float, mat) -> None:
+    """Builds the two rarity inlay strips (side outline `outline`, at `-x` and `+x`) and joins them into `target`."""
+    strips = [paint(slab("Inlay", outline, width, mat, x=side * x), 0.0) for side in (-1, 1)]
+    m.join_into(target, strips)
 
 
 def marking(name: str, rect: tuple, x: float, side: int, region: str, mat, thick: float = 0.0004):

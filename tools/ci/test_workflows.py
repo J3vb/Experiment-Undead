@@ -81,7 +81,7 @@ class CoopSoakWorkflowTests(unittest.TestCase):
 
     def test_failed_runs_keep_every_process_log(self):
         self.assertIn("coop-soak/*.json", self.text)
-        self.assertIn("coop-soak/*/godot/app_userdata/Experiment Undead/logs/", self.text)
+        self.assertIn("coop-soak/*/godot/app_userdata/Fenlight/logs/", self.text)
 
 
 if __name__ == "__main__":
@@ -102,4 +102,24 @@ class LauncherWorkflowTests(unittest.TestCase):
     def test_checks_format_lint_tests_and_builds_on_windows(self):
         for command in ("cargo fmt --all --check", "-D warnings", "cargo test --workspace"):
             self.assertIn(command, self.text)
-        self.assertRegex(self.text, r"(?s)windows:\n\s+runs-on: windows-latest.*cargo build --release")
+        self.assertRegex(self.text, r"(?s)windows:\n\s+runs-on: windows-latest.*--bundles nsis")
+        self.assertIn('"/S"', self.text)
+        self.assertIn("uninstall.exe", self.text)
+
+
+class ReleaseLauncherTests(unittest.TestCase):
+    """Release tags build the signed launcher setup and attach it with its update manifest."""
+
+    def setUp(self):
+        self.text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
+
+    def test_publish_waits_for_the_launcher_and_attaches_everything(self):
+        self.assertRegex(self.text, r"publish:\n    needs: \[[^\]]*launcher")
+        self.assertIn("Fenlight-Setup-$version.exe", self.text)
+        self.assertIn("launcher_release.py manifest", self.text)
+        self.assertIn("--out dist/latest.json", self.text)
+        self.assertEqual(self.text.count("dist/* "), 2)
+
+    def test_signs_with_the_secret_and_stamps_the_version(self):
+        self.assertIn("secrets.TAURI_SIGNING_PRIVATE_KEY", self.text)
+        self.assertIn("launcher_release.py stamp", self.text)

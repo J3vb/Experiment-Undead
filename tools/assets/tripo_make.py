@@ -190,7 +190,7 @@ def fetch(api: Tripo, row: dict, family: str, files: str, save) -> float:
         save()
     task = api.wait(row["task_id"])
     credits += float(task.get("consumed_credit", 0)) if paid else 0.0
-    if row["kind"] == "character":
+    if row["kind"] in ("character", "zombie"):
         paid = not row.get("rig_task_id")
         if paid:
             row["rig_task_id"] = api.create(rig_task(row["task_id"]))

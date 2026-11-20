@@ -148,6 +148,10 @@ Autoloads, managers or base classes added: none.
 
 ## Performance
 
+Later change: F-75 and ADR 0014 raised the gun budget to 30,000 triangles, and a
+baked gun (AR-17 so far) uses one `Baked` material plus glass instead of the
+five below ([baked-gun-textures.md](baked-gun-textures.md)).
+
 - Triangle budget stays 8,000 per weapon and 6 materials (`check_models.py`).
   Today: rifle 6,332, shotgun 4,740, Kestrel 4,836, Talon 7,452. The Talon is
   the tight one (548 triangles left): the bigger turrets are paid for by
@@ -232,7 +236,7 @@ turnarounds, post the before/after in the thread.
   turnaround, `docs/ROADMAP.md`, `docs/DECISIONS.md`.
 - Tests: `test_talon_has_rifle_parts_and_a_long_barrel` and
   `test_scope_display_sits_behind_the_rebuilt_eyepiece` stay green; budget
-  under 8,000.
+  under 8,000 (since raised to 30,000 by ADR 0014).
 - Done when: lineup posted, the person has seen it.
 
 ## Acceptance
@@ -241,7 +245,7 @@ turnarounds, post the before/after in the thread.
   to the concept (`/mnt/project-files/gun-concept/f72_lineup_vs_concept.jpg`).
 - [x] Every red-dot gun aims through its dot (`test_red_dots_sit_on_the_aiming_line`:
   AR-17, VX-9, BR-12).
-- [x] Every gun is under 8,000 triangles and 6 materials (`check_models.py`; MR-28 7,956).
+- [x] Every gun is under 8,000 triangles and 6 materials (`check_models.py`; MR-28 7,956). Budget since raised to 30,000 (ADR 0014, F-75).
 - [x] Hands sit on the guns: arm contact check 0 intersections for all four
   (`tools/check_character_contacts.py`).
 - [x] The person has looked at the lineup render (posted in the thread 2026-11-17; they asked

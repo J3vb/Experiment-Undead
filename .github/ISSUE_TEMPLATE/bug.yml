@@ -40,4 +40,4 @@ body:
     id: extra
     attributes:
       label: Screenshot, video or log
-      description: Logs are in %APPDATA%\Godot\app_userdata\Experiment Undead\logs
+      description: Logs are in %APPDATA%\Godot\app_userdata\Fenlight\logs

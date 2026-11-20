@@ -228,7 +228,7 @@ green. Lanes that touch different files can run at the same time:
   in `well_claims_fixture.gd` with it) and the cached guns. `confirm_well_hit`
   and `well_hit` stay in `HitClaims` (collateral kills use them too).
   `GravityWell` calls by name and string, so a miss only fails at run time:
-  orbs look up `"WellClaims"` (gravity_well.gd lines 43, 50, 217), while an
+  orbs look up `"WellClaims"` (gravity_well.gd line 43; as built, lines 50 and 217 call the passed `_claims`), while an
   opened well keeps the `HitClaims` reference for its hit confirm (line 194),
   which `WellClaims._accept_well` passes to `GravityWell.open`. Protocol +1.
 - Files: hit_claims.gd, well_claims.gd (new), gravity_well.gd,

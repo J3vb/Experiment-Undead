@@ -11,6 +11,7 @@ enum State { IDLE, ROLLING, OFFERING }
 const ROLL_TIME: float = 2.5
 const OFFER_TIME: float = 10.0
 const NAME_CYCLE: float = 0.12
+const BARGAIN_DISCOUNT: int = 200
 
 @export var cost: int = 950
 @export var pool: Array[WeaponData] = []
@@ -27,6 +28,7 @@ var rolls_left: int = 0
 var buyer_id: int = 0
 var _timer: float = 0.0
 var _cycle: float = 0.0
+var _paid: int = 0
 
 
 func _ready() -> void:
@@ -44,7 +46,7 @@ func get_prompt(player: Player) -> String:
 			return "Take %s [F]" % offer.display_name if player.net_id == buyer_id else ""
 		State.IDLE:
 			if _has_choice(player):
-				return "Roll the Specimen Vault [F]  %d" % cost
+				return "Roll the Specimen Vault [F]  %d" % price(player)
 	return ""
 
 
@@ -58,8 +60,15 @@ func interact(player: Player, facts: Dictionary = {}) -> void:
 		_close()
 	elif state == State.IDLE:
 		var choices: Array[WeaponData] = _choices_for(facts.held)
-		if not choices.is_empty() and _pay(player, cost):
+		var paid: int = price(player)
+		if not choices.is_empty() and _pay(player, paid):
+			_paid = paid
 			_start_roll(player, choices)
+
+
+## Bargain Hunter takes BARGAIN_DISCOUNT off (950 to 750 in the design).
+func price(player: Player) -> int:
+	return cost - BARGAIN_DISCOUNT if player.skill_rules.has(SkillNodeData.Rule.BARGAIN_HUNTER) else cost
 
 
 ## held: ids of the owner's guns; slot: the gun in hand, the one a full holder gives up.
@@ -133,7 +142,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		var buyer: Player = _session().players.find_player(buyer_id)
 		if buyer:
-			buyer.wallet.add(cost)
+			buyer.wallet.add(_paid)
 		_move()
 		_close()
 

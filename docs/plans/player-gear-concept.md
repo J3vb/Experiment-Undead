@@ -37,7 +37,8 @@ In:
   from plated up).
 - Appearance plumbing for the new slots: CharacterLook, LookBuilder, LookCodec
   (look payload grows from 3 to 7 slots) and GearRig.
-- Implant: an eye plate on the head (one shape per implant type) plus a
+- Implant: (eye plate dropped 2026-11-20, the person: implant stays a forearm
+  module, see F-42 plan gear-first-person.md) a forearm module per type plus a
   Fenlight vial on the vest clip, replacing the forearm module and neck port.
 - First-person arms take the jacket sleeve and glove materials (colour and
   material only, grip geometry untouched).
@@ -103,7 +104,7 @@ Not in (non-goals, and where each one goes instead):
 
 | Folder or file | New / changed | What changes |
 |---|---|---|
-| tools/assets/player_body_model.py (+ new `player_head_model.py` if over 350 lines) | changed / new | Survivor head and field clothes |
+| tools/assets/player_body/ (as built, ADR 0015; replaces the planned `player_body_model.py` changes) | new | Survivor head and field clothes, same four material names |
 | tools/assets/headgear_model.py, glove_model.py, backpack_model.py, boot_model.py | new | Three tiers per piece |
 | tools/assets/vest_model.py | changed | Plate carrier, pouches, VialClip socket |
 | tools/assets/implant_model.py | changed | Eye plate per type plus vial |
@@ -198,6 +199,10 @@ the 120 fps target on the RTX 4080 Super. Gloves, boots and headgear hide past
 - Tests: test_look_sync.gd / codec test: 7-slot look encodes to 35 bytes and
   back; a 15-byte payload resets all slots. test_gear_rig.gd: Common, Rare and
   Legendary headgear pick tier 0, 1, 2; bad id falls back with no error.
+- As built (PR #337, with step 1): `RarityLook.tier`, `GearVisual.tier_scenes`
+  and `scene_for`, and the GearRig tier pick, tested in `test_gear_rig.gd` and
+  `test_gear_content.gd`. Still to build: the four new `CharacterLook.SLOTS`,
+  the 35-byte codec, `headgear_model.py` and `headgear_cap.tres`.
   Content checks from Data.
 - Done when: the booth shows the three helmets on the new body.
 
@@ -227,18 +232,19 @@ the 120 fps target on the RTX 4080 Super. Gloves, boots and headgear hide past
   clearance check passes; test_gear_rig.gd binds every tier's Shell.
 - Done when: all three frames render on the new body in all three tiers.
 
-### Step 5: Eye implant and Fenlight vial
+### Step 5: Implant restyle and Fenlight vial
 
-- Build: each of the five implant types becomes an eye plate on the head (its own
-  shape, glow lens) plus one shared vial that sits in the vest's VialClip. Vial
-  liquid follows the rule in Data. GearRig binds the Plate to `head` and the Vial
+- Changed 2026-11-20 (the person, F-42 card): no eye plate. Each implant type
+  stays a forearm module on `forearm_L` (restyled to the concept, its own
+  shape and glow lens), plus one shared vial that sits in the vest's VialClip. Vial
+  liquid follows the rule in Data. GearRig keeps the module on `forearm_L` and binds the Vial
   to VialClip (on spine_3 when no vest).
 - Files: implant_model.py, gear_rig.gd, five implant .glb, turnarounds,
   DECISIONS.md (implant placement line).
-- Tests: model checks: every implant has Plate and Vial nodes, under 1,800 tris;
-  test_gear_rig.gd: Plate follows head, Vial follows the vest clip and falls
+- Tests: model checks: every implant has Module and Vial nodes, under 1,800 tris;
+  test_gear_rig.gd: module follows forearm_L, Vial follows the vest clip and falls
   back to spine_3 with no vest.
-- Done when: booth close-up of the face matches the concept's implant panel.
+- Done when: booth close-up of the forearm module and vest vial.
 
 ### Step 6: First-person sleeves and close-out
 
