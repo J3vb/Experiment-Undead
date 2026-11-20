@@ -1,0 +1,79 @@
+name: Launcher
+
+# The separate launcher (docs/plans/separate-launcher.md): Rust format, lint and tests on
+# Linux, and a Windows build of the exe, for every change to launcher/ or the shared
+# version table.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "launcher/**"
+      - "tests/fixtures/version_table.json"
+      - "tests/fixtures/releases.json"
+      - ".github/workflows/launcher.yml"
+  pull_request:
+    paths:
+      - "launcher/**"
+      - "tests/fixtures/version_table.json"
+      - "tests/fixtures/releases.json"
+      - ".github/workflows/launcher.yml"
+
+concurrency:
+  group: launcher-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: launcher
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the window libraries Tauri builds against
+        run: sudo apt-get update -q && sudo apt-get install -y -q libwebkit2gtk-4.1-dev
+
+      - name: Install the pinned Rust toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: launcher
+
+      - name: Format
+        run: cargo fmt --all --check
+
+      - name: Lint
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Tests
+        run: cargo test --workspace
+
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: launcher
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the pinned Rust toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: launcher
+
+      - name: Tests
+        run: cargo test --workspace
+
+      - name: Build the launcher exe
+        run: cargo build --release -p experiment-undead-launcher
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: experiment-undead-launcher-windows
+          path: launcher/target/release/experiment-undead-launcher.exe
+          retention-days: 7

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Experiment Undead</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Experiment: <span>Undead</span></h1>
+      <p class="tagline">A Fenlight survival experience</p>
+    </header>
+    <section class="notes">
+      <h2 id="headline">Checking for updates…</h2>
+      <pre id="notes"></pre>
+    </section>
+    <footer>
+      <button id="play" disabled>Play</button>
+      <div class="version">
+        <label for="channel">Game version</label>
+        <select id="channel">
+          <option value="stable">Stable</option>
+          <option value="test">Test builds</option>
+        </select>
+        <p id="status"></p>
+      </div>
+      <div class="install">
+        <progress id="progress" max="100" value="0" hidden></progress>
+        <button id="cancel" hidden>Cancel</button>
+        <p id="folder"></p>
+      </div>
+    </footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

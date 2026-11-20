@@ -1,6 +1,6 @@
 # Plan: Separate launcher program
 
-Status: Approved
+Status: Building
 Roadmap: F-82
 Phase: P8 (steps 1-4 land before Release v0.1.0, F-11)
 Size: L
@@ -114,7 +114,8 @@ Not in (non-goals, and where each one goes instead):
 
 | Folder or file | New / changed | What changes |
 |---|---|---|
-| `launcher/src-tauri/` | new | `Cargo.toml`, `tauri.conf.json`, `src/main.rs`, `src/feed.rs`, `src/install.rs`, `src/version.rs`, `src/host.rs` (step 4), `tests/` |
+| `launcher/core/` | new | Rust library with no window code, so Linux CI tests it without WebView: `version.rs`, `feed.rs`, `install.rs`, `settings.rs`, `log.rs`, `host.rs` (step 4), `tests/` |
+| `launcher/src-tauri/` | new | the thin Tauri app: `Cargo.toml`, `tauri.conf.json`, `src/main.rs` (commands the window calls), icons from `tools/assets/launcher_icon.py` |
 | `launcher/ui/` | new | `index.html`, `app.js`, `style.css`, one JS file per page (step 5), images |
 | `launcher/news/` | new | `news.json` + images |
 | `systems/launcher/` | removed | step 3 (screen, feed, installer) and step 4 (`server_host.gd`) |

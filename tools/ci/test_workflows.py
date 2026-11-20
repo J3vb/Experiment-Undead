@@ -86,3 +86,20 @@ class CoopSoakWorkflowTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class LauncherWorkflowTests(unittest.TestCase):
+    """The separate launcher is linted, tested on Linux and Windows, and built as a Windows exe."""
+
+    def setUp(self):
+        self.text = (WORKFLOWS / "launcher.yml").read_text(encoding="utf-8")
+
+    def test_runs_for_launcher_changes_and_the_shared_version_table(self):
+        triggers = re.search(r"^on:\n(.*?)^\S", self.text, re.S | re.M).group(1)
+        for path in ("launcher/**", "tests/fixtures/version_table.json"):
+            self.assertEqual(triggers.count(f'"{path}"'), 2, path)
+
+    def test_checks_format_lint_tests_and_builds_on_windows(self):
+        for command in ("cargo fmt --all --check", "-D warnings", "cargo test --workspace"):
+            self.assertIn(command, self.text)
+        self.assertRegex(self.text, r"(?s)windows:\n\s+runs-on: windows-latest.*cargo build --release")
