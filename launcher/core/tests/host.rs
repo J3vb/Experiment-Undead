@@ -1,4 +1,4 @@
-use launcher_core::host::{server_args, Host, LOG_FILE};
+use launcher_core::host::{server_args, Host, Tick, LOG_FILE};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
@@ -25,21 +25,23 @@ fn wait_for_exit(host: &mut Host) -> Option<i32> {
 #[test]
 fn server_args_match_the_game_and_clamp() {
     let stop = Path::new("/tmp/eu.stop");
+    let drain = Path::new("/tmp/eu.drain");
     assert_eq!(
-        server_args(7790, 4, stop),
+        server_args(7790, 4, stop, drain),
         vec![
             "--headless",
             "--",
             "--server",
             "--port=7790",
             "--max-players=4",
-            "--stop-file=/tmp/eu.stop"
+            "--stop-file=/tmp/eu.stop",
+            "--drain-file=/tmp/eu.drain"
         ]
     );
-    let clamped = server_args(0, 99, stop);
+    let clamped = server_args(0, 99, stop, drain);
     assert_eq!(clamped[3], "--port=1");
     assert_eq!(clamped[4], "--max-players=8");
-    assert_eq!(server_args(7777, 0, stop)[4], "--max-players=1");
+    assert_eq!(server_args(7777, 0, stop, drain)[4], "--max-players=1");
 }
 
 #[test]
@@ -96,4 +98,76 @@ fn missing_game_is_a_plain_error() {
     let problem = host.start(&dir.join("nope.exe"), "0.1.1", 7790, 4).unwrap_err();
     assert!(problem.starts_with("Could not start the server"), "{problem}");
     assert_eq!(host.running(), None);
+}
+
+fn wait_for_tick(host: &mut Host, newest: Option<(&Path, &str)>) -> Tick {
+    let start = Instant::now();
+    loop {
+        let tick = host.tick(newest);
+        if tick != Tick::Running || start.elapsed() > Duration::from_secs(10) {
+            return tick;
+        }
+        std::thread::sleep(Duration::from_millis(20));
+    }
+}
+
+#[test]
+fn a_newer_install_drains_once_then_restarts_on_it() {
+    let dir = common::temp_dir("host-drain");
+    let mut host = Host::new(dir.join("server"));
+    let exe = fake_server();
+    host.start(&exe, "0.1.1", 7790, 4).expect("started");
+    assert_eq!(
+        host.tick(Some((&exe, "0.1.1"))),
+        Tick::Running,
+        "same version: nothing to do"
+    );
+    assert!(!host.drain_file().exists());
+    assert_eq!(host.tick(Some((&exe, "0.1.2"))), Tick::Draining("0.1.2".into()));
+    assert!(host.drain_file().exists(), "the server is asked to finish, not stopped");
+    assert_eq!(
+        wait_for_tick(&mut host, Some((&exe, "0.1.2"))),
+        Tick::Restarted("0.1.2".into())
+    );
+    assert_eq!(host.running().as_deref(), Some("0.1.2"));
+    assert!(!host.drain_file().exists(), "a fresh start clears the drain file");
+    assert_eq!(host.tick(Some((&exe, "0.1.2"))), Tick::Running);
+    let start = Instant::now();
+    let mut log = String::new();
+    while !log.contains("--server") && start.elapsed() < Duration::from_secs(5) {
+        std::thread::sleep(Duration::from_millis(20));
+        log = std::fs::read_to_string(host.dir.join(LOG_FILE)).unwrap();
+    }
+    assert!(
+        log.contains("--port=7790 --max-players=4"),
+        "same port and limit: {log}"
+    );
+    host.stop_and_wait(Duration::from_secs(10));
+}
+
+#[test]
+fn a_stopped_or_crashed_server_is_not_restarted() {
+    let dir = common::temp_dir("host-no-restart");
+    let mut host = Host::new(dir.join("server"));
+    let exe = fake_server();
+    for (written, code) in [("stop", 0), ("7", 7)] {
+        host.start(&exe, "0.1.1", 7790, 4).expect("started");
+        std::fs::write(host.stop_file(), written).unwrap();
+        assert_eq!(wait_for_tick(&mut host, Some((&exe, "0.1.1"))), Tick::Exited(code));
+        assert_eq!(host.tick(Some((&exe, "0.1.1"))), Tick::Idle);
+        assert_eq!(host.running(), None);
+    }
+}
+
+#[test]
+fn checking_running_keeps_the_exit_code() {
+    let dir = common::temp_dir("host-keep-code");
+    let mut host = Host::new(dir.join("server"));
+    host.start(&fake_server(), "0.1.1", 7790, 4).expect("started");
+    std::fs::write(host.stop_file(), "3").unwrap();
+    let start = Instant::now();
+    while host.running().is_some() && start.elapsed() < Duration::from_secs(10) {
+        std::thread::sleep(Duration::from_millis(20));
+    }
+    assert_eq!(host.poll(), Some(3), "the status poll did not swallow the update exit");
 }

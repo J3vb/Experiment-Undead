@@ -1,11 +1,18 @@
 //! The Host a server page: start, stop and watch a dedicated server run by the newest
-//! installed game (docs/plans/separate-launcher.md, step 4).
+//! installed game, and keep it updated between matches (docs/plans/separate-launcher.md,
+//! step 4).
 
 use crate::Launcher;
+use launcher_core::feed;
+use launcher_core::host::Tick;
 use launcher_core::log;
 use serde::Serialize;
+use std::sync::atomic::Ordering;
 use std::time::Duration;
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Emitter, Manager, State};
+
+/// How often a hosting launcher looks for a newer release (F-65 step 9).
+const UPDATE_CHECK: Duration = Duration::from_secs(15 * 60);
 
 #[derive(Serialize)]
 pub struct HostStatus {
@@ -20,9 +27,6 @@ pub struct HostStatus {
 #[tauri::command]
 pub fn host_status(launcher: State<'_, Launcher>) -> Result<HostStatus, String> {
     let mut host = launcher.host.lock().map_err(|error| error.to_string())?;
-    if let Some(code) = host.poll() {
-        log::write(&launcher.data_dir, "info", "server_exited", &code.to_string());
-    }
     let saved = launcher.settings.lock().map_err(|error| error.to_string())?;
     Ok(HostStatus {
         running: host.running(),
@@ -97,4 +101,68 @@ pub fn quit(app: AppHandle, launcher: State<'_, Launcher>) -> Result<(), String>
     }
     app.exit(0);
     Ok(())
+}
+
+/// Runs for the launcher's lifetime: every second it lets the host drain or restart the
+/// server (`Host::tick`), and while hosting it installs a newer release every 15 minutes.
+pub fn watch(app: AppHandle) {
+    let mut since_check = Duration::ZERO;
+    loop {
+        std::thread::sleep(Duration::from_secs(1));
+        let launcher = app.state::<Launcher>();
+        let installer = launcher.installer();
+        let newest = installer.installed().into_iter().next();
+        let exe = newest.as_deref().map(|version| installer.exe_path(version));
+        let tick = match launcher.host.lock() {
+            Ok(mut host) => host.tick(exe.as_deref().zip(newest.as_deref())),
+            Err(_) => return,
+        };
+        let (event, message) = match &tick {
+            Tick::Idle => {
+                since_check = Duration::ZERO;
+                continue;
+            }
+            Tick::Running => ("", String::new()),
+            Tick::Draining(version) => ("server_draining", version.clone()),
+            Tick::Restarted(version) => ("server_update_restarted", version.clone()),
+            Tick::Exited(code) => ("server_exited", code.to_string()),
+        };
+        if !event.is_empty() {
+            log::write(&launcher.data_dir, "info", event, &message);
+            let _ = app.emit("host_changed", ());
+        }
+        since_check += Duration::from_secs(1);
+        if since_check >= UPDATE_CHECK {
+            since_check = Duration::ZERO;
+            let app = app.clone();
+            std::thread::spawn(move || install_newer(&app.state::<Launcher>()));
+        }
+    }
+}
+
+/// Fetches the release list and installs a newer game on the player's channel next to the
+/// running server. The next tick then drains the server onto it.
+fn install_newer(launcher: &Launcher) {
+    let list = match feed::fetch(&launcher.api_url) {
+        Ok(list) => list,
+        Err(problem) => {
+            log::write(&launcher.data_dir, "warn", "check_failed", &problem);
+            return;
+        }
+    };
+    if let Ok(mut releases) = launcher.releases.lock() {
+        *releases = Some(list);
+    }
+    let installer = launcher.installer();
+    let Some(release) = launcher.newest() else {
+        return;
+    };
+    if !feed::is_newer(&release.version, &installer.installed()) || launcher.busy.swap(true, Ordering::Relaxed) {
+        return;
+    }
+    match installer.install(&release, &launcher.cancel, &mut |_, _| {}) {
+        Ok(_) => log::write(&launcher.data_dir, "info", "installed", &release.version),
+        Err(problem) => log::write(&launcher.data_dir, "warn", "install_failed", &problem),
+    }
+    launcher.busy.store(false, Ordering::Relaxed);
 }
