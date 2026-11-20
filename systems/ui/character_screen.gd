@@ -1,16 +1,18 @@
-## Character loadout, fixed stash and a shared item tooltip around a dressed turntable.
+## Loadout screen: section tabs, loadout slots, fixed stash and item tooltip around a dressed turntable.
 class_name CharacterScreen
 extends Control
 
 signal closed
 
 const SLOTS: Array[StringName] = [&"primary", &"sidearm", &"vest", &"charm", &"implant"]
+const WEAPON_SLOTS: Array[StringName] = [&"primary", &"sidearm"]
 const ACCENT: Color = Color("7fd6e0")
 const DIM: Color = Color("8fa3a8")
 
 var profile: CharacterProfile
 var stash_buttons: Array[Button] = []
 var slot_buttons: Array[Button] = []
+var tab: StringName = &"weapons"
 var selected_stash: int = -1
 var selected_slot: StringName = &""
 var _comparing: bool = false
@@ -20,6 +22,7 @@ var _save_failed: bool = false
 
 @onready var rig: GearRig = %GearRig
 @onready var tooltip: ItemTooltip = %ItemTooltip
+@onready var tabs: LoadoutTabs = %Tabs
 
 
 func _ready() -> void:
@@ -37,9 +40,10 @@ func _ready() -> void:
 		if not InputMap.action_has_event(action, binding):
 			InputMap.action_add_event(action, binding)
 	_style_controls()
+	tabs.tab_selected.connect(select_tab)
 	_build_buttons()
-	_wire_focus()
-	for filter: OptionButton in [%Category, %Rarity, %Sort]:
+	_show_tab(tab)
+	for filter: OptionButton in [%Rarity, %Sort]:
 		filter.item_selected.connect(func(_index: int) -> void: _refresh())
 	%Preview.gui_input.connect(_preview_input)
 	%Back.pressed.connect(_close)
@@ -55,9 +59,31 @@ func open(character: CharacterProfile) -> void:
 	show()
 	_refresh()
 	if visible_stash_indices().is_empty():
-		slot_buttons[0].grab_focus()
+		_visible_slots()[0].grab_focus()
 	else:
 		stash_buttons[0].grab_focus()
+
+
+## Weapons shows the gun slots and guns, Field Gear the other slots and gear. Locked tabs do nothing.
+func select_tab(id: StringName) -> void:
+	if not LoadoutTabs.OPEN_TABS.has(id):
+		return
+	_show_tab(id)
+	_refresh()
+
+
+func _show_tab(id: StringName) -> void:
+	tab = id
+	tabs.mark(id)
+	for button: Button in slot_buttons:
+		button.visible = WEAPON_SLOTS.has(button.get_meta("slot")) == (id == &"weapons")
+	_wire_focus()
+
+
+func _visible_slots() -> Array[Button]:
+	var shown: Array[Button] = []
+	shown.assign(slot_buttons.filter(func(button: Button) -> bool: return button.visible))
+	return shown
 
 
 func _style_controls() -> void:
@@ -111,69 +137,47 @@ func _build_buttons() -> void:
 
 
 func _wire_focus() -> void:
-	var order: Array[Control] = []
-	order.assign(slot_buttons)
-	order.append_array([%Category, %Rarity, %Sort])
+	var tab_row: Array[Control] = tabs.open_buttons()
+	var slots: Array[Button] = _visible_slots()
+	var order: Array[Control] = tab_row.duplicate()
+	order.append_array(slots)
+	order.append_array([%Rarity, %Sort])
 	order.append_array(stash_buttons)
 	order.append(%Back)
 	for index: int in order.size():
 		order[index].focus_next = order[index].get_path_to(order[(index + 1) % order.size()])
 		order[index].focus_previous = order[index].get_path_to(order[posmod(index - 1, order.size())])
-	for cell: int in stash_buttons.size():
-		var button: Button = stash_buttons[cell]
-		button.focus_neighbor_left = button.get_path_to(
-			slot_buttons[mini(cell / 10, 4)] if cell % 10 == 0 else stash_buttons[cell - 1]
-		)
-		button.focus_neighbor_right = button.get_path_to(%Back if cell % 10 == 9 else stash_buttons[cell + 1])
-		button.focus_neighbor_top = button.get_path_to(%Sort if cell < 10 else stash_buttons[cell - 10])
-		button.focus_neighbor_bottom = button.get_path_to(%Back if cell >= 50 else stash_buttons[cell + 10])
-	for index: int in slot_buttons.size():
-		var button: Button = slot_buttons[index]
-		button.focus_neighbor_top = button.get_path_to(%Back if index == 0 else slot_buttons[index - 1])
-		button.focus_neighbor_bottom = button.get_path_to(%Back if index == 4 else slot_buttons[index + 1])
+	_wire_stash_focus(slots)
+	for index: int in slots.size():
+		var button: Button = slots[index]
+		button.focus_neighbor_top = button.get_path_to(%Back if index == 0 else slots[index - 1])
+		button.focus_neighbor_bottom = button.get_path_to(%Back if index == slots.size() - 1 else slots[index + 1])
 		button.focus_neighbor_right = button.get_path_to(stash_buttons[index * 10])
-	%Category.focus_neighbor_bottom = %Category.get_path_to(%Sort)
+		button.focus_neighbor_left = button.get_path_to(tabs.button_for(tab))
+	for index: int in tab_row.size():
+		var button: Control = tab_row[index]
+		button.focus_neighbor_top = button.get_path_to(tab_row[posmod(index - 1, tab_row.size())])
+		button.focus_neighbor_bottom = button.get_path_to(tab_row[(index + 1) % tab_row.size()])
+		button.focus_neighbor_right = button.get_path_to(slots[0])
 	%Rarity.focus_neighbor_bottom = %Rarity.get_path_to(%Sort)
 	%Sort.focus_neighbor_bottom = %Sort.get_path_to(stash_buttons[0])
 	%Back.focus_neighbor_top = %Back.get_path_to(stash_buttons[59])
 
 
+func _wire_stash_focus(slots: Array[Button]) -> void:
+	for cell: int in stash_buttons.size():
+		var button: Button = stash_buttons[cell]
+		button.focus_neighbor_left = button.get_path_to(
+			slots[mini(cell / 10, slots.size() - 1)] if cell % 10 == 0 else stash_buttons[cell - 1]
+		)
+		button.focus_neighbor_right = button.get_path_to(%Back if cell % 10 == 9 else stash_buttons[cell + 1])
+		button.focus_neighbor_top = button.get_path_to(%Sort if cell < 10 else stash_buttons[cell - 10])
+		button.focus_neighbor_bottom = button.get_path_to(%Back if cell >= 50 else stash_buttons[cell + 10])
+
+
 func visible_stash_indices() -> Array[int]:
-	var indices: Array[int] = []
-	if profile == null:
-		return indices
-	for index: int in profile.stash.size():
-		var item: Dictionary = profile.stash[index]
-		if item.is_empty():
-			continue
-		var base: StringName = StringName(item.get("base", ""))
-		var weapon: bool = Content.has(&"weapons", base)
-		var gear: bool = Inventory.is_gear(item)
-		if (%Category.selected == 1 and not weapon) or (%Category.selected == 2 and not gear):
-			continue
-		if %Rarity.selected > 0 and item.get("rar", "common") != ItemRoller.RARITIES[%Rarity.selected - 1]:
-			continue
-		indices.append(index)
-	indices.sort_custom(_comes_before)
-	return indices
-
-
-func _comes_before(left: int, right: int) -> bool:
-	if %Sort.selected == 2:
-		var left_order: int = int(profile.stash[left].get("acquired", left))
-		var right_order: int = int(profile.stash[right].get("acquired", right))
-		return left_order > right_order if left_order != right_order else left > right
-	var a: Dictionary = profile.stash[left]
-	var b: Dictionary = profile.stash[right]
-	var a_rarity: int = ItemRoller.RARITIES.find(StringName(a.get("rar", "common")))
-	var b_rarity: int = ItemRoller.RARITIES.find(StringName(b.get("rar", "common")))
-	var a_level: int = int(a.get("ilvl", 1))
-	var b_level: int = int(b.get("ilvl", 1))
-	if %Sort.selected == 1 and a_level != b_level:
-		return a_level > b_level
-	if a_rarity != b_rarity:
-		return a_rarity > b_rarity
-	return a_level > b_level if a_level != b_level else left > right
+	var kind: CharacterStash.Kind = CharacterStash.Kind.WEAPONS if tab == &"weapons" else CharacterStash.Kind.GEAR
+	return CharacterStash.visible_indices(profile, kind, %Rarity.selected, %Sort.selected as CharacterStash.Order)
 
 
 func _refresh() -> void:
@@ -281,7 +285,7 @@ func _input(event: InputEvent) -> void:
 	_compare_input(event)
 	if event is InputEventMouseButton and not event.pressed:
 		_rotating = false
-	for filter: OptionButton in [%Category, %Rarity, %Sort]:
+	for filter: OptionButton in [%Rarity, %Sort]:
 		if filter.get_popup().visible:
 			return
 	var escape: bool = event is InputEventKey and event.pressed and event.physical_keycode == KEY_ESCAPE

@@ -62,6 +62,7 @@ func test_equipment_request_reapplies_rig_and_removes_unequipped_vest() -> void:
 	screen._input(_key(KEY_E))
 	assert_false(is_instance_valid(old_vest), "Equipping refreshes GearRig from the current loadout")
 	assert_not_null(screen.rig.skeleton.get_node_or_null("Vest"))
+	screen.select_tab(&"field_gear")
 	screen.slot_buttons[2].grab_focus()
 	screen._input(_key(KEY_E))
 	assert_eq(profile.loadout[&"vest"], {})
@@ -75,6 +76,7 @@ func test_vest_charm_and_implant_equip_and_unequip_through_inventory_and_rig() -
 		var item: Dictionary = _item(String(bases[index]), "worn_" + String(slot), "rare", 14)
 		profile.stash[20 + index] = item
 		screen.open(profile)
+		screen.select_tab(&"field_gear")
 		_stash_button(20 + index).grab_focus()
 		screen._input(_key(KEY_E))
 		assert_eq(profile.loadout[slot], item)
@@ -134,15 +136,14 @@ func test_drag_rotates_turntable_and_releasing_outside_preview_stops_rotation() 
 	assert_almost_eq(turntable.rotation.y, dragged, 0.0001)
 
 
-func test_filters_combine_category_and_rarity_without_mutating_items() -> void:
+func test_filters_combine_tab_and_rarity_without_mutating_items() -> void:
 	profile.stash[14] = _item("vest_medium", "gear", "rare", 30)
 	screen.open(profile)
 	var before: Dictionary = profile.to_dict()
-	_choose("Category", 1)
-	assert_eq(screen.visible_stash_indices(), [9, 4, 0])
+	assert_eq(screen.visible_stash_indices(), [9, 4, 0], "Weapons is the default tab")
 	_choose("Rarity", 3)
 	assert_eq(screen.visible_stash_indices(), [4])
-	_choose("Category", 2)
+	screen.select_tab(&"field_gear")
 	assert_eq(screen.visible_stash_indices(), [14])
 	_choose("Rarity", 5)
 	assert_eq(screen.visible_stash_indices(), [])
@@ -209,13 +210,14 @@ func test_stash_focus_moves_across_cells_rows_and_back_to_controls() -> void:
 	assert_eq(last.get_node(last.focus_next), screen.get_node("%Back"))
 	assert_eq(
 		(screen.get_node("%Back") as Button).get_node((screen.get_node("%Back") as Button).focus_next),
-		screen.slot_buttons[0]
+		screen.tabs.button_for(&"weapons")
 	)
 
 
 func test_unknown_item_and_full_stash_unequip_are_rejected_without_changes() -> void:
 	profile.stash[0] = _item("missing_base", "unknown", "rare", 1)
 	screen.open(profile)
+	screen.select_tab(&"field_gear")
 	var before: Dictionary = profile.to_dict()
 	_stash_button(0).grab_focus()
 	screen._input(_key(KEY_E))
@@ -225,6 +227,7 @@ func test_unknown_item_and_full_stash_unequip_are_rejected_without_changes() -> 
 		profile.stash[index] = _item("rifle_ar", str(index), "common", 1)
 	profile.loadout[&"primary"] = _item("talon_dmr", "equipped", "epic", 20)
 	screen.open(profile)
+	screen.select_tab(&"weapons")
 	before = profile.to_dict()
 	screen.slot_buttons[0].grab_focus()
 	screen._input(_key(KEY_E))
@@ -282,6 +285,7 @@ func test_columns_and_footer_fit_the_base_and_1440p_viewports() -> void:
 		await wait_process_frames(3)
 		var bounds: Rect2 = Rect2(Vector2.ZERO, Vector2(viewport_size))
 		for path: String in [
+			"Margin/Layout/Columns/Tabs",
 			"Margin/Layout/Columns/Loadout",
 			"Margin/Layout/Columns/Stash",
 			"Margin/Layout/Columns/ItemTooltip",
