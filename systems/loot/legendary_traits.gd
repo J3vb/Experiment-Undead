@@ -16,6 +16,9 @@ const STATS: Array[StringName] = [
 	&"overpressure",
 	&"dead_mans_hand",
 	&"cold_snap",
+	&"quarantine_shell",
+	&"iron_lung",
+	&"last_rites",
 ]
 const TIDEWATER_MAX_STACKS: int = 10
 ## Provisional: affixes.md gives no radius (the middle of the other trait radii).

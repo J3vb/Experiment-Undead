@@ -164,9 +164,9 @@ func has_serum(id: StringName) -> bool:
 	return false
 
 
-## Down with Second Wind still waiting to get them up: the squad is not out yet.
+## Down with Second Wind, Undying or Last Rites still able to get them up: the squad is not out yet.
 func can_self_revive() -> bool:
-	return is_downed and not is_dead and (has_serum(&"second_wind") or revive.has_undying_charge())
+	return is_downed and not is_dead and (has_serum(&"second_wind") or revive.can_get_up())
 
 
 func add_serum(serum: SerumData) -> void:

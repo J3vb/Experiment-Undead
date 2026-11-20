@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="LegendaryData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/loot/legendary_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"quarantine_shell"
+display_name = "Quarantine Shell"
+base_id = &"vest_heavy"
+stat = &"quarantine_shell"
+text = "The first hit every {v} s is fully blocked"
+low = 6.0
+high = 10.0
+step = 0.1
+lower_is_better = true
+flavour = "Plate from a Halcyon containment suit, rated for things that bite. It still remembers how to close."

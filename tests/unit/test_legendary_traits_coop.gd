@@ -112,3 +112,20 @@ func test_dead_mans_hand_claim_passes_bounds_only_from_its_item() -> void:
 		1, zombie.name, DamageInfo.Zone.BODY, big, &"hollis_44", Vector3.ZERO, Vector3.ZERO, "dmh"
 	)
 	await wait_until(func() -> bool: return zombie.health.is_dead, 3.0, "a 4x last round lands")
+
+
+func test_last_rites_from_a_downed_client_gets_them_up_through_claims() -> void:
+	claimant.item_guns["lr"] = ItemInstance.new(
+		{"uid": "lr", "base": "pistol_service", "rar": "legendary", "trait": ["last_rites", 1.0]}
+	)
+	claimant.state_sync.down_player()
+	assert_true(claimant.can_self_revive())
+	var pistol: StringName = PlayerStateSync.PISTOL
+	for kill: int in 5:
+		var zombie: Zombie = await _zombie()
+		zombie.health.current = 1.0
+		client.hit_claims.claim_hit.rpc_id(
+			1, zombie.name, DamageInfo.Zone.BODY, 5.0, pistol, Vector3.ZERO, Vector3.ZERO, "lr"
+		)
+		await wait_until(func() -> bool: return zombie.health.is_dead, 3.0, "downed kill")
+	await wait_until(func() -> bool: return not claimant.is_downed, 3.0, "Last Rites got them up")
