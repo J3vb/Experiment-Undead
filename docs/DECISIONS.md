@@ -45,6 +45,9 @@ Each says when to fix it.
 - **Crawler** is not spawned: by design it is made when explosives take a Shambler's legs. Fix when: grenades exist (F-24, F-27).
 - **Whole-tube reloads:** Brenner, Hollis and Atlas reload in one timed action. Fix when: real reload animations exist.
 - **Reforger** has Tier I only and swaps instantly. Fix when: Tiers II (ammo mods) and III get a roadmap row.
+- **Frag numbers** (3 s fuse, 15 m/s throw, 7 m blast with full damage inside 1.5 m, own damage up to 60, no friendly fire) are provisional picks; the 1000 centre damage is the person's. Fix when: the frag play-test. [frag-grenades](plans/frag-grenades.md)
+- **Grenades in co-op:** nobody can throw in co-op yet (solo only). Fix when: F-24 step 2. [frag-grenades](plans/frag-grenades.md)
+- **Grenade HUD:** no grenade slot, cook sound or blast effect yet; the frag is a grey ball. Fix when: F-24 steps 3 and 4. [frag-grenades](plans/frag-grenades.md)
 - **Power-ups:** Resupply, Payday and the Scavenger ammo pack so far; Scavenger's +1 grenade waits. Fix when: F-24 grenades and F-26 steps 2-4.
 - **Window barriers:** no slot timeout (move to another barrier after 4 s), no real sill. Fix when: co-op crowding at a window needs it.
 - **Emergency lighting:** dimmed red ceiling lights only, no separate fixtures or sound. Fix when: the sound world step.

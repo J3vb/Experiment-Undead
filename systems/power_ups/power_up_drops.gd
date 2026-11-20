@@ -125,6 +125,8 @@ func _grant_ammo(data: PowerUpData, collector: Player) -> void:
 	if data.effect == PowerUpData.Effect.RESUPPLY:
 		targets = session.get_players()
 	for player: Player in targets:
+		if data.effect == PowerUpData.Effect.RESUPPLY:
+			player.grenades.refill()
 		if player.net_id == multiplayer.get_unique_id():
 			PowerUp.apply_effect(player, data)
 		elif multiplayer.get_peers().has(player.net_id):

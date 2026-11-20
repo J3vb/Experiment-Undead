@@ -1,6 +1,6 @@
 # Plan: Frag grenades
 
-Status: Approved
+Status: Building
 Roadmap: F-24 / issue #119
 Phase: P3
 Size: M

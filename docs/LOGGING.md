@@ -117,6 +117,7 @@ The server also prints every warning and error to stdout as
 | `net.coop_started` / `coop_ended` | info | The first friend joined this world, or the last one left (`peers`): the solo or co-op rules now apply (`Net.is_coop()`) |
 | `net.go_to_place` | info | This peer loads another place (`place`, `online`) |
 | `net.join_switches_place` | info | A joining client loaded another place than the server's and switches before spawning (`from`, `to`) |
+| `throwables.grenade_lost` | warn | A grenade fell below the map before it went off (`at`): a hole in the level collision |
 | `net.hit_claim_rejected` | warn | Server refused a client's hit or gravity well claim (`peer`, `reason`): `player_not_alive`, `zombie_not_alive`, `hit_out_of_bounds`, `zone_missing`, `claims_too_fast`, `well_out_of_bounds`, `well_wrong_weapon` (well or orb request named a gun whose `effect` is not WELL: a mismatched build or a cheat). At most one per second |
 | `net.loadout_rejected` | warn | Server refused a client's equipped loadout (`peer`, `reason`): `not_a_dictionary`, `too_much_gear` (more gear than `CharacterProfile.GEAR_SLOTS`), `too_many_guns` (more than the player's weapon slots), `unknown_gun` (gun base not in content), `not_gear` (a worn piece that is not vest, charm or implant), `slot_twice` (two pieces for one slot). The server keeps the last good loadout; check that both builds have the same content |
 | `loot.gear_worn` | info | The owner wore a Pack gear item mid-run (`uid`, `slot`); the old piece went into its Pack slot |

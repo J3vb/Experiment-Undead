@@ -26,6 +26,7 @@ attack_damage = 40.0
 attack_range = 1.7
 attack_windup = 0.6
 attack_cooldown = 1.6
+burst_by_explosives = true
 loot_drop_chance = 0.05
 scene = ExtResource("2")
 groan_sounds = Array[AudioStream]([ExtResource("26"), ExtResource("27"), ExtResource("28")])

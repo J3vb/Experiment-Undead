@@ -42,6 +42,7 @@ var is_dead: bool = false
 var state_sync: PlayerStateSync
 var loadout_sync: LoadoutSync
 var revive: Revive
+var grenades: GrenadeThrower
 var move_input: Vector2 = Vector2.ZERO
 var sprint_left: float = 4.0
 var last_frame: InputFrame = InputFrame.new()
@@ -95,6 +96,8 @@ func _ready() -> void:
 	add_child(loadout_sync)
 	revive = Revive.new()
 	add_child(revive)
+	grenades = GrenadeThrower.new()
+	add_child(grenades)
 
 
 ## The owning peer sees through this player's camera and drives it; everyone
@@ -232,6 +235,7 @@ func apply_frame(frame: InputFrame, delta: float) -> void:
 	interaction.update(self, frame, delta)
 	_move(delta, frame)
 	weapons.tick(delta)
+	grenades.tick(frame, delta)
 	var fov: float = weapons.get_ads_fov(camera_rig.base_fov)
 	camera_rig.update_feel(delta, is_crouching, is_sprinting, weapons.get_ads_progress(), fov, walk_speed)
 
