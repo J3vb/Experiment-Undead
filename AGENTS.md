@@ -63,6 +63,16 @@ Keep it simple check, GUT is our test runner, co-op follows `docs/MULTIPLAYER.md
 numbers come from the balance sheet. Ignore their links to skills we did not copy.
 Do not edit these folders; update them by copying a newer upstream release.
 
+**Plan reviews with EGM.** The Elephant-Goldfish Model plugin (Apache-2.0, Google,
+`.agents/plugins/egm/`) runs fresh reviewers that never saw your chat. Claude Code
+cloud sessions enable it through the session hook; elsewhere run
+`claude plugin marketplace add "$PWD/.agents/plugins/egm" --scope local` and
+`claude plugin install egm@egm --scope local` (Codex: `codex plugin add egm@egm`
+from the repo marketplace). Use `/egm:egm-review <plan>` on size M and L plans
+before approval, and `/egm:egm-drift-report docs/plans/` to compare built plans with
+the code. Its reports are input to `review-plan`: plans stay in `docs/plans/` in our
+template, and skip its "Alternatives considered" demand (the person decides by card).
+
 Edit skills in `.agents/skills/` only, then run
 `python tools/ci/check_skills_mirror.py --fix`. CI fails if the copies differ.
 

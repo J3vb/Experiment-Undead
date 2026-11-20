@@ -82,6 +82,7 @@ Each says when to fix it.
 
 Agent picks the person may change.
 
+- **EGM plugin:** vendored at `.agents/plugins/egm/` and enabled per machine by the session hook (local settings, no machine path committed). The Codex repo marketplace source path is an agent pick, not yet tried in Codex. [CREDITS](CREDITS.md)
 - **Gun feel:** falloff ranges, spread, recoil and empty reloads not in `roster.csv` (Kestrel, Talon, vault batch A1, Bastion, batch B rifles, Wren, Siphon, Cryo Lance, Synapse). Talon head x3.0 and Atlas Auto's strong DPS wait for play-tests.
 - **Siphon:** 10 m/s orb, 3 s well, at most 12 zombies, 6 m pull, two live wells per player, Vault weight 0.05.
 - **Wearing gear mid-run:** the piece you take off goes into the same Pack slot; swaps never heal; vest icons show the rest-pose shoulder pads ([plan](plans/wear-gear-mid-run.md)).

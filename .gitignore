@@ -36,3 +36,6 @@ node_modules/
 
 # Local Godot MCP runtime files (screenshots, bridge)
 .mcp/
+
+# Claude Code per-machine settings (the session hook writes the egm plugin path here)
+.claude/settings.local.json
