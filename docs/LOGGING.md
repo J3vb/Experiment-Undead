@@ -127,12 +127,11 @@ The server also prints every warning and error to stdout as
 | `loot.gear_worn` | info | The owner wore a Pack gear item mid-run (`uid`, `slot`); the old piece went into its Pack slot |
 | `loot.gear_equip_refused` | warn | A Pack gear item could not be worn (`uid`, `banked`): the run was already banked or there is no character profile (soak bots, tests). In a normal run this should never appear |
 | `net.interaction_rate_limited` | warn | A client sent interact requests less than 0.1 s apart; extra ones are refused. At most one per second |
-| `launcher.server_started` / `server_stop_requested` / `server_exited` / `server_start_failed` | info / warn | The launcher's Host a server panel (`version`, `port`, `pid`, `exe`). A quick `server_exited` after start = port in use; read that server's own log |
 | `ui.unknown_screen` | warn | `UI.push` or `UI.replace` got an id with no `content/screens/<id>.tres`; `id`. Nothing opens |
 | `ui.pop_empty` | warn | `UI.pop()` with no screen open: a screen emitted `closed` twice or something popped a screen it did not push |
 | `ui.loading_failed` | warn | A root behind a loading screen failed its threaded load; `scene`. The router falls back to a plain scene change |
 
-The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher.log` in its data folder (`%LOCALAPPDATA%\com.experimentundead.launcher\` on Windows): `{"t", "level", "event", "message"}`. The `launcher.server_*` lines above come from the game's old Host a server code, which moves into the launcher in F-82 step 4.
+The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher.log` in its data folder (`%LOCALAPPDATA%\com.experimentundead.launcher\` on Windows): `{"t", "level", "event", "message"}`. A hosted server writes its own game log, and its console output goes to `server/server.log` there (Open logs).
 
 | Event | Level | Meaning |
 |---|---|---|
@@ -141,6 +140,10 @@ The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher
 | `install_failed` | warn | A download failed, was cancelled, had the wrong SHA-256, or could not be unpacked (`message` says which). Nothing was installed |
 | `self_updated` | info | The launcher installed a newer launcher from the release's `latest.json` (`message` = manifest URL) and restarts |
 | `self_update_failed` | warn | A launcher update could not be checked, downloaded or installed (`message`; "signature" = the setup exe was not signed with our key). The old launcher keeps running |
+| `server_started` | info | Host a server started the newest installed game as a server (`message` = version and port) |
+| `server_start_failed` | warn | The server exe could not start (`message`): the game is missing or damaged. Reinstall it |
+| `server_stop_requested` | info | The player pressed Stop server; the server quits on its stop file within a second |
+| `server_exited` | info | The hosted server quit (`message` = exit code, or "launcher closed"). A quick exit after `server_started` = port in use; read `server/server.log` |
 
 ## Adding log lines (rules for agents)
 
