@@ -2,11 +2,18 @@
 # Installs Godot (headless) and the lint tools so cloud sessions can run the same checks as CI.
 set -euo pipefail
 
+cd "${CLAUDE_PROJECT_DIR:-.}"
+
+# The vendored Elephant-Goldfish Model plugin (plan reviews), in local settings so no machine path is committed.
+if command -v claude >/dev/null; then
+  { claude plugin marketplace add "$PWD/.agents/plugins/egm" --scope local \
+    && claude plugin install egm@egm --scope local; } >/dev/null 2>&1 \
+    || echo "session-start: could not enable the egm plugin" >&2
+fi
+
 if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
   exit 0
 fi
-
-cd "${CLAUDE_PROJECT_DIR:-.}"
 
 GODOT_VERSION=4.7.2
 GDTOOLKIT_VERSION=4.5.0

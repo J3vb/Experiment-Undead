@@ -1,4 +1,4 @@
-## Loadout tabs (F-88 step 3): Weapons and Field Gear split the slots and the stash; the other three are locked.
+## Loadout tabs (F-88 step 3): Weapons and Field Gear split the stash; the other three are locked.
 extends GutTest
 
 const SCREEN: PackedScene = preload("res://systems/ui/character_screen.tscn")
@@ -19,14 +19,13 @@ func before_each() -> void:
 	screen.open(profile)
 
 
-func test_weapons_is_the_default_and_shows_only_gun_slots_and_guns() -> void:
+func test_weapons_is_the_default_and_lists_only_guns() -> void:
 	assert_eq(screen.tab, &"weapons")
 	assert_true(screen.tabs.button_for(&"weapons").button_pressed)
-	assert_eq(_visible_slot_ids(), [&"primary", &"sidearm"])
 	assert_eq(screen.visible_stash_indices(), [3, 0])
 
 
-func test_field_gear_shows_the_other_slots_and_gear() -> void:
+func test_field_gear_lists_gear_and_every_slot_stays_on_the_figure() -> void:
 	var field_gear: Button = screen.tabs.button_for(&"field_gear")
 	field_gear.button_pressed = true
 	field_gear.pressed.emit()
@@ -34,7 +33,7 @@ func test_field_gear_shows_the_other_slots_and_gear() -> void:
 	assert_eq(screen.tab, &"field_gear")
 	assert_true(screen.tabs.button_for(&"field_gear").button_pressed)
 	assert_false(screen.tabs.button_for(&"weapons").button_pressed)
-	assert_eq(_visible_slot_ids(), [&"vest", &"charm", &"implant"])
+	assert_eq(screen.slots.buttons.filter(func(button: Button) -> bool: return button.visible).size(), 9)
 	assert_eq(screen.visible_stash_indices(), [2, 1])
 
 
@@ -63,12 +62,12 @@ func test_locked_tabs_are_greyed_and_do_nothing() -> void:
 	assert_eq(labels, ["WEAPONS", "SERUMS", "PERKS", "FIELD GEAR", "CUSTOMIZE"])
 
 
-func test_focus_only_points_at_visible_controls_after_each_tab_change() -> void:
+func test_focus_only_points_at_reachable_controls_after_each_tab_change() -> void:
 	for id: StringName in [&"field_gear", &"weapons", &"field_gear"]:
 		screen.select_tab(id)
 		var controls: Array[Control] = []
 		controls.append_array(screen.tabs.open_buttons())
-		controls.append_array(screen.slot_buttons.filter(func(button: Button) -> bool: return button.visible))
+		controls.append_array(screen.slots.buttons)
 		controls.append_array(screen.stash_buttons)
 		controls.append_array([screen.get_node("%Rarity"), screen.get_node("%Sort"), screen.get_node("%Back")])
 		for control: Control in controls:
@@ -90,7 +89,7 @@ func test_reopening_starts_on_weapons() -> void:
 	screen.select_tab(&"field_gear")
 	screen.open(profile)
 	assert_eq(screen.tab, &"weapons")
-	assert_eq(_visible_slot_ids(), [&"primary", &"sidearm"])
+	assert_eq(screen.visible_stash_indices(), [3, 0])
 
 
 func test_loadout_tabs_lists_all_five_and_opens_only_two() -> void:
@@ -109,14 +108,6 @@ func test_character_stash_puts_items_with_a_missing_base_under_field_gear() -> v
 		profile, CharacterStash.Kind.WEAPONS, 0, CharacterStash.Order.RARITY
 	)
 	assert_false(guns.has(4))
-
-
-func _visible_slot_ids() -> Array[StringName]:
-	var ids: Array[StringName] = []
-	for button: Button in screen.slot_buttons:
-		if button.visible:
-			ids.append(button.get_meta("slot"))
-	return ids
 
 
 func _stash_button(index: int) -> Button:

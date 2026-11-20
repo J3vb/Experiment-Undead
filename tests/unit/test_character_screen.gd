@@ -32,8 +32,8 @@ func test_open_shows_profile_slots_stash_and_default_focus() -> void:
 	assert_eq((screen.get_node("%Name") as NameField).text, "Rook")
 	assert_string_contains((screen.get_node("%Level") as Label).text, "14")
 	assert_eq(screen.stash_buttons.size(), 60)
-	assert_eq(screen.slot_buttons.size(), 5)
-	assert_eq((screen.get_node("%Grid") as GridContainer).columns, 10)
+	assert_eq(screen.slots.buttons.size(), 9)
+	assert_eq((screen.get_node("%Grid") as GridContainer).columns, CharacterScreen.STASH_COLUMNS)
 	assert_true(screen.is_ancestor_of(screen.get_viewport().gui_get_focus_owner()))
 	assert_eq(screen.get_theme_font("font"), (screen.get_node("%ItemTooltip") as Control).get_theme_font("font"))
 	assert_not_null(screen.rig.skeleton)
@@ -46,7 +46,7 @@ func test_e_equips_selected_stash_item_then_unequips_loadout() -> void:
 	screen._input(_key(KEY_E))
 	assert_eq(profile.loadout[&"sidearm"], chosen)
 	assert_eq(profile.stash[4], {})
-	screen.slot_buttons[1].grab_focus()
+	_slot_button(&"sidearm").grab_focus()
 	screen._input(_key(KEY_E))
 	assert_eq(profile.loadout[&"sidearm"], {})
 	assert_true(profile.stash.has(chosen))
@@ -62,8 +62,7 @@ func test_equipment_request_reapplies_rig_and_removes_unequipped_vest() -> void:
 	screen._input(_key(KEY_E))
 	assert_false(is_instance_valid(old_vest), "Equipping refreshes GearRig from the current loadout")
 	assert_not_null(screen.rig.skeleton.get_node_or_null("Vest"))
-	screen.select_tab(&"field_gear")
-	screen.slot_buttons[2].grab_focus()
+	_slot_button(&"vest").grab_focus()
 	screen._input(_key(KEY_E))
 	assert_eq(profile.loadout[&"vest"], {})
 	assert_null(screen.rig.skeleton.get_node_or_null("Vest"))
@@ -83,8 +82,8 @@ func test_vest_charm_and_implant_equip_and_unequip_through_inventory_and_rig() -
 		assert_eq(profile.stash[20 + index], {})
 		assert_not_null(screen.rig.skeleton.get_node_or_null(String(slot).capitalize()))
 		var base: GearBaseData = Content.get_item(&"loot", bases[index]) as GearBaseData
-		assert_string_contains(screen.slot_buttons[index + 2].text, base.display_name)
-		screen.slot_buttons[index + 2].grab_focus()
+		assert_string_contains(_slot_button(slot).text, base.display_name)
+		_slot_button(slot).grab_focus()
 		screen._input(_key(KEY_E))
 		assert_eq(profile.loadout[slot], {})
 		assert_true(profile.stash.has(item))
@@ -171,7 +170,7 @@ func test_newest_sort_uses_acquisition_order_after_reusing_a_stash_hole() -> voi
 	screen._input(_key(KEY_E))
 	assert_eq(profile.loadout[&"primary"].get("uid"), "fresh")
 	assert_eq(profile.loadout[&"primary"].get("acquired"), acquired)
-	screen.slot_buttons[0].grab_focus()
+	_slot_button(&"primary").grab_focus()
 	screen._input(_key(KEY_E))
 	assert_eq(profile.stash[0].get("uid"), "fresh")
 	assert_eq(profile.stash[0].get("acquired"), acquired, "Equipment moves preserve acquisition order")
@@ -202,8 +201,8 @@ func test_shift_holds_compare_and_controller_x_toggles_it() -> void:
 func test_stash_focus_moves_across_cells_rows_and_back_to_controls() -> void:
 	var first: Button = screen.stash_buttons[0]
 	assert_eq(first.get_node(first.focus_neighbor_right), screen.stash_buttons[1])
-	assert_eq(first.get_node(first.focus_neighbor_bottom), screen.stash_buttons[10])
-	assert_eq(first.get_node(first.focus_neighbor_left), screen.slot_buttons[0])
+	assert_eq(first.get_node(first.focus_neighbor_bottom), screen.stash_buttons[CharacterScreen.STASH_COLUMNS])
+	assert_eq(first.get_node(first.focus_neighbor_left), _slot_button(&"primary"))
 	assert_eq(first.get_node(first.focus_neighbor_top), screen.get_node("%Sort"))
 	var last: Button = screen.stash_buttons[59]
 	assert_eq(last.get_node(last.focus_neighbor_bottom), screen.get_node("%Back"))
@@ -228,7 +227,7 @@ func test_unknown_item_and_full_stash_unequip_are_rejected_without_changes() -> 
 	profile.loadout[&"primary"] = _item("talon_dmr", "equipped", "epic", 20)
 	screen.open(profile)
 	before = profile.to_dict()
-	screen.slot_buttons[0].grab_focus()
+	_slot_button(&"primary").grab_focus()
 	screen._input(_key(KEY_E))
 	assert_eq(profile.to_dict(), before)
 	assert_false((screen.get_node("%Status") as Label).text.is_empty())
@@ -292,6 +291,13 @@ func test_columns_and_footer_fit_the_base_and_1440p_viewports() -> void:
 		]:
 			var control: Control = layout.get_node(path) as Control
 			assert_true(bounds.encloses(control.get_global_rect()), "%s fits at %s" % [path, viewport_size])
+
+
+func _slot_button(slot: StringName) -> Button:
+	for button: Button in screen.slots.buttons:
+		if screen.slots.slot_of(button) == slot:
+			return button
+	return null
 
 
 func _choose(name: String, index: int) -> void:

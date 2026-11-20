@@ -17,7 +17,7 @@ func _ready() -> void:
 		var button: Button = Button.new()
 		button.text = String(id).replace("_", " ").to_upper()
 		button.theme_type_variation = &"MenuBrush"
-		button.add_theme_font_size_override("font_size", 20)
+		button.add_theme_font_size_override("font_size", 18)
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.toggle_mode = true
 		button.button_group = group
@@ -37,8 +37,8 @@ func _ready() -> void:
 func _narrow(button: Button) -> void:
 	for state: StringName in [&"normal", &"hover", &"pressed", &"focus", &"disabled", &"hover_pressed"]:
 		var box: StyleBox = button.get_theme_stylebox(state).duplicate() as StyleBox
-		box.content_margin_left = 10.0
-		box.content_margin_right = 10.0
+		box.content_margin_left = 6.0
+		box.content_margin_right = 6.0
 		button.add_theme_stylebox_override(state, box)
 
 
