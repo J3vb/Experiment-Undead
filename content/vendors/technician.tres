@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="VendorData" format=3]
+
+[ext_resource type="Script" path="res://systems/hub/vendor_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/characters/npc_technician.glb" id="2"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Dr. Lien Corvelyn"
+title = "Technician"
+stall = &"TECHNICIAN"
+model = ExtResource("2")
+idle_clip = &"desk_work"
+lines = Array[String](["A serum is Fenlight on a leash. Don't forget the leash.", "I made these doses once. For Oriel.", "Dr. Aust had a reason. I have to believe that.", "If your vial glows bright, come and see me."])

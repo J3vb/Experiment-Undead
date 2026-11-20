@@ -17,7 +17,7 @@ func _files(type: String) -> PackedStringArray:
 
 func test_content_autoload_indexes_every_type() -> void:
 	for type: StringName in [
-		&"weapons", &"enemies", &"waves", &"economy", &"serums", &"power_ups", &"loot", &"gear_visuals"
+		&"weapons", &"enemies", &"waves", &"economy", &"serums", &"power_ups", &"loot", &"gear_visuals", &"vendors"
 	]:
 		assert_gt(Content.ids(type).size(), 0, "Content has %s" % type)
 

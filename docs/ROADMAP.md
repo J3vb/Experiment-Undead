@@ -45,7 +45,8 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-65 | Client and server updates: clear version refusals, saves safe across channels, a launcher that installs and updates the game and a server, self-updating Docker servers (steps 1-5 before F-11) | - | - | [ready](plans/client-server-updates.md) | L | Building |
 | F-09 | v0.1 performance check | #108 | F-01..F-07, F-12, F-13, F-16 | issue | S | Todo |
 | F-10 | First play-test (the person plays) | #109 | F-09 | issue | S | Todo |
-| F-11 | Release v0.1.0 | #111 | F-10, F-65 steps 1-5 | issue | S | Todo |
+| F-82 | Separate launcher program (like Steam or Battle.net): installs and updates the game, updates itself, news and patch notes, hosts a server; replaces the launcher built into the game (F-65 steps 5-6, 9) | - | F-65 step 4 | [ready](plans/separate-launcher.md) | L | Ready |
+| F-11 | Release v0.1.0 | #111 | F-10, F-65 steps 1-4, F-82 steps 1-4 | issue | S | Todo |
 | F-40 | Round state and power-ups in co-op (rest of #126 after F-02) | #126 | F-02 | [done](plans/coop-round-state-power-ups.md) | M | Done |
 | F-47 | A full co-op match: co-op soak, pause, squad cards, hub and deploy flow | #213 | F-40 | [plan](plans/coop-full-match.md) | L | Done |
 | F-48 | Full settings screen: Graphics page with presets, then Accessibility and Comfort | - | F-05 | [ready](plans/full-settings.md) | L | Done |
@@ -55,7 +56,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-67 | Character select before Enter world: pick a preset survivor with a bio and 3 traits (ui-hud screen 3, concept art 2026-11-17) | - | F-66 step 2 | needed | M | Todo |
 | F-81 | Players set their own in-game name on the Character screen; teammates see it in co-op | - | F-66 | [done](plans/player-names.md) | S | Done |
 | F-74 | Lantern Post to the concept art: ridge sky, timber lodges, market stalls, concrete Deploy gate, props | - | F-50 | [done](plans/lantern-post-concept.md) | L | Done |
-| F-76 | Lantern Post vendors: the four stall keepers (Quartermaster, Gunsmith, Technician, Cordon liaison) as code-built NPCs with idle clips, head turn and talk lines; shop screens stay in F-45 | - | F-74 step 3 (#338), F-70 step 1 (#337) | [ready](plans/lantern-post-vendors.md) | L | Ready |
+| F-76 | Lantern Post vendors: the four stall keepers (Quartermaster, Gunsmith, Technician, Cordon liaison) as code-built NPCs with idle clips, head turn and talk lines; shop screens stay in F-45 | - | F-74 step 3 (#338), F-70 step 1 (#337) | [ready](plans/lantern-post-vendors.md) | L | Building |
 | F-77 | Shared prop library for future maps: about 75 code-built props in eight families (barriers, military, industrial, rail, large pieces, hospital, outdoor, map hero pieces) plus a catalogue, so Act I maps and towns are assembly, not modelling | - | - | [ready](plans/prop-library.md) | L | Building |
 | F-78 | Tripo model trial: one Tripo prop and one vendor through a new intake (decimate, bake our three maps, fit our 22-bone skeleton, existing clips), side by side with code-built, report so the person can pick how F-76 and F-77 are made | - | - | [ready](plans/tripo-trial.md) | M | Ready |
 | F-80 | Props and vendors made in Tripo: Tripo API tool with manifests and image prompts, ADR for Tripo models, F-76 vendors and F-77 prop families built from Tripo instead of Blender scripts | - | F-78 | [ready](plans/tripo-models.md) | L | Building |
