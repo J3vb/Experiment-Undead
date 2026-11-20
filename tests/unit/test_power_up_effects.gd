@@ -123,3 +123,14 @@ func test_a_cryo_freeze_ending_keeps_the_stasis_ice() -> void:
 	assert_not_null(mesh.material_overlay, "still iced while in Stasis")
 	drops._physics_process(8.5)
 	assert_null(mesh.material_overlay, "ice gone once both end")
+
+
+func test_power_up_effects_stasis_ignores_dead_zombies() -> void:
+	var dead: Zombie = _zombie()
+	dead.state = Zombie.State.DEAD
+	var alive: Zombie = _zombie()
+	PowerUpEffects.set_stasis(session.spawner, true)
+	assert_false(dead.stasis)
+	assert_true(alive.stasis)
+	PowerUpEffects.set_stasis(session.spawner, false)
+	assert_false(alive.stasis)
