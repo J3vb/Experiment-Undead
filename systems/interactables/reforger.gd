@@ -52,7 +52,7 @@ func owner_facts(player: Player) -> Dictionary:
 func check_facts(facts: Dictionary) -> bool:
 	if not (facts.get("current") is StringName and facts.get("slot") is int and facts.get("full") is bool):
 		return false
-	return facts.current == &"" or Content.ids(&"weapons").has(facts.current)
+	return facts.current == &"" or Content.has(&"weapons", facts.current)
 
 
 func _is_full(weapon: Weapon) -> bool:

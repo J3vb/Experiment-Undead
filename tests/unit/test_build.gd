@@ -69,6 +69,13 @@ func test_server_port_falls_back() -> void:
 	assert_eq(DedicatedServer.read_int_setting("no-such-arg", "EU_NO_SUCH_ENV", 7777), 7777)
 
 
+func test_server_refuses_ports_the_browser_cannot_see() -> void:
+	assert_true(DedicatedServer.port_fits(7777))
+	assert_true(DedicatedServer.port_fits(PortOpener.MAX_PORT))
+	assert_false(DedicatedServer.port_fits(PortOpener.MAX_PORT + 1), "info port would be above 65535")
+	assert_false(DedicatedServer.port_fits(0))
+
+
 func test_only_plain_release_versions_are_stable() -> void:
 	for version: String in ["0.1.0", "1.20.3"]:
 		assert_true(Build.is_stable_version(version), version)

@@ -30,6 +30,16 @@ class MessyName:
 		return data
 
 
+## A matching build whose hello lost its level field.
+class NoLevel:
+	extends Handshake
+
+	func hello() -> Dictionary:
+		var data: Dictionary = super.hello()
+		data.erase("level")
+		return data
+
+
 func _make_side(side_name: String, handshake: Handshake = null) -> Node:
 	if handshake == null:
 		handshake = Handshake.new()
@@ -124,6 +134,15 @@ func test_server_cleans_the_name_in_a_hello() -> void:
 	await wait_until(func() -> bool: return server_spawner.find_player(peer_id) != null, 5.0, "messy client admitted")
 	assert_eq(server_handshake.player_name(peer_id), "bScoutb of the l")
 	assert_eq(server_handshake.player_name(1), "Host")
+
+
+func test_hello_without_a_level_joins_at_level_one_instead_of_timing_out() -> void:
+	var odd_root: Node = _make_side("NoLevelClient", NoLevel.new())
+	_join(odd_root)
+	var peer_id: int = odd_root.multiplayer.get_unique_id()
+	await wait_until(func() -> bool: return server_spawner.find_player(peer_id) != null, 5.0, "client admitted")
+	assert_not_null(server_spawner.find_player(peer_id), "no silent timeout")
+	assert_eq(server_handshake.player_level(peer_id), 1)
 
 
 func test_wrong_protocol_is_refused_with_both_versions_without_spawning() -> void:

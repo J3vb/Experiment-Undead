@@ -85,6 +85,7 @@ Each says when to fix it.
 - **Wall guns:** BR-12 keeps its stock wrist (no pistol grip); VX-9, BR-12 and MR-28 still use the shared surface shader (AR-17 is baked). Fix when: F-75 bakes them. [guns-concept](plans/guns-concept.md)
 - **Damage numbers:** Siphon shows none (damage is server-side); a host can show overkill from later pellets. Fix when: a player asks for them.
 - **No Git LFS:** binaries in plain git; the lines to switch it on are in `.gitattributes`. Fix when: asset packs arrive.
+- **Hello without a level (F-65):** a matching hello with no number in `level` joins at level 1 and logs `net.hello_bad_level` instead of a refusal, so no new refusal code or protocol bump. [client-server-updates](plans/client-server-updates.md)
 
 ## Provisional picks
 

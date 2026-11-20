@@ -153,6 +153,13 @@ class CheckRulesTests(unittest.TestCase):
             },
         )
 
+    def test_content_has(self):
+        line = 'if Content.ids(&"weapons").has(id):\n'
+        self.check("content-has", {"systems/vault.gd": line}, 1)
+        self.check("content-has", {"core/net.gd": line}, 1)
+        self.check("content-has", {"tests/unit/test_vault.gd": line})
+        self.check("content-has", {"systems/vault.gd": 'if Content.has(&"weapons", id):\n# Content.ids(x).has(y)\n'})
+
     def test_no_absolute_paths(self):
         self.check(
             "no-absolute-paths",

@@ -9,6 +9,8 @@ signal finished
 const LEASE_SECONDS: int = 3600
 const RENEW_SECONDS: float = 3000.0
 const INFO_PORT_OFFSET: int = 1000
+## Highest game port a world can use: the info port must fit in 65535 too.
+const MAX_PORT: int = 65535 - INFO_PORT_OFFSET
 const DESCRIPTION: String = "Fenlight"
 ## UPNP_RESULT_SUCCESS, named here so a build without the UPNP class still loads.
 const SUCCESS: int = 0

@@ -40,6 +40,7 @@ fn server_args_match_the_game_and_clamp() {
     );
     let clamped = server_args(0, 99, stop, drain);
     assert_eq!(clamped[3], "--port=1");
+    assert_eq!(server_args(65535, 4, stop, drain)[3], "--port=64535");
     assert_eq!(clamped[4], "--max-players=8");
     assert_eq!(server_args(7777, 0, stop, drain)[4], "--max-players=1");
 }
