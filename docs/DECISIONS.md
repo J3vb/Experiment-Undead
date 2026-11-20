@@ -27,8 +27,11 @@ These win over the design docs (see `docs/design/README.md`).
 - **Text size:** 80 to 150%, not 200%, until layouts are checked at that size. Font options (Lexend, OpenDyslexic) wait. [full-settings](plans/full-settings.md)
 - **Shotgun hitstop:** the "< 4 m" condition is dropped (`hit_confirmed` has no distance); the "shake from your gun" slider at 0 also turns hitstop off. [game-feel-slice](plans/game-feel-slice.md)
 - **Log autoload:** `Log` is an autoload although the architecture doc's table does not list it. [LOGGING](LOGGING.md)
-- **Stat caps:** the design's caps (reload +60%, recoil -50%, max health 400, points +50%, luck +100%) hold skills plus gear; Serum multipliers stack on top (the person's pick). [skill-effects](plans/skill-effects.md)
+- **Stat caps:** the design's caps (reload +60%, recoil -50%, points +50%, luck +100%) hold skills plus gear; Serum multipliers stack on top (the person's pick). [skill-effects](plans/skill-effects.md)
+- **Max health cap (F-71):** flat max health from gear and skills stops at +100 (was 400 in total); Thick Skin sharing it is provisional. Ironhide multiplies the base outside the cap (100 base: 200, with Ironhide 350). [four-gear-slots](plans/four-gear-slots.md)
 - **Second Wind:** solo only; "solo" means alone in the world (`Net.is_coop()` false), so a lone listen server plays as solo. [join-any-game](plans/join-any-game.md)
+- **Sets (F-71, the person's pick):** a set is exactly five armour pieces: headgear, vest, gloves, backpack, boots. Guns, charm and implant are never set pieces; bonuses stay at 2/3/5. Replaces affixes.md's gun-and-vest set. F-32 builds it. [four-gear-slots](plans/four-gear-slots.md)
+- **Gear drop share (F-71, the person's pick):** each new slot's one base weighs 300, as much as the three vests together, so at level 30 Rare guns are about 39% of drops (was 56%) and each new slot about 7%. Weights are data. [four-gear-slots](plans/four-gear-slots.md)
 
 ## Simplified on purpose
 
@@ -55,7 +58,8 @@ Each says when to fix it.
 - **Co-op hit bounds** use Content weapon data, not the held inventory (weapon switching is local). Fix when: a server checks loadouts (P8).
 - **Loadout trust:** the server does not check that a client owns the gear it sends (friends-only servers). Fix when: public servers (P8). [item-effects-server](plans/item-effects-server.md)
 - **All-guns gear stats (F-71 step 1):** non-item guns get gear damage, recoil and reserve through F-20's `ItemInstance.fit_player_gun` and `ItemLoadout.refit_guns`, not a new `Weapon.refit`; swap time also reads the raised gun's own handling line. [four-gear-slots](plans/four-gear-slots.md)
-- **New slots before their pools (F-71 step 2):** the four new bases ship at `drop_weight` 0 with no affix pool or GearVisual: they equip, save and sync, but only drop after step 4 and show after F-70. [four-gear-slots](plans/four-gear-slots.md)
+- **New slots not drawn yet (F-71):** headgear, gloves, backpack and boots drop, roll and give stats but have no GearVisual until F-70; their stash icons are flat placeholders from `tools/assets/placeholder_gear_icons.py`. Fix when: F-70 steps 2-3. [four-gear-slots](plans/four-gear-slots.md)
+- **Six dormant gear lines:** Explosion guard, Grab escape, Fast revive, Grenade damage, Extra grenade and Scrap find still roll on vest, charm or implant with no reader; they stay off the new slots. Fix when: grabs, revive tuning, grenades, scrap. [four-gear-slots](plans/four-gear-slots.md)
 - **Skill rules (provisional):** Execution Line checks health before the hit; Dead Center refunds a round to the gun in hand on any headshot kill; Undying works only without Second Wind and costs every Serum; Scrounger skips the revive reward. [skill-effects](plans/skill-effects.md)
 - **Skills waiting on their feature:** Gadgeteer and Sturdy only add their stat; Execution Line has no Brute rule. Overtime lengthens timed power-ups by the collector's seconds (team-wide timer). Fix when: F-22, F-24, F-30. [skill-effects](plans/skill-effects.md)
 - **Hold-to-buy** stays a tap. Fix when: accidental buys show in play-tests.
@@ -129,3 +133,4 @@ Agent picks the person may change.
 - **Rename to Fenlight:** players see Fenlight; game exe/pck names, the launcher app id and data folder, and the `experiment-undead-server` image keep the old name so installs and servers keep working. Saves copy over once. [RELEASING](RELEASING.md)
 - **Menu brush colour (F-88):** the concept art's orange brush on the selected menu row is burnt orange #D9662B, not Legendary #FF8A1C, and the restyled menus drop the one-green-main-button rule. Provisional. [front-end-concept](plans/front-end-concept.md)
 - **Server drain (F-65 step 8, F-82 step 4b):** the game side (drain file, `SERVER_UPDATING`, exit code 3) is built with the launcher's hosted-server updates; the Docker entrypoint's auto-update half of step 8 is still to build. [client-server-updates](plans/client-server-updates.md)
+- **New slot pools (F-71):** Headgear = head and aim, Gloves = handling, Backpack = carrying, Boots = moving, 2 prefixes and 2 suffixes each; Steady aim and Recoil grip are gear prefixes; names Salvager Cap, Gloves, Pack and Boots. [four-gear-slots](plans/four-gear-slots.md)

@@ -3,9 +3,7 @@ extends GutTest
 
 const GATES: Array[int] = [1, 8, 15, 22, 30]
 const SLOTS: Array[StringName] = [&"vest", &"charm", &"implant", &"headgear", &"gloves", &"backpack", &"boots"]
-## Affix slot lists cover these until F-71 step 4 adds the new pools.
-const AFFIX_SLOTS: Array[StringName] = [&"vest", &"charm", &"implant"]
-## F-71 bases: drop_weight 0 until step 4; drawn once F-70 adds their GearVisual.
+## F-71 bases: drawn once F-70 adds their GearVisual.
 const NEW_BASES: Array[StringName] = [&"headgear_cap", &"gloves_tactical", &"backpack_pack", &"boots_field"]
 const MODELS: Array[StringName] = [
 	&"vest_light",
@@ -47,7 +45,22 @@ const RANGES: Dictionary[StringName, Vector3] = {
 	&"headshot_focus": Vector3(4, 12, 50),
 	&"reload_focus": Vector3(4, 10, 60),
 	&"mule": Vector3(5, 15, 50),
+	&"steady_aim": Vector3(3, 8, 90),
+	&"recoil_grip": Vector3(3, 8, 90),
+	&"quick_hands": Vector3(6, 14, 70),
 }
+const ALL_THREE: Array[StringName] = [&"vest", &"charm", &"implant"]
+## Pools for the F-71 slots (plan "Slot jobs and pools"): 2 prefixes and 2 suffixes each.
+const NEW_POOLS: Dictionary[StringName, Array] = {
+	&"headgear": [&"max_health", &"steady_aim", &"regen_delay", &"reload_focus"],
+	&"gloves": [&"recoil_grip", &"steady_aim", &"reload_focus", &"quick_hands"],
+	&"backpack": [&"max_health", &"damage_reduction", &"mule", &"sprint_duration"],
+	&"boots": [&"max_health", &"damage_reduction", &"move_speed", &"sprint_duration"],
+}
+## Lines with no reader yet: they stay off the F-71 slots (docs/DECISIONS.md).
+const DORMANT: Array[StringName] = [
+	&"explosion_guard", &"grab_escape", &"fast_revive", &"grenade_damage", &"extra_grenade", &"scrap_find"
+]
 
 
 func test_seventeen_bases_are_indexed_and_reference_matching_visuals() -> void:
@@ -72,7 +85,7 @@ func test_seventeen_bases_are_indexed_and_reference_matching_visuals() -> void:
 		assert_has(SLOTS, StringName(base.slot))
 		assert_ne(base.visual_id, &"", path + " names a visual")
 		if NEW_BASES.has(base.id):
-			assert_eq(base.drop_weight, 0.0, "new slots do not drop until F-71 step 4")
+			assert_eq(base.drop_weight, 300.0, "one base carries the whole slot, as much as the three vests")
 			assert_eq(base.loot_tags.size(), 1)
 			assert_eq(base.loot_tags[0], StringName(base.slot))
 		else:
@@ -111,7 +124,7 @@ func test_visual_scenes_load_and_attach_to_the_player_skeleton() -> void:
 
 func test_gear_affixes_have_five_equal_rising_tiers() -> void:
 	var paths: PackedStringArray = _files("res://content/loot/affixes/gear")
-	assert_eq(paths.size(), 24)
+	assert_eq(paths.size(), 27)
 	var families: Array[StringName] = []
 	for path: String in paths:
 		var affix: AffixData = load(path) as AffixData
@@ -143,22 +156,57 @@ func test_gear_affix_ranges_weights_kinds_and_slots_match_the_tables() -> void:
 		&"skill_rank",
 		&"all_damage",
 		&"headshot_focus",
+		&"steady_aim",
+		&"recoil_grip",
 	]
 	var ids: Array[StringName] = []
 	ids.assign(RANGES.keys())
-	for index: int in ids.size():
-		var id: StringName = ids[index]
+	for id: StringName in ids:
 		var affix: AffixData = Content.get_item(&"loot", id) as AffixData
 		var values: Vector3 = RANGES[id]
 		assert_almost_eq(affix.tiers[0].low, float(values.x), 0.00001, String(id))
 		assert_almost_eq(affix.tiers[4].high, float(values.y), 0.00001, String(id))
 		assert_eq(affix.weight, float(values.z), String(id))
 		assert_eq(affix.kind, "prefix" if prefixes.has(id) else "suffix", String(id))
-		var expected_slots: Array[StringName] = AFFIX_SLOTS.duplicate()
-		if index < 18:
-			expected_slots.assign([AFFIX_SLOTS[floori(index / 6.0)]])
-		assert_eq(affix.slots, expected_slots, String(id))
+		assert_eq(affix.slots, _expected_slots(id), String(id))
 		assert_eq(affix.min_rarity, &"rare" if id in [&"skill_rank", &"extra_grenade", &"vault_favour"] else &"common")
+
+
+func test_each_new_slot_pool_is_exactly_its_table_row_with_no_dormant_line() -> void:
+	for slot: StringName in NEW_POOLS:
+		var pool: PackedStringArray = []
+		var kinds: Dictionary = {"prefix": 0, "suffix": 0}
+		for id: StringName in Content.sorted_ids(&"loot"):
+			var affix: AffixData = Content.get_item(&"loot", id) as AffixData
+			if affix != null and affix.slots.has(slot):
+				pool.append(String(id))
+				kinds[affix.kind] += 1
+				assert_false(DORMANT.has(id), "%s rolls on %s but nothing reads it" % [id, slot])
+		var expected: PackedStringArray = PackedStringArray(NEW_POOLS[slot])
+		expected.sort()
+		assert_eq(pool, expected, String(slot))
+		assert_eq(kinds, {"prefix": 2, "suffix": 2}, String(slot))
+
+
+func test_every_gear_slot_has_a_base_that_drops() -> void:
+	var dropping: Array[StringName] = []
+	for id: StringName in Content.sorted_ids(&"loot"):
+		var base: GearBaseData = Content.get_item(&"loot", id) as GearBaseData
+		if base != null and base.drop_weight > 0.0 and not dropping.has(StringName(base.slot)):
+			dropping.append(StringName(base.slot))
+	for slot: StringName in SLOTS:
+		assert_has(dropping, slot)
+
+
+func test_new_aim_and_handling_lines_feed_the_gun_stats() -> void:
+	var expected: Dictionary[StringName, StringName] = {
+		&"steady_aim": &"ads_pct", &"recoil_grip": &"recoil_pct", &"quick_hands": &"handling_pct"
+	}
+	for id: StringName in expected:
+		var affix: AffixData = Content.get_item(&"loot", id) as AffixData
+		assert_eq(affix.stat, expected[id], String(id))
+		assert_eq(affix.op, "increased", String(id))
+		assert_eq(affix.family, id)
 
 
 func test_shared_gear_bonus_stat_keys_match_runtime_consumers() -> void:
@@ -185,6 +233,40 @@ func test_single_value_lines_keep_their_fixed_value_and_level_gate() -> void:
 			for tier: AffixTier in affix.tiers:
 				assert_eq(tier.low, 1.0)
 				assert_eq(tier.high, 1.0)
+
+
+func _expected_slots(id: StringName) -> Array[StringName]:
+	var slots: Array[StringName] = []
+	for slot: StringName in [&"vest", &"charm", &"implant"]:
+		if _old_slots(id).has(slot):
+			slots.append(slot)
+	for slot: StringName in NEW_POOLS:
+		if NEW_POOLS[slot].has(id):
+			slots.append(slot)
+	return slots
+
+
+## The vest, charm and implant pools from before F-71, unchanged.
+func _old_slots(id: StringName) -> Array[StringName]:
+	if id in [&"all_damage", &"headshot_focus", &"reload_focus", &"mule", &"move_speed", &"sprint_duration"]:
+		return ALL_THREE
+	if id in [&"max_health", &"damage_reduction", &"explosion_guard", &"regen_delay", &"grab_escape", &"fast_revive"]:
+		return [&"vest"]
+	if id in [&"points_earned", &"loot_luck", &"power_up_duration", &"power_up_chance", &"scrap_find", &"vault_favour"]:
+		return [&"charm"]
+	if (
+		id
+		in [
+			&"ability_power",
+			&"grenade_damage",
+			&"skill_rank",
+			&"ability_cooldown",
+			&"extra_grenade",
+			&"tactical_recharge"
+		]
+	):
+		return [&"implant"]
+	return []
 
 
 func _check_visual(id: StringName, skeleton: Skeleton3D) -> void:

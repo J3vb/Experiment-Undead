@@ -81,6 +81,21 @@ func test_fire_rate_caps_only_the_increased_bucket() -> void:
 	assert_almost_eq(stats.value(&"fire_rate_pct", 10.0), 26.0, 0.0001)
 
 
+func test_four_full_max_health_lines_stop_at_plus_one_hundred() -> void:
+	var stats: StatBlock = StatBlock.new()
+	for slot: StringName in [&"vest", &"headgear", &"backpack", &"boots"]:
+		stats.add_modifier(&"max_health", "flat", 40.0, slot)
+	assert_eq(stats.value(&"max_health", 100.0), 200.0)
+	assert_eq(stats.value(&"max_health", 100.0, null, 2.5), 350.0, "Ironhide multiplies the base, not the cap")
+
+
+func test_max_health_under_the_cap_adds_in_full() -> void:
+	var stats: StatBlock = StatBlock.new()
+	stats.add_modifier(&"max_health", "flat", 40.0, &"vest")
+	stats.add_modifier(&"max_health", "flat", 40.0, &"boots")
+	assert_eq(stats.value(&"max_health", 100.0), 180.0)
+
+
 func test_removing_source_restores_its_values_and_keeps_other_sources() -> void:
 	var stats: StatBlock = StatBlock.new()
 	stats.add_modifier(&"health", "increased", 0.2, &"vest")

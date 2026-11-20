@@ -11,4 +11,4 @@ display_name = "Salvager Gloves"
 visual_id = &"gloves_tactical"
 loot_tags = Array[StringName]([&"gloves"])
 unlock_level = 1
-drop_weight = 0.0
+drop_weight = 300.0

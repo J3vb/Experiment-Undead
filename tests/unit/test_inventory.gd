@@ -194,10 +194,10 @@ func test_every_rolled_gear_base_adds_equips_swaps_and_unequips_losslessly() -> 
 			profile.loadout[other_base.slot] = ItemRoller.roll_gear(rng, other_base, &"epic", 30)
 		profile.loadout[base.slot] = {}
 		var expected_loadout: Dictionary = profile.loadout.duplicate(true)
-		var first: Dictionary = _roll(rng, base, &"rare", 30)
+		var first: Dictionary = ItemRoller.roll_gear(rng, base, &"rare", 30)
 		first["future"] = {"nested": [null, {"retired_affix": true}]}
 		first["craft"] = {"locked": [0], "unknown_rule": 3}
-		var second: Dictionary = _roll(rng, base, &"legendary", 50)
+		var second: Dictionary = ItemRoller.roll_gear(rng, base, &"legendary", 50)
 		var first_before: Dictionary = first.duplicate(true)
 		var second_before: Dictionary = second.duplicate(true)
 		assert_eq(Inventory.add_to_stash(profile, first), 0, String(id))
@@ -221,13 +221,6 @@ func test_every_rolled_gear_base_adds_equips_swaps_and_unequips_losslessly() -> 
 		assert_eq(profile.stash[1], stored_second, "unequipping preserves the rolled item")
 		assert_eq(profile.stash.size(), 60)
 	assert_eq(checked, 17)
-
-
-## F-71 slots have no affix pool until step 4, so their pieces are plain items for now.
-func _roll(rng: RandomNumberGenerator, base: GearBaseData, rarity: StringName, level: int) -> Dictionary:
-	if base.drop_weight > 0.0:
-		return ItemRoller.roll_gear(rng, base, rarity, level)
-	return {"v": 1, "uid": "plain_%d" % rng.randi(), "base": String(base.id), "rar": String(rarity), "aff": []}
 
 
 func test_equipping_field_boots_from_the_stash_fills_the_boots_slot() -> void:

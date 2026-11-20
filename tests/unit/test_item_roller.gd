@@ -236,8 +236,7 @@ func test_gear_rolls_repeat_as_plain_item_dicts_without_implicit_ammo() -> void:
 
 func test_gear_counts_slots_families_kinds_and_level_gates() -> void:
 	var seen: Array[StringName] = []
-	for id: StringName in [&"vest_light", &"charm_coin", &"implant_reflex"]:
-		var base: GearBaseData = Content.get_item(&"loot", id) as GearBaseData
+	for base: GearBaseData in _one_base_per_slot():
 		for rarity: StringName in [&"common", &"uncommon", &"rare", &"epic", &"legendary"]:
 			var data: RarityData = Content.get_item(&"loot", rarity) as RarityData
 			for level: int in [0, 7, 8, 14, 15, 21, 22, 29, 30, 100]:
@@ -299,12 +298,48 @@ func test_slot_for_maps_every_gear_base_and_weapon() -> void:
 	assert_eq(Inventory.slot_for({}), &"")
 
 
-## Bases that roll today; the F-71 slots get their affix pools (and drop weight) in step 4.
+func test_new_slot_legendaries_roll_two_prefixes_and_two_suffixes_from_their_pool() -> void:
+	var pools: Dictionary[StringName, Array] = {
+		&"headgear_cap": [&"max_health", &"steady_aim", &"regen_delay", &"reload_focus"],
+		&"gloves_tactical": [&"recoil_grip", &"steady_aim", &"reload_focus", &"quick_hands"],
+		&"backpack_pack": [&"max_health", &"damage_reduction", &"mule", &"sprint_duration"],
+		&"boots_field": [&"max_health", &"damage_reduction", &"move_speed", &"sprint_duration"],
+	}
+	for id: StringName in pools:
+		var base: GearBaseData = Content.get_item(&"loot", id) as GearBaseData
+		for _roll: int in 10:
+			var item: Dictionary = ItemRoller.roll_gear(rng, base, &"legendary", 30)
+			var kinds: Dictionary = {"prefix": 0, "suffix": 0}
+			var rolled: PackedStringArray = []
+			for line: Array in item.aff:
+				var affix_id: StringName = StringName(line[0])
+				assert_has(pools[id], affix_id, String(id))
+				var affix: AffixData = Content.get_item(&"loot", affix_id) as AffixData
+				kinds[affix.kind] += 1
+				rolled.append(String(affix_id))
+			assert_eq(kinds, {"prefix": 2, "suffix": 2}, String(id))
+			rolled.sort()
+			var expected: PackedStringArray = PackedStringArray(pools[id])
+			expected.sort()
+			assert_eq(rolled, expected, String(id) + " fills its whole pool")
+
+
+func _one_base_per_slot() -> Array[GearBaseData]:
+	var bases: Array[GearBaseData] = []
+	var slots: Array[StringName] = []
+	for base: GearBaseData in _gear_bases():
+		if not slots.has(StringName(base.slot)):
+			slots.append(StringName(base.slot))
+			bases.append(base)
+	assert_eq(bases.size(), CharacterProfile.GEAR_SLOTS.size())
+	return bases
+
+
 func _gear_bases() -> Array[GearBaseData]:
 	var bases: Array[GearBaseData] = []
-	for id: StringName in Content.ids(&"loot"):
+	for id: StringName in Content.sorted_ids(&"loot"):
 		var base: GearBaseData = Content.get_item(&"loot", id) as GearBaseData
-		if base != null and base.drop_weight > 0.0:
+		if base != null:
 			bases.append(base)
 	return bases
 

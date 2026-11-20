@@ -63,6 +63,19 @@ func test_unlock_level_gates_weapon_and_gear_pool() -> void:
 			assert_false(String((base as WeaponData).id).ends_with("_reforged"))
 
 
+func test_new_gear_slots_each_drop_as_often_as_vests_and_guns_fall_to_two_fifths() -> void:
+	var weights: Dictionary[StringName, float] = {}
+	var total: float = 0.0
+	for base: Resource in LootService.eligible_bases(30, &"rare"):
+		var slot: StringName = &"gun" if base is WeaponData else StringName((base as GearBaseData).slot)
+		weights[slot] = weights.get(slot, 0.0) + LootService._weight(base)
+		total += LootService._weight(base)
+	assert_almost_eq(weights[&"gun"] / total, 0.39, 0.02, "guns")
+	for slot: StringName in [&"headgear", &"gloves", &"backpack", &"boots"]:
+		assert_almost_eq(weights.get(slot, 0.0) / total, 0.07, 0.01, String(slot))
+		assert_eq(weights.get(slot, 0.0), weights[&"vest"], String(slot) + " drops as often as a vest")
+
+
 func test_round_sets_item_level_and_caps_at_fifty() -> void:
 	service.drop_chance_override = 1.0
 	for round_number: int in [1, 17, 50, 83]:

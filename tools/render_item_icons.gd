@@ -45,7 +45,7 @@ func _render_all() -> void:
 	for base: Resource in item_bases():
 		var scene: PackedScene = model_for(base)
 		if scene == null:
-			push_error("No model for %s" % base.get("id"))
+			print("No model for %s: keeps its tools/assets/placeholder_gear_icons.py icon" % base.get("id"))
 			continue
 		await _render(scene, base is WeaponData, OUT_DIR + "%s.png" % base.get("id"))
 	get_tree().quit()
