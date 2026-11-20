@@ -1,10 +1,10 @@
 # Plan: HUD to the concept art
 
-Status: Review
+Status: Approved
 Roadmap: F-87 / no issue (concept art from the person, 2026-11-20)
 Phase: P2
 Size: M
-Approved by:
+Approved by: Claude subagent plan review on PR #438 (2026-11-20), fixes applied; size M with no open decisions
 Lore link: HUD readouts are the survivor's own gear and a game layer like points; Serum icons follow the Serums row in docs/design/lore.md (Oriel trial products), the compass gets a provisional row in "Grenades and field kit"
 
 ## Goal
@@ -302,5 +302,4 @@ for the whole HUD at 1080p with 24 zombies.
 
 ## Open decisions
 
-- none (the heartbeat line was answered by the person: leave it out; other
-  picks are provisional and listed in docs/DECISIONS.md)
+- [x] What the green heartbeat line shows: leave it out (the person, 2026-11-20). Other picks are provisional and go in docs/DECISIONS.md with each step.
