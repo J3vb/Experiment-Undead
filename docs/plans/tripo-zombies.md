@@ -1,6 +1,6 @@
 # Plan: Existing zombies to Tripo models
 
-Status: Approved
+Status: Building
 Roadmap: F-86 / issue none (person's ask in the project thread, 2026-11-20)
 Phase: P4
 Size: M

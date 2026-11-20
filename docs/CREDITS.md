@@ -5,6 +5,7 @@
 | Atkinson Hyperlegible Next and Mono, `assets/fonts/` | Braille Institute of America, Applied Design Works | https://github.com/googlefonts/atkinson-hyperlegible-next | SIL OFL 1.1 |
 | GUT (Godot Unit Test) 9.7.1, `addons/gut/` | Butch Wesley and contributors | https://github.com/bitwes/Gut | MIT |
 | Lantern Post market stalls, `assets/models/town_large/stall_*.glb` | Made for this project with Tripo AI (image to 3D, paid plan) | https://www.tripo3d.ai | Owned by this project, commercial use |
+| Shambler, Shambler guard and Bloater zombies, `assets/models/zombies/{shambler,shambler_guard,bloater}.glb` | Made for this project with Tripo AI (image to 3D, paid plan) | https://www.tripo3d.ai | Owned by this project, commercial use |
 | Glower zombie, `assets/models/zombies/glower.glb` | Made for this project with Tripo AI (image to 3D, paid plan) | https://www.tripo3d.ai | Owned by this project, commercial use |
 | MakeHuman base mesh (head only), `tools/assets/player_body/base_head.obj` | Data Collection AB, Joel Palmius, Jonas Hauquier | https://github.com/makehumancommunity/makehuman | CC0 1.0 |
 

@@ -1,4 +1,4 @@
-## Zombie models in game: each enemy type loads its code-built model, the head
+## Zombie models in game: each enemy type loads its Tripo model (Shamblers in two looks), the head
 ## hit zone rides on the head bone, and code-driven poses move the skeleton.
 extends GutTest
 
@@ -19,7 +19,6 @@ func test_walker_uses_shambler_model_with_all_limbs() -> void:
 	var zombie: Zombie = _spawn(WALKER)
 	for part: StringName in ZombieRig.PARTS:
 		assert_true(zombie.visual.has_part(part), "walker model has " + part)
-	assert_not_null(zombie.visual.find_child("CoatSkirt", true, false), "walker wears the Shambler lab coat")
 	assert_eq(_skeleton(zombie.visual).get_bone_count(), 22, "walker shares the character skeleton")
 
 
@@ -187,39 +186,12 @@ func test_voice_gets_the_enemy_groans() -> void:
 
 func test_bloater_has_its_own_model_and_wider_body() -> void:
 	var zombie: Zombie = _spawn(BLOATER)
-	assert_not_null(zombie.visual.find_child("Belly", true, false), "bloater model loaded")
 	assert_eq(zombie.head_zone.get_parent(), zombie.visual.head, "bloater head zone on its head")
 	var body: CollisionShape3D = zombie.get_node("HitZones/Body/Shape") as CollisionShape3D
-	assert_gt((body.shape as BoxShape3D).size.x, 0.9, "body zone covers the wide belly")
-	var belly: Node3D = zombie.visual.find_child("Belly", true, false) as Node3D
-	zombie.visual.pulse_belly()
-	assert_gt((belly.get_parent() as Node3D).scale.x, 1.0, "belly swells when hit")
-
-
-func test_belly_pulse_stays_centered_and_follows_the_spine() -> void:
-	var zombie: Zombie = _spawn(BLOATER)
-	zombie.set_process(false)
-	zombie.set_physics_process(false)
-	zombie.visual.position = Vector3.ZERO
-	var belly: MeshInstance3D = zombie.visual.find_child("Belly", true, false) as MeshInstance3D
-	var pulse: Node3D = belly.get_parent() as Node3D
-	var attachment: BoneAttachment3D = pulse.get_parent() as BoneAttachment3D
-	assert_eq(attachment.bone_name, &"spine_01")
-	assert_null(belly.skin, "rigid bone attachment replaces skinning for the centered pulse")
-	assert_true(belly.skeleton.is_empty())
-	var center: Vector3 = belly.global_transform * belly.get_aabb().get_center()
-	var size: Vector3 = (belly.global_transform * belly.get_aabb()).size
-	zombie.visual.pulse_belly()
-	assert_almost_eq(belly.global_transform * belly.get_aabb().get_center(), center, Vector3.ONE * 0.001)
-	assert_almost_eq((belly.global_transform * belly.get_aabb()).size, size * 1.12, Vector3.ONE * 0.001)
-	var skeleton: Skeleton3D = _skeleton(zombie.visual)
-	var bone: int = skeleton.find_bone("spine_01")
-	skeleton.set_bone_pose_rotation(bone, skeleton.get_bone_pose_rotation(bone) * Quaternion(Vector3.RIGHT, 0.4))
-	skeleton.force_update_all_bone_transforms()
-	await wait_process_frames(1)
-	var expected: Vector3 = (skeleton.global_transform * skeleton.get_bone_global_pose(bone) * pulse.transform).origin
-	assert_almost_eq(belly.global_transform * belly.get_aabb().get_center(), expected, Vector3.ONE * 0.001)
-	assert_gt(center.distance_to(expected), 0.02, "belly center follows the spine instead of staying at rest")
+	var mesh: MeshInstance3D = zombie.visual.find_child("Body", true, false) as MeshInstance3D
+	assert_gt((body.shape as BoxShape3D).size.x, 0.9, "body zone covers the 0.84 m wide belly")
+	var veins: ShaderMaterial = mesh.mesh.surface_get_material(0) as ShaderMaterial
+	assert_eq(veins.shader.resource_path, "res://assets/materials/glower_veins.gdshader", "pods glow")
 
 
 func test_moving_limbs_skip_lightmap_probes() -> void:

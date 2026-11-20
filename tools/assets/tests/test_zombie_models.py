@@ -16,9 +16,10 @@ import check_models
 import gear_paint
 import pytest
 import zombie_checks
-from zombie_model import build_bloater, build_crawler, build_shambler
+from zombie_model import build_crawler
 
-BUILDERS = {"shambler": build_shambler, "crawler": build_crawler, "bloater": build_bloater}
+# Shambler and Bloater are Tripo models now (tests/test_tripo_zombies.py); the Crawler moves in F-86 step 2.
+BUILDERS = {"crawler": build_crawler}
 
 
 @pytest.fixture(
@@ -108,20 +109,9 @@ def test_crawler_keeps_bones_but_has_no_mesh_on_leg_bones(zombie):
         assert not any(name.startswith(("thigh_", "shin_", "foot_")) for name in weighted), obj.name
 
 
-def test_bloater_has_a_separate_glowing_belly_rigid_on_spine_one(zombie):
-    kind, nodes = zombie
-    if kind != "bloater":
-        assert "Belly" not in nodes
-        return
-    belly = nodes["Belly"]
-    assert belly.type == "MESH" and belly != nodes["Body"]
-    assert all(weights(belly, vertex) == {"spine_01": 1.0} for vertex in belly.data.vertices)
-    assert all(mat.name.startswith("ZombieGlow") for mat in belly.data.materials)
-
-
 def test_zombie_finishes_use_only_main_zones_and_glow_only_on_experiment_parts(zombie):
-    kind, nodes = zombie
-    allowed_glow = {"EyeL", "EyeR", "Belly"} if kind == "bloater" else {"EyeL", "EyeR"}
+    _kind, nodes = zombie
+    allowed_glow = {"EyeL", "EyeR"}
     glowing = set()
     for obj in meshes(nodes):
         shares = gear_paint.zone_shares(obj)

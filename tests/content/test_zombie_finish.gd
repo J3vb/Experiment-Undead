@@ -1,5 +1,5 @@
-## Zombie finishes preserve their palette and material budget; only the Belly
-## instance changes the shared glow response, and rarity cannot recolour enemies.
+## The code-built Crawler finish keeps its palette and material budget; no instance
+## changes the shared glow response, and rarity cannot recolour enemies.
 extends GutTest
 
 const IMPORTER: GDScript = preload("res://tools/assets/zombie_finish_import.gd")
@@ -24,7 +24,7 @@ func _model(kind: String) -> Node3D:
 
 
 func test_all_zombie_surfaces_retain_palette_and_shared_materials() -> void:
-	for kind: String in ["shambler", "crawler", "bloater"]:
+	for kind: String in ["crawler"]:
 		var model: Node3D = _model(kind)
 		var materials: Dictionary[String, Material] = {}
 		for node: Node in model.find_children("*", "MeshInstance3D", true, false):
@@ -64,8 +64,8 @@ func test_head_and_decay_have_their_own_surface_response() -> void:
 			assert_null(result.get_shader_parameter(&"emission_strength"), "plain surfaces never get emission")
 
 
-func test_only_belly_changes_the_shared_eye_glow_response() -> void:
-	for kind: String in ["shambler", "crawler", "bloater"]:
+func test_no_instance_changes_the_shared_eye_glow_response() -> void:
+	for kind: String in ["crawler"]:
 		var model: Node3D = _model(kind)
 		var eye: MeshInstance3D = model.find_child("EyeL", true, false) as MeshInstance3D
 		var eye_material: ShaderMaterial = eye.mesh.surface_get_material(0) as ShaderMaterial
@@ -74,9 +74,6 @@ func test_only_belly_changes_the_shared_eye_glow_response() -> void:
 		for node: Node in model.find_children("*", "MeshInstance3D", true, false):
 			var instance: MeshInstance3D = node as MeshInstance3D
 			assert_eq(instance.get_instance_shader_parameter(&"belly"), node.name == &"Belly")
-		if kind == "bloater":
-			var belly: MeshInstance3D = model.find_child("Belly", true, false) as MeshInstance3D
-			assert_same(belly.mesh.surface_get_material(0), eye_material, "belly needs no ninth material")
 
 
 func test_zombie_shader_has_no_rarity_dye_or_texture_inputs() -> void:
@@ -106,8 +103,8 @@ func test_import_preserves_intrinsic_emission() -> void:
 	assert_eq(result.get_shader_parameter(&"finish"), 10)
 
 
-func test_scene_roundtrip_keeps_shared_finish_and_belly_instance_flag() -> void:
-	var model: Node3D = _model("bloater")
+func test_scene_roundtrip_keeps_shared_finish() -> void:
+	var model: Node3D = _model("crawler")
 	var eye: MeshInstance3D = model.find_child("EyeL", true, false) as MeshInstance3D
 	var previous: Material = eye.mesh.surface_get_material(0)
 	var packed: PackedScene = PackedScene.new()
@@ -116,9 +113,6 @@ func test_scene_roundtrip_keeps_shared_finish_and_belly_instance_flag() -> void:
 	autofree(restored)
 	eye = restored.find_child("EyeL", true, false) as MeshInstance3D
 	assert_same(eye.mesh.surface_get_material(0), previous)
-	var belly: MeshInstance3D = restored.find_child("Belly", true, false) as MeshInstance3D
-	assert_same(belly.mesh.surface_get_material(0), previous)
-	assert_eq(belly.get_instance_shader_parameter(&"belly"), true)
 
 
 func test_unknown_and_missing_materials_report_errors() -> void:

@@ -26,8 +26,15 @@ const VAULT_HEIGHT: float = 0.45
 ## Below this stride (a shuffle on the spot) no footsteps play.
 const STEP_MIN_STRIDE: float = 0.2
 
-## A skinned .glb from tools/assets/zombie_model.py, facing +Z.
+## A skinned .glb (Tripo intake or zombie_model.py), facing +Z.
 @export var model: PackedScene
+## Other looks of the same zombie type; `look` picks one of `model` and these.
+@export var extra_models: Array[PackedScene] = []
+## Swell on hit in metres for the glowing parts (Bloater pods); 0 = none. Instance shader parameter `pulse`.
+@export var pulse_size: float = 0.0
+
+## Which look to show, the same on every peer (the Zombie sets it from its synced net_id).
+var look: int = 0
 
 var head: Node3D
 
@@ -37,13 +44,15 @@ var _rest: Dictionary[StringName, Quaternion] = {}
 var _axes: Dictionary[StringName, Quaternion] = {}
 var _offsets: Dictionary[StringName, Vector3] = {}
 var _hips_rest: Vector3 = Vector3.ZERO
-var _belly: Node3D
+var _body_mesh: GeometryInstance3D
 var _phase: float = 0.0
 var _crawler: bool = false
 
 
 func _ready() -> void:
-	var body: Node3D = model.instantiate() as Node3D
+	var looks: Array[PackedScene] = [model]
+	looks.append_array(extra_models)
+	var body: Node3D = looks[posmod(look, looks.size())].instantiate() as Node3D
 	body.rotation.y = PI
 	add_child(body)
 	# Keep the existing horde's lighting cost: no per-frame lightmap probe capture.
@@ -59,7 +68,7 @@ func _ready() -> void:
 		_cache_bone(bone_name, bone_name)
 	_hips_rest = _skeleton.get_bone_pose_position(_bones[&"Hips"])
 	_attach_head(body)
-	_attach_belly(body)
+	_body_mesh = body.find_child("Body", true, false) as GeometryInstance3D
 
 
 func _cache_bone(part_name: StringName, bone_name: StringName) -> void:
@@ -80,29 +89,6 @@ func _attach_head(body: Node3D) -> void:
 	attachment.transform = _skeleton.get_bone_global_rest(_bones[&"Head"])
 	head.reparent(attachment, false)
 	head.transform = attachment.transform.affine_inverse() * center
-
-
-func _attach_belly(body: Node3D) -> void:
-	var belly: MeshInstance3D = body.find_child("Belly", true, false) as MeshInstance3D
-	if belly == null:
-		return
-	# glTF skins put the vertices in skeleton space. Give this rigid mesh a
-	# centered pivot so its hit pulse grows in place instead of away from the feet.
-	var mesh_rest: Transform3D = _skeleton.global_transform.affine_inverse() * belly.global_transform
-	var center: Vector3 = belly.get_aabb().get_center()
-	var attachment: BoneAttachment3D = BoneAttachment3D.new()
-	attachment.name = "BellyAttachment"
-	attachment.bone_name = &"spine_01"
-	_skeleton.add_child(attachment)
-	attachment.transform = _skeleton.get_bone_global_rest(_skeleton.find_bone("spine_01"))
-	_belly = Node3D.new()
-	_belly.name = "BellyPulse"
-	attachment.add_child(_belly)
-	_belly.transform = attachment.transform.affine_inverse() * mesh_rest * Transform3D(Basis.IDENTITY, center)
-	belly.skin = null
-	belly.skeleton = NodePath()
-	belly.reparent(_belly, false)
-	belly.transform = Transform3D(Basis.IDENTITY, -center)
 
 
 ## Code-driven limb animation for the zombie's current state, until real clips arrive.
@@ -295,12 +281,23 @@ func pose_dead() -> void:
 			tween.tween_method(_tween_pose.bind(part_name), get_offset(part_name), slack[part_name], 0.4)
 
 
-## Bloater belly swells for a moment when hit.
+## Bloater belly swells for a moment when hit (zombies with a `pulse_size`).
 func pulse_belly() -> void:
-	if _belly == null:
+	if _body_mesh == null or pulse_size <= 0.0:
 		return
-	_belly.scale = Vector3.ONE * 1.12
-	create_tween().tween_property(_belly, "scale", Vector3.ONE, 0.25).set_trans(Tween.TRANS_ELASTIC)
+	_set_pulse(pulse_size)
+	create_tween().tween_method(_set_pulse, pulse_size, 0.0, 0.25).set_trans(Tween.TRANS_ELASTIC)
+
+
+func pulse_amount() -> float:
+	if _body_mesh == null:
+		return 0.0
+	var amount: Variant = _body_mesh.get_instance_shader_parameter(&"pulse")
+	return amount if amount is float else 0.0
+
+
+func _set_pulse(amount: float) -> void:
+	_body_mesh.set_instance_shader_parameter(&"pulse", amount)
 
 
 func _pose_part(part_name: StringName, offset: Vector3) -> void:

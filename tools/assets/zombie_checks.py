@@ -3,11 +3,20 @@
 import character_checks
 import gear_paint
 
-JOINTS = {"shambler": {}, "crawler": {}, "bloater": {}, "glower": {}, "stalker": {}, "brute": {}}
+JOINTS = {
+    "shambler": {},
+    "shambler_guard": {},
+    "crawler": {},
+    "bloater": {},
+    "glower": {},
+    "stalker": {},
+    "brute": {},
+}
 TRIANGLES = {
-    "shambler": (6_000, 8_000),
+    "shambler": (6_000, 9_000),
+    "shambler_guard": (6_000, 9_000),
     "crawler": (6_000, 8_000),
-    "bloater": (7_000, 9_000),
+    "bloater": (6_000, 9_000),
     "glower": (6_000, 9_000),
     "stalker": (6_000, 9_000),
     "brute": (6_000, 9_000),
@@ -69,8 +78,8 @@ def _check_materials(meshes):
             errors.append(f"head must be lighter than material '{material.name}'")
     for obj in meshes:
         if any(material.name.startswith("ZombieGlow") for material in obj.data.materials if material):
-            if obj.name not in {"EyeL", "EyeR", "Belly"}:
-                errors.append(f"{obj.name}: only eyes and the Bloater Belly may glow")
+            if obj.name not in {"EyeL", "EyeR"}:
+                errors.append(f"{obj.name}: only the eyes may glow on code-built zombies")
         try:
             shares = gear_paint.zone_shares(obj)
             if shares[gear_paint.ZONE_MAIN] < 1.0 - 1e-6:
@@ -80,20 +89,11 @@ def _check_materials(meshes):
     return errors
 
 
-def _check_special_parts(nodes, stem):
+def _check_special_parts(nodes):
     errors = []
     for name in ("Body", "EyeL", "EyeR"):
         if name not in nodes or nodes[name].type != "MESH":
             errors.append(f"missing zombie mesh '{name}'")
-    if stem == "bloater":
-        belly = nodes.get("Belly")
-        if belly is None or belly.type != "MESH":
-            errors.append("Bloater needs a separate glowing Belly mesh")
-        else:
-            if not any(mat and mat.name.startswith("ZombieGlow") for mat in belly.data.materials):
-                errors.append("Belly must use ZombieGlow")
-            if any(_weights(belly, vertex) != {"spine_01": 1.0} for vertex in belly.data.vertices):
-                errors.append("Belly must be bound rigidly to spine_01")
     return errors
 
 
@@ -107,7 +107,7 @@ def check(objects: list, stem: str) -> list:
     if _is_baked(meshes):
         errors += _check_baked(objects, meshes)
     else:
-        errors += _check_materials(meshes) + _check_special_parts(nodes, stem)
+        errors += _check_materials(meshes) + _check_special_parts(nodes)
     triangles = sum(len(face.vertices) - 2 for obj in meshes for face in obj.data.polygons)
     low, high = TRIANGLES[stem]
     if not low <= triangles <= high:
