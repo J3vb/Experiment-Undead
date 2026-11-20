@@ -11,6 +11,8 @@ const STEP_RANGE: float = 15.0
 
 static var _vocals: Array[AudioStreamPlayer3D] = []
 static var _steps: Array[AudioStreamPlayer3D] = []
+## The voice_refused warning is written once per run.
+static var refused_warned: bool = false
 
 var groans: Array[AudioStream] = []
 var deaths: Array[AudioStream] = []
@@ -130,10 +132,18 @@ static func _claim(active: Array[AudioStreamPlayer3D], cap: int, player: AudioSt
 		if _listener_distance(active[index]) > _listener_distance(active[farthest]):
 			farthest = index
 	if _listener_distance(active[farthest]) <= _listener_distance(player):
+		_warn_refused(cap)
 		return false
 	active[farthest].stop()
 	active[farthest] = player
 	return true
+
+
+static func _warn_refused(cap: int) -> void:
+	if refused_warned:
+		return
+	refused_warned = true
+	Log.warn(&"enemies", &"zombie_voice_refused", {"cap": cap})
 
 
 static func _listener_distance(player: AudioStreamPlayer3D) -> float:

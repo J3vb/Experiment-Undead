@@ -111,3 +111,14 @@ func test_bank_saves_the_worn_vest_and_stashes_the_old_one() -> void:
 	session.loot.pack.add(_vest("late_vest", 0.0))
 	await _wear("late_vest")
 	assert_eq(session.profile.loadout["vest"]["uid"], "new_vest", "no swaps after the run is banked")
+
+
+func test_wearing_after_the_run_banked_is_refused_and_warns() -> void:
+	session.loot.pack.add(_vest("new_vest", 0.0))
+	session.loot._banked = true
+	var before: int = Log.event_counts.get("loot.gear_equip_refused", 0)
+	await _wear("new_vest")
+	assert_eq(Log.event_counts.get("loot.gear_equip_refused", 0), before + 1, "the refusal is logged")
+	assert_eq(session.profile.loadout["vest"]["uid"], "old_vest", "the worn vest stays")
+	assert_eq(session.loot.pack.items[0]["uid"], "new_vest", "the Pack vest stays in the Pack")
+	assert_eq(player.health.max_health, 140.0)

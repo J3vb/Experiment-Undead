@@ -117,3 +117,14 @@ func test_weapon_fired_from_another_player_is_ignored() -> void:
 func test_player_damage_adds_hit_trauma() -> void:
 	player.take_damage(DamageInfo.create(1.0, null))
 	assert_almost_eq(rig.get_trauma(), rig.rules.hit_trauma, 0.001)
+
+
+func test_gun_with_no_feel_warns_once_per_gun() -> void:
+	var gun: Weapon = autofree(Weapon.new()) as Weapon
+	gun.instance = WeaponInstance.new(Content.weapon(&"rifle_ar").duplicate() as WeaponData)
+	gun.data.feel = null
+	var before: int = Log.event_counts.get("player.weapon_has_no_feel", 0)
+	Events.weapon_fired.emit(player, gun)
+	Events.weapon_fired.emit(player, gun)
+	assert_eq(Log.event_counts.get("player.weapon_has_no_feel", 0), before + 1, "one warning per gun")
+	assert_eq(rig.get_trauma(), 0.0, "no feel, no kick")
