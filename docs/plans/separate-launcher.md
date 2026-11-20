@@ -57,10 +57,11 @@ Not in (non-goals, and where each one goes instead):
 ```
 %LOCALAPPDATA%\Experiment Undead Launcher\   installed by the setup exe (per user, no admin)
   experiment-undead-launcher.exe
-%LOCALAPPDATA%\Experiment Undead\game\       the launcher's data folder
-  versions\0.1.0-test.2\                     full game, installed by the launcher
-  versions\0.1.0-test.3\                     newest; Play starts this one
+%LOCALAPPDATA%\com.experimentundead.launcher\  the launcher's data folder (the uninstaller offers to delete it)
   launcher.json                              channel, server port, max players
+  launcher.log
+  game\versions\0.1.0-test.2\               full game, installed by the launcher
+  game\versions\0.1.0-test.3\               newest; Play starts this one
 ```
 
 | Piece | Rule |
@@ -163,11 +164,11 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
 ### Step 1: The Tauri launcher installs and starts the game
 
 - Build: `launcher/` Tauri 2 project with one plain page: channel dropdown,
-  status, progress bar, Play. Rust commands `check(channel)`,
-  `install(release)` (emits progress events), `play()`. Port
+  status, progress bar, Play. Rust commands (as built) `status`, `refresh`,
+  `set_channel`, `install` (emits progress events), `cancel` and `play`. Port
   `ReleaseFeed`/`VersionInstaller` rules (see table). Shared version table
   fixture. `launcher/.gdignore`. New `launcher.yml` workflow: fmt, clippy,
-  `cargo test` on Ubuntu; `cargo tauri build --no-bundle` on Windows for
+  `cargo test` on Ubuntu; `cargo build --release -p experiment-undead-launcher` on Windows for
   PRs touching `launcher/`. The game is untouched in this step. ADR 0018
   accepted.
 - Files: `launcher/**`, `.github/workflows/launcher.yml`,
@@ -180,7 +181,7 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
   `versions/<v>/`, a wrong digest or cut-off download leaves nothing, only 2
   newest stay; version table. GUT: `test_build.gd` reads the same table.
 - Done when: the launcher built on Windows installs the newest release on
-  its channel and Play starts it.
+  its channel and Play starts it. Done 2026-11-20, PR #397.
 
 ### Step 2: Setup exe and self-update
 
@@ -195,13 +196,10 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
   Needs the person once: add the signing key as a repository secret (the
   step's thread makes the key and gives exact clicks).
 - Files: `launcher/src-tauri/tauri.conf.json`, `src/main.rs`,
-  `.github/workflows/release.yml`, `tools/ci/make_latest_json.py` (new),
-  `tools/ci/test_make_latest_json.py` (new), `tools/ci/test_workflows.py`,
-  `tools/ci/stamp_version.sh` and `tools/ci/test_stamp_version.py` (the
-  "Launcher version" rule: also write the version into `tauri.conf.json`;
-  the launcher reports it instead of `CARGO_PKG_VERSION`), `docs/RELEASING.md`.
+  `.github/workflows/release.yml`, `tools/ci/launcher_release.py` (new: stamp and manifest),
+  `tools/ci/test_launcher_release.py` (new), `tools/ci/test_workflows.py`,
+  `docs/RELEASING.md`.
 - Tests: `test_make_latest_json.py` (version, notes, URL, signature);
-  `test_stamp_version.py` (the game and launcher get the same version);
   `test_workflows.py` (release attaches the three files); the release job
   installs the setup with `/S`, checks the exe and shortcut, then uninstalls
   and checks they are gone.

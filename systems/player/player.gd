@@ -21,6 +21,7 @@ extends CharacterBody3D
 @export var gravity_multiplier: float = 1.3
 ## Seconds spent down before Second Wind gets the player back up.
 @export var second_wind_time: float = 3.0
+@export var mantle_rules: MantleRules
 
 @export_group("Interact")
 @export var interact_range: float = 2.5
@@ -41,6 +42,7 @@ var is_dead: bool = false
 var state_sync: PlayerStateSync
 var loadout_sync: LoadoutSync
 var revive: Revive
+var grenades: GrenadeThrower
 var move_input: Vector2 = Vector2.ZERO
 var sprint_left: float = 4.0
 var last_frame: InputFrame = InputFrame.new()
@@ -50,6 +52,7 @@ var focus: Interactable
 var serums: Array[SerumData] = []
 var stats: StatBlock = StatBlock.new()
 var moves: PlayerMoves = PlayerMoves.new()
+var mantle: PlayerMantle = PlayerMantle.new()
 var interaction: PlayerInteract = PlayerInteract.new()
 ## Equipped item guns by uid. The server fills its copy from the owner's loadout.
 var item_guns: Dictionary[String, ItemInstance] = {}
@@ -93,6 +96,8 @@ func _ready() -> void:
 	add_child(loadout_sync)
 	revive = Revive.new()
 	add_child(revive)
+	grenades = GrenadeThrower.new()
+	add_child(grenades)
 
 
 ## The owning peer sees through this player's camera and drives it; everyone
@@ -194,6 +199,7 @@ func get_rng() -> RandomNumberGenerator:
 
 ## RPC moves land outside the physics tick; the owner waits for its next tick (interpolated camera).
 func teleport(to: Transform3D) -> void:
+	mantle.cancel()
 	_teleport_to = to
 	_teleport_pending = is_physics_processing() and not Engine.is_in_physics_frame()
 	if not _teleport_pending:
@@ -229,12 +235,13 @@ func apply_frame(frame: InputFrame, delta: float) -> void:
 	interaction.update(self, frame, delta)
 	_move(delta, frame)
 	weapons.tick(delta)
+	grenades.tick(frame, delta)
 	var fov: float = weapons.get_ads_fov(camera_rig.base_fov)
 	camera_rig.update_feel(delta, is_crouching, is_sprinting, weapons.get_ads_progress(), fov, walk_speed)
 
 
 func _read_input(frame: InputFrame) -> void:
-	if not input_enabled:
+	if not input_enabled or mantle.is_active():
 		move_input = Vector2.ZERO
 		is_sprinting = false
 		is_aiming = false
@@ -276,6 +283,9 @@ func _tick_stamina(delta: float) -> void:
 
 
 func _move(delta: float, frame: InputFrame) -> void:
+	if mantle.update(self, frame, delta):
+		weapons.set_state(false, true, 0.0)
+		return
 	var jump: bool = input_enabled and frame.has(InputFrame.JUMP) and not is_crouching
 	velocity.y = moves.vertical(self, delta, jump, _gravity * gravity_multiplier)
 	var speed: float = sprint_speed if is_sprinting else walk_speed

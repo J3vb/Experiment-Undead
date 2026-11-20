@@ -1,7 +1,7 @@
 name: Release
 
 # Pushing a tag like v0.1.0 builds everything, publishes a GitHub Release
-# with zips and auto-written notes, and pushes the server image.
+# with zips, the launcher setup exe and auto-written notes, and pushes the server image.
 on:
   push:
     tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
@@ -48,8 +48,64 @@ jobs:
       version: ${{ needs.export.outputs.version }}
       tags: ${{ needs.tags.outputs.image-tags }}
 
+  launcher:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: launcher
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the pinned Rust toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: launcher
+
+      - name: Stamp the launcher version
+        shell: pwsh
+        env:
+          TAG: ${{ github.ref_name }}
+        run: python ../tools/ci/launcher_release.py stamp $env:TAG.TrimStart("v")
+
+      # Signed with TAURI_SIGNING_PRIVATE_KEY so installed launchers can update themselves.
+      # Without the secret the setup exe still ships, but launchers do not self-update to it.
+      - name: Build the setup exe
+        shell: pwsh
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+        run: |
+          if ($env:TAURI_SIGNING_PRIVATE_KEY) {
+            npx -y @tauri-apps/cli@2.12.6 build --bundles nsis
+          } else {
+            Write-Output "::warning::No TAURI_SIGNING_PRIVATE_KEY secret: installed launchers will not update to this release"
+            npx -y @tauri-apps/cli@2.12.6 build --bundles nsis --config '{"bundle":{"createUpdaterArtifacts":false}}'
+          }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Name the setup files
+        shell: pwsh
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          $version = $env:TAG.TrimStart("v")
+          New-Item -ItemType Directory -Force dist | Out-Null
+          $setup = Get-ChildItem target/release/bundle/nsis/*-setup.exe | Select-Object -First 1
+          Copy-Item $setup.FullName "dist/ExperimentUndead-Setup-$version.exe"
+          if (Test-Path "$($setup.FullName).sig") { Copy-Item "$($setup.FullName).sig" "dist/ExperimentUndead-Setup-$version.exe.sig" }
+          Get-ChildItem dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: launcher-setup
+          path: launcher/dist/*
+          retention-days: 7
+
   publish:
-    needs: [export, tags, server-image]
+    needs: [export, tags, server-image, launcher]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -71,6 +127,29 @@ jobs:
           done
           ls -la dist
 
+      - name: Download the launcher setup
+        uses: actions/download-artifact@v4
+        with:
+          name: launcher-setup
+          path: dist
+
+      - uses: actions/checkout@v4
+        with:
+          path: source
+
+      - name: Write the launcher update manifest
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          sig="dist/ExperimentUndead-Setup-$version.exe.sig"
+          if [ -f "$sig" ]; then
+            python3 source/tools/ci/launcher_release.py manifest --version "$version" \
+              --setup-url "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/ExperimentUndead-Setup-$version.exe" \
+              --signature-file "$sig" --out dist/latest.json
+          fi
+          ls -la dist
+
       - name: Create or update GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -78,11 +157,11 @@ jobs:
           VERSION: ${{ needs.export.outputs.version }}
           PRERELEASE: ${{ needs.tags.outputs.prerelease }}
         run: |
-          # A release made in the GitHub UI already exists: just attach the zips.
+          # A release made in the GitHub UI already exists: just attach the files.
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "$TAG" dist/*.zip --repo "$GITHUB_REPOSITORY" --clobber
+            gh release upload "$TAG" dist/* --repo "$GITHUB_REPOSITORY" --clobber
             exit 0
           fi
           flags=(--repo "$GITHUB_REPOSITORY" --title "Experiment Undead $VERSION" --generate-notes --verify-tag)
           if [ "$PRERELEASE" = "true" ]; then flags+=(--prerelease); fi
-          gh release create "$TAG" dist/*.zip "${flags[@]}"
+          gh release create "$TAG" dist/* "${flags[@]}"

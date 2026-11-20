@@ -70,6 +70,7 @@ The server also prints every warning and error to stdout as
 | `engine.engine_warning` | warn | `push_warning` or an engine warning |
 | `player.body_clips_missing` | warn | The player model has no third-person clips, so teammates show a still body; rebuild `player.glb` |
 | `player.world_model_missing` | warn | A teammate holds a gun whose `WeaponData` has no `world_model`, so its hands are empty; set the field in the gun's `.tres` |
+| `player.mantle_landed_blocked` | warn | A mantle ended with the player inside world collision: the ledge clearance check missed something. `at` = the landing spot; check the geometry there |
 | `vendor.vendor_clip_missing` | warn | A Lantern Post stall keeper's model has no clip named by its `VendorData.idle_clip`, so they stand in rest pose; re-export the keeper (`tools/assets/tripo/vendors.json`, `clips: keeper`) or fix the data |
 | `perf.long_frames` | warn | Frames over 50 ms in the last second (`count`, `worst_ms`, `draw_compiles`: shader pipelines compiled while drawing that second, `all_compiles`: pipelines of any kind since the last line, `enemies`). Hitch at load is normal; in a round it is not. `draw_compiles` > 0 means a first-use shader stutter |
 | `perf.low_fps` | warn | Under 50 fps for 3 s in a row (windowed builds only), with a health snapshot |
@@ -90,6 +91,7 @@ The server also prints every warning and error to stdout as
 | `player.weapon_has_no_grip` | warn | A gun has no `GripData`, so it shows no first-person arms. `weapon` id; once per gun per run. Add `content/grips/<base id>.tres` and set the gun's `grip` |
 | `player.weapon_has_no_feel` | warn | A gun fired with no `FeelData`, so it has no view kick, shake or FOV punch. `weapon` id; once per gun per run. Set the gun's `feel` in its `.tres` |
 | `player.reload_motion_unreachable` | warn | The left arm cannot reach a reload key pose, so the forearm stretches off the hand. `weapon` id, `gap` in metres; once per gun per run. Move the gun's reload pose in `WeaponPose` or the grab offsets in `ReloadMotion` |
+| `gear.fp_piece_missing` | warn | A worn gear model has no first-person piece (a vest scene without `CuffFP_L`/`CuffFP_R`), so the first-person arms show nothing for it. `visual` id; once per visual per run. Rebuild the model with its first-person pieces |
 | `progression.profile_save_failed` | warn | Character could not be saved; `id`, `path`, `error` (Godot Error code). Check folder permissions and disk space |
 | `progression.profile_unreadable` | warn | Existing character is unreadable or malformed; file stays untouched, this match uses a temporary character. `id`, `path`; inspect nearby engine errors |
 | `save.profile_newer` | warn | A character file was saved by a newer game version (`id`, `path`, `version` = its save_version). The file stays untouched, the main menu tells the player to update, and this run uses a temporary character. Happens after going back to an older build |
@@ -103,6 +105,7 @@ The server also prints every warning and error to stdout as
 | `net.join_failed` | warn | Client side: the pending join could not start (`error`, a Godot error string), so the game goes back to the main menu. Usually a bad address or a port the OS would not open |
 | `net.connection_lost` | warn | Client side: the server disconnected, the connection failed or the server refused authentication. Run XP is banked and the game goes back to the main menu. Look at the server's log for the same time |
 | `net.round_state_ignored` | warn | A round message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
+| `power_ups.timer_ignored` | warn | A power-up timer message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
 | `net.interaction_rejected` | warn | Server refused a client's interact request (`peer`, `reason`, `path`): `player_not_alive`, `match_over`, `unknown_path`, `out_of_range`, `grant_pending` (last gun grant not applied yet), `bad_facts` (gun facts with wrong fields or ids). At most one per second. Many `out_of_range` = `InteractionSync.REACH_SLACK` too tight |
 | `net.deploy_refused` | warn | The hub's deploy vote or `deploy()` was refused (`place`, `reason` or `hub`): an unknown place id on a deploy board, or a deploy outside the hub. A board with a typo in `place` |
 | `net.place_change_kicked` | warn | A client was sent to another place but had not left after `Net.CONNECT_TIMEOUT`, so the server dropped it (`peer`). It never got the order: check the network |
@@ -116,30 +119,26 @@ The server also prints every warning and error to stdout as
 | `net.coop_started` / `coop_ended` | info | The first friend joined this world, or the last one left (`peers`): the solo or co-op rules now apply (`Net.is_coop()`) |
 | `net.go_to_place` | info | This peer loads another place (`place`, `online`) |
 | `net.join_switches_place` | info | A joining client loaded another place than the server's and switches before spawning (`from`, `to`) |
+| `throwables.grenade_lost` | warn | A grenade fell below the map before it went off (`at`): a hole in the level collision |
 | `net.hit_claim_rejected` | warn | Server refused a client's hit or gravity well claim (`peer`, `reason`): `player_not_alive`, `zombie_not_alive`, `hit_out_of_bounds`, `zone_missing`, `claims_too_fast`, `well_out_of_bounds`, `well_wrong_weapon` (well or orb request named a gun whose `effect` is not WELL: a mismatched build or a cheat). At most one per second |
 | `net.loadout_rejected` | warn | Server refused a client's equipped loadout (`peer`, `reason`): `not_a_dictionary`, `too_much_gear` (more gear than `CharacterProfile.GEAR_SLOTS`), `too_many_guns` (more than the player's weapon slots), `unknown_gun` (gun base not in content), `not_gear` (a worn piece that is not vest, charm or implant), `slot_twice` (two pieces for one slot). The server keeps the last good loadout; check that both builds have the same content |
 | `loot.gear_worn` | info | The owner wore a Pack gear item mid-run (`uid`, `slot`); the old piece went into its Pack slot |
 | `loot.gear_equip_refused` | warn | A Pack gear item could not be worn (`uid`, `banked`): the run was already banked or there is no character profile (soak bots, tests). In a normal run this should never appear |
 | `net.interaction_rate_limited` | warn | A client sent interact requests less than 0.1 s apart; extra ones are refused. At most one per second |
-| `launcher.download_failed` | warn | A release zip did not download (`version`, `result` = HTTPRequest result code, `code` = HTTP status). No network, GitHub down or a moved asset |
-| `launcher.digest_mismatch` | warn | A downloaded zip's SHA-256 is not the release's digest (`version`); nothing was installed. A cut-off download or a replaced asset |
-| `launcher.install_failed` | warn | A checked zip could not be unpacked into `versions/` (`version`, `folder`): a read-only install folder (Program Files) or a full disk |
-| `launcher.version_installed` | info | A release is unpacked and ready in `versions/<version>/` |
-| `launcher.releases_unreachable` | warn | The launcher could not read the GitHub Releases list (`result`, `code`; 403 = GitHub rate limit, 60 per hour per address); it plays offline |
-| `launcher.version_started` / `start_failed` | info / warn | Play started an installed version (`version`, `pid`) or could not (`exe`): a deleted or blocked versions folder |
-| `launcher.root_refreshed` / `root_refresh_failed` | info / warn | A started copy replaced the install folder's exe and pck (`version`, `tries`), or gave up after 15 s (`root`): the old copy was still running or the folder is read-only |
 | `launcher.server_started` / `server_stop_requested` / `server_exited` / `server_start_failed` | info / warn | The launcher's Host a server panel (`version`, `port`, `pid`, `exe`). A quick `server_exited` after start = port in use; read that server's own log |
+| `ui.unknown_screen` | warn | `UI.push` or `UI.replace` got an id with no `content/screens/<id>.tres`; `id`. Nothing opens |
+| `ui.pop_empty` | warn | `UI.pop()` with no screen open: a screen emitted `closed` twice or something popped a screen it did not push |
+| `ui.loading_failed` | warn | A root behind a loading screen failed its threaded load; `scene`. The router falls back to a plain scene change |
 
-The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher.log` in its data folder (`%LOCALAPPDATA%\Experiment Undead\` on Windows): `{"t", "level", "event", "message"}`. The `launcher.*` lines above belong to the old built-in launcher and go away in F-82 step 3.
+The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher.log` in its data folder (`%LOCALAPPDATA%\com.experimentundead.launcher\` on Windows): `{"t", "level", "event", "message"}`. The `launcher.server_*` lines above come from the game's old Host a server code, which moves into the launcher in F-82 step 4.
 
 | Event | Level | Meaning |
 |---|---|---|
 | `check_failed` | warn | The launcher could not read the GitHub Releases list (`message` has the reason; "GitHub answered 403" = rate limit, 60 per hour per address). It plays the newest installed version offline |
 | `installed` | info | A release is downloaded, checked and unpacked into `game/versions/<version>/` (`message` = version) |
 | `install_failed` | warn | A download failed, was cancelled, had the wrong SHA-256, or could not be unpacked (`message` says which). Nothing was installed |
-| `ui.unknown_screen` | warn | `UI.push` or `UI.replace` got an id with no `content/screens/<id>.tres`; `id`. Nothing opens |
-| `ui.pop_empty` | warn | `UI.pop()` with no screen open: a screen emitted `closed` twice or something popped a screen it did not push |
-| `ui.loading_failed` | warn | A root behind a loading screen failed its threaded load; `scene`. The router falls back to a plain scene change |
+| `self_updated` | info | The launcher installed a newer launcher from the release's `latest.json` (`message` = manifest URL) and restarts |
+| `self_update_failed` | warn | A launcher update could not be checked, downloaded or installed (`message`; "signature" = the setup exe was not signed with our key). The old launcher keeps running |
 
 ## Adding log lines (rules for agents)
 

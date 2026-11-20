@@ -65,24 +65,13 @@ func _ready() -> void:
 	_launch_from_command_line.call_deferred(OS.get_cmdline_user_args())
 
 
-## "--server" runs this build as a dedicated server. A release build run from the install
-## folder opens the launcher first, once per process. A copy the launcher started refreshes
-## the root copy when the root is older.
+## "--server" runs this build as a dedicated server (the launcher's Host a server). Players
+## start the game from the separate launcher (F-82), so there is no launcher screen here.
 func _hand_over() -> bool:
 	if parse_launch(OS.get_cmdline_user_args()).has("server"):
 		UI.replace.call_deferred(&"dedicated_server")
 		return true
-	var exe_dir: String = OS.get_executable_path().get_base_dir()
-	if VersionInstaller.is_version_dir(exe_dir):
-		var refresher: VersionInstaller = VersionInstaller.new()
-		add_child(refresher)
-		refresher.refresh_root()
-	var args: PackedStringArray = LauncherScreen.launch_args()
-	if LauncherScreen.shown or not LauncherScreen.should_open(args, Build.version, OS.has_feature("template"), exe_dir):
-		return false
-	LauncherScreen.shown = true
-	UI.replace.call_deferred(&"launcher")
-	return true
+	return false
 
 
 ## Command-line launches run once per process, so returning to the menu

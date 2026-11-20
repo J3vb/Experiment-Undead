@@ -113,7 +113,7 @@ Not in (non-goals, and where each one goes instead):
 | tools/character_contact_export.gd | changed | Shot peak from `grip.shot_peak`, not an id list |
 | systems/net/hit_claims.gd | changed | Chain, frost and well picked by `effect`; well RPCs carry `weapon_id` |
 | systems/weapons/weapon.gd, gravity_well.gd | changed | Well chosen by `effect`; the well keeps the firing gun's data |
-| core/build.gd | changed | `PROTOCOL_VERSION` 2 -> 3 (well RPC arguments change) |
+| core/build.gd | changed | `PROTOCOL_VERSION` 2 -> 3 (well RPC arguments change; later bumps took it to 21) |
 | systems/enemies/enemy_data.gd | changed | `loot_drop_chance`, `loot_min_rarity` |
 | content/enemies/zombie_bloater.tres | changed | `loot_drop_chance = 0.05` |
 | systems/loot/loot_service.gd | changed | `drop_chance(enemy, round)` and `_rarity()` read `EnemyData` |
