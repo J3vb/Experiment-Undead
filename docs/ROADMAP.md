@@ -76,7 +76,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 
 | Id | Feature | Issue | Needs | Plan | Size | Status |
 |---|---|---|---|---|---|---|
-| F-20 | Skill effects (through the stat stack) | #113 | F-11 | needed | M | Todo |
+| F-20 | Skill effects (through the stat stack) | #113 | F-11 | [ready](plans/skill-effects.md) | M | Ready |
 | F-21 | Skill tree screen | #112 | F-20 | needed | M | Todo |
 | F-22 | Field abilities | #114 | F-20 | needed | M | Todo |
 | F-23 | Levelling pace check | #115 | F-20, F-22 | issue | S | Todo |
