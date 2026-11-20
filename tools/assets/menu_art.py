@@ -1,4 +1,4 @@
-"""Draws the front-end art (F-87): the FENLIGHT logo with green Fenlight veins and the menu brush stroke.
+"""Draws the front-end art (F-88): the FENLIGHT logo with green Fenlight veins and the menu brush stroke.
 
 Run from the repo root: python tools/assets/menu_art.py
 Writes assets/ui/fenlight_logo.png and assets/ui/brush_stroke.png. Same seed, same pixels.
@@ -19,6 +19,7 @@ LOGO_SIZE = (1600, 560)
 LETTER = (226, 230, 224)
 GRIME = (120, 128, 124)
 BIO_GREEN = (141, 255, 58)
+DEEP_GREEN = (46, 190, 34)
 BRUSH_SIZE = (1024, 128)
 BRUSH = (217, 102, 43)
 
@@ -73,36 +74,47 @@ def _erode(rng: np.random.Generator, mask: Image.Image) -> np.ndarray:
 
 
 def _vein(pen: ImageDraw.ImageDraw, rng: np.random.Generator, start: tuple, angle: float, length: float, width: float):
-    """One crooked vein that forks as it goes, like a lightning crack."""
+    """One jagged vein in straight kinks that forks as it goes, like a lightning crack."""
     x, y = start
-    steps = int(length / 6)
+    steps = max(int(length / 16), 1)
     for step in range(steps):
-        angle += float(rng.normal(0.0, 0.28))
-        angle = min(max(angle, math.pi * 0.2), math.pi * 0.8)
-        nx, ny = x + math.cos(angle) * 6, y + math.sin(angle) * 6
-        w = max(width * (1.0 - step / steps), 1.0)
-        pen.line([(x, y), (nx, ny)], fill=255, width=round(w))
-        if width > 2.5 and rng.random() < 0.09:
-            _vein(pen, rng, (nx, ny), angle + float(rng.choice([-0.7, 0.7])), length * 0.5, w * 0.6)
+        angle += float(rng.normal(0.0, 0.55))
+        angle = min(max(angle, math.pi * 0.3), math.pi * 0.7)
+        reach = float(rng.uniform(10, 22))
+        nx, ny = x + math.cos(angle) * reach, y + math.sin(angle) * reach
+        w = max(width * (1.0 - step / steps), 1.5)
+        pen.line([(x, y), (nx, ny)], fill=255, width=round(w), joint="curve")
+        if width > 3.0 and rng.random() < 0.22:
+            _vein(pen, rng, (nx, ny), angle + float(rng.choice([-0.8, 0.8])), length * 0.45, w * 0.65)
         x, y = nx, ny
 
 
 def _veins(rng: np.random.Generator, size: tuple, box: tuple) -> Image.Image:
-    """Green veins growing down out of the middle letters, with a soft glow."""
+    """Saturated green veins cracking down from the bottom edge of the middle letters, with a soft glow."""
     lines = Image.new("L", size, 0)
     pen = ImageDraw.Draw(lines)
     centre = (box[0] + box[2]) / 2
-    for _ in range(8):
-        x = float(rng.normal(centre, (box[2] - box[0]) * 0.12))
-        _vein(pen, rng, (x, box[3] - 90), math.pi / 2 + float(rng.normal(0, 0.3)), float(rng.uniform(150, 240)), 9.0)
-    glow = lines.filter(ImageFilter.GaussianBlur(16))
+    for i in range(7):
+        x = centre + (i - 3) * (box[2] - box[0]) * 0.055 + float(rng.normal(0, 12))
+        _vein(pen, rng, (x, box[3] - 24), math.pi / 2 + float(rng.normal(0, 0.25)), float(rng.uniform(140, 220)), 6.5)
+    glow = lines.filter(ImageFilter.GaussianBlur(12))
     core = np.asarray(lines, dtype=np.float32) / 255.0
-    halo = np.asarray(glow, dtype=np.float32) / 255.0 * 2.6
+    halo = np.asarray(glow, dtype=np.float32) / 255.0 * 2.2
     rgba = np.zeros((size[1], size[0], 4), dtype=np.float32)
-    rgba[..., :3] = BIO_GREEN
-    rgba[..., :3] = rgba[..., :3] * (1.0 - core[..., None] * 0.5) + 255.0 * core[..., None] * 0.5
+    deep, bright = np.array(DEEP_GREEN, dtype=np.float32), np.array(BIO_GREEN, dtype=np.float32)
+    rgba[..., :3] = deep * (1.0 - core[..., None]) + bright * core[..., None]
     rgba[..., 3] = np.clip(np.maximum(core, halo * 0.7), 0.0, 1.0) * 255.0
     return Image.fromarray(rgba.astype(np.uint8), "RGBA")
+
+
+def _green_bleed(size: tuple, box: tuple) -> np.ndarray:
+    """0..1 weight for the green glow soaking into the bottom of the middle letters."""
+    ys = np.linspace(0, size[1] - 1, size[1], dtype=np.float32)[:, None]
+    xs = np.linspace(0, size[0] - 1, size[0], dtype=np.float32)[None, :]
+    centre = (box[0] + box[2]) / 2
+    across = np.exp(-(((xs - centre) / ((box[2] - box[0]) * 0.22)) ** 2))
+    up = np.clip((ys - (box[3] - 150)) / 150, 0.0, 1.0) ** 1.5
+    return across * up * 0.4
 
 
 def draw_logo() -> Image.Image:
@@ -113,6 +125,8 @@ def draw_logo() -> Image.Image:
     shade = np.linspace(0.0, 1.0, LOGO_SIZE[1], dtype=np.float32)[:, None] ** 2
     grime = _noise(rng, LOGO_SIZE, 3.0)[..., None] * 0.35 + shade[..., None] * 0.45
     colour = np.array(LETTER, dtype=np.float32) * (1.0 - grime) + np.array(GRIME, dtype=np.float32) * grime
+    bleed = _green_bleed(LOGO_SIZE, box)[..., None]
+    colour = colour * (1.0 - bleed) + np.array(DEEP_GREEN, dtype=np.float32) * bleed
     letters = np.dstack([colour, alpha[..., None] * 255.0]).astype(np.uint8)
     word = Image.fromarray(letters, "RGBA")
     shadow = Image.new("RGBA", LOGO_SIZE, (0, 0, 0, 0))
