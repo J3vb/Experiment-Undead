@@ -1,18 +1,23 @@
-## Rolls a power-up drop for every zombie kill: drop_chance each, at most
+## Rolls a power-up drop for every kill by a player: drop_chance each, at most
 ## max_per_round a round. Types come from a shuffled deck, so every type drops
-## once before any repeats. Kills by a player with Scavenger can also drop an
-## ammo pack (not counted in the cap). Only kills by a player roll. Lives in the
-## GameSession. The server spawns pickups through a MultiplayerSpawner, so every
-## peer and late joiner sees them; ammo effects reach the PCs that own the guns.
-## Timed power-ups (Payday, Overkill, Stasis) run on a team-wide server timer; every peer hears
-## when one starts, late joiners ask for the time left.
+## once before any repeats; a type with deck_chance below 1 sits out some decks.
+## Kills by a player with Scavenger can also drop an ammo pack (not counted in
+## the cap). Lives in the GameSession. The server spawns pickups and Supply
+## Crates through a MultiplayerSpawner, so every peer and late joiner sees them;
+## ammo effects reach the PCs that own the guns. Timed power-ups (Payday,
+## Overkill, Stasis) run on a team-wide server timer; every peer hears when one
+## starts, late joiners ask for the time left.
 class_name PowerUpDrops
 extends Node
 
 const SCENE: PackedScene = preload("res://systems/power_ups/power_up.tscn")
+const CRATE_SCENE: PackedScene = preload("res://systems/power_ups/supply_crate.tscn")
+## Spawn data kinds: one MultiplayerSpawner makes pickups and Supply Crates.
+const KIND_PICKUP: int = 0
+const KIND_CRATE: int = 1
 
-@export var drop_chance: float = 0.01
-@export var max_per_round: int = 1
+@export var drop_chance: float = 0.025
+@export var max_per_round: int = 4
 @export var power_ups: Array[PowerUpData] = []
 @export var ammo_pack: PowerUpData
 @export var ammo_pack_chance: float = 0.05
@@ -88,17 +93,28 @@ func drop(data: PowerUpData, at: Vector3) -> PowerUp:
 
 
 func _spawn(data: PowerUpData, at: Vector3) -> PowerUp:
+	return _spawn_kind(KIND_PICKUP, data, at + Vector3.UP * 0.8) as PowerUp
+
+
+## Server: a Supply Crate standing at `at`.
+func spawn_crate(data: PowerUpData, at: Vector3) -> SupplyCrate:
+	return _spawn_kind(KIND_CRATE, data, at) as SupplyCrate
+
+
+func _spawn_kind(kind: int, data: PowerUpData, at: Vector3) -> Node:
 	_next_id += 1
-	var spawn_data: Array = [_next_id, data.id, at + Vector3.UP * 0.8]
+	var spawn_data: Array = [_next_id, data.id, at, kind]
 	if _net:
-		return _net.spawn(spawn_data) as PowerUp
-	var pickup: PowerUp = _create(spawn_data) as PowerUp
-	session.level.add_child(pickup)
-	return pickup
+		return _net.spawn(spawn_data)
+	var node: Node = _create(spawn_data)
+	session.level.add_child(node)
+	return node
 
 
 ## Runs on the server and on every client with the same data.
 func _create(spawn_data: Array) -> Node:
+	if int(spawn_data[3]) == KIND_CRATE:
+		return _create_crate(spawn_data)
 	var pickup: PowerUp = SCENE.instantiate() as PowerUp
 	pickup.name = "PowerUp%d" % int(spawn_data[0])
 	pickup.data = Content.get_item(&"power_ups", spawn_data[1]) as PowerUpData
@@ -113,6 +129,20 @@ func _create(spawn_data: Array) -> Node:
 	return pickup
 
 
+## The crate's pool is the level Vault's, so it rolls the same guns.
+func _create_crate(spawn_data: Array) -> SupplyCrate:
+	var crate: SupplyCrate = CRATE_SCENE.instantiate() as SupplyCrate
+	crate.name = "SupplyCrate%d" % int(spawn_data[0])
+	crate.position = spawn_data[2]
+	crate.session = session
+	for node: Node in get_tree().get_nodes_in_group(&"specimen_vault"):
+		if session.level.is_ancestor_of(node):
+			crate.pool = (node as SpecimenVault).pool
+	if session.interactions:
+		session.interactions.watch(crate)
+	return crate
+
+
 ## Server: runs the effect, then everyone hears and sees the pickup go.
 func on_collected(pickup: PowerUp, collector: Player) -> void:
 	match pickup.data.effect:
@@ -122,6 +152,8 @@ func on_collected(pickup: PowerUp, collector: Player) -> void:
 			PowerUpEffects.purge(session.spawner)
 		PowerUpData.Effect.SCRAP_KIT:
 			PowerUpEffects.rebuild_barriers(session.level)
+		PowerUpData.Effect.SUPPLY_CRATE:
+			spawn_crate(pickup.data, pickup.position - Vector3.UP * 0.8)
 	if pickup.data.duration > 0.0:
 		start_timer(pickup.data)
 	for player: Player in session.get_players() if pickup.data.team_points > 0 else []:
@@ -202,8 +234,10 @@ func _on_enemy_killed(enemy: Node3D, info: DamageInfo) -> void:
 
 
 func _next() -> PowerUpData:
-	if _deck.is_empty():
-		_deck = power_ups.duplicate()
+	while _deck.is_empty():
+		for data: PowerUpData in power_ups:
+			if data.deck_chance >= 1.0 or session.rng.randf() < data.deck_chance:
+				_deck.append(data)
 		for i: int in range(_deck.size() - 1, 0, -1):
 			var j: int = session.rng.randi_range(0, i)
 			var swap: PowerUpData = _deck[i]
