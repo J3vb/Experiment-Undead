@@ -55,7 +55,7 @@ Each says when to fix it.
 - **Hold-to-buy** stays a tap. Fix when: accidental buys show in play-tests.
 - **Loot extras:** no supply or exfil caches, no gun comparison in the pickup prompt, no trading; traits, sets and `proc` lines save but do not run. Fix when: their loot batches.
 - **Run loadout:** the equipped Primary is not given at spawn (the round-5 Drop Locker is not built). Fix when: the Drop Locker.
-- **Skill tree:** no stat effects, Trainer screen or prerequisites; the 15/25-point gates cannot be reached with only the named nodes. Fix when: the skills feature.
+- **Skill tree:** no Trainer screen or prerequisites; the 15/25-point gates cannot be reached with only the named nodes. Skill effects are being built ([skill-effects](plans/skill-effects.md)). Fix when: F-21.
 - **Teammate animations:** one two-handed rifle pose and one reload clip for every gun; a remote muzzle flash plays at the owner's first-person muzzle. Fix when: F-41 follow-ups.
 - **First-person hands:** fingers are fixed curls, no trigger-pull or magazine clips; the Corvid bolt only kicks back. Fix when: real clips.
 - **Player body:** some cloth clipping in motion, a soft face, a ragged beard bit near the ear. Fix when: F-70 step 6. [ADR 0015](adr/0015-baked-player-body.md)

@@ -49,6 +49,9 @@ var focus: Interactable
 ## Serums bought this run. Their multipliers are read through get_stat().
 var serums: Array[SerumData] = []
 var stats: StatBlock = StatBlock.new()
+## Skill ranks: the owner's save, and the server's copy from LoadoutSync. Folded into stats by equip_gear.
+var skill_ranks: Dictionary[StringName, int] = {}
+var skill_rules: Dictionary[int, bool] = {}
 var moves: PlayerMoves = PlayerMoves.new()
 var interaction: PlayerInteract = PlayerInteract.new()
 ## Equipped item guns by uid. The server fills its copy from the owner's loadout.
@@ -137,12 +140,15 @@ func get_stat(stat: StringName, base: float = 1.0, other: StatBlock = null) -> f
 	return ItemInstance.stat_value(stats, stat, base, other, value)
 
 
+## Rebuilds stats from scratch: gear, then skill ranks. A respec is new ranks and a call here.
 func equip_gear(items: Array[Dictionary], heal: bool = true) -> void:
 	stats = StatBlock.new()
 	for equipped: Dictionary in items:
 		var item: ItemInstance = ItemInstance.new(equipped)
 		for modifier: Modifier in item.stats.modifiers:
 			stats.add_modifier(modifier.stat, modifier.op, modifier.value, modifier.source)
+	SkillEffects.add_to(stats, skill_ranks)
+	skill_rules = SkillEffects.rules_for(skill_ranks)
 	_refresh_stats(heal)
 
 
