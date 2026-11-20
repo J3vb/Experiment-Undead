@@ -74,22 +74,14 @@ func test_only_plain_release_versions_are_stable() -> void:
 		assert_false(Build.is_stable_version(version), version)
 
 
+## The launcher's Rust copy reads the same table (launcher/core/tests/version.rs).
 func test_compare_versions_orders_numbers_and_pre_releases() -> void:
-	var cases: Array[Array] = [
-		["0.10.0", "0.9.0", 1],
-		["0.1.10", "0.1.9", 1],
-		["1.0.0", "0.99.99", 1],
-		["0.2.0-test.3", "0.2.0", -1],
-		["0.2.0", "0.2.1", -1],
-		["0.2.0-test.3", "0.2.1", -1],
-		["0.2.0-test.10", "0.2.0-test.9", 1],
-		["0.2.0", "v0.2.0", 0],
-		["0.2.0-dev.10+abc1234", "0.2.0-dev.9+def5678", 1],
-		["0.2.0-dev.3+abc1234", "0.2.0-dev.3+def5678", 0],
-		["0.2.0-dev.3+abc1234", "0.2.0", -1],
-		["0.2.0-dev.3", "0.2.0-test.1", -1],
-		["0.2", "0.2.0", 0],
-	]
+	var text: String = FileAccess.get_file_as_string("res://tests/fixtures/version_table.json")
+	var cases: Variant = JSON.parse_string(text)
+	assert_true(cases is Array and cases.size() >= 10, "version table loads")
+	if not cases is Array:
+		return
 	for row: Array in cases:
-		assert_eq(Build.compare_versions(row[0], row[1]), row[2], "%s vs %s" % [row[0], row[1]])
-		assert_eq(Build.compare_versions(row[1], row[0]), -int(row[2]), "%s vs %s" % [row[1], row[0]])
+		var expected: int = int(row[2])
+		assert_eq(Build.compare_versions(row[0], row[1]), expected, "%s vs %s" % [row[0], row[1]])
+		assert_eq(Build.compare_versions(row[1], row[0]), -expected, "%s vs %s" % [row[1], row[0]])
