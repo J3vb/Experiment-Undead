@@ -106,23 +106,26 @@ Not in (non-goals, and where each one goes instead):
 
 | Folder or file | New / changed | What changes |
 |---|---|---|
-| systems/progression/skill_tree.gd | changed | `can_rank_down(pending, saved, id)`, `rank_down`, `branch_gate_ok` |
+| systems/progression/skill_tree.gd | changed | `can_rank_down(pending, saved, id)` and `rank_down` (mirror of `can_rank_up`/`rank_up`) |
 | systems/progression/skill_node_data.gd | changed | `icon: Texture2D` |
 | systems/ui/research_screen.gd/.tscn | new | the screen: lanes, tiles, detail panel, Confirm/Reset/Back |
 | systems/ui/skill_tile.gd | new | one tile: icon, name, ranks, locked/owned/focus looks |
 | systems/ui/skill_links.gd | new | a Control that draws the lines between tiles |
 | content/screens/research.tres | new | ScreenData for the router |
-| systems/ui/main_menu.gd/.tscn | changed | RESEARCH row enabled, opens the screen |
+| systems/ui/main_menu.gd/.tscn | changed | RESEARCH row enabled (not disabled, focusable, no "Coming soon"), focus neighbours rewired so Loadout goes to Research, `research_button.pressed` opens the screen; the newer-save guard remembers which screen asked (`_pending_screen: StringName`) |
 | assets/ui/skills/<id>.svg | new | 20 line icons |
 | content/skills/*.tres | changed | `icon`, and gate numbers per the decision |
 | docs/DECISIONS.md, docs/HOW_TO_ADD.md, docs/ROADMAP.md | changed | Skill tree line, "A skill" gets the icon step, F-21 status |
+| docs/design/game-design.md, docs/design/ui-hud.md | changed | gate numbers from the decision (design-change skill, Change log row); ui-hud section 1 Research enabled, section 6 points to the DECISIONS line for K key and Trainer |
+| docs/LOGGING.md | changed | the two new warnings |
+| tests/content/test_skills.gd, tests/unit/test_skill_tree.gd | changed | gate tests stop hard-coding 15/25: keystones and capstones found by row 3/4 |
 
 Autoloads, managers or base classes added: none. `SkillTile` and `SkillLinks`
 are leaf Controls owned by the screen.
 
 Files over 300 lines this plan grows: `systems/ui/main_menu.gd` is 286; it
-gains about 8 lines (open Research, shared with `_open_character` through the
-newer-save guard). No split needed.
+gains about 15 lines: `_open_research`, and `_open_character`/`_close_error` take
+the pending screen id instead of always pushing `&"character"`. No split needed.
 
 ## Data
 
@@ -132,15 +135,22 @@ newer-save guard). No split needed.
   by the open decision. Content test: every gate is reachable, meaning the
   branch's other nodes below that gate hold at least that many ranks.
 - Respec: Reset is free and unlimited until Scrap exists. DECISIONS line.
-- Pending ranks live in the screen only (`Dictionary[StringName, int]`), copied
-  from `profile.skill_ranks`; Confirm writes them back and calls
-  `profile.save()`. A loaded `.tres` is never changed.
+- Pending ranks live in the screen only (`Dictionary[StringName, int]`), read
+  through `SkillEffects.ranks_from(profile.skill_ranks)` (the save holds String
+  keys and maybe float values from JSON). Confirm writes them back with String
+  keys and calls `profile.save()`. A loaded `.tres` is never changed.
+- Save fails (newer or unreadable save, `_can_save` false, or a disk error):
+  same as `CharacterScreen._close`: a status line "Could not save (...). Back
+  again closes without saving."
 - `SkillTree.can_rank_down(pending, saved, id)`: true only when `pending[id] >
   saved[id]` and every other ranked gated node in that branch still meets its
-  gate after the removal.
+  gate after the removal. `rank_down` returns a copy, like `rank_up`.
 - Save format change: none.
 - Content checks to add in `tests/content/test_skills.gd`: icon set, gate
-  reachable, (row, column) unique inside a branch.
+  reachable (counting every other node in the branch, keystone included, the
+  way `points_in_branch` does), (row, column) unique inside a branch.
+  The existing checks that hard-code 15/25 (lines 21, 28, 92-95) find
+  keystones and capstones by row 3 and 4 instead.
 
 ## Co-op behaviour
 
@@ -155,8 +165,10 @@ newer-save guard). No split needed.
 ## Performance
 
 Menu screen only. Tiles are built once on open; a rank change repaints the
-changed tiles and calls `queue_redraw()` on the links. No per-frame work
-except the existing snow-style glow tween. No cost in a match.
+changed tiles and calls `queue_redraw()` on the links. The only animation is
+a looping Tween on the tank glow, off when
+`Settings.get_value(&"accessibility", &"reduce_motion")` is true. No cost in a
+match.
 
 ## Steps
 
@@ -165,19 +177,27 @@ except the existing snow-style glow tween. No cost in a match.
 Risky part first: the undo and gate rules, and the save round-trip.
 
 - Build: `SkillTree.can_rank_down` / `rank_down`; the gate numbers from the
-  decision; `research_screen` with three plain lanes of tiles (name and
+  decision (design-change skill: game-design.md, Change log row); `research_screen` with three plain lanes of tiles (name and
   ranks, no icons yet), points left and per branch, add/remove, Confirm,
   Reset all, Back with the discard question; `content/screens/research.tres`;
-  main menu RESEARCH row enabled. Gamepad and keyboard focus between tiles.
+  main menu RESEARCH row enabled with focus neighbours and the shared
+  newer-save guard; failed-save status like CharacterScreen. Gamepad and
+  keyboard focus between tiles. LOGGING.md lines.
 - Files: systems/progression/skill_tree.gd, systems/ui/research_screen.gd/.tscn,
   systems/ui/skill_tile.gd, content/screens/research.tres,
-  systems/ui/main_menu.gd/.tscn, content/skills/ (gates), tests.
+  systems/ui/main_menu.gd/.tscn, content/skills/ (gates),
+  docs/design/game-design.md, docs/design/ui-hud.md, docs/LOGGING.md, tests.
 - Tests: `tests/unit/test_skill_tree.gd` (remove only pending ranks, removing
-  a rank that would break a held keystone is refused, reset); new
+  a rank that would break a held keystone is refused, reset; the old
+  `test_keystone_requires_fifteen` / `test_capstone_requires_twenty_five`
+  read the gate from data); new
   `tests/unit/test_research_screen.gd` (open with a level 12 profile, add 3
-  ranks, points left drops, Back discards, Confirm saves and reloads equal,
-  a locked keystone does not take a click); `tests/unit/test_main_menu.gd`
-  (RESEARCH enabled and opens the screen, replacing the greyed check);
+  ranks, points left drops, Back discards, Confirm saves and a fresh
+  `CharacterProfile` load from disk holds the same ranks, a locked keystone
+  does not take a click, a newer save shows the could-not-save status); `tests/unit/test_main_menu.gd`
+  (RESEARCH enabled and opens the screen, Loadout focus goes to Research,
+  the newer-save dialog then opens Research not Loadout; replaces the greyed
+  and focus-skips-Research checks);
   `tests/content/test_skills.gd` (gates reachable).
 - Done when: a player can spend and save points from the main menu and the
   next run's stats change (already covered by F-20's spawn path).
@@ -225,7 +245,8 @@ Risky part first: the undo and gate rules, and the save round-trip.
   64 px grid like the Serum icons, checked together in one contact sheet.
 - A save could hold more ranks than its level allows (edited saves, or a
   gate change). The screen shows the over-budget state and offers Reset;
-  the server already rejects totals over 54.
+  the server only rejects totals over 54, not totals over the player's
+  level or broken gates (trusted client, ADR 0003). DECISIONS line says so.
 
 ## Open decisions
 
