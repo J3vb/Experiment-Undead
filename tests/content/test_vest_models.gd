@@ -155,3 +155,19 @@ func test_vest_shell_rebinds_to_player_and_deforms_with_spine_and_forearm() -> v
 			assert_gt(_posed_displacement(shell, body_rig, bone), 0.005, frame + " deforms with " + bone_name)
 		await get_tree().process_frame
 		assert_eq(shell.get_node_or_null(shell.skeleton), body_rig, "binding remains valid after a frame")
+
+
+func test_every_vest_visual_scene_has_both_first_person_cuffs() -> void:
+	for id: StringName in Content.sorted_ids(&"gear_visuals"):
+		var visual: GearVisual = Content.get_item(&"gear_visuals", id) as GearVisual
+		if visual.slot != &"vest":
+			continue
+		var scenes: Array[PackedScene] = [visual.scene]
+		scenes.append_array(visual.tier_scenes)
+		for scene: PackedScene in scenes:
+			var vest: Node3D = scene.instantiate() as Node3D
+			for cuff_name: String in ["CuffFP_L", "CuffFP_R"]:
+				assert_not_null(
+					vest.find_child(cuff_name, true, false), "%s %s has %s" % [id, scene.resource_path, cuff_name]
+				)
+			vest.free()

@@ -208,7 +208,8 @@ an older build before any player spawns (existing `test_handshake.gd` and
   `Interactable` under the level, distance from the server's copy of the
   player to the interactable <= `interact_range + REACH_SLACK` (2.0 m:
   pose lag plus big areas), at most one request per 0.1 s per peer, facts
-  valid. Any failure: `Log.warn(&"net", &"interaction_rejected", ...)` and a
+  valid. Any failure: `Log.warn(&"net", &"interaction_rejected", ...)` (as built: at most
+  one warning per second across all peers) and a
   denied result. Otherwise `interact(player, facts)`. Back: result to the
   requester, grants to the owner, state to everyone.
 - What everyone sees: doors open, power lights, planks, dispensers that run

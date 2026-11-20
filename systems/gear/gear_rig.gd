@@ -7,6 +7,8 @@ signal look_changed(look: CharacterLook)
 @export var body: Node3D
 
 var skeleton: Skeleton3D
+## The last look applied, for views made after it (first-person arms).
+var look: CharacterLook = CharacterLook.new()
 var _attachments: Array[Node3D] = []
 var _owner_view: bool = false
 
@@ -30,7 +32,20 @@ func set_owner_view(value: bool) -> void:
 	_set_geometry(body)
 
 
-func apply(look: CharacterLook) -> void:
+## The GearVisual and RarityLook a look entry shows, as [visual, finish], with the shared fallbacks.
+static func resolve(slot: StringName, entry: Dictionary) -> Array:
+	var visual: GearVisual = GearVisual.find(entry.get("visual_id", &""))
+	var rarity: StringName = entry.get("rarity", &"common")
+	if visual == null or visual.slot != slot:
+		visual = GearVisual.fallback(slot)
+		rarity = &"common"
+	if not Content.has(&"looks", rarity):
+		rarity = &"common"
+	return [visual, Content.get_item(&"looks", rarity) as RarityLook]
+
+
+func apply(new_look: CharacterLook) -> void:
+	look = new_look
 	for attachment: Node3D in _attachments:
 		attachment.free()
 	_attachments.clear()
@@ -38,15 +53,9 @@ func apply(look: CharacterLook) -> void:
 		if not look.slots.has(slot):
 			continue
 		var entry: Dictionary = look.slots[slot]
-		var visual: GearVisual = GearVisual.find(entry.get("visual_id", &""))
-		var rarity: StringName = entry.get("rarity", &"common")
-		if visual == null or visual.slot != slot:
-			visual = GearVisual.fallback(slot)
-			rarity = &"common"
-		if not Content.has(&"looks", rarity):
-			rarity = &"common"
-		var finish: RarityLook = Content.get_item(&"looks", rarity) as RarityLook
-		var piece: Node3D = _attach(visual, finish.tier)
+		var shown: Array = resolve(slot, entry)
+		var finish: RarityLook = shown[1]
+		var piece: Node3D = _attach(shown[0], finish.tier)
 		var dyes: Array = entry.get("dyes", [CharacterLook.DEFAULT_DYE_MAIN, CharacterLook.DEFAULT_DYE_ACCENT])
 		GearLook.apply(piece, finish, dyes[0], dyes[1])
 		_set_geometry(piece)

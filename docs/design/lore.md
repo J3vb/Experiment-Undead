@@ -1,10 +1,12 @@
-# Experiment Undead: Lore Bible
+# Fenlight: Lore Bible
 
 Source: copy of the design doc as of Nov 14, 2026. Where this file and the code differ, the code and `docs/DECISIONS.md` win.
 
 ## The premise
 
 A cold-loving bog organism called **Fenlight** was kept asleep in freezing labs under the Ardennes. One winter night the power failed, the labs warmed up, and it woke. Now the dead walk with green light in their veins, a military cordon has sealed the region, and a handful of survivors in a ridge-top village called **Lantern Post** send salvagers back into the zone for gear, data and answers.
+
+The game is named after the mould: **Fenlight** is both the title and the thing that woke. In-game text keeps using Fenlight for the organism.
 
 The one-line pitch: *the cold kept it asleep, and someone turned off the cold.* That is why the art direction is Cold Containment: cold means safe, warmth means danger, green means Fenlight.
 
@@ -302,6 +304,12 @@ some guns have codes and some have names.
 **Reforged** guns are any of these run through the Reforger's Fenlight alloy
 (see Why the machines exist).
 
+### Grenades and field kit
+
+| Thing | Story reason |
+| --- | --- |
+| Frag grenades | Army and Cordon issue, from the same crates as the wall guns: the evacuation force left them on Day 3 and Cordon patrols still drop them. Two fit in a vest pouch, which is why you carry two and find more each round in the kit the Lit still carry. *(provisional)* |
+
 ### Power-ups, points and buying from walls
 
 These are the arcade rules of the wave game. Decided by the person
@@ -320,13 +328,14 @@ stay a plain game score. The drop reasons below are provisional picks.
 | Purge | An Oriel pulse breaker. It breaks the pulse sync for a moment, and every host nearby drops dead. |
 | Scrap Kit | A carpenter's repair kit. |
 | Stasis | An Oriel cryo charge: a burst of cold that freezes every host. |
-| Supply Crate | An Oriel Vault key card: one free Vault roll. |
+| Supply Crate | An Oriel Vault key card: it unseals an Oriel supply crate on the spot, good for one free Vault roll (provisional). |
 
 ### Gear and abilities
 
 | Thing | Story reason |
 | --- | --- |
 | Vests | Body armour salvaged from Oriel security, the army and the Cordon. Light, medium and heavy frames. |
+| Headgear, gloves, backpacks, boots | The rest of a salvager's kit, patched together at Lantern Post from Oriel security, army and Cordon gear like the vests: a knit cap, work gloves, a field pack and boots at first, plated pieces from Rare up, Oriel armour at Legendary (F-70 tiers). Named Salvager Cap, Gloves, Pack and Boots. *(provisional)* |
 | Charms | Keepsakes taken from the zone: dog tags, a sample vial, a coin, a key card, a dosimeter. Salvagers hang them on the gun for luck. |
 | Implants | HALCYON's soldier program: a forearm module and a neck port that feed the body tiny doses of tamed Fenlight. Dr. Corvelyn fits the neck port once at the Technician stall; the forearm modules click in and out, so salvagers swap them in the field. *(provisional)* |
 | Rarity | How much use and Fenlight an item has seen. Prototype = live Fenlight (bio-green). |
@@ -350,6 +359,15 @@ stay a plain game score. The drop reasons below are provisional picks.
 | Trainer (skill respec) | Dr. Corvelyn, as first written. *(provisional; open question below)* |
 | Firing Range | The old customs yard behind the post. |
 
+### Front-end screens
+
+| Screen | Story reason |
+| --- | --- |
+| Main menu | Lantern Post at night from the road in, under the Fenlight glow in the sky: the town that sends you out. *(provisional)* |
+| Loadout | Odile's armoury table at the post, where you pick what you carry out. *(provisional)* |
+| Research (skill tree, F-21) | Dr. Corvelyn's lab: samples you bring back are studied there and teach you the salvager trades. *(provisional)* |
+| FENLIGHT logo | The game is named after the mould; the green veins in the logo are Fenlight. |
+
 ### Maps, rooms and props
 
 - **Rooms.** Every room tells one small story you can read in a glance. In
@@ -367,7 +385,7 @@ stay a plain game score. The drop reasons below are provisional picks.
   evacuation train, hospital furniture at Grauwald is 1950s sanatorium stock.
 - **New maps** follow the chapter checklist in The long campaign.
 - **The launcher** (F-82) sits outside the fiction: it shows the game's name,
-  the tagline "A Fenlight survival experience", news and patch notes. Any art
+  the tagline "The cold kept it asleep.", news and patch notes. Any art
   or names on it use lore names (Oriel, HALCYON, the Cordon, Lantern Post).
   *(provisional)*
 

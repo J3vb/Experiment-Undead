@@ -37,6 +37,9 @@ var _noise: FastNoiseLite = FastNoiseLite.new()
 var _hold_left: float = 0.0
 var _clock: float = 0.0
 var _hitstop_times: Array[float] = []
+var _dip_depth: float = 0.0
+var _dip_length: float = 0.0
+var _dip_time: float = 0.0
 
 @onready var recoil_pivot: Node3D = $RecoilPivot
 @onready var camera: Camera3D = $RecoilPivot/Camera3D
@@ -128,6 +131,20 @@ func tilt_down(down: bool) -> Tween:
 	return tilt(rules.downed_roll_deg if down else 0.0, rules.downed_drop_s)
 
 
+## A short down-and-back camera dip (mantle), scaled by the Head bob comfort setting.
+func dip(metres: float, seconds: float) -> void:
+	_dip_depth = metres * head_bob
+	_dip_length = seconds
+	_dip_time = 0.0
+
+
+func _step_dip(delta: float) -> float:
+	if _dip_time >= _dip_length:
+		return 0.0
+	_dip_time += delta
+	return _dip_depth * sin(PI * clampf(_dip_time / _dip_length, 0.0, 1.0))
+
+
 func add_flinch(strength_degrees: float, sideways: float) -> void:
 	_recoil_target += Vector2(deg_to_rad(strength_degrees), deg_to_rad(sideways * strength_degrees * 0.6))
 
@@ -149,7 +166,7 @@ func update_feel(
 	if _body.is_on_floor() and speed > 0.5:
 		_bob_time += delta * speed * 1.6
 	var amount: float = bob_strength * head_bob * (1.0 - ads_progress) * clampf(speed / walk_speed, 0.0, 1.5)
-	camera.position = Vector3(cos(_bob_time * 0.5) * amount * 0.5, sin(_bob_time) * amount, 0.0)
+	camera.position = Vector3(cos(_bob_time * 0.5) * amount * 0.5, sin(_bob_time) * amount - _step_dip(delta), 0.0)
 
 	var fov: float = base_fov + (sprint_fov_bonus if sprinting and sprint_fov else 0.0)
 	fov = lerpf(fov, ads_fov, ads_progress)

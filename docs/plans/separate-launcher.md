@@ -5,11 +5,11 @@ Roadmap: F-82
 Phase: P8 (steps 1-4 land before Release v0.1.0, F-11)
 Size: L
 Approved by: the person in the project thread, 2026-11-19 ("Approve, start building" card, after picking Tauri and a Windows installer); plan PR #378
-Lore link: the launcher shows the game's name, its news and the Oriel/Halcyon/Cordon names from docs/design/lore.md (Factions); the tagline "A Fenlight survival experience" is a provisional row in "Story links for game content" (Maps, rooms and props)
+Lore link: the launcher shows the game's name, its news and the Oriel/Halcyon/Cordon names from docs/design/lore.md (Factions); the tagline "The cold kept it asleep." is a provisional row in "Story links for game content" (Maps, rooms and props)
 
 ## Goal
 
-Players install one small program, the Experiment Undead launcher, like
+Players install one small program, the Fenlight launcher, like
 Steam or Battle.net. It installs the game, keeps it updated, shows news and
 patch notes, hosts a server, and keeps itself updated. The game exe itself
 goes straight to the main menu. Serves "Better together": friends are always
@@ -27,7 +27,7 @@ In:
 - A Tauri 2 app in `launcher/`: a small Rust core (downloads, checksums,
   unzip, starting the game and a server) and a plain HTML/CSS/JS window
   (step 1). About 10 MB, using the WebView2 that ships with Windows 10 and 11.
-- A per-user Windows installer, `ExperimentUndead-Setup-<version>.exe`, made
+- A per-user Windows installer, `Fenlight-Setup-<version>.exe`, made
   by Tauri's own NSIS bundler, and launcher self-update through Tauri's
   updater plugin (step 2).
 - The in-game launcher screen is deleted; "Restart to update" in the join
@@ -55,12 +55,13 @@ Not in (non-goals, and where each one goes instead):
 ## How it fits together
 
 ```
-%LOCALAPPDATA%\Experiment Undead Launcher\   installed by the setup exe (per user, no admin)
-  experiment-undead-launcher.exe
-%LOCALAPPDATA%\Experiment Undead\game\       the launcher's data folder
-  versions\0.1.0-test.2\                     full game, installed by the launcher
-  versions\0.1.0-test.3\                     newest; Play starts this one
+%LOCALAPPDATA%\Fenlight Launcher\   installed by the setup exe (per user, no admin)
+  fenlight-launcher.exe
+%LOCALAPPDATA%\com.experimentundead.launcher\  the launcher's data folder (the uninstaller offers to delete it)
   launcher.json                              channel, server port, max players
+  launcher.log
+  game\versions\0.1.0-test.2\               full game, installed by the launcher
+  game\versions\0.1.0-test.3\               newest; Play starts this one
 ```
 
 | Piece | Rule |
@@ -70,7 +71,7 @@ Not in (non-goals, and where each one goes instead):
 | Version compare | Ported to Rust once. `tests/fixtures/version_table.json` is read by both the game's GUT test and the launcher's `cargo test`, so the two can never disagree. |
 | Launcher version | Built from the same tag as the game, same version (`tauri.conf.json` version set by `tools/ci/stamp_version.sh`). |
 | Launcher self-update | Tauri's updater plugin: on start it reads `latest.json` from the newest release on the channel, downloads the new setup exe, checks its signature with the public key built into the launcher, runs it quietly and restarts. The signing key is a GitHub secret (`TAURI_SIGNING_PRIVATE_KEY`). Any failure keeps the old launcher running. |
-| Release assets | Add `ExperimentUndead-Setup-<version>.exe`, its `.sig`, and `latest.json`. Existing zip names unchanged. From v0.1.0 these join the F-65 asset contract. |
+| Release assets | Add `Fenlight-Setup-<version>.exe`, its `.sig`, and `latest.json`. Existing zip names unchanged. From v0.1.0 these join the F-65 asset contract. |
 | Game finds the launcher | The `--launcher-exe=` path it was started with. Started by hand or a dev build: no "Restart to update" button. |
 | News | `launcher/news/news.json` + images on `main`, fetched from `raw.githubusercontent.com` (one call per start). Offline: the copy built into the launcher. Adding news is a docs-style PR, no release. |
 | Patches | The release notes of every release on the channel, from the Releases call the launcher already makes. |
@@ -163,11 +164,11 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
 ### Step 1: The Tauri launcher installs and starts the game
 
 - Build: `launcher/` Tauri 2 project with one plain page: channel dropdown,
-  status, progress bar, Play. Rust commands `check(channel)`,
-  `install(release)` (emits progress events), `play()`. Port
+  status, progress bar, Play. Rust commands (as built) `status`, `refresh`,
+  `set_channel`, `install` (emits progress events), `cancel` and `play`. Port
   `ReleaseFeed`/`VersionInstaller` rules (see table). Shared version table
   fixture. `launcher/.gdignore`. New `launcher.yml` workflow: fmt, clippy,
-  `cargo test` on Ubuntu; `cargo tauri build --no-bundle` on Windows for
+  `cargo test` on Ubuntu; `cargo build --release -p fenlight-launcher` on Windows for
   PRs touching `launcher/`. The game is untouched in this step. ADR 0018
   accepted.
 - Files: `launcher/**`, `.github/workflows/launcher.yml`,
@@ -180,12 +181,12 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
   `versions/<v>/`, a wrong digest or cut-off download leaves nothing, only 2
   newest stay; version table. GUT: `test_build.gd` reads the same table.
 - Done when: the launcher built on Windows installs the newest release on
-  its channel and Play starts it.
+  its channel and Play starts it. Done 2026-11-20, PR #397.
 
 ### Step 2: Setup exe and self-update
 
 - Build: Tauri NSIS bundle (`installMode: currentUser`, Start menu and
-  desktop shortcut, uninstall entry), product name "Experiment Undead
+  desktop shortcut, uninstall entry), product name "Fenlight
   Launcher". Updater plugin with the public key in `tauri.conf.json` and the
   endpoint `https://github.com/J3vb/Experiment-Undead/releases/latest/download/latest.json`
   for stable; test reads `latest.json` from the newest pre-release through
@@ -195,8 +196,8 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
   Needs the person once: add the signing key as a repository secret (the
   step's thread makes the key and gives exact clicks).
 - Files: `launcher/src-tauri/tauri.conf.json`, `src/main.rs`,
-  `.github/workflows/release.yml`, `tools/ci/make_latest_json.py` (new),
-  `tools/ci/test_make_latest_json.py` (new), `tools/ci/test_workflows.py`,
+  `.github/workflows/release.yml`, `tools/ci/launcher_release.py` (new: stamp and manifest),
+  `tools/ci/test_launcher_release.py` (new), `tools/ci/test_workflows.py`,
   `docs/RELEASING.md`.
 - Tests: `test_make_latest_json.py` (version, notes, URL, signature);
   `test_workflows.py` (release attaches the three files); the release job

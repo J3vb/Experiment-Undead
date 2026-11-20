@@ -1,6 +1,6 @@
 # Plan: More power-ups in the drop deck
 
-Status: Approved
+Status: Done
 Roadmap: F-26 / issue #118
 Phase: P3
 Size: M
@@ -285,11 +285,11 @@ while a timer runs and reuses its icon nodes. No new per-frame allocations.
 
 ## Acceptance
 
-- [ ] Each power-up is a PowerUpData file; its effect is a small function (test per effect).
-- [ ] Timed ones show an icon with a shrinking ring, bottom centre (HUD test + play-test).
-- [ ] Deck test: no repeats before every type came out; Supply Crate in about 1 of 3 decks.
-- [ ] Every effect works from a co-op client and for a late joiner (two-peer tests).
-- [ ] Drop rate is 2.5% per kill, max 4 a round; soak rounds 1-10 pass.
+- [x] Each power-up is a PowerUpData file; its effect is a small function (test per effect). tests/unit/test_power_up_timers.gd, test_power_up_effects.gd, test_supply_crate.gd
+- [x] Timed ones show an icon with a shrinking ring, bottom centre (HUD test: test_power_up_timers.gd `test_hud_ring_counts_down_and_goes`; look play-test by the person still open).
+- [x] Deck test: no repeats before every type came out; Supply Crate in about 1 of 3 decks. tests/unit/test_power_up_drops.gd
+- [x] Every effect works from a co-op client and for a late joiner (two-peer tests). tests/unit/test_coop_power_ups.gd
+- [x] Drop rate is 2.5% per kill, max 4 a round; soak rounds 1-10 pass. tests/integration/test_power_ups.gd `test_drop_rates_match_the_design`, CI soak.
 
 ## Risks
 

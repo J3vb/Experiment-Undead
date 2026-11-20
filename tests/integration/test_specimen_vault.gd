@@ -127,3 +127,19 @@ func test_vault_can_offer_the_kestrel_from_the_map_pool() -> void:
 	assert_eq(player.weapons.current.data.id, &"kestrel_smg")
 	assert_eq(player.weapons.current.instance.ammo_in_mag, 30)
 	assert_eq(player.wallet.points, 9050)
+
+
+func test_bargain_hunter_pays_750_and_the_moving_roll_refunds_750() -> void:
+	level.turn_power_on()
+	player.skill_ranks = {&"bargain_hunter": 1}
+	player.equip_gear([])
+	assert_eq(vault.get_prompt(player), "Roll the Specimen Vault [F]  750")
+	var start: Node3D = vault.spot
+	var rolls: int = 0
+	while vault.spot == start and rolls < 20:
+		vault.interact(player)
+		_finish_roll()
+		if vault.state == SpecimenVault.State.OFFERING:
+			vault._physics_process(SpecimenVault.OFFER_TIME + 0.01)
+		rolls += 1
+	assert_eq(player.wallet.points, 10000 - 750 * (rolls - 1), "refund is the 750 paid, not 950")

@@ -58,6 +58,8 @@ func collect(player: Player) -> void:
 		drops.on_collected(self, player)
 	else:
 		apply_effect(player, data)
+		if data.effect == PowerUpData.Effect.RESUPPLY:
+			player.grenades.refill()
 	play_collect_sound()
 	Events.power_up_collected.emit(player, data)
 	queue_free()

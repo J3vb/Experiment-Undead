@@ -3,7 +3,7 @@
 extends Node
 
 ## Bump when client/server messages change. Mismatched peers are refused.
-const PROTOCOL_VERSION: int = 21
+const PROTOCOL_VERSION: int = 24
 ## Development stage shown next to the version.
 const STAGE: String = "Early Alpha"
 const VERSION_FILE: String = "res://version.json"
@@ -149,7 +149,7 @@ func end_run(marker: String) -> void:
 
 
 func _log_header() -> void:
-	print("Experiment Undead %s (commit %s, built %s, protocol %d)" % [version, commit, built_at, PROTOCOL_VERSION])
+	print("Fenlight %s (commit %s, built %s, protocol %d)" % [version, commit, built_at, PROTOCOL_VERSION])
 	print("OS: %s %s | CPU: %s" % [OS.get_name(), OS.get_version(), OS.get_processor_name()])
 	if DisplayServer.get_name() != "headless":
 		var gpu: String = RenderingServer.get_video_adapter_name()

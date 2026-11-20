@@ -1,4 +1,4 @@
-//! Experiment Undead launcher: installs the newest game on the player's channel, keeps it
+//! Fenlight launcher: installs the newest game on the player's channel, keeps it
 //! updated and starts it (docs/plans/separate-launcher.md). The window is `ui/`.
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
@@ -12,6 +12,7 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager, State};
+use tauri_plugin_updater::UpdaterExt;
 
 struct Launcher {
     data_dir: PathBuf,
@@ -153,6 +154,50 @@ fn cancel(launcher: State<'_, Launcher>) {
     launcher.cancel.store(true, Ordering::Relaxed);
 }
 
+/// Updates the launcher itself when the newest release on the channel has a newer one: the
+/// signed setup exe installs quietly and the launcher restarts. Ok(false) means up to date.
+#[tauri::command]
+async fn self_update(app: AppHandle, launcher: State<'_, Launcher>) -> Result<bool, String> {
+    let url = {
+        let channel = launcher.settings.lock().map_err(|error| error.to_string())?.channel;
+        let releases = launcher.releases.lock().map_err(|error| error.to_string())?;
+        releases
+            .as_deref()
+            .and_then(|list| feed::launcher_manifest_url(list, channel))
+    };
+    let Some(url) = url else {
+        return Ok(false);
+    };
+    let result = check_and_install(&app, &url).await;
+    match &result {
+        Ok(true) => log::write(&launcher.data_dir, "info", "self_updated", &url),
+        Ok(false) => {}
+        Err(problem) => log::write(&launcher.data_dir, "warn", "self_update_failed", problem),
+    }
+    if result == Ok(true) {
+        app.restart();
+    }
+    result
+}
+
+async fn check_and_install(app: &AppHandle, manifest: &str) -> Result<bool, String> {
+    let endpoint = manifest.parse().map_err(|error: url::ParseError| error.to_string())?;
+    let updater = app
+        .updater_builder()
+        .endpoints(vec![endpoint])
+        .map_err(|error| error.to_string())?
+        .build()
+        .map_err(|error| error.to_string())?;
+    let Some(update) = updater.check().await.map_err(|error| error.to_string())? else {
+        return Ok(false);
+    };
+    update
+        .download_and_install(|_, _| {}, || {})
+        .await
+        .map_err(|error| error.to_string())?;
+    Ok(true)
+}
+
 /// Starts the newest installed game and closes the launcher.
 #[tauri::command]
 fn play(app: AppHandle, launcher: State<'_, Launcher>) -> Result<(), String> {
@@ -177,9 +222,10 @@ fn play(app: AppHandle, launcher: State<'_, Launcher>) -> Result<(), String> {
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(move |app| {
-            let local_data = app.path().local_data_dir()?;
-            let data_dir = settings::data_dir(&args, local_data);
+            let app_data = app.path().app_local_data_dir()?;
+            let data_dir = settings::data_dir(&args, app_data);
             app.manage(Launcher {
                 settings: Mutex::new(Settings::load(&data_dir)),
                 api_url: settings::releases_api(&args),
@@ -193,6 +239,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             status,
             refresh,
+            self_update,
             set_channel,
             install,
             cancel,
