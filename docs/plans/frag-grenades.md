@@ -320,13 +320,13 @@ physics tick. Budget: under 0.5 ms on the blast frame with 24 zombies.
 
 ## Acceptance
 
-- [ ] Hold G cooks, release throws; holding 3 s blows up in hand (unit test)
-- [ ] 2 frags per round, refilled at round start and by Resupply, count on the HUD (unit tests)
-- [ ] Damage falls off from 1.5 m to 0 at 7 m and is blocked by walls (unit tests)
-- [ ] Own grenade hurts the thrower up to 60, teammates take none (unit test)
-- [ ] A Bloater bursts from any explosive hit (unit test)
-- [ ] A client's throw does damage only on the server and both see the blast (co-op integration test)
-- [ ] Soak and co-op bot soak green with grenades in the build
+- [x] Hold G cooks, release throws; holding 3 s blows up in hand (unit test: test_grenades.gd cook, release and blow-up-in-hand tests)
+- [x] 2 frags per round, refilled at round start and by Resupply, count on the HUD (unit tests)
+- [x] Damage falls off from 1.5 m to 0 at 7 m and is blocked by walls (unit tests)
+- [x] Own grenade hurts the thrower up to 60, teammates take none (unit test)
+- [x] A Bloater bursts from any explosive hit (unit test)
+- [x] A client's throw does damage only on the server and both see the blast (two-peer test: test_grenade_claims.gd, client frag kills on the server)
+- [x] Soak and co-op bot soak green with grenades in the build
 - [ ] Solo play-test: throwing and cooking feel good (recorded by the person)
 
 ## Risks

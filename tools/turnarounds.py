@@ -19,6 +19,7 @@ FONT = REPO / "assets/fonts/AtkinsonHyperlegibleNext.ttf"
 REFERENCES = {
     "zombies": "style_lineup.jpg",
     "weapons": "style_corridor.jpg",
+    "throwables": "style_corridor.jpg",
     "kit": "style_corridor.jpg",
     "props": "style_corridor.jpg",
     "dressing": "style_corridor.jpg",
