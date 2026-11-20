@@ -20,6 +20,7 @@ import bpy
 # isort: split
 import bmesh
 import numpy
+import tripo_crawler
 import tripo_rig
 from mathutils import Matrix, Vector
 from player_body.build import strip_icc
@@ -342,6 +343,8 @@ def run(args: argparse.Namespace) -> dict:
         low.name = "Body"
         keep = tripo_rig.rig(low, armature, placed, None)
         keep.append(tripo_rig.head_center_marker(keep[0], keep[2]))
+        if args.crawler:
+            keep.append(tripo_crawler.make(keep[0], keep[1]))
     bpy.data.objects.remove(high)
     model = os.path.join(os.path.join(MODELS, args.folder) if args.folder else folder, f"{args.name}.glb")
     export(keep, model)
@@ -362,6 +365,7 @@ def parse(argv: list) -> argparse.Namespace:
     parser.add_argument("--out", default=OUT, help="folder for the baked maps (and the model without --folder)")
     parser.add_argument("--clips", choices=("player", "keeper"), default="player", help="characters: clip set")
     parser.add_argument("--folder", default="", help="write the model to assets/models/<folder>/")
+    parser.add_argument("--crawler", action="store_true", help="zombies: cut the legs off and lay it prone")
     return parser.parse_args(argv)
 
 

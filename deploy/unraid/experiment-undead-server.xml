@@ -2,11 +2,11 @@
 <Container version="2">
   <Name>experiment-undead-server</Name>
   <Repository>ghcr.io/j3vb/experiment-undead-server:latest</Repository>
-  <Registry>https://github.com/J3vb/Experiment-Undead/pkgs/container/experiment-undead-server</Registry>
+  <Registry>https://github.com/J3vb/Fenlight/pkgs/container/experiment-undead-server</Registry>
   <Network>bridge</Network>
   <Privileged>false</Privileged>
-  <Support>https://github.com/J3vb/Experiment-Undead</Support>
-  <Project>https://github.com/J3vb/Experiment-Undead</Project>
+  <Support>https://github.com/J3vb/Fenlight</Support>
+  <Project>https://github.com/J3vb/Fenlight</Project>
   <Overview>Dedicated server for Fenlight, a co-op wave survival shooter. Up to 8 players. Use tag "latest" for releases or "edge" for the newest main build.</Overview>
   <Category>GameServers:</Category>
   <WebUI/>

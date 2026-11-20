@@ -77,18 +77,7 @@ pub fn host_stop(launcher: State<'_, Launcher>) -> Result<(), String> {
 pub fn open_logs(launcher: State<'_, Launcher>) -> Result<(), String> {
     let dir = launcher.host.lock().map_err(|error| error.to_string())?.dir.clone();
     std::fs::create_dir_all(&dir).map_err(|error| error.to_string())?;
-    let opener = if cfg!(windows) {
-        "explorer"
-    } else if cfg!(target_os = "macos") {
-        "open"
-    } else {
-        "xdg-open"
-    };
-    std::process::Command::new(opener)
-        .arg(&dir)
-        .spawn()
-        .map(|_| ())
-        .map_err(|error| format!("Could not open {}: {error}", dir.display()))
+    crate::pages::open(&dir.display().to_string())
 }
 
 /// Closes the launcher, stopping a running server first (it gets 10 seconds to save).

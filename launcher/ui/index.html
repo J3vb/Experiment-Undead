@@ -7,16 +7,75 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main>
-    <header>
+  <div class="titlebar" data-tauri-drag-region>
+    <button id="win-min" class="win" aria-label="Minimise"><svg viewBox="0 0 12 12"><path d="M1 6h10"/></svg></button>
+    <button id="win-max" class="win" aria-label="Maximise"><svg viewBox="0 0 12 12"><rect x="1.5" y="1.5" width="9" height="9"/></svg></button>
+    <button id="win-close" class="win close" aria-label="Close"><svg viewBox="0 0 12 12"><path d="M1 1l10 10M11 1L1 11"/></svg></button>
+  </div>
+
+  <header class="brand" data-tauri-drag-region>
+    <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M32 2 L36 28 L62 32 L36 36 L32 62 L28 36 L2 32 L28 28 Z"/>
+      <circle cx="32" cy="32" r="13"/>
+    </svg>
+    <div>
       <h1>Fen<span>light</span></h1>
       <p class="tagline">The cold kept it asleep.</p>
-    </header>
-    <section class="notes">
-      <h2 id="headline">Checking for updates…</h2>
-      <pre id="notes"></pre>
+    </div>
+  </header>
+
+  <nav class="sidebar">
+    <button class="nav active" data-page="play">
+      <svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>Play</button>
+    <button class="nav" data-page="news">
+      <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>News<i id="news-dot" hidden></i></button>
+    <button class="nav" data-page="patches">
+      <svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>Patches</button>
+    <button class="nav" data-page="host">
+      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"/><rect x="4" y="14" width="16" height="6" rx="1"/><path d="M8 7h.01M8 17h.01"/></svg>Host a server</button>
+    <button class="nav" data-page="settings">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Settings</button>
+    <button class="nav" data-page="support">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5h.01"/></svg>Support</button>
+    <p class="build" id="launcher-version"></p>
+  </nav>
+
+  <main>
+    <section id="page-play" class="page">
+      <article class="hero panel" id="hero">
+        <div class="hero-text">
+          <p class="kicker" id="hero-kicker"></p>
+          <h2 id="hero-title"></h2>
+          <p id="hero-summary"></p>
+          <button class="outline" id="hero-more">Read more</button>
+        </div>
+      </article>
+      <aside class="latest panel">
+        <div class="latest-head">
+          <h3>Latest news</h3>
+          <button class="link" data-page="news">View all &rarr;</button>
+        </div>
+        <ol id="latest"></ol>
+      </aside>
+      <div class="strip panel">
+        <span class="oriel">Oriel <small>Biotechnic</small></span>
+        <span class="project"><small>Project</small> HALCYON</span>
+        <span class="stamp">Subject: Fenlight<br>Status: containment failed</span>
+      </div>
     </section>
-    <section class="host">
+
+    <section id="page-news" class="page panel scroll" hidden>
+      <h2>News</h2>
+      <div id="news-list"></div>
+    </section>
+
+    <section id="page-patches" class="page panel scroll" hidden>
+      <h2>Patches</h2>
+      <p class="muted" id="patches-empty"></p>
+      <div id="patches-list"></div>
+    </section>
+
+    <section id="page-host" class="page panel" hidden>
       <h2>Host a server</h2>
       <div class="host-row">
         <label>Port <input id="host-port" type="number" min="1" max="65535" value="7777"></label>
@@ -26,37 +85,86 @@
             <option>5</option><option>6</option><option>7</option><option selected>8</option>
           </select>
         </label>
-        <button id="host-toggle">Start server</button>
-        <button id="host-logs" class="quiet">Open logs</button>
+        <button id="host-toggle" class="outline">Start server</button>
+        <button id="host-logs" class="outline quiet">Open logs</button>
       </div>
       <p id="host-status"></p>
-      <p class="hint" id="host-hint"></p>
+      <p class="muted" id="host-hint"></p>
     </section>
-    <footer>
-      <button id="play" disabled>Play</button>
-      <div class="version">
-        <label for="channel">Game version</label>
-        <select id="channel">
+
+    <section id="page-settings" class="page panel" hidden>
+      <h2>Settings</h2>
+      <label class="field">Game version
+        <select id="settings-channel" class="channel">
           <option value="stable">Stable</option>
-          <option value="test">Test builds</option>
+          <option value="test">Test</option>
+        </select>
+      </label>
+      <p class="muted">Test builds get new things first and may break. Your test and stable saves are kept apart.</p>
+      <label class="check"><input type="checkbox" id="close-on-play"> Close the launcher when the game starts</label>
+      <p class="muted">The launcher always stays open while it hosts a server.</p>
+    </section>
+
+    <section id="page-support" class="page panel" hidden>
+      <h2>Support</h2>
+      <p>Something broke? Send us the logs with a short note of what you did.</p>
+      <div class="buttons">
+        <button class="outline" data-place="logs">Open the logs folder</button>
+        <button class="outline" data-place="issues">Report a problem on GitHub</button>
+      </div>
+      <p class="muted" id="support-status"></p>
+    </section>
+  </main>
+
+  <footer class="bar panel">
+    <button id="play" disabled><svg viewBox="0 0 24 24"><path d="M6 3l15 9-15 9z"/></svg><span id="play-text">Play</span></button>
+    <div class="version">
+      <label for="channel">Game version</label>
+      <div class="version-row">
+        <select id="channel" class="channel">
+          <option value="stable">Stable</option>
+          <option value="test">Test</option>
         </select>
         <p id="status"></p>
       </div>
-      <div class="install">
-        <progress id="progress" max="100" value="0" hidden></progress>
-        <button id="cancel" hidden>Cancel</button>
-        <p id="folder"></p>
+    </div>
+    <div class="install">
+      <label>Installation</label>
+      <div class="install-row">
+        <svg class="drive" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 14h.01M10 14h7"/></svg>
+        <div class="meter">
+          <div class="meter-text"><span id="disk-used"></span><span id="disk-free"></span></div>
+          <progress id="progress" max="100" value="0"></progress>
+        </div>
+        <button id="cancel" class="outline quiet" hidden>Cancel</button>
+        <div class="more">
+          <button id="more" class="outline quiet" aria-label="More">&middot;&middot;&middot;</button>
+          <div id="more-menu" class="menu" hidden>
+            <button data-place="game">Open game folder</button>
+            <button id="repair">Repair game files</button>
+            <button id="uninstall">Uninstall game</button>
+          </div>
+        </div>
       </div>
-    </footer>
-  </main>
+    </div>
+  </footer>
+
+  <div id="ask" class="overlay" hidden>
+    <div class="dialog panel">
+      <p id="ask-text"></p>
+      <button id="ask-yes" class="outline"></button>
+      <button id="ask-no" class="outline quiet">Cancel</button>
+    </div>
+  </div>
   <div id="close-ask" class="overlay" hidden>
-    <div class="dialog">
+    <div class="dialog panel">
       <p>Your server is still running. Closing the launcher stops it and disconnects everyone on it.</p>
-      <button id="close-stop">Stop server and close</button>
-      <button id="close-keep" class="quiet">Keep running</button>
+      <button id="close-stop" class="outline">Stop server and close</button>
+      <button id="close-keep" class="outline quiet">Keep running</button>
     </div>
   </div>
   <script src="app.js"></script>
+  <script src="pages.js"></script>
   <script src="host.js"></script>
 </body>
 </html>

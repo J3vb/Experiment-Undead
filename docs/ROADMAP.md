@@ -72,6 +72,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-75 | Baked texture maps for the four concept guns: high-detail bake (bevels, stipple, engraved marks, wear), 30,000-triangle gun budget, Forward+ lit previews, intake for handed-over .glb guns | - | F-72 step 2 (per gun: its F-72 step) | [ready](plans/baked-gun-textures.md) | L | Building (steps 1-2; 3-6 after the AR-17 look) |
 | F-85 | Real reload animations: left hand swaps magazines, bolt catch on empty reloads, BR-12 loads shell by shell, sounds on each move (solo play-test 2026-11-19) | - | F-72 | [done](plans/reload-animations.md) | M | Done |
 | F-87 | HUD to the FENLIGHT concept art: angled health/stamina and gun/ammo/frag panels, Serum slots with icons, compass, ROUND counter, pickup prompt on the object (concept art 2026-11-20) | - | - | [ready](plans/hud-concept.md) | M | Building (all 5 steps built; play-test left) |
+| F-89 | Real sounds and music instead of the generated placeholders: free packs (Sonniss, Kenney, Freesound CC0) and Stable Audio music, intake tool, licence log, audition pages to pick by ear (play-test 2026-11-20) | - | - | [ready](plans/real-sounds-music.md) | L | Ready |
 
 ## Next: v0.2 Progression and loot
 
@@ -86,7 +87,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-25 | Mantle | #120 | F-11 | [ready](plans/mantle.md) | M | Building |
 | F-26 | More power-ups in the drop deck | #118 | F-11 | [needed](plans/more-power-ups.md) | M | Done |
 | F-27 | Crawler | #121 | F-24 | needed | M | Todo |
-| F-86 | Existing zombies (Shambler, Crawler, Bloater) to the person's Tripo models, same poses, hit zones and gore | - | F-28 step 1 | [ready](plans/tripo-zombies.md) | M | Building |
+| F-86 | Existing zombies (Shambler, Crawler, Bloater) to the person's Tripo models, same poses, hit zones and gore | - | F-28 step 1 | [done](plans/tripo-zombies.md) | M | Done |
 | F-28 | Blackout rounds and Glowers | #122 | F-11 | [ready](plans/blackout-glowers.md) | M | Building |
 | F-29 | Stalker | #123 | F-11, F-28 | [ready](plans/stalker.md) | L | Ready |
 | F-30 | Brute | #124 | F-11, F-29 | [ready](plans/brute.md) | L | Ready |

@@ -41,6 +41,9 @@ var target: Player
 var barrier: Barrier
 ## The Spawner's live zombies (shared array, not a copy); separation pushes off these.
 var neighbours: Array[Zombie] = []
+## Server only, not synced: a Blackout pack follower's leader, and the side (-1/+1) it splits to.
+var pack_leader: Zombie
+var pack_side: int = 0
 ## Window queue, plank tearing and vault (ZombieEntry).
 var entry: ZombieEntry = ZombieEntry.new()
 

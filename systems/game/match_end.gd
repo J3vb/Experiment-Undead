@@ -58,8 +58,9 @@ func finish_exfil() -> void:
 
 
 ## Only connected squad members count; an empty dedicated server waits for players.
+## A client closing for a place change is offline (so "server") but ends nothing.
 func check_squad() -> void:
-	if session.is_over or not multiplayer.is_server():
+	if not is_inside_tree() or session.is_over or Net.changing_place or not multiplayer.is_server():
 		return
 	var squad: Array[Player] = session.get_players()
 	if squad.is_empty() or squad.any(func(p: Player) -> bool: return p.is_alive() or p.can_self_revive()):

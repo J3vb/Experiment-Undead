@@ -16,12 +16,14 @@ fn channel_is_saved_and_loaded() {
         channel: Channel::Test,
         port: 7790,
         max_players: 4,
+        close_on_play: false,
     }
     .save(&dir)
     .unwrap();
     let loaded = Settings::load(&dir);
     assert_eq!(loaded.channel, Channel::Test);
     assert_eq!((loaded.port, loaded.max_players), (7790, 4));
+    assert!(!loaded.close_on_play);
 }
 
 #[test]
@@ -31,6 +33,7 @@ fn old_settings_files_get_the_default_server_port() {
     let loaded = Settings::load(&dir);
     assert_eq!(loaded.channel, Channel::Test);
     assert_eq!((loaded.port, loaded.max_players), (7777, 8));
+    assert!(loaded.close_on_play);
 }
 
 #[test]
@@ -53,6 +56,7 @@ fn command_line_test_hooks() {
     );
     assert_eq!(versions_dir(&PathBuf::from("/d")), PathBuf::from("/d/game/versions"));
     assert_eq!(releases_api(&args(&[])), API_URL);
+    assert_eq!(API_URL, "https://api.github.com/repos/J3vb/Fenlight/releases");
     assert_eq!(
         releases_api(&args(&["--releases-api=http://127.0.0.1:9/r"])),
         "http://127.0.0.1:9/r"

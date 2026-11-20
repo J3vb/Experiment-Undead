@@ -107,12 +107,57 @@ impl Installer {
         }
     }
 
+    /// Bytes used by every installed version, for the Installation panel.
+    pub fn size(&self) -> u64 {
+        dir_size(&self.versions_dir)
+    }
+
+    /// Free bytes on the drive the game installs to (its nearest existing folder).
+    pub fn free_space(&self) -> u64 {
+        self.versions_dir
+            .ancestors()
+            .find(|dir| dir.is_dir())
+            .and_then(|dir| fs4::available_space(dir).ok())
+            .unwrap_or(0)
+    }
+
+    /// Deletes one version folder, so the next check installs it fresh (Repair game files).
+    pub fn remove(&self, version: &str) -> Result<(), String> {
+        if !version::is_release_version(version) || self.in_use.iter().any(|name| name == version) {
+            return Err(format!("v{version} is in use."));
+        }
+        fs::remove_dir_all(self.versions_dir.join(version))
+            .map_err(|_| format!("Could not delete v{version}. Close the game and try again."))
+    }
+
+    /// Deletes every installed version that is not in use (Uninstall game).
+    pub fn remove_all(&self) -> Result<(), String> {
+        for name in self.installed() {
+            self.remove(&name)?;
+        }
+        Ok(())
+    }
+
     fn write_problem(&self) -> String {
         format!(
             "Could not write to {}. Pick a folder you own.",
             self.versions_dir.display()
         )
     }
+}
+
+fn dir_size(path: &Path) -> u64 {
+    let Ok(entries) = fs::read_dir(path) else {
+        return 0;
+    };
+    entries
+        .filter_map(Result::ok)
+        .map(|entry| match entry.file_type() {
+            Ok(kind) if kind.is_dir() => dir_size(&entry.path()),
+            Ok(_) => entry.metadata().map(|meta| meta.len()).unwrap_or(0),
+            Err(_) => 0,
+        })
+        .sum()
 }
 
 /// Lowercase hex SHA-256 of a file, like GitHub's asset `digest` without its `sha256:` prefix.

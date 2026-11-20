@@ -84,6 +84,11 @@ launcher screen of its own (removed in F-82 step 3).
   for an update"), tells everyone there, and quits with exit code 3 (an empty server waits
   12 s first). The launcher then starts the new version on the same port. Any other exit is
   left alone. Players see a Restart to update button that opens the launcher.
+- **News:** the launcher's Play and News pages read `launcher/news/news.json` on `main`, so
+  posting news is a PR that adds an item there (a new, higher `id`; newest first is sorted
+  for you). Pictures must ship in `launcher/ui/news/`; a picture that an older launcher lacks
+  shows the Kessel Dam fallback. Offline, the launcher shows the copy it was built with.
+  Patches lists the release notes of every release on the player's channel.
 - **Frozen from v0.1.0:** `latest.json` and the `.sig` beside the setup exe it names
   (`Fenlight-Setup-<version>.exe`; `ExperimentUndead-Setup-` before the rename).
 - **Version:** the release workflow stamps the tag's version into the launcher

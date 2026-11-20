@@ -7,7 +7,8 @@
 ## MultiplayerSpawner, so every peer and late joiner sees them; ammo effects reach
 ## the PCs that own the guns. Timed power-ups (Payday, Overkill, Stasis) run on a
 ## team-wide server timer; every peer hears when one starts, late joiners ask for
-## the time left.
+## the time left. Clearing a Blackout round drops its reward where the last zombie
+## died (outside the cap).
 class_name PowerUpDrops
 extends Node
 
@@ -31,6 +32,7 @@ var dropped_this_round: int = 0
 var _deck: Array[PowerUpData] = []
 var _net: MultiplayerSpawner
 var _next_id: int = 0
+var _last_kill: Vector3 = Vector3.ZERO
 ## Server: seconds left per running timed power-up.
 var _timers: Dictionary[PowerUpData, float] = {}
 
@@ -38,6 +40,7 @@ var _timers: Dictionary[PowerUpData, float] = {}
 func _ready() -> void:
 	Events.enemy_killed.connect(_on_enemy_killed)
 	Events.round_started.connect(func(_round: int, _count: int) -> void: dropped_this_round = 0)
+	Events.round_ended.connect(_on_round_ended)
 	multiplayer.connected_to_server.connect(_ask_timers)
 	if not multiplayer.is_server():
 		_ask_timers.call_deferred()
@@ -228,6 +231,7 @@ func _request_timers() -> void:
 
 
 func _on_enemy_killed(enemy: Node3D, info: DamageInfo) -> void:
+	_last_kill = enemy.global_position
 	var killer: Player = info.attacker as Player
 	if not multiplayer.is_server() or killer == null:
 		return
@@ -250,6 +254,15 @@ func _chain(first: PowerUpData, at: Vector3) -> void:
 			others.append(data)
 	if not others.is_empty():
 		_spawn(others[session.rng.randi_range(0, others.size() - 1)], at)
+
+
+## Server: the round ends while the lights are still out, so this is a cleared Blackout round.
+func _on_round_ended(_round_number: int) -> void:
+	if not multiplayer.is_server() or session == null or not session.director.blackout_round:
+		return
+	var reward: PowerUpData = session.wave_rules.blackout_reward
+	if reward:
+		_spawn(reward, _last_kill)
 
 
 func _next() -> PowerUpData:

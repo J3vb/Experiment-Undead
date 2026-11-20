@@ -28,7 +28,7 @@ MIXAMO = {
 SIDES = {"L": "Left", "R": "Right"}
 EYE_HEIGHT = 1.682
 EYE_FRONT = 0.115
-# The code-built zombies put HeadCenter 8 cm behind and just under the Eyes (zombie_model.py).
+# HeadCenter sits 8 cm behind and just under the Eyes, where the old code-built zombies had it.
 HEAD_CENTER_BEHIND_EYES = (0.0, 0.08, -0.005)
 # Our player body's rest thumb, measured off player.glb: up and out along the arm's side, 31 degrees forward.
 THUMB_OUT = 0.86
@@ -54,7 +54,7 @@ def _targets() -> dict:
     return targets
 
 
-def _aim(arm, pbone, world_dir: Vector) -> None:
+def aim(arm, pbone, world_dir: Vector) -> None:
     """Turns a pose bone about its head so it points along `world_dir`."""
     to_arm = arm.matrix_world.to_3x3().inverted()
     current = pbone.matrix.to_3x3() @ Vector((0.0, 1.0, 0.0))
@@ -120,7 +120,7 @@ def a_pose(arm, meshes: list) -> None:
         for part in ("arm", "forearm"):
             pbone = bones.get(f"{word.lower()}{part}")
             if pbone is not None:
-                _aim(arm, pbone, direction)
+                aim(arm, pbone, direction)
         _turn_thumb_up(arm, bones, word.lower(), direction)
         _curl_fingers(arm, bones, word.lower(), direction)
     for obj in meshes:

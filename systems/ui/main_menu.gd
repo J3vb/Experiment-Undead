@@ -15,7 +15,7 @@ GUT (Godot Unit Test) 9.7.1, `addons/gut/`
 Butch Wesley and contributors
 https://github.com/bitwes/Gut · MIT
 
-Shambler, Shambler guard and Bloater zombies, `assets/models/zombies/{shambler,shambler_guard,bloater}.glb`
+Shambler (two looks), Crawler and Bloater zombies, `assets/models/zombies/`
 Made for this project with Tripo AI (image to 3D, paid plan)
 https://www.tripo3d.ai · Owned by this project, commercial use
 
