@@ -529,3 +529,4 @@ Design changes since the Nov 14, 2026 copy, newest first. Add one row in the sam
 | 2026-11-15 | Co-op | Co-op uses a trusted client: clients ask, the host or server decides shared state. Host and direct join are on the main menu. | [MULTIPLAYER.md](../MULTIPLAYER.md), [ADR 0003](../adr/0003-trusted-client-co-op.md), PRs #73, #96 |
 | 2026-11-15 | Weapons | Kestrel SMG and Talon DMR damage now match the balance sheet (25.65 and 68.4 per bullet); they were about 43% too low. | [weapons.csv](balance/weapons.csv), PR #76 |
 | 2026-11-15 | Weapons | Version 1 roster grows from 12 to 22 base guns, all bullet-based. The crossbow and launchers are dropped. | [gun-roster.md](gun-roster.md), PR #67 |
+| 2026-11-20 | Audio | Real sounds and music replace the generated placeholders, from free sources only (Sonniss, Kenney, Freesound CC0, Stable Audio on the GPU). No paid packs. | [real-sounds-music.md](../plans/real-sounds-music.md), [sound.md](sound.md#packs-to-evaluate) |

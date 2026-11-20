@@ -309,7 +309,7 @@ Start free, then buy one gun library and one zombie library once the free baseli
 | [ShotgunMike: The Undead](https://www.asoundeffect.com/sound-library/the-undead-2) | 618 zombie vocals by intensity plus horde ambiences (urban, interior, tunnel) | Price not shown on page, check cart | Royalty-free | Top zombie pick: covers vocals and the horde loop |
 | [Dark Fantasy Studio: Zombie Voices](https://darkfantasystudio.itch.io/zombie-voices) | 40 groans, snarls, vocals | From €2.99 | Royalty-free, commercial use | Cheap starter set for v0.1 Shamblers |
 
-**Recommendation for v0.1:** Sonniss + Kenney + Freesound CC0 (free), plus Epic Stock Media Game Weapons and Dark Fantasy Zombie Voices. About $60 total. Re-evaluate BOOM GUNS and The Undead after the first play-test on sound.
+**Recommendation for v0.1:** free only, no spend (the person's pick, 2026-11-20): Sonniss GDC bundles + Kenney + Freesound CC0, and Stable Audio run locally for music. The paid packs above are not bought; they come back as a question only if an audition shows a gap free files cannot fill. Build plan: [real-sounds-music.md](../plans/real-sounds-music.md).
 
 ## Build order
 
