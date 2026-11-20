@@ -4,7 +4,7 @@ Status: Review
 Roadmap: F-24 / issue #119
 Phase: P3
 Size: M
-Approved by:
+Approved by: the person (decision card, 2026-11-20, damage model); plan review on PR #407
 Lore link: Army and Cordon issue frags left in the zone by the evacuation force, the same source as the wall guns (docs/design/lore.md#story-links-for-game-content, row "Frag grenades", provisional, added by this plan)
 
 ## Goal
@@ -101,8 +101,8 @@ Not in (non-goals, and where each one goes instead):
 - docs/design/game-design.md skills: Sturdy "own explosive damage", and
   docs/design/affixes.md Explosion guard "your own grenades": own grenades
   hurt the thrower
-- docs/design/balance/rounds.csv "Base health" column, WaveRules
-  `get_round_health()`: the centre damage scales from it (open decision 1)
+- docs/design/balance/rounds.csv "Base health" column: a fixed 1000 kills a
+  Shambler at the centre up to about round 10 (915.6 health), then fades
 - docs/DECISIONS.md lines 43 (Crawler waits on grenades) and 46 (Scavenger
   +1 grenade waits)
 - docs/adr/0003-trusted-client-co-op.md, docs/MULTIPLAYER.md patterns 2, 5, 6
@@ -115,7 +115,7 @@ the Change log in step 1, one DECISIONS line):
 | Fuse | 3.0 s from pin pull | Genre standard; cooking eats into it |
 | Throw speed | 15 m/s along aim, tilted up 10 degrees, plus player velocity | Reaches about 20 m on flat ground |
 | Blast radius | 7 m, full damage inside 1.5 m, linear to 0 at 7 m | Clears a doorway crowd, not a room |
-| Centre damage | 1.1 x the round's Shambler health (open decision 1) | A centre hit always kills a Shambler |
+| Centre damage | 1000, fixed (person's pick, 2026-11-20) | One-shots crowds to about round 10, then fades like classic zombie games; gear grenade damage carries it later |
 | Own damage | at most 60, same falloff | Cooking too long hurts, never downs a full-health player alone |
 | Gun down after throw | 0.5 s | Same feel as the knife swing |
 
@@ -162,7 +162,7 @@ job out first.
   `id: StringName`, `display_name: String`, `carry: int = 2`,
   `fuse: float = 3.0`, `throw_speed: float = 15.0`,
   `throw_lift_degrees: float = 10.0`, `radius: float = 7.0`,
-  `full_radius: float = 1.5`, `centre_health_mult: float = 1.1`,
+  `full_radius: float = 1.5`, `centre_damage: float = 1000.0`,
   `self_damage_max: float = 60.0`, `recover_time: float = 0.5`,
   `scene: PackedScene` (the grenade). Read by GrenadeThrower, Grenade, Blast,
   GrenadeClaims.
@@ -322,9 +322,13 @@ physics tick. Budget: under 0.5 ms on the blast frame with 24 zombies.
 - A blast in a doorway hits zombies behind the door frame. The wall ray goes
   from 0.3 m above the blast to the target's chest; step 1 test covers a wall
   between blast and zombie.
+- With fixed damage, late-round frags stop making Crawlers (F-27 needs 40%
+  of max health from explosives: about 2,500 health, so round 20 still
+  works at the centre, not at the edge). F-27's plan checks this against
+  rounds.csv and asks the person if Crawlers get too rare.
 - The bot soak never throws, so a grenade crash would not show. Step 2 adds
   a throw to the co-op soak bot once per round.
 
 ## Open decisions
 
-- [ ] Grenade damage over a run: scale with the round so a centre hit always kills a Shambler (recommended), or a fixed 1000 that fades after about round 10 like classic zombie games?
+- [x] Grenade damage over a run: fixed 1000 at the centre that fades after about round 10 like classic zombie games (person's pick on the decision card, 2026-11-20)
