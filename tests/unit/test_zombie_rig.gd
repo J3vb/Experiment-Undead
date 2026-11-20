@@ -67,7 +67,12 @@ func test_glower_tripo_model_has_every_posed_bone_and_a_head_zone() -> void:
 	var glow: ShaderMaterial = mesh.mesh.surface_get_material(0) as ShaderMaterial
 	assert_not_null(glow, "import gives the Glower its vein-glow material")
 	assert_eq(glow.shader.resource_path, "res://assets/materials/glower_veins.gdshader")
-	assert_not_null(glow.get_shader_parameter(&"albedo_tex"), "glow reads the baked albedo")
+	var maps: Dictionary[StringName, String] = {&"albedo_tex": "_albedo", &"normal_tex": "_normal", &"orm_tex": "_orm"}
+	for slot: StringName in maps:
+		var map: Texture2D = glow.get_shader_parameter(slot) as Texture2D
+		assert_not_null(map, "glow reads the baked map in " + slot)
+		if map:
+			assert_string_contains(map.resource_path, maps[slot], slot + " gets the right baked map")
 
 
 func test_walk_swings_legs_in_opposite_directions() -> void:

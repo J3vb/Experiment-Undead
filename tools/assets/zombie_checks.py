@@ -21,7 +21,7 @@ def _is_baked(meshes) -> bool:
     return any(mat and mat.name.startswith(BAKED) for obj in meshes for mat in obj.data.materials)
 
 
-def _check_baked(meshes) -> list:
+def _check_baked(objects, meshes) -> list:
     """One `Body` mesh with only the ZombieBaked material. The head-lighter and zone rules are skipped: the head
     tone is in the baked texture and zombies have no dye zones (DECISIONS "Gear looks")."""
     errors = []
@@ -31,6 +31,9 @@ def _check_baked(meshes) -> list:
         for material in obj.data.materials:
             if material is None or not material.name.startswith(BAKED):
                 errors.append(f"{obj.name}: baked zombies use only the {BAKED} material")
+    center = next((obj for obj in objects if obj.name == "HeadCenter"), None)
+    if center is None or center.type != "EMPTY" or center.parent_type != "BONE" or center.parent_bone != "head":
+        errors.append("baked zombies need a HeadCenter empty on the head bone (ZombieRig hangs the head zone on it)")
     return errors
 
 
@@ -102,7 +105,7 @@ def check(objects: list, stem: str) -> list:
     errors = character_checks._check_skin(meshes, armatures, "characters")
     errors += character_checks._check_facing(objects, armatures)
     if _is_baked(meshes):
-        errors += _check_baked(meshes)
+        errors += _check_baked(objects, meshes)
     else:
         errors += _check_materials(meshes) + _check_special_parts(nodes, stem)
     triangles = sum(len(face.vertices) - 2 for obj in meshes for face in obj.data.polygons)

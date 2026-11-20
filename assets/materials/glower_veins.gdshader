@@ -1,6 +1,8 @@
 // Tripo-baked zombie (albedo, normal, ORM) whose green veins glow bio-green: only texels where green beats red
 // and blue light up, so the grey skin stays dark. One shared material per model, made by zombie_import.gd.
 shader_type spatial;
+// The Tripo source is double-sided and the decimated mesh has a few open edges (and the popped-head stump).
+render_mode cull_disabled;
 
 uniform sampler2D albedo_tex : source_color, filter_linear_mipmap;
 uniform sampler2D normal_tex : hint_normal, filter_linear_mipmap;

@@ -69,6 +69,7 @@ def test_baked_zombie_rules_want_one_body_mesh_and_only_the_baked_material():
     cube.name = "Torso"
     cube.data.materials.append(bpy.data.materials.new(zombie_checks.BAKED))
     cube.data.materials.append(bpy.data.materials.new("ZombieSkin"))
-    errors = zombie_checks._check_baked([cube])
+    errors = zombie_checks._check_baked([cube], [cube])
     assert any("one mesh named 'Body'" in error for error in errors)
     assert any("only the ZombieBaked material" in error for error in errors)
+    assert any("HeadCenter" in error for error in errors)
