@@ -75,7 +75,7 @@ Not in (non-goals, and where each one goes instead):
   `test_player_moves.gd`), `tests/content/test_feel_data.gd` (rules file),
   `tests/integration/test_halcyon_mantle.gd` (the vent ledge stays one-way).
   Co-op: no new message; step 2 runs a mantle on a client with
-  `tests/helpers/coop_side.gd` and checks the server's copy follows.
+  two real ENet peers (`TwoPeers`, like `test_pose_sync.gd`) and checks the server's copy follows.
 - Logging: `Log.warn("player", "mantle_landed_blocked", ...)` when a mantle
   ends with the capsule overlapping world collision (the clearance check
   missed something). Listed in `docs/LOGGING.md`.
@@ -265,7 +265,7 @@ per player per tick.
   `docs/ROADMAP.md`, `docs/plans/mantle.md`.
 - Tests: `test_player_mantle.gd`: a mantle starts the dip and the sound;
   `head_bob = 0` gives no camera offset. `test_player_mantle_coop.gd` (with
-  `tests/helpers/coop_side.gd`): a
+  two real ENet peers, `TwoPeers`): a
   client's mantle moves the server's copy of that player onto the ledge
   (position reaches it through `PoseSync`).
   `test_generated_sounds.gd`: the new file exists, is mono, under 0.5 s and
@@ -275,14 +275,18 @@ per player per tick.
 
 ## Acceptance
 
-- [ ] Ledges from 0.5 to 1.2 m are mantled by pushing forward and jumping
+- [x] Ledges from 0.5 to 1.2 m are mantled by pushing forward and jumping
   (test_player_mantle.gd).
-- [ ] A 1.4 m ledge, a ledge with no headroom and a blocked ledge are refused
+- [x] A 1.4 m ledge, a ledge with no headroom and a blocked ledge are refused
   (test_player_mantle.gd).
-- [ ] The Halcyon vent ledge stays one-way (test_halcyon_mantle.gd).
-- [ ] All timings live in `content/feel/mantle_rules.tres` (test_feel_data.gd).
-- [ ] No shots while mantling; a teleport or going down cancels it
+- [x] The Halcyon vent ledge stays one-way (test_halcyon_mantle.gd).
+- [x] All timings live in `content/feel/mantle_rules.tres` (test_feel_data.gd).
+- [x] No shots while mantling; a teleport or going down cancels it
   (test_player_mantle.gd).
+- [x] A client's mantle reaches the server through PoseSync, with no new message
+  (test_player_mantle_coop.gd).
+- [x] Camera dip follows Head bob, one sound plays (test_player_mantle.gd,
+  test_generated_sounds.gd).
 - [ ] Mantle feels smooth and quick in the person's play-test.
 
 ## Risks

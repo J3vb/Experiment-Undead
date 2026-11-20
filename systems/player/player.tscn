@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://systems/player/player.gd" id="1"]
 [ext_resource type="Script" path="res://systems/player/player_camera.gd" id="2"]
@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" path="res://systems/player/footsteps.tscn" id="10_steps"]
 [ext_resource type="Script" path="res://systems/player/body_animator.gd" id="11_anim"]
 [ext_resource type="Resource" path="res://content/feel/mantle_rules.tres" id="12_mantle"]
+[ext_resource type="AudioStream" path="res://assets/audio/player_mantle.wav" id="13_mantle_sound"]
 
 [sub_resource type="SceneReplicationConfig" id="pose_sync"]
 properties/0/path = NodePath(".:position")
@@ -86,6 +87,10 @@ script = ExtResource("6")
 
 [node name="HurtSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("7")
+bus = &"Player"
+
+[node name="MantleSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("13_mantle_sound")
 bus = &"Player"
 
 [node name="Footsteps" parent="." instance=ExtResource("10_steps")]

@@ -15,6 +15,8 @@ const PUSH: float = -0.5
 const EXIT_SPEED: float = 0.5
 const MARGIN: float = 0.02
 const MIN_TOP_NORMAL: float = 0.7
+## Deepest camera dip in metres at full Head bob.
+const CAMERA_DIP: float = 0.1
 ## How far past the wall face the ledge top is probed and the player lands.
 const PROBE_IN: float = 0.1
 const WALL_MASK: int = Layers.WORLD | Layers.BARRIER
@@ -52,6 +54,8 @@ func update(player: Player, frame: InputFrame, delta: float) -> bool:
 		_active = true
 		_time = 0.0
 		player.weapons.set_trigger(false)
+		player.camera_rig.dip(CAMERA_DIP, _duration)
+		(player.get_node(^"MantleSound") as AudioStreamPlayer).play()
 	if _active:
 		_step(player, delta)
 	return _active
