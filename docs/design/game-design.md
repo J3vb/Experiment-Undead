@@ -1,4 +1,4 @@
-# Experiment Undead: Game Design Doc
+# Fenlight: Game Design Doc
 
 Source: copy of the design doc as of Nov 14, 2026. Where this file and the code differ, the code and `docs/DECISIONS.md` win.
 
@@ -6,7 +6,7 @@ Every design change since that copy is listed in the [Change log](#change-log) a
 
 ## Pitch, pillars and core loop
 
-Experiment Undead is a solo-first, round-based zombie survival FPS set in a Cold War bunker turned bio-lab in the Ardennes forest. You survive endless rounds, earn points from every hit and kill, and spend them to open the facility, buy guns, and power up.
+Fenlight is a solo-first, round-based zombie survival FPS set in a Cold War bunker turned bio-lab in the Ardennes forest. You survive endless rounds, earn points from every hit and kill, and spend them to open the facility, buy guns, and power up.
 
 **Four pillars.** Every feature must serve at least one.
 
@@ -100,7 +100,7 @@ The target feel is a modern military shooter: fast aim-down-sights, recoil you c
 7. **Hit feedback.** White hitmarker for body, gold for head, red X for kill. A short, punchy hit sound. Blood puffs and limb loss on Shamblers. Small camera shake on kills with heavy guns.
 8. **Melee.** Knife swipe, 150 damage, 0.6 s. Always one key away. Saves you when trapped.
 
-**Game feel details.** Exact numbers for hit markers, kill feedback, view kick, screen shake, FOV punch, hitstop, muzzle flash, impacts, gore, player damage, low health and round transitions are in [Experiment Undead: Game Feel](game-feel.md). They live in a `FeelData` resource per weapon class, linked from each `WeaponData`.
+**Game feel details.** Exact numbers for hit markers, kill feedback, view kick, screen shake, FOV punch, hitstop, muzzle flash, impacts, gore, player damage, low health and round transitions are in [Fenlight: Game Feel](game-feel.md). They live in a `FeelData` resource per weapon class, linked from each `WeaponData`.
 
 The player carries 2 guns (3 with a later serum), 2 frag grenades that refill each round (hold G to cook, 3 s fuse; 1000 damage inside 1.5 m, falling to 0 at 7 m, stopped by walls; your own frag hurts you for up to 60, teammates take none), and one tactical slot (Lure Beacon, buyable). Weapon swap takes 0.4 s.
 
@@ -228,7 +228,7 @@ The map opens in two rings. The first ring (Dock, Guard Post, Mess Hall, Main Co
 
 ### The first four maps
 
-Full designs, layouts and the build plan are in [Experiment Undead: First Four Maps](maps.md). In short:
+Full designs, layouts and the build plan are in [Fenlight: First Four Maps](maps.md). In short:
 
 | Map | How it plays | Signature event |
 | --- | --- | --- |
@@ -427,7 +427,7 @@ The HUD stays small and at the screen edges so the middle is free for aiming. Ev
 
 Sound does half the gunfeel and most of the enemy tells, so it gets priority over visuals in early milestones.
 
-**Full design in [Experiment Undead: Sound Design](sound.md)**, which replaces the notes below where they differ. In short: danger tells always cut through the mix; guns use 4 layers plus a far layer and room tails from reverb zones; 4 music stems fade in with round intensity; one drop sound per loot rarity; a pooled sound manager capped at 48 voices, with only the 8 nearest zombies vocalising and a horde loop for the rest; packs plus scripted synth sounds, every file logged in `docs/CREDITS.md`.
+**Full design in [Fenlight: Sound Design](sound.md)**, which replaces the notes below where they differ. In short: danger tells always cut through the mix; guns use 4 layers plus a far layer and room tails from reverb zones; 4 music stems fade in with round intensity; one drop sound per loot rarity; a pooled sound manager capped at 48 voices, with only the 8 nearest zombies vocalising and a horde loop for the rest; packs plus scripted synth sounds, every file logged in `docs/CREDITS.md`.
 
 - **Guns:** three layers per shot. A close mechanical crack, a body thump, and a room tail (short in corridors, long and echoing outside). Separate sounds for the mag out, mag in and bolt or slide, timed to the reload animation. The last 5 rounds in a mag get a slightly higher, thinner click to warn you.
 - **Zombies:** each type has its own idle, attack and death sounds. Tells (Stalker shriek, Brute thud, Bloater gurgle) are louder than everything else and use 3D position so you can locate them.
