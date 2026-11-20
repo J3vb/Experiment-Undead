@@ -333,6 +333,7 @@ stay a plain game score. The drop reasons below are provisional picks.
 | Thing | Story reason |
 | --- | --- |
 | Vests | Body armour salvaged from Oriel security, the army and the Cordon. Light, medium and heavy frames. |
+| Headgear, gloves, backpacks, boots | The rest of a salvager's kit, patched together at Lantern Post from Oriel security, army and Cordon gear like the vests: a knit cap, work gloves, a field pack and boots at first, plated pieces from Rare up, Oriel armour at Legendary (F-70 tiers). Named Salvager Cap, Gloves, Pack and Boots. *(provisional)* |
 | Charms | Keepsakes taken from the zone: dog tags, a sample vial, a coin, a key card, a dosimeter. Salvagers hang them on the gun for luck. |
 | Implants | HALCYON's soldier program: a forearm module and a neck port that feed the body tiny doses of tamed Fenlight. Dr. Corvelyn fits the neck port once at the Technician stall; the forearm modules click in and out, so salvagers swap them in the field. *(provisional)* |
 | Rarity | How much use and Fenlight an item has seen. Prototype = live Fenlight (bio-green). |

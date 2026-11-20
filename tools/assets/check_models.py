@@ -40,6 +40,7 @@ BUDGETS = {
     "town": (2_500, 4),
     "town_large": (12_000, 6),
     "props_large": (12_000, 6),
+    "throwables": (1_500, 3),
 }
 BUDGETS.update(character_checks.BUDGETS)
 
@@ -51,6 +52,7 @@ STATIC = {"kit", "props", "props_large", "dressing", "doors", "machines", "town"
 
 # Required node -> required ancestor (None = any). Code finds these by name.
 JOINTS = {
+    "frag": {},
     "rifle_ar": GUN_WITH_MAG,
     "kestrel_smg": GUN_WITH_MAG,
     "talon_dmr": GUN_WITH_MAG,
@@ -180,7 +182,7 @@ def check_origin(objects: list, folder: str) -> list:
         return []
     lo, hi = bounds(objects)
     centre = (lo + hi) / 2
-    if folder == "weapons":
+    if folder in ("weapons", "throwables"):
         inside = all(lo[i] - TOLERANCE <= 0.0 <= hi[i] + TOLERANCE for i in range(3))
         return [] if inside else [f"origin must sit inside the gun, bounds are {fmt(lo)} to {fmt(hi)}"]
     errors = []

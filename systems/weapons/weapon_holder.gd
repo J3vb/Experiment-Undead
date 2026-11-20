@@ -124,6 +124,7 @@ func _bind_arm_view() -> void:
 		if _player != null:
 			_player.gear_rig.look_changed.connect(arm_view.apply_look)
 			arm_view.apply_look(_player.gear_rig.look)
+	arm_view.thrower = _player.grenades if _player else null
 	arm_view.bind_weapon(current)
 
 
