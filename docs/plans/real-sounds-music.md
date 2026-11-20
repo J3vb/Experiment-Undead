@@ -1,10 +1,10 @@
 # Plan: Real sounds and music
 
-Status: Review
+Status: Approved
 Roadmap: F-89 / issue none (play-test 2026-11-20: "replace the self-made sounds with actual music or sounds")
 Phase: P1
 Size: L
-Approved by:
+Approved by: the person, 2026-11-20 (decision card, plan PR #458)
 Lore link: none: the same sounds play at the same moments, just recorded or produced instead of synthesised. Music stays the moods already set in docs/design/sound.md (cold synth in rounds, warm breather between them).
 
 ## Goal
