@@ -4,7 +4,7 @@
 ## ammo pack (not counted in the cap). Only kills by a player roll. Lives in the
 ## GameSession. The server spawns pickups through a MultiplayerSpawner, so every
 ## peer and late joiner sees them; ammo effects reach the PCs that own the guns.
-## Timed power-ups (Payday) run on a team-wide server timer; every peer hears
+## Timed power-ups (Payday, Overkill, Stasis) run on a team-wide server timer; every peer hears
 ## when one starts, late joiners ask for the time left.
 class_name PowerUpDrops
 extends Node
@@ -44,6 +44,8 @@ func _physics_process(delta: float) -> void:
 			ended = data
 	if ended:
 		_timers.erase(ended)
+		if ended.effect == PowerUpData.Effect.STASIS:
+			PowerUpEffects.set_stasis(session.spawner, false)
 
 
 ## Server: starts data's timer for the whole team, or resets it to full time on a re-pickup.
@@ -51,6 +53,8 @@ func start_timer(data: PowerUpData) -> void:
 	if not multiplayer.is_server():
 		return
 	_timers[data] = data.duration
+	if data.effect == PowerUpData.Effect.STASIS:
+		PowerUpEffects.set_stasis(session.spawner, true)
 	Events.power_up_timer_started.emit(data, data.duration)
 	if not multiplayer.get_peers().is_empty():
 		_receive_timer.rpc(data.id, data.duration)

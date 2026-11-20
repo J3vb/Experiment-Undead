@@ -151,9 +151,11 @@ func apply_server_hit(hit_zone: HitZone, info: DamageInfo) -> void:
 	var collateral_killed: bool = false
 	if effect == WeaponData.Effect.CHAIN:
 		collateral_killed = _chain.apply(zombie, info)
-	if zombie.frozen or effect == WeaponData.Effect.FROST:
+	if (zombie.frozen or effect == WeaponData.Effect.FROST) and not zombie.stasis:
 		if Frost.apply(zombie, info):
 			return
+	if session.power_up_drops.is_active(PowerUpData.Effect.OVERKILL):
+		info.amount = maxf(info.amount, zombie.health.current / maxf(hit_zone.damage_multiplier, 0.01) + 1.0)
 	hit_zone.receive_hit(info)
 	_confirm_secondary_kill(zombie, info, collateral_killed)
 

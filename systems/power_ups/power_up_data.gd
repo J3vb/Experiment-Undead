@@ -5,7 +5,9 @@ extends Resource
 
 ## RESUPPLY: full ammo for every player. AMMO_PACK: one magazine per gun for the collector.
 ## PAYDAY: double hit and kill points for every player while its timer runs.
-enum Effect { RESUPPLY, AMMO_PACK, PAYDAY }
+## OVERKILL: every bullet or melee hit kills while its timer runs.
+## STASIS: zombies alive at pickup stand still and cannot attack until its timer ends.
+enum Effect { RESUPPLY, AMMO_PACK, PAYDAY, OVERKILL, STASIS }
 
 @export var id: StringName = &""
 @export var display_name: String = "Power-up"

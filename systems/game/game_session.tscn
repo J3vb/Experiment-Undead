@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://systems/game/game_session.gd" id="1"]
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/map.tscn" id="2"]
@@ -17,6 +17,8 @@
 [ext_resource type="Resource" path="res://content/power_ups/resupply.tres" id="15"]
 [ext_resource type="Resource" path="res://content/power_ups/ammo_pack.tres" id="16"]
 [ext_resource type="Resource" path="res://content/power_ups/payday.tres" id="power_up_payday"]
+[ext_resource type="Resource" path="res://content/power_ups/overkill.tres" id="power_up_overkill"]
+[ext_resource type="Resource" path="res://content/power_ups/stasis.tres" id="power_up_stasis"]
 
 [ext_resource type="PackedScene" path="res://systems/debug/debug_console.tscn" id="debug_console"]
 [ext_resource type="Script" path="res://systems/debug/debug_overlay.gd" id="debug_overlay"]
@@ -47,7 +49,7 @@ script = ExtResource("10")
 [node name="PowerUpDrops" type="Node" parent="."]
 process_mode = 1
 script = ExtResource("13")
-power_ups = Array[ExtResource("14")]([ExtResource("15"), ExtResource("power_up_payday")])
+power_ups = Array[ExtResource("14")]([ExtResource("15"), ExtResource("power_up_payday"), ExtResource("power_up_overkill"), ExtResource("power_up_stasis")])
 ammo_pack = ExtResource("16")
 
 [node name="Hud" parent="." instance=ExtResource("11")]
