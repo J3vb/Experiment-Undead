@@ -1,10 +1,10 @@
 # Plan: Four new loot slots (headgear, gloves, backpack, boots)
 
-Status: Review
+Status: Approved
 Roadmap: F-71 / issue none (split out of F-70, docs/plans/player-gear-concept.md)
 Phase: P6
 Size: M
-Approved by: first version: the person on decision cards (sets, slot strength, drop mix; 2026-11-17), PR #309. This rewrite: pending (plan PR + max health card)
+Approved by: first version: the person on decision cards (sets, slot strength, drop mix; 2026-11-17), PR #309. This rewrite: the person on the max health card (2026-11-20), plan PR #412
 Lore link: lore.md "Gear and abilities": new Headgear, Gloves, Backpacks and Boots rows (provisional, added in this PR); names follow the Salvager Vest pattern
 
 Rewrite (2026-11-20): a fresh code-vs-plan review found the first version
@@ -160,7 +160,7 @@ shoot" side and the new slots have no damage lines:
   backpack, boots at up to 10% each), so the cap can be reached with three
   top pieces.
 - Max health: today one slot rolls +10 to +40. With four slots it could reach
-  +160 on a 100 base (410 with Ironhide). Pending card; recommended: gear max
+  +160 on a 100 base (410 with Ironhide). Decided 2026-11-20: gear max
   health is capped at **+100** in total, as a StatCaps entry on the flat part
   only, so Ironhide's x2.5 still multiplies the base. The character screen
   already shows a capped stat in amber.
@@ -246,7 +246,7 @@ of 350 lines.
   ships them with `drop_weight = 0`; step 4 sets 300.
 - New affixes: `steady_aim`, `recoil_grip`, `quick_hands`, 5 tiers each like
   every gear affix, `min_rarity` common.
-- StatCaps: `max_health` = 100 (pending card), meaning the flat gear bonus.
+- StatCaps: `max_health` = 100 (decided 2026-11-20), meaning the flat gear bonus.
 - Save: `SaveFile.CURRENT_VERSION` 2 -> 3. `_v2_to_v3` returns the data
   unchanged (`CharacterProfile.from_dict` already fills missing slots with
   `{}`); the bump exists so a version 2 build refuses a version 3 file instead
@@ -416,5 +416,6 @@ Riskiest part first: it touches the co-op hit check. Label `fix`.
       person, 2026-11-17).
 - [x] Drop mix: gear added on top; guns fall to about 40% (the person,
       2026-11-17).
-- [ ] Max health with four slots that roll it: cap gear max health at +100
-      (recommended), keep it on the vest only, or no cap (up to +160).
+- [x] Max health with four slots that roll it: gear max health capped at +100
+      on the flat part; Ironhide still multiplies the base (the person,
+      2026-11-20).
