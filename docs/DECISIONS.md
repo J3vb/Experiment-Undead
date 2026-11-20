@@ -10,6 +10,7 @@ Read the entries for the systems you touch, not the whole file.
 
 These win over the design docs (see `docs/design/README.md`).
 
+- **v0.2 before the v0.1.0 tag:** the person played v0.1 solo (2026-11-19) and asked to start v0.2 on 2026-11-20, so roadmap rows that need F-11 may start once F-10 is Done. Game stage is Early Alpha. [ROADMAP](ROADMAP.md)
 - **Gun damage:** every gun deals balance-sheet damage x 0.57 (AR 60 -> 34), the prototype's scale, until a balance pass resets the TTK targets. [gun-roster](design/gun-roster.md)
 - **Prices:** doors and Serums use the design doc's base prices, not the balance sheet's provisional x2.5. Reforger 5000, refill 2500, Reforged wall ammo 4000 (sheet).
 - **Look reference:** AgX instead of ACES; ambient energy 0.2 instead of 0.35 (baked bounce fills shadows); fog albedo light teal-grey, because Godot's fog albedo is the scatter colour. [look-rules](design/look-rules.md)
@@ -26,6 +27,7 @@ These win over the design docs (see `docs/design/README.md`).
 - **Text size:** 80 to 150%, not 200%, until layouts are checked at that size. Font options (Lexend, OpenDyslexic) wait. [full-settings](plans/full-settings.md)
 - **Shotgun hitstop:** the "< 4 m" condition is dropped (`hit_confirmed` has no distance); the "shake from your gun" slider at 0 also turns hitstop off. [game-feel-slice](plans/game-feel-slice.md)
 - **Log autoload:** `Log` is an autoload although the architecture doc's table does not list it. [LOGGING](LOGGING.md)
+- **Stat caps:** the design's caps (reload +60%, recoil -50%, max health 400, points +50%, luck +100%) hold skills plus gear; Serum multipliers stack on top (the person's pick). [skill-effects](plans/skill-effects.md)
 - **Second Wind:** solo only; "solo" means alone in the world (`Net.is_coop()` false), so a lone listen server plays as solo. [join-any-game](plans/join-any-game.md)
 
 ## Simplified on purpose
@@ -107,3 +109,4 @@ Agent picks the person may change.
 - **Reload motion (F-85):** empty reloads press the bolt catch above the well for every gun (no charging-handle pull: crossing the receiver flipped the elbow); the tactical swap shows the same magazine low in frame. Feel signed off 2026-11-20. [reload-animations](plans/reload-animations.md)
 - **BR-12 Reforged reload (F-85):** keeps the base shell times like every Reforged gun keeps its reload, so its 9 shells take 5.1 s from empty (was 3.6 s for a full reload). [reload-animations](plans/reload-animations.md)
 - **Launcher game folder (F-82):** the game lives in the launcher's own app data folder (`%LOCALAPPDATA%\com.experimentundead.launcher\game\`), not `Experiment Undead\`, so Tauri's uninstaller "delete app data" box removes it with no custom NSIS code. [separate-launcher](plans/separate-launcher.md)
+- **First-person charm:** hangs from a `CharmMount` on the left rail just in front of the support hand, out of the ADS sight line; hidden while a sidearm is in hand; a spring swing, no physics. [gear-first-person](plans/gear-first-person.md)

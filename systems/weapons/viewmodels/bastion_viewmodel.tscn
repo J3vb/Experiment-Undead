@@ -48,3 +48,6 @@ mesh = ExtResource("flash_quad")
 stream = ExtResource("spin_up")
 volume_db = -20.0
 bus = &"Weapons"
+
+[node name="CharmMount" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.064, 0.157, -0.289)

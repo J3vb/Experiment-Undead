@@ -196,17 +196,37 @@ class ShapeToolTest(unittest.TestCase):
         self.assertEqual(len(volumes(body)), 1)
         self.assertGreater(volumes(body)[0], 0)
 
-    def test_inlay_mask_survives_join_without_recolouring_the_body(self) -> None:
+    def test_add_inlays_marks_only_the_two_strips(self) -> None:
         body = g.slab("Receiver", [(0, 0), (0.1, 0), (0.1, 0.1), (0, 0.1)], 0.05, self.mat)
-        strip = g.slab("Inlay", [(0.01, 0.01), (0.09, 0.01), (0.09, 0.013), (0.01, 0.013)], 0.001, self.mat, x=0.026)
-        body_loops, strip_loops = len(body.data.loops), len(strip.data.loops)
-        self.assertIs(g.mark_inlay(strip), strip)
-        bm.join_into(body, [strip])
+        bystander = g.slab("Magazine", [(0, -0.1), (0.05, -0.1), (0.05, 0), (0, 0)], 0.02, self.mat)
+        body_loops = len(body.data.loops)
+        g.add_inlays(bm, body, [(0.01, 0.01), (0.09, 0.01), (0.09, 0.013), (0.01, 0.013)], 0.001, 0.026, self.mat)
         colors = body.data.color_attributes["Color"].data
         self.assertEqual(sum(color.color[3] == 1.0 for color in colors), body_loops)
-        self.assertEqual(sum(color.color[3] == 0.0 for color in colors), strip_loops)
+        self.assertEqual(sum(color.color[3] == 0.0 for color in colors), len(colors) - body_loops)
+        self.assertGreater(len(colors), body_loops)
         self.assertTrue(all(tuple(color.color[:3]) == (1.0, 1.0, 1.0) for color in colors))
+        self.assertIsNone(bystander.data.color_attributes.get("Color"))
         self.assertEqual(list(body.data.materials), [self.mat])
+
+    def test_parts_joined_after_the_inlay_stay_plain(self) -> None:
+        body = g.slab("Receiver", [(0, 0), (0.1, 0), (0.1, 0.1), (0, 0.1)], 0.05, self.mat)
+        g.add_inlays(bm, body, [(0.01, 0.01), (0.09, 0.01), (0.09, 0.013), (0.01, 0.013)], 0.001, 0.026, self.mat)
+        marked = sum(color.color[3] == 0.0 for color in body.data.color_attributes["Color"].data)
+        stock = g.slab("Stock", [(-0.2, 0), (0, 0), (0, 0.05), (-0.2, 0.05)], 0.03, self.mat)
+        bm.join_into(body, [stock])
+        colors = body.data.color_attributes["Color"].data
+        self.assertEqual(sum(color.color[3] == 0.0 for color in colors), marked)
+        self.assertTrue(all(tuple(color.color[:3]) == (1.0, 1.0, 1.0) for color in colors))
+
+    def test_painted_part_joined_into_a_plain_body_keeps_its_zone(self) -> None:
+        body = g.slab("Receiver", [(0, 0), (0.1, 0), (0.1, 0.1), (0, 0.1)], 0.05, self.mat)
+        glow = g.paint(g.slab("Coil", [(0, 0.1), (0.05, 0.1), (0.05, 0.12), (0, 0.12)], 0.01, self.mat), 1 / 3)
+        body_loops, glow_loops = len(body.data.loops), len(glow.data.loops)
+        bm.join_into(body, [glow])
+        alphas = [round(color.color[3], 4) for color in body.data.color_attributes["Color"].data]
+        self.assertEqual(alphas.count(1.0), body_loops)
+        self.assertEqual(alphas.count(round(1 / 3, 4)), glow_loops)
 
 
 class DetailedGunTest(unittest.TestCase):

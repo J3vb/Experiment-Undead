@@ -15,6 +15,9 @@ milestone gates come from `docs/design/game-design.md` (Build roadmap) and
 5. When a feature finishes, set its Status to Done in the same PR. New
    features get a new row in the right place, with the next free id.
 
+The game is in **Early Alpha** (shown in the main menu version label).
+v0.2 features may start before the v0.1.0 tag (the person's call, 2026-11-20): read F-11 in their Needs as F-10.
+
 Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 (may already be done, verify and close).
 
@@ -44,7 +47,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-16 | Game feel: camera punch, hitstop, downed and death screen | - | - | [ready](plans/game-feel-slice.md) | M | Done |
 | F-65 | Client and server updates: clear version refusals, saves safe across channels, a launcher that installs and updates the game and a server, self-updating Docker servers (steps 1-5 before F-11) | - | - | [ready](plans/client-server-updates.md) | L | Building |
 | F-09 | v0.1 performance check | #108 | F-01..F-07, F-12, F-13, F-16 | issue | S | Todo |
-| F-10 | First play-test (the person plays) | #109 | F-09 | issue | S | Todo |
+| F-10 | First play-test (the person plays) | #109 | F-09 | issue | S | Done (solo play-test 2026-11-19, fixes in F-84, F-85) |
 | F-82 | Separate launcher program (like Steam or Battle.net): installs and updates the game, updates itself, news and patch notes, hosts a server; replaces the launcher built into the game (F-65 steps 5-6, 9) | - | F-65 step 4 | [ready](plans/separate-launcher.md) | L | Building |
 | F-11 | Release v0.1.0 | #111 | F-10, F-65 steps 1-4, F-82 steps 1-4 | issue | S | Todo |
 | F-40 | Round state and power-ups in co-op (rest of #126 after F-02) | #126 | F-02 | [done](plans/coop-round-state-power-ups.md) | M | Done |
@@ -73,17 +76,17 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 
 | Id | Feature | Issue | Needs | Plan | Size | Status |
 |---|---|---|---|---|---|---|
-| F-20 | Skill effects (through the stat stack) | #113 | F-11 | needed | M | Todo |
+| F-20 | Skill effects (through the stat stack) | #113 | F-11 | [ready](plans/skill-effects.md) | M | Ready |
 | F-21 | Skill tree screen | #112 | F-20 | needed | M | Todo |
 | F-22 | Field abilities | #114 | F-20 | needed | M | Todo |
 | F-23 | Levelling pace check | #115 | F-20, F-22 | issue | S | Todo |
-| F-24 | Frag grenades | #119 | F-11 | needed | M | Todo |
-| F-25 | Mantle | #120 | F-11 | needed | M | Todo |
-| F-26 | More power-ups in the drop deck | #118 | F-11 | needed | M | Todo |
+| F-24 | Frag grenades | #119 | F-11 | [needed](plans/frag-grenades.md) | M | Ready |
+| F-25 | Mantle | #120 | F-11 | [ready](plans/mantle.md) | M | Ready |
+| F-26 | More power-ups in the drop deck | #118 | F-11 | [needed](plans/more-power-ups.md) | M | Ready |
 | F-27 | Crawler | #121 | F-24 | needed | M | Todo |
-| F-28 | Blackout rounds and Glowers | #122 | F-11 | needed | M | Todo |
-| F-29 | Stalker | #123 | F-11 | needed | L | Todo |
-| F-30 | Brute | #124 | F-11 | needed | L | Todo |
+| F-28 | Blackout rounds and Glowers | #122 | F-11 | [ready](plans/blackout-glowers.md) | M | Ready |
+| F-29 | Stalker | #123 | F-11, F-28 | [ready](plans/stalker.md) | L | Ready |
+| F-30 | Brute | #124 | F-11, F-29 | [ready](plans/brute.md) | L | Ready |
 | F-31 | Legendaries and traits | #116 | F-20 | needed | L | Todo |
 | F-32 | Item sets (needs set lore first) | #117 | F-31 | needed | M | Todo |
 | F-33 | Run length target: solo runs end between round 15 and 30 | #125 | F-27..F-30 | issue | S | Todo |
@@ -93,7 +96,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | Id | Feature | Issue | Needs | Plan | Size | Status |
 |---|---|---|---|---|---|---|
 | F-41 | Third-person walk, run and downed animations | #128 | F-11 | [needed](plans/teammate-animations.md) | L | Done |
-| F-42 | Gear in first person | #129 | F-11 | needed | M | Todo |
+| F-42 | Gear in first person | #129 | F-84 (F-11 waived 2026-11-20, see plan) | [ready](plans/gear-first-person.md) | M | Building |
 | F-43 | 4-player play-test to round 20 | #127 | F-47, F-41 | issue | S | Todo |
 | F-44 | Finish the server package | #130 | F-43 | needed | L | Todo |
 | F-45 | Town hub Lantern Post (split into features when it starts) | #131 | F-44 | needed | L | Todo |
