@@ -2,7 +2,7 @@
 
 Status: Review
 Roadmap: F-42 / issue #129
-Phase: P7
+Phase: P7, pulled forward 2026-11-20: the person called the v0.1 solo play-test done and asked to go on with v0.2 features. F-11 (the v0.1.0 release) is not needed: this is client-side visuals only, on the gear swap path from F-84.
 Size: M
 Approved by:
 Lore link: lore.md "Story links for game content": Vests (salvaged body armour, its sleeve cuffs), Charms ("Salvagers hang them on the gun for luck"), Implants (forearm module).
@@ -61,8 +61,10 @@ Not in (non-goals, and where each one goes instead):
     look when gear changes; the first-person view listens to it.
   - What other players see, and how it reaches them: nothing new. They already
     get the look through LookSync and see the third-person body.
-  - Works on a dedicated server with no local player: yes (WeaponHolder never
-    builds a PlayerArmView on a server).
+  - Works on a dedicated server with no local player: yes. WeaponHolder builds a
+    PlayerArmView only when `Build.is_server()` is false and the player is the
+    multiplayer authority: a dedicated server and remote players never build one,
+    a listen-server host builds one for its own player (correct).
 - Data: charm placement is a `CharmMount` Marker3D in each primary viewmodel
   scene; cuff and implant pieces come from the existing GearVisual scenes.
   Code compares against a specific id anywhere: no.
@@ -75,6 +77,8 @@ Not in (non-goals, and where each one goes instead):
   for the mounts; co-op: a remote player builds no first-person gear.
 - Logging: `Log.warn(&"gear", &"fp_piece_missing", ...)` once per visual when a
   vest scene has no `CuffFP_*` node or an implant has no module.
+- Render settings: every piece made after `_ready` (cuffs, charm, implant) gets
+  `ScopeLens.VIEWMODEL_LAYER` and shadows off, like the arm mesh.
 - Performance: pieces are made only when the look changes; the charm is moved,
   not rebuilt, on weapon switch; the swing uses fields only.
 - Lore link: Vests, Charms, Implants rows in lore.md.
@@ -101,6 +105,7 @@ Not in (non-goals, and where each one goes instead):
 | systems/player/player_arm_view.gd | changed | `apply_look()`: cuffs from the worn vest, charm, implant; charm moves to the bound gun's `CharmMount` |
 | systems/player/fp_gear.gd | new (only if player_arm_view.gd would pass 300 lines) | The cuff, charm and implant code moved out of PlayerArmView by job |
 | systems/player/charm_swing.gd | new | Small spring swing for the hanging charm (`_process`, visual only) |
+| tests/unit/test_player_arm_view.gd, tests/content/test_vest_models.gd | changed | Cuff asserts wear a vest first; cuff check covers tier scenes |
 | systems/weapons/weapon_holder.gd | changed | Connects the player's `gear_rig.look_changed` to the arm view when it makes it |
 | systems/weapons/viewmodels/*_viewmodel.tscn (18 primary) | changed | One `CharmMount` Marker3D each |
 | tools/fp_gear_review.tscn + .gd | new | Hip and ADS renders per rarity for the look-check |
@@ -125,9 +130,9 @@ would pass 300, the gear code goes to `fp_gear.gd` (split by job) in step 1.
   without changes as long as they keep `CuffFP_L/R`.
 - Save format change: none.
 - Network message change: none.
-- Content checks to add in `tests/content/`: every primary viewmodel has exactly
-  one `CharmMount`, no sidearm viewmodel has one; every vest GearVisual tier
-  scene has `CuffFP_L` and `CuffFP_R`.
+- Content checks in `tests/content/`: new test_charm_mounts.gd (every primary
+  viewmodel has exactly one `CharmMount`, no sidearm viewmodel has one); the
+  existing cuff check in test_vest_models.gd extended to every vest tier scene.
 
 ## Co-op behaviour
 
@@ -153,31 +158,42 @@ keeps two floats; no allocations. One player's view only, never per zombie.
 - Build: `GearRig.look`; `PlayerArmView.apply_look(look)` replaces the fixed
   `CUFFS`/`COMMON` cuffs: frees old pieces, takes `CuffFP_L/R` from the worn
   vest's tier scene, attaches them to the forearms as today, and applies the
-  vest's RarityLook and dyes with `GearLook.apply`. No vest: no cuffs. The arm
-  mesh keeps the Common look. WeaponHolder connects `gear_rig.look_changed` to
+  vest's RarityLook and dyes with `GearLook.apply`, and sets the viewmodel layer
+  and shadows off on them. No vest: no cuffs. A holder with no player (tests)
+  uses an empty look. The arm mesh keeps the Common look. WeaponHolder connects `gear_rig.look_changed` to
   the view and applies the current look when it makes the view. Warning
   `fp_piece_missing`. Fp gear review tool renders hip and ADS with Common,
   Rare and Legendary heavy vests.
 - Files: gear_rig.gd, player_arm_view.gd (or new fp_gear.gd), weapon_holder.gd,
   tools/fp_gear_review.tscn/.gd, tests/unit/test_fp_gear.gd,
-  tests/content (vest cuff check), docs/LOGGING.md.
+  tests/unit/test_player_arm_view.gd (the cuff asserts at lines 59-60 first wear
+  a vest; the scoped-layer test wears a vest on talon_dmr so it checks the cuffs),
+  tests/content/test_vest_models.gd (cuff check covers every tier scene),
+  docs/LOGGING.md.
 - Tests: test_fp_gear.gd: Legendary heavy vest gives cuffs with the Legendary
   trim on both forearms; no vest gives no cuffs; a new look after a gear swap
-  replaces the cuffs (no leftovers); a remote player builds none. Content check:
-  every vest scene has both cuff nodes.
-- Done when: the review render shows three different cuffs per rarity on the rifle.
+  replaces the cuffs (no leftovers); a remote player whose GearRig gets a look
+  (as LookSync does) still has no arm view. Content check: every vest scene and
+  tier scene has both cuff nodes.
+- Done when: the review render shows Common, Rare and Legendary cuffs on the
+  rifle. Until F-70 adds vest tier scenes they differ by frame, trim and glow,
+  not shape.
 
 ### Step 2: Charm on the primary gun
 
 - Build: `CharmMount` in the 18 primary viewmodels; the view makes the worn
-  charm's scene once per look (rarity look applied), moves it to the bound
-  gun's mount on `bind_weapon`, hides it when the gun has no mount;
+  charm's scene once per look (rarity look, viewmodel layer, no shadows) and
+  keeps it as a child of PlayerArmView, never of a gun: each frame it copies the
+  bound gun's `CharmMount` global transform, and hides when the gun has no mount
+  or there is no gun. A gun that is replaced or freed (also a primary replaced
+  while the sidearm is in hand) can never free the charm;
   `charm_swing.gd` swings it from the mount's motion (spring, clamped angle).
 - Files: 18 viewmodel .tscn, player_arm_view.gd / fp_gear.gd, charm_swing.gd,
   tests/content/test_charm_mounts.gd, test_fp_gear.gd, review tool.
 - Tests: content check for mounts; test_fp_gear.gd: the charm sits under the
   rifle's mount, moves to the new primary after replace, is hidden with a
-  sidearm in hand, and is gone when the charm is unequipped; the swing returns
+  sidearm in hand, survives a primary replaced while the sidearm is in hand,
+  and is gone when the charm is unequipped; the swing returns
   to rest when the gun stops.
 - Done when: review renders of every primary at hip show the charm on the rail,
   clear of the hands.
@@ -188,7 +204,8 @@ keeps two floats; no allocations. One player's view only, never per zombie.
   module attaches to `forearm_L` of the first-person arms with its rarity look
   (the neck port is not shown in first person). If the implant becomes an eye
   plate only, this step builds nothing for the implant and records that.
-  Close-out: gear-visuals.md first-person section updated, DECISIONS lines,
+  Close-out: gear-visuals.md first-person section and slot table (Implant row)
+  updated to the decision, DECISIONS lines,
   roadmap row Done, issue #129 ticked, renders sent to the person.
 - Files: player_arm_view.gd / fp_gear.gd, test_fp_gear.gd, docs.
 - Tests: test_fp_gear.gd: the implant module follows the left forearm bone and
@@ -210,7 +227,9 @@ keeps two floats; no allocations. One player's view only, never per zombie.
 - F-70 vest tier scenes may drop the `CuffFP_*` nodes: the content check fails
   if any vest scene lacks them.
 - F-70 step 5 moves the implant to the eye: the open decision settles it before
-  step 3 is built.
+  step 3 is built; the PR that settles it updates gear-visuals.md and F-70's plan.
+- F-70 step 6 (sleeve materials on `player_arms`) must keep the Common
+  `GearLook.apply` on the arm mesh, so the cuffs and arms keep separate looks.
 - A charm in view while aiming could distract: it hangs on the left side, below
   the sight line; the person sees the ADS render.
 
