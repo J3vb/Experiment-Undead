@@ -1,10 +1,10 @@
 # Plan: Brute
 
-Status: Review
+Status: Approved
 Roadmap: F-30 / issue #124
 Phase: P4
 Size: L
-Approved by:
+Approved by: Claude plan review on PR #411 (Codex out of quota), fixes applied; the person answered both decisions 2026-11-20 (head plate head-only, slower health after round 20)
 Lore link: Brute row in [lore.md](../design/lore.md#story-links-for-game-content): Oriel security and army riot troops who turned in full kit; Fenlight grew the body huge and fused the riot helmet into a bone plate, which is the head plate.
 
 ## Goal
@@ -115,12 +115,12 @@ Not in (non-goals, and where each one goes instead):
 | systems/enemies/brute.tscn | new | inherits zombie.tscn: 0.5 m movement capsule, big hit zones, Plate node |
 | systems/enemies/zombie_rig.gd | changed | wind-up, charge and slam poses |
 | systems/interactables/barrier.gd | changed | public `smash()` that removes every plank (`_set_planks` is private) |
-| systems/waves/spawner.gd | changed | passes the enemy's late health growth (if picked) |
+| systems/waves/spawner.gd | changed | passes the enemy's late health growth  |
 | systems/enemies/brute_plate.gd | new | plate absorb, break, fly-off, speed boost |
 | systems/enemies/brute_moves.gd | new | charge, slam (RefCounted, data points to it) |
 | systems/enemies/zombie_targeting.gd | changed | MOST_DAMAGE mode |
 | systems/enemies/zombie_entry.gd | changed | smash a whole barrier in one hit when the data says so |
-| systems/enemies/enemy_data.gd | changed | `smashes_barriers`, `spawn_sound`, late health growth fields (if picked) |
+| systems/enemies/enemy_data.gd | changed | `smashes_barriers`, `spawn_sound`, late health growth fields  |
 | systems/enemies/zombie_voice.gd | changed | spawn roar at long range |
 | systems/waves/wave_rules.gd, wave_director.gd | changed | Brute schedule and spawn |
 | systems/net/zombie_sync.gd | changed | adds `Plate:broken` in `_ready` when the zombie has a Plate (not in the shared `SYNCED` const) |
@@ -154,9 +154,8 @@ first as in the Stalker plan.
   at match start with the session RNG (like Blackouts); a Brute round that falls on a
   Blackout round moves to the next round (provisional). The Brute spawns once half
   the round's zombies have spawned (provisional) and is added to the round's count.
-- Plate: `BrutePlate` sets the head zone's multiplier (and the body's, if the person
-  picks "all damage") to 25% of its normal value while whole; `broken: bool` synced.
-- Health curve: as the person picks (Open decisions). If "flatter after round 20":
+- Plate: `BrutePlate` sets the head zone's multiplier to 25% of its normal value while whole; `broken: bool` synced.
+- Health curve (the person, 2026-11-20): slower after round 20:
   `EnemyData.late_growth_from_round: int = 0` and `late_growth: float = 0.0`
   (0 = use the round curve), Brute 20 and 1.05.
 - Network: `Plate:broken` sync (step 2), `PlayerPush` RPC (step 3): protocol bumps.
@@ -213,13 +212,13 @@ per Brute, not per frame). Budget: 60 fps with 24 zombies plus the Brute.
 - Build: WaveRules Brute fields and `roll_brutes()`; WaveDirector rolls the schedule
   at `start()` and spawns the Brute once half the round has spawned (count + 1),
   skipping Blackout rounds to the next round. `BrutePlate`: while whole the head zone
-  (and body zone, if picked) multiplier is 25% of normal; when the Brute has lost 25%
+  multiplier is 25% of normal; when the Brute has lost 25%
   of max health it breaks: multipliers back, STAGGERED 1.5 s, plate mesh hidden and a
   copy thrown off (visual, every peer), speed x 1.2 on the server. ZombieSync adds
   `Plate:broken` to its config in `_ready` when the zombie has a Plate (the shared
   `SYNCED` const stays as it is, which `test_zombie_entry.gd` checks on a Walker).
   Tag the Halcyon spawn points with room for the Brute body as `wide`, and walk every
-  path from them to the player areas in a headless test (no relocates). Late health growth fields if picked. Bump
+  path from them to the player areas in a headless test (no relocates). Late health growth fields (Brute: from round 20, 1.05). Bump
   PROTOCOL_VERSION.
 - Files: systems/waves/wave_rules.gd, wave_director.gd, content/waves/default_waves.tres,
   systems/enemies/brute_plate.gd (new), brute.tscn, enemy_data.gd, wave_rules.gd
@@ -307,7 +306,5 @@ The plan is size L, so the person approves it as a whole. Agent picks, marked
 provisional in DECISIONS as their steps land: one Brute per Brute round, spawns at half
 the round, skips a Blackout round, 4 s charge cooldown, push 8 m/s, height 2.3 m.
 
-- Head plate rule: does the plate cut only head damage, or all damage? (balance sheet
-  issues.csv row 11 recommends head only)
-- Brute health: keep 12x on the normal round curve, or grow slower after round 20?
-  (issues.csv row 11 recommends 1.05 per round after round 20)
+- [x] Head plate rule: head damage only (the person, 2026-11-20). Body shots do full damage; headshots do 25% until the plate breaks.
+- [x] Brute health: 12x the round health up to round 20, then +5% per round instead of +9% (the person, 2026-11-20).
