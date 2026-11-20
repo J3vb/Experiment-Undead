@@ -96,7 +96,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | Id | Feature | Issue | Needs | Plan | Size | Status |
 |---|---|---|---|---|---|---|
 | F-41 | Third-person walk, run and downed animations | #128 | F-11 | [needed](plans/teammate-animations.md) | L | Done |
-| F-42 | Gear in first person | #129 | F-84 (F-11 waived 2026-11-20, see plan) | [ready](plans/gear-first-person.md) | M | Building |
+| F-42 | Gear in first person | #129 | F-84 (F-11 waived 2026-11-20, see plan) | [done](plans/gear-first-person.md) | M | Done |
 | F-43 | 4-player play-test to round 20 | #127 | F-47, F-41 | issue | S | Todo |
 | F-44 | Finish the server package | #130 | F-43 | needed | L | Todo |
 | F-45 | Town hub Lantern Post (split into features when it starts) | #131 | F-44 | needed | L | Todo |

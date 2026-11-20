@@ -1,6 +1,6 @@
 # Plan: Gear in first person
 
-Status: Building
+Status: Done
 Roadmap: F-42 / issue #129
 Phase: P7, pulled forward 2026-11-20: the person called the v0.1 solo play-test done and asked to go on with v0.2 features. F-11 (the v0.1.0 release) is not needed: this is client-side visuals only, on the gear swap path from F-84.
 Size: M
@@ -213,11 +213,12 @@ keeps two floats; no allocations. One player's view only, never per zombie.
 
 ## Acceptance
 
-- [ ] Equipped gear changes the first-person arms look: cuffs by vest frame and
+- [x] Equipped gear changes the first-person arms look: cuffs by vest frame and
       rarity, charm on primaries, implant per the decision (test_fp_gear.gd).
-- [ ] A gear swap mid-run updates the first-person view at once (test).
-- [ ] Remote players and dedicated servers build no first-person gear (test).
-- [ ] Look-check renders at hip and ADS per rarity, sent to the person.
+- [x] A gear swap mid-run updates the first-person view at once (test).
+- [x] Remote players and dedicated servers build no first-person gear (test).
+- [x] Look-check renders at hip and ADS per rarity, sent to the person
+      (`tools/fp_gear_review.tscn`; the person's own play-test of the look is still open).
 
 ## Risks
 

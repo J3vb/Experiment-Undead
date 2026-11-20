@@ -142,3 +142,34 @@ func test_swing_tilts_with_motion_and_settles_at_rest() -> void:
 		swing.step(mount, 1.0 / 60.0)
 	assert_lt(swing.angle.length(), 0.001, "it settles once the gun stops")
 	assert_lte(absf(swing.angle.x), CharmSwing.MAX_ANGLE)
+
+
+func test_implant_module_rides_the_left_forearm_without_its_neck_port() -> void:
+	var player: Player = _local_player()
+	var look: CharacterLook = _look(&"", &"")
+	look.slots[&"implant"] = {"visual_id": &"implant_reflex", "rarity": &"rare"}
+	player.gear_rig.apply(look)
+	var view: PlayerArmView = player.weapons.arm_view
+	var holder: BoneAttachment3D = view.find_child("Implant", true, false) as BoneAttachment3D
+	assert_not_null(holder)
+	assert_eq(holder.bone_name, &"forearm_L")
+	assert_not_null(holder.find_child("Module", true, false))
+	assert_null(holder.find_child("Port", true, false), "the neck port is not seen in first person")
+	for node: Node in holder.find_children("*", "GeometryInstance3D", true, false):
+		var geometry: GeometryInstance3D = node as GeometryInstance3D
+		assert_eq(geometry.get_instance_shader_parameter(&"trim_color"), RARE.trim_color)
+		assert_eq(geometry.layers, ScopeLens.VIEWMODEL_LAYER)
+
+
+func test_implant_swaps_and_clears_with_the_look() -> void:
+	var player: Player = _local_player()
+	var look: CharacterLook = _look(&"", &"")
+	look.slots[&"implant"] = {"visual_id": &"implant_lung", "rarity": &"common"}
+	player.gear_rig.apply(look)
+	look = _look(&"", &"")
+	look.slots[&"implant"] = {"visual_id": &"implant_ocular", "rarity": &"legendary"}
+	player.gear_rig.apply(look)
+	var view: PlayerArmView = player.weapons.arm_view
+	assert_eq(view.find_children("Implant", "BoneAttachment3D", true, false).size(), 1)
+	player.gear_rig.apply(_look(&"", &""))
+	assert_null(view.find_child("Implant", true, false))
