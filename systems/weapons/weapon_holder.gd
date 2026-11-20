@@ -35,6 +35,7 @@ var _held: Weapon
 func setup(player: Player, camera: Camera3D) -> void:
 	weapon_bob = Settings.get_value(&"comfort", &"weapon_bob")
 	Settings.changed.connect(_on_setting_changed)
+	Events.hit_confirmed.connect(_on_hit_confirmed)
 	_player = player
 	_camera = camera
 	melee.shooter = player
@@ -256,6 +257,18 @@ func _process(delta: float) -> void:
 func _on_setting_changed(section: StringName, key: StringName, value: Variant) -> void:
 	if section == &"comfort" and key == &"weapon_bob":
 		weapon_bob = value
+
+
+## Dead Center: a confirmed headshot kill puts one round back in the gun in hand (owner only).
+func _on_hit_confirmed(player: Player, is_kill: bool, headshot: bool) -> void:
+	if player != _player or not (is_kill and headshot) or current == null:
+		return
+	if not _player.is_multiplayer_authority() or not _player.skill_rules.has(SkillNodeData.Rule.DEAD_CENTER):
+		return
+	if current.instance.ammo_in_mag >= current.data.magazine_size:
+		return
+	current.instance.ammo_in_mag += 1
+	current.ammo_changed.emit(current.instance.ammo_in_mag, current.instance.ammo_reserve)
 
 
 func _on_ammo_changed(in_mag: int, reserve: int, weapon: Weapon) -> void:
