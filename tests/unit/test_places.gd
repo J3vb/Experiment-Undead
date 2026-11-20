@@ -80,14 +80,14 @@ func test_dedicated_server_starts_in_the_hub_and_swaps_to_the_match() -> void:
 
 
 func test_a_peer_on_its_way_out_gets_no_player() -> void:
-	Net._leaving.assign([42])
+	Net.place_change._leaving.assign([42])
 	var spawner: PlayerSpawner = PlayerSpawner.new()
 	var world: Node3D = Node3D.new()
 	add_child_autofree(world)
 	add_child_autofree(spawner)
 	spawner._parent = world
 	assert_null(spawner.add_peer(42))
-	Net._leaving.clear()
+	Net.place_change._leaving.clear()
 
 
 func test_a_held_order_waits_on_the_results_and_the_menu_forgets_it() -> void:
