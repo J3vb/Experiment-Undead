@@ -90,6 +90,7 @@ Each says when to fix it.
 
 Agent picks the person may change.
 
+- **EGM plugin:** vendored at `.agents/plugins/egm/` and enabled per machine by the session hook (local settings, no machine path committed). The Codex repo marketplace source path is an agent pick, not yet tried in Codex. [CREDITS](CREDITS.md)
 - **Gun feel:** falloff ranges, spread, recoil and empty reloads not in `roster.csv` (Kestrel, Talon, vault batch A1, Bastion, batch B rifles, Wren, Siphon, Cryo Lance, Synapse). Talon head x3.0 and Atlas Auto's strong DPS wait for play-tests.
 - **Siphon:** 10 m/s orb, 3 s well, at most 12 zombies, 6 m pull, two live wells per player, Vault weight 0.05.
 - **Wearing gear mid-run:** the piece you take off goes into the same Pack slot; swaps never heal; vest icons show the rest-pose shoulder pads ([plan](plans/wear-gear-mid-run.md)).
@@ -118,6 +119,7 @@ Agent picks the person may change.
 - **Hold to repair:** one plank every 0.6 s while interact is held, tap still works; the 0.3 s hold-to-buy in `controls.md` is not built.
 - **Player names:** up to 16 Latin letters, digits, spaces and - _ . ' ; default "Survivor"; duplicates allowed; set on the Character screen before joining. See [player-names](plans/player-names.md).
 - **Halcyon machines (F-83):** one Med Dispenser model for all 8 Serums with one teal glow (no per-Serum colour); exfil hatch model squashed to 14 cm over the old thin floor box so players walk over it; Reforger glow is a thin front strip. [plan](plans/halcyon-machines-fill.md)
+- **Halcyon small life (F-83 step 4):** drips already existed (F-61), so only fan, PA and papers are new; PA crackles on a fixed 29 s timer, not a random 20-40 s; fan turns with an AnimationPlayer like the beacons, not _process. [plan](plans/halcyon-machines-fill.md)
 - **Stall keeper heights (provisional):** Odile 1.66 m, Teun 1.80 m, Lien 1.68 m, Raes 1.73 m (`height` in [vendors.json](../tools/assets/tripo/vendors.json)); the code-built Quartermaster and `town_npcs/` builder are gone. [tripo-models](plans/tripo-models.md)
 - **Stall keeper clips (F-76):** keepers carry only the five keeper clips (`clips: keeper`), not the 12 player clips; hand spots scale with arm length, counter hands palm down. Look is an agent pick until the person sees the GIFs. [lantern-post-vendors](plans/lantern-post-vendors.md)
 - **Keeper spots (F-76, provisional):** the Tripo stalls are packed to chest height, so each keeper stands inside the stall on a hidden 0.2-0.3 m step (Missions on the floor); the talk area reaches 0.25 m past the stall collider. Card asked. [lantern-post-vendors](plans/lantern-post-vendors.md)
@@ -127,4 +129,5 @@ Agent picks the person may change.
 - **First-person charm:** hangs from a `CharmMount` on the left rail just in front of the support hand, out of the ADS sight line; hidden while a sidearm is in hand; a spring swing, no physics. [gear-first-person](plans/gear-first-person.md)
 - Content fingerprint skips Texture2D fields (HUD icons): the dedicated server export strips textures, so their paths differ and joins were refused. Textures are client art only ([F-87](plans/hud-concept.md)).
 - **Rename to Fenlight:** players see Fenlight; game exe/pck names, the launcher app id and data folder, and the `experiment-undead-server` image keep the old name so installs and servers keep working. Saves copy over once. [RELEASING](RELEASING.md)
+- **Menu brush colour (F-88):** the concept art's orange brush on the selected menu row is burnt orange #D9662B, not Legendary #FF8A1C, and the restyled menus drop the one-green-main-button rule. Provisional. [front-end-concept](plans/front-end-concept.md)
 - **Server drain (F-65 step 8, F-82 step 4b):** the game side (drain file, `SERVER_UPDATING`, exit code 3) is built with the launcher's hosted-server updates; the Docker entrypoint's auto-update half of step 8 is still to build. [client-server-updates](plans/client-server-updates.md)

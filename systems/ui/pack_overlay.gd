@@ -218,7 +218,8 @@ func _input(event: InputEvent) -> void:
 	if panel.visible and event is InputEventMouseButton:
 		Input.action_release(&"fire")
 		Input.action_release(&"ads")
-	if service.session.is_over or get_tree().paused:
+	# In co-op the tree never pauses, so a pushed screen (Pause, Settings) owns the keys instead.
+	if service.session.is_over or get_tree().paused or UI.top() != &"":
 		if panel.visible:
 			set_open(false)
 		return

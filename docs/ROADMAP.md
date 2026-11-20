@@ -63,7 +63,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-77 | Shared prop library for future maps: about 75 code-built props in eight families (barriers, military, industrial, rail, large pieces, hospital, outdoor, map hero pieces) plus a catalogue, so Act I maps and towns are assembly, not modelling | - | - | [ready](plans/prop-library.md) | L | Building |
 | F-78 | Tripo model trial: one Tripo prop and one vendor through a new intake (decimate, bake our three maps, fit our 22-bone skeleton, existing clips), side by side with code-built, report so the person can pick how F-76 and F-77 are made | - | - | [ready](plans/tripo-trial.md) | M | Ready |
 | F-80 | Props and vendors made in Tripo: Tripo API tool with manifests and image prompts, ADR for Tripo models, F-76 vendors and F-77 prop families built from Tripo instead of Blender scripts | - | F-78 | [ready](plans/tripo-models.md) | L | Building |
-| F-83 | Halcyon Labs machine models (Med Dispenser, Reforger, power switch, exfil hatch) from Tripo, about 12 Tripo room props in the bare rooms, and small life (fan, drips, PA crackle) | - | F-80 step 2 | [ready](plans/halcyon-machines-fill.md) | L | Ready |
+| F-83 | Halcyon Labs machine models (Med Dispenser, Reforger, power switch, exfil hatch) from Tripo, about 12 Tripo room props in the bare rooms, and small life (fan, drips, PA crackle) | - | F-80 step 2 | [ready](plans/halcyon-machines-fill.md) | L | Building |
 | F-70 | Player and gear to the concept art: bearded survivor body, headgear, gloves, backpack and boots models in three tiers (field, plated, Oriel), plate carrier vests, eye implant and vest vial | - | - | [ready](plans/player-gear-concept.md) | L | Building |
 | F-71 | Four new loot slots: headgear, gloves, backpack, boots (item bases, affix pools, drops, sets, save, inventory and character screen) | - | - | [ready](plans/four-gear-slots.md) | M | Building |
 | F-84 | Wear loot gear mid-run: Tab Pack overlay shows your character and gear slots, E wears a picked-up vest, charm or implant (solo play-test 2026-11-19) | - | - | [ready](plans/wear-gear-mid-run.md) | M | Building (all 3 steps merged; play-test left) |
@@ -77,7 +77,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 
 | Id | Feature | Issue | Needs | Plan | Size | Status |
 |---|---|---|---|---|---|---|
-| F-88 | Front-end screens to the concept art: FENLIGHT logo, brush-stroke menu, painted main menu and Loadout backdrops, Loadout tabs (concept art 2026-11-20) | - | - | [ready](plans/front-end-concept.md) | M | Ready |
+| F-88 | Front-end screens to the concept art: FENLIGHT logo, brush-stroke menu, painted main menu and Loadout backdrops, Loadout tabs (concept art 2026-11-20) | - | - | [ready](plans/front-end-concept.md) | M | Building |
 | F-20 | Skill effects (through the stat stack) | #113 | F-11 | [ready](plans/skill-effects.md) | M | Done |
 | F-21 | Skill tree screen (look target: [research_concept.jpg](design/concepts/screens/research_concept.jpg)) | #112 | F-20 | needed | M | Todo |
 | F-22 | Field abilities | #114 | F-20 | needed | M | Todo |
