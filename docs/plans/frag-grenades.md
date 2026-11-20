@@ -1,10 +1,10 @@
 # Plan: Frag grenades
 
-Status: Review
+Status: Approved
 Roadmap: F-24 / issue #119
 Phase: P3
 Size: M
-Approved by: the person (decision card, 2026-11-20, damage model); plan review on PR #407
+Approved by: the person (decision card, 2026-11-20, damage model); plan review on PR #407 by a separate Claude review (Codex out of quota): 2 blocking and 9 suggestions, all fixed
 Lore link: Army and Cordon issue frags left in the zone by the evacuation force, the same source as the wall guns (docs/design/lore.md#story-links-for-game-content, row "Frag grenades", provisional, added by this plan)
 
 ## Goal
@@ -118,6 +118,9 @@ the Change log in step 1, one DECISIONS line):
 | Centre damage | 1000, fixed (person's pick, 2026-11-20) | One-shots crowds to about round 10, then fades like classic zombie games; gear grenade damage carries it later |
 | Own damage | at most 60, same falloff | Cooking too long hurts, never downs a full-health player alone |
 | Gun down after throw | 0.5 s | Same feel as the knife swing |
+| Server throw checks | origin within 2 m of the camera, speed at most throw_speed + 10 m/s (player speed), one throw per `recover_time` | Constants in GrenadeClaims, step 2 |
+| Cook tick | every 0.5 s | Step 3 sound |
+| Wall ray start | 0.3 m above the blast | So a frag on the floor sees past its own floor |
 
 ## Systems touched
 
@@ -137,7 +140,10 @@ the Change log in step 1, one DECISIONS line):
 | project.godot | changed | `lethal` action (G, joypad button 10 RB) appended to [input] by hand |
 | systems/ui/key_bindings.gd | changed | "Lethal (grenade)" row |
 | systems/net/player_state_sync.gd | changed | server-owned `grenades` count in the snapshot, refill on round start |
-| systems/power_ups/power_up.gd | changed | Resupply also refills grenades (server side) |
+| systems/power_ups/power_up_drops.gd | changed | Resupply refills grenades for every target in `on_collected` (server side) |
+| systems/power_ups/power_up.gd | changed | same refill in `collect()`'s no-drops branch (tests, standalone) |
+| systems/weapons/weapon_holder.gd | changed | `lower(seconds)` pulled out of `swing()`: gun down, no firing, cancels a reload |
+| tools/soak/soak_bot.gd, coop_soak_bot.gd | changed (steps 1, 2) | bots throw one frag a round |
 | systems/player/player.gd | changed | add the GrenadeThrower child, pass presses (2-3 lines; file is 335 lines) |
 | systems/game/game_session.gd | changed (step 2) | add `GrenadeClaims` to the session systems list |
 | systems/net/hit_claims.gd | changed (step 2) | rename `confirm_well_hit`/`well_hit` to `confirm_area_hit`/`area_hit` (second user) |
@@ -174,6 +180,9 @@ job out first.
 - Network messages (step 2, protocol bump): `GrenadeClaims.throw_on_server`
   (any_peer, reliable), `show_throw` (authority, unreliable),
   `show_blast` (authority, reliable).
+- Blast hits leave `DamageInfo.item_uid` empty, so the thrower's loot-gun
+  on-hit effects never run from a frag. A blast kill pays the normal
+  `points_per_kill` (no headshot or melee bonus) and XP as usual.
 - Save format change: none.
 - Content checks to add in `tests/content/`: `test_throwables.gd`, every
   throwable has carry >= 1, fuse > 0, radius > full_radius > 0, a scene, and
@@ -184,14 +193,19 @@ job out first.
 - Who owns the state: server owns each player's grenade count, the real
   grenade, blast damage, points and XP. Owning client owns the cook timer and
   aim. Each client owns its cosmetic copies.
+- The client never writes its count: it only checks count > 0 before a
+  throw, and its HUD follows the snapshot. A mid-run joiner starts with
+  `carry`.
 - What clients send, what the server sends back: owner sends
   `throw_on_server(origin, velocity, fuse_left)`. Server checks (alive,
   count, origin near camera, speed, fuse range, rate), spawns the real
   grenade, takes one from the count and publishes the snapshot; it relays
   `show_throw(peer, origin, velocity, fuse_left)` to the other clients and,
   when the grenade goes off, `show_blast(peer, position)` to everyone. A
-  rejected throw is dropped and the next snapshot puts the owner's count
-  back.
+  rejected throw changes nothing on the server; the owner's cosmetic
+  grenade ends quietly at its fuse end when no `show_blast` arrives
+  within 1 s. A grenade that blows up in hand goes through the same
+  request with velocity 0 and fuse_left 0.
 - What a client sees that the host sees too: the flying grenade (cosmetic,
   same arc), the blast, damage numbers and kills. Only the owner sees its
   own hit markers (through `confirm_area_hit`) and its own count on the HUD.
@@ -208,8 +222,9 @@ solo and on the host, the owner's grenade is the real one.
 
 At most 2 live grenades per player (16 with 8 players). A grenade is one
 RigidBody3D on the WORLD mask only (it ignores zombies and players), with
-continuous collision. The blast runs once: one loop over the `enemies` and
-`players` groups (already used by GravityWell) with a distance check, then
+continuous collision. The blast runs once: one loop over the `enemies` group,
+filtered to the grenade's own multiplayer (tests and spectating can hold
+another session in the tree), plus the thrower only, with a distance check, then
 one ray for each target inside 7 m (at most the 24 alive zombies in v0.1).
 Scene, effect and sounds are preloaded on first use; no allocation per
 physics tick. Budget: under 0.5 ms on the blast frame with 24 zombies.
@@ -226,14 +241,16 @@ physics tick. Budget: under 0.5 ms on the blast frame with 24 zombies.
   counts down, goes off), `Blast.apply()` (falloff, wall ray, own-damage cap,
   no teammate damage, Bloater burst, points and XP through the normal
   damage path), grenade count in `PlayerStateSync` (refill on round start
-  and Resupply). On a co-op client the key does nothing yet (one
-  temporary DECISIONS line, removed in step 2). Numbers into
+  and Resupply). In co-op (client and host) the key does nothing yet, so nobody sees a
+  blast they cannot explain (one temporary DECISIONS line, removed in
+  step 2). The solo soak bot throws one frag a round. Numbers into
   game-design.md, its Change log and one DECISIONS line.
 - Files: systems/throwables/*, content/throwables/frag.tres,
   systems/damage/damage_info.gd, systems/enemies/{enemy_data,zombie}.gd,
   content/enemies/bloater.tres, systems/input/*, project.godot,
   systems/ui/key_bindings.gd, systems/net/player_state_sync.gd,
-  systems/power_ups/power_up.gd, systems/player/player.gd, docs.
+  systems/power_ups/{power_up,power_up_drops}.gd, systems/weapons/weapon_holder.gd,
+  systems/player/player.gd, tools/soak/soak_bot.gd, docs.
 - Tests: `tests/unit/test_grenades.gd` (cook timer: release at 1 s leaves
   2 s, holding to 3 s blows up in hand; falloff at 0, 1.5, 4, 7, 8 m;
   wall blocks; own damage capped at 60; teammate takes 0; Bloater bursts;
@@ -254,8 +271,9 @@ physics tick. Budget: under 0.5 ms on the blast frame with 24 zombies.
 - Files: systems/net/grenade_claims.gd, systems/net/hit_claims.gd,
   systems/weapons/gravity_well.gd (rename call), systems/game/game_session.gd,
   systems/throwables/grenade_thrower.gd, systems/throwables/grenade.gd,
-  core/build.gd, docs/MULTIPLAYER.md (add GrenadeClaims as a pattern 2
-  example), docs/LOGGING.md.
+  core/build.gd, tools/soak/coop_soak_bot.gd (one throw a round),
+  docs/MULTIPLAYER.md (add GrenadeClaims as a pattern 2 example),
+  docs/LOGGING.md.
 - Tests: `tests/unit/test_grenade_claims.gd` (each server check rejects
   the bad case and accepts the good one; rate limit; count goes down once).
   `tests/integration/test_coop_grenades.gd` (a real server process and a
