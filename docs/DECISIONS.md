@@ -46,7 +46,7 @@ Each says when to fix it.
 - **Whole-tube reloads:** Brenner, Hollis and Atlas reload in one timed action. Fix when: real reload animations exist.
 - **Reforger** has Tier I only and swaps instantly. Fix when: Tiers II (ammo mods) and III get a roadmap row.
 - **Frag numbers** (3 s fuse, 15 m/s throw, 7 m blast with full damage inside 1.5 m, own damage up to 60, no friendly fire) are provisional picks; the 1000 centre damage is the person's. Fix when: the frag play-test. [frag-grenades](plans/frag-grenades.md)
-- **Grenade HUD:** no grenade slot, cook sound or blast effect yet; the frag is a grey ball. Fix when: F-24 steps 3 and 4. [frag-grenades](plans/frag-grenades.md)
+- **Frag look:** the frag is a grey ball with no first-person hold or throw; the blast is a code-built flash, fireball and smoke (no .tscn, like HeadPop) on the Weapons bus. Fix when: F-24 step 4. [frag-grenades](plans/frag-grenades.md)
 - **Power-ups:** Resupply, Payday, Overkill, Stasis and the Scavenger ammo pack so far; Scavenger's +1 grenade waits. Fix when: F-24 grenades and F-26 steps 3-4.
 - **Window barriers:** no slot timeout (move to another barrier after 4 s), no real sill. Fix when: co-op crowding at a window needs it.
 - **Emergency lighting:** dimmed red ceiling lights only, no separate fixtures or sound. Fix when: the sound world step.

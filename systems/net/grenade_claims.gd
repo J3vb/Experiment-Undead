@@ -3,7 +3,7 @@
 class_name GrenadeClaims
 extends Node
 
-## Emitted on every peer that shows a blast (the effect in step 3 listens).
+## Emitted on every peer that shows a blast.
 signal blast_shown(peer_id: int, position: Vector3)
 
 ## The throw leaves within this distance of the thrower's eyes.
@@ -23,6 +23,7 @@ func _init() -> void:
 
 func _ready() -> void:
 	multiplayer.peer_disconnected.connect(_forget_peer)
+	blast_shown.connect(func(_peer_id: int, at: Vector3) -> void: BlastEffect.spawn(session, at))
 
 
 func _physics_process(delta: float) -> void:
