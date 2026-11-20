@@ -36,10 +36,10 @@ func _gore(level: Impact.Gore) -> void:
 	Settings._values[&"graphics"][&"gore"] = level
 
 
-func _zombie(path: String = WALKER) -> Zombie:
+func _zombie(path: String = WALKER, net_id: int = 1) -> Zombie:
 	var data: EnemyData = load(path) as EnemyData
 	var zombie: Zombie = data.scene.instantiate() as Zombie
-	zombie.setup(data, 1, 1.0, 1.0, 1.0, RandomNumberGenerator.new())
+	zombie.setup(data, net_id, 1.0, 1.0, 1.0, RandomNumberGenerator.new())
 	_parent.add_child(zombie)
 	zombie.set_process(false)
 	zombie.set_physics_process(false)
@@ -74,6 +74,18 @@ func test_pop_head_collapses_the_head_bone_on_both_models() -> void:
 		zombie.visual.pop_head()
 		assert_lt(zombie.visual.head_scale(), 0.05, "%s head shrinks into the neck" % path.get_file())
 		zombie.free()
+
+
+func test_pop_head_collapses_the_head_bone_on_both_shambler_looks() -> void:
+	var looks: Dictionary[String, bool] = {}
+	for net_id: int in range(1, 9):
+		var zombie: Zombie = _zombie(WALKER, net_id)
+		var body: Node = zombie.visual.find_children("*", "Skeleton3D", true, false)[0].owner
+		looks[body.scene_file_path] = true
+		zombie.visual.pop_head()
+		assert_lt(zombie.visual.head_scale(), 0.05, "%s head shrinks into the neck" % body.scene_file_path.get_file())
+		zombie.free()
+	assert_eq(looks.size(), 2, "both Shambler looks popped")
 
 
 func test_headshot_kill_on_full_pops_the_head_with_chunks_and_splats() -> void:

@@ -1,4 +1,4 @@
-"""Tripo zombies (tools/assets/tripo/zombies.json, F-28 step 1): intake `--kind zombie` output passes the zombie rules.
+"""Tripo zombies (tools/assets/tripo/zombies.json, F-28 step 1, F-86): intake `--kind zombie` output passes the rules.
 
 Run from the repo root: python -m pytest tools/assets/tests/test_tripo_zombies.py
 """
@@ -12,8 +12,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import bpy
 
 # isort: split
+import bmesh
 import check_models
 import pytest
+import tripo_crawler
 import tripo_intake
 import zombie_checks
 
@@ -33,7 +35,7 @@ def test_zombie_kind_matches_the_zombie_folder_budget():
 
 
 def test_manifest_rows_are_zombies_with_rules():
-    assert [row["name"] for row in ROWS] == ["glower"]
+    assert [row["name"] for row in ROWS] == ["glower", "shambler", "shambler_guard", "bloater", "crawler"]
     for row in ROWS:
         assert row["kind"] == "zombie" and row["folder"] == "zombies"
         assert row["name"] in zombie_checks.JOINTS and row["name"] in zombie_checks.TRIANGLES
@@ -54,7 +56,15 @@ def test_committed_zombie_is_placed_with_head_center_behind_the_eyes(row):
     assert nodes["Body"].data.materials[0].name.startswith(zombie_checks.BAKED)
     low, high = check_models.bounds([nodes["Body"]])
     assert low.z == pytest.approx(0.0, abs=0.01)
-    assert high.z - low.z == pytest.approx(row["height"], abs=0.01)
+    if row.get("crawler"):
+        assert high.z - low.z < 0.8, "the Crawler lies prone"
+        assert nodes["Crawler"].parent_bone == "pelvis", "ZombieRig finds the crawl rest by this marker"
+        body = nodes["Body"]
+        groups = {g.index: g.name for g in body.vertex_groups}
+        weighted = {groups[e.group] for v in body.data.vertices for e in v.groups if e.weight > 0.0}
+        assert not any(name.startswith(("thigh_", "shin_", "foot_")) for name in weighted), "no legs left"
+    else:
+        assert high.z - low.z == pytest.approx(row["height"], abs=0.01)
     center = nodes["HeadCenter"]
     assert center.parent == arm and center.parent_type == "BONE" and center.parent_bone == "head"
     eyes = nodes["Eyes"].matrix_world.translation
@@ -73,3 +83,26 @@ def test_baked_zombie_rules_want_one_body_mesh_and_only_the_baked_material():
     assert any("one mesh named 'Body'" in error for error in errors)
     assert any("only the ZombieBaked material" in error for error in errors)
     assert any("HeadCenter" in error for error in errors)
+
+
+def test_crawler_pass_cuts_the_legs_and_caps_them_facing_out():
+    objects = check_models.load_glb(_model(ROWS[1]))
+    arm = next(obj for obj in objects if obj.type == "ARMATURE")
+    body = next(obj for obj in objects if obj.name == "Body")
+    tripo_intake.weld(body)
+    cut = tripo_crawler.cut_legs(arm, body)
+    tripo_crawler.stumps_on_pelvis(arm, body)
+    mesh = bmesh.new()
+    mesh.from_mesh(body.data)
+    groups = {g.index: g.name for g in body.vertex_groups}
+    for vert in mesh.verts:
+        if vert.co.z < cut - 0.001:
+            weights = body.data.vertices[vert.index].groups
+            top = max(weights, key=lambda item: item.weight)
+            assert groups[top.group].startswith(tripo_crawler.ARMS), "only hands may hang below the cut"
+    assert not [e for e in mesh.edges if e.is_boundary and all(abs(v.co.z - cut) < 0.05 for v in e.verts)]
+    caps = [f for f in mesh.faces if len(f.verts) > 3]
+    assert len(caps) == 2, "one cap per thigh (Tripo bodies are all triangles, caps are n-gons)"
+    assert all(f.normal.z < -0.5 for f in caps), "caps face down, out of the stump"
+    mesh.free()
+    assert not any(name.startswith(tripo_crawler.LEGS) for name in groups.values())

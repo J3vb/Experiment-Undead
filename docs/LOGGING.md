@@ -86,6 +86,7 @@ The server also prints every warning and error to stdout as
 | `waves.round_started` | info | Round number, enemies this round, health snapshot |
 | `waves.round_ended` | info | Round cleared |
 | `waves.round_stalled` | warn | 90 s in a round with no kill; lists where the living zombies are |
+| `waves.blackout_pack_waiting` | warn | A Blackout pack (`pack` Glowers, `round`) waited over 10 s for room under the alive cap. Zombies are stuck alive somewhere or the cap is too low for the pack size |
 | `waves.spawn_points_missing` | warn | The Spawner found no marker in its `spawn_group` (`spawn_group`), so no zombie spawns. The map has no spawn markers in that group, or the group name in the Spawner is wrong |
 | `player.player_spawned` / `player_died` | info | Player `net_id`, spawn position |
 | `player.weapon_has_no_grip` | warn | A gun has no `GripData`, so it shows no first-person arms. `weapon` id; once per gun per run. Add `content/grips/<base id>.tres` and set the gun's `grip` |
@@ -112,7 +113,7 @@ The server also prints every warning and error to stdout as
 | `power_ups.timer_ignored` | warn | A power-up timer message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
 | `net.interaction_rejected` | warn | Server refused a client's interact request (`peer`, `reason`, `path`): `player_not_alive`, `match_over`, `unknown_path`, `out_of_range`, `grant_pending` (last gun grant not applied yet), `bad_facts` (gun facts with wrong fields or ids). At most one per second. Many `out_of_range` = `InteractionSync.REACH_SLACK` too tight |
 | `net.deploy_refused` | warn | The hub's deploy vote or `deploy()` was refused (`place`, `reason` or `hub`): an unknown place id on a deploy board, or a deploy outside the hub. A board with a typo in `place` |
-| `net.place_change_kicked` | warn | A client was sent to another place but had not left after `Net.CONNECT_TIMEOUT`, so the server dropped it (`peer`). It never got the order: check the network |
+| `net.place_change_kicked` | warn | A client was sent to another place but had not disconnected after `Net.CONNECT_TIMEOUT`, so the server dropped it (`peer`) and swapped place. Clients close as soon as the order arrives, so it never got the order: check the network |
 | `net.place_changed` | info | The server changed place (`place`, `players` sent along) |
 | `net.port_busy` | warn | Enter world could not open the world's port (`port`), so the world runs offline and friends cannot join. Another game or server holds it: change the port in Settings > Network |
 | `net.upnp_opened` | info | The router opened the world's game and info ports (`port`) for an hour; renewed every 50 minutes while the game runs |
@@ -150,6 +151,8 @@ The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher
 | `server_exited` | info | The hosted server quit and was not restarted (`message` = exit code, or "launcher closed"). A quick exit after `server_started` = port in use; read `server/server.log` |
 | `server_draining` | info | A newer game is installed (`message` = version) and the drain file asks the hosted server to finish its match. No `server_update_restarted` within a match's length = the server never drained; read `server/server.log` |
 | `server_update_restarted` | info | The hosted server drained (exit code 3) and runs again on the newer version (`message`), same port and player limit |
+| `repair_started` | info | Repair game files deleted the newest version (`message`) so the launcher downloads it again |
+| `uninstalled` | info | Uninstall game deleted every installed version. Saves and settings stay |
 
 ## Adding log lines (rules for agents)
 

@@ -1,6 +1,6 @@
 # Plan: Existing zombies to Tripo models
 
-Status: Approved
+Status: Done
 Roadmap: F-86 / issue none (person's ask in the project thread, 2026-11-20)
 Phase: P4
 Size: M
@@ -141,16 +141,17 @@ tween. Checked by the existing benchmark job (24 zombies).
 
 - Build: intake `bloater`, `shambler` (lab tech) and `shambler_guard` with
   `--kind zombie` and manifest rows. `ZombieRig.extra_models` and the look pick
-  `([model] + extra_models)[look % size]`, where `look` (default 0, so `ZombieRig.new()` in tools still works) is `hash(net_id)` set in `Zombie.setup()` before the rig enters the tree. `hash` because `Net.allocate_id` is one counter for every zombie type, so a plain `% 2` with an alternating Walker/Bloater mix would give every Walker the same look. Delete `_attach_belly` and `_belly`. Bloater pod shader through
-  `zombie_import.gd`: green-only glow (like the Glower veins) and an
-  `instance uniform float pulse` that pushes the pod area out along the normal;
-  `pulse_belly()` tweens `instance_shader_parameters/pulse` on the `Body` mesh; the pod mask comes from `textureLod` of the albedo in `vertex()`. Shambler looks get a plain baked material. Fit the Body hit zones and capsules to the new
+  `([model] + extra_models)[look % size]`, where `look` (default 0, so `ZombieRig.new()` in tools still works) is `hash(net_id)` set in `Zombie.setup()` before the rig enters the tree. `hash` because `Net.allocate_id` is one counter for every zombie type, so a plain `% 2` with an alternating Walker/Bloater mix would give every Walker the same look. Delete `_attach_belly` and `_belly`. All Tripo zombies import through
+  `zombie_import.gd` and share the Glower vein glow (lore: every Lit has faint green eyes and veins; changed
+  while building, see DECISIONS). `glower_veins.gdshader` gets an `instance uniform float pulse` that pushes
+  the green area out along the normal, gated by `ZombieRig.pulse_size` (Bloater only);
+  `pulse_belly()` tweens `instance_shader_parameters/pulse` on the `Body` mesh; the pod mask comes from `textureLod` of the albedo in `vertex()`. Fit the Body hit zones and capsules to the new
   heights. Turnarounds approved in `docs/design/turnarounds/zombies/`. ADR 0017
   line: these three zombies are Tripo now.
 - Files: assets/models/zombies/* (and their .glb.import), tools/assets/tripo/zombies.json,
   systems/enemies/zombie_rig.gd, zombie.gd, zombie.tscn, bloater.tscn, glower.tscn,
   tools/assets/zombie_import.gd, zombie_checks.py, build_models.py,
-  assets/materials/bloater_pods.gdshader, tests/content/test_zombie_finish.gd,
+  assets/materials/glower_veins.gdshader, tests/content/test_zombie_finish.gd,
   test_model_finish.gd, tests/unit/test_gear_import.gd,
   docs/adr/0017-tripo-models.md, docs/design/turnarounds/zombies/.
 - Tests: test_zombie_rig.gd: Walkers with two looks values get the two looks; a Bloater and a Glower with any look keep their own model;
@@ -185,14 +186,19 @@ tween. Checked by the existing benchmark job (24 zombies).
 - Files: tools/assets/*, tools/zombie_*.gd, levels/look_reference/, docs/.
 - Tests: check_outputs and test_scripts_compile pass with the builder gone.
 - Done when: no code path builds a zombie in Blender; roadmap row Done.
+- Built (with step 2, one PR): once the Crawler was Tripo, every code-built zombie test lost its subject, so the
+  steps went together. Deleted the files above, the non-baked branch of `zombie_checks.py`, and the now-unused
+  `Zombie*` finishes in `gear_import.gd` / `gear.gdshader` with their tests. Checked, nothing left to change:
+  `zombie_pose_capture.gd`, `zombie_review.gd`, `zombie_lineup.gd` and `levels/look_reference/` load the zombies
+  by file name, so they show the Tripo models already.
 
 ## Acceptance
 
-- [ ] Both Shambler looks and the Tripo Bloater show in a Halcyon Labs round, the same on host and client (test + soak).
-- [ ] Head pop, blood pool, belly pulse and Bloater burst still work (tests).
-- [ ] Crawler model is Tripo and its crawl poses pass the clearance test.
-- [ ] No code-built zombie builder left.
-- [ ] The person has seen the lineup render.
+- [x] Both Shambler looks and the Tripo Bloater show in a Halcyon Labs round, the same on host and client (test + soak).
+- [x] Head pop, blood pool, belly pulse and Bloater burst still work (tests).
+- [x] Crawler model is Tripo and its crawl poses pass the clearance test.
+- [x] No code-built zombie builder left.
+- [x] Lineup render posted to the person in the build thread (step 1 and step 2 renders).
 
 ## Risks
 

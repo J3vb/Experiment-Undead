@@ -136,6 +136,27 @@ def klaxon() -> np.ndarray:
     return lowpass(lowpass(wave_, 0.15), 0.3) * envelope
 
 
+def pa_crackle() -> np.ndarray:
+    """A dead PA speaker keying up: a pop, two seconds of crackling carrier with a muffled hum, a pop."""
+    rng = np.random.default_rng(35)
+    time = timeline(2.2)
+    carrier = highpass(lowpass(rng.standard_normal(len(time)), 0.35), 0.05) * 0.25
+    gate = np.repeat(rng.uniform(0.2, 1.0, len(time) // 1100 + 1), 1100)[: len(time)]
+    garble = lowpass(np.sign(np.sin(2 * np.pi * 180 * time)) * (0.5 + 0.5 * np.sin(2 * np.pi * 3.1 * time)), 0.05)
+    crackle = np.zeros(len(time))
+    for start in rng.uniform(0.1, 2.0, 40):
+        index = int(start * SAMPLE_RATE)
+        snap = rng.standard_normal(int(0.008 * SAMPLE_RATE)) * rng.uniform(0.3, 0.9)
+        crackle[index : index + len(snap)] += snap
+    envelope = np.clip(time / 0.03, 0, 1) * np.clip((time[-1] - time) / 0.08, 0, 1)
+    pops = np.zeros(len(time))
+    for at in (0.0, 2.1):
+        index = int(at * SAMPLE_RATE)
+        pop = timeline(0.03)
+        pops[index : index + len(pop)] += np.sin(2 * np.pi * 90 * pop) * np.exp(-pop * 120) * 0.8
+    return (carrier * gate + garble * 0.2 * gate + crackle * 0.4) * envelope + pops
+
+
 def drip_loop() -> np.ndarray:
     rng = np.random.default_rng(34)
     length = int(SAMPLE_RATE * LOOP_SECONDS)
@@ -170,6 +191,7 @@ def main() -> None:
     save_wav(output / "distant_groan.wav", distant_groan())
     save_wav(output / "spark_crackle.wav", spark_crackle())
     save_wav(output / "klaxon.wav", klaxon())
+    save_wav(output / "pa_crackle.wav", pa_crackle())
     save_ogg(output / "steam_hiss.ogg", steam_hiss())
     save_ogg(output / "machine_hum.ogg", machine_hum())
     save_ogg(output / "drip_loop.ogg", drip_loop())

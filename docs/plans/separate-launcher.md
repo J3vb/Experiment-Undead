@@ -188,7 +188,7 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
 - Build: Tauri NSIS bundle (`installMode: currentUser`, Start menu and
   desktop shortcut, uninstall entry), product name "Fenlight
   Launcher". Updater plugin with the public key in `tauri.conf.json` and the
-  endpoint `https://github.com/J3vb/Experiment-Undead/releases/latest/download/latest.json`
+  endpoint `https://github.com/J3vb/Fenlight/releases/latest/download/latest.json`
   for stable; test reads `latest.json` from the newest pre-release through
   the Releases API. `release.yml` builds on `windows-latest` with
   `TAURI_SIGNING_PRIVATE_KEY` and attaches the setup, `.sig` and
@@ -258,6 +258,11 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
 
 ### Step 5: The concept look
 
+> 2026-11-20: built. News tests live in `launcher/core/tests/news.rs` (the window crate
+> has no tests); the concept copy is `docs/design/images/launcher_concept.jpg`. Repair game
+> files deletes the newest version and downloads it again (the SHA-256 check runs on the
+> zip). The person signed off the look on 2026-11-20.
+
 - Build: the concept layout, 1280x720 minimum, resizable, custom title bar:
   left sidebar (Play, News, Patches, Settings, Support; News dot when an item
   is newer than the last one seen), logo and tagline, hero banner from the
@@ -288,7 +293,7 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
 - [ ] The game exe never shows a launcher screen (step 3 test).
 - [ ] A player hosts and stops a server from the launcher, and it updates
   between matches (step 4 tests).
-- [ ] The launcher matches the concept (step 5, the person's sign-off).
+- [x] The launcher matches the concept (step 5, the person's sign-off, 2026-11-20).
 
 ## Risks
 

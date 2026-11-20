@@ -113,3 +113,26 @@ func test_enemy_mix_respects_first_round() -> void:
 		if custom.pick_enemy(5, rng) == bloater:
 			saw_bloater = true
 	assert_true(saw_bloater)
+
+
+func test_blackout_schedule_starts_at_round_6_with_gaps_of_5_to_7() -> void:
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.seed = 1
+	var rounds: PackedInt32Array = rules.roll_blackouts(rng, 50)
+	assert_eq(rounds[0], 6, "first Blackout is round 6")
+	assert_gt(rounds.size(), 5, "several Blackouts by round 50")
+	for i: int in range(1, rounds.size()):
+		assert_between(rounds[i] - rounds[i - 1], 5, 7, "gap before Blackout %d" % rounds[i])
+	assert_lte(rounds[rounds.size() - 1], 50)
+
+
+func test_blackout_count_is_one_and_a_half_times_the_round() -> void:
+	for r: int in [6, 11, 20]:
+		assert_eq(rules.get_blackout_count(r), floori(rules.get_enemy_count(r) * 1.5), "round %d" % r)
+	assert_eq(rules.get_blackout_count(6), 31, "21 x 1.5")
+	assert_eq(rules.get_blackout_count(6, 2), floori(rules.get_enemy_count(6, 2) * 1.5), "co-op count scales too")
+
+
+func test_no_blackout_enemy_means_no_blackouts() -> void:
+	var plain: WaveRules = WaveRules.new()
+	assert_eq(plain.roll_blackouts(RandomNumberGenerator.new(), 50).size(), 0)

@@ -15,6 +15,10 @@ GUT (Godot Unit Test) 9.7.1, `addons/gut/`
 Butch Wesley and contributors
 https://github.com/bitwes/Gut · MIT
 
+Shambler (two looks), Crawler and Bloater zombies, `assets/models/zombies/`
+Made for this project with Tripo AI (image to 3D, paid plan)
+https://www.tripo3d.ai · Owned by this project, commercial use
+
 Glower zombie, `assets/models/zombies/glower.glb`
 Made for this project with Tripo AI (image to 3D, paid plan)
 https://www.tripo3d.ai · Owned by this project, commercial use
@@ -30,6 +34,8 @@ Painted concept art · Owned by this project, commercial use
 MakeHuman base mesh (head only), `tools/assets/player_body/base_head.obj`
 Data Collection AB, Joel Palmius, Jonas Hauquier
 https://github.com/makehumancommunity/makehuman · CC0 1.0"""
+
+const MUSIC_FADE_SECONDS: float = 4.0
 
 const NEWER_SAVE: String = (
 	"This character was saved by a newer version of the game. "
@@ -56,12 +62,14 @@ var _hub_path: String = ""
 @onready var snow: CPUParticles2D = $Screens/Root/Snow
 @onready var research_button: Button = $Screens/Root/Menu/Research
 @onready var error_dialog: NetErrorDialog = $NetErrorDialog
+@onready var music: AudioStreamPlayer = $Music
 
 
 func _ready() -> void:
 	if _hand_over():
 		return
 	Net.cancel_place_change()
+	_fade_in_music()
 	_bind_gamepad()
 	Net.world.close()
 	enter_button.pressed.connect(enter_world)
@@ -122,6 +130,12 @@ static func parse_launch(args: PackedStringArray) -> Dictionary:
 		if arg.begins_with("--host=") and arg.substr(7).is_valid_int():
 			return {"host": arg.substr(7).to_int()}
 	return {}
+
+
+func _fade_in_music() -> void:
+	var target: float = music.volume_linear
+	music.volume_linear = 0.0
+	create_tween().tween_property(music, "volume_linear", target, MUSIC_FADE_SECONDS)
 
 
 ## Slow backdrop drift and falling snow; Reduce motion holds both still.

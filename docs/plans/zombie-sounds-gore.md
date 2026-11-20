@@ -235,7 +235,7 @@ feel systems; F-09 measures it.
 
 - Build: Server sets `head_popped` on a headshot kill; ZombieSync syncs it;
   bump Build.PROTOCOL_VERSION. The head is part of the one skinned `Body`
-  mesh (and its face details are in `AnatomyDetails`), so `ZombieRig.head`
+  mesh (code-built zombies then had face details in a separate mesh), so `ZombieRig.head`
   (the `HeadCenter` marker) cannot be hidden. Instead `ZombieRig.pop_head()`
   sets the `head` bone's pose scale to 0.01: every vertex skinned to the head
   bone, including the face details, collapses into the neck top, which reads

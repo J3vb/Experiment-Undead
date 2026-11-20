@@ -66,9 +66,7 @@ func deploy(target: StringName) -> bool:
 		Log.warn(&"net", &"deploy_refused", {"place": String(target), "hub": session.is_hub})
 		return false
 	_clear()
-	Net.change_place(target)
-	if session.has_local_player:
-		Net.go_to(target)
+	Net.change_place(target, session.has_local_player)
 	return true
 
 
@@ -81,7 +79,7 @@ func _on_peers_changed() -> void:
 func _recheck() -> void:
 	var connected: Array[int] = []
 	for peer_id: int in multiplayer.get_peers():
-		if not Net.is_leaving(peer_id):
+		if not Net.place_change.is_leaving(peer_id):
 			connected.append(peer_id)
 	if session.has_local_player:
 		connected.append(multiplayer.get_unique_id())
@@ -131,5 +129,6 @@ func _receive_state(next_place: StringName, ready_ids: Array, countdown: float) 
 ## along; a client goes back to the server, which has moved (or soon moves) to the hub.
 func back_to_hub() -> void:
 	if Net.is_coop(multiplayer) and multiplayer.is_server():
-		Net.change_place(HUB)
-	Net.go_to(HUB)
+		Net.change_place(HUB, true)
+	else:
+		Net.go_to(HUB)

@@ -105,6 +105,12 @@ func test_wave_rules_are_valid() -> void:
 		for entry: EnemySpawnEntry in r.enemy_mix:
 			assert_not_null(entry.enemy, path + " mix entry has an enemy")
 		assert_not_null(r.pick_enemy(1, RandomNumberGenerator.new()), path + " can spawn something in round 1")
+		if r.blackout_enemy:
+			assert_not_null(r.blackout_reward, path + " Blackout rounds have a reward")
+			assert_between(r.pack_min, 1, r.pack_max, path + " pack_min <= pack_max")
+			assert_between(r.blackout_gap_min, 1, r.blackout_gap_max, path + " gap_min <= gap_max")
+			for entry: EnemySpawnEntry in r.enemy_mix:
+				assert_ne(entry.enemy, r.blackout_enemy, path + " Blackout enemy joins only through Blackouts")
 
 
 func test_serums_are_valid() -> void:

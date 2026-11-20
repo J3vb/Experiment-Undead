@@ -1,0 +1,29 @@
+[
+  {
+    "id": 3,
+    "date": "2026-11-20",
+    "kicker": "Test build",
+    "title": "A launcher of its own",
+    "summary": "Fenlight now installs, updates and starts from this launcher, and it can host a co-op server for you.",
+    "body": "Pick Stable or Test builds under Game version and the launcher keeps that game up to date on its own. Host a server lets friends join your game from their own PC. A hosted server updates itself between matches, so nobody gets cut off mid-run.",
+    "image": "marrow_junction.jpg"
+  },
+  {
+    "id": 2,
+    "date": "2026-11-19",
+    "kicker": "Test build",
+    "title": "First test build",
+    "summary": "Halcyon Labs, co-op for up to eight players and the Lantern Post hub.",
+    "body": "The first test build has one full map, Halcyon Labs, playable alone or with up to seven friends. Between runs you gather at Lantern Post, the survivors' village on the ridge, and vote to deploy again.",
+    "image": "kessel_dam.jpg"
+  },
+  {
+    "id": 1,
+    "date": "2026-11-18",
+    "kicker": "Story",
+    "title": "What is Fenlight?",
+    "summary": "A fen mould that healed the sick at Grauwald Sanatorium, then stopped them from staying dead.",
+    "body": "In 1951 a doctor at Grauwald Sanatorium treated tuberculosis patients with a fen mould extract. They recovered, then stopped staying dead. Decades later Oriel Biotechnic bought the records and started Project HALCYON. On the coldest night of the year the labs warmed up, and Fenlight woke.",
+    "image": "grauwald_sanatorium.jpg"
+  }
+]

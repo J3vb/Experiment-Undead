@@ -1,6 +1,8 @@
 ## Generated music imports as loops with aligned combat stems and Music routing.
 extends GutTest
 
+const MENU: PackedScene = preload("res://systems/ui/main_menu.tscn")
+
 
 func test_loops_load_and_combat_lengths_match() -> void:
 	var bed: AudioStreamOggVorbis = load("res://assets/audio/music/halcyon_bed.ogg") as AudioStreamOggVorbis
@@ -32,8 +34,17 @@ func test_music_routing_menu_autoplay_and_scene_isolation() -> void:
 	assert_eq(combat.bus, &"Music")
 	assert_ne(combat.stream, other.stream)
 	assert_eq((first.get_node("Breather") as AudioStreamPlayer).bus, &"Music")
-	var menu: Node = (load("res://systems/ui/main_menu.tscn") as PackedScene).instantiate()
+	var menu: Node = MENU.instantiate()
 	autofree(menu)
 	var music: AudioStreamPlayer = menu.get_node("Music") as AudioStreamPlayer
 	assert_eq(music.bus, &"Music")
 	assert_true(music.autoplay)
+
+
+func test_menu_music_fades_in_to_its_quiet_level() -> void:
+	var menu: MainMenu = MENU.instantiate() as MainMenu
+	add_child_autofree(menu)
+	assert_true(menu.music.playing)
+	assert_almost_eq(menu.music.volume_linear, 0.0, 0.001)
+	await wait_seconds(MainMenu.MUSIC_FADE_SECONDS + 0.2)
+	assert_almost_eq(menu.music.volume_db, -20.0, 0.01)

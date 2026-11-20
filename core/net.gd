@@ -38,14 +38,13 @@ var holds_place: bool = false
 var world: OwnWorld = OwnWorld.new()
 ## Answers server browser queries while this PC runs a world or a dedicated server.
 var info: ServerInfo
+## Server: holds the old session until the clients sent away have left.
+var place_change: PlaceChange
 
 var _next_net_id: int = 1
 var _target: String = ""
-## Server: peers sent to another place that have not disconnected yet. They get no player.
-var _leaving: Array[int] = []
 ## multiplayer.is_server() is also true for a client still in its hello, so hosting is tracked here.
 var _hosting: bool = false
-var _leave_deadline: Timer
 var _deadline: Timer
 var _signals_bound: bool = false
 var _connected: bool = false
@@ -55,6 +54,9 @@ var _coop: bool = false
 func _ready() -> void:
 	info = ServerInfo.new()
 	add_child(info)
+	place_change = PlaceChange.new()
+	add_child(place_change)
+	place_change.finished.connect(_on_place_change_finished)
 
 
 func is_authority() -> bool:
@@ -137,7 +139,7 @@ func leave() -> void:
 	_hosting = false
 	joining = false
 	_connected = false
-	_leaving.clear()
+	place_change.reset()
 	if not changing_place:
 		pending_join = ""
 		player_limit = MAX_PLAYERS
@@ -151,32 +153,30 @@ func leave() -> void:
 	_update_coop()
 
 
-## Server: sends every client to next. They leave and rejoin into the new session
-## themselves (closing their connection here would drop the order); until then they
-## get no player. Clients that never leave are dropped after CONNECT_TIMEOUT.
-func change_place(next: StringName) -> void:
+## Server: sends every client to next. They close their connection on the order and
+## rejoin into the new session themselves; place_changed (the session swap) and, with
+## host_goes, the listen host's own move wait until they have all left.
+func change_place(next: StringName, host_goes: bool = false) -> void:
+	if not place_change.pending.is_empty():
+		return
 	place = next
 	Log.info(&"net", &"place_changed", {"place": String(next), "players": multiplayer.get_peers().size()})
-	if is_online() and multiplayer.is_server() and not multiplayer.get_peers().is_empty():
-		_leaving.assign(multiplayer.get_peers())
+	var online_server: bool = is_online() and multiplayer.is_server()
+	place_change.start(next, multiplayer.get_peers() if online_server else PackedInt32Array(), host_goes)
+	if online_server and place_change.pending == next:
 		_go_to_place.rpc(next)
 		(multiplayer.multiplayer_peer as ENetMultiplayerPeer).host.flush()
-		_leave_deadline.start(CONNECT_TIMEOUT)
+
+
+## Server: sends one more client to next (it connected while the change was pending).
+func send_to_place(peer_id: int, next: StringName) -> void:
+	_go_to_place.rpc_id(peer_id, next)
+
+
+func _on_place_change_finished(next: StringName, host_goes: bool) -> void:
 	place_changed.emit(next)
-
-
-func is_leaving(peer_id: int) -> bool:
-	return _leaving.has(peer_id)
-
-
-func _drop_leaving() -> void:
-	if not is_online() or not multiplayer.is_server():
-		return
-	for peer_id: int in _leaving.duplicate():
-		if multiplayer.get_peers().has(peer_id):
-			Log.warn(&"net", &"place_change_kicked", {"peer": peer_id})
-			multiplayer.multiplayer_peer.disconnect_peer(peer_id)
-	_leaving.clear()
+	if host_goes:
+		go_to(next)
 
 
 ## Loads next on this peer. Online, the next session rejoins the same server when it starts.
@@ -196,17 +196,19 @@ func cancel_place_change() -> void:
 	pending_join = ""
 
 
+## Closing at once stops this client's packets to the old place; the server keeps that
+## place until every client has left. With the results up, "Back to hub" rejoins later.
 @rpc("authority", "reliable")
 func _go_to_place(next: StringName) -> void:
-	if not holds_place:
-		go_to(next)
-		return
-	# The results stay up; the connection closes quietly and "Back to hub" rejoins.
-	Log.info(&"net", &"place_change_held", {"place": String(next)})
-	place = next
+	var held: bool = holds_place
 	changing_place = true
 	pending_join = _target
 	leave()
+	if not held:
+		go_to(next)
+		return
+	Log.info(&"net", &"place_change_held", {"place": String(next)})
+	place = next
 
 
 func _exit_tree() -> void:
@@ -247,12 +249,6 @@ func _configure() -> void:
 	_deadline.process_mode = Node.PROCESS_MODE_ALWAYS
 	_deadline.timeout.connect(func() -> void: _fail_join(&"timeout", {"address": _target}))
 	add_child(_deadline)
-	_leave_deadline = Timer.new()
-	_leave_deadline.one_shot = true
-	_leave_deadline.process_mode = Node.PROCESS_MODE_ALWAYS
-	_leave_deadline.timeout.connect(_drop_leaving)
-	add_child(_leave_deadline)
-	api.peer_disconnected.connect(func(peer_id: int) -> void: _leaving.erase(peer_id))
 	api.peer_connected.connect(func(_peer_id: int) -> void: _update_coop())
 	api.peer_disconnected.connect(func(_peer_id: int) -> void: _update_coop.call_deferred())
 	api.peer_authentication_failed.connect(_on_authentication_failed, CONNECT_DEFERRED)
