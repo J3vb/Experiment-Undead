@@ -18,6 +18,12 @@ func _holder() -> WeaponHolder:
 	return holder
 
 
+func _vest_look() -> CharacterLook:
+	var look: CharacterLook = CharacterLook.new()
+	look.slots[&"vest"] = {"visual_id": &"vest_heavy", "rarity": &"legendary"}
+	return look
+
+
 func _give(holder: WeaponHolder, id: StringName = &"rifle_ar") -> Weapon:
 	var weapon: Weapon = holder.give(Content.weapon(id))
 	weapon.set_process(false)
@@ -56,6 +62,8 @@ func test_rifle_uses_the_imported_rig_and_hides_only_placeholder_hands() -> void
 		assert_not_null(node, part + " contract is retained")
 		assert_false(node.visible, part + " is replaced visually")
 	assert_true((weapon.find_child("Receiver", true, false) as Node3D).visible)
+	assert_null(view.find_child("CuffFP_R", true, false), "no vest worn, no cuffs")
+	view.apply_look(_vest_look())
 	assert_not_null(view.find_child("CuffFP_R", true, false))
 	assert_not_null(view.find_child("CuffFP_L", true, false))
 	_assert_grip_targets(holder)
@@ -65,6 +73,8 @@ func test_scoped_arm_meshes_use_the_scope_excluded_layer_without_shadows() -> vo
 	var holder: WeaponHolder = _holder()
 	var weapon: Weapon = _give(holder, &"talon_dmr")
 	var lens: ScopeLens = weapon.find_child("ScopeLens", true, false) as ScopeLens
+	holder.arm_view.apply_look(_vest_look())
+	assert_not_null(holder.arm_view.find_child("CuffFP_L", true, false), "cuffs are checked too")
 	for node: Node in holder.arm_view.find_children("*", "GeometryInstance3D", true, false):
 		var geometry: GeometryInstance3D = node as GeometryInstance3D
 		assert_eq(geometry.layers, ScopeLens.VIEWMODEL_LAYER)

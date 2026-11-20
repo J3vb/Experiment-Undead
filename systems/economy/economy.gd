@@ -1,9 +1,14 @@
 ## Pays players for hits and kills and is the only way to spend points.
-## Lives in the GameSession.
+## Lives in the GameSession. Hit and kill points double while Payday runs.
 class_name Economy
 extends Node
 
+const PAYDAY_MULTIPLIER: int = 2
+
 @export var rules: EconomyRules
+
+## Set by the GameSession; tells whether Payday runs.
+var drops: PowerUpDrops
 
 var _repair_points: Dictionary[Player, int] = {}
 var _local_player: Player
@@ -49,7 +54,7 @@ func _on_player_spawned(player: Player) -> void:
 func _on_enemy_damaged(_enemy: Node3D, info: DamageInfo) -> void:
 	var player: Player = info.attacker as Player
 	if multiplayer.is_server() and player and player.multiplayer == multiplayer:
-		player.wallet.add(rules.points_per_hit)
+		player.wallet.add(rules.points_per_hit * _multiplier())
 
 
 func _on_enemy_killed(_enemy: Node3D, info: DamageInfo) -> void:
@@ -61,7 +66,11 @@ func _on_enemy_killed(_enemy: Node3D, info: DamageInfo) -> void:
 		amount += rules.headshot_kill_bonus
 	elif info.damage_type == DamageInfo.Type.MELEE:
 		amount += rules.melee_kill_bonus
-	player.wallet.add(amount)
+	player.wallet.add(amount * _multiplier())
+
+
+func _multiplier() -> int:
+	return PAYDAY_MULTIPLIER if drops and drops.is_active(PowerUpData.Effect.PAYDAY) else 1
 
 
 func _on_round_ended(_round_number: int) -> void:

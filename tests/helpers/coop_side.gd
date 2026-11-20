@@ -111,6 +111,7 @@ static func _add_scene_children(session: GameSession) -> void:
 	economy.rules = ECONOMY
 	var drops: PowerUpDrops = PowerUpDrops.new()
 	drops.session = session
+	economy.drops = drops
 	var children: Dictionary[StringName, Node] = {
 		&"WaveDirector": director,
 		&"Economy": economy,

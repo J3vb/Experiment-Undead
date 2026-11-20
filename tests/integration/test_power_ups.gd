@@ -1,5 +1,5 @@
-## Power-up drops in a real match: the drop roll, the per-round cap, Resupply
-## refilling every gun, the two pickups' looks, and a drop timing out.
+## Power-up drops in a real match: the drop roll (player kills only), the per-round
+## cap, Resupply refilling every gun, the pickups' looks, and a drop timing out.
 extends GutTest
 
 const SESSION: PackedScene = preload("res://systems/game/game_session.tscn")
@@ -24,7 +24,7 @@ func _kill_somewhere() -> void:
 	var corpse: Node3D = Node3D.new()
 	add_child_autofree(corpse)
 	corpse.global_position = Vector3(40, 0, 40)
-	Events.enemy_killed.emit(corpse, DamageInfo.create(1.0, null))
+	Events.enemy_killed.emit(corpse, DamageInfo.create(1.0, player))
 
 
 func _pickups() -> Array[PowerUp]:
@@ -45,8 +45,20 @@ func test_drop_floats_above_the_kill() -> void:
 	drops.drop_chance = 1.0
 	_kill_somewhere()
 	assert_eq(_pickups().size(), 1)
-	assert_eq(_pickups()[0].data.id, &"resupply")
+	assert_has(drops.power_ups, _pickups()[0].data, "a power-up from the deck")
 	assert_almost_eq(_pickups()[0].global_position, Vector3(40, 0.8, 40), Vector3.ONE * 0.01)
+
+
+func test_kills_by_no_player_never_drop() -> void:
+	drops.drop_chance = 1.0
+	var corpse: Node3D = Node3D.new()
+	add_child_autofree(corpse)
+	Events.enemy_killed.emit(corpse, DamageInfo.create(1.0, null))
+	assert_eq(_pickups().size(), 0)
+
+
+func test_deck_holds_payday() -> void:
+	assert_has(drops.power_ups, Content.get_item(&"power_ups", &"payday"))
 
 
 func test_drop_cap_per_round() -> void:
@@ -61,7 +73,7 @@ func test_drop_cap_per_round() -> void:
 
 func test_ammo_drop_rates_after_the_first_play_test() -> void:
 	var fresh: PowerUpDrops = PowerUpDrops.new()
-	assert_eq(fresh.drop_chance, 0.01, "Resupply is the only power-up yet, so it drops less than the GDD 2.5%")
+	assert_eq(fresh.drop_chance, 0.01, "the deck is not full yet, so drops stay below the GDD 2.5%")
 	assert_eq(fresh.max_per_round, 1)
 	assert_eq(fresh.ammo_pack_chance, 0.05, "Scavenger packs halved")
 	fresh.free()
