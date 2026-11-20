@@ -2,6 +2,8 @@
 
 Wave-based zombie survival FPS built in Godot 4.7 (Forward+). Original game.
 
+**Stage: Early Alpha.** Expect missing features, placeholder art and bugs.
+
 ## Run it
 
 1. Install [Godot 4.7.2](https://godotengine.org/download) (standard build, not .NET).
