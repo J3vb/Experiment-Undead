@@ -1,9 +1,11 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://systems/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/hud/gun_knife.svg" id="hud_icon"]
 
 [resource]
 script = ExtResource("1")
+hud_icon = ExtResource("hud_icon")
 id = &"knife"
 slot = 2
 display_name = "Knife"

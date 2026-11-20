@@ -12,6 +12,7 @@ const SERVER_TEXT: Dictionary = {
 	Net.RefusalReason.WRONG_VERSION: "This server runs another version of the game.",
 	Net.RefusalReason.CONTENT_MISMATCH: "Your game content differs from the server's.",
 	Net.RefusalReason.SERVER_FULL: "The server is full.",
+	Net.RefusalReason.SERVER_UPDATING: "The server is restarting for an update. Try again in a minute.",
 }
 
 var protocol_version: int = Build.PROTOCOL_VERSION
@@ -20,6 +21,8 @@ var game_version: String = Build.version
 var fingerprint: String = ""
 var max_players: int = Net.MAX_PLAYERS
 var has_local_player: bool = true
+## Set by a draining dedicated server in the hub: new hellos get SERVER_UPDATING.
+var draining: bool = false
 var refusal_reason: int = -1
 var refusal_message: String = ""
 
@@ -121,6 +124,8 @@ func _receive_hello(peer_id: int, hello_data: Dictionary) -> void:
 		_reject(peer_id, Net.RefusalReason.WRONG_VERSION)
 	elif str(hello_data.get("content", "")) != content_hash or str(hello_data.get("fingerprint", "")) != fingerprint:
 		_reject(peer_id, Net.RefusalReason.CONTENT_MISMATCH)
+	elif draining:
+		_reject(peer_id, Net.RefusalReason.SERVER_UPDATING)
 	elif players >= max_players:
 		_reject(peer_id, Net.RefusalReason.SERVER_FULL, {"players": players, "max_players": max_players})
 	else:

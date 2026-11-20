@@ -170,6 +170,14 @@ func test_different_content_values_are_refused_even_with_matching_ids() -> void:
 	assert_eq(client_handshake.content_hash, server_handshake.content_hash, "ids alone do not hide changed values")
 
 
+func test_draining_server_refuses_new_players_with_server_updating() -> void:
+	server_handshake.draining = true
+	_join(client_root)
+	await _assert_refused(Net.RefusalReason.SERVER_UPDATING)
+	assert_true(client_handshake.refusal_message.contains("restarting for an update"))
+	assert_eq(Handshake.reason_key(Net.RefusalReason.SERVER_UPDATING).to_lower(), "server_updating")
+
+
 func test_ninth_player_gets_server_full_without_receiving_players() -> void:
 	for index: int in range(Net.MAX_PLAYERS - 1):
 		var root: Node = client_root if index == 0 else _make_side("AcceptedClient%d" % index)

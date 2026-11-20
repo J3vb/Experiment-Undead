@@ -55,6 +55,7 @@ Each says when to fix it.
 - **Co-op hit bounds** use Content weapon data, not the held inventory (weapon switching is local). Fix when: a server checks loadouts (P8).
 - **Loadout trust:** the server does not check that a client owns the gear it sends (friends-only servers). Fix when: public servers (P8). [item-effects-server](plans/item-effects-server.md)
 - **All-guns gear stats (F-71 step 1):** non-item guns get gear damage, recoil and reserve through F-20's `ItemInstance.fit_player_gun` and `ItemLoadout.refit_guns`, not a new `Weapon.refit`; swap time also reads the raised gun's own handling line. [four-gear-slots](plans/four-gear-slots.md)
+- **New slots before their pools (F-71 step 2):** the four new bases ship at `drop_weight` 0 with no affix pool or GearVisual: they equip, save and sync, but only drop after step 4 and show after F-70. [four-gear-slots](plans/four-gear-slots.md)
 - **Skill rules (provisional):** Execution Line checks health before the hit; Dead Center refunds a round to the gun in hand on any headshot kill; Undying works only without Second Wind and costs every Serum; Scrounger skips the revive reward. [skill-effects](plans/skill-effects.md)
 - **Skills waiting on their feature:** Gadgeteer and Sturdy only add their stat; Execution Line has no Brute rule. Overtime lengthens timed power-ups by the collector's seconds (team-wide timer). Fix when: F-22, F-24, F-30. [skill-effects](plans/skill-effects.md)
 - **Hold-to-buy** stays a tap. Fix when: accidental buys show in play-tests.
@@ -103,6 +104,7 @@ Agent picks the person may change.
 - **Footsteps:** one step per 0.5 s walking, 0.34 s sprinting, 0.72 s crouched; landings silent under 3 m/s.
 - **HUD:** XP bar placement, the 90 px / 0.6 s level-up ring, a 3-row drop feed; "Crits only" damage numbers show headshots until a crit stat exists.
 - **HUD vitals (provisional):** 5 health segments of max/5 each, no health number or portrait (the 2026-11-20 concept has none). [hud-concept](plans/hud-concept.md)
+- **HUD gun icons (provisional):** one silhouette per gun class (pistol, smg, rifle, shotgun, lmg, sniper, special, knife), not per gun; Reforged copies share it. [hud-concept](plans/hud-concept.md)
 - **Halcyon concept pass (F-68):** kitchen fires as the Mess Hall's warm accent, the existing hazard orange (not yellow) on the tank railings, the catwalk office not walkable, pods at leak-glow strength, one steel material on the ceiling models. Look signed off 2026-11-19.
 - **Glower (F-28):** 1.7 m tall; veins glow bio-green at strength 2 where the baked albedo is green; chitter, swipe and death sounds generated in `zombie_sfx.py` (no free pack download from the cloud). [blackout-glowers](plans/blackout-glowers.md)
 - **Blackout darkness (F-28):** a Blackout takes the LightmapGI data off (works in Forward+ and Compatibility) and drops ambient light to 25%; ceiling and emergency lights go fully dark; Fenlight leaks, fire, signs and flashlights stay. [blackout-glowers](plans/blackout-glowers.md)
@@ -122,4 +124,6 @@ Agent picks the person may change.
 - **BR-12 Reforged reload (F-85):** keeps the base shell times like every Reforged gun keeps its reload, so its 9 shells take 5.1 s from empty (was 3.6 s for a full reload). [reload-animations](plans/reload-animations.md)
 - **Launcher game folder (F-82):** the game lives in the launcher's own app data folder (`%LOCALAPPDATA%\com.experimentundead.launcher\game\`), not `Fenlight\`, so Tauri's uninstaller "delete app data" box removes it with no custom NSIS code. [separate-launcher](plans/separate-launcher.md)
 - **First-person charm:** hangs from a `CharmMount` on the left rail just in front of the support hand, out of the ADS sight line; hidden while a sidearm is in hand; a spring swing, no physics. [gear-first-person](plans/gear-first-person.md)
+- Content fingerprint skips Texture2D fields (HUD icons): the dedicated server export strips textures, so their paths differ and joins were refused. Textures are client art only ([F-87](plans/hud-concept.md)).
 - **Rename to Fenlight:** players see Fenlight; game exe/pck names, the launcher app id and data folder, and the `experiment-undead-server` image keep the old name so installs and servers keep working. Saves copy over once. [RELEASING](RELEASING.md)
+- **Server drain (F-65 step 8, F-82 step 4b):** the game side (drain file, `SERVER_UPDATING`, exit code 3) is built with the launcher's hosted-server updates; the Docker entrypoint's auto-update half of step 8 is still to build. [client-server-updates](plans/client-server-updates.md)

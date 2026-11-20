@@ -3,7 +3,7 @@
 extends Node
 
 ## Bump when client/server messages change. Mismatched peers are refused.
-const PROTOCOL_VERSION: int = 25
+const PROTOCOL_VERSION: int = 27
 ## Development stage shown next to the version.
 const STAGE: String = "Early Alpha"
 const VERSION_FILE: String = "res://version.json"
@@ -173,6 +173,8 @@ func content_fingerprint() -> String:
 
 
 func _content_value(value: Variant) -> String:
+	if value is Texture2D:  # HUD art only; the dedicated server export swaps it for a placeholder
+		return "texture"
 	if value is Resource:
 		var resource: Resource = value
 		if resource.get_script() == null:

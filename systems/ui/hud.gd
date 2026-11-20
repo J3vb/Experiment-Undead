@@ -24,10 +24,7 @@ var _squad: SquadCards
 @onready var round_label: Label = $Root/RoundInfo/RoundLabel
 @onready var points_label: Label = $Root/Loadout/PointsLabel
 @onready var points_delta: Label = $Root/Loadout/PointsDelta
-@onready var serums: HBoxContainer = $Root/Vitals/Serums
-@onready var ammo_label: Label = $Root/Loadout/Ammo/AmmoLabel
 @onready var weapon_label: Label = $Root/Loadout/WeaponLabel
-@onready var reserve_label: Label = $Root/Loadout/Ammo/ReserveLabel
 @onready var exfil_box: PanelContainer = $Root/ExfilBox
 @onready var exfil_title: Label = $Root/ExfilBox/Box/Title
 @onready var exfil_bar: ProgressBar = $Root/ExfilBox/Box/Hold
@@ -65,7 +62,6 @@ func _ready() -> void:
 	Events.ammo_changed.connect(_on_ammo_changed)
 	Events.weapon_switched.connect(_on_weapon_switched)
 	Events.hit_confirmed.connect(_on_hit_confirmed)
-	Events.serum_gained.connect(_on_serum_gained)
 	Events.power_up_collected.connect(_on_power_up_collected)
 	Events.player_revived.connect(_on_player_revived)
 	Events.round_started.connect(_on_round_started)
@@ -177,7 +173,6 @@ func _on_player_spawned(player: Player) -> void:
 func _on_health_changed(player: Player, current: float, maximum: float) -> void:
 	if player == _player:
 		_health_ratio = clampf(current / maxf(maximum, 1.0), 0.0, 1.0)
-		_drop_lost_serums(player)
 
 
 func _on_player_damaged(player: Player, _info: DamageInfo) -> void:
@@ -198,10 +193,7 @@ func _on_points_changed(player: Player, total: int, delta: int) -> void:
 func _on_ammo_changed(player: Player, in_mag: int, reserve: int) -> void:
 	if player != _player:
 		return
-	ammo_label.text = str(in_mag)
-	reserve_label.text = "/ %d" % reserve
 	var low: bool = _player.weapons.current and in_mag <= _player.weapons.current.data.magazine_size / 4
-	ammo_label.modulate = BLOOD_RED if low else OFF_WHITE
 	if in_mag == 0 and reserve == 0:
 		hint_label.text = "NO AMMO"
 	elif low and reserve > 0:
@@ -213,27 +205,6 @@ func _on_ammo_changed(player: Player, in_mag: int, reserve: int) -> void:
 func _on_weapon_switched(player: Player, weapon: Weapon) -> void:
 	if player == _player:
 		weapon_label.text = weapon.data.display_name
-
-
-func _on_serum_gained(player: Player, _serum: SerumData) -> void:
-	if player != _player:
-		return
-	if _serum.badge.is_empty():
-		return
-	for badge: Node in serums.get_children():
-		if badge.name == String(_serum.id):
-			return
-	var square: StyleBoxFlat = StyleBoxFlat.new()
-	square.bg_color = _serum.badge_colour
-	var label: Label = Label.new()
-	label.name = String(_serum.id)
-	label.text = _serum.badge
-	label.tooltip_text = _serum.display_name
-	label.custom_minimum_size = Vector2(44, 44)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_stylebox_override("normal", square)
-	serums.add_child(label)
 
 
 func _on_hit_confirmed(player: Player, is_kill: bool, is_headshot: bool) -> void:
@@ -251,14 +222,6 @@ func _on_power_up_collected(_collector: Player, power_up: PowerUpData) -> void:
 func _on_player_revived(player: Player) -> void:
 	if player == _player:
 		_flash_center("REVIVED" if Net.is_coop() else "SECOND WIND", 2.0)
-		_drop_lost_serums(player)
-
-
-func _drop_lost_serums(player: Player) -> void:
-	for badge: Node in serums.get_children():
-		if not player.has_serum(StringName(badge.name)):
-			serums.remove_child(badge)
-			badge.queue_free()
 
 
 func _on_round_started(round_number: int, _count: int) -> void:

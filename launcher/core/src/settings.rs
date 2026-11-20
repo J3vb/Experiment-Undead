@@ -1,6 +1,7 @@
 //! Where the launcher keeps the game and its own settings, and the command-line test hooks.
 
 use crate::feed::{Channel, API_URL};
+use crate::host;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
@@ -10,12 +11,17 @@ const SETTINGS_FILE: &str = "launcher.json";
 #[serde(default)]
 pub struct Settings {
     pub channel: Channel,
+    /// Host a server: UDP port and player limit.
+    pub port: u16,
+    pub max_players: u8,
 }
 
 impl Default for Settings {
     fn default() -> Self {
         Self {
             channel: Channel::Stable,
+            port: host::DEFAULT_PORT,
+            max_players: host::MAX_PLAYERS,
         }
     }
 }
