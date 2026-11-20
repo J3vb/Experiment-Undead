@@ -15,6 +15,9 @@ milestone gates come from `docs/design/game-design.md` (Build roadmap) and
 5. When a feature finishes, set its Status to Done in the same PR. New
    features get a new row in the right place, with the next free id.
 
+The game is in **Early Alpha** (shown in the main menu version label).
+v0.2 features may start before the v0.1.0 tag (the person's call, 2026-11-20): read F-11 in their Needs as F-10.
+
 Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 (may already be done, verify and close).
 
@@ -44,7 +47,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-16 | Game feel: camera punch, hitstop, downed and death screen | - | - | [ready](plans/game-feel-slice.md) | M | Done |
 | F-65 | Client and server updates: clear version refusals, saves safe across channels, a launcher that installs and updates the game and a server, self-updating Docker servers (steps 1-5 before F-11) | - | - | [ready](plans/client-server-updates.md) | L | Building |
 | F-09 | v0.1 performance check | #108 | F-01..F-07, F-12, F-13, F-16 | issue | S | Todo |
-| F-10 | First play-test (the person plays) | #109 | F-09 | issue | S | Todo |
+| F-10 | First play-test (the person plays) | #109 | F-09 | issue | S | Done (solo play-test 2026-11-19, fixes in F-84, F-85) |
 | F-82 | Separate launcher program (like Steam or Battle.net): installs and updates the game, updates itself, news and patch notes, hosts a server; replaces the launcher built into the game (F-65 steps 5-6, 9) | - | F-65 step 4 | [ready](plans/separate-launcher.md) | L | Building |
 | F-11 | Release v0.1.0 | #111 | F-10, F-65 steps 1-4, F-82 steps 1-4 | issue | S | Todo |
 | F-40 | Round state and power-ups in co-op (rest of #126 after F-02) | #126 | F-02 | [done](plans/coop-round-state-power-ups.md) | M | Done |
@@ -79,7 +82,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-23 | Levelling pace check | #115 | F-20, F-22 | issue | S | Todo |
 | F-24 | Frag grenades | #119 | F-11 | needed | M | Todo |
 | F-25 | Mantle | #120 | F-11 | [ready](plans/mantle.md) | M | Ready |
-| F-26 | More power-ups in the drop deck | #118 | F-11 | needed | M | Todo |
+| F-26 | More power-ups in the drop deck | #118 | F-11 | [needed](plans/more-power-ups.md) | M | Ready |
 | F-27 | Crawler | #121 | F-24 | needed | M | Todo |
 | F-28 | Blackout rounds and Glowers | #122 | F-11 | needed | M | Todo |
 | F-29 | Stalker | #123 | F-11 | needed | L | Todo |

@@ -226,7 +226,4 @@ def build(m) -> None:
     m.join_into(receiver, frame_parts(metal, black) + cylinder_parts(metal, black) + barrel_parts(metal, black))
     grip_parts(m, receiver, metal, wood, checker)
     moving_parts(m, receiver, metal, black)
-    strips = [
-        g.slab(f"Inlay{x}", g.rounded(-0.024, 0.064, 0.031, 0.066, 0.0008), 0.001, metal, x=x * 0.0104) for x in (-1, 1)
-    ]
-    m.join_into(receiver, [g.mark_inlay(strip) for strip in strips])
+    g.add_inlays(m, receiver, g.rounded(-0.024, 0.064, 0.031, 0.066, 0.0008), 0.001, 0.0104, metal)

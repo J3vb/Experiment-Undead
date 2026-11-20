@@ -11,6 +11,6 @@ func _ready() -> void:
 	horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	add_theme_font_size_override("font_size", 12)
 	modulate = Color(1, 1, 1, 0.45)
-	text = Build.display_version()
+	text = Build.stage_version()
 	if Build.crashed_last_run:
 		text = "Last session crashed. Logs: %s\n%s" % [Build.logs_dir(), text]
