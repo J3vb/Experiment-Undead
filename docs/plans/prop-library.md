@@ -342,7 +342,8 @@ How to add one Tripo model (every family step):
   so the map's walls give collision and navmesh, and signal_gantry as a
   prop with box colliders. Red tail lamps on `Beacon`, the last car's glow
   on a bio-green glow slot (reuse an existing one, or add one shared
-  slot). Hospital car mark: see Open decisions.
+  slot). The hospital car carries
+  our own Cordon medical mark, never a red cross.
 - Tests: catalogue rows; Assets CI in `props_large/`; a check that the train
   car has an open door gap at least 1.2 m wide (player capsule fits).
 - Done when: board approved.
@@ -413,7 +414,8 @@ How to add one Tripo model (every family step):
 ## Open decisions
 
 - [ ] Approve this Tripo plan and buy about 3,000 Tripo credits (about $30)
-  for the 48 models? (Card to the person.)
-- [ ] Hospital train mark: the design says "red cross"; the Red Cross emblem
-  is protected and its owners ask games not to use it. Use an Oriel or
-  Cordon medical mark instead? (Card to the person.)
+  for the 48 models? Answer (person, 2026-11-20): hold for now; no credits
+  spent, steps 3-9 stay paused.
+- [x] Hospital train mark: the design says "red cross"; the Red Cross emblem
+  is protected and its owners ask games not to use it. Answer (person,
+  2026-11-20): use our own Cordon medical mark (white cars, red stripe).
