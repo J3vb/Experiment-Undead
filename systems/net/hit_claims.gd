@@ -6,6 +6,8 @@ extends Node
 const KILL_WINDOW: float = 0.5
 const SLACK: float = 1.5
 const MAX_IMPULSE: float = 12.0
+## Execution Line kills a zombie hit while under this share of its health.
+const EXECUTE_BELOW: float = 0.15
 
 var session: GameSession
 
@@ -154,10 +156,19 @@ func apply_server_hit(hit_zone: HitZone, info: DamageInfo) -> void:
 	if (zombie.frozen or effect == WeaponData.Effect.FROST) and not zombie.stasis:
 		if Frost.apply(zombie, info):
 			return
-	if session.power_up_drops and session.power_up_drops.is_active(PowerUpData.Effect.OVERKILL):
+	var overkill: bool = session.power_up_drops and session.power_up_drops.is_active(PowerUpData.Effect.OVERKILL)
+	if overkill or _executes(zombie, info):
 		info.amount = maxf(info.amount, zombie.health.current / maxf(hit_zone.damage_multiplier, 0.01) + 1.0)
 	hit_zone.receive_hit(info)
 	_confirm_secondary_kill(zombie, info, collateral_killed)
+
+
+## Execution Line: any hit on a zombie already under EXECUTE_BELOW of its health kills it.
+func _executes(zombie: Zombie, info: DamageInfo) -> bool:
+	var player: Player = info.attacker as Player
+	if player == null or not player.skill_rules.has(SkillNodeData.Rule.EXECUTION_LINE):
+		return false
+	return zombie.health.get_ratio() < EXECUTE_BELOW
 
 
 ## Defer past the normal hit marker; primary kills already confirm themselves.

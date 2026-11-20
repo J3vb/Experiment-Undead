@@ -30,6 +30,7 @@ var _charm: Node3D
 var _mount: Node3D
 var _swing: CharmSwing = CharmSwing.new()
 var _frag: Node3D
+var _left_hand: int = -1
 
 
 func _ready() -> void:
@@ -40,6 +41,7 @@ func _ready() -> void:
 	skeleton = arms.find_children("*", "Skeleton3D", true, false)[0] as Skeleton3D
 	mesh = arms.find_child("PlayerArms", true, false) as MeshInstance3D
 	_solver = PlayerArmPose.new(skeleton)
+	_left_hand = skeleton.find_bone("hand_L")
 	for side: String in ["R", "L"]:
 		_hand_rest.append(skeleton.get_bone_global_rest(skeleton.find_bone("hand_" + side)))
 		_markers.append(arms.find_child("GripIndexTip_" + side, true, false) as Node3D)
@@ -130,6 +132,8 @@ func update_pose() -> void:
 	var pump_delta: Vector3 = weapon.to_local(_support.global_position) - _support_rest if _support else Vector3.ZERO
 	pump_delta += weapon.pose.reload_hand(profile.left.wrist + pump_delta)
 	var relax: float = weapon.pose.reload_relax()
+	var to_holder: Basis = (get_parent() as Node3D).transform.basis.inverse()
+	_solver.set_left_hold(to_holder * GrenadeHold.FINGERS, to_holder * GrenadeHold.BACK, grenade_hold.weight)
 	if grenade_hold.weight > 0.0:
 		pump_delta += _hold_delta(profile.left.wrist + pump_delta)
 		relax = maxf(relax, grenade_hold.weight)
@@ -157,7 +161,9 @@ func _place_frag() -> void:
 			(node as GeometryInstance3D).layers = ScopeLens.VIEWMODEL_LAYER
 			(node as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_frag.visible = grenade_hold.shows_frag
-	_frag.position = (get_parent() as Node3D).transform.affine_inverse() * grenade_hold.frag_position()
+	var holder: Transform3D = (get_parent() as Node3D).transform
+	var wrist: Vector3 = holder * skeleton.get_bone_global_pose(_left_hand).origin
+	_frag.position = holder.affine_inverse() * grenade_hold.frag_position(wrist)
 
 
 ## How far the left forearm stretches past its length; zero when the hand target is reachable.
