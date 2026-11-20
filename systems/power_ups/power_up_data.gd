@@ -7,7 +7,8 @@ extends Resource
 ## PAYDAY: double hit and kill points for every player while its timer runs.
 ## OVERKILL: every bullet or melee hit kills while its timer runs.
 ## STASIS: zombies alive at pickup stand still and cannot attack until its timer ends.
-enum Effect { RESUPPLY, AMMO_PACK, PAYDAY, OVERKILL, STASIS }
+## PURGE: kills every zombie alive now (no kill points, XP or loot). SCRAP_KIT: rebuilds every barricade.
+enum Effect { RESUPPLY, AMMO_PACK, PAYDAY, OVERKILL, STASIS, PURGE, SCRAP_KIT }
 
 @export var id: StringName = &""
 @export var display_name: String = "Power-up"
@@ -18,3 +19,5 @@ enum Effect { RESUPPLY, AMMO_PACK, PAYDAY, OVERKILL, STASIS }
 @export var size: float = 1.0
 ## Seconds a timed power-up lasts for the whole team (HUD ring); 0 = it acts once on pickup.
 @export var duration: float = 0.0
+## Points every player gets on pickup (Purge, Scrap Kit).
+@export var team_points: int = 0

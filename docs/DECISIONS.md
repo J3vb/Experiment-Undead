@@ -47,7 +47,7 @@ Each says when to fix it.
 - **Reforger** has Tier I only and swaps instantly. Fix when: Tiers II (ammo mods) and III get a roadmap row.
 - **Frag numbers** (3 s fuse, 15 m/s throw, 7 m blast with full damage inside 1.5 m, own damage up to 60, no friendly fire) are provisional picks; the 1000 centre damage is the person's. Fix when: the frag play-test. [frag-grenades](plans/frag-grenades.md)
 - **Frag look:** the frag is a grey ball with no first-person hold or throw; the blast is a code-built flash, fireball and smoke (no .tscn, like HeadPop) on the Weapons bus. Fix when: F-24 step 4. [frag-grenades](plans/frag-grenades.md)
-- **Power-ups:** Resupply, Payday, Overkill, Stasis and the Scavenger ammo pack so far; Scavenger's +1 grenade waits. Fix when: F-24 grenades and F-26 steps 3-4.
+- **Power-ups:** every design power-up but the Supply Crate, plus the Scavenger ammo pack; Scavenger's +1 grenade waits. Fix when: F-24 grenades and F-26 step 4.
 - **Window barriers:** no slot timeout (move to another barrier after 4 s), no real sill. Fix when: co-op crowding at a window needs it.
 - **Emergency lighting:** dimmed red ceiling lights only, no separate fixtures or sound. Fix when: the sound world step.
 - **Stuck zombies:** relocate replaces the AI doc's repath sidestep and navmesh snap; no louder groan for the last zombies (voice is local). Fix when: relocates show in soak logs.
@@ -57,7 +57,7 @@ Each says when to fix it.
 - **Hold-to-buy** stays a tap. Fix when: accidental buys show in play-tests.
 - **Loot extras:** no supply or exfil caches, no gun comparison in the pickup prompt, no trading; traits, sets and `proc` lines save but do not run. Fix when: their loot batches.
 - **Run loadout:** the equipped Primary is not given at spawn (the round-5 Drop Locker is not built). Fix when: the Drop Locker.
-- **Skill tree:** no stat effects, Trainer screen or prerequisites; the 15/25-point gates cannot be reached with only the named nodes. Fix when: the skills feature.
+- **Skill tree:** no Trainer screen or prerequisites; the 15/25-point gates cannot be reached with only the named nodes. Skill effects are being built ([skill-effects](plans/skill-effects.md)). Fix when: F-21.
 - **Teammate animations:** one two-handed rifle pose and one reload clip for every gun; a remote muzzle flash plays at the owner's first-person muzzle. Fix when: F-41 follow-ups.
 - **First-person hands:** fingers are fixed curls, no trigger-pull or magazine clips; the Corvid bolt only kicks back. Fix when: real clips.
 - **Player body:** some cloth clipping in motion, a soft face, a ragged beard bit near the ear. Fix when: F-70 step 6. [ADR 0015](adr/0015-baked-player-body.md)
@@ -105,6 +105,7 @@ Agent picks the person may change.
 - **Power-up drops:** 1% per kill, at most 1 a round (GDD 2.5%, 4), while Resupply is the deck's only power-up; raise with F-26. Resupply glows big and green, the ammo pack small and orange.
 - **Power-up timers:** team-wide, a re-pickup resets to full time; Payday doubles hit and kill points only (not repairs or the round bonus); only kills by a player roll drops. [more-power-ups](plans/more-power-ups.md)
 - **Overkill and Stasis:** Overkill raises a hit to the zombie's health after Synapse and Cryo (their splash stays normal); Stasis freezes only zombies alive at pickup, hits on them do normal damage and never Cryo-freeze or shatter. [more-power-ups](plans/more-power-ups.md)
+- **Purge and Scrap Kit:** Purge kills have no attacker (no kill points, XP, loot or drop rolls; the round still counts them); team points go to every player and are not doubled by Payday; Purge glows Rare blue #3D7DFF since bio-green is Resupply's. [more-power-ups](plans/more-power-ups.md)
 - **Hold to repair:** one plank every 0.6 s while interact is held, tap still works; the 0.3 s hold-to-buy in `controls.md` is not built.
 - **Player names:** up to 16 Latin letters, digits, spaces and - _ . ' ; default "Survivor"; duplicates allowed; set on the Character screen before joining. See [player-names](plans/player-names.md).
 - **Halcyon machines (F-83):** one Med Dispenser model for all 8 Serums with one teal glow (no per-Serum colour); exfil hatch model squashed to 14 cm over the old thin floor box so players walk over it; Reforger glow is a thin front strip. [plan](plans/halcyon-machines-fill.md)
