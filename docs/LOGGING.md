@@ -150,6 +150,8 @@ The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher
 | `server_exited` | info | The hosted server quit and was not restarted (`message` = exit code, or "launcher closed"). A quick exit after `server_started` = port in use; read `server/server.log` |
 | `server_draining` | info | A newer game is installed (`message` = version) and the drain file asks the hosted server to finish its match. No `server_update_restarted` within a match's length = the server never drained; read `server/server.log` |
 | `server_update_restarted` | info | The hosted server drained (exit code 3) and runs again on the newer version (`message`), same port and player limit |
+| `repair_started` | info | Repair game files deleted the newest version (`message`) so the launcher downloads it again |
+| `uninstalled` | info | Uninstall game deleted every installed version. Saves and settings stay |
 
 ## Adding log lines (rules for agents)
 
