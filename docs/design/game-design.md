@@ -508,6 +508,7 @@ Design changes since the Nov 14, 2026 copy, newest first. Add one row in the sam
 
 | Date | Area | Change | Detail |
 | --- | --- | --- | --- |
+| 2026-11-20 | Town | The stall keepers come alive (provisional look): each has their own idle (Odile leans on her counter, Teun files a part at his vice, Lien types and checks her monitors, Raes stands arms crossed by the board), turns their head to you within 4 m, and greets you with a nod and a raised hand when you talk. The line shows only for you. | [lore.md](lore.md#the-stall-keepers), plan lantern-post-vendors steps 3-4, PRs #393 #394 |
 | 2026-11-20 | Skills | The hard caps on the shared stat stack hold skills plus gear; Serums stack on top of them, so Quickhands keeps its full reload boost. | [skill-effects plan](../plans/skill-effects.md), PR #409 |
 | 2026-11-19 | Weapons | BR-12 (Brenner Trench) loads shell by shell, as the balance sheet already says: 0.5 s per shell, the first shell from empty 1.1 s (it also racks the pump), full empty reload still 3.6 s. Reforged keeps the same shell times (9 shells: 5.1 s from empty). Firing mid-reload keeps loaded shells. | [weapons.csv](balance/weapons.csv) Brenner row, plan reload-animations step 2 |
 | 2026-11-19 | Loot | Gear from drops can be worn mid-run from the Tab Pack overlay; the old piece swaps into the Pack slot, no heal on a swap. | [wear-gear-mid-run.md](../plans/wear-gear-mid-run.md), F-84 step 1 |
