@@ -70,6 +70,7 @@
 [ext_resource type="PackedScene" path="res://levels/halcyon_labs/atmosphere.tscn" id="atmosphere"]
 [ext_resource type="Texture2D" path="res://assets/textures/halcyon/painted_metal_albedo.png" id="painted_metal_albedo"]
 [ext_resource type="Texture2D" path="res://assets/textures/halcyon/painted_metal_normal.png" id="painted_metal_normal"]
+[ext_resource type="Script" path="res://systems/level/blackout_dimmer.gd" id="blackout_dimmer"]
 
 [sub_resource type="NavigationMesh" id="navmesh"]
 resource_local_to_scene = true
@@ -899,3 +900,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.5, 0.9, 61.0)
 quality = 2
 texel_scale = 1.5
 light_data = ExtResource("lightmap")
+
+[node name="BlackoutDimmer" type="Node" parent="." node_paths=PackedStringArray("lightmap", "world")]
+script = ExtResource("blackout_dimmer")
+lightmap = NodePath("../LightmapGI")
+world = NodePath("../WorldEnvironment")
