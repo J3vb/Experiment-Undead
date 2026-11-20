@@ -40,7 +40,7 @@ func test_enter_world_has_default_focus_and_existing_match_target() -> void:
 	var row_font: FontVariation = menu.enter_button.get_theme_font("font") as FontVariation
 	var body_font: FontVariation = menu.get_theme_font("font") as FontVariation
 	assert_eq(row_font.base_font, body_font.base_font, "menu rows use Atkinson Hyperlegible, spaced out")
-	assert_eq(menu.get_node("Backdrop").process_mode, Node.PROCESS_MODE_DISABLED)
+	assert_null(menu.get_node_or_null("Camera3D"), "no 3D map behind the menu any more")
 
 
 ## The separate launcher (F-82) replaced the launcher screen: a release build opens the main menu.
@@ -109,9 +109,9 @@ func test_menu_rows_are_focusable_in_keyboard_and_gamepad_order() -> void:
 		menu.credits_button,
 		menu.get_node("Screens/Root/Menu/Quit") as Button,
 	]
-	assert_eq(menu.enter_button.text, "ENTER WORLD")
+	assert_eq(menu.enter_button.text, "PLAY")
 	assert_eq(menu.servers_button.text, "SERVERS")
-	assert_eq((buttons[-1] as Button).text, "EXIT")
+	assert_eq((buttons[-1] as Button).text, "QUIT")
 	assert_null(menu.get_node_or_null("Screens/Root/Menu/Play"), "no Play solo: Enter world is the one way in")
 	assert_null(menu.get_node_or_null("Screens/Root/HostPanel"), "no Host panel: your world is open by default")
 	for index: int in range(buttons.size()):
@@ -263,3 +263,28 @@ func test_logo_and_brush_rows() -> void:
 		assert_eq(focus.texture.resource_path, "res://assets/ui/brush_stroke.png")
 		assert_true(button.get_theme_stylebox("normal") is StyleBoxEmpty, button.name)
 		assert_eq(button.text, button.text.to_upper(), button.name)
+
+
+## F-88 step 2: the painted backdrop replaces the Halcyon Labs map, and Research waits for the skill tree.
+func test_painted_backdrop_and_greyed_research() -> void:
+	assert_false(FileAccess.get_file_as_string("res://systems/ui/main_menu.tscn").contains("halcyon_labs/map.tscn"))
+	assert_eq(menu.backdrop.texture.resource_path, "res://assets/ui/backdrops/main_menu.jpg")
+	assert_gte(menu.backdrop.texture.get_width(), 1600)
+	assert_true(menu.research_button.disabled)
+	assert_eq(menu.research_button.focus_mode, Control.FOCUS_NONE)
+	assert_eq(menu.research_button.tooltip_text, "Coming soon")
+	assert_eq(menu.research_button.text, "RESEARCH")
+	var loadout: Button = menu.loadout_button
+	assert_eq(loadout.get_node(loadout.focus_neighbor_bottom), menu.settings_button, "focus skips Research")
+
+
+func test_backdrop_drifts_and_snow_falls_unless_reduce_motion() -> void:
+	Settings.set_value(&"accessibility", &"reduce_motion", false)
+	menu._process(5.0)
+	assert_true(menu.snow.emitting)
+	assert_ne(menu.backdrop.offset_left, 0.0, "the backdrop drifts")
+	Settings.set_value(&"accessibility", &"reduce_motion", true)
+	menu._process(5.0)
+	assert_false(menu.snow.emitting)
+	assert_eq(menu.backdrop.offset_left, 0.0)
+	assert_eq(menu.backdrop.offset_top, 0.0)

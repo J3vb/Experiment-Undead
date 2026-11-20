@@ -1,5 +1,5 @@
-## Front end: Enter world opens your own world, Servers joins someone else's. Shared settings
-## and plain-word network errors.
+## Front end over the painted Lantern Post backdrop: Play opens your own world, Servers joins
+## someone else's. Shared settings and plain-word network errors.
 class_name MainMenu
 extends Control
 
@@ -18,6 +18,10 @@ https://github.com/bitwes/Gut · MIT
 Lantern Post market stalls, `assets/models/town_large/stall_*.glb`
 Made for this project with Tripo AI (image to 3D, paid plan)
 https://www.tripo3d.ai · Owned by this project, commercial use
+
+Main menu backdrop (Lantern Post at night), `assets/ui/backdrops/main_menu.jpg`
+Made for this project with an AI image tool (ADR 0019)
+Painted concept art · Owned by this project, commercial use
 
 MakeHuman base mesh (head only), `tools/assets/player_body/base_head.obj`
 Data Collection AB, Joel Palmius, Jonas Hauquier
@@ -42,7 +46,9 @@ var _pending_profile: CharacterProfile
 @onready var settings_button: Button = $Screens/Root/Menu/Settings
 @onready var credits_button: Button = $Screens/Root/Menu/Credits
 @onready var credits_panel: PanelContainer = $Screens/Root/CreditsPanel
-@onready var camera: Camera3D = $Camera3D
+@onready var backdrop: TextureRect = $Screens/Root/Backdrop
+@onready var snow: CPUParticles2D = $Screens/Root/Snow
+@onready var research_button: Button = $Screens/Root/Menu/Research
 @onready var error_dialog: NetErrorDialog = $NetErrorDialog
 
 
@@ -62,6 +68,8 @@ func _ready() -> void:
 	$Screens/Root/CreditsPanel/Box/Back.pressed.connect(_close_credits)
 	$Screens/Root/CreditsPanel/Box/Text.text = CREDITS
 	$Screens/Root.add_child(VersionLabel.new())
+	if backdrop.texture == null:
+		Log.warn(&"ui", &"menu_backdrop_missing", {"screen": "main_menu"})
 	enter_button.grab_focus()
 	if not Net.last_error.is_empty():
 		_show_error(Net.last_error["reason"], Net.last_error["details"])
@@ -106,10 +114,19 @@ static func parse_launch(args: PackedStringArray) -> Dictionary:
 	return {}
 
 
+## Slow backdrop drift and falling snow; Reduce motion holds both still.
 func _process(delta: float) -> void:
-	_drift_time += delta
-	camera.position.x = 24.0 + sin(_drift_time * 0.2) * 0.15
-	camera.rotation.y = sin(_drift_time * 0.15) * 0.015
+	var still: bool = Settings.get_value(&"accessibility", &"reduce_motion")
+	snow.emitting = not still
+	if not still:
+		_drift_time += delta
+	var drift: Vector2 = (
+		Vector2.ZERO if still else Vector2(sin(_drift_time * 0.2) * 10.0, sin(_drift_time * 0.13) * 4.0)
+	)
+	backdrop.offset_left = drift.x
+	backdrop.offset_right = drift.x
+	backdrop.offset_top = drift.y
+	backdrop.offset_bottom = drift.y
 
 
 func _input(event: InputEvent) -> void:

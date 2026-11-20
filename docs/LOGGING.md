@@ -128,6 +128,7 @@ The server also prints every warning and error to stdout as
 | `launcher.server_started` / `server_stop_requested` / `server_exited` / `server_start_failed` | info / warn | The launcher's Host a server panel (`version`, `port`, `pid`, `exe`). A quick `server_exited` after start = port in use; read that server's own log |
 | `ui.unknown_screen` | warn | `UI.push` or `UI.replace` got an id with no `content/screens/<id>.tres`; `id`. Nothing opens |
 | `ui.pop_empty` | warn | `UI.pop()` with no screen open: a screen emitted `closed` twice or something popped a screen it did not push |
+| `ui.menu_backdrop_missing` | warn | A front-end screen opened with no backdrop texture (`screen`); it shows the dark shade only. The image in `assets/ui/backdrops/` is missing or failed to import |
 | `ui.loading_failed` | warn | A root behind a loading screen failed its threaded load; `scene`. The router falls back to a plain scene change |
 
 The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher.log` in its data folder (`%LOCALAPPDATA%\com.experimentundead.launcher\` on Windows): `{"t", "level", "event", "message"}`. The `launcher.server_*` lines above come from the game's old Host a server code, which moves into the launcher in F-82 step 4.

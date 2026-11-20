@@ -66,20 +66,17 @@ Shown once, before the main menu, and again from Settings. One page with big pre
 
 ### 1. Main menu
 
-A live 3D scene: your selected character stands in the snow at the Halcyon Labs outer gate at night, under a green Fenlight aurora, with the Oriel Biotechnic building and its red warning lights behind. Slow camera drift, falling snow. The menu sits on the left third over a dark fade.
+Concept: [main_menu_concept.jpg](concepts/screens/main_menu_concept.jpg) (2026-11-20, F-88). A painted backdrop, `assets/ui/backdrops/main_menu.jpg` (ADR 0019): Lantern Post at night from the road in, snow, a green Fenlight aurora, the lantern and the crossed-hammers sign on the right. It drifts a few pixels and light snow falls over it; Reduce motion holds both still. A dark fade from the left keeps the menu readable. Music only, no map sounds (PR #399).
 
-- **Top left:** the wordmark "EXPERIMENT: UNDEAD" (UNDEAD in bio-green) with the four-point Fenlight star, and the line "A Fenlight survival story".
-- **Enter World** (green, default focus): starts your own Lantern Post with the selected character (open to friends, F-66).
-- **Servers**: the server browser (screen 2).
-- **Character**: character select (screen 3).
-- **Loadout**: the Character screen (screen 5) for the selected character.
-- **Progression**: the Skill tree (screen 6) for the selected character.
-- **Settings**, **Exit**.
-- **Top right, profile card:** portrait, character name, level and a brass XP bar. Click it or press C to change character. Never a real name: the mockup uses "Survivor".
-- **Bottom right, news card:** the latest update's title and one line, from the patch notes bundled with the build (no internet feed), with dots to page through the last 3. Replaces the concept's season banner: there are no seasons.
-- **Bottom left:** game version and build number, for bug reports.
-
-![Main menu mockup](images/ui_main_menu.jpg)
+- **Top left:** the FENLIGHT logo (`assets/ui/fenlight_logo.png`).
+- **Left column**, spaced capitals with the `MenuBrush` brush stroke on the hovered or focused row:
+  - **PLAY** (default focus): starts your own Lantern Post with your character (open to friends, F-66).
+  - **SERVERS**: the server browser (screen 2).
+  - **LOADOUT**: the Character screen (screen 5).
+  - **RESEARCH**: the Skill tree (screen 6, F-21). Greyed out with "Coming soon" until it is built, and skipped by focus.
+  - **SETTINGS**, **CREDITS**, **QUIT**.
+- **Bottom left:** controls hint. **Bottom right:** game version and build number, for bug reports.
+- Not on the restyled menu yet: Character (character select, F-67), the profile card and the news card. They come back when those features are built, in the new look.
 
 ### 2. Server browser
 

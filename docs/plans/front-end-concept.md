@@ -1,6 +1,6 @@
 # Plan: Front-end screens to the concept art
 
-Status: Approved
+Status: Building
 Roadmap: F-88 / no issue
 Phase: P7, pulled forward 2026-11-20 with the new menu concept art and the rename to FENLIGHT
 Size: M

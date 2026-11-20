@@ -1,11 +1,24 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://systems/ui/main_menu.gd" id="1"]
 [ext_resource type="Theme" path="res://systems/ui/theme.tres" id="2"]
-[ext_resource type="PackedScene" path="res://levels/halcyon_labs/map.tscn" id="4"]
+[ext_resource type="Texture2D" path="res://assets/ui/backdrops/main_menu.jpg" id="4"]
 [ext_resource type="AudioStream" path="res://assets/audio/music/breather.ogg" id="5"]
 [ext_resource type="PackedScene" path="res://systems/ui/net_error_dialog.tscn" id="6"]
 [ext_resource type="Texture2D" path="res://assets/ui/fenlight_logo.png" id="7"]
+
+[sub_resource type="Gradient" id="ShadeGradient"]
+offsets = PackedFloat32Array(0, 0.45, 1)
+colors = PackedColorArray(0.043, 0.059, 0.078, 0.8, 0.043, 0.059, 0.078, 0.35, 0.043, 0.059, 0.078, 0)
+
+[sub_resource type="GradientTexture2D" id="Shade"]
+gradient = SubResource("ShadeGradient")
+width = 256
+height = 4
+
+[sub_resource type="Gradient" id="SnowFade"]
+offsets = PackedFloat32Array(0, 0.15, 0.85, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 0.8, 1, 1, 1, 0.8, 1, 1, 1, 0)
 
 [sub_resource type="StyleBoxFlat" id="Panel"]
 bg_color = Color(0.043, 0.059, 0.063, 0.85)
@@ -29,13 +42,6 @@ grow_vertical = 2
 script = ExtResource("1")
 theme = ExtResource("2")
 
-[node name="Backdrop" parent="." instance=ExtResource("4")]
-process_mode = 4
-
-[node name="Camera3D" type="Camera3D" parent="."]
-position = Vector3(24, 2, 59)
-current = true
-
 [node name="Screens" type="CanvasLayer" parent="."]
 layer = 10
 
@@ -46,12 +52,41 @@ anchor_bottom = 1.0
 mouse_filter = 2
 theme = ExtResource("2")
 
-[node name="Shade" type="ColorRect" parent="Screens/Root"]
+[node name="Backdrop" type="TextureRect" parent="Screens/Root"]
 anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchor_left = -0.02
+anchor_top = -0.02
+anchor_right = 1.02
+anchor_bottom = 1.02
 mouse_filter = 2
-color = Color(0.043, 0.059, 0.078, 0.65)
+texture = ExtResource("4")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Snow" type="CPUParticles2D" parent="Screens/Root"]
+amount = 150
+lifetime = 9.0
+preprocess = 9.0
+emission_shape = 3
+emission_rect_extents = Vector2(1100, 10)
+position = Vector2(800, -20)
+direction = Vector2(-0.3, 1)
+spread = 12.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 60.0
+initial_velocity_max = 140.0
+scale_amount_min = 1.5
+scale_amount_max = 3.5
+color_ramp = SubResource("SnowFade")
+
+[node name="Shade" type="TextureRect" parent="Screens/Root"]
+anchors_preset = 9
+anchor_bottom = 1.0
+anchor_right = 0.55
+mouse_filter = 2
+texture = SubResource("Shade")
+expand_mode = 1
+stretch_mode = 0
 
 [node name="Logo" type="TextureRect" parent="Screens/Root"]
 anchor_left = 0.05
@@ -66,25 +101,20 @@ texture_filter = 5
 
 [node name="Menu" type="VBoxContainer" parent="Screens/Root"]
 anchor_left = 0.05
-anchor_top = 0.44
+anchor_top = 0.37
 anchor_right = 0.29
-anchor_bottom = 0.44
-theme_override_constants/separation = 8
+anchor_bottom = 0.37
+theme_override_constants/separation = 2
 
 [node name="EnterWorld" type="Button" parent="Screens/Root/Menu"]
 layout_mode = 2
-text = "ENTER WORLD"
+text = "PLAY"
 alignment = 0
 theme_type_variation = &"MenuBrush"
 focus_neighbor_top = NodePath("../Quit")
 focus_neighbor_bottom = NodePath("../Servers")
 focus_next = NodePath("../Servers")
 focus_previous = NodePath("../Quit")
-
-[node name="Gap" type="Control" parent="Screens/Root/Menu"]
-custom_minimum_size = Vector2(0, 8)
-layout_mode = 2
-mouse_filter = 2
 
 [node name="Servers" type="Button" parent="Screens/Root/Menu"]
 layout_mode = 2
@@ -105,6 +135,15 @@ focus_neighbor_top = NodePath("../Servers")
 focus_neighbor_bottom = NodePath("../Settings")
 focus_next = NodePath("../Settings")
 focus_previous = NodePath("../Servers")
+
+[node name="Research" type="Button" parent="Screens/Root/Menu"]
+layout_mode = 2
+tooltip_text = "Coming soon"
+focus_mode = 0
+disabled = true
+text = "RESEARCH"
+alignment = 0
+theme_type_variation = &"MenuBrush"
 
 [node name="Settings" type="Button" parent="Screens/Root/Menu"]
 layout_mode = 2
@@ -128,7 +167,7 @@ focus_previous = NodePath("../Settings")
 
 [node name="Quit" type="Button" parent="Screens/Root/Menu"]
 layout_mode = 2
-text = "EXIT"
+text = "QUIT"
 alignment = 0
 theme_type_variation = &"MenuBrush"
 focus_neighbor_top = NodePath("../Credits")
