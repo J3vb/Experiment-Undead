@@ -1,10 +1,10 @@
 # Plan: Field abilities
 
-Status: Review
+Status: Approved
 Roadmap: F-22 / issue #114
 Phase: P5
 Size: L
-Approved by:
+Approved by: the person (decision card "Approve all five abilities", 2026-11-20); plan review on PR #467 by a fresh Claude review (Codex out of quota): 2 blocking and 9 suggestions, all fixed
 Lore link: Salvager kit built from Oriel scrap (docs/design/lore.md#story-links-for-game-content, row "Field abilities"; the turret's new name Watchdog and the siren canister are added there, provisional, by this plan)
 
 ## Goal
@@ -67,7 +67,8 @@ Not in (non-goals, and where each one goes instead):
     sends, its own HUD countdown between snapshots.
   - How a client triggers it: `AbilityClaims.request_use(player, aim)`;
     the server checks alive, not downed, not in the hub, ability known,
-    cooldown done, aim point within reach of the eyes, not twice in 0.5 s.
+    cooldown done (0.25 s slack), level from the handshake reaches the unlock,
+    aim point within reach of the eyes, not twice in 0.5 s.
   - What other players see: `show_use` (reliable, one per use) plays the
     ring, sound, turret or siren on every peer; turret shots relay unreliable
     like RemoteShots; zombie movement already syncs through ZombieSync.
@@ -81,9 +82,10 @@ Not in (non-goals, and where each one goes instead):
   session RNG: yes (no randomness needed).
 - Tests: unit per ability and for the cooldown; content checks for every
   AbilityData; co-op tests where a client uses each server effect.
-- Logging: `Log.warn(&"net", &"ability_rejected")` (through
-  `HitClaims.reject`, at most once a second) and `ability_unknown` when a
-  loadout names a missing ability.
+- Logging: refusals go through `HitClaims.reject` (`hit_claim_rejected`
+  with `ability_*` reasons, at most once a second);
+  `Log.warn(&"net", &"ability_unknown")` when a loadout names a missing or
+  locked ability. Catalogue lines in docs/LOGGING.md (step 1).
 - Performance: no per-frame allocations; the turret scans every 0.2 s from
   the Spawner's array; stun and lure are two floats per zombie.
 - Lore link: above.
@@ -185,14 +187,17 @@ Files and numbers (design numbers unless marked provisional):
 - `stat_caps.tres`: key `ability_cooldown` with 1.4 (the stack result with
   base 1.0, like `reload_pct` 1.6). Cooldown = `cooldown * (2.0 -
   get_stat(&"ability_cooldown"))`, the shape `damage_reduction` uses.
-- Adrenal Rush multiplies `move_speed` and `fire_rate_pct` **after** the caps
-  (the same place Serum multipliers go), so +30% is not cut to the 15% move
-  cap. One line in `Player.get_stat`.
+- Adrenal Rush acts in `Player.get_stat` **outside** `ItemInstance.stat_value`
+  (Serum multipliers sit inside it, before the cap): `move_speed` x1.3 and
+  `fire_interval` / 1.3 (guns read `fire_interval`), so +30% is not cut to
+  the 15% move cap. One line in `Player.get_stat`.
 - Network: `LoadoutSync.submit_loadout(gear, guns, skills, ability)` gains a
   String id; `AbilityClaims.use_on_server(aim: Vector3)`,
-  `show_use(peer_id, effect_id, at)`, `show_turret_shot(turret_id, from, to)`;
-  snapshot key `"ability_cooldown"`. Each step that adds one bumps
-  `PROTOCOL_VERSION` (one above main when it merges).
+  `show_use(peer_id, effect_id, at, object_id)` (object_id names a turret or
+  siren, 0 otherwise), `show_turret_shot(turret_id, from, to)`;
+  snapshot key `"ability_cooldown"`. Steps 2 and 6 change the wire and bump
+  `PROTOCOL_VERSION` (one above main when they merge); 4 and 5 reuse
+  `show_use` unchanged.
 - Save format change: none.
 - Content checks: new `tests/content/test_abilities.gd`: every file loads,
   id = file name, unlock levels strictly rise and match the design table,
@@ -217,15 +222,21 @@ Files and numbers (design numbers unless marked provisional):
   most 20 s; DECISIONS line).
 - Dedicated server: no local player, no profile; it only applies received
   ids and runs effects. No sound, ring or HUD (`Build.is_server()`).
-- Trust: the server does not know a client's level (start XP stays on the
-  owner), so the unlock level is checked by the owner only, like loadouts
-  (ADR 0003, DECISIONS "Loadout trust"). The server checks the id exists.
-- Hit bounds: Adrenal Rush raises fire rate on the server's copy too, so
-  `HitClaims` rate checks accept the faster shots.
+- Trust: the server checks the id exists and that `Handshake.player_level(peer)`
+  reaches its unlock level (the level the client sent at join, ADR 0003).
+- Timers on the server: the server's copy of a client player runs no physics
+  (`set_physics_process(local)`), so `FieldAbility` counts down its cooldown
+  and buff in its own `_physics_process` on the server, the way
+  `PlayerStateSync` counts the bleed-out. `tick(frame)` only reads the owner's
+  press. The owner shows the snapshot's cooldown counting down; it never
+  presses early because it only asks when its shown cooldown is 0, and the
+  server allows 0.25 s slack.
+- Hit bounds: Adrenal Rush lowers `fire_interval` on the server's copy too;
+  `HitClaims.take_claim` gains a rate factor so the faster shots pass.
 
 ## Performance
 
-Per frame with 24 zombies and 4 players: `FieldAbility.tick` is a float
+Per frame with 24 zombies and 4 players: `FieldAbility` is a float
 subtract and one bit test per player. Zombies check two floats. A live
 turret scans `Spawner.zombies` every 0.2 s (24 distance checks, one ray to
 the best target), not per frame. Rings, turret and siren scenes are preloaded;
@@ -238,15 +249,23 @@ effect. Budget: under 0.1 ms per frame on the server with 4 turrets up.
 
 - Build: `AbilityData`; `content/abilities/shock_pulse.tres`. `FieldAbility`
   node made in `Player._ready` like `GrenadeThrower`: `ability`,
-  `cooldown_left`, `tick(frame, delta)` (press, cooldown countdown),
-  `use(aim)` on the server, kill credit from `Events.enemy_killed` when
+  `cooldown_left` counted down in its own `_physics_process` (server and
+  owner), `tick(frame)` (the press, owner only), `use(aim)` on the server
+  (in step 1 a co-op client's press does nothing; step 2 adds the request), kill credit from `Events.enemy_killed` when
   `info.attacker` is its player (server), `static pick_for_level(level)`.
   `GameSession._on_player_added` sets the profile player's ability from its
   level. `AbilityEffects.shock_pulse(spawner, at, data)`: every live zombie
   within 6 m gets `Zombie.stun(2.0, push)`. `Zombie.stun` zeroes movement and
-  attacks while it lasts, after a short push away from the user. Cap key fix.
+  attacks while it lasts, after a short push away from the user. Rules: the
+  stun timer runs down even while frozen or in Stasis (checked before the
+  early return); a zombie in SPAWNING or ENTERING (rising, at or vaulting a
+  window) is stunned but not pushed; `_stuck_watch` does not tick while
+  stunned (or, from step 5, lured), so no `zombie_stuck` warnings. Cap key fix.
   `field_ability` action on X and D-pad down, `InputFrame.FIELD_ABILITY`,
-  key bindings row, controls.md fixed. Move `_tick_stamina` to PlayerMoves.
+  key bindings row, controls.md fixed. Move `_tick_stamina`, `can_sprint` and
+  `_sprint_cooldown_left` to PlayerMoves (player keeps a `can_sprint()`
+  forwarder if the vitals panel needs it); update the tests that use them.
+  `docs/LOGGING.md` catalogue lines for `ability_*` reasons.
   Roadmap row to Building; DECISIONS lines for the key, the pick and
   Gadgeteer (rewrite "Skills waiting on their feature").
 - Files: systems/abilities/ability_data.gd, field_ability.gd,
@@ -254,16 +273,19 @@ effect. Budget: under 0.1 ms per frame on the server with 4 turrets up.
   content/loot/stat_caps.tres, systems/player/player.gd, player_moves.gd,
   systems/enemies/zombie.gd, systems/input/input_frame.gd, local_input.gd,
   project.godot, systems/ui/key_bindings.gd, systems/game/game_session.gd,
-  docs/design/controls.md, docs/DECISIONS.md, docs/ROADMAP.md,
+  docs/design/controls.md, docs/DECISIONS.md, docs/ROADMAP.md, docs/LOGGING.md,
   tests/unit/test_field_ability.gd (new), tests/content/test_abilities.gd
-  (new), tests/content/test_loot_content.gd.
+  (new), tests/content/test_loot_content.gd, tests/unit/test_stat_block.gd
+  (old cap key), tests/unit/test_player_stamina.gd,
+  tests/integration/test_item_loadout.gd, tests/unit/test_vitals_panel.gd.
 - Tests: `test_field_ability.gd`: pick by level (2 none, 3 Shock Pulse, 50
   the highest); a press uses it once and starts the 60 s cooldown; a second
   press during cooldown does nothing; a kill by the user takes 0.5 s, a
   teammate's kill does not; Gadgeteer 3 gives 60 x 0.76 = 45.6 s; gear plus
   skill stops at 40% (36 s), which fails without the cap fix; Shock Pulse
   stuns a zombie at 5 m for 2 s and not one at 7 m; a stunned zombie does
-  not attack; downed or in the hub: no use. Stamina tests still pass.
+  not attack and logs no `zombie_stuck`; a zombie at a window is stunned, not
+  pushed; downed or in the hub: no use. Stamina tests still pass.
 - Done when: in solo a level 3+ character presses X, nearby zombies are
   pushed and stand still for 2 s, and the cooldown runs; CI green.
 
@@ -272,19 +294,26 @@ effect. Budget: under 0.1 ms per frame on the server with 4 turrets up.
 - Build: `AbilityClaims` under the session (made in
   `GameSession._setup_shooting` next to `GrenadeClaims`). `FieldAbility.tick`
   calls `claims.request_use(player, aim)` when there is a session; the
-  server checks (`check()` returns a reason) and runs `FieldAbility.use`.
-  `show_use` reliable to every other peer. `LoadoutSync` sends the id; the
-  server looks it up and logs `ability_unknown` on a missing one. Snapshot key
-  `ability_cooldown`; the owner counts down locally between snapshots.
-  Protocol bump.
+  server checks (`check()` returns a reason: `ability_not_alive`,
+  `ability_cooling`, `ability_locked`, `ability_bad_aim`, `ability_too_fast`)
+  and runs `FieldAbility.use`; refusals go through `HitClaims.reject` (logged
+  as `hit_claim_rejected` with the reason). `show_use` reliable to every
+  other peer. `LoadoutSync` sends the id; the server checks it exists and
+  against `Handshake.player_level`, and logs `ability_unknown` otherwise.
+  Snapshot key `ability_cooldown`. The co-op soak bot gets Shock Pulse in its
+  loadout and asks `AbilityClaims` when ready, so a client asking a dedicated
+  server is soaked from this step. Protocol bump.
 - Files: systems/abilities/ability_claims.gd (new), field_ability.gd,
   systems/net/loadout_sync.gd, player_state_sync.gd,
   systems/game/game_session.gd, core/build.gd, docs/MULTIPLAYER.md (adds
   AbilityClaims as a second pattern 2 reference with relay),
-  tests/unit/test_ability_claims.gd (new).
+  tools/soak/coop_soak_bot.gd, tests/unit/test_ability_claims.gd (new).
 - Tests: two-peer ENet test (the shape of `test_grenade_claims.gd`): a
   client's Shock Pulse stuns a server zombie; the client's cooldown arrives
-  in its snapshot; a second request inside the cooldown is refused and logged;
+  in its snapshot; a second request inside the cooldown is refused with
+  `ability_cooling` (asserted on the reason, not the throttled log); after
+  the cooldown runs out on the server the client's next use is accepted;
+  a level-2 client's Shock Pulse is refused;
   a downed client is refused; an unknown ability id in a loadout is dropped
   and logged; the server's own player uses it without an RPC.
 - Done when: a client and the host both use Shock Pulse in one match; CI
@@ -316,15 +345,17 @@ effect. Budget: under 0.1 ms per frame on the server with 4 turrets up.
   the user heals to full, living teammates within 10 m heal 50 (server,
   through `HealthComponent.heal`; downed players are not revived). Adrenal
   Rush: `FieldAbility` holds a buff timer and `multiplier(stat)` (1.3 for
-  `move_speed` and `fire_rate_pct` while it runs, else 1.0), read in
-  `Player.get_stat` after the caps; set on the server's copy on use and on
-  the owner by `show_use`. Ends early when downed. `HitClaims.take_claim`
-  multiplies its shot limit by the shooter's `get_stat(&"fire_rate_pct")`
-  (today it uses the gun's base rate times 1.5 slack, which gear fire rate
-  plus the rush can pass). Protocol bump if `show_use` changes.
+  `move_speed`, 1 / 1.3 for `fire_interval` while it runs, else 1.0), applied
+  in `Player.get_stat` outside `ItemInstance.stat_value`; set on the server's
+  copy on use and on the owner by `show_use`. Ends early when downed.
+  `HitClaims.take_claim(sender, weapon, rate: float = 1.0)` multiplies its
+  shot limit by `rate`; HitClaims and WellClaims pass the shooter's
+  `1.0 / get_stat(&"fire_interval")` (today gear fire rate plus the rush can
+  pass the 1.5 slack). No wire change.
 - Files: content/abilities/med_burst.tres, adrenal_rush.tres,
   systems/abilities/ability_effects.gd, field_ability.gd, ability_claims.gd,
   systems/player/player.gd (one line), systems/net/hit_claims.gd,
+  systems/net/well_claims.gd,
   tests/unit/test_field_ability.gd, tests/unit/test_hit_claims.gd,
   tests/unit/test_ability_claims.gd.
 - Tests: Med Burst heals self to full and a teammate at 8 m by 50, not one at
@@ -361,8 +392,10 @@ effect. Budget: under 0.1 ms per frame on the server with 4 turrets up.
 - Build: `watchdog.tres`. `Watchdog` scene placed 1.5 m in front of the user
   on the floor. Server: every 0.2 s it picks the nearest live zombie within
   25 m with a clear line to the head; every 0.6 s it shoots it in the head for
-  0.4 of that zombie's max health (attacker = the user, so kill points, XP and
-  the 0.5 s cooldown credit go to the user; weapon id `watchdog`).
+  0.4 of that zombie's max health, divided by the head zone's
+  `damage_multiplier` as `HitClaims` does (attacker = the user, so hit and
+  kill points, XP and the 0.5 s cooldown credit go to the user; weapon id
+  `watchdog`). The turret's id comes in `show_use`'s object_id.
   `show_turret_shot` relays the tracer unreliably; clients turn the cosmetic
   turret toward it. Freed after 20 s. Model from Tripo as in step 5.
 - Files: content/abilities/watchdog.tres, systems/abilities/watchdog.gd +
@@ -407,6 +440,9 @@ effect. Budget: under 0.1 ms per frame on the server with 4 turrets up.
   proven cheaply; lure reuses the same spot.
 - Fire-rate rate limits in `HitClaims` could refuse Adrenal Rush shots from a
   client. Step 4 tests a client's buffed shots pass.
+- A client's timers on the server: the server's player copy runs no physics,
+  so FieldAbility counts its own time (review finding); step 2 tests a second
+  use after the cooldown.
 - `PROTOCOL_VERSION` clashes with other open PRs: each step merges main and
   takes one above main's value.
 - Tripo API not reachable or out of credit: a grey box ships so the feature is
@@ -428,12 +464,12 @@ Provisional picks (reversible, DECISIONS lines in the step that builds them):
 - [x] Provisional: numbers the design does not give: Shock Pulse push 6 m/s,
   Med Burst teammate radius 10 m, Watchdog range 25 m and 0.4 of max health
   per head shot every 0.6 s, siren placed up to 20 m along your aim.
-- [x] Provisional: Watchdog kills count as the user's kills (points, XP,
-  cooldown credit).
+- [x] Provisional: Watchdog hits and kills count as the user's (hit points,
+  kill points, XP, cooldown credit).
 - [x] Provisional: Adrenal Rush's +30% goes past the move and fire-rate caps,
   like Serums.
 
 For the person:
 
-- [ ] Approve this plan (size L): all five abilities in seven steps, with the
-  provisional picks above.
+- [x] Approve this plan (size L): all five abilities in seven steps, with the
+  provisional picks above: approved (the person, decision card 2026-11-20).
