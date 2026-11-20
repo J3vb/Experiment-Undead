@@ -1,9 +1,6 @@
 ## Every Legendary names a real base, a trait stat that has code, a sane range and a flavour line.
 extends GutTest
 
-## Trait stats with code that reads them. Step 2 moves this list to LegendaryTraits.STATS.
-const KNOWN_STATS: Array[StringName] = [&"tidewater"]
-
 
 func test_every_legendary_is_complete_and_points_at_a_real_base() -> void:
 	var per_base: Dictionary[StringName, int] = {}
@@ -19,7 +16,7 @@ func test_every_legendary_is_complete_and_points_at_a_real_base() -> void:
 		assert_true(legendary.text.contains("{v}"), "%s text shows the rolled value" % id)
 		assert_lt(legendary.low, legendary.high, "%s stores low < high" % id)
 		assert_gt(legendary.step, 0.0)
-		assert_true(KNOWN_STATS.has(legendary.stat), "%s trait stat has code" % id)
+		assert_true(LegendaryTraits.STATS.has(legendary.stat), "%s trait stat has code" % id)
 		var base: StringName = legendary.base_id
 		if Content.has(&"weapons", base):
 			assert_false(Content.weapon(base).loot_tags.has(&"prototype"), "%s is not on a Prototype" % id)

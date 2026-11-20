@@ -24,8 +24,8 @@ class Session:
 
 ## Adds a side named side_name under parent holding a GameSession with the scene's children
 ## (WaveDirector, Economy, Progression, PowerUpDrops, Hud), MatchEnd, a Level with the "Enemies" Spawner,
-## a PlayerSpawner, and the parts asked for: hit_claims, well_claims, grenade_claims, loot, remote_shots,
-## interactions, deploy_vote. level replaces the empty Level; claims replaces the plain HitClaims.
+## a PlayerSpawner, and the parts asked for: hit_claims (with LegendaryTraits), well_claims, grenade_claims, loot,
+## remote_shots, interactions, deploy_vote. level replaces the empty Level; claims replaces the plain HitClaims.
 static func make(
 	parent: Node, side_name: String, parts: Array[StringName] = [], level: Level = null, claims: HitClaims = null
 ) -> GameSession:
@@ -129,6 +129,8 @@ static func _add_systems(session: GameSession, parts: Array[StringName]) -> void
 		session.hit_claims = HitClaims.new()
 	if session.hit_claims:
 		session.hit_claims.name = "HitClaims"
+		session.legendary_traits = LegendaryTraits.new()
+		session.legendary_traits.name = "LegendaryTraits"
 	if parts.has(&"loot"):
 		session.loot = LootService.new()
 	if parts.has(&"remote_shots"):
@@ -142,6 +144,7 @@ static func _add_systems(session: GameSession, parts: Array[StringName]) -> void
 	var grenades: GrenadeClaims = GrenadeClaims.new() if parts.has(&"grenade_claims") else null
 	var systems: Array[Node] = [
 		session.hit_claims,
+		session.legendary_traits,
 		wells,
 		grenades,
 		session.loot,

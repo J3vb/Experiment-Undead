@@ -163,6 +163,8 @@ func apply_server_hit(hit_zone: HitZone, info: DamageInfo) -> void:
 	var overkill: bool = session.power_up_drops and session.power_up_drops.is_active(PowerUpData.Effect.OVERKILL)
 	if overkill or _executes(zombie, info):
 		info.amount = maxf(info.amount, zombie.health.current / maxf(hit_zone.damage_multiplier, 0.01) + 1.0)
+	if session and session.legendary_traits:
+		session.legendary_traits.on_hit(zombie, info)
 	hit_zone.receive_hit(info)
 	_confirm_secondary_kill(zombie, info, collateral_killed)
 
