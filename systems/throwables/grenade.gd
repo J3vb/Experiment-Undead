@@ -69,7 +69,9 @@ func _physics_process(delta: float) -> void:
 func go_off() -> void:
 	went_off = true
 	if gameplay and multiplayer.is_server():
-		Blast.apply(self, global_position, data, thrower)
+		# The thrower may have left or been freed while the fuse burned.
+		var by: Player = thrower if is_instance_valid(thrower) else null
+		Blast.apply(self, global_position, data, by)
 		if is_instance_valid(claims):
-			claims.call("broadcast_blast", thrower.net_id if is_instance_valid(thrower) else 0, global_position)
+			claims.call("broadcast_blast", by.net_id if by else 0, global_position)
 	queue_free()

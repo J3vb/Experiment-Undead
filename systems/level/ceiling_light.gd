@@ -1,13 +1,15 @@
 ## Kit ceiling light: housing, glowing tube and a spot; LightmapGI bakes its bounce.
 ## The builder turns the shadow on for a few lights per room (light budget).
 ## Inside a Level whose power is off it runs as a dim red-orange emergency
-## light, and switches to normal shortly after the power comes on.
+## light, and switches to normal shortly after the power comes on. A Blackout
+## turns it fully dark on every peer until the Blackout ends.
 class_name CeilingLight
 extends Node3D
 
 const EMERGENCY_COLOR: Color = Color(1.0, 0.32, 0.12)
 const EMERGENCY_DIM: float = 0.3
 const EMERGENCY_TUBE: Material = preload("res://levels/materials/emergency_tube.tres")
+const DARK_TUBE: Material = preload("res://levels/materials/dark_tube.tres")
 ## Lights come on in a ragged wave over this many seconds after power-on.
 const POWER_ON_SPREAD: float = 0.6
 
@@ -15,6 +17,7 @@ const POWER_ON_SPREAD: float = 0.6
 @export var flickers: bool = false
 
 var emergency: bool = false
+var dark: bool = false
 var _flicker: FlickerLight
 
 @onready var _spot: SpotLight3D = $Fixture
@@ -33,6 +36,8 @@ func _ready() -> void:
 		_flicker = FlickerLight.new()
 		_flicker.light = _spot
 		add_child(_flicker)
+	Events.blackout_started.connect(_on_blackout.bind(true).unbind(1))
+	Events.blackout_ended.connect(_on_blackout.bind(false).unbind(1))
 
 
 func _on_power_on() -> void:
@@ -49,6 +54,22 @@ func _set_emergency(on: bool) -> void:
 	_tube.material_override = EMERGENCY_TUBE if on else null
 	if _flicker:
 		_flicker.base_energy = _spot.light_energy
+	_refresh_dark()
+
+
+func _on_blackout(on: bool) -> void:
+	dark = on
+	_refresh_dark()
+
+
+## Dark wins over the power state: the spot is hidden (FlickerLight only changes energy) and the tube goes dull,
+## and the power state underneath comes back when the Blackout ends.
+func _refresh_dark() -> void:
+	_spot.visible = not dark
+	if dark:
+		_tube.material_override = DARK_TUBE
+	else:
+		_tube.material_override = EMERGENCY_TUBE if emergency else null
 
 
 func _find_level() -> Level:

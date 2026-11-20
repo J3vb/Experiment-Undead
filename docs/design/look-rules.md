@@ -162,6 +162,7 @@ Full UI tokens and every screen: [ui-hud.md](ui-hud.md).
 | Round red | `#C3201B` | Round number, damage arcs, low-health vignette |
 | Headshot gold | `#FFC845` | Head hitmarker, point gains |
 | Warning orange | `#FF8A1C` | Ammo at 25% (same as Legendary on purpose) |
+| Menu brush | `#D9662B` | Brush stroke behind the selected front-end menu row (F-88); darker than Legendary so it never reads as loot |
 | Empty red | `#FF3B30` | Empty mag, cannot afford |
 | Brass | `#E3CF9A` | XP bar, level-up, skill points |
 | Panel | `#0B0F10` at 85% | Menu and tooltip backgrounds, 1 px light border |

@@ -37,8 +37,10 @@ func test_enter_world_has_default_focus_and_existing_match_target() -> void:
 	var match_screen: ScreenData = Content.get_item(&"screens", &"match") as ScreenData
 	assert_true(ResourceLoader.exists(match_screen.scene))
 	assert_eq(match_screen.scene, "res://systems/game/game_session.tscn")
-	assert_eq(menu.enter_button.get_theme_font("font"), menu.get_theme_font("font"))
-	assert_eq(menu.get_node("Backdrop").process_mode, Node.PROCESS_MODE_DISABLED)
+	var row_font: FontVariation = menu.enter_button.get_theme_font("font") as FontVariation
+	var body_font: FontVariation = menu.get_theme_font("font") as FontVariation
+	assert_eq(row_font.base_font, body_font.base_font, "menu rows use Atkinson Hyperlegible, spaced out")
+	assert_null(menu.get_node_or_null("Camera3D"), "no 3D map behind the menu any more")
 
 
 ## The separate launcher (F-82) replaced the launcher screen: a release build opens the main menu.
@@ -107,9 +109,9 @@ func test_menu_rows_are_focusable_in_keyboard_and_gamepad_order() -> void:
 		menu.credits_button,
 		menu.get_node("Screens/Root/Menu/Quit") as Button,
 	]
-	assert_eq(menu.enter_button.text, "Enter World")
-	assert_eq(menu.servers_button.text, "Servers")
-	assert_eq((buttons[-1] as Button).text, "Exit")
+	assert_eq(menu.enter_button.text, "PLAY")
+	assert_eq(menu.servers_button.text, "SERVERS")
+	assert_eq((buttons[-1] as Button).text, "QUIT")
 	assert_null(menu.get_node_or_null("Screens/Root/Menu/Play"), "no Play solo: Enter world is the one way in")
 	assert_null(menu.get_node_or_null("Screens/Root/HostPanel"), "no Host panel: your world is open by default")
 	for index: int in range(buttons.size()):
@@ -247,3 +249,50 @@ func test_command_line_launch_runs_once_per_process() -> void:
 	assert_true(MainMenu.launch_consumed, "the first menu used up the launch arguments")
 	menu._launch_from_command_line(PackedStringArray(["--host=24634"]))
 	assert_false(Net.is_online(), "a later menu does not host or join again")
+
+
+## F-88 step 1: the FENLIGHT logo replaces the old wordmark and every row wears the brush look.
+func test_logo_and_brush_rows() -> void:
+	var logo: TextureRect = menu.get_node("Screens/Root/Logo") as TextureRect
+	assert_eq(logo.texture.resource_path, "res://assets/ui/fenlight_logo.png")
+	assert_null(menu.get_node_or_null("Screens/Root/Title"), "the EXPERIMENT / UNDEAD labels are gone")
+	for button: Button in menu.menu.get_children().filter(func(node: Node) -> bool: return node is Button):
+		assert_eq(button.theme_type_variation, &"MenuBrush", button.name)
+		var focus: StyleBoxTexture = button.get_theme_stylebox("focus") as StyleBoxTexture
+		assert_not_null(focus, button.name + " focus is the brush stroke")
+		assert_eq(focus.texture.resource_path, "res://assets/ui/brush_stroke.png")
+		assert_true(button.get_theme_stylebox("normal") is StyleBoxEmpty, button.name)
+		assert_eq(button.text, button.text.to_upper(), button.name)
+
+
+## F-88 step 2: the painted backdrop replaces the Halcyon Labs map, and Research waits for the skill tree.
+func test_painted_backdrop_and_greyed_research() -> void:
+	assert_false(FileAccess.get_file_as_string("res://systems/ui/main_menu.tscn").contains("halcyon_labs/map.tscn"))
+	assert_eq(menu.backdrop.texture.resource_path, "res://assets/ui/backdrops/main_menu.jpg")
+	assert_gte(menu.backdrop.texture.get_width(), 1600)
+	assert_true(menu.research_button.disabled)
+	assert_eq(menu.research_button.focus_mode, Control.FOCUS_NONE)
+	assert_eq(menu.research_button.tooltip_text, "Coming soon")
+	assert_eq(menu.research_button.text, "RESEARCH")
+	var loadout: Button = menu.loadout_button
+	assert_eq(loadout.get_node(loadout.focus_neighbor_bottom), menu.settings_button, "focus skips Research")
+
+
+func test_backdrop_drifts_and_snow_falls_unless_reduce_motion() -> void:
+	Settings.set_value(&"accessibility", &"reduce_motion", false)
+	menu._process(5.0)
+	assert_true(menu.snow.emitting)
+	assert_true(menu.snow.visible)
+	assert_ne(menu.backdrop.offset_left, 0.0, "the backdrop drifts")
+	Settings.set_value(&"accessibility", &"reduce_motion", true)
+	menu._process(5.0)
+	assert_false(menu.snow.emitting)
+	assert_false(menu.snow.visible, "flakes already falling are hidden too")
+	assert_eq(menu.backdrop.offset_left, 0.0)
+	assert_eq(menu.backdrop.offset_top, 0.0)
+
+
+func test_hovering_a_row_moves_focus_so_only_one_brush_shows() -> void:
+	menu.loadout_button.mouse_entered.emit()
+	assert_true(menu.loadout_button.has_focus())
+	assert_false(menu.enter_button.has_focus())

@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=31 format=3]
 
 [ext_resource type="Script" path="res://systems/ui/hud.gd" id="1"]
 [ext_resource type="Script" path="res://systems/net/coop_hud.gd" id="coop"]
@@ -26,6 +26,9 @@
 
 [ext_resource type="Script" path="res://systems/ui/power_up_timers.gd" id="power_up_timers"]
 [ext_resource type="Script" path="res://systems/ui/hud/weapon_panel.gd" id="weapon_panel"]
+[ext_resource type="Script" path="res://systems/ui/hud/round_counter.gd" id="round_counter"]
+[ext_resource type="Script" path="res://systems/ui/hud/compass_strip.gd" id="compass_strip"]
+[ext_resource type="Script" path="res://systems/ui/hud/world_prompt.gd" id="world_prompt"]
 [ext_resource type="Script" path="res://systems/ui/hud/vitals_panel.gd" id="vitals_panel"]
 [ext_resource type="Script" path="res://systems/ui/hud/serum_slots.gd" id="serum_slots"]
 
@@ -42,11 +45,16 @@ shader_parameter/intensity = 0.0
 shader_parameter/tint = Color(0.55, 0, 0, 1)
 
 [sub_resource type="StyleBoxFlat" id="dark_box"]
-content_margin_left = 16.0
-content_margin_top = 10.0
-content_margin_right = 16.0
-content_margin_bottom = 10.0
-bg_color = Color(0.025, 0.04, 0.045, 0.92)
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 18.0
+content_margin_bottom = 8.0
+bg_color = Color(0.047, 0.067, 0.082, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.902, 0.925, 0.925, 0.85)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_left = 8
@@ -65,12 +73,11 @@ border_width_bottom = 2
 border_color = Color(0.4, 0.75, 0.5, 1)
 
 [sub_resource type="StyleBoxFlat" id="key_box"]
-bg_color = Color(0.08, 0.1, 0.1, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.75, 0.77, 0.73, 1)
+bg_color = Color(0.902, 0.925, 0.925, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
 
 [sub_resource type="StyleBoxFlat" id="bar_bg"]
 bg_color = Color(0.12, 0.15, 0.15, 0.9)
@@ -127,25 +134,47 @@ script = ExtResource("4")
 
 [node name="RoundInfo" type="VBoxContainer" parent="Root"]
 layout_mode = 1
-anchor_left = 0.025
-anchor_top = 0.025
-anchor_right = 0.25
-anchor_bottom = 0.22
-theme_override_constants/separation = -10
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -360.0
+offset_top = 20.0
+offset_right = -32.0
+offset_bottom = 104.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_constants/separation = 2
+script = ExtResource("round_counter")
 
 [node name="RoundLabel" type="Label" parent="Root/RoundInfo"]
 layout_mode = 2
 theme_type_variation = &"LabelMono"
-theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_color = Color(0.901961, 0.92549, 0.92549, 1)
 theme_override_fonts/font = SubResource("round_bold")
-theme_override_font_sizes/font_size = 110
-theme_override_constants/outline_size = 8
-modulate = Color(0.784314, 0.12549, 0.164706, 1)
-text = "1"
+theme_override_font_sizes/font_size = 40
+theme_override_constants/outline_size = 4
+text = "ROUND 1"
+horizontal_alignment = 2
 
 [node name="MapName" type="Label" parent="Root/RoundInfo"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.560784, 0.639216, 0.658824, 1)
+theme_override_font_sizes/font_size = 20
 text = "Halcyon Labs"
+horizontal_alignment = 2
+
+[node name="Compass" type="Control" parent="Root"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -280.0
+offset_top = 14.0
+offset_right = 280.0
+offset_bottom = 58.0
+grow_horizontal = 2
+mouse_filter = 2
+script = ExtResource("compass_strip")
 
 [node name="Loadout" type="VBoxContainer" parent="Root"]
 layout_mode = 1
@@ -218,7 +247,7 @@ layout_mode = 1
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -270.0
-offset_top = 24.0
+offset_top = 72.0
 offset_right = 270.0
 grow_horizontal = 2
 theme_override_styles/panel = SubResource("green_box")
@@ -267,6 +296,16 @@ theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
 text = "RELOAD [R]"
 horizontal_alignment = 1
 
+[node name="WorldPrompt" type="Control" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("world_prompt")
+
 [node name="Prompt" type="PanelContainer" parent="Root"]
 visible = false
 layout_mode = 1
@@ -287,6 +326,8 @@ theme_override_constants/separation = 14
 [node name="Key" type="Label" parent="Root/Prompt/Row"]
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.043, 0.063, 0.078, 1)
+theme_override_constants/outline_size = 0
 theme_override_styles/normal = SubResource("key_box")
 text = "F"
 horizontal_alignment = 1
@@ -294,6 +335,7 @@ vertical_alignment = 1
 
 [node name="PromptLabel" type="Label" parent="Root/Prompt/Row"]
 layout_mode = 2
+uppercase = true
 vertical_alignment = 1
 
 [node name="Price" type="Label" parent="Root/Prompt/Row"]

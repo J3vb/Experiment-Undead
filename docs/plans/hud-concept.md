@@ -121,7 +121,6 @@ Not in (non-goals, and where each one goes instead):
 | systems/ui/hud/compass_strip.gd | new | Heading strip from the local camera yaw |
 | systems/ui/hud/round_counter.gd | new | "ROUND n" top right with the red underline and the intermission blink |
 | systems/ui/hud/world_prompt.gd | new | Prompt box, leader line and brackets around player.focus |
-| systems/ui/hud/hud_draw.gd | new (step 5) | Static `angled_panel()`, pulled out at its third user (vitals, weapon, prompt) |
 | systems/ui/hud.gd / hud.tscn | changed | Old Vitals, Loadout ammo, RoundInfo and Prompt nodes replaced by the new nodes; serum, ammo and round code moves out |
 | systems/ui/grenade_slot.gd | deleted (step 3) | Folded into weapon_panel.gd |
 | systems/ui/crosshair.gd | changed | Default line length / thickness thinner |
@@ -131,8 +130,8 @@ Not in (non-goals, and where each one goes instead):
 | content/serums/*.tres, content/weapons/*.tres | changed | Point at the icons |
 
 Autoloads, managers or base classes added: none. The angled panel is drawn
-inline in VitalsPanel (step 1), copied into WeaponPanel (step 3) and pulled
-out into `hud_draw.gd` in step 5 when the prompt is its third user (Keep it
+inline in VitalsPanel and copied into WeaponPanel; the prompt box turned out
+rounded (a StyleBox), so there is no third user and no shared helper (Keep it
 simple rule 2).
 
 Files over 300 lines this plan grows: `hud.gd` (321) shrinks; every step moves
@@ -260,18 +259,17 @@ for the whole HUD at 1080p with 24 zombies.
 
 ### Step 5: pickup prompt on the object
 
-- Build: pull the angled panel out into `systems/ui/hud/hud_draw.gd`
-  (third user) and use it in VitalsPanel, WeaponPanel and the prompt. New
-  `WorldPrompt`: when `coop_hud.get_prompt()` returns text and
+- Build: new `WorldPrompt`: when `coop_hud.get_prompt()` returns text and
   `player.focus` is set, project the focus's bounds (its first
   CollisionShape3D's AABB, cached when the focus changes) to screen, draw four
   corner brackets around it, a thin leader line from the brackets' top-right
   to a rounded dark box with the key cap and the action text (price kept).
   With no focus (revive, downed, spectating) the box shows at today's fixed
-  spot without brackets. Off-screen or behind the camera: fixed spot. Replaces
-  `Root/Prompt` and `_update_prompt` in hud.gd.
-- Files: systems/ui/hud/world_prompt.gd, systems/ui/hud/hud_draw.gd,
-  vitals_panel.gd, weapon_panel.gd, hud.gd, hud.tscn,
+  spot without brackets. Off-screen or behind the camera: fixed spot. The
+  existing `Root/Prompt` box and `_update_prompt` in hud.gd stay (less code);
+  WorldPrompt only moves the box and draws the brackets and line. The box gets
+  the concept's rounded light border, a white key cap and capital letters.
+- Files: systems/ui/hud/world_prompt.gd, hud.gd, hud.tscn,
   tests/unit/test_coop_hud.gd (prompt_label / prompt_box checks),
   tests/unit/test_hud.gd (prompt and rebind tests move out).
 - Tests: `tests/unit/test_world_prompt.gd`: price split from "[F] 950" text
