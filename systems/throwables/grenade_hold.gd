@@ -10,8 +10,13 @@ const FLICK_TIME: float = 0.12
 const HOLD: Vector3 = Vector3(-0.15, -0.13, -0.34)
 ## Camera-space wrist spot at the end of the flick.
 const FLICK: Vector3 = Vector3(-0.06, -0.04, -0.52)
-## From the wrist to the frag in the palm, camera space.
-const PALM: Vector3 = Vector3(0.03, 0.02, -0.06)
+## Camera-space hand turn while holding: fingers forward and up, back of the hand down and out,
+## so the palm faces up under the frag and the fingers close over it.
+const FINGERS: Vector3 = Vector3(0.25, 0.35, -1.0)
+const BACK: Vector3 = Vector3(-0.45, -1.0, -0.1)
+## Frag centre from the wrist: along the fingers and off the palm, in metres.
+const ALONG_FINGERS: float = 0.06
+const OFF_PALM: float = 0.045
 
 ## How far the hand is off its grip: 0 on the gun, 1 at the hold spot.
 var weight: float = 0.0
@@ -50,5 +55,6 @@ func wrist_target() -> Vector3:
 	return HOLD.lerp(FLICK, t)
 
 
-func frag_position() -> Vector3:
-	return wrist_target() + PALM
+## Camera-space frag centre for a wrist at `wrist`.
+func frag_position(wrist: Vector3) -> Vector3:
+	return wrist + FINGERS.normalized() * ALONG_FINGERS - BACK.normalized() * OFF_PALM
