@@ -63,6 +63,14 @@ async function refresh() {
   } catch (problem) {
     online = false;
   }
+  if (online) {
+    showStatus("Checking for a launcher update…");
+    try {
+      await invoke("self_update");
+    } catch (problem) {
+      // A failed launcher update keeps this launcher; the game still installs and plays.
+    }
+  }
   await show();
 }
 

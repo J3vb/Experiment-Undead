@@ -60,6 +60,31 @@ Tags with a dash (`v0.2.0-rc.1`) become pre-releases and do not move `latest`.
 - Test hooks: `--launcher` (open it in any build), `--releases-api=<url>`,
   `--launcher-autoplay` (smoke test only).
 
+## The separate launcher (F-82)
+
+The launcher is its own program in `launcher/` (Tauri 2, ADR 0018). Until F-82 step 3 the
+game still has its old built-in launcher too.
+
+- **Install:** download `ExperimentUndead-Setup-<version>.exe` from Releases and run it.
+  It installs per user (no admin) to `%LOCALAPPDATA%\Experiment Undead Launcher\`, with a
+  Start menu and desktop shortcut and an uninstall entry. Windows SmartScreen warns once
+  (the exe is not code-signed): **More info**, **Run anyway**.
+- **Game files:** the launcher installs the game into
+  `%LOCALAPPDATA%\com.experimentundead.launcher\game\versions\<version>\` (SHA-256 checked,
+  the 2 newest kept). Its settings (`launcher.json`) and log (`launcher.log`) sit in that
+  same folder. Uninstalling with "Delete the application data" ticked removes the game too.
+- **Launcher updates:** each release also carries `ExperimentUndead-Setup-<version>.exe.sig`
+  and `latest.json`. On start the launcher reads `latest.json` from the newest release on its
+  channel; when it is newer, it downloads the setup exe, checks its signature against the
+  public key built into the launcher, installs it quietly and restarts.
+- **Signing key:** the private key is the repository secret `TAURI_SIGNING_PRIVATE_KEY` (no
+  password). Without it a release still gets the setup exe but no `.sig` or `latest.json`,
+  so installed launchers do not update to it. Losing the key means every player reinstalls
+  once from a new setup exe built with a new key; keep a copy in a password manager.
+- **Frozen from v0.1.0:** `ExperimentUndead-Setup-<version>.exe`, its `.sig`, `latest.json`.
+- **Version:** the release workflow stamps the tag's version into the launcher
+  (`tools/ci/launcher_release.py stamp`); builds outside a release say `0.0.0`.
+
 ## Version numbers
 
 - The git tag is the version. Never edit a version number by hand.
