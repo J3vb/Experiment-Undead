@@ -200,3 +200,38 @@ func test_a_teleport_cancels_the_mantle() -> void:
 	assert_false(player.mantle.is_active())
 	player.apply_frame(_frame(0, Vector2.ZERO), TICK)
 	assert_almost_eq(player.global_position.x, 5.0, 0.01)
+
+
+func test_a_mantle_dips_the_camera_and_plays_the_sound() -> void:
+	_ledge(1.0)
+	await _settle()
+	player.camera_rig.head_bob = 0.6
+	var sound: AudioStreamPlayer = player.get_node(^"MantleSound") as AudioStreamPlayer
+	player.apply_frame(_frame(InputFrame.JUMP, FORWARD), TICK)
+	assert_true(sound.playing, "mantle sound")
+	var deepest: float = 0.0
+	for i: int in 30:
+		player.apply_frame(_frame(0, FORWARD), TICK)
+		deepest = minf(deepest, player.camera.position.y)
+	assert_lt(deepest, -0.04, "camera dipped")
+	assert_almost_eq(player.camera.position.y, 0.0, 0.02, "and came back")
+
+
+func test_no_dip_with_head_bob_off() -> void:
+	_ledge(1.0)
+	await _settle()
+	player.camera_rig.head_bob = 0.0
+	player.apply_frame(_frame(InputFrame.JUMP, FORWARD), TICK)
+	for i: int in 30:
+		player.apply_frame(_frame(0, FORWARD), TICK)
+		assert_almost_eq(player.camera.position.y, 0.0, 0.001, "no camera offset at head bob 0")
+
+
+func test_going_down_cancels_the_mantle() -> void:
+	_ledge(1.0)
+	await _settle()
+	player.apply_frame(_frame(InputFrame.JUMP, FORWARD), TICK)
+	assert_true(player.mantle.is_active())
+	player.is_downed = true
+	player.apply_frame(_frame(0, FORWARD), TICK)
+	assert_false(player.mantle.is_active())
