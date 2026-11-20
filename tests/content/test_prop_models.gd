@@ -1,6 +1,7 @@
 ## Checks the code-built prop, dressing and large prop models (plans F-15, F-77): each
 ## loads as one mesh, imports as a static lightmapped piece with baked AO shading, every
-## surface uses a shared prop_import.gd slot material, and monitors use the shared screen.
+## surface uses a shared prop_import.gd slot material (Tripo props keep their one baked
+## material, ADR 0017), and monitors use the shared screen.
 extends GutTest
 
 const FOLDERS: Array[String] = [
@@ -67,8 +68,28 @@ func test_every_surface_uses_a_shared_slot() -> void:
 		for mesh: MeshInstance3D in _meshes(path):
 			for i: int in mesh.mesh.get_surface_count():
 				var mat: Material = mesh.mesh.surface_get_material(i)
+				if _is_tripo_baked(mat):
+					continue
 				var where: String = mat.resource_path if mat else "no material"
 				assert_has(shared, where, "%s surface %d uses a prop_import.gd SHARED slot" % [path, i])
+
+
+func test_tripo_props_are_one_baked_material_with_its_maps() -> void:
+	var tripo: int = 0
+	for path: String in _models():
+		var mesh: Mesh = _meshes(path)[0].mesh
+		if not _is_tripo_baked(mesh.surface_get_material(0)):
+			continue
+		tripo += 1
+		assert_eq(mesh.get_surface_count(), 1, path + " is one baked surface")
+		var baked: StandardMaterial3D = mesh.surface_get_material(0) as StandardMaterial3D
+		assert_not_null(baked.albedo_texture, path + " keeps its baked colour map")
+		assert_not_null(baked.normal_texture, path + " keeps its baked normal map")
+	assert_gte(tripo, 12, "the F-83 Halcyon room props are Tripo models")
+
+
+func _is_tripo_baked(mat: Material) -> bool:
+	return mat is StandardMaterial3D and mat.resource_name == "Baked"
 
 
 func test_library_slots_load() -> void:

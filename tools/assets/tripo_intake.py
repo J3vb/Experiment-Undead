@@ -27,6 +27,8 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 OUT = os.path.join(REPO, "docs", "design", "reviews", "tripo-trial")
 MODELS = os.path.join(REPO, "assets", "models")
 KINDS = {"prop": (2_000, 1024, None), "large": (12_000, 2048, None), "character": (16_000, 2048, 1.8)}
+## Thin or open Tripo meshes can stop above budget after one collapse; later passes take the rest.
+DECIMATE_PASSES = 4
 BAKED = "Baked"  # characters: "BodyBaked", the Body* finish the character checks expect
 CHANNELS = ("albedo", "roughness", "metal")
 
@@ -92,14 +94,18 @@ def make_low(high, budget: int):
     low.name = "Model"
     bpy.context.collection.objects.link(low)
     weld(low)
-    ratio = min(1.0, budget * 0.96 / max(triangle_count(low), 1))
-    if ratio < 1.0:
+    bpy.context.view_layer.objects.active = low
+    for _attempt in range(DECIMATE_PASSES):
+        ratio = budget * 0.96 / max(triangle_count(low), 1)
+        if ratio >= 1.0:
+            break
         mod = low.modifiers.new("Decimate", "DECIMATE")
         mod.ratio = ratio
         mod.use_collapse_triangulate = True
-        bpy.context.view_layer.objects.active = low
         bpy.ops.object.modifier_apply(modifier=mod.name)
     clean(low)
+    floor, _top = world_bounds(low)
+    low.data.transform(Matrix.Translation((0.0, 0.0, -floor.z)))
     return low
 
 
@@ -108,6 +114,8 @@ def weld(obj) -> None:
     bm = bmesh.new()
     bm.from_mesh(obj.data)
     bmesh.ops.remove_doubles(bm, verts=bm.verts[:], dist=1e-5)
+    # Edges shared by three or more faces stop the collapse decimate; split, they collapse like open edges.
+    bmesh.ops.split_edges(bm, edges=[e for e in bm.edges if len(e.link_faces) > 2])
     bm.to_mesh(obj.data)
     bm.free()
 
