@@ -293,7 +293,7 @@ func _move(delta: float, frame: InputFrame) -> void:
 		return
 	var jump: bool = input_enabled and frame.has(InputFrame.JUMP) and not is_crouching
 	velocity.y = moves.vertical(self, delta, jump, _gravity * gravity_multiplier)
-	var speed: float = sprint_speed if is_sprinting else walk_speed
+	var speed: float = sprint_speed * get_stat(&"sprint_speed") if is_sprinting else walk_speed
 	if is_crouching:
 		speed *= 0.2 if is_downed else crouch_speed_multiplier
 	speed *= lerpf(1.0, ads_speed_multiplier, weapons.get_ads_progress())
