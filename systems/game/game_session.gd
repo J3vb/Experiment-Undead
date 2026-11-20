@@ -86,6 +86,8 @@ func _setup_level() -> void:
 	level = level_scene.instantiate() as Level
 	level.process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_child(level)
+	if not Build.is_server():
+		level.add_child(ShaderWarmUp.new())
 	spawner = Spawner.new()
 	spawner.name = "Enemies"
 	spawner.session = self

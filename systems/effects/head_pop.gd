@@ -48,6 +48,12 @@ static func _take(parent: Node) -> HeadPop:
 	return pop
 
 
+## Shared meshes, for ShaderWarmUp to draw once at match start.
+static func warm_up_meshes() -> Array[Mesh]:
+	_shared_meshes()
+	return [_chunk_mesh, _mist_mesh]
+
+
 static func _shared_meshes() -> void:
 	if _chunk_mesh:
 		return

@@ -115,6 +115,12 @@ static func _take(parent: Node) -> Impact:
 	return impact
 
 
+## Shared meshes, for ShaderWarmUp to draw once at match start.
+static func warm_up_meshes() -> Array[Mesh]:
+	_shared_meshes()
+	return [_flesh_mesh, _reduced_mesh, _surface_mesh, _mark_mesh]
+
+
 static func _shared_meshes() -> void:
 	if _mark_mesh:
 		return

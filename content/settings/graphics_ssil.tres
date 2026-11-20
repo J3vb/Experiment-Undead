@@ -10,5 +10,5 @@ key = &"ssil"
 label = "Indirect light"
 hint = "Light bouncing off nearby surfaces (SSIL). Costly; off on High."
 kind = &"choice"
-options = PackedStringArray("Off", "Low", "Medium", "High")
+options = Array[String](["Off", "Low", "Medium", "High"])
 order = 110

@@ -152,14 +152,14 @@ func _menu_with_loading() -> ScreenData:
 	var menu: ScreenData = Content.get_item(&"screens", &"main_menu") as ScreenData
 	menu.loading_screen = &"loading"
 	menu.title = "Test Place"
-	menu.tips = PackedStringArray(["Only tip"])
+	menu.tips = ["Only tip"] as Array[String]
 	return menu
 
 
 func _restore_menu(menu: ScreenData) -> void:
 	menu.loading_screen = &""
 	menu.title = ""
-	menu.tips = PackedStringArray()
+	menu.tips = [] as Array[String]
 
 
 func test_replace_with_a_loading_screen_shows_it_until_the_scene_is_in() -> void:

@@ -71,7 +71,7 @@ The server also prints every warning and error to stdout as
 | `player.body_clips_missing` | warn | The player model has no third-person clips, so teammates show a still body; rebuild `player.glb` |
 | `player.world_model_missing` | warn | A teammate holds a gun whose `WeaponData` has no `world_model`, so its hands are empty; set the field in the gun's `.tres` |
 | `vendor.vendor_clip_missing` | warn | A Lantern Post stall keeper's model has no clip named by its `VendorData.idle_clip`, so they stand in rest pose; re-export the keeper (`tools/assets/tripo/vendors.json`, `clips: keeper`) or fix the data |
-| `perf.long_frames` | warn | Frames over 50 ms in the last second (`count`, `worst_ms`, `draw_compiles`: shader pipelines compiled while drawing that second, `enemies`). Hitch at load is normal; in a round it is not. `draw_compiles` > 0 means a first-use shader stutter |
+| `perf.long_frames` | warn | Frames over 50 ms in the last second (`count`, `worst_ms`, `draw_compiles`: shader pipelines compiled while drawing that second, `all_compiles`: pipelines of any kind since the last line, `enemies`). Hitch at load is normal; in a round it is not. `draw_compiles` > 0 means a first-use shader stutter |
 | `perf.low_fps` | warn | Under 50 fps for 3 s in a row (windowed builds only), with a health snapshot |
 | `perf.health` | info | Every 30 s: fps, process/physics ms, memory, objects, nodes, orphan nodes, enemies, draw calls |
 | `perf.orphan_nodes_growing` | warn | Over 200 orphan nodes and still rising: nodes created and never freed |

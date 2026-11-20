@@ -15,4 +15,4 @@ extends Resource
 ## Place name the loading screen shows.
 @export var title: String = ""
 ## The loading screen shows one of these.
-@export var tips: PackedStringArray = []
+@export var tips: Array[String] = []
