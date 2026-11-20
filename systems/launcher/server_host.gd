@@ -6,6 +6,7 @@ extends Node
 signal changed
 
 const STOP_FILE: String = "user://launcher/server.stop"
+const CONFIG: String = "user://launcher.cfg"
 
 var port: int = Net.DEFAULT_PORT
 var max_players: int = Net.MAX_PLAYERS
@@ -16,7 +17,7 @@ var _pid: int = -1
 
 func _ready() -> void:
 	var config: ConfigFile = ConfigFile.new()
-	config.load(VersionInstaller.CONFIG)
+	config.load(CONFIG)
 	port = clampi(int(config.get_value("server", "port", Net.DEFAULT_PORT)), 1, 65535)
 	max_players = clampi(int(config.get_value("server", "max_players", Net.MAX_PLAYERS)), 1, Net.MAX_PLAYERS)
 	var timer: Timer = Timer.new()
@@ -48,10 +49,10 @@ func save(at_port: int, players: int) -> void:
 	port = clampi(at_port, 1, 65535)
 	max_players = clampi(players, 1, Net.MAX_PLAYERS)
 	var config: ConfigFile = ConfigFile.new()
-	config.load(VersionInstaller.CONFIG)
+	config.load(CONFIG)
 	config.set_value("server", "port", port)
 	config.set_value("server", "max_players", max_players)
-	config.save(VersionInstaller.CONFIG)
+	config.save(CONFIG)
 
 
 ## Starts exe as a server. False when it could not start or one is already running.

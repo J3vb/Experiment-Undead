@@ -149,9 +149,17 @@ func test_visible_dialog_holds_the_mouse_until_hidden() -> void:
 	UI._root = root
 
 
-func test_restart_to_update_only_for_older_release_client() -> void:
+func test_restart_to_update_only_when_the_launcher_started_an_older_client() -> void:
 	var older_client: Dictionary = {"older": "client"}
-	assert_true(NetErrorDialog.can_update(&"wrong_version", older_client, "0.1.0"))
-	assert_false(NetErrorDialog.can_update(&"wrong_version", {"older": "server"}, "0.1.0"))
-	assert_false(NetErrorDialog.can_update(&"wrong_version", older_client, "0.1.1-dev.3+abc1234"))
-	assert_false(NetErrorDialog.can_update(&"server_full", older_client, "0.1.0"))
+	var launcher: String = OS.get_executable_path()
+	assert_true(NetErrorDialog.can_update(&"wrong_version", older_client, launcher))
+	assert_false(NetErrorDialog.can_update(&"wrong_version", {"older": "server"}, launcher))
+	assert_false(NetErrorDialog.can_update(&"wrong_version", older_client, ""), "started by hand")
+	assert_false(NetErrorDialog.can_update(&"wrong_version", older_client, "/no/such/launcher.exe"))
+	assert_false(NetErrorDialog.can_update(&"server_full", older_client, launcher))
+
+
+func test_launcher_exe_comes_from_the_command_line() -> void:
+	var args: PackedStringArray = ["--from-launcher", "--launcher-exe=C:/Launcher/ExperimentUndead-Launcher.exe"]
+	assert_eq(NetErrorDialog.launcher_exe(args), "C:/Launcher/ExperimentUndead-Launcher.exe")
+	assert_eq(NetErrorDialog.launcher_exe(PackedStringArray()), "")

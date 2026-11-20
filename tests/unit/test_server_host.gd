@@ -4,14 +4,14 @@ var saved_config: String = ""
 
 
 func before_each() -> void:
-	saved_config = FileAccess.get_file_as_string(VersionInstaller.CONFIG)
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(VersionInstaller.CONFIG))
+	saved_config = FileAccess.get_file_as_string(ServerHost.CONFIG)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(ServerHost.CONFIG))
 
 
 func after_each() -> void:
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(VersionInstaller.CONFIG))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(ServerHost.CONFIG))
 	if not saved_config.is_empty():
-		FileAccess.open(VersionInstaller.CONFIG, FileAccess.WRITE).store_string(saved_config)
+		FileAccess.open(ServerHost.CONFIG, FileAccess.WRITE).store_string(saved_config)
 
 
 func test_server_args() -> void:

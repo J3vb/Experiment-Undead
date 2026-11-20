@@ -299,7 +299,8 @@ unauthenticated limit even with several servers on one home IP).
 Status per step (2026-11-20): step 1 built (PR #302), step 2 built (PR #301),
 step 3 built (PR #329), steps 4-6 built (PR #331). F-82
 ([separate-launcher.md](separate-launcher.md)) replaces the in-game launcher
-of steps 5 and 6, and step 9. Steps 7 and 8 are not built yet.
+of steps 4-6, and step 9; F-82 step 3 removed the launcher screen,
+ReleaseFeed and VersionInstaller from the game. Steps 7 and 8 are not built yet.
 
 Steps 1, 2, 4 and 7 do not depend on each other. Steps 1-5 must merge before
 Release v0.1.0 (F-11): whatever handshake, save layout and launcher v0.1.0
