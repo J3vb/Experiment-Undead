@@ -179,12 +179,12 @@ Map art, the map name, and one rotating tip. A progress bar, and the names of sq
 
 Follows the design doc table. Additions (the concept art on 2026-11-17 added the health panel, objective list, item slots and area name):
 
-- **Top left:** round number, and under it the map and the area you are in ("Halcyon Labs · Containment").
-- **Top right:** an objective list (exfil steps, map events, pinned contracts with a count, done ones ticked and struck through), then squad cards (name, health bar, down state with bleed-out timer).
+- **Top centre:** a compass strip (120 degrees, ticks every 15, N / NE / E letters) from the 2026-11-20 HUD concept ([hud_concept_2.jpg](concepts/screens/hud_concept_2.jpg)). Exfil sits under it.
+- **Top right:** "ROUND 3" in white with a red stroke under it, the map name under that (moved from the top left in the 2026-11-20 concept), then an objective list (exfil steps, map events, pinned contracts with a count, done ones ticked and struck through), then squad cards (name, health bar, down state with bleed-out timer).
 - **Bottom left:** the Serum slots in one row, and under it the vitals panel from the 2026-11-20 HUD concept ([hud_concept.jpg](concepts/screens/hud_concept.jpg)): an angled dark panel with a health cross and a 5-segment health bar (each segment a fifth of max health, red under 30%), and a runner with the sprint bar (orange while sprint cools down). The red vignette under 40 HP stays. Field ability icon and Pack count come with their features.
 - **Bottom centre:** power-up timers, and a small item drop feed ("Rare Talon DMR" in rarity colour) that fades after 4 s.
 - **Bottom right:** points, the gun name small, then the weapon panel from the 2026-11-20 HUD concept: an angled dark panel with a white gun-class silhouette, magazine big (orange at a quarter, red when empty) and reserve small ("30 / 210"), a divider, and the frag icon with its count and key. The tactical slot joins it with its feature.
-- **Exfil:** from round 10, every 5 rounds, a marker and a 60 s hold bar appear at the top centre.
+- **Exfil:** from round 10, every 5 rounds, a marker and a 60 s hold bar appear at the top centre, under the compass.
 - **Not taken from the concept:** a minimap (Halcyon Labs is small; later if a bigger map needs it), armour and medkits (the game has neither), and a zombies-remaining count.
 
 ![Match HUD mockup over a first-playable screenshot](images/ui_match_hud.jpg)

@@ -16,7 +16,7 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	offset_left = -260.0
 	offset_right = -24.0
-	offset_top = 24.0
+	offset_top = 128.0
 	grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_theme_constant_override(&"separation", 10)
