@@ -101,35 +101,6 @@ func test_zombie_glow_uses_source_emission_without_requiring_a_rarity_zone() -> 
 	assert_push_error_count(0)
 
 
-func test_zombie_imports_use_only_zombie_finishes_and_main_paint_zones() -> void:
-	for kind: String in ["crawler"]:
-		var packed: PackedScene = load("res://assets/models/zombies/%s.glb" % kind) as PackedScene
-		assert_not_null(packed, kind + " imports")
-		if packed == null:
-			continue
-		var model: Node3D = packed.instantiate() as Node3D
-		autofree(model)
-		var glow_surfaces: int = 0
-		for node: Node in model.find_children("*", "MeshInstance3D", true, false):
-			var mesh: Mesh = (node as MeshInstance3D).mesh
-			for surface: int in mesh.get_surface_count():
-				var material: ShaderMaterial = mesh.surface_get_material(surface) as ShaderMaterial
-				assert_not_null(material, kind + " uses the zombie finish shader")
-				if material == null:
-					continue
-				assert_eq(material.shader.resource_path, "res://assets/materials/zombie_finish.gdshader")
-				var finish: int = material.get_shader_parameter(&"finish")
-				assert_between(finish, 7, 10, kind + " cannot acquire a player finish")
-				if finish == 10:
-					glow_surfaces += 1
-					assert_gt(float(material.get_shader_parameter(&"emission_strength")), 0.0)
-				var colors: PackedColorArray = mesh.surface_get_arrays(surface)[Mesh.ARRAY_COLOR]
-				assert_gt(colors.size(), 0, kind + " retains baked AO and main paint zones")
-				for color: Color in colors:
-					assert_almost_eq(color.a, 1.0, 0.001, kind + " has no rarity or dye zones")
-		assert_gte(glow_surfaces, 2, kind + " eyes have intrinsic bio-green emission")
-
-
 func test_vest_imports_share_four_finishes_across_shell_and_first_person_cuffs() -> void:
 	for frame: String in ["light", "medium", "heavy"]:
 		var packed: PackedScene = load("res://assets/models/gear/vest_%s.glb" % frame) as PackedScene

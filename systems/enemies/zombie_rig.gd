@@ -26,7 +26,7 @@ const VAULT_HEIGHT: float = 0.45
 ## Below this stride (a shuffle on the spot) no footsteps play.
 const STEP_MIN_STRIDE: float = 0.2
 
-## A skinned .glb (Tripo intake or zombie_model.py), facing +Z.
+## A skinned .glb from tripo_intake.py --kind zombie, facing +Z.
 @export var model: PackedScene
 ## Other looks of the same zombie type; `look` picks one of `model` and these.
 @export var extra_models: Array[PackedScene] = []

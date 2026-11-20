@@ -28,7 +28,7 @@ MIXAMO = {
 SIDES = {"L": "Left", "R": "Right"}
 EYE_HEIGHT = 1.682
 EYE_FRONT = 0.115
-# The code-built zombies put HeadCenter 8 cm behind and just under the Eyes (zombie_model.py).
+# HeadCenter sits 8 cm behind and just under the Eyes, where the old code-built zombies had it.
 HEAD_CENTER_BEHIND_EYES = (0.0, 0.08, -0.005)
 # Our player body's rest thumb, measured off player.glb: up and out along the arm's side, 31 degrees forward.
 THUMB_OUT = 0.86
