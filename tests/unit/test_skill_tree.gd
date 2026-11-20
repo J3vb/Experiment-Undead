@@ -45,23 +45,58 @@ func test_every_required_node_needs_at_least_one_rank() -> void:
 	assert_eq(ranks[&"test_requires_two"], 1)
 
 
-func test_keystone_requires_fifteen_points_in_its_own_branch() -> void:
+func test_keystone_needs_its_gate_in_its_own_branch() -> void:
+	var gate: int = (Content.get_item(&"skills", &"dead_center") as SkillNodeData).branch_points_needed
+	assert_gt(gate, 0)
 	# Hand-built ranks exercise gates beyond the named nodes' current capacity.
-	var ranks: Dictionary[StringName, int] = {&"steady_hands": 14, &"thick_skin": 5}
-	assert_eq(SkillTree.points_in_branch(ranks, &"Marksman"), 14)
+	var ranks: Dictionary[StringName, int] = {&"steady_hands": gate - 1, &"thick_skin": 5}
+	assert_eq(SkillTree.points_in_branch(ranks, &"Marksman"), gate - 1)
 	assert_eq(SkillTree.points_in_branch(ranks, &"Survivor"), 5)
 	assert_false(SkillTree.can_rank_up(ranks, &"dead_center", 50))
-	ranks[&"steady_hands"] = 15
+	ranks[&"steady_hands"] = gate
 	assert_true(SkillTree.can_rank_up(ranks, &"dead_center", 50))
 	assert_eq(SkillTree.rank_up(ranks, &"dead_center", 50).get(&"dead_center"), 1)
 	assert_false(SkillTree.can_rank_up(ranks, &"dead_center", 2))
 
 
-func test_capstone_requires_twenty_five_branch_points() -> void:
-	var ranks: Dictionary[StringName, int] = {&"steady_hands": 24}
+func test_capstone_needs_its_gate_counting_the_keystone() -> void:
+	var gate: int = (Content.get_item(&"skills", &"execution_line") as SkillNodeData).branch_points_needed
+	var ranks: Dictionary[StringName, int] = {&"steady_hands": gate - 2, &"dead_center": 1}
 	assert_false(SkillTree.can_rank_up(ranks, &"execution_line", 50))
-	ranks[&"steady_hands"] = 25
+	ranks[&"steady_hands"] = gate - 1
 	assert_true(SkillTree.can_rank_up(ranks, &"execution_line", 50))
+
+
+func test_only_ranks_added_since_the_save_come_off() -> void:
+	var saved: Dictionary[StringName, int] = {&"steady_hands": 1}
+	var pending: Dictionary[StringName, int] = {&"steady_hands": 2, &"quick_draw": 1}
+	assert_true(SkillTree.can_rank_down(pending, saved, &"steady_hands"))
+	assert_true(SkillTree.can_rank_down(pending, saved, &"quick_draw"))
+	assert_false(SkillTree.can_rank_down(pending, saved, &"weak_spot"))
+	pending = SkillTree.rank_down(pending, saved, &"steady_hands")
+	assert_eq(pending[&"steady_hands"], 1)
+	assert_false(SkillTree.can_rank_down(pending, saved, &"steady_hands"), "saved ranks only go with Reset")
+	pending = SkillTree.rank_down(pending, saved, &"quick_draw")
+	assert_false(pending.has(&"quick_draw"), "a rank taken to 0 leaves no key")
+
+
+func test_removing_a_rank_that_holds_up_a_keystone_is_refused() -> void:
+	var gate: int = (Content.get_item(&"skills", &"dead_center") as SkillNodeData).branch_points_needed
+	var saved: Dictionary[StringName, int] = {}
+	var pending: Dictionary[StringName, int] = {&"steady_hands": gate, &"dead_center": 1}
+	assert_false(SkillTree.can_rank_down(pending, saved, &"steady_hands"))
+	assert_eq(SkillTree.rank_down(pending, saved, &"steady_hands"), pending)
+	assert_true(SkillTree.can_rank_down(pending, saved, &"dead_center"))
+	pending = SkillTree.rank_down(pending, saved, &"dead_center")
+	assert_true(SkillTree.can_rank_down(pending, saved, &"steady_hands"))
+
+
+func test_rank_down_returns_a_copy() -> void:
+	var saved: Dictionary[StringName, int] = {}
+	var pending: Dictionary[StringName, int] = {&"steady_hands": 2}
+	var result: Dictionary[StringName, int] = SkillTree.rank_down(pending, saved, &"steady_hands")
+	assert_eq(pending[&"steady_hands"], 2)
+	assert_eq(result[&"steady_hands"], 1)
 
 
 func test_rank_up_returns_a_new_dictionary_even_when_refused() -> void:

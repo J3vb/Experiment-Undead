@@ -263,7 +263,7 @@ The first levels come fast so new players unlock their first skill and ability i
 
 One skill point per level from level 2, plus a bonus point at levels 10, 20, 30, 40 and 50. That is 54 points. The tree has 3 branches of about 30 points each, so a maxed character can fill a bit less than two branches. That forces a build choice. Respec is free in the town for the first 3 times, then costs Scrap.
 
-| Branch | Focus | Example nodes | Keystone (15 points in branch) | Capstone (25 points in branch) |
+| Branch | Focus | Example nodes | Keystone (8 points in branch for now, 15 after F-90) | Capstone (11 points in branch for now, 25 after F-90) |
 | --- | --- | --- | --- | --- |
 | Marksman | Gun handling and headshots | Steady Hands: recoil -5% per rank (3). Quick Draw: ADS +5% per rank (3). Weak Spot: headshot damage +5% per rank (3). Fast Hands: reload +5% per rank (3). Deep Pockets: reserve ammo +10% per rank (2). | Dead Center: headshot kills refund 1 bullet to the magazine | Execution Line: any hit on a zombie under 15% health kills it (Brutes under 5%) |
 | Survivor | Health, movement, staying alive | Thick Skin: +10 max health per rank (3). Second Breath: regen starts 0.3 s sooner per rank (3). Light Feet: sprint speed +5% per rank (2). Sturdy: own explosive damage -25% per rank (2). | Last Stand: once per round, a killing blow leaves you at 1 health with 2 s of immunity | Undying: +1 self-revive charge per run (co-op: revive teammates 50% faster) |
@@ -530,3 +530,4 @@ Design changes since the Nov 14, 2026 copy, newest first. Add one row in the sam
 | 2026-11-15 | Weapons | Kestrel SMG and Talon DMR damage now match the balance sheet (25.65 and 68.4 per bullet); they were about 43% too low. | [weapons.csv](balance/weapons.csv), PR #76 |
 | 2026-11-15 | Weapons | Version 1 roster grows from 12 to 22 base guns, all bullet-based. The crossbow and launchers are dropped. | [gun-roster.md](gun-roster.md), PR #67 |
 | 2026-11-20 | Audio | Real sounds and music replace the generated placeholders, from free sources only (Sonniss, Kenney, Freesound CC0, Stable Audio on the GPU). No paid packs. | [real-sounds-music.md](../plans/real-sounds-music.md), [sound.md](sound.md#packs-to-evaluate) |
+| 2026-11-20 | Skills | Keystone and capstone gates drop from 15/25 to 8/11 points in a branch, because the branches hold only 10 to 14 points today. F-90 adds about 5 skills per branch and puts the gates back to 15/25. | [skill-tree-screen.md](../plans/skill-tree-screen.md), PR #464 |

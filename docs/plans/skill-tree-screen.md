@@ -1,6 +1,6 @@
 # Plan: Skill tree screen (Research)
 
-Status: Approved
+Status: Building
 Roadmap: F-21 / issue #112
 Phase: P5
 Size: M
