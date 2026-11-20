@@ -5,7 +5,7 @@ Roadmap: F-82
 Phase: P8 (steps 1-4 land before Release v0.1.0, F-11)
 Size: L
 Approved by: the person in the project thread, 2026-11-19 ("Approve, start building" card, after picking Tauri and a Windows installer); plan PR #378
-Lore link: the launcher shows the game's name, its news and the Oriel/Halcyon/Cordon names from docs/design/lore.md (Factions); the tagline "A Fenlight survival experience" is a provisional row in "Story links for game content" (Maps, rooms and props)
+Lore link: the launcher shows the game's name, its news and the Oriel/Halcyon/Cordon names from docs/design/lore.md (Factions); the tagline "The cold kept it asleep." is a provisional row in "Story links for game content" (Maps, rooms and props)
 
 ## Goal
 
