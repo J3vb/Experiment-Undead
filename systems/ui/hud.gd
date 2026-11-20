@@ -25,7 +25,6 @@ var _squad: SquadCards
 @onready var points_label: Label = $Root/Loadout/PointsLabel
 @onready var points_delta: Label = $Root/Loadout/PointsDelta
 @onready var serums: HBoxContainer = $Root/Vitals/Serums
-@onready var health_bar: ProgressBar = $Root/Vitals/Health
 @onready var ammo_label: Label = $Root/Loadout/Ammo/AmmoLabel
 @onready var weapon_label: Label = $Root/Loadout/WeaponLabel
 @onready var reserve_label: Label = $Root/Loadout/Ammo/ReserveLabel
@@ -178,8 +177,6 @@ func _on_player_spawned(player: Player) -> void:
 func _on_health_changed(player: Player, current: float, maximum: float) -> void:
 	if player == _player:
 		_health_ratio = clampf(current / maxf(maximum, 1.0), 0.0, 1.0)
-		health_bar.value = _health_ratio
-		health_bar.modulate = BLOOD_RED if _health_ratio < 0.3 else OFF_WHITE
 		_drop_lost_serums(player)
 
 

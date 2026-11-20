@@ -54,6 +54,24 @@ func test_quickhands_swaps_40_percent_faster() -> void:
 	assert_false(player.weapons.is_swapping(), "0.24 s with Quickhands")
 
 
+func test_gear_handling_line_swaps_faster() -> void:
+	player.equip_gear([{"v": 1, "uid": "gloves", "base": "vest_medium", "aff": [["handling_pct", 3, 0.5]]}])
+	player.weapons.equip(0)
+	_tick(0.31)
+	assert_true(player.weapons.is_swapping())
+	_tick(0.02)
+	assert_false(player.weapons.is_swapping(), "0.32 s with +25% handling")
+
+
+func test_the_raised_gun_own_handling_line_counts() -> void:
+	player.weapons.weapons[0].item = ItemInstance.new({"uid": "quick", "aff": [["handling_pct", 3, 0.5]]})
+	player.weapons.equip(0)
+	_tick(0.31)
+	assert_true(player.weapons.is_swapping())
+	_tick(0.02)
+	assert_false(player.weapons.is_swapping(), "the pistol's own +25% swap line")
+
+
 func test_equipping_the_gun_in_hand_is_free() -> void:
 	player.weapons.equip(1)
 	assert_false(player.weapons.is_swapping())

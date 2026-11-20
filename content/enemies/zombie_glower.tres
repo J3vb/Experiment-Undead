@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://systems/enemies/enemy_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://systems/enemies/glower.tscn" id="2"]
+[ext_resource type="AudioStream" path="res://assets/audio/glower_chitter_1.wav" id="3"]
+[ext_resource type="AudioStream" path="res://assets/audio/glower_chitter_2.wav" id="4"]
+[ext_resource type="AudioStream" path="res://assets/audio/glower_chitter_3.wav" id="5"]
+[ext_resource type="AudioStream" path="res://assets/audio/glower_swipe.wav" id="6"]
+[ext_resource type="AudioStream" path="res://assets/audio/glower_death_1.wav" id="20"]
+[ext_resource type="AudioStream" path="res://assets/audio/glower_death_2.wav" id="21"]
+[ext_resource type="AudioStream" path="res://assets/audio/zombie_step_1.wav" id="23"]
+[ext_resource type="AudioStream" path="res://assets/audio/zombie_step_2.wav" id="24"]
+[ext_resource type="AudioStream" path="res://assets/audio/zombie_step_3.wav" id="25"]
+[ext_resource type="AudioStream" path="res://assets/audio/zombie_step_4.wav" id="26"]
+
+[resource]
+script = ExtResource("1")
+id = &"zombie_glower"
+display_name = "Glower"
+max_health = 40.0
+move_speed = 5.0
+uses_speed_mix = false
+acceleration = 8.0
+xp_reward = 10
+attack_damage = 20.0
+attack_range = 1.4
+attack_windup = 0.45
+attack_cooldown = 1.0
+body_scale = 1.0
+scene = ExtResource("2")
+groan_sounds = Array[AudioStream]([ExtResource("3"), ExtResource("4"), ExtResource("5")])
+attack_sound = ExtResource("6")
+death_sounds = Array[AudioStream]([ExtResource("20"), ExtResource("21")])
+footstep_sounds = Array[AudioStream]([ExtResource("23"), ExtResource("24"), ExtResource("25"), ExtResource("26")])

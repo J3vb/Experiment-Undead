@@ -125,3 +125,10 @@ func test_weapon_snapshot_leaves_timer_and_head_stats_for_the_hook() -> void:
 	assert_eq(snapshot.ads_time, base.ads_time)
 	assert_eq(snapshot.head_multiplier, base.head_multiplier)
 	assert_eq(snapshot.rounds_per_minute, base.rounds_per_minute)
+
+
+func test_swap_time_reads_handling_and_serums_still_multiply() -> void:
+	var stats: StatBlock = StatBlock.new()
+	stats.add_modifier(&"handling_pct", "increased", 0.1, &"gloves")
+	assert_almost_eq(ItemInstance.stat_value(stats, &"swap_time"), 1.0 / 1.1, 0.00001)
+	assert_almost_eq(ItemInstance.stat_value(stats, &"swap_time", 1.0, null, 0.6), 0.6 / 1.1, 0.00001, "Quickhands")

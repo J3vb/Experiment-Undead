@@ -94,8 +94,8 @@ jobs:
           $version = $env:TAG.TrimStart("v")
           New-Item -ItemType Directory -Force dist | Out-Null
           $setup = Get-ChildItem target/release/bundle/nsis/*-setup.exe | Select-Object -First 1
-          Copy-Item $setup.FullName "dist/ExperimentUndead-Setup-$version.exe"
-          if (Test-Path "$($setup.FullName).sig") { Copy-Item "$($setup.FullName).sig" "dist/ExperimentUndead-Setup-$version.exe.sig" }
+          Copy-Item $setup.FullName "dist/Fenlight-Setup-$version.exe"
+          if (Test-Path "$($setup.FullName).sig") { Copy-Item "$($setup.FullName).sig" "dist/Fenlight-Setup-$version.exe.sig" }
           Get-ChildItem dist
 
       - uses: actions/upload-artifact@v4
@@ -114,7 +114,7 @@ jobs:
       - name: Download builds
         uses: actions/download-artifact@v4
         with:
-          pattern: ExperimentUndead-*
+          pattern: Fenlight-*
           path: artifacts
 
       - name: Zip builds
@@ -142,10 +142,10 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           version="${TAG#v}"
-          sig="dist/ExperimentUndead-Setup-$version.exe.sig"
+          sig="dist/Fenlight-Setup-$version.exe.sig"
           if [ -f "$sig" ]; then
             python3 source/tools/ci/launcher_release.py manifest --version "$version" \
-              --setup-url "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/ExperimentUndead-Setup-$version.exe" \
+              --setup-url "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/Fenlight-Setup-$version.exe" \
               --signature-file "$sig" --out dist/latest.json
           fi
           ls -la dist
@@ -162,6 +162,6 @@ jobs:
             gh release upload "$TAG" dist/* --repo "$GITHUB_REPOSITORY" --clobber
             exit 0
           fi
-          flags=(--repo "$GITHUB_REPOSITORY" --title "Experiment Undead $VERSION" --generate-notes --verify-tag)
+          flags=(--repo "$GITHUB_REPOSITORY" --title "Fenlight $VERSION" --generate-notes --verify-tag)
           if [ "$PRERELEASE" = "true" ]; then flags+=(--prerelease); fi
           gh release create "$TAG" dist/* "${flags[@]}"

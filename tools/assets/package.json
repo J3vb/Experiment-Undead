@@ -1,5 +1,5 @@
 {
-  "name": "experiment-undead-asset-checks",
+  "name": "fenlight-asset-checks",
   "private": true,
   "type": "module",
   "description": "Khronos glTF validator for the asset CI (tools/assets/validate_gltf.mjs).",

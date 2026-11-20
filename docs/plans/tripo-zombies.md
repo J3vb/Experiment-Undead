@@ -1,10 +1,10 @@
 # Plan: Existing zombies to Tripo models
 
-Status: Review
+Status: Approved
 Roadmap: F-86 / issue none (person's ask in the project thread, 2026-11-20)
 Phase: P4
 Size: M
-Approved by:
+Approved by: Claude plan review on PR #436 (Codex out of quota), fixes applied, 2026-11-20 (size M, no open decisions; built on the person's ask)
 Lore link: Shambler, Crawler and Bloater rows in [lore.md](../design/lore.md#story-links-for-game-content). The two Shambler looks are Halcyon's own dead: lab staff who turned first on Day 0 and Oriel security who held the doors (backstories in the Tripo character list). The Crawler is a Shambler whose legs were blown off. The Bloater's belly glows because the pods do. No new names, signs or text.
 
 ## Goal
@@ -47,7 +47,7 @@ Not in (non-goals, and where each one goes instead):
 ### Ready to build
 - Foundations touched: 2 (content as data: model scenes in .tscn/.tres), 7 (no
   per-frame allocations). Any of them shaky or missing? no. Needs the zombie
-  intake from F-28 step 1 (PR #422, green). This plan is approved only after #422 merges.
+  intake from F-28 step 1 (PR #422, merged 2026-11-20).
 - Decision records that apply: 0008 code-built art (superseded for these models
   by 0017), 0017 Tripo models ("code-built stay for done features until a plan
   moves them": this plan moves the three zombies; step 1 adds the line to 0017),

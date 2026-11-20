@@ -46,7 +46,7 @@ Each says when to fix it.
 - **Whole-tube reloads:** Brenner, Hollis and Atlas reload in one timed action. Fix when: real reload animations exist.
 - **Reforger** has Tier I only and swaps instantly. Fix when: Tiers II (ammo mods) and III get a roadmap row.
 - **Frag numbers** (3 s fuse, 15 m/s throw, 7 m blast with full damage inside 1.5 m, own damage up to 60, no friendly fire) are provisional picks; the 1000 centre damage is the person's. Fix when: the frag play-test. [frag-grenades](plans/frag-grenades.md)
-- **Frag look:** the frag is a grey ball with no first-person hold or throw; the blast is a code-built flash, fireball and smoke (no .tscn, like HeadPop) on the Weapons bus. Fix when: F-24 step 4. [frag-grenades](plans/frag-grenades.md)
+- **Frag blast** is code-built (flash, fireball, smoke; no .tscn, like HeadPop) on the Weapons bus; the frag in the hand has no throwing-arm swing, only a left-hand hold and flick. Fix when: the frag play-test asks for more. [frag-grenades](plans/frag-grenades.md)
 - **Power-ups:** Scavenger's +1 grenade waits; no voice line, tint or drop arpeggio on pickup. Fix when: F-24 grenades, F-04 audio follow-up.
 - **Window barriers:** no slot timeout (move to another barrier after 4 s), no real sill. Fix when: co-op crowding at a window needs it.
 - **Emergency lighting:** dimmed red ceiling lights only, no separate fixtures or sound. Fix when: the sound world step.
@@ -54,7 +54,9 @@ Each says when to fix it.
 - **Slide** keeps the normal 0.18 s sprint-out block before hip fire (weapon.gd was at its size limit). Fix when: weapon.gd is split (F-79 step 7).
 - **Co-op hit bounds** use Content weapon data, not the held inventory (weapon switching is local). Fix when: a server checks loadouts (P8).
 - **Loadout trust:** the server does not check that a client owns the gear it sends (friends-only servers). Fix when: public servers (P8). [item-effects-server](plans/item-effects-server.md)
-- **All-guns gear stats:** wall, Vault, Reforged and starter guns get the player's recoil and reserve-ammo stats (skills and gear); gear `dmg_pct` (All damage) still reaches item guns only. Fix when: the loot balance pass. [skill-effects](plans/skill-effects.md)
+- **All-guns gear stats (F-71 step 1):** non-item guns get gear damage, recoil and reserve through F-20's `ItemInstance.fit_player_gun` and `ItemLoadout.refit_guns`, not a new `Weapon.refit`; swap time also reads the raised gun's own handling line. [four-gear-slots](plans/four-gear-slots.md)
+- **Skill rules (provisional):** Execution Line checks health before the hit; Dead Center refunds a round to the gun in hand on any headshot kill; Undying works only without Second Wind and costs every Serum; Scrounger skips the revive reward. [skill-effects](plans/skill-effects.md)
+- **Skills waiting on their feature:** Gadgeteer and Sturdy only add their stat; Execution Line has no Brute rule. Overtime lengthens timed power-ups by the collector's seconds (team-wide timer). Fix when: F-22, F-24, F-30. [skill-effects](plans/skill-effects.md)
 - **Hold-to-buy** stays a tap. Fix when: accidental buys show in play-tests.
 - **Loot extras:** no supply or exfil caches, no gun comparison in the pickup prompt, no trading; traits, sets and `proc` lines save but do not run. Fix when: their loot batches.
 - **Run loadout:** the equipped Primary is not given at spawn (the round-5 Drop Locker is not built). Fix when: the Drop Locker.
@@ -100,7 +102,9 @@ Agent picks the person may change.
 - **Halcyon atmosphere:** spark gaps 3-9 s and a 30 s Containment klaxon. Emergency lights at 30% red-orange, back on in a 0.6 s ragged wave.
 - **Footsteps:** one step per 0.5 s walking, 0.34 s sprinting, 0.72 s crouched; landings silent under 3 m/s.
 - **HUD:** XP bar placement, the 90 px / 0.6 s level-up ring, a 3-row drop feed; "Crits only" damage numbers show headshots until a crit stat exists.
+- **HUD vitals (provisional):** 5 health segments of max/5 each, no health number or portrait (the 2026-11-20 concept has none). [hud-concept](plans/hud-concept.md)
 - **Halcyon concept pass (F-68):** kitchen fires as the Mess Hall's warm accent, the existing hazard orange (not yellow) on the tank railings, the catwalk office not walkable, pods at leak-glow strength, one steel material on the ceiling models. Look signed off 2026-11-19.
+- **Glower (F-28):** 1.7 m tall; veins glow bio-green at strength 2 where the baked albedo is green; chitter, swipe and death sounds generated in `zombie_sfx.py` (no free pack download from the cloud). [blackout-glowers](plans/blackout-glowers.md)
 - **Model looks:** skinned zombies, gear finishes, vest frames, first-person arms, teammate clips and the launcher screen are agent looks until the person sees them.
 - **Tripo settings:** `tripo_make.py` asks for model v3.1, PBR, detailed texture, standard geometry (a 0.9 m prop: 40 credits); `body_tarp` goes in `props/`, not `dressing/` (intake prop budget 2,000). [tripo-models](plans/tripo-models.md)
 - **Supply Crate:** a plain box with a teal strip, not a model; anyone opens it, only the opener takes the gun; it rolls the level Vault's pool for free and vanishes 25 s after landing unless opened. [more-power-ups](plans/more-power-ups.md)
@@ -115,5 +119,6 @@ Agent picks the person may change.
 - **Keeper spots (F-76, provisional):** the Tripo stalls are packed to chest height, so each keeper stands inside the stall on a hidden 0.2-0.3 m step (Missions on the floor); the talk area reaches 0.25 m past the stall collider. Card asked. [lantern-post-vendors](plans/lantern-post-vendors.md)
 - **Reload motion (F-85):** empty reloads press the bolt catch above the well for every gun (no charging-handle pull: crossing the receiver flipped the elbow); the tactical swap shows the same magazine low in frame. Feel signed off 2026-11-20. [reload-animations](plans/reload-animations.md)
 - **BR-12 Reforged reload (F-85):** keeps the base shell times like every Reforged gun keeps its reload, so its 9 shells take 5.1 s from empty (was 3.6 s for a full reload). [reload-animations](plans/reload-animations.md)
-- **Launcher game folder (F-82):** the game lives in the launcher's own app data folder (`%LOCALAPPDATA%\com.experimentundead.launcher\game\`), not `Experiment Undead\`, so Tauri's uninstaller "delete app data" box removes it with no custom NSIS code. [separate-launcher](plans/separate-launcher.md)
+- **Launcher game folder (F-82):** the game lives in the launcher's own app data folder (`%LOCALAPPDATA%\com.experimentundead.launcher\game\`), not `Fenlight\`, so Tauri's uninstaller "delete app data" box removes it with no custom NSIS code. [separate-launcher](plans/separate-launcher.md)
 - **First-person charm:** hangs from a `CharmMount` on the left rail just in front of the support hand, out of the ADS sight line; hidden while a sidearm is in hand; a spring swing, no physics. [gear-first-person](plans/gear-first-person.md)
+- **Rename to Fenlight:** players see Fenlight; game exe/pck names, the launcher app id and data folder, and the `experiment-undead-server` image keep the old name so installs and servers keep working. Saves copy over once. [RELEASING](RELEASING.md)

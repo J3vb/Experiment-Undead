@@ -6,6 +6,8 @@ extends Node
 const KILL_WINDOW: float = 0.5
 const SLACK: float = 1.5
 const MAX_IMPULSE: float = 12.0
+## Execution Line kills a zombie hit while under this share of its health.
+const EXECUTE_BELOW: float = 0.15
 
 var session: GameSession
 
@@ -15,6 +17,8 @@ var _claims: Dictionary[int, Dictionary] = {}
 var _recent_hits: Array[Dictionary] = []
 var _weapons: Dictionary[StringName, WeaponData] = {}
 var _chain: Chain = Chain.new()
+## Per peer: [player stats, Content gun, that gun fitted with the stats]. Pellet claims reuse it.
+var _fitted: Dictionary[int, Array] = {}
 
 
 func _ready() -> void:
@@ -108,6 +112,8 @@ func claim_hit(
 	var weapon: WeaponData = _weapons.get(weapon_id)
 	if item and weapon:
 		weapon = item.weapon_data(weapon, player.stats)
+	elif weapon and weapon.slot != WeaponData.Slot.MELEE:
+		weapon = _fitted_gun(sender, player, weapon)
 	if not _valid_hit(player, weapon, amount, point, impulse):
 		reject(sender, &"hit_out_of_bounds")
 		return
@@ -154,10 +160,19 @@ func apply_server_hit(hit_zone: HitZone, info: DamageInfo) -> void:
 	if (zombie.frozen or effect == WeaponData.Effect.FROST) and not zombie.stasis:
 		if Frost.apply(zombie, info):
 			return
-	if session.power_up_drops and session.power_up_drops.is_active(PowerUpData.Effect.OVERKILL):
+	var overkill: bool = session.power_up_drops and session.power_up_drops.is_active(PowerUpData.Effect.OVERKILL)
+	if overkill or _executes(zombie, info):
 		info.amount = maxf(info.amount, zombie.health.current / maxf(hit_zone.damage_multiplier, 0.01) + 1.0)
 	hit_zone.receive_hit(info)
 	_confirm_secondary_kill(zombie, info, collateral_killed)
+
+
+## Execution Line: any hit on a zombie already under EXECUTE_BELOW of its health kills it.
+func _executes(zombie: Zombie, info: DamageInfo) -> bool:
+	var player: Player = info.attacker as Player
+	if player == null or not player.skill_rules.has(SkillNodeData.Rule.EXECUTION_LINE):
+		return false
+	return zombie.health.get_ratio() < EXECUTE_BELOW
 
 
 ## Defer past the normal hit marker; primary kills already confirm themselves.
@@ -176,6 +191,16 @@ func _valid_hit(player: Player, weapon: WeaponData, amount: float, point: Vector
 	var maximum: float = maxf(weapon.damage, weapon.min_damage) * weapon.head_multiplier
 	maximum *= player.get_stat(&"head_damage") * SLACK
 	return amount <= maximum
+
+
+## The Content gun with the sender's gear and skill lines, rebuilt only when their stats object changes.
+func _fitted_gun(sender: int, player: Player, weapon: WeaponData) -> WeaponData:
+	var cached: Array = _fitted.get(sender, [])
+	if cached.size() == 3 and cached[0] == player.stats and cached[1] == weapon:
+		return cached[2]
+	var fitted: WeaponData = ItemInstance.fit_player_gun(weapon, player.stats)
+	_fitted[sender] = [player.stats, weapon, fitted]
+	return fitted
 
 
 ## The server's cached copy of a gun or melee weapon, or null for an unknown id.
@@ -217,6 +242,7 @@ func reject(sender: int, reason: StringName) -> void:
 
 func _forget_peer(peer_id: int) -> void:
 	_claims.erase(peer_id)
+	_fitted.erase(peer_id)
 
 
 func confirm_area_hit(player: Player, killed: bool) -> void:

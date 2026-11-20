@@ -35,6 +35,7 @@ var _held: Weapon
 func setup(player: Player, camera: Camera3D) -> void:
 	weapon_bob = Settings.get_value(&"comfort", &"weapon_bob")
 	Settings.changed.connect(_on_setting_changed)
+	Events.hit_confirmed.connect(_on_hit_confirmed)
 	_player = player
 	_camera = camera
 	melee.shooter = player
@@ -44,7 +45,7 @@ func setup(player: Player, camera: Camera3D) -> void:
 
 
 ## Adds a gun. When every slot is full it replaces the gun in hand.
-## fit: give it the player's recoil and reserve stats; false for item guns, already fitted by their item.
+## fit: give it the player's damage, recoil and reserve stats; false for item guns, already fitted by their item.
 func give(data: WeaponData, fit: bool = true) -> Weapon:
 	if weapons.size() >= max_slots and current:
 		return replace(current, data, fit)
@@ -101,7 +102,8 @@ func equip(index: int) -> void:
 		current.trigger_held = false
 		current.aiming = false
 		current.ads_progress = 0.0
-		var swap: float = SWAP_TIME * (_player.get_stat(&"swap_time") if _player else 1.0)
+		var item_stats: StatBlock = weapons[index].item.stats if weapons[index].item else null
+		var swap: float = SWAP_TIME * (_player.get_stat(&"swap_time", 1.0, item_stats) if _player else 1.0)
 		if swap >= _swap_left:
 			_swap_time = swap
 			_swap_left = swap
@@ -124,6 +126,7 @@ func _bind_arm_view() -> void:
 		if _player != null:
 			_player.gear_rig.look_changed.connect(arm_view.apply_look)
 			arm_view.apply_look(_player.gear_rig.look)
+	arm_view.thrower = _player.grenades if _player else null
 	arm_view.bind_weapon(current)
 
 
@@ -254,6 +257,18 @@ func _process(delta: float) -> void:
 func _on_setting_changed(section: StringName, key: StringName, value: Variant) -> void:
 	if section == &"comfort" and key == &"weapon_bob":
 		weapon_bob = value
+
+
+## Dead Center: a confirmed headshot kill puts one round back in the gun in hand (owner only).
+func _on_hit_confirmed(player: Player, is_kill: bool, headshot: bool) -> void:
+	if player != _player or not (is_kill and headshot) or current == null:
+		return
+	if not _player.is_multiplayer_authority() or not _player.skill_rules.has(SkillNodeData.Rule.DEAD_CENTER):
+		return
+	if current.instance.ammo_in_mag >= current.data.magazine_size:
+		return
+	current.instance.ammo_in_mag += 1
+	current.ammo_changed.emit(current.instance.ammo_in_mag, current.instance.ammo_reserve)
 
 
 func _on_ammo_changed(in_mag: int, reserve: int, weapon: Weapon) -> void:

@@ -4,6 +4,7 @@ extends Node3D
 
 const ARMS: PackedScene = preload("res://assets/models/characters/player_arms.glb")
 const COMMON: RarityLook = preload("res://content/looks/rarity/common.tres")
+const FRAG_MODEL: PackedScene = preload("res://assets/models/throwables/frag.glb")
 const PLACEHOLDERS: Array[String] = ["HandRight", "HandLeft", "SleeveRight", "SleeveLeft"]
 
 static var _warned_no_grip: Dictionary[StringName, bool] = {}
@@ -14,6 +15,9 @@ var skeleton: Skeleton3D
 var mesh: MeshInstance3D
 var weapon: Weapon
 var profile: PlayerArmProfiles.Profile
+## The owner's lethal slot; its cook drives grenade_hold (the left hand holds the frag).
+var thrower: GrenadeThrower
+var grenade_hold: GrenadeHold = GrenadeHold.new()
 
 var _solver: PlayerArmPose
 var _support: Node3D
@@ -25,6 +29,8 @@ var _gear: Array[Node3D] = []
 var _charm: Node3D
 var _mount: Node3D
 var _swing: CharmSwing = CharmSwing.new()
+var _frag: Node3D
+var _left_hand: int = -1
 
 
 func _ready() -> void:
@@ -35,6 +41,7 @@ func _ready() -> void:
 	skeleton = arms.find_children("*", "Skeleton3D", true, false)[0] as Skeleton3D
 	mesh = arms.find_child("PlayerArms", true, false) as MeshInstance3D
 	_solver = PlayerArmPose.new(skeleton)
+	_left_hand = skeleton.find_bone("hand_L")
 	for side: String in ["R", "L"]:
 		_hand_rest.append(skeleton.get_bone_global_rest(skeleton.find_bone("hand_" + side)))
 		_markers.append(arms.find_child("GripIndexTip_" + side, true, false) as Node3D)
@@ -102,6 +109,8 @@ func _set_markers(index: int, grip: PlayerArmProfiles.Hand) -> void:
 
 
 func _process(delta: float) -> void:
+	if thrower:
+		grenade_hold.step(thrower.cooking, delta, thrower.data.recover_time)
 	update_pose()
 	place_charm(delta)
 
@@ -122,9 +131,39 @@ func update_pose() -> void:
 		return
 	var pump_delta: Vector3 = weapon.to_local(_support.global_position) - _support_rest if _support else Vector3.ZERO
 	pump_delta += weapon.pose.reload_hand(profile.left.wrist + pump_delta)
-	_solver.pose(profile, weapon.transform, pump_delta, weapon._sprint_progress, weapon.pose.reload_relax())
+	var relax: float = weapon.pose.reload_relax()
+	var to_holder: Basis = (get_parent() as Node3D).transform.basis.inverse()
+	_solver.set_left_hold(to_holder * GrenadeHold.FINGERS, to_holder * GrenadeHold.BACK, grenade_hold.weight)
+	if grenade_hold.weight > 0.0:
+		pump_delta += _hold_delta(profile.left.wrist + pump_delta)
+		relax = maxf(relax, grenade_hold.weight)
+	_solver.pose(profile, weapon.transform, pump_delta, weapon._sprint_progress, relax)
+	_place_frag()
 	if weapon.pose.motion and weapon.is_reloading() and not _warned_reach.has(weapon.data.id):
 		_check_reach()
+
+
+## Weapon-local offset that takes the left wrist from its grip to the grenade hold spot.
+func _hold_delta(grip_wrist: Vector3) -> Vector3:
+	var target: Vector3 = (get_parent() as Node3D).transform.affine_inverse() * grenade_hold.wrist_target()
+	return (weapon.transform.affine_inverse() * target - grip_wrist) * grenade_hold.weight
+
+
+## The frag in the left palm while cooking, on the viewmodel layer like the arms.
+func _place_frag() -> void:
+	if _frag == null:
+		if not grenade_hold.shows_frag:
+			return
+		_frag = FRAG_MODEL.instantiate() as Node3D
+		_frag.name = "HeldFrag"
+		add_child(_frag)
+		for node: Node in _frag.find_children("*", "GeometryInstance3D", true, false):
+			(node as GeometryInstance3D).layers = ScopeLens.VIEWMODEL_LAYER
+			(node as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_frag.visible = grenade_hold.shows_frag
+	var holder: Transform3D = (get_parent() as Node3D).transform
+	var wrist: Vector3 = holder * skeleton.get_bone_global_pose(_left_hand).origin
+	_frag.position = holder.affine_inverse() * grenade_hold.frag_position(wrist)
 
 
 ## How far the left forearm stretches past its length; zero when the hand target is reachable.

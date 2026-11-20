@@ -84,6 +84,17 @@ func test_enemies_are_valid() -> void:
 			z.free()
 
 
+func test_glower_matches_the_design() -> void:
+	var glower: EnemyData = load("res://content/enemies/zombie_glower.tres") as EnemyData
+	assert_eq(glower.max_health, 40.0, "0.4x the Walker's 100")
+	assert_eq(glower.move_speed, 5.0, "5 m/s")
+	assert_false(glower.uses_speed_mix, "fixed speed, not the round's speed mix")
+	assert_eq(glower.attack_damage, 20.0)
+	assert_eq(glower.xp_reward, 10)
+	assert_eq(glower.groan_sounds.size(), 3, "chitter idles")
+	assert_not_null(glower.attack_sound, "swipe")
+
+
 func test_wave_rules_are_valid() -> void:
 	for path: String in _files("waves"):
 		var r: WaveRules = load(path) as WaveRules

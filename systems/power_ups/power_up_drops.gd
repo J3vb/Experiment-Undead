@@ -1,12 +1,13 @@
 ## Rolls a power-up drop for every kill by a player: drop_chance each, at most
 ## max_per_round a round. Types come from a shuffled deck, so every type drops
 ## once before any repeats; a type with deck_chance below 1 sits out some decks.
-## Kills by a player with Scavenger can also drop an ammo pack (not counted in
-## the cap). Lives in the GameSession. The server spawns pickups and Supply
-## Crates through a MultiplayerSpawner, so every peer and late joiner sees them;
-## ammo effects reach the PCs that own the guns. Timed power-ups (Payday,
-## Overkill, Stasis) run on a team-wide server timer; every peer hears when one
-## starts, late joiners ask for the time left.
+## Kills by a player with Scavenger can also drop an ammo pack, and Chain Supply
+## kills a second, different power-up (neither counted in the cap). Lives in the
+## GameSession. The server spawns pickups and Supply Crates through a
+## MultiplayerSpawner, so every peer and late joiner sees them; ammo effects reach
+## the PCs that own the guns. Timed power-ups (Payday, Overkill, Stasis) run on a
+## team-wide server timer; every peer hears when one starts, late joiners ask for
+## the time left.
 class_name PowerUpDrops
 extends Node
 
@@ -15,6 +16,9 @@ const CRATE_SCENE: PackedScene = preload("res://systems/power_ups/supply_crate.t
 ## Spawn data kinds: one MultiplayerSpawner makes pickups and Supply Crates.
 const KIND_PICKUP: int = 0
 const KIND_CRATE: int = 1
+## Chain Supply: chance that a drop brings a second, different power-up, and how far apart they land.
+const CHAIN_CHANCE: float = 0.25
+const CHAIN_OFFSET: Vector3 = Vector3(0.8, 0.0, 0.0)
 
 @export var drop_chance: float = 0.025
 @export var max_per_round: int = 4
@@ -54,15 +58,17 @@ func _physics_process(delta: float) -> void:
 
 
 ## Server: starts data's timer for the whole team, or resets it to full time on a re-pickup.
-func start_timer(data: PowerUpData) -> void:
+## extra: the collector's power_up_duration seconds (Overtime, gear).
+func start_timer(data: PowerUpData, extra: float = 0.0) -> void:
 	if not multiplayer.is_server():
 		return
-	_timers[data] = data.duration
+	var duration: float = data.duration + maxf(extra, 0.0)
+	_timers[data] = duration
 	if data.effect == PowerUpData.Effect.STASIS:
 		PowerUpEffects.set_stasis(session.spawner, true)
-	Events.power_up_timer_started.emit(data, data.duration)
+	Events.power_up_timer_started.emit(data, duration)
 	if not multiplayer.get_peers().is_empty():
-		_receive_timer.rpc(data.id, data.duration)
+		_receive_timer.rpc(data.id, duration)
 
 
 ## Server: true while a timed power-up with this effect runs.
@@ -155,7 +161,7 @@ func on_collected(pickup: PowerUp, collector: Player) -> void:
 		PowerUpData.Effect.SUPPLY_CRATE:
 			spawn_crate(pickup.data, pickup.position - Vector3.UP * 0.8)
 	if pickup.data.duration > 0.0:
-		start_timer(pickup.data)
+		start_timer(pickup.data, collector.get_stat(&"power_up_duration", 0.0))
 	for player: Player in session.get_players() if pickup.data.team_points > 0 else []:
 		player.wallet.add(pickup.data.team_points)
 	if not multiplayer.get_peers().is_empty():
@@ -230,7 +236,20 @@ func _on_enemy_killed(enemy: Node3D, info: DamageInfo) -> void:
 	if dropped_this_round >= max_per_round or power_ups.is_empty():
 		return
 	if session.rng.randf() < drop_chance:
-		drop(_next(), enemy.global_position)
+		var first: PowerUpData = _next()
+		drop(first, enemy.global_position)
+		if killer.skill_rules.has(SkillNodeData.Rule.CHAIN_SUPPLY) and session.rng.randf() < CHAIN_CHANCE:
+			_chain(first, enemy.global_position + CHAIN_OFFSET)
+
+
+## A second power-up of another kind, outside the round cap; none when the deck has one kind.
+func _chain(first: PowerUpData, at: Vector3) -> void:
+	var others: Array[PowerUpData] = []
+	for data: PowerUpData in power_ups:
+		if data.id != first.id and not others.has(data):
+			others.append(data)
+	if not others.is_empty():
+		_spawn(others[session.rng.randi_range(0, others.size() - 1)], at)
 
 
 func _next() -> PowerUpData:
