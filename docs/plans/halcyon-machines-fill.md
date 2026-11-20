@@ -1,6 +1,6 @@
 # Plan: Halcyon Labs machine models and fuller rooms
 
-Status: Approved
+Status: Building
 Roadmap: F-83
 Phase: P5 (art)
 Size: L
@@ -203,11 +203,11 @@ Manifests keep task ids, so a good model is never paid for twice.
 
 ## Acceptance
 
-- [ ] The four machines use Tripo models; the machine scripts and tests are unchanged.
-- [ ] 12 new room props placed, each with a collider, rooms within draw-call budget.
-- [ ] Fan, drips, PA crackle and papers play in game.
+- [x] The four machines use Tripo models; the machine scripts and tests are unchanged.
+- [x] 12 new room props placed, each with a collider, rooms within draw-call budget.
+- [x] Fan, drips, PA crackle and papers play in game.
 - [ ] fps after the GPU check stays above 120 at 1440p with 24 zombies.
-- [ ] Credits spent per model listed in each step's PR.
+- [x] Credits spent per model listed in each step's PR.
 
 ## Risks
 

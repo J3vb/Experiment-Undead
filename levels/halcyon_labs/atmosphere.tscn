@@ -9,6 +9,7 @@
 [ext_resource type="AudioStream" path="res://assets/audio/ambience/machine_hum.ogg" id="hum"]
 [ext_resource type="AudioStream" path="res://assets/audio/ambience/drip_loop.ogg" id="drips"]
 [ext_resource type="AudioStream" path="res://assets/audio/ambience/klaxon.wav" id="klaxon"]
+[ext_resource type="AudioStream" path="res://assets/audio/ambience/pa_crackle.wav" id="pa_crackle"]
 [ext_resource type="Texture2D" path="res://assets/textures/story/blood_smear.png" id="blood_smear"]
 [ext_resource type="Texture2D" path="res://assets/textures/story/drag_trail.png" id="drag_trail"]
 [ext_resource type="Texture2D" path="res://assets/textures/story/scratch_marks.png" id="scratch_marks"]
@@ -296,6 +297,88 @@ billboard_mode = 2
 [sub_resource type="QuadMesh" id="leak_drip_mesh"]
 material = SubResource("leak_drip_mat")
 size = Vector2(0.012, 0.05)
+
+[sub_resource type="StandardMaterial3D" id="small_life_metal"]
+albedo_color = Color(0.42, 0.45, 0.45, 1)
+metallic = 0.5
+roughness = 0.55
+
+[sub_resource type="CylinderMesh" id="fan_rod_mesh"]
+material = SubResource("small_life_metal")
+top_radius = 0.025
+bottom_radius = 0.025
+height = 2.8
+
+[sub_resource type="CylinderMesh" id="fan_hub_mesh"]
+material = SubResource("small_life_metal")
+top_radius = 0.1
+bottom_radius = 0.14
+height = 0.16
+
+[sub_resource type="BoxMesh" id="fan_blade_mesh"]
+material = SubResource("small_life_metal")
+size = Vector3(0.75, 0.015, 0.16)
+
+[sub_resource type="Animation" id="fan_turn"]
+resource_name = "turn"
+length = 6.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Blades:rotation:y")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 6),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, -6.2831855]
+}
+
+[sub_resource type="AnimationLibrary" id="fan_anims"]
+_data = {
+&"turn": SubResource("fan_turn")
+}
+
+[sub_resource type="CylinderMesh" id="pa_horn_mesh"]
+material = SubResource("small_life_metal")
+top_radius = 0.05
+bottom_radius = 0.2
+height = 0.3
+
+[sub_resource type="BoxMesh" id="pa_bracket_mesh"]
+material = SubResource("small_life_metal")
+size = Vector3(0.08, 0.08, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="paper_mat"]
+cull_mode = 2
+albedo_color = Color(0.78, 0.76, 0.68, 1)
+roughness = 1.0
+billboard_mode = 3
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="paper_mesh"]
+material = SubResource("paper_mat")
+size = Vector2(0.16, 0.22)
+
+[sub_resource type="ParticleProcessMaterial" id="paper_lift"]
+emission_shape = 3
+emission_box_extents = Vector3(0.5, 0.02, 0.4)
+angle_min = -180.0
+angle_max = 180.0
+direction = Vector3(0.3, 1, 0)
+spread = 25.0
+initial_velocity_min = 1.0
+initial_velocity_max = 1.6
+angular_velocity_min = -90.0
+angular_velocity_max = 90.0
+gravity = Vector3(0, -0.5, 0)
+damping_min = 0.1
+damping_max = 0.3
+turbulence_enabled = true
+turbulence_noise_strength = 0.6
+turbulence_noise_speed_random = 0.2
 
 [node name="Atmosphere" type="Node3D"]
 script = ExtResource("atmosphere")
@@ -827,4 +910,92 @@ visibility_aabb = AABB(-0.5, -2.5, -0.5, 1, 3, 1)
 process_material = SubResource("drip_process")
 draw_pass_1 = SubResource("leak_drip_mesh")
 
+[node name="SmallLife" type="Node3D" parent="."]
+
+[node name="MessHallFan" type="Node3D" parent="SmallLife"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.7, 6, 35.35)
+
+[node name="Rod" type="MeshInstance3D" parent="SmallLife/MessHallFan"]
+cast_shadow = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.4, 0)
+gi_mode = 0
+mesh = SubResource("fan_rod_mesh")
+
+[node name="Blades" type="Node3D" parent="SmallLife/MessHallFan"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.85, 0)
+
+[node name="Hub" type="MeshInstance3D" parent="SmallLife/MessHallFan/Blades"]
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("fan_hub_mesh")
+
+[node name="Blade1" type="MeshInstance3D" parent="SmallLife/MessHallFan/Blades"]
+cast_shadow = 0
+transform = Transform3D(1, 0, 0, 0, 0.9848, 0.1736, 0, -0.1736, 0.9848, 0.48, 0, 0)
+gi_mode = 0
+mesh = SubResource("fan_blade_mesh")
+
+[node name="Blade2" type="MeshInstance3D" parent="SmallLife/MessHallFan/Blades"]
+cast_shadow = 0
+transform = Transform3D(0, -0.1736, -0.9848, 0, 0.9848, -0.1736, 1, 0, 0, 0, 0, -0.48)
+gi_mode = 0
+mesh = SubResource("fan_blade_mesh")
+
+[node name="Blade3" type="MeshInstance3D" parent="SmallLife/MessHallFan/Blades"]
+cast_shadow = 0
+transform = Transform3D(-1, 0, 0, 0, 0.9848, -0.1736, 0, -0.1736, -0.9848, -0.48, 0, 0)
+gi_mode = 0
+mesh = SubResource("fan_blade_mesh")
+
+[node name="Blade4" type="MeshInstance3D" parent="SmallLife/MessHallFan/Blades"]
+cast_shadow = 0
+transform = Transform3D(0, 0.1736, 0.9848, 0, 0.9848, -0.1736, -1, 0, 0, 0, 0, 0.48)
+gi_mode = 0
+mesh = SubResource("fan_blade_mesh")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="SmallLife/MessHallFan"]
+libraries = {
+&"": SubResource("fan_anims")
+}
+autoplay = &"turn"
+
+[node name="CorridorPA" type="Node3D" parent="SmallLife"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 2.45, 26.2)
+
+[node name="Bracket" type="MeshInstance3D" parent="SmallLife/CorridorPA"]
+cast_shadow = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.11)
+gi_mode = 0
+mesh = SubResource("pa_bracket_mesh")
+
+[node name="Horn" type="MeshInstance3D" parent="SmallLife/CorridorPA"]
+cast_shadow = 0
+transform = Transform3D(1, 0, 0, 0, 0.5, 0.866, 0, -0.866, 0.5, 0, -0.08, 0.3)
+gi_mode = 0
+mesh = SubResource("pa_horn_mesh")
+
+[node name="Crackle" type="AudioStreamPlayer3D" parent="SmallLife/CorridorPA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0.35)
+stream = ExtResource("pa_crackle")
+volume_db = -8.0
+unit_size = 3.0
+max_distance = 14.0
+bus = &"Ambient"
+
+[node name="Timer" type="Timer" parent="SmallLife/CorridorPA/Crackle"]
+wait_time = 29.0
+autostart = true
+
+[node name="LabsPapers" type="GPUParticles3D" parent="SmallLife"]
+cast_shadow = 0
+gi_mode = 0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.5, 0.05, 21.4)
+amount = 5
+lifetime = 4.0
+visibility_range_end = 30.0
+visibility_aabb = AABB(-1.5, -0.2, -1.5, 3, 2.2, 3)
+process_material = SubResource("paper_lift")
+draw_pass_1 = SubResource("paper_mesh")
+
 [connection signal="timeout" from="Beacons/BeaconWest/Klaxon/Timer" to="Beacons/BeaconWest/Klaxon" method="play"]
+[connection signal="timeout" from="SmallLife/CorridorPA/Crackle/Timer" to="SmallLife/CorridorPA/Crackle" method="play"]

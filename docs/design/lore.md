@@ -365,6 +365,11 @@ stay a plain game score. The drop reasons below are provisional picks.
   own. Their story comes from where a map places them: army trucks at Kessel
   and Marrow are the Day 3 evacuation convoy, the hospital train car is the
   evacuation train, hospital furniture at Grauwald is 1950s sanatorium stock.
+- **Small life in Halcyon** (F-83). The Mess Hall ceiling fan still turns on
+  the trickle from the backup line. The Main Corridor PA is Oriel's site speaker
+  on its own battery: it only crackles, the evacuation call it once played is
+  long gone (no words). Papers by the Labs bench lift in the draught from the
+  air handling the generators keep alive. *(provisional)*
 - **New maps** follow the chapter checklist in The long campaign.
 
 ## How the story is told in-game
