@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3]
+[gd_scene load_steps=31 format=3]
 
 [ext_resource type="Script" path="res://systems/ui/hud.gd" id="1"]
 [ext_resource type="Script" path="res://systems/net/coop_hud.gd" id="coop"]
@@ -28,6 +28,7 @@
 [ext_resource type="Script" path="res://systems/ui/hud/weapon_panel.gd" id="weapon_panel"]
 [ext_resource type="Script" path="res://systems/ui/hud/round_counter.gd" id="round_counter"]
 [ext_resource type="Script" path="res://systems/ui/hud/compass_strip.gd" id="compass_strip"]
+[ext_resource type="Script" path="res://systems/ui/hud/world_prompt.gd" id="world_prompt"]
 [ext_resource type="Script" path="res://systems/ui/hud/vitals_panel.gd" id="vitals_panel"]
 [ext_resource type="Script" path="res://systems/ui/hud/serum_slots.gd" id="serum_slots"]
 
@@ -44,11 +45,16 @@ shader_parameter/intensity = 0.0
 shader_parameter/tint = Color(0.55, 0, 0, 1)
 
 [sub_resource type="StyleBoxFlat" id="dark_box"]
-content_margin_left = 16.0
-content_margin_top = 10.0
-content_margin_right = 16.0
-content_margin_bottom = 10.0
-bg_color = Color(0.025, 0.04, 0.045, 0.92)
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 18.0
+content_margin_bottom = 8.0
+bg_color = Color(0.047, 0.067, 0.082, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.902, 0.925, 0.925, 0.85)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_left = 8
@@ -67,12 +73,11 @@ border_width_bottom = 2
 border_color = Color(0.4, 0.75, 0.5, 1)
 
 [sub_resource type="StyleBoxFlat" id="key_box"]
-bg_color = Color(0.08, 0.1, 0.1, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.75, 0.77, 0.73, 1)
+bg_color = Color(0.902, 0.925, 0.925, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_left = 4
+corner_radius_bottom_right = 4
 
 [sub_resource type="StyleBoxFlat" id="bar_bg"]
 bg_color = Color(0.12, 0.15, 0.15, 0.9)
@@ -291,6 +296,16 @@ theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
 text = "RELOAD [R]"
 horizontal_alignment = 1
 
+[node name="WorldPrompt" type="Control" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("world_prompt")
+
 [node name="Prompt" type="PanelContainer" parent="Root"]
 visible = false
 layout_mode = 1
@@ -311,6 +326,8 @@ theme_override_constants/separation = 14
 [node name="Key" type="Label" parent="Root/Prompt/Row"]
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.043, 0.063, 0.078, 1)
+theme_override_constants/outline_size = 0
 theme_override_styles/normal = SubResource("key_box")
 text = "F"
 horizontal_alignment = 1
@@ -318,6 +335,7 @@ vertical_alignment = 1
 
 [node name="PromptLabel" type="Label" parent="Root/Prompt/Row"]
 layout_mode = 2
+uppercase = true
 vertical_alignment = 1
 
 [node name="Price" type="Label" parent="Root/Prompt/Row"]
