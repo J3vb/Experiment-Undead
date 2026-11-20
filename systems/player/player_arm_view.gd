@@ -1,14 +1,14 @@
-## One imported first-person arm rig per weapon holder, with Common cosmetic medium cuffs.
+## One imported first-person arm rig per weapon holder, showing the owner's worn vest cuffs.
 class_name PlayerArmView
 extends Node3D
 
 const ARMS: PackedScene = preload("res://assets/models/characters/player_arms.glb")
-const CUFFS: PackedScene = preload("res://assets/models/gear/vest_medium.glb")
 const COMMON: RarityLook = preload("res://content/looks/rarity/common.tres")
 const PLACEHOLDERS: Array[String] = ["HandRight", "HandLeft", "SleeveRight", "SleeveLeft"]
 
 static var _warned_no_grip: Dictionary[StringName, bool] = {}
 static var _warned_reach: Dictionary[StringName, bool] = {}
+static var _warned_piece: Dictionary[StringName, bool] = {}
 
 var skeleton: Skeleton3D
 var mesh: MeshInstance3D
@@ -21,6 +21,7 @@ var _support_rest: Vector3 = Vector3.ZERO
 var _morph_index: int = -1
 var _markers: Array[Node3D] = []
 var _hand_rest: Array[Transform3D] = []
+var _gear: Array[Node3D] = []
 
 
 func _ready() -> void:
@@ -35,7 +36,6 @@ func _ready() -> void:
 		_hand_rest.append(skeleton.get_bone_global_rest(skeleton.find_bone("hand_" + side)))
 		_markers.append(arms.find_child("GripIndexTip_" + side, true, false) as Node3D)
 		_markers.append(arms.find_child("GripThumbTip_" + side, true, false) as Node3D)
-	_attach_cuffs()
 	for node: Node in find_children("*", "GeometryInstance3D", true, false):
 		var geometry: GeometryInstance3D = node as GeometryInstance3D
 		geometry.layers = ScopeLens.VIEWMODEL_LAYER
@@ -129,17 +129,51 @@ func _check_reach() -> void:
 		)
 
 
-func _attach_cuffs() -> void:
-	var vest: Node3D = CUFFS.instantiate() as Node3D
+## Rebuilds the worn gear pieces seen in first person from the owner's look.
+func apply_look(look: CharacterLook) -> void:
+	for node: Node3D in _gear:
+		node.free()
+	_gear.clear()
+	if look.slots.has(&"vest"):
+		_attach_cuffs(look.slots[&"vest"])
+
+
+func _attach_cuffs(entry: Dictionary) -> void:
+	var shown: Array = GearRig.resolve(&"vest", entry)
+	var visual: GearVisual = shown[0]
+	var finish: RarityLook = shown[1]
+	var vest: Node3D = visual.scene_for(finish.tier).instantiate() as Node3D
+	var dyes: Array = entry.get("dyes", [CharacterLook.DEFAULT_DYE_MAIN, CharacterLook.DEFAULT_DYE_ACCENT])
 	for side: String in ["R", "L"]:
 		var cuff: Node3D = vest.find_child("CuffFP_" + side, true, false) as Node3D
+		if cuff == null:
+			_warn_piece(visual.id)
+			continue
 		var rest: Transform3D = skeleton.get_bone_global_rest(skeleton.find_bone("forearm_" + side))
 		var offset: Transform3D = rest.affine_inverse() * cuff.transform
 		cuff.get_parent().remove_child(cuff)
 		cuff.owner = null
 		var attachment: BoneAttachment3D = BoneAttachment3D.new()
+		attachment.name = "Cuff_" + side
 		attachment.bone_name = "forearm_" + side
 		skeleton.add_child(attachment)
 		attachment.add_child(cuff)
 		cuff.transform = offset
+		_show_piece(attachment, finish, dyes)
 	vest.free()
+
+
+func _show_piece(piece: Node3D, finish: RarityLook, dyes: Array) -> void:
+	_gear.append(piece)
+	GearLook.apply(piece, finish, dyes[0], dyes[1])
+	for node: Node in piece.find_children("*", "GeometryInstance3D", true, false):
+		var geometry: GeometryInstance3D = node as GeometryInstance3D
+		geometry.layers = ScopeLens.VIEWMODEL_LAYER
+		geometry.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+
+func _warn_piece(visual_id: StringName) -> void:
+	if _warned_piece.has(visual_id):
+		return
+	_warned_piece[visual_id] = true
+	Log.warn(&"gear", &"fp_piece_missing", {"visual": String(visual_id)})
