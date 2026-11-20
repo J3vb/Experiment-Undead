@@ -69,6 +69,7 @@ func test_kill_in_the_spawn_area_drops_inside_the_window() -> void:
 func test_drop_from_inside_the_window_is_in_line_with_the_kill() -> void:
 	var at_slot: Vector3 = barrier.slot_point(0)
 	_kill(at_slot, barrier)
+	assert_eq(_loot_drops().size(), 1)
 	var loot: Vector3 = _loot_drops()[0].global_position
 	var side: float = barrier.global_basis.x.dot(at_slot - barrier.global_position)
 	assert_almost_eq(barrier.global_basis.x.dot(loot - barrier.global_position), side, 0.01, "same side of the window")
@@ -77,4 +78,5 @@ func test_drop_from_inside_the_window_is_in_line_with_the_kill() -> void:
 func test_kill_in_the_room_drops_where_it_fell() -> void:
 	var in_room: Vector3 = Vector3(40, 0, 40)
 	_kill(in_room, null)
+	assert_eq(_loot_drops().size(), 1)
 	assert_almost_eq(_loot_drops()[0].global_position, in_room, Vector3.ONE * 0.01)
