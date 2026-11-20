@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=30 format=3]
 
 [ext_resource type="Script" path="res://systems/ui/hud.gd" id="1"]
 [ext_resource type="Script" path="res://systems/net/coop_hud.gd" id="coop"]
@@ -26,6 +26,8 @@
 
 [ext_resource type="Script" path="res://systems/ui/power_up_timers.gd" id="power_up_timers"]
 [ext_resource type="Script" path="res://systems/ui/hud/weapon_panel.gd" id="weapon_panel"]
+[ext_resource type="Script" path="res://systems/ui/hud/round_counter.gd" id="round_counter"]
+[ext_resource type="Script" path="res://systems/ui/hud/compass_strip.gd" id="compass_strip"]
 [ext_resource type="Script" path="res://systems/ui/hud/vitals_panel.gd" id="vitals_panel"]
 [ext_resource type="Script" path="res://systems/ui/hud/serum_slots.gd" id="serum_slots"]
 
@@ -127,25 +129,47 @@ script = ExtResource("4")
 
 [node name="RoundInfo" type="VBoxContainer" parent="Root"]
 layout_mode = 1
-anchor_left = 0.025
-anchor_top = 0.025
-anchor_right = 0.25
-anchor_bottom = 0.22
-theme_override_constants/separation = -10
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -360.0
+offset_top = 20.0
+offset_right = -32.0
+offset_bottom = 104.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_constants/separation = 2
+script = ExtResource("round_counter")
 
 [node name="RoundLabel" type="Label" parent="Root/RoundInfo"]
 layout_mode = 2
 theme_type_variation = &"LabelMono"
-theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_color = Color(0.901961, 0.92549, 0.92549, 1)
 theme_override_fonts/font = SubResource("round_bold")
-theme_override_font_sizes/font_size = 110
-theme_override_constants/outline_size = 8
-modulate = Color(0.784314, 0.12549, 0.164706, 1)
-text = "1"
+theme_override_font_sizes/font_size = 40
+theme_override_constants/outline_size = 4
+text = "ROUND 1"
+horizontal_alignment = 2
 
 [node name="MapName" type="Label" parent="Root/RoundInfo"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.560784, 0.639216, 0.658824, 1)
+theme_override_font_sizes/font_size = 20
 text = "Halcyon Labs"
+horizontal_alignment = 2
+
+[node name="Compass" type="Control" parent="Root"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -280.0
+offset_top = 14.0
+offset_right = 280.0
+offset_bottom = 58.0
+grow_horizontal = 2
+mouse_filter = 2
+script = ExtResource("compass_strip")
 
 [node name="Loadout" type="VBoxContainer" parent="Root"]
 layout_mode = 1
@@ -218,7 +242,7 @@ layout_mode = 1
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -270.0
-offset_top = 24.0
+offset_top = 72.0
 offset_right = 270.0
 grow_horizontal = 2
 theme_override_styles/panel = SubResource("green_box")
