@@ -205,3 +205,19 @@ func test_leak_glow_is_masked() -> void:
 	var glow: Image = (load(LEAK.replace("leak_pool", "leak_glow")) as Texture2D).get_image()
 	glow.decompress()
 	assert_lt(glow.get_pixel(0, 0).v, 0.05, "glow map is black outside the pool")
+
+
+func test_small_life_fan_pa_and_papers() -> void:
+	var scene: Node = (load(ATMOSPHERE) as PackedScene).instantiate()
+	var fan: AnimationPlayer = scene.get_node("SmallLife/MessHallFan/AnimationPlayer") as AnimationPlayer
+	var turn: Animation = fan.get_animation(fan.autoplay)
+	assert_gte(turn.length, 4.0, "the Mess Hall fan turns slowly")
+	assert_eq(String(turn.track_get_path(0)), "Blades:rotation:y", "only the blades turn")
+	var crackle: AudioStreamPlayer3D = scene.get_node("SmallLife/CorridorPA/Crackle") as AudioStreamPlayer3D
+	var timer: Timer = crackle.get_node("Timer") as Timer
+	assert_true(timer.autostart, "the PA crackles on its own")
+	assert_between(timer.wait_time, 20.0, 40.0, "every 20 to 40 s")
+	assert_true(timer.is_connected(&"timeout", crackle.play), "the timer plays the crackle")
+	var papers: GPUParticles3D = scene.get_node("SmallLife/LabsPapers") as GPUParticles3D
+	assert_lte(papers.amount, 8, "a few papers, not a storm")
+	scene.free()

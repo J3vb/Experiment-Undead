@@ -34,6 +34,7 @@ func _run() -> void:
 	menu_script.launch_consumed = true
 	change_scene_to_file(MENU_SCENE)
 	await _settle()
+	await _hub_warmed()
 	match _mode:
 		"timeout":
 			await _timeout_flow()
@@ -159,6 +160,19 @@ func _start_join() -> void:
 	browser.address_field.text = TARGET
 	(browser.get_node("%AddJoin") as Button).pressed.emit()
 	await _settle()
+
+
+## A player looks at the menu for a moment before clicking; by then the menu has warmed the hub.
+func _hub_warmed() -> void:
+	var path: String = SESSION_SCENE
+	var until: int = Time.get_ticks_msec() + 10000
+	while ResourceLoader.load_threaded_get_status(path) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		if Time.get_ticks_msec() > until:
+			break
+		await process_frame
+	_check(
+		ResourceLoader.load_threaded_get_status(path) == ResourceLoader.THREAD_LOAD_LOADED, "The menu warmed the hub"
+	)
 
 
 func _browser() -> Control:

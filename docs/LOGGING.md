@@ -135,6 +135,7 @@ The server also prints every warning and error to stdout as
 | `net.interaction_rate_limited` | warn | A client sent interact requests less than 0.1 s apart; extra ones are refused. At most one per second |
 | `ui.unknown_screen` | warn | `UI.push` or `UI.replace` got an id with no `content/screens/<id>.tres`; `id`. Nothing opens |
 | `ui.pop_empty` | warn | `UI.pop()` with no screen open: a screen emitted `closed` twice or something popped a screen it did not push |
+| `ui.menu_backdrop_missing` | warn | A front-end screen opened with no backdrop texture (`screen`); it shows the dark shade only. The image in `assets/ui/backdrops/` is missing or failed to import |
 | `ui.loading_failed` | warn | A root behind a loading screen failed its threaded load; `scene`. The router falls back to a plain scene change |
 
 The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher.log` in its data folder (`%LOCALAPPDATA%\com.experimentundead.launcher\` on Windows): `{"t", "level", "event", "message"}`. A hosted server writes its own game log, and its console output goes to `server/server.log` there (Open logs).
