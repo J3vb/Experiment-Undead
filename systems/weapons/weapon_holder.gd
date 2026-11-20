@@ -44,11 +44,12 @@ func setup(player: Player, camera: Camera3D) -> void:
 
 
 ## Adds a gun. When every slot is full it replaces the gun in hand.
-func give(data: WeaponData) -> Weapon:
+## fit: give it the player's recoil and reserve stats; false for item guns, already fitted by their item.
+func give(data: WeaponData, fit: bool = true) -> Weapon:
 	if weapons.size() >= max_slots and current:
-		return replace_current(data)
+		return replace(current, data, fit)
 	var weapon: Weapon = WEAPON_SCENE.instantiate()
-	weapon.setup(WeaponInstance.new(data), _player, _camera)
+	weapon.setup(WeaponInstance.new(_fitted(data) if fit else data), _player, _camera)
 	add_child(weapon)
 	weapon.set_active(false)
 	weapon.ammo_changed.connect(_on_ammo_changed.bind(weapon))
@@ -67,10 +68,10 @@ func replace_current(data: WeaponData) -> Weapon:
 
 
 ## Swaps old for a new gun in old's slot (full ammo). Stays in hand only if old was.
-func replace(old: Weapon, data: WeaponData) -> Weapon:
+func replace(old: Weapon, data: WeaponData, fit: bool = true) -> Weapon:
 	var was_current: bool = old == current
 	var weapon: Weapon = WEAPON_SCENE.instantiate()
-	weapon.setup(WeaponInstance.new(data), _player, _camera)
+	weapon.setup(WeaponInstance.new(_fitted(data) if fit else data), _player, _camera)
 	add_child(weapon)
 	weapon.set_active(false)
 	weapon.ammo_changed.connect(_on_ammo_changed.bind(weapon))
@@ -84,6 +85,10 @@ func replace(old: Weapon, data: WeaponData) -> Weapon:
 		current = null
 		equip(weapons.find(weapon))
 	return weapon
+
+
+func _fitted(data: WeaponData) -> WeaponData:
+	return ItemInstance.fit_player_gun(data, _player.stats) if _player else data
 
 
 func equip(index: int) -> void:

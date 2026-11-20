@@ -58,9 +58,27 @@ func weapon_data(base: WeaponData, extra: StatBlock = null) -> WeaponData:
 	return result
 
 
+## A non-item gun with the player's all-guns stats: recoil and reserve ammo only (damage stays item-gun only).
+## Without those stats it returns base itself, so a plain player holds the shared Content gun.
+static func fit_player_gun(base: WeaponData, player_stats: StatBlock) -> WeaponData:
+	var reserve: float = player_stats.value(&"deep_reserve")
+	var recoil: float = player_stats.value(&"recoil_pct")
+	if reserve == 1.0 and recoil == 1.0:
+		return base
+	var result: WeaponData = base.duplicate() as WeaponData
+	result.starting_reserve = maxi(roundi(base.starting_reserve * reserve), 0)
+	result.max_reserve = maxi(roundi(base.max_reserve * reserve), 0)
+	if base.recoil:
+		result.recoil = _scaled_recoil(base.recoil, maxf(2.0 - recoil, 0.0))
+	return result
+
+
 func _recoil_data(base: RecoilData, extra: StatBlock) -> RecoilData:
+	return _scaled_recoil(base, maxf(2.0 - value(&"recoil_pct", 1.0, extra), 0.0))
+
+
+static func _scaled_recoil(base: RecoilData, scale: float) -> RecoilData:
 	var result: RecoilData = base.duplicate() as RecoilData
-	var scale: float = maxf(2.0 - value(&"recoil_pct", 1.0, extra), 0.0)
 	result.pattern = []
 	for kick: Vector2 in base.pattern:
 		result.pattern.append(kick * scale)
