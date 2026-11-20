@@ -1,5 +1,5 @@
 ## The player's interact job: finds the Interactable under the crosshair and
-## uses it once per press, or again every hold_interval() while interact is
+## uses it once per press, or again every hold_interval(player) while interact is
 ## held (barrier repair). Solo and the server run interact(); a client asks.
 class_name PlayerInteract
 extends RefCounted
@@ -19,7 +19,7 @@ func update(player: Player, frame: InputFrame, delta: float) -> void:
 	if not player.input_enabled or player.is_downed or player.focus == null:
 		_hold_left = 0.0
 		return
-	if _wants_use(player.focus, frame, delta):
+	if _wants_use(player, frame, delta):
 		_use(player)
 
 
@@ -31,8 +31,8 @@ func _find_focus(player: Player) -> Interactable:
 	return hit.get("collider") as Interactable if not hit.is_empty() else null
 
 
-func _wants_use(target: Interactable, frame: InputFrame, delta: float) -> bool:
-	var interval: float = target.hold_interval()
+func _wants_use(player: Player, frame: InputFrame, delta: float) -> bool:
+	var interval: float = player.focus.hold_interval(player)
 	if frame.has(InputFrame.INTERACT):
 		_hold_left = interval
 		return true

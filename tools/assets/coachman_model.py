@@ -207,8 +207,4 @@ def build(m) -> None:
     stock_parts(m, receiver, black, wood, checker)
     forepiece(m, receiver, metal, wood, checker)
     moving_parts(m, receiver, metal, black)
-    inlays = [
-        g.mark_inlay(g.slab("Inlay", g.rounded(-0.078, 0.046, 0.027, 0.048, 0.0008), 0.001, metal, x=side * 0.0262))
-        for side in (-1, 1)
-    ]
-    m.join_into(receiver, inlays)
+    g.add_inlays(m, receiver, g.rounded(-0.078, 0.046, 0.027, 0.048, 0.0008), 0.001, 0.0262, metal)

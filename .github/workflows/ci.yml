@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install quality tools
-        run: pip install "gdtoolkit==${GDTOOLKIT_VERSION}" "ruff==${RUFF_VERSION}"
+        run: pip install "gdtoolkit==${GDTOOLKIT_VERSION}" "ruff==${RUFF_VERSION}" "pillow==12.3.0" "numpy==2.5.3"
 
       - name: Test quality checks
         run: python -m unittest discover -s tools/ci -p "test_*.py"

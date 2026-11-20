@@ -8,7 +8,7 @@ The game has 15 screens in 3 places: the front end (before you join a server), t
 
 **Rules every screen follows**
 
-1. **Two clicks to play.** From the main menu, Enter World puts you in your own town with your last character; from the town, the Deploy Gate is the only way into a match.
+1. **Two clicks to play.** From the main menu, PLAY (formerly Enter World) puts you in your own town with your last character; from the town, the Deploy Gate is the only way into a match.
 2. **Easy to read.** Atkinson Hyperlegible by default (Lexend and OpenDyslexic as options), body text never below 24 px at 1080p, left-aligned, no italics, no long all-caps text, short labels. A text size slider scales every screen, not only the HUD.
 3. **The middle of the HUD stays empty.** Only the crosshair, hitmarkers and the interaction prompt live in the centre.
 4. **Colour always has a second signal.** Rarity has a colour, a shape, a name and pips (Common circle with 1 pip up to Prototype hazard triangle with 6). Low ammo turns orange and shows LOW. This keeps colour-blind players covered.
@@ -26,7 +26,9 @@ Two-way arrows are screens that open on top and close with Esc or B. The first-l
 
 ## UI style
 
-Menus look like containment-facility terminals: dark blue-black glass panels, thin teal-grey borders, and one bright accent per screen. Bio-green is for the experiment (Prototype loot, power-ups, the Vault) and for **one main action button per screen** (Enter World, Join Server, Select Character, the launcher's PLAY), as in the concept art (the person, 2026-11-17). Every other button, focus ring and selected row stays teal.
+Menus look like containment-facility terminals: dark blue-black glass panels, thin teal-grey borders, and one bright accent per screen. Bio-green is for the experiment (Prototype loot, power-ups, the Vault) and for **one main action button per screen** (Join Server, Select Character, the launcher's PLAY), as in the concept art (the person, 2026-11-17). Every other button, focus ring and selected row stays teal.
+
+**Front-end menus (concept art 2026-11-20, F-88).** The main menu and Loadout follow the newer menu art: the FENLIGHT logo (`assets/ui/fenlight_logo.png`, drawn by `tools/assets/menu_art.py`) top left, a left column of spaced capitals with no icons, and a burnt orange brush stroke behind the hovered or focused row (theme variation `MenuBrush` in `systems/ui/theme.tres`). These screens have no green main button and no teal bar; the rest of the front end keeps the older layout below until it is restyled.
 
 **Front-end layout (from the concept art).** Front-end screens use a left column of menu rows or tabs, each with a small line icon, and the selected row gets a teal bar on its left edge. Content sits in large glass panels. The one main action is a wide green button with dark text and a soft green glow, at the bottom right of the screen's content or at the top of the menu column.
 
@@ -43,6 +45,7 @@ Menus look like containment-facility terminals: dark blue-black glass panels, th
 | danger | #C3201B | Round number, damage, death, delete |
 | headshot | #FFC845 | Headshot hitmarker and kill numbers |
 | xp | #E3CF9A | XP bar and level-up (brass) |
+| brush | #D9662B | Brush stroke behind the selected row on the restyled front-end menus (darker than Legendary #FF8A1C so it does not read as loot) |
 | experiment | #8DFF3A | Prototype, power-ups, Vault, and the one main action button per screen (gradient #A6FF66 to #6FD626, text bg\_deep) |
 
 Rarity colours come from the style guide: Common #D9D9D2, Uncommon #3FE0C8, Rare #3D7DFF, Epic #A64DFF, Legendary #FF8A1C, Prototype #8DFF3A. Each item shows rarity four ways: border colour, rarity shape (circle for Common up to hazard triangle for Prototype), rarity name in the tooltip, and 1 to 6 pips.
@@ -63,20 +66,17 @@ Shown once, before the main menu, and again from Settings. One page with big pre
 
 ### 1. Main menu
 
-A live 3D scene: your selected character stands in the snow at the Halcyon Labs outer gate at night, under a green Fenlight aurora, with the Oriel Biotechnic building and its red warning lights behind. Slow camera drift, falling snow. The menu sits on the left third over a dark fade.
+Concept: [main_menu_concept.jpg](concepts/screens/main_menu_concept.jpg) (2026-11-20, F-88). A painted backdrop, `assets/ui/backdrops/main_menu.jpg` (ADR 0019): Lantern Post at night from the road in, snow, a green Fenlight aurora, the lantern and the crossed-hammers sign on the right. It drifts a few pixels and light snow falls over it; Reduce motion holds both still. A dark fade from the left keeps the menu readable. Music only, no map sounds (PR #399).
 
-- **Top left:** the wordmark "EXPERIMENT: UNDEAD" (UNDEAD in bio-green) with the four-point Fenlight star, and the line "A Fenlight survival story".
-- **Enter World** (green, default focus): starts your own Lantern Post with the selected character (open to friends, F-66).
-- **Servers**: the server browser (screen 2).
-- **Character**: character select (screen 3).
-- **Loadout**: the Character screen (screen 5) for the selected character.
-- **Progression**: the Skill tree (screen 6) for the selected character.
-- **Settings**, **Exit**.
-- **Top right, profile card:** portrait, character name, level and a brass XP bar. Click it or press C to change character. Never a real name: the mockup uses "Survivor".
-- **Bottom right, news card:** the latest update's title and one line, from the patch notes bundled with the build (no internet feed), with dots to page through the last 3. Replaces the concept's season banner: there are no seasons.
-- **Bottom left:** game version and build number, for bug reports.
-
-![Main menu mockup](images/ui_main_menu.jpg)
+- **Top left:** the FENLIGHT logo (`assets/ui/fenlight_logo.png`).
+- **Left column**, spaced capitals with the `MenuBrush` brush stroke on the hovered or focused row:
+  - **PLAY** (default focus): starts your own Lantern Post with your character (open to friends, F-66).
+  - **SERVERS**: the server browser (screen 2).
+  - **LOADOUT**: the Character screen (screen 5).
+  - **RESEARCH**: the Skill tree (screen 6, F-21). Greyed out with "Coming soon" until it is built, and skipped by focus.
+  - **SETTINGS**, **CREDITS**, **QUIT**.
+- **Bottom left:** controls hint. **Bottom right:** game version and build number, for bug reports.
+- Not on the restyled menu yet: Character (character select, F-67), the profile card and the news card. They come back when those features are built, in the new look.
 
 ### 2. Server browser
 
@@ -179,12 +179,13 @@ Map art, the map name, and one rotating tip. A progress bar, and the names of sq
 
 Follows the design doc table. Additions (the concept art on 2026-11-17 added the health panel, objective list, item slots and area name):
 
-- **Top left:** round number, and under it the map and the area you are in ("Halcyon Labs · Containment").
-- **Top right:** an objective list (exfil steps, map events, pinned contracts with a count, done ones ticked and struck through), then squad cards (name, health bar, down state with bleed-out timer).
-- **Bottom left:** field ability icon with a cooldown ring, serums and the Pack count (4/6) in one row, and under it the health panel: portrait, health number and max (100 / 150) and a health bar. The red vignette under 40 HP and the heartbeat stay.
+- **Top centre:** a compass strip (120 degrees, ticks every 15, N / NE / E letters) from the 2026-11-20 HUD concept ([hud_concept_2.jpg](concepts/screens/hud_concept_2.jpg)). Exfil sits under it.
+- **Top right:** "ROUND 3" in white with a red stroke under it, the map name under that (moved from the top left in the 2026-11-20 concept), then an objective list (exfil steps, map events, pinned contracts with a count, done ones ticked and struck through), then squad cards (name, health bar, down state with bleed-out timer).
+- **Bottom left:** the Serum slots in one row, and under it the vitals panel from the 2026-11-20 HUD concept ([hud_concept.jpg](concepts/screens/hud_concept.jpg)): an angled dark panel with a health cross and a 5-segment health bar (each segment a fifth of max health, red under 30%), and a runner with the sprint bar (orange while sprint cools down). The red vignette under 40 HP stays. Field ability icon and Pack count come with their features.
 - **Bottom centre:** power-up timers, and a small item drop feed ("Rare Talon DMR" in rarity colour) that fades after 4 s.
-- **Bottom right:** points, then the grenade and tactical slots (icon, count, key G and Q) next to the ammo panel (gun name with rarity shape, magazine big, reserve small).
-- **Exfil:** from round 10, every 5 rounds, a marker and a 60 s hold bar appear at the top centre.
+- **Bottom right:** points, the gun name small, then the weapon panel from the 2026-11-20 HUD concept: an angled dark panel with a white gun-class silhouette, magazine big (orange at a quarter, red when empty) and reserve small ("30 / 210"), a divider, and the frag icon with its count and key. The tactical slot joins it with its feature.
+- **Prompt:** the use prompt sits beside what you look at, with corner brackets around it and a thin line to a rounded dark box (white key cap, action in capitals, price), as in the 2026-11-20 concept. Revive and downed prompts, and objects too big or behind you, use the fixed spot under the crosshair.
+- **Exfil:** from round 10, every 5 rounds, a marker and a 60 s hold bar appear at the top centre, under the compass.
 - **Not taken from the concept:** a minimap (Halcyon Labs is small; later if a bigger map needs it), armour and medkits (the game has neither), and a zombies-remaining count.
 
 ![Match HUD mockup over a first-playable screenshot](images/ui_match_hud.jpg)

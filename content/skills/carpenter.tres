@@ -15,3 +15,4 @@ requires = Array[StringName]([])
 branch_points_needed = 0
 stat = &"repair_speed"
 per_rank = 30.0
+op = "increased"

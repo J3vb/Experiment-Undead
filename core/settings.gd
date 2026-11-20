@@ -63,7 +63,15 @@ var _values: Dictionary = DEFAULTS.duplicate(true)
 
 
 func _ready() -> void:
+	_copy_old_name_data()
 	load_settings()
+
+
+## The game was renamed: bring the player's files over before anything reads them.
+func _copy_old_name_data() -> void:
+	var copied: int = OldNameData.copy_if_new(OldNameData.old_dir(), OS.get_user_data_dir())
+	if copied > 0:
+		Log.info(&"save", &"old_name_data_copied", {"files": copied, "from": OldNameData.old_dir()})
 
 
 func get_value(section: StringName, key: StringName) -> Variant:

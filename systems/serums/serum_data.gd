@@ -26,6 +26,9 @@ const EFFECTS: Array[StringName] = [&"second_wind", &"scavenger"]
 @export var cost: int = 1000
 @export_multiline var description: String = ""
 @export var multipliers: Dictionary[StringName, float] = {}
-## Up to two letters on the HUD square while the Serum is active.
+## Up to two letters on the HUD slot, shown when icon is missing.
 @export var badge: String = ""
+## HUD slot colour.
 @export var badge_colour: Color = Color("596b80")
+## White line icon on the HUD slot (assets/ui/hud/serum_<id>.svg).
+@export var icon: Texture2D

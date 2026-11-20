@@ -24,7 +24,7 @@ class Session:
 
 ## Adds a side named side_name under parent holding a GameSession with the scene's children
 ## (WaveDirector, Economy, Progression, PowerUpDrops, Hud), MatchEnd, a Level with the "Enemies" Spawner,
-## a PlayerSpawner, and the parts asked for: hit_claims, well_claims, loot, remote_shots,
+## a PlayerSpawner, and the parts asked for: hit_claims, well_claims, grenade_claims, loot, remote_shots,
 ## interactions, deploy_vote. level replaces the empty Level; claims replaces the plain HitClaims.
 static func make(
 	parent: Node, side_name: String, parts: Array[StringName] = [], level: Level = null, claims: HitClaims = null
@@ -111,6 +111,7 @@ static func _add_scene_children(session: GameSession) -> void:
 	economy.rules = ECONOMY
 	var drops: PowerUpDrops = PowerUpDrops.new()
 	drops.session = session
+	economy.drops = drops
 	var children: Dictionary[StringName, Node] = {
 		&"WaveDirector": director,
 		&"Economy": economy,
@@ -138,8 +139,15 @@ static func _add_systems(session: GameSession, parts: Array[StringName]) -> void
 	if parts.has(&"deploy_vote"):
 		session.deploy_vote = DeployVote.new()
 	var wells: WellClaims = WellClaims.new() if parts.has(&"well_claims") else null
+	var grenades: GrenadeClaims = GrenadeClaims.new() if parts.has(&"grenade_claims") else null
 	var systems: Array[Node] = [
-		session.hit_claims, wells, session.loot, session.remote_shots, session.interactions, session.deploy_vote
+		session.hit_claims,
+		wells,
+		grenades,
+		session.loot,
+		session.remote_shots,
+		session.interactions,
+		session.deploy_vote
 	]
 	for system: Node in systems:
 		if system:

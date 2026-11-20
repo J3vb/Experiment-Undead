@@ -227,7 +227,7 @@ Build it in small PRs, each with its own tests (no tests, no merge):
 1. **Rig and body.** `rig.py` builds the skeleton, body and first-person arms. Test: the export check (bone names, triangle budget) runs in CI.
 2. **Gear shader and paint zones.** `gear.gdshader`, `paint.py`, the 6 `RarityLook` files, one medium vest. Test: every rarity file loads; shader parameters exist.
 3. **GearRig and LookBuilder.** Swap meshes from a `CharacterLook`. Tests: `from_equipped` maps each slot to the right visual, rarity and set count; unknown id falls back to Common; every `GearVisual` file loads and its attach bone exists on the skeleton.
-4. **First-person view.** Cuffs, implant and charm on the first-person arms and gun. Test: the first-person scene has the three sockets.
+4. **First-person view.** Cuffs, implant and charm on the first-person arms and gun. Test: the first-person scene has the three sockets. *Built in F-42 (2026-11-20, [plan](../plans/gear-first-person.md)): cuffs from the worn vest's frame and rarity, the charm on a `CharmMount` in each primary viewmodel (hidden with a sidearm in hand), the implant module on the left forearm without the neck port. The person kept the implant on the forearm (no eye plate). Gloves and sleeves follow with F-70 and F-71.*
 5. **Character screen turntable.** Booth light profile, slot hover zoom. Test: UI router opens it with a look and no errors.
 6. **Network sync** (with the first co-op build). Tests: look encodes to 64 bytes or less and decodes to the same look; content hash mismatch is refused.
 7. **Sets, crest and Legendary effects** (with the first set content). Tests: 5 of 5 shows the crest, 4 of 5 does not; effects respect the 8-effect cap.

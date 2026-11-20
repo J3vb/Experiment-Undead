@@ -1,6 +1,6 @@
 # Plan: Real reload animations
 
-Status: Building
+Status: Done
 Roadmap: F-85 (was F-83, a number three plans took the same day) / solo play-test 2026-11-19
 Phase: P1
 Size: M
@@ -14,7 +14,8 @@ down and back up on its own while the left hand stays on the fore-end
 (solo play-test 2026-11-19: "reload animations need to be actual reload
 animation of changing mags"). After this, the left hand pulls the magazine
 out, fetches a fresh one, seats it and, on an empty reload, works the
-charging handle or bolt. The BR-12 loads shell by shell. Serves the "gun is
+charging handle or bolt (as built: the bolt catch for every gun, see the
+DECISIONS.md "Reload motion (F-85)" line). The BR-12 loads shell by shell. Serves the "gun is
 the star" pillar (docs/design/game-design.md#gunfeel-and-movement: "crisp reloads").
 
 ## Scope
@@ -107,7 +108,8 @@ Not in (non-goals, and where each one goes instead):
 - docs/design/gun-roster.md "Build order" row B: "Shell-by-shell reload (also
   fixes the Brenner)".
 - BR-12 today: magazine 6, empty_reload_time 3.6 s. New numbers keep the full
-  empty reload at 3.6 s: first shell from empty 1.1 s (port load and rack),
+  empty reload at 3.6 s (base gun only; BR-12 Reforged takes 5.1 s, see the
+  DECISIONS.md "BR-12 Reforged reload (F-85)" line): first shell from empty 1.1 s (port load and rack),
   then 5 x 0.5 s. Partial top-ups get faster (2 shells: 1.0 s instead of 2.6 s);
   that is the point of shell loading. Logged in docs/DECISIONS.md and the
   balance sheet change log.
@@ -177,7 +179,7 @@ extra IK target per frame, no nodes created, no allocations. Budget: under
     0.65-0.75 push home, 0.75-0.80 slap, 0.80-1.0 back to grip.
   - Empty: the same squeezed into 0-0.72 (magazine drops instead of being
     carried), then 0.72-0.90 charging handle pull and release or bolt
-    release slap, 0.90-1.0 back to grip.
+    release slap (as built: bolt catch for every gun, DECISIONS.md F-85 line), 0.90-1.0 back to grip.
 - Files: systems/weapons/reload_motion.gd (new), weapon_pose.gd,
   systems/player/player_arm_pose.gd, player_arm_view.gd, docs/LOGGING.md.
 - Tests: tests/unit/test_reload_motion.gd (rest at t=0 and t=1, magazine
@@ -234,13 +236,17 @@ extra IK target per frame, no nodes created, no allocations. Budget: under
 
 ## Acceptance
 
-- [ ] Every starter gun's left hand pulls and seats a magazine (or loads
-      shells) on reload, in a recorded clip.
-- [ ] Empty reloads add the charging handle or bolt move; tactical do not.
-- [ ] Ammo lands only after the magazine is seated (unit test).
-- [ ] Sprint cancel returns the hand to the grip without a pop.
-- [ ] BR-12 full reload from empty still takes 3.6 s (unit test).
-- [ ] The person signs off the feel from the before/after clips.
+- [x] Every starter gun's left hand pulls and seats a magazine (or loads
+      shells) on reload, in a recorded clip. (Clip: `tools/reload_frames.tscn -- --clip`;
+      tests `test_left_arm_reaches_every_key_pose_and_returns_to_its_grip`,
+      `test_brenner_hand_carries_one_shell_into_the_port_per_round`.)
+- [x] Empty reloads add the charging handle or bolt move; tactical do not.
+      (`test_empty_reload_presses_the_bolt_catch_then_releases_the_bolt`; bolt catch, see DECISIONS.)
+- [x] Ammo lands only after the magazine is seated (`test_magazine_seated_before_ammo_lands`).
+- [x] Sprint cancel returns the hand to the grip without a pop
+      (`test_sprint_cancel_eases_the_hand_back_to_its_grip`).
+- [x] BR-12 full reload from empty still takes 3.6 s (`test_round_reload.gd`, first-round rack test).
+- [x] The person signs off the feel from the before/after clips (decision card "Good, keep them", 2026-11-20).
 
 ## Risks
 

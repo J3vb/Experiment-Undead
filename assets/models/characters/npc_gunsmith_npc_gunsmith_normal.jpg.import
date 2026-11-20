@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://jyi5h26tldcb"
-path="res://.godot/imported/npc_gunsmith_npc_gunsmith_normal.jpg-18d7cd753b3079c5ac38aa6af15c182a.ctex"
+path.s3tc="res://.godot/imported/npc_gunsmith_npc_gunsmith_normal.jpg-18d7cd753b3079c5ac38aa6af15c182a.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "9451035dac2de6ab896b22b560c5798a"
@@ -14,7 +15,8 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/characters/npc_gunsmith_npc_gunsmith_normal.jpg"
-dest_files=["res://.godot/imported/npc_gunsmith_npc_gunsmith_normal.jpg-18d7cd753b3079c5ac38aa6af15c182a.ctex"]
+dest_files=["res://.godot/imported/npc_gunsmith_npc_gunsmith_normal.jpg-18d7cd753b3079c5ac38aa6af15c182a.s3tc.ctex"]
+
 [params]
 
 compress/mode=2

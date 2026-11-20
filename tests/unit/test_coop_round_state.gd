@@ -94,5 +94,36 @@ func test_client_does_not_run_the_round_loop_from_a_snapshot() -> void:
 
 func test_round_message_from_a_client_is_ignored() -> void:
 	var director: WaveDirector = _director(server)
-	director._receive_round(WaveDirector.Message.STARTED, 9, 4.0)
+	director._receive_round(WaveDirector.Message.STARTED, 9, 4.0, true)
 	assert_eq(director.round_number, 0, "the server never takes round numbers from anyone")
+	assert_false(director.blackout, "nor a Blackout")
+
+
+func test_blackout_reaches_the_client_and_ends_there() -> void:
+	watch_signals(Events)
+	_director(server).skip_to_round(6)
+	_director(server).set_blackout(true)
+	await wait_until(func() -> bool: return _director(client).blackout, 3.0, "Blackout reached the client")
+	assert_signal_emitted_with_parameters(Events, "blackout_started", [6])
+	_director(server).set_blackout(false)
+	await wait_until(func() -> bool: return not _director(client).blackout, 3.0, "lights back on the client")
+	assert_signal_emitted_with_parameters(Events, "blackout_ended", [6])
+
+
+func test_round_start_carries_the_blackout() -> void:
+	var director: WaveDirector = _director(server)
+	director.blackout = true
+	director.skip_to_round(6)
+	await wait_until(func() -> bool: return _director(client).round_number == 6, 3.0, "round reached the client")
+	assert_true(_director(client).blackout, "the round start says the lights are out")
+
+
+func test_late_joiner_mid_blackout_gets_dark_lights() -> void:
+	_director(server).skip_to_round(6)
+	_director(server).set_blackout(true)
+	late = make_side("InteractLate")
+	add_player(late, client_id)
+	watch_signals(Events)
+	await join(late)
+	await wait_until(func() -> bool: return _director(late).blackout, 3.0, "snapshot carried the Blackout")
+	assert_signal_emitted(Events, "blackout_started")

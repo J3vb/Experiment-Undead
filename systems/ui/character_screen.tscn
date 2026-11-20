@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://systems/ui/character_screen.gd" id="script"]
 [ext_resource type="Script" path="res://systems/ui/name_field.gd" id="name_field"]
 [ext_resource type="PackedScene" path="res://systems/ui/item_tooltip.tscn" id="tooltip"]
+[ext_resource type="Script" path="res://systems/ui/loadout_slots.gd" id="loadout_slots"]
 
 [sub_resource type="StyleBoxFlat" id="panel"]
 bg_color = Color(0.071, 0.102, 0.125, 0.94)
@@ -82,9 +83,9 @@ theme_override_constants/separation = 20
 
 [node name="Loadout" type="PanelContainer" parent="Margin/Layout/Columns"]
 layout_mode = 2
-custom_minimum_size = Vector2(350, 0)
+custom_minimum_size = Vector2(460, 0)
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.85
+size_flags_stretch_ratio = 1.1
 theme_override_styles/panel = SubResource("panel")
 
 [node name="Box" type="VBoxContainer" parent="Margin/Layout/Columns/Loadout"]
@@ -101,60 +102,71 @@ placeholder_text = "Survivor"
 script = ExtResource("name_field")
 theme_override_font_sizes/font_size = 28
 
-[node name="Preview" type="SubViewportContainer" parent="Margin/Layout/Columns/Loadout/Box"]
+[node name="LoadoutSlots" type="HBoxContainer" parent="Margin/Layout/Columns/Loadout/Box"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(0, 270)
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+script = ExtResource("loadout_slots")
+
+[node name="ArmourSlots" type="VBoxContainer" parent="Margin/Layout/Columns/Loadout/Box/LoadoutSlots"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Preview" type="SubViewportContainer" parent="Margin/Layout/Columns/Loadout/Box/LoadoutSlots"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(140, 270)
+size_flags_horizontal = 3
 size_flags_vertical = 3
 stretch = true
 mouse_filter = 0
 
-[node name="Viewport" type="SubViewport" parent="Margin/Layout/Columns/Loadout/Box/Preview"]
+[node name="Viewport" type="SubViewport" parent="Margin/Layout/Columns/Loadout/Box/LoadoutSlots/Preview"]
 msaa_3d = 2
 size = Vector2i(360, 350)
 own_world_3d = true
 handle_input_locally = false
 render_target_update_mode = 4
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="Margin/Layout/Columns/Loadout/Box/Preview/Viewport"]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Margin/Layout/Columns/Loadout/Box/LoadoutSlots/Preview/Viewport"]
 environment = SubResource("booth")
 
-[node name="Key" type="DirectionalLight3D" parent="Margin/Layout/Columns/Loadout/Box/Preview/Viewport"]
+[node name="Key" type="DirectionalLight3D" parent="Margin/Layout/Columns/Loadout/Box/LoadoutSlots/Preview/Viewport"]
 rotation_degrees = Vector3(-40, -45, 0)
 light_color = Color(1, 0.851, 0.627, 1)
 light_energy = 1.15
 
-[node name="Rim" type="OmniLight3D" parent="Margin/Layout/Columns/Loadout/Box/Preview/Viewport"]
+[node name="Rim" type="OmniLight3D" parent="Margin/Layout/Columns/Loadout/Box/LoadoutSlots/Preview/Viewport"]
 position = Vector3(2, 2.6, -2)
 light_color = Color(0.804, 0.933, 0.910, 1)
 light_energy = 1.6
 omni_range = 8.0
 
-[node name="Camera" type="Camera3D" parent="Margin/Layout/Columns/Loadout/Box/Preview/Viewport"]
+[node name="Camera" type="Camera3D" parent="Margin/Layout/Columns/Loadout/Box/LoadoutSlots/Preview/Viewport"]
 position = Vector3(0, 1.05, 3.4)
 fov = 36.0
 current = true
 
-[node name="Turntable" type="Node3D" parent="Margin/Layout/Columns/Loadout/Box/Preview/Viewport"]
+[node name="Turntable" type="Node3D" parent="Margin/Layout/Columns/Loadout/Box/LoadoutSlots/Preview/Viewport"]
 unique_name_in_owner = true
 rotation_degrees = Vector3(0, -15, 0)
 
-[node name="Body" parent="Margin/Layout/Columns/Loadout/Box/Preview/Viewport/Turntable" instance=ExtResource("body")]
+[node name="Body" parent="Margin/Layout/Columns/Loadout/Box/LoadoutSlots/Preview/Viewport/Turntable" instance=ExtResource("body")]
 
-[node name="GearRig" type="Node3D" parent="Margin/Layout/Columns/Loadout/Box/Preview/Viewport/Turntable" node_paths=PackedStringArray("body")]
+[node name="GearRig" type="Node3D" parent="Margin/Layout/Columns/Loadout/Box/LoadoutSlots/Preview/Viewport/Turntable" node_paths=PackedStringArray("body")]
 unique_name_in_owner = true
 script = ExtResource("rig")
 body = NodePath("../Body")
+
+[node name="KitSlots" type="VBoxContainer" parent="Margin/Layout/Columns/Loadout/Box/LoadoutSlots"]
+layout_mode = 2
+theme_override_constants/separation = 6
 
 [node name="RotateHint" type="Label" parent="Margin/Layout/Columns/Loadout/Box"]
 layout_mode = 2
 text = "Drag to rotate"
 theme_override_colors/font_color = Color(0.561, 0.639, 0.659, 1)
-
-[node name="Slots" type="VBoxContainer" parent="Margin/Layout/Columns/Loadout/Box"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_constants/separation = 6
 
 [node name="Level" type="Label" parent="Margin/Layout/Columns/Loadout/Box"]
 unique_name_in_owner = true
@@ -238,7 +250,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/h_separation = 5
 theme_override_constants/v_separation = 8
-columns = 10
+columns = 6
 
 [node name="Status" type="Label" parent="Margin/Layout/Columns/Stash/Box"]
 unique_name_in_owner = true

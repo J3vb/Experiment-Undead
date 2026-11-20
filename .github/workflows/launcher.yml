@@ -1,0 +1,95 @@
+name: Launcher
+
+# The separate launcher (docs/plans/separate-launcher.md): Rust format, lint and tests on
+# Linux, and a Windows build of the exe, for every change to launcher/ or the shared
+# version table.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "launcher/**"
+      - "tests/fixtures/version_table.json"
+      - "tests/fixtures/releases.json"
+      - ".github/workflows/launcher.yml"
+  pull_request:
+    paths:
+      - "launcher/**"
+      - "tests/fixtures/version_table.json"
+      - "tests/fixtures/releases.json"
+      - ".github/workflows/launcher.yml"
+
+concurrency:
+  group: launcher-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: launcher
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the window libraries Tauri builds against
+        run: sudo apt-get update -q && sudo apt-get install -y -q libwebkit2gtk-4.1-dev
+
+      - name: Install the pinned Rust toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: launcher
+
+      - name: Format
+        run: cargo fmt --all --check
+
+      - name: Lint
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Tests
+        run: cargo test --workspace
+
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: launcher
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the pinned Rust toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: launcher
+
+      - name: Tests
+        run: cargo test --workspace
+
+      - name: Build the setup exe (unsigned updater files are only made on release tags)
+        run: npx -y @tauri-apps/cli@2.12.6 build --bundles nsis --config '{"bundle":{"createUpdaterArtifacts":false}}'
+
+      - name: Install, check and uninstall the setup exe quietly
+        shell: pwsh
+        run: |
+          $setup = Get-ChildItem target/release/bundle/nsis/*-setup.exe | Select-Object -First 1
+          Start-Process $setup.FullName -ArgumentList "/S" -Wait
+          $dir = Join-Path $env:LOCALAPPDATA "Fenlight Launcher"
+          $exe = Join-Path $dir "Fenlight-Launcher.exe"
+          if (-not (Test-Path $exe)) { Get-ChildItem $env:LOCALAPPDATA -Recurse -Filter *.exe -Depth 2 | Select-Object FullName; throw "launcher exe not installed at $exe" }
+          $menu = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs"
+          $link = Get-ChildItem $menu -Recurse -Filter "Fenlight Launcher*.lnk" | Select-Object -First 1
+          if (-not $link) { throw "no Start menu shortcut in $menu" }
+          Start-Process (Join-Path $dir "uninstall.exe") -ArgumentList "/S" -Wait
+          Start-Sleep -Seconds 5
+          if (Test-Path $exe) { throw "launcher exe still there after uninstall" }
+          Write-Output "Setup installed $exe with shortcut $($link.Name), uninstall removed it"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fenlight-launcher-setup
+          path: launcher/target/release/bundle/nsis/*-setup.exe
+          retention-days: 7

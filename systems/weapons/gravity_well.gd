@@ -191,7 +191,7 @@ func _damage() -> void:
 	if not damaged or not is_instance_valid(attacker):
 		return
 	if is_instance_valid(_claims):
-		_claims.call("confirm_well_hit", attacker, killed)
+		_claims.call("confirm_area_hit", attacker, killed)
 	else:
 		Events.hit_confirmed.emit(attacker, killed, false)
 

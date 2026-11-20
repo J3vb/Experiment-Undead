@@ -1,4 +1,4 @@
-"""Generate the original zombie death, footstep, Bloater gurgle and flesh hit sounds into assets/audio.
+"""Generate the original zombie death, footstep, Bloater gurgle, Glower chitter and flesh hit sounds into assets/audio.
 
 Run: python tools/assets/zombie_sfx.py assets/audio   (needs numpy)
 """
@@ -63,6 +63,49 @@ def bloater_gurgle(seed: int) -> np.ndarray:
     return (belly + slosh) * envelope
 
 
+def chirps(rng: np.random.Generator, time: np.ndarray, rate: float, base: float) -> np.ndarray:
+    """Fast insect-like clicks with a rising pitch: the Glower's chitter."""
+    out = np.zeros(len(time))
+    for start in np.sort(rng.random(int(rate * time[-1])) * time[-1]):
+        local = time - start
+        mask = local >= 0
+        frequency = base * (0.8 + rng.random() * 0.5)
+        sweep = 2 * np.pi * frequency * local[mask] * (1 + local[mask] * 30)
+        out[mask] += np.sin(sweep) * np.sign(np.sin(sweep * 0.5)) * np.exp(-local[mask] * 90)
+    return out
+
+
+def glower_chitter(seed: int) -> np.ndarray:
+    rng = np.random.default_rng(seed)
+    duration = 0.9 + rng.random() * 0.5
+    time = timeline(duration)
+    clicks = lowpass(chirps(rng, time, 38, 1400), 0.55)
+    rasp = lowpass(rng.standard_normal(len(time)), 0.25) * (0.5 + 0.5 * np.sin(2 * np.pi * 23 * time)) * 0.25
+    envelope = np.sin(np.pi * time / duration) ** 0.6
+    return (clicks + rasp) * envelope
+
+
+def glower_swipe(seed: int) -> np.ndarray:
+    rng = np.random.default_rng(seed)
+    time = timeline(0.5)
+    shriek = voice(time, 520 * (1 + 0.6 * time)) * np.exp(-((time - 0.12) ** 2) / 0.01) * 0.5
+    whoosh = lowpass(rng.standard_normal(len(time)), 0.5) * np.exp(-((time - 0.2) ** 2) / 0.004) * 0.8
+    clicks = lowpass(chirps(rng, time, 30, 1800), 0.6) * np.exp(-time * 4) * 0.6
+    return lowpass(shriek, 0.3) + whoosh + clicks
+
+
+def glower_death(seed: int) -> np.ndarray:
+    rng = np.random.default_rng(seed)
+    duration = 0.9 + rng.random() * 0.2
+    time = timeline(duration)
+    pitch = (680 + rng.random() * 80) * (1 - 0.6 * time / duration)
+    screech = lowpass(voice(time, pitch), 0.25) * np.exp(-time * 3.5) * 0.7
+    rattle = lowpass(chirps(rng, time, 50, 1100), 0.5) * np.clip(1 - time / duration, 0, 1) * 0.6
+    thud_time = np.maximum(time - duration * 0.7, 0)
+    thud = np.sin(2 * np.pi * 75 * thud_time) * np.exp(-thud_time * 22) * (time > duration * 0.7) * 0.6
+    return screech + rattle + thud
+
+
 def shambler_step(seed: int) -> np.ndarray:
     rng = np.random.default_rng(seed)
     time = timeline(0.4)
@@ -107,9 +150,12 @@ def main() -> None:
     for index in range(1, 4):
         save_wav(output / f"zombie_death_{index}.wav", shambler_death(300 + index))
         save_wav(output / f"bloater_gurgle_{index}.wav", bloater_gurgle(400 + index))
+        save_wav(output / f"glower_chitter_{index}.wav", glower_chitter(1000 + index))
     for index in range(1, 3):
         save_wav(output / f"bloater_death_{index}.wav", bloater_death(500 + index))
         save_wav(output / f"hit_head_{index}.wav", head_crack(900 + index))
+        save_wav(output / f"glower_death_{index}.wav", glower_death(1100 + index))
+    save_wav(output / "glower_swipe.wav", glower_swipe(1200))
     for index in range(1, 5):
         save_wav(output / f"zombie_step_{index}.wav", shambler_step(600 + index))
         save_wav(output / f"bloater_step_{index}.wav", bloater_step(700 + index))

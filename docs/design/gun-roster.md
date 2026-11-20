@@ -1,4 +1,4 @@
-# Experiment Undead: Gun Roster
+# Fenlight: Gun Roster
 
 The plan for every base gun in version 1: what each one is for, where you get it, when it starts dropping, which affixes and Legendary it leans on, and the order to build them. Numbers are in [balance/roster.csv](balance/roster.csv). Where this file and the code or `docs/DECISIONS.md` differ, the code and DECISIONS win.
 
@@ -163,7 +163,7 @@ Each gun needs: a model script using `tools/assets/gun_parts.py` (PR #65), a `We
 
 | Batch | When | Guns | New mechanic | Size |
 | --- | --- | --- | --- | --- |
-| A0 | Done or in PR #65 | Warden P9 (as M-9), Brenner Trench, Kestrel SMG, Vanguard AR (as AR-7), Talon DMR | - | - |
+| A0 | Done or in PR #65 | Warden P9 (as M-9), Brenner Trench, Kestrel SMG, Vanguard AR (as AR-17), Talon DMR | - | - |
 | A1 | Built (Vault pool, Halcyon Labs) | Hollis .44, Mako PDW, Atlas Auto, Halberd LMG, Corvid .338 | None (burst and scope exist) | 5 x S |
 | A2 | P3 | Cryo Lance, Siphon | Freeze/shatter, gravity well | 2 x M |
 | B | Sentry, Nightjar SD, Rampart BR built; rest with P6 loot | Wren MP, Coachman, Fieldhand, Rampart BR, Grubber, Sentry, Nightjar SD | Shell-by-shell reload (also fixes the Brenner), both-barrels alt fire, innate pierce, no-flash flag | 4 x S, 3 x M |

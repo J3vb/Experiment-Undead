@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="SerumData" format=3]
 
 [ext_resource type="Script" path="res://systems/serums/serum_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/hud/serum_stride.svg" id="icon"]
 
 [resource]
 script = ExtResource("1")
@@ -11,3 +12,4 @@ description = "Sprint twice as long, slide 25% further. Raise your gun out of a 
 multipliers = Dictionary[StringName, float]({&"slide_time": 1.25, &"sprint_out_time": 0.5, &"sprint_time": 2.0})
 badge = "ST"
 badge_colour = Color(0.305882353, 0.470588235, 0.439215686, 1)
+icon = ExtResource("icon")
