@@ -7,6 +7,7 @@ const TIMING_STATS: Dictionary[StringName, StringName] = {
 	&"fire_interval": &"fire_rate_pct",
 	&"ads_time": &"ads_pct",
 	&"sprint_out_time": &"handling_pct",
+	&"swap_time": &"handling_pct",
 }
 
 var data: Dictionary
@@ -58,14 +59,17 @@ func weapon_data(base: WeaponData, extra: StatBlock = null) -> WeaponData:
 	return result
 
 
-## A non-item gun with the player's all-guns stats: recoil and reserve ammo only (damage stays item-gun only).
+## A non-item gun with the player's all-guns stats: damage, recoil and reserve ammo.
 ## Without those stats it returns base itself, so a plain player holds the shared Content gun.
 static func fit_player_gun(base: WeaponData, player_stats: StatBlock) -> WeaponData:
+	var damage: float = player_stats.value(&"dmg_pct")
 	var reserve: float = player_stats.value(&"deep_reserve")
 	var recoil: float = player_stats.value(&"recoil_pct")
-	if reserve == 1.0 and recoil == 1.0:
+	if damage == 1.0 and reserve == 1.0 and recoil == 1.0:
 		return base
 	var result: WeaponData = base.duplicate() as WeaponData
+	result.damage = base.damage * damage
+	result.min_damage = base.min_damage * damage
 	result.starting_reserve = maxi(roundi(base.starting_reserve * reserve), 0)
 	result.max_reserve = maxi(roundi(base.max_reserve * reserve), 0)
 	if base.recoil:
