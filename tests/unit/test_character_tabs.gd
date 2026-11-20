@@ -27,7 +27,10 @@ func test_weapons_is_the_default_and_shows_only_gun_slots_and_guns() -> void:
 
 
 func test_field_gear_shows_the_other_slots_and_gear() -> void:
-	screen.tabs.button_for(&"field_gear").pressed.emit()
+	var field_gear: Button = screen.tabs.button_for(&"field_gear")
+	field_gear.button_pressed = true
+	field_gear.pressed.emit()
+	assert_false(field_gear.button_group.allow_unpress, "clicking the open tab again keeps it open")
 	assert_eq(screen.tab, &"field_gear")
 	assert_true(screen.tabs.button_for(&"field_gear").button_pressed)
 	assert_false(screen.tabs.button_for(&"weapons").button_pressed)
@@ -67,6 +70,7 @@ func test_focus_only_points_at_visible_controls_after_each_tab_change() -> void:
 		controls.append_array(screen.tabs.open_buttons())
 		controls.append_array(screen.slot_buttons.filter(func(button: Button) -> bool: return button.visible))
 		controls.append_array(screen.stash_buttons)
+		controls.append_array([screen.get_node("%Rarity"), screen.get_node("%Sort"), screen.get_node("%Back")])
 		for control: Control in controls:
 			for path: NodePath in [
 				control.focus_neighbor_top,
@@ -80,6 +84,13 @@ func test_focus_only_points_at_visible_controls_after_each_tab_change() -> void:
 					continue
 				var target: Control = control.get_node(path) as Control
 				assert_true(target.visible and target.focus_mode != Control.FOCUS_NONE, "%s -> %s" % [control, target])
+
+
+func test_reopening_starts_on_weapons() -> void:
+	screen.select_tab(&"field_gear")
+	screen.open(profile)
+	assert_eq(screen.tab, &"weapons")
+	assert_eq(_visible_slot_ids(), [&"primary", &"sidearm"])
 
 
 func _visible_slot_ids() -> Array[StringName]:

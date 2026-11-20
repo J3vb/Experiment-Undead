@@ -227,7 +227,6 @@ func test_unknown_item_and_full_stash_unequip_are_rejected_without_changes() -> 
 		profile.stash[index] = _item("rifle_ar", str(index), "common", 1)
 	profile.loadout[&"primary"] = _item("talon_dmr", "equipped", "epic", 20)
 	screen.open(profile)
-	screen.select_tab(&"weapons")
 	before = profile.to_dict()
 	screen.slot_buttons[0].grab_focus()
 	screen._input(_key(KEY_E))

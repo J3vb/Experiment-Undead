@@ -56,6 +56,7 @@ func open(character: CharacterProfile) -> void:
 	_comparing = false
 	tooltip.set_comparing(false)
 	%Back.text = "Back"
+	_show_tab(&"weapons")
 	show()
 	_refresh()
 	if visible_stash_indices().is_empty():
