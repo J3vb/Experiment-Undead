@@ -27,6 +27,8 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 OUT = os.path.join(REPO, "docs", "design", "reviews", "tripo-trial")
 MODELS = os.path.join(REPO, "assets", "models")
 KINDS = {"prop": (2_000, 1024, None), "large": (12_000, 2048, None), "character": (16_000, 2048, 1.8)}
+## Thin or open Tripo meshes can stop above budget after one collapse; later passes take the rest.
+DECIMATE_PASSES = 4
 BAKED = "Baked"  # characters: "BodyBaked", the Body* finish the character checks expect
 CHANNELS = ("albedo", "roughness", "metal")
 
@@ -92,14 +94,18 @@ def make_low(high, budget: int):
     low.name = "Model"
     bpy.context.collection.objects.link(low)
     weld(low)
-    ratio = min(1.0, budget * 0.96 / max(triangle_count(low), 1))
-    if ratio < 1.0:
+    bpy.context.view_layer.objects.active = low
+    for _attempt in range(DECIMATE_PASSES):
+        ratio = budget * 0.96 / max(triangle_count(low), 1)
+        if ratio >= 1.0:
+            break
         mod = low.modifiers.new("Decimate", "DECIMATE")
         mod.ratio = ratio
         mod.use_collapse_triangulate = True
-        bpy.context.view_layer.objects.active = low
         bpy.ops.object.modifier_apply(modifier=mod.name)
     clean(low)
+    floor, _top = world_bounds(low)
+    low.data.transform(Matrix.Translation((0.0, 0.0, -floor.z)))
     return low
 
 
@@ -108,6 +114,8 @@ def weld(obj) -> None:
     bm = bmesh.new()
     bm.from_mesh(obj.data)
     bmesh.ops.remove_doubles(bm, verts=bm.verts[:], dist=1e-5)
+    # Edges shared by three or more faces stop the collapse decimate; split, they collapse like open edges.
+    bmesh.ops.split_edges(bm, edges=[e for e in bm.edges if len(e.link_faces) > 2])
     bm.to_mesh(obj.data)
     bm.free()
 
@@ -322,7 +330,7 @@ def run(args: argparse.Namespace) -> dict:
     keep = [low]
     if args.kind == "character":
         low.data.materials[0].name = "Body" + BAKED
-        keep = tripo_rig.rig(low, armature, placed)
+        keep = tripo_rig.rig(low, armature, placed, args.clips)
     bpy.data.objects.remove(high)
     model = os.path.join(os.path.join(MODELS, args.folder) if args.folder else folder, f"{args.name}.glb")
     export(keep, model)
@@ -341,6 +349,7 @@ def parse(argv: list) -> argparse.Namespace:
     parser.add_argument("--size", type=int, default=0, help="map size; default 1024 props, 2048 characters")
     parser.add_argument("--samples", type=int, default=16)
     parser.add_argument("--out", default=OUT, help="folder for the baked maps (and the model without --folder)")
+    parser.add_argument("--clips", choices=("player", "keeper"), default="player", help="characters: clip set")
     parser.add_argument("--folder", default="", help="write the model to assets/models/<folder>/")
     return parser.parse_args(argv)
 

@@ -46,6 +46,11 @@
 [ext_resource type="Material" path="res://levels/materials/town_snow.tres" id="town_snow"]
 [ext_resource type="Material" path="res://levels/materials/iron.tres" id="iron"]
 [ext_resource type="PackedScene" path="res://systems/hub/deploy_board.tscn" id="deploy_board"]
+[ext_resource type="PackedScene" path="res://systems/hub/vendor.tscn" id="vendor"]
+[ext_resource type="Resource" path="res://content/vendors/cordon_liaison.tres" id="vendor_cordon_liaison"]
+[ext_resource type="Resource" path="res://content/vendors/gunsmith.tres" id="vendor_gunsmith"]
+[ext_resource type="Resource" path="res://content/vendors/quartermaster.tres" id="vendor_quartermaster"]
+[ext_resource type="Resource" path="res://content/vendors/technician.tres" id="vendor_technician"]
 [ext_resource type="PackedScene" path="res://systems/hub/deploy_vote_panel.tscn" id="deploy_vote_panel"]
 [ext_resource type="PackedScene" path="res://levels/lantern_post/fire_barrel.tscn" id="fire_barrel_scene"]
 [ext_resource type="PackedScene" path="res://levels/lantern_post/snowfall.tscn" id="snowfall"]
@@ -71,23 +76,17 @@ add_uv2 = true
 [sub_resource type="BoxShape3D" id="shape_0p15x1p9x0p15"]
 size = Vector3(0.15, 1.9, 0.15)
 
-[sub_resource type="BoxShape3D" id="shape_0p2526x1p148x0p2526"]
-size = Vector3(0.2526, 1.148, 0.2526)
+[sub_resource type="BoxShape3D" id="shape_0p245x1p114x0p245"]
+size = Vector3(0.245, 1.114, 0.245)
 
-[sub_resource type="BoxShape3D" id="shape_0p2591x1p178x0p2591"]
-size = Vector3(0.2591, 1.178, 0.2591)
+[sub_resource type="BoxShape3D" id="shape_0p2498x1p135x0p2498"]
+size = Vector3(0.2498, 1.135, 0.2498)
 
 [sub_resource type="BoxShape3D" id="shape_0p2621x1p191x0p2621"]
 size = Vector3(0.2621, 1.191, 0.2621)
 
-[sub_resource type="BoxShape3D" id="shape_0p2642x1p201x0p2642"]
-size = Vector3(0.2642, 1.201, 0.2642)
-
 [sub_resource type="BoxShape3D" id="shape_0p26x3p2x0p26"]
 size = Vector3(0.26, 3.2, 0.26)
-
-[sub_resource type="BoxShape3D" id="shape_0p2929x1p331x0p2929"]
-size = Vector3(0.2929, 1.331, 0.2929)
 
 [sub_resource type="BoxShape3D" id="shape_0p2x2p6x0p2"]
 size = Vector3(0.2, 2.6, 0.2)
@@ -288,295 +287,194 @@ transform = Transform3D(0.08001, 0, 0.9968, 0, 1, 0, -0.9968, 0, 0.08001, 4.681,
 
 [node name="Walls" type="Node3D" parent="."]
 
-[node name="NorthWest" type="StaticBody3D" parent="Walls"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.5, 1.8, -39)
-script = ExtResource("block")
-size = Vector3(5, 3.6, 0.6)
-material = ExtResource("town_planks")
-
-[node name="NorthWestPost0" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, -39)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="NorthWestPost1" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -23, 2.05, -39)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="NorthWestCap" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(5.1, 0, 0, 0, 0.1, 0, 0, 0, 0.9, -23.5, 3.65, -39)
-mesh = SubResource("box_town_snow")
-
-[node name="NorthEast" type="StaticBody3D" parent="Walls"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.5, 1.8, -39)
-script = ExtResource("block")
-size = Vector3(5, 3.6, 0.6)
-material = ExtResource("town_planks")
-
-[node name="NorthEastPost0" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 21, 2.05, -39)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="NorthEastPost1" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 24, 2.05, -39)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="NorthEastCap" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(5.1, 0, 0, 0, 0.1, 0, 0, 0, 0.9, 23.5, 3.65, -39)
-mesh = SubResource("box_town_snow")
-
-[node name="South" type="StaticBody3D" parent="Walls"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 16)
-script = ExtResource("block")
-size = Vector3(52, 3.6, 0.6)
-material = ExtResource("town_planks")
-
-[node name="SouthPost0" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="SouthPost1" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -23, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="SouthPost2" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -20, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="SouthPost3" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -17, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="SouthPost4" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -14, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="SouthPost5" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -11, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="SouthPost6" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -8, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="SouthPost7" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -5, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="SouthPost8" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -2, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="SouthPost9" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 1, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="SouthPost10" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 4, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="SouthPost11" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 7, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="SouthPost12" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 10, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="SouthPost13" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 13, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="SouthPost14" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 16, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="SouthPost15" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 19, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="SouthPost16" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 22, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="SouthPost17" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 25, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="SouthCap" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(52.1, 0, 0, 0, 0.1, 0, 0, 0, 0.9, 0, 3.65, 16)
-mesh = SubResource("box_town_snow")
-
-[node name="West" type="StaticBody3D" parent="Walls"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26, 1.8, -11)
-script = ExtResource("block")
-size = Vector3(0.6, 3.6, 54)
-material = ExtResource("town_planks")
-
-[node name="WestPost0" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, -38)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestPost1" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, -35)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestPost2" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, -32)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestPost3" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, -29)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestPost4" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, -26)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestPost5" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, -23)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestPost6" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, -20)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestPost7" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, -17)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestPost8" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, -14)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestPost9" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, -11)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestPost10" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, -8)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestPost11" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, -5)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestPost12" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, -2)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestPost13" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, 1)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestPost14" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, 4)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestPost15" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, 7)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestPost16" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, 10)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestPost17" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, 13)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestPost18" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, -26, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="WestCap" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.7, 0, 0, 0, 0.1, 0, 0, 0, 54.3, -26, 3.65, -11)
-mesh = SubResource("box_town_snow")
-
-[node name="East" type="StaticBody3D" parent="Walls"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 1.8, -11)
-script = ExtResource("block")
-size = Vector3(0.6, 3.6, 54)
-material = ExtResource("town_planks")
-
-[node name="EastPost0" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, -38)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastPost1" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, -35)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastPost2" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, -32)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastPost3" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, -29)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastPost4" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, -26)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastPost5" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, -23)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastPost6" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, -20)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastPost7" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, -17)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastPost8" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, -14)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastPost9" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, -11)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastPost10" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, -8)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastPost11" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, -5)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastPost12" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, -2)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastPost13" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, 1)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastPost14" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, 4)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastPost15" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, 7)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastPost16" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, 10)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastPost17" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, 13)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastPost18" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.32, 0, 0, 0, 4.1, 0, 0, 0, 0.32, 26, 2.05, 16)
-mesh = SubResource("box_town_dark_wood")
-
-[node name="EastCap" type="MeshInstance3D" parent="Walls"]
-transform = Transform3D(0.7, 0, 0, 0, 0.1, 0, 0, 0, 54.3, 26, 3.65, -11)
-mesh = SubResource("box_town_snow")
+[node name="West0" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -25.93, 0, -35.5)
+
+[node name="West0Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -26.2, 3.5, -35.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/West0Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="East0" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 25.93, 0, -35.5)
+
+[node name="East0Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 26.2, 3.5, -35.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/East0Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="West1" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -25.93, 0, -27.5)
+
+[node name="West1Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -26.2, 3.5, -27.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/West1Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="East1" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 25.93, 0, -27.5)
+
+[node name="East1Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 26.2, 3.5, -27.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/East1Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="West2" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -25.93, 0, -19.5)
+
+[node name="West2Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -26.2, 3.5, -19.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/West2Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="East2" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 25.93, 0, -19.5)
+
+[node name="East2Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 26.2, 3.5, -19.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/East2Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="West3" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -25.93, 0, -11.5)
+
+[node name="West3Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -26.2, 3.5, -11.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/West3Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="East3" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 25.93, 0, -11.5)
+
+[node name="East3Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 26.2, 3.5, -11.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/East3Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="West4" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -25.93, 0, -3.5)
+
+[node name="West4Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -26.2, 3.5, -3.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/West4Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="East4" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 25.93, 0, -3.5)
+
+[node name="East4Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 26.2, 3.5, -3.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/East4Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="West5" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -25.93, 0, 4.5)
+
+[node name="West5Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -26.2, 3.5, 4.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/West5Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="East5" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 25.93, 0, 4.5)
+
+[node name="East5Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 26.2, 3.5, 4.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/East5Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="West6" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -25.93, 0, 12.5)
+
+[node name="West6Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -26.2, 3.5, 12.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/West6Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="East6" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 25.93, 0, 12.5)
+
+[node name="East6Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(6.123e-17, 0, -1, 0, 1, 0, 1, 0, 6.123e-17, 26.2, 3.5, 12.5)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/East6Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="South0" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(-1, 0, 1.225e-16, 0, 1, 0, -1.225e-16, 0, -1, -24, 0, 15.93)
+
+[node name="South0Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(-1, 0, 1.225e-16, 0, 1, 0, -1.225e-16, 0, -1, -24, 3.5, 16.2)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/South0Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="South1" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(-1, 0, 1.225e-16, 0, 1, 0, -1.225e-16, 0, -1, -16, 0, 15.93)
+
+[node name="South1Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(-1, 0, 1.225e-16, 0, 1, 0, -1.225e-16, 0, -1, -16, 3.5, 16.2)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/South1Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="South2" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(-1, 0, 1.225e-16, 0, 1, 0, -1.225e-16, 0, -1, -8, 0, 15.93)
+
+[node name="South2Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(-1, 0, 1.225e-16, 0, 1, 0, -1.225e-16, 0, -1, -8, 3.5, 16.2)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/South2Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="South3" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(-1, 0, 1.225e-16, 0, 1, 0, -1.225e-16, 0, -1, -1.133e-16, 0, 15.93)
+
+[node name="South3Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(-1, 0, 1.225e-16, 0, 1, 0, -1.225e-16, 0, -1, -1.47e-16, 3.5, 16.2)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/South3Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="South4" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(-1, 0, 1.225e-16, 0, 1, 0, -1.225e-16, 0, -1, 8, 0, 15.93)
+
+[node name="South4Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(-1, 0, 1.225e-16, 0, 1, 0, -1.225e-16, 0, -1, 8, 3.5, 16.2)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/South4Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="South5" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(-1, 0, 1.225e-16, 0, 1, 0, -1.225e-16, 0, -1, 16, 0, 15.93)
+
+[node name="South5Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(-1, 0, 1.225e-16, 0, 1, 0, -1.225e-16, 0, -1, 16, 3.5, 16.2)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/South5Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="South6" parent="Walls" instance=ExtResource("gate_wall")]
+transform = Transform3D(-1, 0, 1.225e-16, 0, 1, 0, -1.225e-16, 0, -1, 24, 0, 15.93)
+
+[node name="South6Block" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(-1, 0, 1.225e-16, 0, 1, 0, -1.225e-16, 0, -1, 24, 3.5, 16.2)
+
+[node name="Shape" type="CollisionShape3D" parent="Walls/South6Block"]
+shape = SubResource("shape_8x7x2p4")
 
 [node name="Lodges" type="Node3D" parent="."]
 
@@ -721,6 +619,11 @@ light_energy = 1.8
 omni_range = 6.0
 omni_attenuation = 1.2
 
+[node name="TechnicianKeeper" parent="Market" instance=ExtResource("vendor")]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.34, 0.3, -27)
+data = ExtResource("vendor_technician")
+reach = 1.71
+
 [node name="GunsmithStall" parent="Market" instance=ExtResource("stall_gunsmith")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.85, 0, -22.6)
 
@@ -756,6 +659,11 @@ light_energy = 1.8
 omni_range = 6.0
 omni_attenuation = 1.2
 
+[node name="GunsmithKeeper" parent="Market" instance=ExtResource("vendor")]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -6.05, 0.2, -22.6)
+data = ExtResource("vendor_gunsmith")
+reach = 1.76
+
 [node name="TraderStall" parent="Market" instance=ExtResource("stall_trader")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -6.17, 0, -18.2)
 
@@ -790,6 +698,11 @@ light_color = Color(1, 0.58, 0.25, 1)
 light_energy = 1.8
 omni_range = 6.0
 omni_attenuation = 1.2
+
+[node name="TraderKeeper" parent="Market" instance=ExtResource("vendor")]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -5.82, 0.3, -18.2)
+data = ExtResource("vendor_quartermaster")
+reach = 0.72
 
 [node name="MissionsStall" parent="Market" instance=ExtResource("stall_frame")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -6.1, 0, -13.8)
@@ -832,6 +745,11 @@ light_color = Color(1, 0.58, 0.25, 1)
 light_energy = 1.8
 omni_range = 6.0
 omni_attenuation = 1.2
+
+[node name="MissionsKeeper" parent="Market" instance=ExtResource("vendor")]
+transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -6.1, 0, -13.8)
+data = ExtResource("vendor_cordon_liaison")
+reach = 1.68
 
 [node name="MissionsLantern" parent="Market" instance=ExtResource("lantern_hanging")]
 transform = Transform3D(6.123e-17, 0, 1, 0, 1, 0, -1, 0, 6.123e-17, -4.6, 1.95, -11.95)
@@ -1202,39 +1120,57 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.25, -3)
 [node name="Gate" type="Node3D" parent="."]
 
 [node name="Wall0" parent="Gate" instance=ExtResource("gate_wall")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 0, -38.92)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 0, -38.92)
 
 [node name="Wall0Block" type="StaticBody3D" parent="Gate"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 3.5, -39.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 3.5, -39.2)
 
 [node name="Shape" type="CollisionShape3D" parent="Gate/Wall0Block"]
 shape = SubResource("shape_8x7x2p4")
 
 [node name="Wall1" parent="Gate" instance=ExtResource("gate_wall")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0, -38.92)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 0, -38.92)
 
 [node name="Wall1Block" type="StaticBody3D" parent="Gate"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 3.5, -39.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 3.5, -39.2)
 
 [node name="Shape" type="CollisionShape3D" parent="Gate/Wall1Block"]
 shape = SubResource("shape_8x7x2p4")
 
 [node name="Wall2" parent="Gate" instance=ExtResource("gate_wall")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, -38.92)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0, -38.92)
 
 [node name="Wall2Block" type="StaticBody3D" parent="Gate"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 3.5, -39.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 3.5, -39.2)
 
 [node name="Shape" type="CollisionShape3D" parent="Gate/Wall2Block"]
 shape = SubResource("shape_8x7x2p4")
 
 [node name="Wall3" parent="Gate" instance=ExtResource("gate_wall")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 0, -38.92)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, -38.92)
 
 [node name="Wall3Block" type="StaticBody3D" parent="Gate"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 3.5, -39.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 3.5, -39.2)
 
 [node name="Shape" type="CollisionShape3D" parent="Gate/Wall3Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="Wall4" parent="Gate" instance=ExtResource("gate_wall")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 0, -38.92)
+
+[node name="Wall4Block" type="StaticBody3D" parent="Gate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 3.5, -39.2)
+
+[node name="Shape" type="CollisionShape3D" parent="Gate/Wall4Block"]
+shape = SubResource("shape_8x7x2p4")
+
+[node name="Wall5" parent="Gate" instance=ExtResource("gate_wall")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, -38.92)
+
+[node name="Wall5Block" type="StaticBody3D" parent="Gate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 3.5, -39.2)
+
+[node name="Shape" type="CollisionShape3D" parent="Gate/Wall5Block"]
 shape = SubResource("shape_8x7x2p4")
 
 [node name="Banner0" parent="Gate" instance=ExtResource("banner")]
@@ -1937,160 +1873,142 @@ font_size = 26
 text = "INFIRMARY"
 
 [node name="YardPine0_0" parent="Yards" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.5942, 0, 0.04127, 0, 0.5956, 0, -0.04127, 0, -0.5942, -21.01, 0, 0.8285)
+transform = Transform3D(-0.5942, 0, 0.04127, 0, 0.5956, 0, -0.04127, 0, -0.5942, -20.17, 0, 0.8285)
 
 [node name="YardPine0_0Trunk" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.01, 0.5956, 0.8285)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.17, 0.5956, 0.8285)
 
 [node name="Shape" type="CollisionShape3D" parent="Yards/YardPine0_0Trunk"]
 shape = SubResource("shape_0p2621x1p191x0p2621")
 
 [node name="YardPine0_1" parent="Yards" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.6988, 0, -0.3452, 0, 0.7794, 0, 0.3452, 0, -0.6988, -18.74, 0, -3.262)
+transform = Transform3D(-0.6988, 0, -0.3452, 0, 0.7794, 0, 0.3452, 0, -0.6988, -18.66, 0, -3.262)
 
 [node name="YardPine0_1Trunk" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.74, 0.7794, -3.262)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.66, 0.7794, -3.262)
 
 [node name="Shape" type="CollisionShape3D" parent="Yards/YardPine0_1Trunk"]
 shape = SubResource("shape_0p3429x1p559x0p3429")
 
 [node name="YardPine0_2" parent="Yards" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.6291, 0, -0.4239, 0, 0.7586, 0, 0.4239, 0, -0.6291, -23.75, 0, -19.57)
+transform = Transform3D(-0.6291, 0, -0.4239, 0, 0.7586, 0, 0.4239, 0, -0.6291, -22, 0, -19.57)
 
 [node name="YardPine0_2Trunk" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.75, 0.7586, -19.57)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 0.7586, -19.57)
 
 [node name="Shape" type="CollisionShape3D" parent="Yards/YardPine0_2Trunk"]
 shape = SubResource("shape_0p3338x1p517x0p3338")
 
 [node name="YardPine0_4" parent="Yards" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.3555, 0, -0.5939, 0, 0.6922, 0, 0.5939, 0, -0.3555, -23.54, 0, 9.455)
+transform = Transform3D(-0.3555, 0, -0.5939, 0, 0.6922, 0, 0.5939, 0, -0.3555, -21.86, 0, 9.455)
 
 [node name="YardPine0_4Trunk" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.54, 0.6922, 9.455)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.86, 0.6922, 9.455)
 
 [node name="Shape" type="CollisionShape3D" parent="Yards/YardPine0_4Trunk"]
 shape = SubResource("shape_0p3046x1p384x0p3046")
 
 [node name="YardPine1_0" parent="Yards" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.7434, 0, -0.03227, 0, 0.7441, 0, 0.03227, 0, 0.7434, 16.99, 0, -1.731)
+transform = Transform3D(0.7434, 0, -0.03227, 0, 0.7441, 0, 0.03227, 0, 0.7434, 16.86, 0, -1.731)
 
 [node name="YardPine1_0Trunk" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.99, 0.7441, -1.731)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.86, 0.7441, -1.731)
 
 [node name="Shape" type="CollisionShape3D" parent="Yards/YardPine1_0Trunk"]
 shape = SubResource("shape_0p3274x1p488x0p3274")
 
-[node name="YardPine1_1" parent="Yards" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.3256, 0, -0.5807, 0, 0.6657, 0, 0.5807, 0, -0.3256, 23.08, 0, -20.91)
-
-[node name="YardPine1_1Trunk" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.08, 0.6657, -20.91)
-
-[node name="Shape" type="CollisionShape3D" parent="Yards/YardPine1_1Trunk"]
-shape = SubResource("shape_0p2929x1p331x0p2929")
-
 [node name="YardPine1_2" parent="Yards" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.4451, 0, 0.403, 0, 0.6004, 0, -0.403, 0, 0.4451, 16.68, 0, -12.76)
+transform = Transform3D(-0.5407, 0, 0.1327, 0, 0.5568, 0, -0.1327, 0, -0.5407, 18.81, 0, -3.242)
 
 [node name="YardPine1_2Trunk" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.68, 0.6004, -12.76)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.81, 0.5568, -3.242)
 
 [node name="Shape" type="CollisionShape3D" parent="Yards/YardPine1_2Trunk"]
-shape = SubResource("shape_0p2642x1p201x0p2642")
+shape = SubResource("shape_0p245x1p114x0p245")
 
 [node name="YardPine1_3" parent="Yards" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.008824, 0, 0.5887, 0, 0.5888, 0, -0.5887, 0, 0.008824, 16.97, 0, 1.339)
+transform = Transform3D(0.06489, 0, -0.564, 0, 0.5677, 0, 0.564, 0, 0.06489, 17.51, 0, -28.61)
 
 [node name="YardPine1_3Trunk" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.97, 0.5888, 1.339)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.51, 0.5677, -28.61)
 
 [node name="Shape" type="CollisionShape3D" parent="Yards/YardPine1_3Trunk"]
-shape = SubResource("shape_0p2591x1p178x0p2591")
-
-[node name="YardPine1_4" parent="Yards" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.5452, 0, 0.1802, 0, 0.5742, 0, -0.1802, 0, -0.5452, 19.63, 0, 6.085)
-
-[node name="YardPine1_4Trunk" type="StaticBody3D" parent="Yards"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.63, 0.5742, 6.085)
-
-[node name="Shape" type="CollisionShape3D" parent="Yards/YardPine1_4Trunk"]
-shape = SubResource("shape_0p2526x1p148x0p2526")
+shape = SubResource("shape_0p2498x1p135x0p2498")
 
 [node name="Pines" type="Node3D" parent="."]
 metadata/walk_through = "outside the town walls"
 
 [node name="Pine0" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.8361, 0, -0.9606, 0, 1.273, 0, 0.9606, 0, 0.8361, 4.548, 0, 26.34)
+transform = Transform3D(-0.7182, 0, 0.2374, 0, 0.7564, 0, -0.2374, 0, -0.7182, -10.03, 0, 25.14)
 
 [node name="Pine1" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.7991, 0, 1.113, 0, 1.37, 0, -1.113, 0, 0.7991, -12.99, 0, 26.42)
+transform = Transform3D(-0.7711, 0, 0.4541, 0, 0.8949, 0, -0.4541, 0, -0.7711, 29.37, 0, 24.4)
 
 [node name="Pine2" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.8595, 0, 0.08145, 0, 0.8633, 0, -0.08145, 0, -0.8595, -29.79, 0, -38.8)
+transform = Transform3D(0.7991, 0, 1.113, 0, 1.37, 0, -1.113, 0, 0.7991, -12.99, 0, 26.42)
 
 [node name="Pine3" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.8764, 0, -0.3881, 0, 0.9585, 0, 0.3881, 0, -0.8764, -45.62, 0, -20.11)
+transform = Transform3D(-0.8595, 0, 0.08145, 0, 0.8633, 0, -0.08145, 0, -0.8595, -29.79, 0, -38.8)
 
 [node name="Pine4" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.7842, 0, -0.7144, 0, 1.061, 0, 0.7144, 0, -0.7842, 41.69, 0, 7.049)
+transform = Transform3D(-0.8764, 0, -0.3881, 0, 0.9585, 0, 0.3881, 0, -0.8764, -45.62, 0, -20.11)
 
 [node name="Pine5" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.2489, 0, -1.306, 0, 1.33, 0, 1.306, 0, 0.2489, 16.21, 0, -56.6)
+transform = Transform3D(-0.7842, 0, -0.7144, 0, 1.061, 0, 0.7144, 0, -0.7842, 41.69, 0, 7.049)
 
 [node name="Pine6" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.7848, 0, 0.5779, 0, 0.9747, 0, -0.5779, 0, -0.7848, 34.46, 0, 17.79)
+transform = Transform3D(0.2489, 0, -1.306, 0, 1.33, 0, 1.306, 0, 0.2489, 16.21, 0, -56.6)
 
 [node name="Pine7" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.678, 0, 0.3053, 0, 0.7436, 0, -0.3053, 0, 0.678, -36.47, 0, 1.429)
+transform = Transform3D(-0.7848, 0, 0.5779, 0, 0.9747, 0, -0.5779, 0, -0.7848, 34.46, 0, 17.79)
 
 [node name="Pine8" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.8873, 0, 0.3043, 0, 0.938, 0, -0.3043, 0, 0.8873, -26.79, 0, -45.77)
+transform = Transform3D(0.678, 0, 0.3053, 0, 0.7436, 0, -0.3053, 0, 0.678, -36.47, 0, 1.429)
 
 [node name="Pine9" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.5048, 0, 0.5828, 0, 0.771, 0, -0.5828, 0, -0.5048, -45.98, 0, -46.87)
+transform = Transform3D(0.8873, 0, 0.3043, 0, 0.938, 0, -0.3043, 0, 0.8873, -26.79, 0, -45.77)
 
 [node name="Pine10" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.6724, 0, 0.908, 0, 1.13, 0, -0.908, 0, 0.6724, -43.65, 0, 25.43)
+transform = Transform3D(-0.5048, 0, 0.5828, 0, 0.771, 0, -0.5828, 0, -0.5048, -45.98, 0, -46.87)
 
 [node name="Pine11" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(1.293, 0, -0.05607, 0, 1.294, 0, 0.05607, 0, 1.293, -12.5, 0, -49.72)
+transform = Transform3D(0.6724, 0, 0.908, 0, 1.13, 0, -0.908, 0, 0.6724, -43.65, 0, 25.43)
 
 [node name="Pine12" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.08702, 0, 0.9358, 0, 0.9398, 0, -0.9358, 0, -0.08702, -38.1, 0, -51.78)
+transform = Transform3D(1.293, 0, -0.05607, 0, 1.294, 0, 0.05607, 0, 1.293, -12.5, 0, -49.72)
 
 [node name="Pine13" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.6825, 0, -0.2171, 0, 0.7162, 0, 0.2171, 0, 0.6825, 30.25, 0, -45.86)
+transform = Transform3D(-0.08702, 0, 0.9358, 0, 0.9398, 0, -0.9358, 0, -0.08702, -38.1, 0, -51.78)
 
 [node name="Pine14" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(1.065, 0, 0.1827, 0, 1.08, 0, -0.1827, 0, 1.065, 2.6, 0, -47.34)
+transform = Transform3D(0.6825, 0, -0.2171, 0, 0.7162, 0, 0.2171, 0, 0.6825, 30.25, 0, -45.86)
 
 [node name="Pine15" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.4326, 0, -1.231, 0, 1.304, 0, 1.231, 0, -0.4326, 2.586, 0, 35.85)
+transform = Transform3D(1.06, 0, -0.1441, 0, 1.07, 0, 0.1441, 0, 1.06, 3.972, 0, -59.3)
 
 [node name="Pine16" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.1948, 0, -1.055, 0, 1.073, 0, 1.055, 0, 0.1948, -30.63, 0, 15.19)
+transform = Transform3D(-0.5908, 0, 0.6559, 0, 0.8828, 0, -0.6559, 0, -0.5908, 33.43, 0, 7.62)
 
 [node name="Pine17" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.4475, 0, -1.217, 0, 1.297, 0, 1.217, 0, 0.4475, 28.66, 0, 36.49)
+transform = Transform3D(0.1948, 0, -1.055, 0, 1.073, 0, 1.055, 0, 0.1948, -30.63, 0, 15.19)
 
 [node name="Pine18" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.8534, 0, -0.09497, 0, 0.8587, 0, 0.09497, 0, -0.8534, 29.29, 0, 11.99)
+transform = Transform3D(0.4475, 0, -1.217, 0, 1.297, 0, 1.217, 0, 0.4475, 28.66, 0, 36.49)
 
 [node name="Pine19" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.1322, 0, 0.7073, 0, 0.7196, 0, -0.7073, 0, -0.1322, -13.29, 0, -59.1)
+transform = Transform3D(-0.8534, 0, -0.09497, 0, 0.8587, 0, 0.09497, 0, -0.8534, 29.29, 0, 11.99)
 
 [node name="Pine20" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(1.352, 0, -0.1018, 0, 1.356, 0, 0.1018, 0, 1.352, 42, 0, -17.28)
+transform = Transform3D(-0.1322, 0, 0.7073, 0, 0.7196, 0, -0.7073, 0, -0.1322, -13.29, 0, -59.1)
 
 [node name="Pine21" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.1239, 0, 0.8453, 0, 0.8543, 0, -0.8453, 0, 0.1239, 41.86, 0, -25.54)
+transform = Transform3D(1.352, 0, -0.1018, 0, 1.356, 0, 0.1018, 0, 1.352, 42, 0, -17.28)
 
 [node name="Pine22" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.921, 0, -0.6664, 0, 1.137, 0, 0.6664, 0, 0.921, -27.9, 0, -41.56)
+transform = Transform3D(0.1239, 0, 0.8453, 0, 0.8543, 0, -0.8453, 0, 0.1239, 41.86, 0, -25.54)
 
 [node name="Pine23" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.3551, 0, -1.101, 0, 1.157, 0, 1.101, 0, 0.3551, 31.32, 0, -14.05)
+transform = Transform3D(-1.278, 0, 0.1657, 0, 1.288, 0, -0.1657, 0, -1.278, 11.41, 0, 28.03)
 
 [node name="Pine24" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.2695, 0, -1.309, 0, 1.337, 0, 1.309, 0, 0.2695, -38.2, 0, 4.059)
@@ -2114,259 +2032,214 @@ transform = Transform3D(-0.9014, 0, -0.2845, 0, 0.9453, 0, 0.2845, 0, -0.9014, 4
 transform = Transform3D(-0.8132, 0, -1.114, 0, 1.38, 0, 1.114, 0, -0.8132, -33.95, 0, -60.58)
 
 [node name="Pine31" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.695, 0, -0.7241, 0, 1.004, 0, 0.7241, 0, 0.695, 2.445, 0, 31.36)
-
-[node name="Pine32" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.2337, 0, 0.8445, 0, 0.8763, 0, -0.8445, 0, -0.2337, 30.01, 0, -40.9)
 
-[node name="Pine33" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine32" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.9151, 0, 0.2463, 0, 0.9476, 0, -0.2463, 0, -0.9151, -33.94, 0, 29)
 
-[node name="Pine34" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.8645, 0, -0.4915, 0, 0.9944, 0, 0.4915, 0, 0.8645, 7.668, 0, 28.43)
-
-[node name="Pine35" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine33" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.4113, 0, 0.9204, 0, 1.008, 0, -0.9204, 0, 0.4113, 2.163, 0, -60.13)
 
-[node name="Pine36" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine34" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.8093, 0, 0.136, 0, 0.8206, 0, -0.136, 0, -0.8093, -45.64, 0, 17.92)
 
-[node name="Pine37" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine35" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.1471, 0, 0.8615, 0, 0.8739, 0, -0.8615, 0, -0.1471, -36.24, 0, -5.97)
 
-[node name="Pine38" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine36" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-1.128, 0, -0.03938, 0, 1.129, 0, 0.03938, 0, -1.128, 37.95, 0, -17.68)
 
-[node name="Pine39" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.8491, 0, -0.8329, 0, 1.189, 0, 0.8329, 0, 0.8491, -2.021, 0, 32.15)
+[node name="Pine37" parent="Pines" instance=ExtResource("pine_tree")]
+transform = Transform3D(-0.08189, 0, 1.357, 0, 1.36, 0, -1.357, 0, -0.08189, 18.33, 0, 25.65)
 
-[node name="Pine40" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(1.023, 0, -0.3809, 0, 1.092, 0, 0.3809, 0, 1.023, 40.68, 0, -36.04)
-
-[node name="Pine41" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine38" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.7338, 0, 0.2793, 0, 0.7851, 0, -0.2793, 0, -0.7338, 31.28, 0, -48.29)
 
-[node name="Pine42" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine39" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.3641, 0, -0.6571, 0, 0.7512, 0, 0.6571, 0, -0.3641, -39.33, 0, -37.94)
 
-[node name="Pine43" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine40" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.1707, 0, -0.7899, 0, 0.8081, 0, 0.7899, 0, -0.1707, 26.12, 0, 27.7)
 
-[node name="Pine44" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine41" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(1.291, 0, -0.2669, 0, 1.318, 0, 0.2669, 0, 1.291, 14.74, 0, -47.7)
 
-[node name="Pine45" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine42" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.9756, 0, 0.07826, 0, 0.9788, 0, -0.07826, 0, -0.9756, -25.8, 0, 33.25)
 
-[node name="Pine46" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine43" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.7389, 0, 0.3391, 0, 0.813, 0, -0.3391, 0, -0.7389, 45.07, 0, 21.24)
 
-[node name="Pine47" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine44" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-1.013, 0, 0.3975, 0, 1.088, 0, -0.3975, 0, -1.013, 20.44, 0, -60.05)
 
-[node name="Pine48" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine45" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-1.133, 0, -0.0875, 0, 1.137, 0, 0.0875, 0, -1.133, -44.34, 0, -28.85)
 
-[node name="Pine49" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine46" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(1.232, 0, -0.2215, 0, 1.252, 0, 0.2215, 0, 1.232, -40.09, 0, 36.51)
 
-[node name="Pine50" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine47" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.1319, 0, -0.7157, 0, 0.7277, 0, 0.7157, 0, 0.1319, -36.36, 0, -35.44)
 
-[node name="Pine51" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine48" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.8453, 0, -0.526, 0, 0.9956, 0, 0.526, 0, 0.8453, -21.12, 0, -49.04)
 
-[node name="Pine52" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine49" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.703, 0, -0.3913, 0, 0.8046, 0, 0.3913, 0, 0.703, 29.35, 0, -36.14)
 
-[node name="Pine53" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine50" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-1.054, 0, 0.5344, 0, 1.182, 0, -0.5344, 0, -1.054, -37.77, 0, -56.25)
 
-[node name="Pine54" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine51" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.3647, 0, -1.084, 0, 1.144, 0, 1.084, 0, 0.3647, -39.34, 0, 31.83)
 
-[node name="Pine55" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine52" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.4859, 0, -0.5669, 0, 0.7466, 0, 0.5669, 0, 0.4859, -38.3, 0, 23.62)
 
-[node name="Pine56" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.6107, 0, 0.644, 0, 0.8875, 0, -0.644, 0, 0.6107, 4.882, 0, 30.67)
+[node name="Pine53" parent="Pines" instance=ExtResource("pine_tree")]
+transform = Transform3D(0.07759, 0, 1.066, 0, 1.069, 0, -1.066, 0, 0.07759, -21.36, 0, -49.08)
 
-[node name="Pine57" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine54" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.2194, 0, 0.7018, 0, 0.7353, 0, -0.7018, 0, 0.2194, -35.93, 0, -45.86)
 
-[node name="Pine58" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.9368, 0, 0.1074, 0, 0.9429, 0, -0.1074, 0, 0.9368, 0.008151, 0, -44.21)
+[node name="Pine55" parent="Pines" instance=ExtResource("pine_tree")]
+transform = Transform3D(0.8712, 0, 0.08427, 0, 0.8753, 0, -0.08427, 0, 0.8712, -14.08, 0, -60.18)
 
-[node name="Pine59" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(-1.151, 0, -0.3825, 0, 1.213, 0, 0.3825, 0, -1.151, -22.96, 0, -60.47)
+[node name="Pine56" parent="Pines" instance=ExtResource("pine_tree")]
+transform = Transform3D(-1.159, 0, 0.5263, 0, 1.273, 0, -0.5263, 0, -1.159, 39.99, 0, -51.37)
 
-[node name="Pine60" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(1.063, 0, 0.8386, 0, 1.354, 0, -0.8386, 0, 1.063, -28.57, 0, -14.52)
-
-[node name="Pine61" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.5305, 0, -0.9021, 0, 1.047, 0, 0.9021, 0, 0.5305, 29.34, 0, -18.78)
-
-[node name="Pine62" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine57" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.4646, 0, -0.817, 0, 0.9399, 0, 0.817, 0, 0.4646, 17.27, 0, 36.24)
 
-[node name="Pine63" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine58" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.04288, 0, -0.7483, 0, 0.7495, 0, 0.7483, 0, -0.04288, -41, 0, -49.02)
 
-[node name="Pine64" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine59" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.4119, 0, -0.6377, 0, 0.7591, 0, 0.6377, 0, 0.4119, -22.49, 0, -45.68)
 
-[node name="Pine65" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine60" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.04389, 0, 0.8963, 0, 0.8974, 0, -0.8963, 0, 0.04389, 34.09, 0, 5.054)
 
-[node name="Pine66" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine61" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.8589, 0, -0.2103, 0, 0.8843, 0, 0.2103, 0, 0.8589, -31.51, 0, -17.42)
 
-[node name="Pine67" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine62" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.8509, 0, -0.1865, 0, 0.8711, 0, 0.1865, 0, 0.8509, 43.48, 0, -7.293)
 
-[node name="Pine68" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine63" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-1.032, 0, -0.01793, 0, 1.032, 0, 0.01793, 0, -1.032, -45.9, 0, -23.84)
 
-[node name="Pine69" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine64" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.6158, 0, 0.4503, 0, 0.7628, 0, -0.4503, 0, -0.6158, -45.54, 0, -35.58)
 
-[node name="Pine70" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine65" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.09842, 0, 0.9077, 0, 0.913, 0, -0.9077, 0, 0.09842, -42.17, 0, -59.75)
 
-[node name="Pine71" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine66" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.4477, 0, 0.8635, 0, 0.9727, 0, -0.8635, 0, -0.4477, 19.87, 0, 25.91)
 
-[node name="Pine72" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine67" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.7503, 0, -0.9453, 0, 1.207, 0, 0.9453, 0, -0.7503, 44.6, 0, -47.05)
 
-[node name="Pine73" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine68" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.9226, 0, -0.9501, 0, 1.324, 0, 0.9501, 0, -0.9226, -41.97, 0, 21.53)
 
-[node name="Pine74" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine69" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.7886, 0, -0.1186, 0, 0.7975, 0, 0.1186, 0, -0.7886, 21.51, 0, 19.22)
 
-[node name="Pine75" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.5835, 0, -1.12, 0, 1.263, 0, 1.12, 0, 0.5835, 0.4021, 0, 21.49)
+[node name="Pine70" parent="Pines" instance=ExtResource("pine_tree")]
+transform = Transform3D(0.8668, 0, -0.6915, 0, 1.109, 0, 0.6915, 0, 0.8668, 28.03, 0, 20.64)
 
-[node name="Pine76" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.4107, 0, -1.104, 0, 1.178, 0, 1.104, 0, -0.4107, 7.734, 0, 27.28)
-
-[node name="Pine77" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine71" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.5083, 0, 0.6089, 0, 0.7932, 0, -0.6089, 0, -0.5083, -24.85, 0, -58.88)
 
-[node name="Pine78" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine72" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.7579, 0, -0.7847, 0, 1.091, 0, 0.7847, 0, -0.7579, -36.35, 0, 21.58)
 
-[node name="Pine79" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine73" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.01371, 0, -1.258, 0, 1.258, 0, 1.258, 0, -0.01371, -0.9849, 0, -61.67)
 
-[node name="Pine80" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine74" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.01676, 0, 1.216, 0, 1.216, 0, -1.216, 0, -0.01676, 14.66, 0, -55.39)
 
-[node name="Pine81" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine75" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.3361, 0, 1.163, 0, 1.211, 0, -1.163, 0, 0.3361, -39.15, 0, -35.44)
 
-[node name="Pine82" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine76" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.7737, 0, 0.7035, 0, 1.046, 0, -0.7035, 0, -0.7737, 22.06, 0, 35.57)
 
-[node name="Pine83" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine77" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.01988, 0, 0.803, 0, 0.8032, 0, -0.803, 0, -0.01988, 13.13, 0, -54.25)
 
-[node name="Pine84" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine78" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.08737, 0, 0.7373, 0, 0.7425, 0, -0.7373, 0, -0.08737, 6.234, 0, -60.75)
 
-[node name="Pine85" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.4156, 0, 1.259, 0, 1.326, 0, -1.259, 0, 0.4156, -3.097, 0, -50.15)
+[node name="Pine79" parent="Pines" instance=ExtResource("pine_tree")]
+transform = Transform3D(1.275, 0, -0.5399, 0, 1.385, 0, 0.5399, 0, 1.275, 36.22, 0, -42.07)
 
-[node name="Pine86" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.6887, 0, 0.1816, 0, 0.7123, 0, -0.1816, 0, -0.6887, 43.99, 0, 31.63)
+[node name="Pine80" parent="Pines" instance=ExtResource("pine_tree")]
+transform = Transform3D(1.248, 0, -0.2536, 0, 1.274, 0, 0.2536, 0, 1.248, -44.39, 0, -16.1)
 
-[node name="Pine87" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.1187, 0, 1.008, 0, 1.015, 0, -1.008, 0, -0.1187, 29.43, 0, 34.81)
-
-[node name="Pine88" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine81" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.7389, 0, -0.4151, 0, 0.8475, 0, 0.4151, 0, -0.7389, -26.69, 0, 32.56)
 
-[node name="Pine89" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine82" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.9193, 0, 1.012, 0, 1.367, 0, -1.012, 0, 0.9193, -32.96, 0, -9.593)
 
-[node name="Pine90" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine83" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.3817, 0, -1.264, 0, 1.321, 0, 1.264, 0, -0.3817, 29.46, 0, -11.13)
 
-[node name="Pine91" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine84" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(1.028, 0, 0.1617, 0, 1.04, 0, -0.1617, 0, 1.028, -24.71, 0, 27.77)
 
-[node name="Pine92" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine85" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.3256, 0, 0.9619, 0, 1.016, 0, -0.9619, 0, -0.3256, -45.67, 0, -12.83)
 
-[node name="Pine93" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine86" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.4948, 0, -0.7771, 0, 0.9213, 0, 0.7771, 0, 0.4948, -33.05, 0, -27.6)
 
-[node name="Pine94" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine87" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.9382, 0, 0.8815, 0, 1.287, 0, -0.8815, 0, 0.9382, -45.84, 0, 13.07)
 
-[node name="Pine95" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine88" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.3297, 0, 1.29, 0, 1.331, 0, -1.29, 0, -0.3297, 39.23, 0, 9.302)
 
-[node name="Pine96" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine89" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.8568, 0, 0.4161, 0, 0.9525, 0, -0.4161, 0, -0.8568, 45.89, 0, -3.082)
 
-[node name="Pine97" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine90" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.3912, 0, -0.6646, 0, 0.7712, 0, 0.6646, 0, 0.3912, -20.69, 0, -57.17)
 
-[node name="Pine98" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine91" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.08628, 0, 0.8703, 0, 0.8745, 0, -0.8703, 0, -0.08628, -19.72, 0, 31.56)
 
-[node name="Pine99" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.9251, 0, -0.2614, 0, 0.9613, 0, 0.2614, 0, 0.9251, 1.009, 0, -43.02)
+[node name="Pine92" parent="Pines" instance=ExtResource("pine_tree")]
+transform = Transform3D(0.5006, 0, -1.22, 0, 1.319, 0, 1.22, 0, 0.5006, -11.65, 0, 33.62)
 
-[node name="Pine100" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.9768, 0, -0.5908, 0, 1.142, 0, 0.5908, 0, 0.9768, 35.35, 0, 19.2)
+[node name="Pine93" parent="Pines" instance=ExtResource("pine_tree")]
+transform = Transform3D(-1.294, 0, -0.4135, 0, 1.358, 0, 0.4135, 0, -1.294, 12.04, 0, 29.34)
 
-[node name="Pine101" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(1.146, 0, 0.3682, 0, 1.204, 0, -0.3682, 0, 1.146, 40.54, 0, -7.077)
+[node name="Pine94" parent="Pines" instance=ExtResource("pine_tree")]
+transform = Transform3D(-1.155, 0, 0.3685, 0, 1.213, 0, -0.3685, 0, -1.155, 20.2, 0, -57.05)
 
-[node name="Pine102" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine95" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.9398, 0, 0.9675, 0, 1.349, 0, -0.9675, 0, 0.9398, -19.67, 0, -57.1)
 
-[node name="Pine103" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine96" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(-0.364, 0, 1.101, 0, 1.159, 0, -1.101, 0, -0.364, 43.82, 0, -35.98)
 
-[node name="Pine104" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine97" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.7022, 0, -0.471, 0, 0.8455, 0, 0.471, 0, 0.7022, -30.61, 0, -45.83)
 
-[node name="Pine105" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine98" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.649, 0, 0.7804, 0, 1.015, 0, -0.7804, 0, 0.649, 37.38, 0, 37.65)
 
-[node name="Pine106" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine99" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.7897, 0, 0.5088, 0, 0.9394, 0, -0.5088, 0, 0.7897, -28.3, 0, -52.93)
 
-[node name="Pine107" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(-1.045, 0, 0.6381, 0, 1.225, 0, -0.6381, 0, -1.045, 6.405, 0, 26.73)
-
-[node name="Pine108" parent="Pines" instance=ExtResource("pine_tree")]
+[node name="Pine100" parent="Pines" instance=ExtResource("pine_tree")]
 transform = Transform3D(0.9686, 0, 0.9793, 0, 1.377, 0, -0.9793, 0, 0.9686, -40.29, 0, -34.25)
-
-[node name="Pine109" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.008644, 0, 0.8897, 0, 0.8897, 0, -0.8897, 0, 0.008644, 33.38, 0, -40.4)
-
-[node name="Pine110" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(1.299, 0, 0.1791, 0, 1.311, 0, -0.1791, 0, 1.299, 41.76, 0, 22.87)
-
-[node name="Pine111" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(-1.308, 0, 0.2218, 0, 1.327, 0, -0.2218, 0, -1.308, -43.03, 0, 8.951)
-
-[node name="Pine112" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.8729, 0, -0.4322, 0, 0.9741, 0, 0.4322, 0, 0.8729, 8.02, 0, -61.98)
-
-[node name="Pine113" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.01331, 0, 1.381, 0, 1.381, 0, -1.381, 0, 0.01331, 29.95, 0, 23.55)
-
-[node name="Pine114" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(-0.4411, 0, -0.9701, 0, 1.066, 0, 0.9701, 0, -0.4411, -35.97, 0, -46.56)
-
-[node name="Pine115" parent="Pines" instance=ExtResource("pine_tree")]
-transform = Transform3D(0.1071, 0, -1.148, 0, 1.153, 0, 1.148, 0, 0.1071, 40.62, 0, 10.17)
 
 [node name="Ridge" type="Node3D" parent="."]
 metadata/walk_through = "outside the town walls"

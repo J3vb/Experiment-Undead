@@ -33,6 +33,8 @@ live state belongs in objects such as `WeaponInstance`.
     moves the hands. Set `grip` on the gun and its Reforged copy. No code change.
     Check hip, ADS and reload poses with `tools/weapon_arm_review.tscn` and the
     arm anatomy, marker and contact checks; a new weapon must have an authored fit.
+   Render its Pack icon: `xvfb-run -s "-screen 0 1024x768x24" godot --path . --rendering-driver opengl3 --resolution 256x256 res://tools/render_item_icons.tscn`
+    and commit `assets/textures/ui/icons/<id>.png` (`tests/content/test_item_icons.gd` fails until you do; a new gear base needs one too).
 7. `Content.reload()` discovers it by filename; use `Content.weapon(&"<id>")`.
     Make it obtainable through `WallBuy.weapon` or `SpecimenVault.pool` in `levels/halcyon_labs/map.tscn`.
 8. Add `tests/content/test_<id>.gd` like `test_kestrel_smg.gd`; extend

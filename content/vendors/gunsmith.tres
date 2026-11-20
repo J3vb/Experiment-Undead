@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="VendorData" format=3]
+
+[ext_resource type="Script" path="res://systems/hub/vendor_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/characters/npc_gunsmith.glb" id="2"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Teun Maes"
+title = "Gunsmith"
+stall = &"GUNSMITH"
+model = ExtResource("2")
+idle_clip = &"bench_work"
+lines = Array[String](["Leave it on the bench. I'll get the rattle out.", "Every gun has a temper. Learn yours.", "Kessel? I don't talk about Kessel.", "Oil it tonight. The cold won't wait for you."])

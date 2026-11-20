@@ -111,7 +111,18 @@
 		{"id": "containment_tank_c02", "room": "containment_wing", "box": [72.3, 0, 25.2, 2.9, 4.5, 2.8], "model": "big_tank_cracked", "turn": 180},
 		{"id": "containment_tank_c03", "room": "containment_wing", "box": [64, 0, 13.5, 2.9, 4.5, 2.8], "model": "big_tank_cracked"},
 		{"id": "containment_console", "room": "containment_wing", "box": [61.5, 0, 22.8, 1.4, 1, 1.2], "model": "toppled_console"},
-		{"id": "containment_barrels", "room": "containment_wing", "box": [71, 0, 5, 2, 0.9, 1.6], "model": "fallen_barrels"}
+		{"id": "containment_barrels", "room": "containment_wing", "box": [71, 0, 5, 2, 0.9, 1.6], "model": "fallen_barrels"},
+		{"id": "corridor_water_cooler", "room": "main_corridor", "box": [37.0, 0, 26.45, 0.42, 1.3, 0.4], "model": "water_cooler"},
+		{"id": "corridor_wheelchair", "room": "main_corridor", "box": [36.0, 0, 29.45, 1.02, 0.9, 0.6], "model": "wheelchair", "turn": -90},
+		{"id": "corridor_janitor_cart", "room": "main_corridor", "box": [39.5, 0, 29.3, 0.9, 1.21, 0.9], "model": "janitor_cart", "turn": 180},
+		{"id": "generator_tool_cart", "room": "generator_hall", "box": [11.0, 0, 13.0, 0.6, 1.0, 1.02], "model": "tool_cart", "turn": 90},
+		{"id": "generator_gas_cylinders", "room": "generator_hall", "box": [9.9, 0, 6.62, 0.8, 1.6, 0.62], "model": "gas_cylinder_rack"},
+		{"id": "generator_supply_shelving", "room": "generator_hall", "box": [14.5, 0, 25.5, 1.17, 2.0, 0.52], "model": "supply_shelving", "turn": 180},
+		{"id": "guard_server_rack", "room": "guard_post", "box": [12.5, 0, 49.0, 1.14, 2.0, 1.46], "model": "server_rack_tipped", "turn": 180},
+		{"id": "guard_riot_shield", "room": "guard_post", "box": [15.6, 0, 31.2, 0.85, 1.0, 0.65], "model": "riot_shield_cases"},
+		{"id": "guard_office_chair", "room": "guard_post", "box": [17.2, 0, 41.4, 1.1, 0.75, 0.75], "model": "office_chair_tipped", "turn": 180},
+		{"id": "labs_lab_cart", "room": "labs", "box": [47.5, 0, 23.9, 1.0, 0.86, 0.6], "model": "lab_cart", "turn": 180},
+		{"id": "labs_biohazard_bin", "room": "labs", "box": [38.4, 0, 24.5, 0.52, 0.9, 0.44], "model": "biohazard_bin", "turn": 90}
 	],
 	"dressing": [
 		{"id": "labs_papers", "room": "labs", "at": [44.5, 0, 21.4], "model": "lab_papers", "turn": 20},
@@ -167,7 +178,8 @@
 		{"id": "generator_ceiling", "room": "generator_hall", "at": [18, 3.9, 16], "model": "ceiling_generator_hall", "turn": 0},
 		{"id": "labs_ceiling", "room": "labs", "at": [44, 2.7, 18], "model": "ceiling_labs", "turn": 0},
 		{"id": "tunnel_ceiling", "room": "coolant_tunnel", "at": [32, 2.3, 12.5], "model": "ceiling_coolant_tunnel", "turn": 0},
-		{"id": "containment_ceiling", "room": "containment_wing", "at": [68, 4.3, 18], "model": "ceiling_containment_wing", "turn": 0}
+		{"id": "containment_ceiling", "room": "containment_wing", "at": [68, 4.3, 18], "model": "ceiling_containment_wing", "turn": 0},
+		{"id": "corridor_fire_hose", "room": "main_corridor", "at": [28.0, 0.9, 26.5], "model": "props/fire_hose_cabinet", "turn": 0, "block": [28.0, 0.9, 26.5, 0.7, 0.9, 1.0]}
 	],
 	"light_states": {
 		"guard_post": {"flicker": [1, 4], "dead": [5]},

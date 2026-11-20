@@ -37,9 +37,11 @@ Rules for every prompt:
 
 ## Vendors (F-76)
 
+All four made in Tripo Studio by the person; intake from `tools/assets/tripo/vendors.json` (F-80 step 3, 0 API credits).
+
 | Model | Prompt after the style line |
 |---|---|
-| npc_quartermaster | Done in the F-78 trial (Odile Brandt). |
+| npc_quartermaster | Done in the F-78 trial (Odile Brandt). Made 2026-11-19 at 1.66 m. |
 | npc_gunsmith | Teun Maes, man in his 50s, bald, thick grey-brown beard, ear defenders hanging round his neck, tan canvas apron over olive work overalls, sleeves rolled to the elbow, strong forearms, heavy work boots. |
 | npc_technician | Dr. Lien Corvelyn, woman in her 30s, short black hair, blue-grey radio headset, dark padded parka under a stained grey lab coat with a patch scratched off the chest, tired eyes, boots. |
 | npc_cordon_liaison | Lieutenant Raes, man in his 40s, snow-grey military parka, officer fur hat with a small round metal badge, black armband with a plain white band, holding a rugged tablet at his side, gloves, boots. |
@@ -147,3 +149,28 @@ Rules for every prompt:
 | dam_control_building | 15 m wide | Concrete dam control building front, radio masts on the roof with red tip lamps, backdrop facade only. |
 | sanatorium_front | 30 m wide | Old sanatorium front facade, columns, central balcony, wide stairs, arched windows, backdrop only. |
 | sanatorium_cupola | 5 m wide | Roof cupola with a small dome and arched openings. |
+
+## Halcyon Labs machines and room props (F-83)
+
+Manifest `tools/assets/tripo/halcyon.json` holds the prompt for each row;
+`tripo_make.py --images` makes the image from the style line plus that prompt.
+Halcyon hazard stripes are orange and black, never yellow.
+
+| Model | Size | Prompt after the style line |
+|---|---|---|
+| med_dispenser | 2.0 m tall | Freestanding medical serum dispenser cabinet from a sealed biotech research lab, 2 metres tall, grey-green painted steel body with brushed steel trim, frosted glass front window showing racks of small glass vials, a coloured glowing light strip above the window, dispensing tray slot at waist height, small keypad, scuffed paint, slight rust at the base. |
+| reforger | 1.6 m | Heavy industrial metal coating press from a sealed biotech lab, waist-high steel workbench about 1.6 metres long with a hinged clamshell lid over a long tray big enough for a rifle, thick hydraulic pistons, hoses and small pressure gauges, a glass tank of pale glowing green liquid metal on one side, dark gunmetal body with worn orange hazard paint, grime, thin dark moss-like organic growth creeping over the pipes. |
+| power_switch | 1.8 m tall | Wall-standing emergency backup generator breaker cabinet, grey steel electrical cabinet 1.8 metres tall with its door open, one big knife switch lever with a dark red handle on the front, rows of old breakers and round dials, thick conduit pipes rising from the top, faded worn hazard orange and black warning stripes, scuffed and dented. |
+| exfil_hatch | 3.0 m | Square heavy steel emergency escape hatch set flush into a thin concrete floor slab, 3 by 3 metres, flat closed blast lid almost level with the slab, a central wheel lock, recessed grab handles, worn hazard orange and black hazard stripe border, heavy bolts, grime and scratches. |
+| office_chair_tipped | 1.1 m | Swivel office chair from a 1990s research facility lying tipped over on its side, grey fabric seat, black plastic base with castors. |
+| lab_cart | 1.0 m | Wheeled stainless steel lab cart with two shelves, steel trays, a few empty glass beakers and a clipboard, scuffed castors. |
+| supply_shelving | 2.0 m | Grey steel warehouse shelving unit 2 metres tall, four shelves with cardboard boxes, plastic tubs and folded blankets, a few boxes fallen and torn. |
+| tool_cart | 1.0 m | Engineer's red-brown rolling tool chest with drawers half open, wrenches and a hand lamp on top, oily and worn. |
+| gas_cylinder_rack | 1.6 m | Steel rack holding four tall grey gas cylinders chained upright, one cylinder missing, valves and regulators, scuffed paint. |
+| biohazard_bin | 0.9 m | Wheeled grey plastic medical waste bin with a hinged lid half open, hazard orange band, stained and dirty. |
+| wheelchair | 1.0 m | Old steel hospital wheelchair with a cracked black vinyl seat, folded footrests, worn and dusty. |
+| janitor_cart | 1.2 m | Janitor cleaning cart with a mop bucket on wheels, a mop leaning in it, spray bottles, a grey trash bag, worn. |
+| fire_hose_cabinet | 1.0 m | Wall-mounted steel fire hose cabinet with its glass door open, coiled canvas hose on a reel, dark red paint faded and chipped. |
+| server_rack_tipped | 2.0 m | Black steel server rack cabinet tipped over on its side, door hanging open, loose cables and a few computer units spilling out. |
+| riot_shield_cases | 1.0 m | Black security riot shield lying on the floor with a scatter of brass spent bullet casings and an empty rifle magazine next to it. |
+| water_cooler | 1.3 m | Office water cooler with an empty cracked plastic bottle on top, grey and off-white body, a stack of paper cups. |

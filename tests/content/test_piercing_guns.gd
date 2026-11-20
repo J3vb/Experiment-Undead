@@ -51,13 +51,20 @@ func test_tier_one_preserves_the_mechanics_and_presentation() -> void:
 		assert_eq(up.fire_sound, gun.fire_sound)
 
 
-func test_fieldhand_loads_rounds_and_brenner_keeps_its_existing_reload() -> void:
+func test_fieldhand_and_brenner_load_round_by_round() -> void:
 	var fieldhand: WeaponData = Content.weapon(&"fieldhand_lever")
 	assert_true(fieldhand.reload_per_round)
 	assert_eq(fieldhand.per_round_time, 0.375)
 	assert_false(Content.weapon(&"ironwood_50").reload_per_round)
-	assert_false(Content.weapon(&"brenner_trench").reload_per_round)
-	assert_false(Content.weapon(&"brenner_trench_reforged").reload_per_round)
+	for id: StringName in [&"brenner_trench", &"brenner_trench_reforged"]:
+		var brenner: WeaponData = Content.weapon(id)
+		assert_true(brenner.reload_per_round, String(id))
+		assert_eq(brenner.per_round_time, 0.5, String(id) + " balance sheet: 0.5 s per shell")
+		assert_almost_eq(brenner.empty_reload_time - brenner.per_round_time, 0.6, 0.0001, String(id) + " + 0.6 s rack")
+	for id: StringName in Content.ids(&"weapons"):
+		var gun: WeaponData = Content.weapon(id)
+		if gun.reload_per_round:
+			assert_gte(gun.empty_reload_time, gun.per_round_time, String(id) + " first round from empty")
 
 
 func test_fieldhand_enters_the_vault_and_ironwood_stays_loot_only() -> void:

@@ -1,7 +1,5 @@
 """Builds the survivor player body and bakes its texture maps into the game .glb (ADR 0015).
 
-build_body() takes a look (face, hair, colours, texture looks); town NPCs reuse it (ADR 0016).
-
 python tools/assets/player_body/build.py            # build, bake, check and export assets/models/characters/player.glb
 python tools/assets/player_body/build.py --out DIR  # somewhere else
 """
@@ -29,17 +27,13 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.a
 OUT = os.path.join(REPO, "assets", "models")
 
 
-PLAYER = {
-    **head.PLAYER,
-    "colours": {"skin": "#8F6A50", "hair": "#1E1915", "cloth": "#2F393B", "rubber": "#1C2122"},
-    "textures": textures.LOOKS,
-}
+COLOURS = {"skin": "#8F6A50", "hair": "#1E1915", "cloth": "#2F393B", "rubber": "#1C2122"}
 
 
-def materials(look: dict = PLAYER) -> dict:
+def materials() -> dict:
     from build_models import material, srgb
 
-    colours = look["colours"]
+    colours = COLOURS
     return {
         "skin": material("BodySkin", srgb(colours["skin"]), roughness=0.62),
         "hair": material("BodyHair", srgb(colours["hair"]), roughness=0.85),
@@ -101,17 +95,16 @@ def _eyes_marker(armature) -> None:
     eyes.matrix_world = Matrix.Translation((0, -0.115, head.EYE[1]))
 
 
-def build_body(look: dict = PLAYER, dress=outfit.build_outfit, cloth_bones: dict = CLOTH_BONES):
-    """A body on the shared 22 bones, facing -Y, 1.8 m tall. `dress(mats)` returns the clothes:
-    {"cloth": [...], "arms": {sign: [...]}} and optionally "head": [...] for parts that ride the head bone."""
+def build_body():
+    """A body on the shared 22 bones, facing -Y, 1.8 m tall."""
     from build_models import join_into
 
-    mats = materials(look)
+    mats = materials()
     armature = rig.build_armature()
-    bind = functools.partial(_bind, armature=armature, table=look["textures"], cloth=cloth_bones)
-    face = head.build_head(mats, look)
-    clothes = dress(mats)
-    parts = bind(face["skin"] + face["hair"] + face["eyes"] + clothes.get("head", []), paint.ZONE_ACCENT, "head")
+    bind = functools.partial(_bind, armature=armature, table=textures.LOOKS, cloth=CLOTH_BONES)
+    face = head.build_head(mats)
+    clothes = outfit.build_outfit(mats)
+    parts = bind(face["skin"] + face["hair"] + face["eyes"], paint.ZONE_ACCENT, "head")
     parts += bind([head.build_neck(mats)], paint.ZONE_ACCENT, blend=0.06)
     parts += bind(clothes["cloth"], paint.ZONE_MAIN)
     for sign in (1, -1):
@@ -125,7 +118,7 @@ def build_body(look: dict = PLAYER, dress=outfit.build_outfit, cloth_bones: dict
 
 
 def build_player(clips: bool = True) -> None:
-    """The survivor player body (the default look)."""
+    """The survivor player body."""
     armature = build_body()
     if clips:
         import player_clips

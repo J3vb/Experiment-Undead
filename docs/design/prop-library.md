@@ -57,6 +57,7 @@ embedded colours (`vertex_shading_import.gd`).
 | `barricade` | props | 2.4 x 0.8 x 1.3 | Halcyon, Barriers | Halcyon Labs, Kessel Dam, Marrow Junction | Paint, Steel, Wood, Dark |
 | `big_tank_cracked` | props | 2.9 x 2.7 x 4.5 | Halcyon | Halcyon Labs | Steel, Glass, Fluid, Hazard |
 | `big_tank_shattered` | props | 2.9 x 2.7 x 4.5 | Halcyon | Halcyon Labs | Steel, Glass, Hazard |
+| `biohazard_bin` | props | 0.4 x 0.5 x 0.9 | Halcyon | Halcyon Labs | Baked (Tripo) |
 | `boom_barrier` | props | 4.6 x 0.6 x 1.1 | Barriers | Kessel Dam, Marrow Junction | Paint, TownHazard, Dark, Beacon |
 | `chain_link_fence` | props | 3.1 x 0.1 x 2.0 | Barriers, Industrial | Kessel Dam, Marrow Junction, towns, Halcyon Labs dock | Steel, Dark |
 | `chain_link_gate` | props | 2.3 x 0.1 x 2.1 | Barriers, Industrial | Kessel Dam, Marrow Junction, towns, Halcyon Labs dock | Steel, Dark |
@@ -67,30 +68,41 @@ embedded colours (`vertex_shading_import.gd`).
 | `crate_stack` | props | 1.1 x 1.0 x 1.8 | Halcyon, Military | Halcyon Labs, Kessel Dam, Marrow Junction | Wood, Steel, Paper |
 | `fallen_barrels` | props | 2.0 x 1.5 x 0.9 | Halcyon | Halcyon Labs | Steel |
 | `filing_cabinets` | props | 1.0 x 0.9 x 1.3 | Halcyon, Hospital | Halcyon Labs, Grauwald Sanatorium | Paint, Steel, Dark, Paper |
+| `fire_hose_cabinet` | props | 0.7 x 1.0 x 0.9 | Halcyon | Halcyon Labs | Baked (Tripo) |
 | `forklift` | props | 2.4 x 1.2 x 2.2 | Halcyon | Halcyon Labs | SodiumPaint, Dark, Steel |
 | `fuel_drum` | props | 0.6 x 0.6 x 0.9 | Halcyon, Military | Halcyon Labs, Kessel Dam, Marrow Junction | Olive, Dark, Steel |
+| `gas_cylinder_rack` | props | 0.8 x 0.6 x 1.6 | Halcyon | Halcyon Labs | Baked (Tripo) |
 | `generator` | props | 4.0 x 2.4 x 2.4 | Halcyon | Halcyon Labs | Dark, Olive, Steel |
 | `guard_desk` | props | 2.4 x 1.0 x 1.3 | Halcyon | Halcyon Labs | Paint, Steel, Dark, Screen |
 | `hard_case` | props | 0.9 x 0.6 x 0.4 | Barriers, Military | Kessel Dam, Marrow Junction, Halcyon Labs dock, towns | TownHazard, Dark |
 | `holding_cell` | props | 2.5 x 2.5 x 3.0 | Halcyon | Halcyon Labs | Dark, Olive, Steel, Alarm |
+| `janitor_cart` | props | 0.9 x 0.9 x 1.2 | Halcyon | Halcyon Labs | Baked (Tripo) |
 | `jar_shelf` | props | 2.0 x 0.5 x 2.0 | Halcyon | Halcyon Labs | Steel, JarFluid, Dark, Fluid |
 | `jersey_barrier` | props | 2.0 x 0.6 x 0.8 | Barriers | Kessel Dam, Marrow Junction, towns, Halcyon Labs dock | Concrete, TownHazard, Dark |
 | `kitchen_line` | props | 3.4 x 1.3 x 2.4 | Halcyon | Halcyon Labs | Steel, Paint, Dark, Glass |
 | `lab_bench` | props | 7.0 x 1.0 x 1.5 | Halcyon | Halcyon Labs | Dark, Paint, Steel, Screen |
+| `lab_cart` | props | 1.0 x 0.6 x 0.9 | Halcyon | Halcyon Labs | Baked (Tripo) |
 | `locker_row` | props | 6.0 x 0.6 x 2.0 | Halcyon | Halcyon Labs | Dark, Paint, Steel |
 | `mess_table` | props | 9.0 x 2.2 x 0.9 | Halcyon | Halcyon Labs | Laminate, Steel, Dark, Paper |
 | `military_cases` | props | 1.3 x 0.6 x 0.7 | Halcyon, Barriers, Military | Halcyon Labs, Kessel Dam, Marrow Junction | Paint, Steel, Dark |
+| `office_chair_tipped` | props | 1.1 x 0.75 x 0.7 | Halcyon | Halcyon Labs | Baked (Tripo) |
 | `overturned_table` | props | 2.4 x 0.9 x 1.0 | Halcyon | Halcyon Labs | Laminate, Steel |
 | `pallet_stack` | props | 1.3 x 0.9 x 0.6 | Barriers, Industrial | Kessel Dam, Marrow Junction, towns, Halcyon Labs dock | Wood |
 | `razor_wire_fence` | props | 3.1 x 0.5 x 2.3 | Barriers, Military | Kessel Dam, Marrow Junction | Steel |
 | `research_room` | props | 4.0 x 1.1 x 2.8 | Halcyon | Halcyon Labs | Steel, Glass, Vine, Fluid |
+| `riot_shield_cases` | props | 0.8 x 0.6 x 1.0 | Halcyon | Halcyon Labs | Baked (Tripo) |
 | `sandbag_corner` | props | 1.5 x 1.5 x 0.9 | Barriers, Military | Kessel Dam, Marrow Junction, towns | Burlap |
 | `sandbag_wall` | props | 2.1 x 0.5 x 0.9 | Barriers, Military | Kessel Dam, Marrow Junction, towns | Burlap |
+| `server_rack_tipped` | props | 1.1 x 1.5 x 2.0 | Halcyon | Halcyon Labs | Baked (Tripo) |
 | `serving_counter` | props | 3.5 x 0.8 x 1.4 | Halcyon | Halcyon Labs | Paint, Steel, Dark, Glass |
 | `specimen_tank` | props | 1.2 x 1.2 x 2.7 | Halcyon | Halcyon Labs | Steel, Dark, Glass, Fluid |
+| `supply_shelving` | props | 1.2 x 0.5 x 2.0 | Halcyon | Halcyon Labs | Baked (Tripo) |
 | `supply_truck` | props | 2.6 x 7.1 x 2.8 | Halcyon, Military | Halcyon Labs, Kessel Dam, Marrow Junction | Dark, Olive, Steel |
+| `tool_cart` | props | 1.0 x 0.6 x 1.0 | Halcyon | Halcyon Labs | Baked (Tripo) |
 | `toppled_console` | props | 1.3 x 1.1 x 0.9 | Halcyon | Halcyon Labs | Paint, Dark, Screen |
 | `vending_machine` | props | 0.9 x 0.9 x 1.9 | Halcyon | Halcyon Labs | Alarm, Screen, Dark, Steel |
+| `water_cooler` | props | 0.4 x 0.4 x 1.3 | Halcyon | Halcyon Labs | Baked (Tripo) |
+| `wheelchair` | props | 0.6 x 1.0 x 0.9 | Halcyon | Halcyon Labs | Baked (Tripo) |
 
 ### Dressing (`assets/models/dressing/`)
 

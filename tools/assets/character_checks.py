@@ -27,6 +27,9 @@ VEST_BUDGETS = {"vest_light": (3_000, 4_500), "vest_medium": (4_000, 5_500), "ve
 JOINTS = {
     "player": {"Eyes": None},
     "npc_quartermaster": {"Eyes": None},
+    "npc_gunsmith": {"Eyes": None},
+    "npc_technician": {"Eyes": None},
+    "npc_cordon_liaison": {"Eyes": None},
     "player_arms": {},
     **dict.fromkeys(CHARMS, CHARM_JOINTS),
     **dict.fromkeys(IMPLANTS, IMPLANT_JOINTS),

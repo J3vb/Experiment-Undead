@@ -77,6 +77,7 @@ func _style_controls() -> void:
 			box.bg_color = Color.TRANSPARENT
 		theme.set_stylebox(state, "Button", box)
 	theme.set_color("font_color", "Button", Color("e6ecec"))
+	theme.set_constant("icon_max_width", "Button", 40)
 	theme.set_color("font_color", "Label", Color("e6ecec"))
 
 
@@ -95,6 +96,8 @@ func _build_buttons() -> void:
 	for cell: int in CharacterProfile.STASH_SIZE:
 		var button: Button = Button.new()
 		button.custom_minimum_size = Vector2(48, 66)
+		button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.add_theme_font_size_override("font_size", 20)
 		button.set_meta("stash_index", -1)
@@ -208,6 +211,7 @@ func _paint_button(button: Button, item: Dictionary) -> void:
 		var data: RarityData = Content.get_item(&"loot", ItemRoller.RARITIES[rank]) as RarityData
 		box.border_color = data.colour
 	button.add_theme_stylebox_override("normal", box)
+	button.icon = ItemTooltip.icon_for(item)
 	button.text = ""
 	if not item.is_empty():
 		button.text = (

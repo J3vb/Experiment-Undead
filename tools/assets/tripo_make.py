@@ -2,6 +2,10 @@
 
     python tools/assets/tripo_make.py tools/assets/tripo/military.json --only field_table
     python tools/assets/tripo_make.py tools/assets/tripo/vendors.json --no-intake
+    python tools/assets/tripo_make.py tools/assets/tripo/halcyon.json --images
+
+A row with a `prompt` and no image gets its image from Tripo text to image first (5 credits); `--images` stops
+there so the person can approve the images before any model is paid for.
 
 Each manifest row is one model (ADR 0017). A row with a `source` file already in the project files skips
 the API. A row with a `task_id` is downloaded again without paying twice. Task ids and the source path are
@@ -26,6 +30,11 @@ GENERATE = {
     "pbr": True,
     "texture_quality": "detailed",
 }
+STYLE = (
+    "Single game asset, centred, full object in frame, plain light grey background, soft even studio light, "
+    "no shadows on the background, three-quarter view from slightly above, realistic worn materials, muted colours, "
+    "no text, no letters, no logos, clean surfaces, no snow: "
+)
 RIG = {"out_format": "glb", "rig_type": "biped", "spec": "mixamo"}
 DONE = "success"
 FAILED = ("failed", "cancelled", "banned", "expired", "unknown")
@@ -85,7 +94,9 @@ class Tripo:
         return self.call("POST", "/upload", body, f"multipart/form-data; boundary={boundary}")["image_token"]
 
     def create(self, task: dict) -> str:
-        return self.call("POST", "/task", json.dumps(task).encode())["task_id"]
+        task_id = self.call("POST", "/task", json.dumps(task).encode())["task_id"]
+        print(f"  {task['type']} task {task_id}", flush=True)
+        return task_id
 
     def wait(self, task_id: str) -> dict:
         """Polls until the task ends; returns its data on success, raises with Tripo's message otherwise."""
@@ -123,6 +134,32 @@ def model_task(row: dict, image_token: str) -> dict:
         **GENERATE,
         **row.get("options", {}),
     }
+
+
+def image_task(row: dict) -> dict:
+    return {"type": "text_to_image", "prompt": STYLE + row["prompt"]}
+
+
+def make_image(api: Tripo, row: dict, family: str, files: str, save) -> float:
+    """Gets the row's input image from Tripo text to image unless it is on disk; returns the credits charged."""
+    if row.get("image") and os.path.isfile(os.path.join(files, row["image"])):
+        return 0.0
+    if not row.get("prompt"):
+        raise TripoError(f"{row['name']}: no image on disk and no prompt to make one")
+    paid = not row.get("image_task_id")
+    if paid:
+        row["image_task_id"] = api.create(image_task(row))
+        save()
+    task = api.wait(row["image_task_id"])
+    url = task.get("output", {}).get("generated_image")
+    if not url:
+        raise TripoError(f"Tripo task {row['image_task_id']} succeeded without an image")
+    ext = ".png" if url.split("?")[0].lower().endswith(".png") else ".jpg"
+    rel = f"tripo/sources/{family}/{row['name']}{ext}"
+    api.download(url, os.path.join(files, rel))
+    row["image"] = rel
+    save()
+    return float(task.get("consumed_credit", 0)) if paid else 0.0
 
 
 def rig_task(model_task_id: str) -> dict:
@@ -170,6 +207,8 @@ def fetch(api: Tripo, row: dict, family: str, files: str, save) -> float:
 def intake_args(row: dict, files: str) -> list:
     args = [os.path.join(files, row["source"]), "--kind", row["kind"], "--name", row["name"]]
     args += ["--folder", row["folder"], "--yaw", str(row.get("yaw", 0))]
+    if row.get("clips"):
+        args += ["--clips", row["clips"]]
     if row.get("length"):
         args += ["--length", str(row["length"])]
     elif row.get("height"):
@@ -177,7 +216,9 @@ def intake_args(row: dict, files: str) -> list:
     return args
 
 
-def make(manifest: str, only: list, files: str, intake: bool, api: Tripo | None = None) -> list:
+def make(
+    manifest: str, only: list, files: str, intake: bool, api: Tripo | None = None, images_only: bool = False
+) -> list:
     """Runs every chosen row; returns (name, credits) pairs."""
     with open(manifest, encoding="utf-8") as text:
         rows = json.load(text)
@@ -193,9 +234,17 @@ def make(manifest: str, only: list, files: str, intake: bool, api: Tripo | None 
     costs = []
     for row in [r for r in rows if not only or r["name"] in only]:
         credits = 0.0
+        if images_only:
+            api = api or Tripo(os.environ.get("TRIPO_API_KEY", ""))
+            credits = make_image(api, row, family, files, save)
+            print(f"{row['name']}: image {row['image']}, {credits:g} credits", flush=True)
+            costs.append((row["name"], credits))
+            continue
         if not (row.get("source") and os.path.isfile(os.path.join(files, row["source"]))):
             api = api or Tripo(os.environ.get("TRIPO_API_KEY", ""))
-            credits = fetch(api, row, family, files, save)
+            if not row.get("task_id"):
+                credits += make_image(api, row, family, files, save)
+            credits += fetch(api, row, family, files, save)
         print(f"{row['name']}: source {row['source']}, {credits:g} credits", flush=True)
         if intake:
             import tripo_intake
@@ -215,13 +264,14 @@ def main(argv: list) -> int:
     parser.add_argument("--only", nargs="*", default=[], help="row names; default every row")
     parser.add_argument("--files", default=FILES, help="project files folder (images and sources)")
     parser.add_argument("--no-intake", action="store_true", help="only download the Tripo source")
+    parser.add_argument("--images", action="store_true", help="only make the input images, no models")
     args = parser.parse_args(argv)
     try:
-        costs = make(args.manifest, args.only, args.files, not args.no_intake)
+        costs = make(args.manifest, args.only, args.files, not args.no_intake, images_only=args.images)
     except TripoError as error:
         print(f"tripo_make: {error}", file=sys.stderr)
         return 1
-    print(f"{len(costs)} models, {sum(c for _n, c in costs):g} credits")
+    print(f"{len(costs)} {'images' if args.images else 'models'}, {sum(c for _n, c in costs):g} credits")
     return 0
 
 
