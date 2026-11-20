@@ -1,10 +1,12 @@
-# Experiment Undead: Lore Bible
+# Fenlight: Lore Bible
 
 Source: copy of the design doc as of Nov 14, 2026. Where this file and the code differ, the code and `docs/DECISIONS.md` win.
 
 ## The premise
 
 A cold-loving bog organism called **Fenlight** was kept asleep in freezing labs under the Ardennes. One winter night the power failed, the labs warmed up, and it woke. Now the dead walk with green light in their veins, a military cordon has sealed the region, and a handful of survivors in a ridge-top village called **Lantern Post** send salvagers back into the zone for gear, data and answers.
+
+The game is named after the mould: **Fenlight** is both the title and the thing that woke. In-game text keeps using Fenlight for the organism.
 
 The one-line pitch: *the cold kept it asleep, and someone turned off the cold.* That is why the art direction is Cold Containment: cold means safe, warmth means danger, green means Fenlight.
 
@@ -383,7 +385,7 @@ stay a plain game score. The drop reasons below are provisional picks.
   evacuation train, hospital furniture at Grauwald is 1950s sanatorium stock.
 - **New maps** follow the chapter checklist in The long campaign.
 - **The launcher** (F-82) sits outside the fiction: it shows the game's name,
-  the tagline "A Fenlight survival experience", news and patch notes. Any art
+  the tagline "The cold kept it asleep.", news and patch notes. Any art
   or names on it use lore names (Oriel, HALCYON, the Cordon, Lantern Post).
   *(provisional)*
 

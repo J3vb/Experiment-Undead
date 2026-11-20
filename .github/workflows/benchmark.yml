@@ -45,7 +45,7 @@ jobs:
           mkdir -p benchmark-results
           for zombies in 24 48; do
             ./godot --headless --path . --script res://tools/benchmark/benchmark.gd -- --zombies "$zombies" --seconds 20 --seed 1 | tee "benchmark-results/benchmark_${zombies}.log"
-            cp "$XDG_DATA_HOME/godot/app_userdata/Experiment Undead/benchmark_${zombies}.json" benchmark-results/
+            cp "$XDG_DATA_HOME/godot/app_userdata/Fenlight/benchmark_${zombies}.json" benchmark-results/
           done
 
       - name: Write job summary

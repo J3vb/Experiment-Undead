@@ -77,11 +77,11 @@ jobs:
         run: |
           $setup = Get-ChildItem target/release/bundle/nsis/*-setup.exe | Select-Object -First 1
           Start-Process $setup.FullName -ArgumentList "/S" -Wait
-          $dir = Join-Path $env:LOCALAPPDATA "Experiment Undead Launcher"
-          $exe = Join-Path $dir "ExperimentUndead-Launcher.exe"
+          $dir = Join-Path $env:LOCALAPPDATA "Fenlight Launcher"
+          $exe = Join-Path $dir "Fenlight-Launcher.exe"
           if (-not (Test-Path $exe)) { Get-ChildItem $env:LOCALAPPDATA -Recurse -Filter *.exe -Depth 2 | Select-Object FullName; throw "launcher exe not installed at $exe" }
           $menu = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs"
-          $link = Get-ChildItem $menu -Recurse -Filter "Experiment Undead Launcher*.lnk" | Select-Object -First 1
+          $link = Get-ChildItem $menu -Recurse -Filter "Fenlight Launcher*.lnk" | Select-Object -First 1
           if (-not $link) { throw "no Start menu shortcut in $menu" }
           Start-Process (Join-Path $dir "uninstall.exe") -ArgumentList "/S" -Wait
           Start-Sleep -Seconds 5
@@ -90,6 +90,6 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: experiment-undead-launcher-setup
+          name: fenlight-launcher-setup
           path: launcher/target/release/bundle/nsis/*-setup.exe
           retention-days: 7

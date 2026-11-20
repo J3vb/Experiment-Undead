@@ -857,19 +857,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "experiment-undead-launcher"
-version = "0.0.0"
-dependencies = [
- "launcher-core",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-updater",
- "url",
-]
-
-[[package]]
 name = "fastrand"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -882,6 +869,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e6853b52649d4ac5c0bd02320cddc5ba956bdb407c4b75a2c6b75bf51500f8c"
 dependencies = [
  "simd-adler32",
+]
+
+[[package]]
+name = "fenlight-launcher"
+version = "0.0.0"
+dependencies = [
+ "launcher-core",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-updater",
+ "url",
 ]
 
 [[package]]

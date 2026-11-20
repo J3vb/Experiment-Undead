@@ -1,4 +1,4 @@
-//! Experiment Undead launcher: installs the newest game on the player's channel, keeps it
+//! Fenlight launcher: installs the newest game on the player's channel, keeps it
 //! updated and starts it (docs/plans/separate-launcher.md). The window is `ui/`.
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
