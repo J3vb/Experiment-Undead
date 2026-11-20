@@ -19,6 +19,8 @@ MakeHuman base mesh (head only), `tools/assets/player_body/base_head.obj`
 Data Collection AB, Joel Palmius, Jonas Hauquier
 https://github.com/makehumancommunity/makehuman · CC0 1.0"""
 
+const MUSIC_FADE_SECONDS: float = 4.0
+
 const NEWER_SAVE: String = (
 	"This character was saved by a newer version of the game. "
 	+ "Update the game to play it. Your save was not changed."
@@ -40,12 +42,15 @@ var _pending_profile: CharacterProfile
 @onready var credits_panel: PanelContainer = $Screens/Root/CreditsPanel
 @onready var camera: Camera3D = $Camera3D
 @onready var error_dialog: NetErrorDialog = $NetErrorDialog
+@onready var music: AudioStreamPlayer = $Music
 
 
 func _ready() -> void:
 	if _hand_over():
 		return
 	Net.cancel_place_change()
+	silence_world_sounds($Backdrop)
+	_fade_in_music()
 	_bind_gamepad()
 	Net.world.close()
 	enter_button.pressed.connect(enter_world)
@@ -111,6 +116,21 @@ static func parse_launch(args: PackedStringArray) -> Dictionary:
 		if arg.begins_with("--host=") and arg.substr(7).is_valid_int():
 			return {"host": arg.substr(7).to_int()}
 	return {}
+
+
+## The backdrop is the real map, so its room tone, groans and alarms would play under the
+## menu music. The backdrop is disabled, so nothing restarts them once stopped.
+static func silence_world_sounds(root: Node) -> void:
+	for node: Node in root.find_children("*", "AudioStreamPlayer", true, false):
+		(node as AudioStreamPlayer).stop()
+	for node: Node in root.find_children("*", "AudioStreamPlayer3D", true, false):
+		(node as AudioStreamPlayer3D).stop()
+
+
+func _fade_in_music() -> void:
+	var target: float = music.volume_linear
+	music.volume_linear = 0.0
+	create_tween().tween_property(music, "volume_linear", target, MUSIC_FADE_SECONDS)
 
 
 func _process(delta: float) -> void:

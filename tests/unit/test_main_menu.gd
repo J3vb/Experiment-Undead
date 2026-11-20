@@ -240,3 +240,16 @@ func test_command_line_launch_runs_once_per_process() -> void:
 	assert_true(MainMenu.launch_consumed, "the first menu used up the launch arguments")
 	menu._launch_from_command_line(PackedStringArray(["--host=24634"]))
 	assert_false(Net.is_online(), "a later menu does not host or join again")
+
+
+func test_backdrop_world_sounds_are_silent_and_music_fades_in() -> void:
+	var backdrop: Node = menu.get_node("Backdrop")
+	var players: Array[Node] = backdrop.find_children("*", "AudioStreamPlayer", true, false)
+	players.append_array(backdrop.find_children("*", "AudioStreamPlayer3D", true, false))
+	assert_gt(players.size(), 0)
+	for player: Node in players:
+		assert_false(player.get("playing"), "Backdrop sound still playing: %s" % backdrop.get_path_to(player))
+	assert_true(menu.music.playing)
+	assert_almost_eq(menu.music.volume_linear, 0.0, 0.001)
+	await wait_seconds(MainMenu.MUSIC_FADE_SECONDS + 0.2)
+	assert_almost_eq(menu.music.volume_db, -20.0, 0.01)
