@@ -91,7 +91,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-28 | Blackout rounds and Glowers | #122 | F-11 | [ready](plans/blackout-glowers.md) | M | Building |
 | F-29 | Stalker | #123 | F-11, F-28 | [ready](plans/stalker.md) | L | Ready |
 | F-30 | Brute | #124 | F-11, F-29 | [ready](plans/brute.md) | L | Ready |
-| F-31 | Legendaries and traits | #116 | F-20 | needed | L | Todo |
+| F-31 | Legendaries and traits | #116 | F-20 | [needed](plans/legendaries-traits.md) | L | Planning |
 | F-32 | Item sets (needs set lore first) | #117 | F-31 | needed | M | Todo |
 | F-33 | Run length target: solo runs end between round 15 and 30 | #125 | F-27..F-30 | issue | S | Todo |
 
