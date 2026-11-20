@@ -37,7 +37,8 @@ In:
   from plated up).
 - Appearance plumbing for the new slots: CharacterLook, LookBuilder, LookCodec
   (look payload grows from 3 to 7 slots) and GearRig.
-- Implant: an eye plate on the head (one shape per implant type) plus a
+- Implant: (eye plate dropped 2026-11-20, the person: implant stays a forearm
+  module, see F-42 plan gear-first-person.md) a forearm module per type plus a
   Fenlight vial on the vest clip, replacing the forearm module and neck port.
 - First-person arms take the jacket sleeve and glove materials (colour and
   material only, grip geometry untouched).
@@ -227,18 +228,19 @@ the 120 fps target on the RTX 4080 Super. Gloves, boots and headgear hide past
   clearance check passes; test_gear_rig.gd binds every tier's Shell.
 - Done when: all three frames render on the new body in all three tiers.
 
-### Step 5: Eye implant and Fenlight vial
+### Step 5: Implant restyle and Fenlight vial
 
-- Build: each of the five implant types becomes an eye plate on the head (its own
-  shape, glow lens) plus one shared vial that sits in the vest's VialClip. Vial
-  liquid follows the rule in Data. GearRig binds the Plate to `head` and the Vial
+- Changed 2026-11-20 (the person, F-42 card): no eye plate. Each implant type
+  stays a forearm module on `forearm_L` (restyled to the concept, its own
+  shape and glow lens), plus one shared vial that sits in the vest's VialClip. Vial
+  liquid follows the rule in Data. GearRig keeps the module on `forearm_L` and binds the Vial
   to VialClip (on spine_3 when no vest).
 - Files: implant_model.py, gear_rig.gd, five implant .glb, turnarounds,
   DECISIONS.md (implant placement line).
-- Tests: model checks: every implant has Plate and Vial nodes, under 1,800 tris;
-  test_gear_rig.gd: Plate follows head, Vial follows the vest clip and falls
+- Tests: model checks: every implant has Module and Vial nodes, under 1,800 tris;
+  test_gear_rig.gd: module follows forearm_L, Vial follows the vest clip and falls
   back to spine_3 with no vest.
-- Done when: booth close-up of the face matches the concept's implant panel.
+- Done when: booth close-up of the forearm module and vest vial.
 
 ### Step 6: First-person sleeves and close-out
 
