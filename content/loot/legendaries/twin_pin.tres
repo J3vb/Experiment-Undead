@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="LegendaryData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/loot/legendary_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"twin_pin"
+display_name = "Twin Pin"
+base_id = &"implant_relay"
+stat = &"twin_pin"
+text = "Frags split into 2 smaller frags at {v}% damage each"
+low = 55.0
+high = 70.0
+step = 1.0
+flavour = "A HALCYON relay module rewired by Dr. Corvelyn to time two charges off one pin. She does not recommend it."

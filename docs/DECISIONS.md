@@ -19,6 +19,7 @@ These win over the design docs (see `docs/design/README.md`).
 - **Screens folder:** screen data lives in `content/screens/`, not ui-hud.md's `content/ui/screens/`, because `Content` treats each top folder as one type. [ui-router](plans/ui-router.md)
 - **Legendary data:** TraitData is merged into `LegendaryData` (one file per Legendary); a trait is one flat stat line with its own stat name, read by the code that runs it; an unknown trait shows no line, not "Inactive bonus". [legendaries-traits](plans/legendaries-traits.md)
 - **Last Rites in solo:** works in co-op only; solo has no downed state with a pistol, so a solo player with it still dies (unless Second Wind or Undying). Fix when: a solo downed state. [legendaries-traits](plans/legendaries-traits.md)
+- **Legendary tuning:** Twin Pin children 0.4 s fuse, half radius, clients see only blasts; Lantern Fall 4 m; Cold Snap holds without shatter; Dead Man's Hand has no stagger; Iron Lung streak = kills unhurt; no Choir Mark visual. Provisional. [legendaries-traits](plans/legendaries-traits.md)
 - **Knife:** lives in `content/melee/`, not `content/weapons/`, so gun-only code (Vault, loot, grips, viewmodels) never sees it. [core-loop-gaps](plans/core-loop-gaps.md)
 - **Synapse:** 50% damage to up to 3 other zombies within 6 m, replacing the roster's 60% chain; its repeated-target ramp is deferred. Cryo Lance: 3 hits freeze 2 s, the next bullet shatters for 50% within 3 m.
 - **Ironwood .50:** loot only, overriding the roster's "every base is in the Vault" rule.
@@ -62,7 +63,7 @@ Each says when to fix it.
 - **Skills waiting on their feature:** Sturdy only adds its stat; Execution Line has no Brute rule. Overtime lengthens timed power-ups by the collector's seconds (team-wide timer). Gadgeteer shortens field ability cooldowns (F-22). Fix when: F-24, F-30. [skill-effects](plans/skill-effects.md)
 - **Field abilities (provisional):** key X (F is interact); you bring the highest ability your level has unlocked; Shock Pulse pushes at 6 m/s and only holds zombies that are rising or at a window. Fix when: step 7 picker, play-tests. [field-abilities](plans/field-abilities.md)
 - **Hold-to-buy** stays a tap. Fix when: accidental buys show in play-tests.
-- **Loot extras:** no supply or exfil caches, no gun comparison in the pickup prompt, no trading; sets and `proc` lines save but do not run. Legendary traits roll and show; they run as F-31 builds them. Fix when: their loot batches. [legendaries-traits](plans/legendaries-traits.md)
+- **Loot extras:** no supply or exfil caches, no gun comparison in the pickup prompt, no trading; sets and `proc` lines save but do not run. Fix when: their loot batches. [legendaries-traits](plans/legendaries-traits.md)
 - **Run loadout:** the equipped Primary is not given at spawn (the round-5 Drop Locker is not built). Fix when: the Drop Locker.
 - **Skill tree:** Research opens from the main menu only (no K key or Trainer), Reset all is free, gates are 8/11 not 15/25, and the server checks only the 54-point total, not level or gates. Fix when: F-45 (Trainer, Scrap), F-90 (nodes). [skill-tree-screen](plans/skill-tree-screen.md)
 - **Teammate animations:** one two-handed rifle pose and one reload clip for every gun; a remote muzzle flash plays at the owner's first-person muzzle. Fix when: F-41 follow-ups.

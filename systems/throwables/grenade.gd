@@ -8,6 +8,10 @@ const LOST_HEIGHT: float = -50.0
 ## Bounces slower than this make no sound.
 const BOUNCE_SPEED: float = 1.5
 const BOUNCE_SOUND: AudioStream = preload("res://assets/audio/grenade_bounce.wav")
+## Twin Pin child frags (provisional, no design numbers): fuse, radius share, sideways and up speed.
+const TWIN_PIN_FUSE: float = 0.4
+const TWIN_PIN_RADIUS: float = 0.5
+const TWIN_PIN_SPEED: Vector3 = Vector3(2.5, 3.0, 0.0)
 
 var data: ThrowableData
 var thrower: Player
@@ -15,6 +19,8 @@ var fuse_left: float = 0.0
 ## True on the copy that does damage; false on what other peers see.
 var gameplay: bool = true
 var went_off: bool = false
+## A Twin Pin child: it never splits again.
+var split_child: bool = false
 ## The session's GrenadeClaims on the server's real grenade, so the blast reaches everyone.
 var claims: Node
 var _bounce: AudioStreamPlayer3D
@@ -74,4 +80,23 @@ func go_off() -> void:
 		Blast.apply(self, global_position, data, by)
 		if is_instance_valid(claims):
 			claims.call("broadcast_blast", by.net_id if by else 0, global_position)
+		if by and not split_child:
+			_twin_pin(by)
 	queue_free()
+
+
+## Twin Pin (implant Legendary): the frag splits into 2 smaller frags at the trait's share of its damage.
+func _twin_pin(by: Player) -> void:
+	var share: float = by.stats.value(&"twin_pin", 0.0) / 100.0
+	if share <= 0.0:
+		return
+	var child_data: ThrowableData = data.duplicate() as ThrowableData
+	child_data.centre_damage = data.centre_damage * share
+	child_data.self_damage_max = data.self_damage_max * share
+	child_data.radius = data.radius * TWIN_PIN_RADIUS
+	child_data.full_radius = data.full_radius * TWIN_PIN_RADIUS
+	for side: float in [-1.0, 1.0]:
+		var speed: Vector3 = Vector3(TWIN_PIN_SPEED.x * side, TWIN_PIN_SPEED.y, 0.0)
+		var child: Grenade = spawn(get_parent(), child_data, by, global_position, speed, TWIN_PIN_FUSE)
+		child.split_child = true
+		child.claims = claims
