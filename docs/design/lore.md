@@ -309,6 +309,7 @@ some guns have codes and some have names.
 | Thing | Story reason |
 | --- | --- |
 | Frag grenades | Army and Cordon issue, from the same crates as the wall guns: the evacuation force left them on Day 3 and Cordon patrols still drop them. Two fit in a vest pouch, which is why you carry two and find more each round in the kit the Lit still carry. *(provisional)* |
+| HUD compass | The wrist compass in every survivor's Cordon-issue kit; Halcyon's steel throws it a little, which nobody minds in a wave fight. North on every map is the map's -Z side. *(provisional)* |
 
 ### Power-ups, points and buying from walls
 
