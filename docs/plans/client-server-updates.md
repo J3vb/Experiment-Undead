@@ -84,7 +84,7 @@ files: each version lives in its own folder and the launcher starts the one
 it wants.
 
 ```
-Experiment Undead/              the folder the player unzipped
+Fenlight/              the folder the player unzipped
   ExperimentUndead.exe + .pck   the "root" copy: starts in launcher mode
   versions/0.1.1/               full game, downloaded by the launcher
   versions/0.1.2/               newest; the launcher starts this one,
@@ -250,7 +250,7 @@ Autoloads, managers or base classes added: none.
 - A release only counts for the runner when it has a `*-server.zip` asset
   with a SHA-256 digest. A release made in the web UI has no zips for about
   10 minutes, so it is ignored until they arrive.
-- Release assets: unchanged names (`ExperimentUndead-<version>-windows.zip`,
+- Release assets: unchanged names (`Fenlight-<version>-windows.zip`,
   `-linux.zip`, `-server.zip`), each with the exe and pck at the zip's root.
   From v0.1.0 on, these names, that layout, the GitHub Releases API and the
   asset `digest` field are a contract: the launcher in every released version

@@ -149,7 +149,7 @@ func end_run(marker: String) -> void:
 
 
 func _log_header() -> void:
-	print("Experiment Undead %s (commit %s, built %s, protocol %d)" % [version, commit, built_at, PROTOCOL_VERSION])
+	print("Fenlight %s (commit %s, built %s, protocol %d)" % [version, commit, built_at, PROTOCOL_VERSION])
 	print("OS: %s %s | CPU: %s" % [OS.get_name(), OS.get_version(), OS.get_processor_name()])
 	if DisplayServer.get_name() != "headless":
 		var gpu: String = RenderingServer.get_video_adapter_name()

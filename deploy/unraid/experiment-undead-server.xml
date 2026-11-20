@@ -7,7 +7,7 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/J3vb/Experiment-Undead</Support>
   <Project>https://github.com/J3vb/Experiment-Undead</Project>
-  <Overview>Dedicated server for Experiment Undead, a co-op wave survival shooter. Up to 8 players. Use tag "latest" for releases or "edge" for the newest main build.</Overview>
+  <Overview>Dedicated server for Fenlight, a co-op wave survival shooter. Up to 8 players. Use tag "latest" for releases or "edge" for the newest main build.</Overview>
   <Category>GameServers:</Category>
   <WebUI/>
   <Icon/>

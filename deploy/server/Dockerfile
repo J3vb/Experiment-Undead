@@ -4,7 +4,7 @@
 FROM debian:bookworm-slim
 
 ARG VERSION=dev
-LABEL org.opencontainers.image.title="Experiment Undead server" \
+LABEL org.opencontainers.image.title="Fenlight server" \
       org.opencontainers.image.version="${VERSION}"
 
 RUN useradd --uid 1000 --create-home --home-dir /home/server server \
