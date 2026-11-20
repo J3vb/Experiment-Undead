@@ -81,7 +81,7 @@ class CoopSoakWorkflowTests(unittest.TestCase):
 
     def test_failed_runs_keep_every_process_log(self):
         self.assertIn("coop-soak/*.json", self.text)
-        self.assertIn("coop-soak/*/godot/app_userdata/Experiment Undead/logs/", self.text)
+        self.assertIn("coop-soak/*/godot/app_userdata/Fenlight/logs/", self.text)
 
 
 if __name__ == "__main__":
@@ -115,7 +115,7 @@ class ReleaseLauncherTests(unittest.TestCase):
 
     def test_publish_waits_for_the_launcher_and_attaches_everything(self):
         self.assertRegex(self.text, r"publish:\n    needs: \[[^\]]*launcher")
-        self.assertIn("ExperimentUndead-Setup-$version.exe", self.text)
+        self.assertIn("Fenlight-Setup-$version.exe", self.text)
         self.assertIn("launcher_release.py manifest", self.text)
         self.assertIn("--out dist/latest.json", self.text)
         self.assertEqual(self.text.count("dist/* "), 2)

@@ -63,6 +63,6 @@ jobs:
         with:
           name: soak-logs
           path: |
-            soak-data/godot/app_userdata/Experiment Undead/logs/
+            soak-data/godot/app_userdata/Fenlight/logs/
             soak.log
           if-no-files-found: warn

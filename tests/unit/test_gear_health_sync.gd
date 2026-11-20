@@ -115,6 +115,16 @@ func test_client_loadout_raises_server_health_and_records_item_guns() -> void:
 	assert_eq(client.health.current, 140.0)
 
 
+func test_client_damage_reduction_gear_shrinks_hits_on_the_server_copy() -> void:
+	var vest: Dictionary = {"v": 1, "uid": "dr_vest", "base": "vest_medium", "aff": [["damage_reduction", 5, 1.0]]}
+	client.loadout_sync.gear = [vest]
+	client.loadout_sync.send_loadout()
+	await wait_until(func() -> bool: return server.get_stat(&"damage_reduction") > 1.0, 3.0, "loadout reached server")
+	server.take_damage(DamageInfo.create(50.0, null))
+	assert_almost_eq(server.health.current, 55.0, 0.0001)
+	await wait_until(func() -> bool: return is_equal_approx(client.health.current, 55.0), 3.0, "owner sees 55")
+
+
 func test_new_loadout_without_the_vest_drops_max_health() -> void:
 	client.loadout_sync.gear = [_vest()]
 	client.loadout_sync.send_loadout()

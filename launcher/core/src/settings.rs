@@ -44,6 +44,7 @@ pub fn arg_value(args: &[String], name: &str) -> Option<String> {
 }
 
 /// The launcher's data folder: `--game-dir=` (tests), else `<local app data>/Experiment Undead`.
+/// The folder keeps the game's old name so installs from before the rename to Fenlight carry over.
 pub fn data_dir(args: &[String], local_data: PathBuf) -> PathBuf {
     arg_value(args, "game-dir")
         .map(PathBuf::from)

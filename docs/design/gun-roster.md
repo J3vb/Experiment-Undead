@@ -1,4 +1,4 @@
-# Experiment Undead: Gun Roster
+# Fenlight: Gun Roster
 
 The plan for every base gun in version 1: what each one is for, where you get it, when it starts dropping, which affixes and Legendary it leans on, and the order to build them. Numbers are in [balance/roster.csv](balance/roster.csv). Where this file and the code or `docs/DECISIONS.md` differ, the code and DECISIONS win.
 

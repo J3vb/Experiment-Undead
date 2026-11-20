@@ -46,7 +46,7 @@ func _totals(stat: StringName) -> Vector3:
 
 
 func _apply_cap(stat: StringName, base: float, result: float) -> float:
-	if stat == &"move_speed":
+	if stat == &"move_speed" or stat == &"damage_reduction":
 		return minf(result, base * (1.0 + CAPS.caps[stat]))
 	if stat != &"fire_rate_pct" and CAPS.caps.has(stat):
 		return minf(result, CAPS.caps[stat])

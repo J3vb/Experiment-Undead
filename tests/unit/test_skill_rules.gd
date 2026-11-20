@@ -43,6 +43,16 @@ func test_last_stand_comes_back_next_round() -> void:
 	assert_eq(player.health.current, 1.0)
 
 
+func test_last_stand_waits_for_a_hit_that_still_kills_after_damage_reduction() -> void:
+	_rank({&"last_stand": 1})
+	player.equip_gear([{"v": 1, "uid": "dr", "base": "vest_medium", "aff": [["damage_reduction", 5, 1.0]]}])
+	player.health.current = 50.0
+	_hit(52.0)
+	assert_almost_eq(player.health.current, 3.2, 0.0001, "10% off: 46.8 taken, not a killing blow")
+	_hit(500.0)
+	assert_eq(player.health.current, 1.0, "Last Stand was still unused")
+
+
 func test_without_last_stand_a_killing_blow_kills() -> void:
 	_hit(500.0)
 	assert_true(player.health.is_dead)

@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Experiment Undead"
+config/name="Fenlight"
 config/description="Wave-based zombie survival FPS."
 run/main_scene="res://systems/ui/main_menu.tscn"
 run/main_scene.dedicated_server="res://systems/net/dedicated_server.tscn"

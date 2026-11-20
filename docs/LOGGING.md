@@ -10,9 +10,9 @@ Folder `user://logs/`:
 
 | Platform | Folder |
 |---|---|
-| Windows | `%APPDATA%\Godot\app_userdata\Experiment Undead\logs\` |
-| Linux | `~/.local/share/godot/app_userdata/Experiment Undead/logs/` |
-| Docker / Unraid server | `/data/godot/app_userdata/Experiment Undead/logs/` (the `/data` volume) |
+| Windows | `%APPDATA%\Godot\app_userdata\Fenlight\logs\` |
+| Linux | `~/.local/share/godot/app_userdata/Fenlight/logs/` |
+| Docker / Unraid server | `/data/godot/app_userdata/Fenlight/logs/` (the `/data` volume) |
 
 Per run (the last 20 runs are kept):
 
@@ -94,6 +94,8 @@ The server also prints every warning and error to stdout as
 | `progression.profile_save_failed` | warn | Character could not be saved; `id`, `path`, `error` (Godot Error code). Check folder permissions and disk space |
 | `progression.profile_unreadable` | warn | Existing character is unreadable or malformed; file stays untouched, this match uses a temporary character. `id`, `path`; inspect nearby engine errors |
 | `save.profile_newer` | warn | A character file was saved by a newer game version (`id`, `path`, `version` = its save_version). The file stays untouched, the main menu tells the player to update, and this run uses a temporary character. Happens after going back to an older build |
+| `save.old_name_data_copied` | info | First run after the rename to Fenlight: the player's settings, saved servers and characters were copied from the old `Experiment Undead` user folder (`files`, `from`). The old folder stays as a backup. Once per PC |
+| `save.old_name_copy_failed` | warn | One file from the old `Experiment Undead` user folder could not be copied (`path`, `error`). The player may miss that setting or character; copy it by hand from the old folder |
 | `settings.binding_unknown_action` | warn | `user://settings.cfg` has a key binding for an action the game no longer has (`action`); it is ignored. Normal after an action is renamed or removed |
 | `settings.binding_malformed` | warn | A saved key binding is not a list of up to 2 `{"type": "key", "physical": n}` / `{"type": "mouse", "button": n}` entries, or names Esc (`action`); that action uses its default keys |
 | `settings.display_mode_failed` | warn | The window refused the chosen display mode (`mode`: 0 Windowed, 1 Borderless, 2 Fullscreen). Usually the OS or driver does not allow exclusive fullscreen; pick Borderless |

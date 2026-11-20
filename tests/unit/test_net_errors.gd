@@ -160,6 +160,6 @@ func test_restart_to_update_only_when_the_launcher_started_an_older_client() -> 
 
 
 func test_launcher_exe_comes_from_the_command_line() -> void:
-	var args: PackedStringArray = ["--from-launcher", "--launcher-exe=C:/Launcher/ExperimentUndead-Launcher.exe"]
-	assert_eq(NetErrorDialog.launcher_exe(args), "C:/Launcher/ExperimentUndead-Launcher.exe")
+	var args: PackedStringArray = ["--from-launcher", "--launcher-exe=C:/Launcher/Fenlight-Launcher.exe"]
+	assert_eq(NetErrorDialog.launcher_exe(args), "C:/Launcher/Fenlight-Launcher.exe")
 	assert_eq(NetErrorDialog.launcher_exe(PackedStringArray()), "")

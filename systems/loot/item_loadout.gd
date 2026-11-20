@@ -40,7 +40,7 @@ static func worn_gear(loadout: Dictionary) -> Array[Dictionary]:
 
 
 ## Rebuilds each held gun's numbers in place: same gun in hand, ammo kept (capped), no new pickup.
-## Item guns refit from their item; other guns get the player's recoil and reserve stats.
+## Item guns refit from their item; other guns get the player's damage, recoil and reserve stats.
 ## fresh (spawn): reserve restarts at the refitted starting reserve.
 static func refit_guns(player: Player, fresh: bool = false) -> void:
 	for weapon: Weapon in player.weapons.weapons:
