@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="SerumData" format=3]
 
 [ext_resource type="Script" path="res://systems/serums/serum_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/hud/serum_scavenger.svg" id="icon"]
 
 [resource]
 script = ExtResource("1")
@@ -10,3 +11,4 @@ cost = 1500
 description = "Your kills sometimes drop a small ammo pack."
 badge = "SC"
 badge_colour = Color(0.349019608, 0.419607843, 0.501960784, 1)
+icon = ExtResource("icon")

@@ -17,6 +17,8 @@ enum Effect { NONE, CHAIN, FROST, WELL }
 @export var cost: int = 0
 @export var crate_weight: float = 1.0
 @export var upgraded: WeaponData
+## White gun-class silhouette on the HUD weapon panel (assets/ui/hud/gun_<class>.svg).
+@export var hud_icon: Texture2D
 
 @export_group("Damage")
 @export var damage: float = 30.0

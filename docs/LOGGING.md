@@ -71,6 +71,7 @@ The server also prints every warning and error to stdout as
 | `player.body_clips_missing` | warn | The player model has no third-person clips, so teammates show a still body; rebuild `player.glb` |
 | `player.world_model_missing` | warn | A teammate holds a gun whose `WeaponData` has no `world_model`, so its hands are empty; set the field in the gun's `.tres` |
 | `player.mantle_landed_blocked` | warn | A mantle ended with the player inside world collision: the ledge clearance check missed something. `at` = the landing spot; check the geometry there |
+| `hud.hud_icon_missing` | warn | The local player got a Serum (`serum`) or gun with no HUD icon, so its slot shows badge letters or no gun picture; set `icon` / `hud_icon` in its `.tres`. Once per id |
 | `vendor.vendor_clip_missing` | warn | A Lantern Post stall keeper's model has no clip named by its `VendorData.idle_clip`, so they stand in rest pose; re-export the keeper (`tools/assets/tripo/vendors.json`, `clips: keeper`) or fix the data |
 | `perf.long_frames` | warn | Frames over 50 ms in the last second (`count`, `worst_ms`, `draw_compiles`: shader pipelines compiled while drawing that second, `all_compiles`: pipelines of any kind since the last line, `enemies`). Hitch at load is normal; in a round it is not. `draw_compiles` > 0 means a first-use shader stutter |
 | `perf.low_fps` | warn | Under 50 fps for 3 s in a row (windowed builds only), with a health snapshot |
@@ -101,9 +102,11 @@ The server also prints every warning and error to stdout as
 | `settings.row_unknown_key` | warn | A `content/settings/*.tres` row names a `section`/`key` that `Settings.DEFAULTS` does not have; the row is left off the settings screen. Fix the row or add the key |
 | `game.game_over` | info | Final stats |
 | `net.peer_connected` / `peer_disconnected` | info | Server side, peer id |
-| `net.join_refused` | info | Client side: the server refused the hello (`reason`: `WRONG_VERSION`, `CONTENT_MISMATCH`, `SERVER_FULL`, or `REFUSED` for a code from a newer server; `older`: `client`, `server` or empty for dev builds; `message`, `client_protocol`, `server_protocol`). `older` says which side to update |
+| `net.join_refused` | info | Client side: the server refused the hello (`reason`: `WRONG_VERSION`, `CONTENT_MISMATCH`, `SERVER_FULL`, `SERVER_UPDATING`, or `REFUSED` for a code from a newer server; `older`: `client`, `server` or empty for dev builds; `message`, `client_protocol`, `server_protocol`). `older` says which side to update |
 | `net.join_failed` | warn | Client side: the pending join could not start (`error`, a Godot error string), so the game goes back to the main menu. Usually a bad address or a port the OS would not open |
 | `net.connection_lost` | warn | Client side: the server disconnected, the connection failed or the server refused authentication. Run XP is banked and the game goes back to the main menu. Look at the server's log for the same time |
+| `server.drain_started` | info | A dedicated server saw its drain file (`--drain-file=` / `EU_DRAIN_FILE`): a newer release is installed (`place`, `players`). A match plays on; the hub refuses new players with `SERVER_UPDATING` |
+| `server.update_restart` | info | A draining server quits with exit code 3 (`place`): its hub had players (they get the "updating" notice) or it stayed empty for `EMPTY_GRACE`. The launcher restarts it on the newer version |
 | `net.round_state_ignored` | warn | A round message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
 | `power_ups.crate_expired_unopened` | warn | A Supply Crate vanished before anyone opened it (`name`). Often means players miss it or cannot reach it |
 | `power_ups.timer_ignored` | warn | A power-up timer message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
@@ -127,13 +130,12 @@ The server also prints every warning and error to stdout as
 | `loot.gear_worn` | info | The owner wore a Pack gear item mid-run (`uid`, `slot`); the old piece went into its Pack slot |
 | `loot.gear_equip_refused` | warn | A Pack gear item could not be worn (`uid`, `banked`): the run was already banked or there is no character profile (soak bots, tests). In a normal run this should never appear |
 | `net.interaction_rate_limited` | warn | A client sent interact requests less than 0.1 s apart; extra ones are refused. At most one per second |
-| `launcher.server_started` / `server_stop_requested` / `server_exited` / `server_start_failed` | info / warn | The launcher's Host a server panel (`version`, `port`, `pid`, `exe`). A quick `server_exited` after start = port in use; read that server's own log |
 | `ui.unknown_screen` | warn | `UI.push` or `UI.replace` got an id with no `content/screens/<id>.tres`; `id`. Nothing opens |
 | `ui.pop_empty` | warn | `UI.pop()` with no screen open: a screen emitted `closed` twice or something popped a screen it did not push |
 | `ui.menu_backdrop_missing` | warn | A front-end screen opened with no backdrop texture (`screen`); it shows the dark shade only. The image in `assets/ui/backdrops/` is missing or failed to import |
 | `ui.loading_failed` | warn | A root behind a loading screen failed its threaded load; `scene`. The router falls back to a plain scene change |
 
-The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher.log` in its data folder (`%LOCALAPPDATA%\com.experimentundead.launcher\` on Windows): `{"t", "level", "event", "message"}`. The `launcher.server_*` lines above come from the game's old Host a server code, which moves into the launcher in F-82 step 4.
+The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher.log` in its data folder (`%LOCALAPPDATA%\com.experimentundead.launcher\` on Windows): `{"t", "level", "event", "message"}`. A hosted server writes its own game log, and its console output goes to `server/server.log` there (Open logs).
 
 | Event | Level | Meaning |
 |---|---|---|
@@ -142,6 +144,12 @@ The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher
 | `install_failed` | warn | A download failed, was cancelled, had the wrong SHA-256, or could not be unpacked (`message` says which). Nothing was installed |
 | `self_updated` | info | The launcher installed a newer launcher from the release's `latest.json` (`message` = manifest URL) and restarts |
 | `self_update_failed` | warn | A launcher update could not be checked, downloaded or installed (`message`; "signature" = the setup exe was not signed with our key). The old launcher keeps running |
+| `server_started` | info | Host a server started the newest installed game as a server (`message` = version and port) |
+| `server_start_failed` | warn | The server exe could not start (`message`): the game is missing or damaged. Reinstall it |
+| `server_stop_requested` | info | The player pressed Stop server; the server quits on its stop file within a second |
+| `server_exited` | info | The hosted server quit and was not restarted (`message` = exit code, or "launcher closed"). A quick exit after `server_started` = port in use; read `server/server.log` |
+| `server_draining` | info | A newer game is installed (`message` = version) and the drain file asks the hosted server to finish its match. No `server_update_restarted` within a match's length = the server never drained; read `server/server.log` |
+| `server_update_restarted` | info | The hosted server drained (exit code 3) and runs again on the newer version (`message`), same port and player limit |
 
 ## Adding log lines (rules for agents)
 

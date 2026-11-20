@@ -16,7 +16,7 @@ func test_loot_ids_are_unique_across_subfolders() -> void:
 		seen.append(id)
 		assert_eq(String(id), path.get_file().get_basename())
 		assert_eq(Content.get_item(&"loot", id), resource)
-	assert_eq(paths.size(), 69)
+	assert_eq(paths.size(), 73)
 	assert_eq(Content.ids(&"loot").size(), paths.size())
 
 

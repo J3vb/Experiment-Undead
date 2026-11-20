@@ -231,6 +231,11 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
 
 ### Step 4: Host a server from the launcher
 
+> 2026-11-20: built in two PRs. 4a (PR #428): the Host page (start, stop, status, Open logs, ask
+> before closing) and deleting the game's `server_host.gd`. 4b: the 15-minute update
+> check, drain file and exit-code-3 restart, together with the game's drain mode from
+> F-65 step 8, which was not built yet.
+
 - Build: `src/host.rs`: start `versions/<newest>/ExperimentUndead.exe
   --headless -- --server --port=<p> --max-players=<n> --stop-file=<f>
   --drain-file=<d>`, stop through the stop file, status. Host page: port,

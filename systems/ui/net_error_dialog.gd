@@ -10,6 +10,7 @@ const MESSAGES: Dictionary = {
 	&"content_mismatch": "Your game files differ from the server's. Update or verify the game.",
 	&"lost_connection": "Lost connection to the server.",
 	&"host_ended": "The host ended the match.",
+	&"server_updating": "The server is restarting for an update. Update your game, then join again in a minute.",
 }
 
 var connecting: bool = false
@@ -67,13 +68,11 @@ func show_error(reason: StringName, details: Dictionary = {}) -> void:
 	action_button.grab_focus()
 
 
-## "Your game is older" and the game was started by the separate launcher, which can update it.
+## "Your game is older" or "server updating", and the separate launcher started the game: it can update it.
 static func can_update(reason: StringName, details: Dictionary, launcher: String) -> bool:
+	var older_client: bool = reason == &"wrong_version" and details.get("older", "") == "client"
 	return (
-		reason == &"wrong_version"
-		and details.get("older", "") == "client"
-		and not launcher.is_empty()
-		and FileAccess.file_exists(launcher)
+		(older_client or reason == &"server_updating") and not launcher.is_empty() and FileAccess.file_exists(launcher)
 	)
 
 

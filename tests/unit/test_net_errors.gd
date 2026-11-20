@@ -86,8 +86,12 @@ func test_lost_connection_text() -> void:
 	assert_eq(NetErrorDialog.message_for(&"lost_connection"), "Lost connection to the server.")
 
 
-func test_host_ended_text() -> void:
+func test_host_ended_and_server_updating_texts() -> void:
 	assert_eq(NetErrorDialog.message_for(&"host_ended"), "The host ended the match.")
+	assert_eq(
+		NetErrorDialog.message_for(&"server_updating"),
+		"The server is restarting for an update. Update your game, then join again in a minute."
+	)
 
 
 func test_error_opens_with_focus_and_acknowledges() -> void:
@@ -157,6 +161,10 @@ func test_restart_to_update_only_when_the_launcher_started_an_older_client() -> 
 	assert_false(NetErrorDialog.can_update(&"wrong_version", older_client, ""), "started by hand")
 	assert_false(NetErrorDialog.can_update(&"wrong_version", older_client, "/no/such/launcher.exe"))
 	assert_false(NetErrorDialog.can_update(&"server_full", older_client, launcher))
+	assert_true(
+		NetErrorDialog.can_update(&"server_updating", {}, launcher), "a draining server sends players to update"
+	)
+	assert_false(NetErrorDialog.can_update(&"server_updating", {}, ""))
 
 
 func test_launcher_exe_comes_from_the_command_line() -> void:

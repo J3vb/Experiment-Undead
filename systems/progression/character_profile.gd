@@ -8,7 +8,11 @@ const TEST_DIRECTORY: String = "user://characters-test/"
 const STASH_SIZE: int = 60
 const NAME_MAX: int = 16
 const DEFAULT_NAME: String = "Survivor"
-const GEAR_SLOTS: Array[StringName] = [&"vest", &"charm", &"implant"]
+## Save and network order. Screens keep their own display order.
+const SLOTS: Array[StringName] = [
+	&"primary", &"sidearm", &"vest", &"charm", &"implant", &"headgear", &"gloves", &"backpack", &"boots"
+]
+const GEAR_SLOTS: Array[StringName] = [&"vest", &"charm", &"implant", &"headgear", &"gloves", &"backpack", &"boots"]
 const XP_RULES: XpRules = preload("res://content/progression/xp_rules.tres")
 
 var id: StringName = &""
@@ -16,7 +20,7 @@ var display_name: String = DEFAULT_NAME
 var total_xp: int = 0
 var skill_ranks: Dictionary = {}
 var stash: Array[Dictionary] = []
-var loadout: Dictionary = {"primary": {}, "sidearm": {}, "vest": {}, "charm": {}, "implant": {}}
+var loadout: Dictionary = {}
 ## Best run per map (the level folder name): {"round": int, "kills": int}.
 var best_runs: Dictionary = {}
 var level: int:
@@ -31,6 +35,8 @@ var _can_save: bool = true
 
 
 func _init() -> void:
+	for slot: StringName in SLOTS:
+		loadout[String(slot)] = {}
 	for _slot: int in STASH_SIZE:
 		stash.append({})
 
@@ -147,8 +153,8 @@ static func _valid_inventory(data: Dictionary) -> bool:
 	for item: Variant in saved_stash:
 		if item != null and not item is Dictionary:
 			return false
-	for slot: String in ["primary", "sidearm", "vest", "charm", "implant"]:
-		var item: Variant = saved_loadout.get(slot)
+	for slot: StringName in SLOTS:
+		var item: Variant = saved_loadout.get(String(slot))
 		if item != null and not item is Dictionary:
 			return false
 	return true
