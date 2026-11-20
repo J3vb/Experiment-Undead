@@ -109,6 +109,17 @@ func test_content_fingerprint_is_repeatable_and_resource_values_matter() -> void
 	assert_ne(Build._content_value(weapon), before)
 
 
+func test_content_fingerprint_ignores_hud_textures_the_server_strips() -> void:
+	var serum: SerumData = (Content.get_item(&"serums", &"stride") as SerumData).duplicate() as SerumData
+	var client_value: String = Build._content_value(serum)
+	var placeholder: PlaceholderTexture2D = PlaceholderTexture2D.new()
+	placeholder.size = Vector2(64, 64)
+	serum.icon = placeholder
+	assert_eq(Build._content_value(serum), client_value, "a stripped server icon must not break the content match")
+	serum.cost += 1
+	assert_ne(Build._content_value(serum), client_value)
+
+
 func test_connection_configuration_preserves_the_match_handshake() -> void:
 	var handshake: Handshake = Handshake.new()
 	add_child(handshake)
