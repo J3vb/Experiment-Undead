@@ -116,6 +116,9 @@ func _bind_arm_view() -> void:
 		arm_view = PlayerArmView.new()
 		arm_view.name = "PlayerArmView"
 		add_child(arm_view)
+		if _player != null:
+			_player.gear_rig.look_changed.connect(arm_view.apply_look)
+			arm_view.apply_look(_player.gear_rig.look)
 	arm_view.bind_weapon(current)
 
 
