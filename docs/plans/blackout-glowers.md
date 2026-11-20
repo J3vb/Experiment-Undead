@@ -1,10 +1,10 @@
 # Plan: Blackout rounds and Glowers
 
-Status: Review
+Status: Approved
 Roadmap: F-28 / issue #122
 Phase: P4
 Size: M
-Approved by:
+Approved by: Claude plan review on PR #411 (Codex out of quota), fixes applied, 2026-11-20 (size M, no open decisions)
 Lore link: Glower row in [lore.md](../design/lore.md#story-links-for-game-content): hosts so full of Fenlight they shine and shun light, so they only come in force when the lights fail (the Blackout round). The lights-out itself is the facility power failing again; no new signs or text.
 
 ## Goal
@@ -186,14 +186,23 @@ checked in step 2 (dark, horde) and in the step 3 soak.
 ### Step 1: Tripo zombie intake and the Glower
 
 - Build: `tripo_intake.py --kind zombie` (9,000-tri budget, our skeleton through
-  `tripo_rig.py`, material `ZombieBaked`); `zombie_checks.py` accepts `ZombieBaked`
-  (head-lighter rule skipped for baked zombies, with a one-line reason) and gets
-  `glower`, `stalker`, `brute` triangle rows. Copy `/mnt/project-files/Glower.glb` to
+  `tripo_rig.py`, material `ZombieBaked`). The intake adds a `HeadCenter` marker on
+  the head bone (ZombieRig `_attach_head` reads it; today only `zombie_model.py` makes
+  it). Each `zombie_checks.py` / `check_models.py` rule for a baked zombie, decided:
+  - `JOINTS` and `TRIANGLES` rows for `glower`, `stalker`, `brute`: added.
+  - Separate `Body`, `EyeL`, `EyeR` meshes: skipped for `ZombieBaked` (one baked
+    mesh, eyes in the texture); the one mesh is named `Body`.
+  - `ZombieSkinHead` material, head lighter than the rest, gear zone data on every
+    face: skipped for `ZombieBaked` (one material; zombies have no dye zones,
+    DECISIONS "Gear looks"), with a one-line reason in the check.
+  - Triangle budget, facing, feet at origin, skeleton bone names: kept.
+
+  Then: Copy `/mnt/project-files/Glower.glb` to
   `tripo/sources/glower.glb` in the project files, add a `zombies.json` manifest row
   (height 1.7 m, provisional) and run the intake to `assets/models/zombies/glower.glb`.
   `zombie_import.gd` gives the Glower emission (its albedo, tinted bio-green). New
   `glower.tscn` (inherits zombie.tscn), `zombie_glower.tres`, Glower sounds (chitter
-  idles, swipe, death) from the free sources (Sonniss GDC, Freesound CC0, a CREDITS
+  idles, swipe, death; footsteps reuse the Shambler set) from the free sources (Sonniss GDC, Freesound CC0, a CREDITS
   line each) or, if the thread cannot download them, generated in `zombie_sfx.py` with
   a DECISIONS line. Not in any wave mix yet. ADR 0017 gets one line: the three v0.2
   zombies are Tripo. Turnaround rendered and approved in the PR (agent look, "Model
@@ -202,7 +211,8 @@ checked in step 2 (dark, horde) and in the step 3 soak.
   tripo/zombies.json, zombie_import.gd, assets/models/zombies/glower.glb(.import),
   systems/enemies/glower.tscn, content/enemies/zombie_glower.tres, assets/audio/,
   docs/adr/0017-tripo-models.md, docs/CREDITS.md, docs/design/turnarounds/.
-- Tests: `tests/content/` enemy check covers zombie_glower; a unit test spawns a
+- Tests: `tests/content/` enemy check covers zombie_glower (`test_content.gd` needs
+  footsteps); a unit test spawns a
   Glower scene and checks ZombieRig finds every posed bone and the head zone; Assets
   CI (glTF validator, zombie checks) and Turnarounds pass.
 - Done when: `debug spawn zombie_glower` (or the lineup tool) shows a glowing Glower
@@ -213,7 +223,9 @@ checked in step 2 (dark, horde) and in the step 3 soak.
 - Build: `WaveDirector.blackout: bool` and `set_blackout(on)` (server), relayed in
   `_receive_round` STARTED and `_receive_round_state`; Events `blackout_started` and
   `blackout_ended` on every peer. CeilingLight goes fully dark on Blackout (spot off,
-  dark tube) and back to its power state after. New `BlackoutDimmer` node in the Level
+  dark tube, spot hidden so FlickerLight cannot bring it back) and back to its power
+  state after; the delayed power-on restore checks the Blackout flag first, so turning
+  the power on mid-Blackout keeps the room dark. New `BlackoutDimmer` node in the Level
   darkens the baked bounce: spike the cheapest way that works in Forward+ and the
   Compatibility renderer (first try the LightmapGI node's visibility or `light_data`
   swap, then Environment adjustment brightness with the flashlight and Glower emission
@@ -223,10 +235,12 @@ checked in step 2 (dark, horde) and in the step 3 soak.
   for the person's PC if numbers look close).
 - Files: core/events.gd, systems/waves/wave_director.gd, systems/level/ceiling_light.gd,
   systems/level/blackout_dimmer.gd (new), levels/halcyon_labs/map.tscn (adds the
-  dimmer node), systems/debug/debug_console.gd, core/build.gd, docs/LOGGING.md if a
+  dimmer node), systems/debug/debug_console.gd, core/build.gd,
+  tests/unit/test_coop_round_state.gd (calls `_receive_round` with the old
+  arguments), docs/LOGGING.md if a
   warning is added, docs/DECISIONS.md.
 - Tests: unit: CeilingLight dark on blackout_started and back after, with power on
-  and off; co-op test: a client gets `blackout` from the round-start relay and from the
+  and off, and stays dark when the power comes on mid-Blackout; co-op test: a client gets `blackout` from the round-start relay and from the
   late-joiner snapshot (fails without the new argument).
 - Done when: `blackout on` darkens the whole map on host and client, `off` restores it,
   60 fps held with 24 zombies; renders in the PR.
@@ -238,12 +252,14 @@ checked in step 2 (dark, horde) and in the step 3 soak.
   `floor(normal count x 1.5)`, and spawns packs: each spawn tick rolls a pack size
   4..6 (capped by what is left), waits until `alive + pack <= max_alive`, then calls
   `Spawner.spawn_pack(enemy, size, round, rules)`, which places every Glower at one
-  marker (small jitter), marks the first as `pack_leader` of the rest and gives each a
+  marker (small jitter; prefers markers with no barrier, since a window has only 3
+  attack slots and the pack must arrive together), marks the first as `pack_leader` of the rest and gives each a
   `pack_side`. The next pack waits `spawn interval x pack size` (provisional, keeps the
   round's pace). Round end clears `blackout`. PowerUpDrops remembers the last kill
   position and on a server `blackout_ended` drops `blackout_reward` there (outside the
   1-per-round cap). Glowers join the round only through this path (not in
-  `enemy_mix`). DECISIONS lines: first Blackout exactly round 6; pack spacing.
+  `enemy_mix`). The schedule is rolled when empty, so `skip_to_round` (debug and
+  tests, which never call `start()`) works too. DECISIONS lines: first Blackout exactly round 6; pack spacing.
 - Files: systems/waves/wave_rules.gd, wave_director.gd, spawner.gd,
   content/waves/default_waves.tres, systems/power_ups/power_up_drops.gd,
   docs/DECISIONS.md, docs/LOGGING.md (blackout_pack_waiting).
@@ -262,7 +278,8 @@ checked in step 2 (dark, horde) and in the step 3 soak.
   target (and picks its own if the leader is dead); within 6 m of the target it steers
   to a point 1.5 m to its `pack_side` of the target, then attacks as usual.
   `zombie_glower.tres` sets PACK. DECISIONS line: 1.5 m split offset.
-- Files: systems/enemies/zombie_targeting.gd (new), zombie.gd, enemy_data.gd,
+- Files: systems/enemies/zombie_targeting.gd (new), zombie.gd, zombie_entry.gd
+  (calls `zombie._update_target` while in a window slot), enemy_data.gd,
   content/enemies/zombie_glower.tres, docs/DECISIONS.md.
 - Tests: unit `test_zombie_targeting.gd`: NEAREST picks the nearest living player
   (same as before); PACK follower copies the leader's target, falls back when the

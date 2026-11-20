@@ -24,8 +24,8 @@ synced `special_move` and `special_point`, spawn tags). Build only after F-29 is
 In:
 
 - Brute model from the person's Tripo `Brute.glb` through the zombie intake, with
-  the helmet plate as its own part so it can fly off; `brute.tscn` (wide capsule,
-  bigger hit zones); `content/enemies/zombie_brute.tres`; Brute sounds (huge breaths,
+  the helmet plate as its own part so it can fly off; `brute.tscn` (big body
+  and hit zones, movement capsule kept at the navmesh's 0.5 m agent radius); `content/enemies/zombie_brute.tres`; Brute sounds (huge breaths,
   roar + stamp tell, charge thunder and impact, long death roar, sub-bass footsteps).
 - Brute schedule in WaveRules: round 15, then every 4 to 6 rounds; one Brute per
   Brute round on top of the round's count.
@@ -112,7 +112,10 @@ Not in (non-goals, and where each one goes instead):
 |---|---|---|
 | tools/assets/tripo_intake.py | changed | `--part plate` splits the helmet plate into its own mesh |
 | assets/models/zombies/brute.glb, assets/audio/ | new | intake output, sounds |
-| systems/enemies/brute.tscn | new | inherits zombie.tscn: wide capsule, big zones, Plate node |
+| systems/enemies/brute.tscn | new | inherits zombie.tscn: 0.5 m movement capsule, big hit zones, Plate node |
+| systems/enemies/zombie_rig.gd | changed | wind-up, charge and slam poses |
+| systems/interactables/barrier.gd | changed | public `smash()` that removes every plank (`_set_planks` is private) |
+| systems/waves/spawner.gd | changed | passes the enemy's late health growth (if picked) |
 | systems/enemies/brute_plate.gd | new | plate absorb, break, fly-off, speed boost |
 | systems/enemies/brute_moves.gd | new | charge, slam (RefCounted, data points to it) |
 | systems/enemies/zombie_targeting.gd | changed | MOST_DAMAGE mode |
@@ -120,9 +123,10 @@ Not in (non-goals, and where each one goes instead):
 | systems/enemies/enemy_data.gd | changed | `smashes_barriers`, `spawn_sound`, late health growth fields (if picked) |
 | systems/enemies/zombie_voice.gd | changed | spawn roar at long range |
 | systems/waves/wave_rules.gd, wave_director.gd | changed | Brute schedule and spawn |
-| systems/net/zombie_sync.gd | changed | syncs `Plate:broken` when the zombie has a Plate |
+| systems/net/zombie_sync.gd | changed | adds `Plate:broken` in `_ready` when the zombie has a Plate (not in the shared `SYNCED` const) |
 | systems/net/player_push.gd | new | server-to-owner knockback (pattern 5) |
 | systems/player/player_moves.gd | changed | applies a push to the owner's velocity |
+| systems/player/player.tscn | changed | `PlayerPush` child node (no line added to player.gd) |
 | content/enemies/zombie_brute.tres, content/waves/default_waves.tres | new / changed | data and schedule |
 | core/build.gd | changed | PROTOCOL_VERSION bump (steps 2 and 3) |
 
@@ -132,14 +136,16 @@ pattern 5 node because `player_state_sync.gd` (294) and `player.gd` (335) must n
 grow.
 
 Files over 300 lines this plan grows: none (`player.gd` and `player_state_sync.gd`
-are left alone on purpose, see above).
+are left alone on purpose: `PlayerPush` is a node in `player.tscn`). `zombie.gd`
+gains only the data-driven hooks; if a step would take it past 300, split by job
+first as in the Stalker plan.
 
 ## Data
 
 - `zombie_brute.tres`: max_health 1200 (12 x Walker's 100), move_speed 2.2 fixed,
   attack (slam) damage 50, range 2.5, windup 0.9, special_damage 60 (charge),
-  loot_drop_chance 1.0, loot_min_rarity rare, xp_reward 100 (provisional), targeting
-  MOST_DAMAGE, spawn_tags [&"wide"], smashes_barriers true, special_moves
+  loot_drop_chance 1.0, loot_min_rarity rare, xp_reward 10 (design: 10 per kill), targeting
+  MOST_DAMAGE, spawn_tags [&"wide"] with spawn_tags_required true (F-29), smashes_barriers true, special_moves
   brute_moves.gd, body height 2.3 m (provisional).
 - `EnemyData` new fields: `smashes_barriers: bool = false`, `spawn_sound: AudioStream`
   (played at 40 m range on every peer).
@@ -187,11 +193,12 @@ per Brute, not per frame). Budget: 60 fps with 24 zombies plus the Brute.
   height; tune per model in the manifest). If the cut looks bad on the turnaround,
   fall back to a code-built plate over a Tripo head without the helmet and say so in
   DECISIONS. Intake `Brute.glb` (copy to `tripo/sources/brute.glb`, manifest row,
-  height 2.3 m) to `assets/models/zombies/brute.glb`. `brute.tscn` (capsule radius
-  0.6, height 2.3, head and body zones scaled up, `Plate` node holding the plate mesh
+  height 2.3 m) to `assets/models/zombies/brute.glb`. `brute.tscn` (movement capsule
+  radius 0.5 to match the navmesh agent radius in `map.tscn`, height 2.3, head and body zones scaled up, `Plate` node holding the plate mesh
   path), `zombie_brute.tres` with the slam as a plain single-target swing for now,
   sounds (free sources with CREDITS lines, or generated with a DECISIONS line), the
-  spawn roar. Not scheduled yet. DECISIONS lines: height, XP 100.
+  spawn roar. Not scheduled yet. Balance sheet: enemies.csv Brute attack 80 (assumed) becomes
+  charge 60 / slam 50 from zombie-ai.md (design-change skill). DECISIONS lines: height.
 - Files: tools/assets/tripo_intake.py, tripo/zombies.json,
   assets/models/zombies/brute.glb, systems/enemies/brute.tscn,
   content/enemies/zombie_brute.tres, enemy_data.gd (`spawn_sound`), zombie_voice.gd,
@@ -209,8 +216,10 @@ per Brute, not per frame). Budget: 60 fps with 24 zombies plus the Brute.
   (and body zone, if picked) multiplier is 25% of normal; when the Brute has lost 25%
   of max health it breaks: multipliers back, STAGGERED 1.5 s, plate mesh hidden and a
   copy thrown off (visual, every peer), speed x 1.2 on the server. ZombieSync adds
-  `Plate:broken` when a Plate node exists. Tag the Halcyon spawn points a 0.6 m
-  capsule fits through as `wide`. Late health growth fields if picked. Bump
+  `Plate:broken` to its config in `_ready` when the zombie has a Plate (the shared
+  `SYNCED` const stays as it is, which `test_zombie_entry.gd` checks on a Walker).
+  Tag the Halcyon spawn points with room for the Brute body as `wide`, and walk every
+  path from them to the player areas in a headless test (no relocates). Late health growth fields if picked. Bump
   PROTOCOL_VERSION.
 - Files: systems/waves/wave_rules.gd, wave_director.gd, content/waves/default_waves.tres,
   systems/enemies/brute_plate.gd (new), brute.tscn, enemy_data.gd, wave_rules.gd
@@ -235,11 +244,11 @@ per Brute, not per frame). Budget: 60 fps with 24 zombies plus the Brute.
   player within 1.5 m of the Brute during the charge is hit once for `special_damage`
   and pushed (8 m/s away and up, provisional) through `PlayerPush` to the owner;
   hitting a wall stops it with a 2 s STAGGERED stun. `PlayerPush` (server-owned node
-  added in `Player._ready()`, pattern 5) calls the owner, whose `PlayerMoves` adds the
+  child node in `player.tscn`, so it exists with the same name on every peer, pattern 5) calls the owner, whose `PlayerMoves` adds the
   push to velocity. Bump PROTOCOL_VERSION.
 - Files: systems/enemies/brute_moves.gd (new), zombie_rig.gd (wind-up and charge
   poses), content/enemies/zombie_brute.tres, systems/net/player_push.gd (new),
-  systems/player/player_moves.gd, player.tscn or player.gd (one line to add the node),
+  systems/player/player_moves.gd, systems/player/player.tscn,
   core/build.gd, docs/LOGGING.md (brute_charge_blocked), docs/DECISIONS.md.
 - Tests: unit `test_brute_moves.gd`: no charge under 6 m, over 20 m or with a blocked
   line; direction locks at 1.2 s and does not follow a moving target; a player in the
@@ -253,11 +262,12 @@ per Brute, not per frame). Budget: 60 fps with 24 zombies plus the Brute.
 
 - Build: the slam replaces the plain swing: within 2.5 m, 0.9 s wind-up, hits every
   living player within 2.5 m for 50. ZombieEntry: with `smashes_barriers`, one 2 s hit
-  removes all planks. MOST_DAMAGE targeting in `ZombieTargeting`: the server keeps a
+  calls the new `Barrier.smash()`, which removes all planks. MOST_DAMAGE targeting in `ZombieTargeting`: the server keeps a
   small per-zombie table of damage by attacker for the last 10 s (from the zombie's own
   `damaged` signal) and targets the top one, nearest when none. Finish-feature
   close-out: Acceptance, roadmap Done, plan Done, a GIF of a charge and a plate break.
 - Files: systems/enemies/brute_moves.gd, zombie_entry.gd, zombie_targeting.gd,
+  systems/interactables/barrier.gd,
   enemy_data.gd (`smashes_barriers`), content/enemies/zombie_brute.tres,
   docs/ROADMAP.md, docs/plans/brute.md.
 - Tests: unit: slam hits two players inside 2.5 m and not one at 2.6 m; barrier smash
@@ -286,14 +296,16 @@ per Brute, not per frame). Budget: 60 fps with 24 zombies plus the Brute.
   play-test checks round 20.
 - Knockback with owner-moved players: a lost or late push only looks soft; damage is
   still applied on the server.
-- Windows too narrow for a 0.6 m capsule: the Brute prefers `wide` points (F-29 tags);
-  step 2 tags the Halcyon points it can use and logs brute_skipped if none.
+- A 2.3 m body on a navmesh baked for 0.5 m agents can clip door frames: the
+  movement capsule stays 0.5 m (only the body and hit zones are big), it uses only
+  `wide` points, step 2 tests its paths, and the stuck-zombie relocate log
+  (zombie_relocated) is checked in the round 15 integration run.
 
 ## Open decisions
 
 The plan is size L, so the person approves it as a whole. Agent picks, marked
 provisional in DECISIONS as their steps land: one Brute per Brute round, spawns at half
-the round, skips a Blackout round, 4 s charge cooldown, push 8 m/s, XP 100, height 2.3 m.
+the round, skips a Blackout round, 4 s charge cooldown, push 8 m/s, height 2.3 m.
 
 - Head plate rule: does the plate cut only head damage, or all damage? (balance sheet
   issues.csv row 11 recommends head only)

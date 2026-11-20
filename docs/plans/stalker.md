@@ -1,10 +1,10 @@
 # Plan: Stalker
 
-Status: Review
+Status: Approved
 Roadmap: F-29 / issue #123
 Phase: P4
 Size: L
-Approved by:
+Approved by: Claude plan review on PR #411 (Codex out of quota), fixes applied; the person approved 2026-11-20 (card "Approve as written")
 Lore link: Stalker row in [lore.md](../design/lore.md#story-links-for-game-content): a light, young host rewired for climbing; warm air gathers under ceilings, so they hunt along pipes and vents up there. Their climb routes follow the Labs and Containment Wing ceiling pipes and vents that already exist in the map.
 
 ## Goal
@@ -136,6 +136,10 @@ Files over 300 lines this plan grows: `systems/enemies/zombie_rig.gd` (314). Ste
 moves its death job (fall_over, pop_head, pose_dead, about 50 lines) into
 `zombie_corpse.gd` before any pose is added.
 
+`systems/enemies/zombie.gd` (290 today) drops to about 260 in F-28 step 4 and grows
+again with the SPECIAL and STAGGERED states here. If step 2 would take it past 300,
+it first moves the SPAWNING tick and the rise into `ZombieEntry` (the way in).
+
 ## Data
 
 - `EnemyData` new fields (all with defaults that keep Walker and Bloater as they are):
@@ -147,7 +151,7 @@ moves its death job (fall_over, pop_head, pose_dead, about 50 lines) into
 - `Targeting` enum gains `ISOLATED`.
 - `zombie_stalker.tres`: max_health 60 (0.6 x Walker's 100), move_speed 5.8 fixed,
   attack_damage 30 (swipe), attack_range 1.5, windup 0.45, special_damage 50,
-  loot_drop_chance 0.05, xp_reward 30 (provisional, same as the Bloater's),
+  loot_drop_chance 0.05, xp_reward 10 (design: 10 per kill, game-design.md),
   targeting ISOLATED, spawn_tags [&"ceiling"], nav_layers 3, special_moves
   stalker_moves.gd.
 - Round mix row: first_round 12, weight 0.05, weight_per_round 0.01 (provisional,
@@ -160,9 +164,13 @@ moves its death job (fall_over, pop_head, pose_dead, about 50 lines) into
   constant, new).
 - Network: two new synced properties (step 2): protocol bump. Spawn data unchanged.
 - Save format change: none.
-- Content checks: Stalker data (special_moves set, nav_layers includes 2, sounds);
-  every ClimbRoute in Halcyon Labs has both ends within 0.5 m of the navmesh and
-  every perch offset inside the curve length.
+- `EnemyData.spawn_tags_required: bool = false`: false = prefer tagged points and
+  fall back to any (Stalker); true = only tagged points (Brute `wide`, F-30), so the
+  Spawner is built once here.
+- Content checks: Stalker data (special_moves set, nav_layers includes 2, sounds
+  with footsteps). Route checks are integration tests: Halcyon's navmesh is baked at
+  run time (`level.gd`), so a loaded level checks every ClimbRoute end within 0.5 m of
+  the navmesh and every perch offset inside the curve length.
 
 ## Co-op behaviour
 
@@ -193,17 +201,20 @@ the horde stays at 60 fps with 24 zombies, checked in the step 4 headless round 
   unchanged). Intake `Stalker.glb` (copy to `tripo/sources/stalker.glb`, manifest
   row, height 1.75 m provisional) to `assets/models/zombies/stalker.glb`.
   `stalker.tscn`, `zombie_stalker.tres` with the swipe only (no special moves yet),
-  ISOLATED targeting in `ZombieTargeting`, Stalker sounds (free sources with CREDITS
+  ISOLATED targeting in `ZombieTargeting`, Stalker sounds incl. fast scratching footsteps (free sources with CREDITS
   lines, or generated in `zombie_sfx.py` with a DECISIONS line). Round mix row from
-  round 12. DECISIONS lines: Stalker XP 30, mix weights, height.
+  round 12. Callers of the moved death code move with it: `zombie.gd` `_on_died`,
+  `zombie_sync.gd` `show_death`. DECISIONS lines: mix weights, height.
 - Files: systems/enemies/zombie_rig.gd, zombie_corpse.gd (new), zombie_targeting.gd,
   enemy_data.gd, stalker.tscn, content/enemies/zombie_stalker.tres,
   content/waves/default_waves.tres, tools/assets/tripo/zombies.json,
   assets/models/zombies/stalker.glb, assets/audio/, docs/CREDITS.md,
-  docs/design/turnarounds/, docs/DECISIONS.md.
+  docs/design/turnarounds/, docs/DECISIONS.md, systems/enemies/zombie.gd,
+  systems/net/zombie_sync.gd, tests that call the moved functions
+  (`test_head_pop.gd`, `test_blood_pool.gd`, `test_zombie_sync.gd`).
 - Tests: content check for zombie_stalker; unit `test_zombie_targeting.gd` ISOLATED
-  picks the lone player over a nearer pair; existing death and head-pop tests pass
-  on `ZombieCorpse`; Assets and Turnarounds checks.
+  picks the lone player over a nearer pair; head-pop, blood-pool and zombie-sync
+  tests updated to `ZombieCorpse` and passing; Assets and Turnarounds checks.
 - Done when: from round 12 fast Stalkers run, swipe and die on host and client;
   `zombie_rig.gd` is under 300 lines.
 
@@ -252,17 +263,24 @@ the horde stays at 60 fps with 24 zombies, checked in the step 4 headless round 
 
 ### Step 4: Halcyon Labs routes, ceiling vents and close-out
 
-- Build: spawn tags (`ZombieSpawnPoint.tags`, Spawner prefers points whose tags
-  match the enemy's `spawn_tags`, falls back to any usable point). Author in
+- Build: spawn tags (`ZombieSpawnPoint.tags`; the Spawner prefers points whose tags
+  match the enemy's `spawn_tags` and falls back to any usable point, or uses only
+  tagged points when `spawn_tags_required`). Ceiling drop (zombie-ai.md spawn kind):
+  a point tagged `ceiling` is not snapped to the navmesh (`Spawner._place` snaps to
+  the floor today); the zombie starts at the marker, ZombieRig skips the rise from
+  under the floor and plays a drop pose, and it falls under gravity during SPAWNING
+  (0.6 s for this kind). Author in
   `map.tscn`: 3 to 5 climb routes and 2 to 4 perches in the Labs and the
   Containment Wing along existing ceiling pipes and vents, plus one ceiling vent
-  spawn point tagged `ceiling` per room (spawned Stalkers drop to the floor under
-  gravity during SPAWNING). Route check test. Renders or a GIF of a Stalker on a
+  spawn point tagged `ceiling` per room. Route check test. Renders or a GIF of a Stalker on a
   route for the PR. Finish-feature close-out: Acceptance, roadmap Done, plan Done.
-- Files: systems/waves/zombie_spawn_point.gd, spawner.gd, levels/halcyon_labs/map.tscn,
-  tests/content/ (route check), docs/ROADMAP.md, docs/plans/stalker.md.
-- Tests: unit: Spawner picks a tagged point when one is usable and falls back
-  otherwise; content: every Halcyon route end within 0.5 m of the baked navmesh;
+- Files: systems/waves/zombie_spawn_point.gd, spawner.gd, systems/enemies/zombie.gd
+  and zombie_rig.gd (ceiling drop), enemy_data.gd (`spawn_tags_required`),
+  levels/halcyon_labs/map.tscn, tests/integration/ (route check), docs/ROADMAP.md, docs/plans/stalker.md.
+- Tests: unit: Spawner picks a tagged point when one is usable, falls back
+  otherwise, and never falls back when tags are required; a ceiling point is not
+  snapped to the floor; integration: every Halcyon route end within 0.5 m of the
+  baked navmesh;
   integration: headless GameSession skipped to round 12 runs 90 s with Stalkers and
   no SCRIPT ERROR; soak rounds 1-10 unchanged.
 - Done when: Stalkers come out of the Labs and Containment ceilings, climb, perch and
@@ -294,6 +312,6 @@ the horde stays at 60 fps with 24 zombies, checked in the step 4 headless round 
 
 The plan is size L, so the person approves it as a whole (decision card). Agent picks,
 marked provisional in DECISIONS as their steps land: leap arc 0.6 s with a 1.5 m apex,
-1.0 s interrupt stagger, XP 30, mix weight 0.05 + 0.01 per round, height 1.75 m.
+1.0 s interrupt stagger, mix weight 0.05 + 0.01 per round, height 1.75 m.
 
 - none
