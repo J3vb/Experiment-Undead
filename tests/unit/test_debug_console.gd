@@ -94,6 +94,10 @@ func test_game_commands_in_headless_session() -> void:
 	assert_eq(session.spawner.alive_count(), 0)
 	debug.run_command("set_round 8")
 	assert_eq(session.director.round_number, 8)
+	debug.run_command("blackout on")
+	assert_true(session.director.blackout, "debug Blackout turns the lights out")
+	debug.run_command("blackout off")
+	assert_false(session.director.blackout)
 	debug.run_command("seed")
 	assert_string_contains(debug.log_output.get_parsed_text(), "1234")
 	debug._set_open(true)
@@ -228,11 +232,13 @@ func test_game_command_validation_has_no_success_message() -> void:
 		"set_round nope",
 		"set_round 0",
 		"kill_all extra",
-		"skip_round extra"
+		"skip_round extra",
+		"blackout",
+		"blackout dim",
 	]:
 		console.run_command(line)
 	var output: String = console.log_output.get_parsed_text()
-	assert_eq(output.count("Error: usage:"), 8)
+	assert_eq(output.count("Error: usage:"), 10)
 	assert_false(output.contains("OK:"))
 
 

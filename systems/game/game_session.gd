@@ -131,7 +131,9 @@ func _setup_shooting() -> void:
 	remote_shots.name = "RemoteShots"
 	interactions = InteractionSync.new()
 	deploy_vote = DeployVote.new()
-	for system: Node in [hit_claims, WellClaims.new(), loot, remote_shots, interactions, deploy_vote]:
+	for system: Node in [
+		hit_claims, WellClaims.new(), GrenadeClaims.new(), loot, remote_shots, interactions, deploy_vote
+	]:
 		system.set("session", self)
 		add_child(system)
 	(hud.get_node("Root/Pack") as PackOverlay).setup(loot)
@@ -166,6 +168,7 @@ func _on_player_added(player: Player) -> void:
 	player.display_name = handshake.player_name(player.net_id) if named else ""
 	player.spawn(self, starting_loadout)
 	if player == profile_player and profile:
+		player.skill_ranks = SkillEffects.ranks_from(profile.skill_ranks)
 		var loadout: Variant = profile.to_dict().get("loadout", {})
 		if loadout is Dictionary:
 			ItemLoadout.apply(player, loadout)
@@ -236,10 +239,11 @@ func restart() -> void:
 	(deploy_vote.back_to_hub if Net.is_coop(multiplayer) or Net.changing_place else Net.world.reload).call()
 
 
-func quit_game() -> void:
+## exit_code 3 tells the launcher or Docker runner to restart on a newer version.
+func quit_game(exit_code: int = 0) -> void:
 	if _quitting:
 		return
 	_quitting = true
 	match_end.bank_run_xp()
 	await progression.wait_for_run_grants()
-	get_tree().quit()
+	get_tree().quit(exit_code)

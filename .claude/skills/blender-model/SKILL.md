@@ -45,9 +45,8 @@ A new model is one `build_<name>()` function plus one line in `MODELS`
 - **Zombies face Blender -Y, which is Godot +Z.** Feet at z = 0.
 - Every part that code swings is its own object with its **origin at the
   joint** (shoulder, hip, knee, neck). Use `attach(obj, pivot, parent)` and
-  `limb()`. Zombie part names code needs: `Hips`, `Torso`, `Head`, `EyeL`,
-  `EyeR`, `ArmL`, `ArmR`, plus `LegL`, `LegR` (not Crawler) and `Belly`
-  (Bloater). `check_models.py` lists them in `JOINTS`.
+  `limb()`. Zombies are not code-built: they come from
+  `tripo_intake.py --kind zombie` (ADR 0017).
 - Kit pieces: origin at floor level on the wall's back edge, sized to the 2 m
   grid (wall panel is 2.0 x 0.2 x 2.7).
 

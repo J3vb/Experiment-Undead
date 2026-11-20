@@ -1,9 +1,13 @@
-//! Experiment Undead launcher: installs the newest game on the player's channel, keeps it
+//! Fenlight launcher: installs the newest game on the player's channel, keeps it
 //! updated and starts it (docs/plans/separate-launcher.md). The window is `ui/`.
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod host;
+mod pages;
+
 use launcher_core::feed::{self, Channel, Release};
+use launcher_core::host::Host;
 use launcher_core::install::Installer;
 use launcher_core::log;
 use launcher_core::settings::{self, Settings};
@@ -11,7 +15,7 @@ use serde::Serialize;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
-use tauri::{AppHandle, Emitter, Manager, State};
+use tauri::{AppHandle, Emitter, Manager, State, WindowEvent};
 use tauri_plugin_updater::UpdaterExt;
 
 struct Launcher {
@@ -21,11 +25,21 @@ struct Launcher {
     releases: Mutex<Option<Vec<serde_json::Value>>>,
     cancel: Arc<AtomicBool>,
     busy: AtomicBool,
+    host: Mutex<Host>,
 }
 
 impl Launcher {
+    /// The installer, told which version a hosted server runs so it is never deleted.
     fn installer(&self) -> Installer {
-        Installer::new(settings::versions_dir(&self.data_dir))
+        let mut installer = Installer::new(settings::versions_dir(&self.data_dir));
+        if let Some(version) = self.hosting() {
+            installer.in_use.push(version);
+        }
+        installer
+    }
+
+    fn hosting(&self) -> Option<String> {
+        self.host.lock().ok()?.running()
     }
 
     fn newest(&self) -> Option<Release> {
@@ -42,7 +56,12 @@ struct Status {
     online: bool,
     installed: Vec<String>,
     newest: Option<Release>,
+    /// Newest version on each channel, for the Game version dropdown.
+    stable: Option<String>,
+    test: Option<String>,
     update_ready: bool,
+    close_on_play: bool,
+    hosting: bool,
     busy: bool,
     game_dir: String,
 }
@@ -66,17 +85,22 @@ fn status(launcher: State<'_, Launcher>) -> Status {
     let update_ready = newest
         .as_ref()
         .is_some_and(|release| feed::is_newer(&release.version, &installed));
+    let saved = launcher.settings.lock().map(|saved| saved.clone()).unwrap_or_default();
+    let on_channel = |channel: Channel| {
+        let releases = launcher.releases.lock().ok()?;
+        feed::newest(releases.as_deref()?, channel, feed::platform_suffix()).map(|release| release.version)
+    };
     Status {
         version: env!("CARGO_PKG_VERSION").to_string(),
-        channel: launcher
-            .settings
-            .lock()
-            .map(|saved| saved.channel)
-            .unwrap_or(Channel::Stable),
+        channel: saved.channel,
         online: launcher.releases.lock().map(|list| list.is_some()).unwrap_or(false),
         installed,
         newest,
+        stable: on_channel(Channel::Stable),
+        test: on_channel(Channel::Test),
         update_ready,
+        close_on_play: saved.close_on_play,
+        hosting: launcher.hosting().is_some(),
         busy: launcher.busy.load(Ordering::Relaxed),
         game_dir: settings::versions_dir(&launcher.data_dir).display().to_string(),
     }
@@ -155,9 +179,13 @@ fn cancel(launcher: State<'_, Launcher>) {
 }
 
 /// Updates the launcher itself when the newest release on the channel has a newer one: the
-/// signed setup exe installs quietly and the launcher restarts. Ok(false) means up to date.
+/// signed setup exe installs quietly and the launcher restarts. Ok(false) means up to date,
+/// or a hosted server is running (a restart would leave it without its launcher).
 #[tauri::command]
 async fn self_update(app: AppHandle, launcher: State<'_, Launcher>) -> Result<bool, String> {
+    if launcher.hosting().is_some() {
+        return Ok(false);
+    }
     let url = {
         let channel = launcher.settings.lock().map_err(|error| error.to_string())?.channel;
         let releases = launcher.releases.lock().map_err(|error| error.to_string())?;
@@ -198,7 +226,8 @@ async fn check_and_install(app: &AppHandle, manifest: &str) -> Result<bool, Stri
     Ok(true)
 }
 
-/// Starts the newest installed game and closes the launcher.
+/// Starts the newest installed game and closes the launcher when the player wants that and
+/// it hosts no server.
 #[tauri::command]
 fn play(app: AppHandle, launcher: State<'_, Launcher>) -> Result<(), String> {
     let installer = launcher.installer();
@@ -215,7 +244,14 @@ fn play(app: AppHandle, launcher: State<'_, Launcher>) -> Result<(), String> {
         .arg(format!("--launcher-exe={}", me.display()))
         .spawn()
         .map_err(|error| format!("Could not start the game: {error}"))?;
-    app.exit(0);
+    let close = launcher
+        .settings
+        .lock()
+        .map(|saved| saved.close_on_play)
+        .unwrap_or(true);
+    if close && launcher.hosting().is_none() {
+        app.exit(0);
+    }
     Ok(())
 }
 
@@ -229,12 +265,24 @@ fn main() {
             app.manage(Launcher {
                 settings: Mutex::new(Settings::load(&data_dir)),
                 api_url: settings::releases_api(&args),
-                data_dir,
+                data_dir: data_dir.clone(),
                 releases: Mutex::new(None),
                 cancel: Arc::new(AtomicBool::new(false)),
                 busy: AtomicBool::new(false),
+                host: Mutex::new(Host::new(data_dir.join("server"))),
             });
+            let handle = app.handle().clone();
+            std::thread::spawn(move || host::watch(handle));
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            // Closing while hosting asks first (ui/host.js), then `quit` stops the server.
+            if let WindowEvent::CloseRequested { api, .. } = event {
+                if window.state::<Launcher>().hosting().is_some() {
+                    api.prevent_close();
+                    let _ = window.emit("close_requested", ());
+                }
+            }
         })
         .invoke_handler(tauri::generate_handler![
             status,
@@ -243,7 +291,19 @@ fn main() {
             set_channel,
             install,
             cancel,
-            play
+            play,
+            host::host_status,
+            host::host_start,
+            host::host_stop,
+            host::open_logs,
+            host::quit,
+            pages::news,
+            pages::patches,
+            pages::disk,
+            pages::repair,
+            pages::uninstall,
+            pages::set_close_on_play,
+            pages::open_place
         ])
         .run(tauri::generate_context!())
         .expect("the launcher window could not start");

@@ -1,0 +1,7 @@
+[
+  {"name": "glower", "folder": "zombies", "kind": "zombie", "height": 1.7, "yaw": 0, "made": true, "source": "tripo/sources/glower.glb"},
+  {"name": "shambler", "folder": "zombies", "kind": "zombie", "height": 1.78, "yaw": 0, "made": true, "source": "tripo/sources/shambler_labtech.glb"},
+  {"name": "shambler_guard", "folder": "zombies", "kind": "zombie", "height": 1.78, "yaw": 0, "made": true, "source": "tripo/sources/shambler_guard.glb"},
+  {"name": "bloater", "folder": "zombies", "kind": "zombie", "height": 1.8, "yaw": 0, "made": true, "source": "tripo/sources/bloater.glb"},
+  {"name": "crawler", "folder": "zombies", "kind": "zombie", "height": 1.78, "yaw": 0, "crawler": true, "made": true, "source": "tripo/sources/shambler_labtech.glb"}
+]

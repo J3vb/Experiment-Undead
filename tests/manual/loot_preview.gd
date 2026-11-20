@@ -25,7 +25,7 @@ func _render() -> void:
 	player.set_physics_process(false)
 	player.position.z = 5
 	hud._player = player
-	hud.round_label.text = "17"
+	hud.round_counter.show_round(17)
 	player.weapons.give(Content.weapon(&"rifle_ar"))
 	service.player = player
 	var overlay: PackOverlay = hud.get_node("Root/Pack") as PackOverlay

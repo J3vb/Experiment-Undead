@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Experiment Undead Launcher",
+  "productName": "Fenlight Launcher",
   "version": "0.0.0",
   "identifier": "com.experimentundead.launcher",
   "build": {
@@ -10,11 +10,12 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "Experiment Undead",
-        "width": 1280,
-        "height": 760,
-        "minWidth": 960,
-        "minHeight": 600
+        "title": "Fenlight",
+        "width": 1440,
+        "height": 860,
+        "minWidth": 1280,
+        "minHeight": 720,
+        "decorations": false
       }
     ],
     "security": {
@@ -31,8 +32,8 @@
       "icons/icon.ico",
       "icons/icon.png"
     ],
-    "publisher": "Experiment Undead",
-    "shortDescription": "Installs, updates and starts Experiment Undead",
+    "publisher": "Fenlight",
+    "shortDescription": "Installs, updates and starts Fenlight",
     "windows": {
       "webviewInstallMode": {
         "type": "downloadBootstrapper"
@@ -43,7 +44,7 @@
       }
     }
   },
-  "mainBinaryName": "ExperimentUndead-Launcher",
+  "mainBinaryName": "Fenlight-Launcher",
   "plugins": {
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEZFRTk5ODJDRDAxNjQzNUUKUldSZVF4YlFMSmpwL3R3dHdXQ3AvWE5tYkhjTmVZOTM5ZTA2bXRHUy9nNnB2d3I1UFpwNno2Q3MK",

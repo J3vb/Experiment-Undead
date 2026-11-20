@@ -5,11 +5,11 @@ Roadmap: F-82
 Phase: P8 (steps 1-4 land before Release v0.1.0, F-11)
 Size: L
 Approved by: the person in the project thread, 2026-11-19 ("Approve, start building" card, after picking Tauri and a Windows installer); plan PR #378
-Lore link: the launcher shows the game's name, its news and the Oriel/Halcyon/Cordon names from docs/design/lore.md (Factions); the tagline "A Fenlight survival experience" is a provisional row in "Story links for game content" (Maps, rooms and props)
+Lore link: the launcher shows the game's name, its news and the Oriel/Halcyon/Cordon names from docs/design/lore.md (Factions); the tagline "The cold kept it asleep." is a provisional row in "Story links for game content" (Maps, rooms and props)
 
 ## Goal
 
-Players install one small program, the Experiment Undead launcher, like
+Players install one small program, the Fenlight launcher, like
 Steam or Battle.net. It installs the game, keeps it updated, shows news and
 patch notes, hosts a server, and keeps itself updated. The game exe itself
 goes straight to the main menu. Serves "Better together": friends are always
@@ -27,7 +27,7 @@ In:
 - A Tauri 2 app in `launcher/`: a small Rust core (downloads, checksums,
   unzip, starting the game and a server) and a plain HTML/CSS/JS window
   (step 1). About 10 MB, using the WebView2 that ships with Windows 10 and 11.
-- A per-user Windows installer, `ExperimentUndead-Setup-<version>.exe`, made
+- A per-user Windows installer, `Fenlight-Setup-<version>.exe`, made
   by Tauri's own NSIS bundler, and launcher self-update through Tauri's
   updater plugin (step 2).
 - The in-game launcher screen is deleted; "Restart to update" in the join
@@ -55,8 +55,8 @@ Not in (non-goals, and where each one goes instead):
 ## How it fits together
 
 ```
-%LOCALAPPDATA%\Experiment Undead Launcher\   installed by the setup exe (per user, no admin)
-  experiment-undead-launcher.exe
+%LOCALAPPDATA%\Fenlight Launcher\   installed by the setup exe (per user, no admin)
+  fenlight-launcher.exe
 %LOCALAPPDATA%\com.experimentundead.launcher\  the launcher's data folder (the uninstaller offers to delete it)
   launcher.json                              channel, server port, max players
   launcher.log
@@ -71,7 +71,7 @@ Not in (non-goals, and where each one goes instead):
 | Version compare | Ported to Rust once. `tests/fixtures/version_table.json` is read by both the game's GUT test and the launcher's `cargo test`, so the two can never disagree. |
 | Launcher version | Built from the same tag as the game, same version (`tauri.conf.json` version set by `tools/ci/stamp_version.sh`). |
 | Launcher self-update | Tauri's updater plugin: on start it reads `latest.json` from the newest release on the channel, downloads the new setup exe, checks its signature with the public key built into the launcher, runs it quietly and restarts. The signing key is a GitHub secret (`TAURI_SIGNING_PRIVATE_KEY`). Any failure keeps the old launcher running. |
-| Release assets | Add `ExperimentUndead-Setup-<version>.exe`, its `.sig`, and `latest.json`. Existing zip names unchanged. From v0.1.0 these join the F-65 asset contract. |
+| Release assets | Add `Fenlight-Setup-<version>.exe`, its `.sig`, and `latest.json`. Existing zip names unchanged. From v0.1.0 these join the F-65 asset contract. |
 | Game finds the launcher | The `--launcher-exe=` path it was started with. Started by hand or a dev build: no "Restart to update" button. |
 | News | `launcher/news/news.json` + images on `main`, fetched from `raw.githubusercontent.com` (one call per start). Offline: the copy built into the launcher. Adding news is a docs-style PR, no release. |
 | Patches | The release notes of every release on the channel, from the Releases call the launcher already makes. |
@@ -168,7 +168,7 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
   `set_channel`, `install` (emits progress events), `cancel` and `play`. Port
   `ReleaseFeed`/`VersionInstaller` rules (see table). Shared version table
   fixture. `launcher/.gdignore`. New `launcher.yml` workflow: fmt, clippy,
-  `cargo test` on Ubuntu; `cargo build --release -p experiment-undead-launcher` on Windows for
+  `cargo test` on Ubuntu; `cargo build --release -p fenlight-launcher` on Windows for
   PRs touching `launcher/`. The game is untouched in this step. ADR 0018
   accepted.
 - Files: `launcher/**`, `.github/workflows/launcher.yml`,
@@ -186,9 +186,9 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
 ### Step 2: Setup exe and self-update
 
 - Build: Tauri NSIS bundle (`installMode: currentUser`, Start menu and
-  desktop shortcut, uninstall entry), product name "Experiment Undead
+  desktop shortcut, uninstall entry), product name "Fenlight
   Launcher". Updater plugin with the public key in `tauri.conf.json` and the
-  endpoint `https://github.com/J3vb/Experiment-Undead/releases/latest/download/latest.json`
+  endpoint `https://github.com/J3vb/Fenlight/releases/latest/download/latest.json`
   for stable; test reads `latest.json` from the newest pre-release through
   the Releases API. `release.yml` builds on `windows-latest` with
   `TAURI_SIGNING_PRIVATE_KEY` and attaches the setup, `.sig` and
@@ -231,6 +231,11 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
 
 ### Step 4: Host a server from the launcher
 
+> 2026-11-20: built in two PRs. 4a (PR #428): the Host page (start, stop, status, Open logs, ask
+> before closing) and deleting the game's `server_host.gd`. 4b: the 15-minute update
+> check, drain file and exit-code-3 restart, together with the game's drain mode from
+> F-65 step 8, which was not built yet.
+
 - Build: `src/host.rs`: start `versions/<newest>/ExperimentUndead.exe
   --headless -- --server --port=<p> --max-players=<n> --stop-file=<f>
   --drain-file=<d>`, stop through the stop file, status. Host page: port,
@@ -252,6 +257,11 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
   launcher with no second download.
 
 ### Step 5: The concept look
+
+> 2026-11-20: built. News tests live in `launcher/core/tests/news.rs` (the window crate
+> has no tests); the concept copy is `docs/design/images/launcher_concept.jpg`. Repair game
+> files deletes the newest version and downloads it again (the SHA-256 check runs on the
+> zip). The person signed off the look on 2026-11-20.
 
 - Build: the concept layout, 1280x720 minimum, resizable, custom title bar:
   left sidebar (Play, News, Patches, Settings, Support; News dot when an item
@@ -283,7 +293,7 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
 - [ ] The game exe never shows a launcher screen (step 3 test).
 - [ ] A player hosts and stops a server from the launcher, and it updates
   between matches (step 4 tests).
-- [ ] The launcher matches the concept (step 5, the person's sign-off).
+- [x] The launcher matches the concept (step 5, the person's sign-off, 2026-11-20).
 
 ## Risks
 

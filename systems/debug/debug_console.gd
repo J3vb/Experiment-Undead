@@ -28,6 +28,7 @@ func _ready() -> void:
 	register_command(&"seed", _seed, "seed: print the match RNG seed")
 	for name: StringName in [&"give_points", &"set_round", &"skip_round", &"spawn", &"kill_all", &"timescale"]:
 		register_command(name, _change_game.bind(name), str(name) + _usage(name))
+	register_command(&"blackout", _blackout, "blackout on|off: lights out on every peer")
 
 
 func _physics_process(_delta: float) -> void:
@@ -166,6 +167,17 @@ func _change_game(args: PackedStringArray, name: StringName) -> void:
 			if not _set_timescale(args):
 				return
 	write_line("OK: " + str(name))
+
+
+func _blackout(args: PackedStringArray) -> void:
+	if args.size() != 1 or args[0] not in ["on", "off"]:
+		write_line("Error: usage: blackout on|off")
+		return
+	if not Net.is_authority():
+		write_line("Error: blackout requires authority (host/server).")
+		return
+	(get_parent() as GameSession).director.set_blackout(args[0] == "on")
+	write_line("OK: blackout " + args[0])
 
 
 func _change_progress(args: PackedStringArray, name: StringName, session: GameSession) -> bool:

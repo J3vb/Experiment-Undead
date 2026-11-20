@@ -3,6 +3,7 @@
     python tools/assets/tripo_intake.py source.glb --kind prop --height 0.9 --name crate
     python tools/assets/tripo_intake.py odile.glb --kind character --name odile_brandt
     python tools/assets/tripo_intake.py track.glb --length 6 --name track_section --folder props
+    python tools/assets/tripo_intake.py glower.glb --kind zombie --height 1.7 --name glower --folder zombies
 
 Joins the source meshes, turns the front to Blender -Y (Godot +Z), scales to height, puts the
 origin at the floor centre, decimates a copy to budget, unwraps it and bakes the source look into
@@ -19,6 +20,7 @@ import bpy
 # isort: split
 import bmesh
 import numpy
+import tripo_crawler
 import tripo_rig
 from mathutils import Matrix, Vector
 from player_body.build import strip_icc
@@ -26,10 +28,15 @@ from player_body.build import strip_icc
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT = os.path.join(REPO, "docs", "design", "reviews", "tripo-trial")
 MODELS = os.path.join(REPO, "assets", "models")
-KINDS = {"prop": (2_000, 1024, None), "large": (12_000, 2048, None), "character": (16_000, 2048, 1.8)}
+KINDS = {
+    "prop": (2_000, 1024, None),
+    "large": (12_000, 2048, None),
+    "character": (16_000, 2048, 1.8),
+    "zombie": (9_000, 2048, 1.7),
+}
 ## Thin or open Tripo meshes can stop above budget after one collapse; later passes take the rest.
 DECIMATE_PASSES = 4
-BAKED = "Baked"  # characters: "BodyBaked", the Body* finish the character checks expect
+BAKED = "Baked"  # characters: "BodyBaked", the Body* finish the character checks expect; zombies: "ZombieBaked"
 CHANNELS = ("albedo", "roughness", "metal")
 
 
@@ -331,6 +338,13 @@ def run(args: argparse.Namespace) -> dict:
     if args.kind == "character":
         low.data.materials[0].name = "Body" + BAKED
         keep = tripo_rig.rig(low, armature, placed, args.clips)
+    elif args.kind == "zombie":
+        low.data.materials[0].name = "Zombie" + BAKED
+        low.name = "Body"
+        keep = tripo_rig.rig(low, armature, placed, None)
+        keep.append(tripo_rig.head_center_marker(keep[0], keep[2]))
+        if args.crawler:
+            keep.append(tripo_crawler.make(keep[0], keep[1]))
     bpy.data.objects.remove(high)
     model = os.path.join(os.path.join(MODELS, args.folder) if args.folder else folder, f"{args.name}.glb")
     export(keep, model)
@@ -343,7 +357,7 @@ def parse(argv: list) -> argparse.Namespace:
     parser.add_argument("source")
     parser.add_argument("--kind", choices=sorted(KINDS), default="prop")
     parser.add_argument("--name", required=True)
-    parser.add_argument("--height", type=float, default=0.0, help="metres; characters default to 1.80")
+    parser.add_argument("--height", type=float, default=0.0, help="metres; characters 1.80, zombies 1.70 by default")
     parser.add_argument("--length", type=float, default=0.0, help="metres for the longest side, instead of height")
     parser.add_argument("--yaw", type=float, default=0.0, help="degrees about up, to turn the front to Godot +Z")
     parser.add_argument("--size", type=int, default=0, help="map size; default 1024 props, 2048 characters")
@@ -351,6 +365,7 @@ def parse(argv: list) -> argparse.Namespace:
     parser.add_argument("--out", default=OUT, help="folder for the baked maps (and the model without --folder)")
     parser.add_argument("--clips", choices=("player", "keeper"), default="player", help="characters: clip set")
     parser.add_argument("--folder", default="", help="write the model to assets/models/<folder>/")
+    parser.add_argument("--crawler", action="store_true", help="zombies: cut the legs off and lay it prone")
     return parser.parse_args(argv)
 
 

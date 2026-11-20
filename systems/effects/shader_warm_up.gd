@@ -20,6 +20,7 @@ static func meshes() -> Array[Mesh]:
 	out.append_array(HeadPop.warm_up_meshes())
 	out.append_array(BloodPool.warm_up_meshes())
 	out.append_array(LootDrop.warm_up_meshes())
+	out.append_array(BlastEffect.warm_up_meshes())
 	return out
 
 

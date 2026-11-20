@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="SerumData" format=3]
 
 [ext_resource type="Script" path="res://systems/serums/serum_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/hud/serum_overclock.svg" id="icon"]
 
 [resource]
 script = ExtResource("1")
@@ -11,3 +12,4 @@ description = "Fire rate +30%."
 multipliers = Dictionary[StringName, float]({&"fire_interval": 0.769})
 badge = "OC"
 badge_colour = Color(0.298039216, 0.447058824, 0.48627451, 1)
+icon = ExtResource("icon")

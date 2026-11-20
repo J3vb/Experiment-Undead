@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="SerumData" format=3]
 
 [ext_resource type="Script" path="res://systems/serums/serum_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/hud/serum_second_wind.svg" id="icon"]
 
 [resource]
 script = ExtResource("1")
@@ -10,3 +11,4 @@ cost = 1500
 description = "Get back up once when you go down. The dispenser runs dry after 3."
 badge = "SW"
 badge_colour = Color(0.466666667, 0.411764706, 0.317647059, 1)
+icon = ExtResource("icon")

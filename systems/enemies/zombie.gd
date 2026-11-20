@@ -24,7 +24,15 @@ var frozen: bool = false:
 			return
 		frozen = value
 		if is_node_ready():
-			Frost.show_frozen(self, value)
+			_show_ice()
+## Stasis power-up: stands still, no attacks, no plank tearing. Synced; hits do not shatter it.
+var stasis: bool = false:
+	set(value):
+		if stasis == value:
+			return
+		stasis = value
+		if is_node_ready():
+			_show_ice()
 ## Seconds since the current state began.
 var state_time: float = 0.0
 var head_popped: bool = false
@@ -33,6 +41,9 @@ var target: Player
 var barrier: Barrier
 ## The Spawner's live zombies (shared array, not a copy); separation pushes off these.
 var neighbours: Array[Zombie] = []
+## Server only, not synced: a Blackout pack follower's leader, and the side (-1/+1) it splits to.
+var pack_leader: Zombie
+var pack_side: int = 0
 ## Window queue, plank tearing and vault (ZombieEntry).
 var entry: ZombieEntry = ZombieEntry.new()
 
@@ -66,6 +77,8 @@ func setup(
 ) -> void:
 	data = p_data
 	net_id = p_net_id
+	# Before the rig is ready (`visual` is @onready): every peer picks the same look from the synced id.
+	($Visual as ZombieRig).look = hash(net_id)
 	_max_health = data.max_health * health_mult
 	_speed = data.move_speed * speed_mult
 	if not data.uses_speed_mix:
@@ -93,12 +106,17 @@ func _ready() -> void:
 	_repath_timer = _rng.randf() * 0.25
 	visual.position.y = -1.8
 	_enter(State.SPAWNING)
-	if frozen:
-		Frost.show_frozen(self, true)
+	if frozen or stasis:
+		_show_ice()
+
+
+## One ice coat for a Cryo freeze or Stasis, so either ending keeps the other's ice.
+func _show_ice() -> void:
+	Frost.show_frozen(self, frozen or stasis)
 
 
 func _physics_process(delta: float) -> void:
-	if frozen and state != State.DEAD:
+	if (frozen or stasis) and state != State.DEAD:
 		velocity = Vector3.ZERO
 		return
 	state_time += delta
@@ -284,7 +302,7 @@ func _on_died(info: DamageInfo) -> void:
 
 func _process(delta: float) -> void:
 	voice.show_state(state)
-	if frozen and state != State.DEAD:
+	if (frozen or stasis) and state != State.DEAD:
 		Frost.initialize_pose(self)
 	else:
 		visual.follow(self, delta)

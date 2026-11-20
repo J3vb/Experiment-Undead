@@ -84,7 +84,7 @@ files: each version lives in its own folder and the launcher starts the one
 it wants.
 
 ```
-Experiment Undead/              the folder the player unzipped
+Fenlight/              the folder the player unzipped
   ExperimentUndead.exe + .pck   the "root" copy: starts in launcher mode
   versions/0.1.1/               full game, downloaded by the launcher
   versions/0.1.2/               newest; the launcher starts this one,
@@ -250,7 +250,7 @@ Autoloads, managers or base classes added: none.
 - A release only counts for the runner when it has a `*-server.zip` asset
   with a SHA-256 digest. A release made in the web UI has no zips for about
   10 minutes, so it is ignored until they arrive.
-- Release assets: unchanged names (`ExperimentUndead-<version>-windows.zip`,
+- Release assets: unchanged names (`Fenlight-<version>-windows.zip`,
   `-linux.zip`, `-server.zip`), each with the exe and pck at the zip's root.
   From v0.1.0 on, these names, that layout, the GitHub Releases API and the
   asset `digest` field are a contract: the launcher in every released version
@@ -300,7 +300,8 @@ Status per step (2026-11-20): step 1 built (PR #302), step 2 built (PR #301),
 step 3 built (PR #329), steps 4-6 built (PR #331). F-82
 ([separate-launcher.md](separate-launcher.md)) replaces the in-game launcher
 of steps 4-6, and step 9; F-82 step 3 removed the launcher screen,
-ReleaseFeed and VersionInstaller from the game. Steps 7 and 8 are not built yet.
+ReleaseFeed and VersionInstaller from the game. Step 7 is not built yet. Step 8:
+the game's drain mode is built with F-82 step 4b; the Docker entrypoint half is not.
 
 Steps 1, 2, 4 and 7 do not depend on each other. Steps 1-5 must merge before
 Release v0.1.0 (F-11): whatever handshake, save layout and launcher v0.1.0

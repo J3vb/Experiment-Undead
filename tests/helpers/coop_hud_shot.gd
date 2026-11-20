@@ -50,8 +50,7 @@ func _run() -> void:
 	player.weapons.give(Content.weapon(&"pistol_service"))
 	Events.player_health_changed.emit(player, 75.0, 100.0)
 	Events.points_changed.emit(player, 450, 0)
-	hud.round_label.text = "4"
-	hud.round_label.modulate = Hud.BLOOD_RED
+	hud.round_counter.show_round(4)
 	player.revive.progress = 0.6
 	for index: int in 8:
 		await get_tree().process_frame

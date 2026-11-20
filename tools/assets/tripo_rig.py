@@ -28,6 +28,8 @@ MIXAMO = {
 SIDES = {"L": "Left", "R": "Right"}
 EYE_HEIGHT = 1.682
 EYE_FRONT = 0.115
+# HeadCenter sits 8 cm behind and just under the Eyes, where the old code-built zombies had it.
+HEAD_CENTER_BEHIND_EYES = (0.0, 0.08, -0.005)
 # Our player body's rest thumb, measured off player.glb: up and out along the arm's side, 31 degrees forward.
 THUMB_OUT = 0.86
 THUMB_FORWARD = 0.51
@@ -52,7 +54,7 @@ def _targets() -> dict:
     return targets
 
 
-def _aim(arm, pbone, world_dir: Vector) -> None:
+def aim(arm, pbone, world_dir: Vector) -> None:
     """Turns a pose bone about its head so it points along `world_dir`."""
     to_arm = arm.matrix_world.to_3x3().inverted()
     current = pbone.matrix.to_3x3() @ Vector((0.0, 1.0, 0.0))
@@ -118,7 +120,7 @@ def a_pose(arm, meshes: list) -> None:
         for part in ("arm", "forearm"):
             pbone = bones.get(f"{word.lower()}{part}")
             if pbone is not None:
-                _aim(arm, pbone, direction)
+                aim(arm, pbone, direction)
         _turn_thumb_up(arm, bones, word.lower(), direction)
         _curl_fingers(arm, bones, word.lower(), direction)
     for obj in meshes:
@@ -226,8 +228,19 @@ def keep_source_weights(low, arm) -> bool:
     return all(merged)
 
 
-def rig(low, source_armature, placed: Matrix, clips: str = "player") -> list:
-    """Skeleton, skinned mesh, Eyes and clips ("player" or "keeper"); returns the objects to export."""
+def head_center_marker(arm, eyes) -> object:
+    """The `HeadCenter` empty ZombieRig hangs the head hit zone on: on the head bone, behind the eyes."""
+    center = bpy.data.objects.new("HeadCenter", None)
+    bpy.context.collection.objects.link(center)
+    center.parent, center.parent_type, center.parent_bone = arm, "BONE", "head"
+    bpy.context.view_layer.update()
+    center.matrix_world = Matrix.Translation(eyes.matrix_world.translation + Vector(HEAD_CENTER_BEHIND_EYES))
+    return center
+
+
+def rig(low, source_armature, placed: Matrix, clips: str | None = "player") -> list:
+    """Skeleton, skinned mesh, Eyes and clips ("player", "keeper" or None for zombies, which ZombieRig poses in
+    code); returns [armature, mesh, Eyes]."""
     import npc_clips
     import player_clips
 
@@ -243,5 +256,6 @@ def rig(low, source_armature, placed: Matrix, clips: str = "player") -> list:
         character_rig.bind(low, arm, blend=0.08)
     low.parent = arm
     eyes = eyes_marker(arm, low)
-    {"player": player_clips, "keeper": npc_clips}[clips].build_clips(arm)
+    if clips:
+        {"player": player_clips, "keeper": npc_clips}[clips].build_clips(arm)
     return [arm, low, eyes]

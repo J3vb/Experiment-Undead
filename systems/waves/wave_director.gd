@@ -6,11 +6,15 @@ class_name WaveDirector
 extends Node
 
 enum Phase { IDLE, INTERMISSION, SPAWNING, CLEARING }
-enum Message { STARTED, ENDED, INTERMISSION }
+enum Message { STARTED, ENDED, INTERMISSION, BLACKOUT }
 
 ## The last LAST_FEW zombies of a round sprint after LAST_FEW_TIME seconds (zombie-ai.md).
 const LAST_FEW: int = 2
 const LAST_FEW_TIME: float = 30.0
+## Blackout rounds are rolled this far ahead once per match.
+const BLACKOUT_ROLL_ROUNDS: int = 500
+## A pack waiting this long for room under the alive cap is logged.
+const PACK_WAIT_WARN: float = 10.0
 
 @export var rules: WaveRules
 @export var spawner: Spawner
@@ -19,9 +23,17 @@ var phase: Phase = Phase.IDLE
 var round_number: int = 0
 var to_spawn: int = 0
 var total_kills: int = 0
+## The lights are out (a Blackout round). The server decides; every peer gets it with each round message.
+var blackout: bool = false
+## Server: this round is a scheduled Blackout (Glower packs, Resupply reward), whatever the debug lights say.
+var blackout_round: bool = false
 var session: GameSession
 var _timer: float = 0.0
 var _last_few_time: float = 0.0
+## Server: this match's Blackout rounds, rolled from the session RNG.
+var _blackouts: PackedInt32Array = PackedInt32Array()
+var _pack_size: int = 0
+var _pack_wait: float = 0.0
 
 
 func _ready() -> void:
@@ -35,6 +47,7 @@ func start() -> void:
 	if not Net.is_authority():
 		return
 	round_number = 0
+	_blackouts = rules.roll_blackouts(session.rng, BLACKOUT_ROLL_ROUNDS)
 	_begin_intermission(rules.first_round_delay)
 
 
@@ -48,6 +61,24 @@ func skip_to_round(n: int) -> void:
 	_begin_round()
 
 
+## Server: turns the lights out or back on for every peer.
+func set_blackout(on: bool) -> void:
+	if not multiplayer.is_server():
+		return
+	_apply_blackout(on)
+	_relay(Message.BLACKOUT, 0.0)
+
+
+func _apply_blackout(on: bool) -> void:
+	if on == blackout:
+		return
+	blackout = on
+	if on:
+		Events.blackout_started.emit(round_number)
+	else:
+		Events.blackout_ended.emit(round_number)
+
+
 func _physics_process(delta: float) -> void:
 	if phase == Phase.IDLE or not _runs_loop():
 		return
@@ -57,16 +88,42 @@ func _physics_process(delta: float) -> void:
 			if _timer <= 0.0:
 				_begin_round()
 		Phase.SPAWNING:
-			_timer -= delta
-			if _timer <= 0.0 and spawner.alive_count() < rules.get_max_alive(_player_count()):
-				_timer = rules.get_spawn_interval(round_number)
-				spawner.spawn(rules.pick_enemy(round_number, session.rng), round_number, rules)
-				to_spawn -= 1
-				if to_spawn <= 0:
-					phase = Phase.CLEARING
-					_check_round_end()
+			_tick_spawning(delta)
 		Phase.CLEARING:
 			_tick_last_few(delta)
+
+
+func _tick_spawning(delta: float) -> void:
+	_timer -= delta
+	if _timer <= 0.0:
+		if blackout_round:
+			_spawn_pack(delta)
+		elif spawner.alive_count() < rules.get_max_alive(_player_count()):
+			_timer = rules.get_spawn_interval(round_number)
+			spawner.spawn(rules.pick_enemy(round_number, session.rng), round_number, rules)
+			to_spawn -= 1
+	if to_spawn <= 0:
+		phase = Phase.CLEARING
+		_check_round_end()
+
+
+## Blackout: rolls a pack of pack_min..pack_max (capped by what is left and the alive cap) and spawns it at one
+## point once the whole pack fits under the alive cap; the next pack waits the spawn interval times the pack size.
+func _spawn_pack(delta: float) -> void:
+	if _pack_size == 0:
+		var cap: int = mini(to_spawn, rules.get_max_alive(_player_count()))
+		_pack_size = mini(session.rng.randi_range(rules.pack_min, rules.pack_max), cap)
+		_pack_wait = 0.0
+	if spawner.alive_count() + _pack_size > rules.get_max_alive(_player_count()):
+		var before: float = _pack_wait
+		_pack_wait += delta
+		if before < PACK_WAIT_WARN and _pack_wait >= PACK_WAIT_WARN:
+			Log.warn(&"waves", &"blackout_pack_waiting", {"round": round_number, "pack": _pack_size})
+		return
+	spawner.spawn_pack(rules.blackout_enemy, _pack_size, round_number, rules)
+	to_spawn -= _pack_size
+	_timer = rules.get_spawn_interval(round_number) * _pack_size
+	_pack_size = 0
 
 
 ## Counts time while only the last few zombies are left, then hurries them once.
@@ -90,7 +147,15 @@ func _begin_intermission(duration: float) -> void:
 
 func _begin_round() -> void:
 	round_number += 1
-	to_spawn = rules.get_enemy_count(round_number, _player_count())
+	if _blackouts.is_empty():
+		_blackouts = rules.roll_blackouts(session.rng, BLACKOUT_ROLL_ROUNDS)
+	blackout_round = round_number in _blackouts
+	_apply_blackout(blackout_round)
+	if blackout_round:
+		to_spawn = rules.get_blackout_count(round_number, _player_count())
+	else:
+		to_spawn = rules.get_enemy_count(round_number, _player_count())
+	_pack_size = 0
 	_last_few_time = 0.0
 	_timer = 0.5
 	phase = Phase.SPAWNING
@@ -108,6 +173,7 @@ func _check_round_end() -> void:
 	if phase != Phase.CLEARING or spawner.alive_count() > 0:
 		return
 	Events.round_ended.emit(round_number)
+	_apply_blackout(false)
 	_relay(Message.ENDED, 0.0)
 	_begin_intermission(rules.intermission_time)
 
@@ -118,14 +184,16 @@ func _player_count() -> int:
 
 func _relay(kind: Message, value: float) -> void:
 	if is_inside_tree() and _runs_loop() and not multiplayer.get_peers().is_empty():
-		_receive_round.rpc(kind, round_number, value)
+		_receive_round.rpc(kind, round_number, value, blackout)
 
 
 @rpc("authority", "call_remote", "reliable")
-func _receive_round(kind: int, number: int, value: float) -> void:
+func _receive_round(kind: int, number: int, value: float, server_blackout: bool) -> void:
 	if not _from_server():
 		return
 	round_number = number
+	if kind != Message.ENDED:
+		_apply_blackout(server_blackout)
 	match kind:
 		Message.STARTED:
 			phase = Phase.SPAWNING
@@ -133,6 +201,7 @@ func _receive_round(kind: int, number: int, value: float) -> void:
 		Message.ENDED:
 			phase = Phase.CLEARING
 			Events.round_ended.emit(number)
+			_apply_blackout(server_blackout)
 		Message.INTERMISSION:
 			phase = Phase.INTERMISSION
 			Events.intermission_started.emit(number + 1, value)
@@ -147,16 +216,18 @@ func _ask_round_state() -> void:
 @rpc("any_peer", "call_remote", "reliable")
 func _request_round_state() -> void:
 	if multiplayer.is_server():
-		_receive_round_state.rpc_id(multiplayer.get_remote_sender_id(), phase, round_number, maxf(_timer, 0.0))
+		var sender: int = multiplayer.get_remote_sender_id()
+		_receive_round_state.rpc_id(sender, phase, round_number, maxf(_timer, 0.0), blackout)
 
 
 ## Late joiner: catch the HUD and music up with the round in progress.
 @rpc("authority", "call_remote", "reliable")
-func _receive_round_state(server_phase: int, number: int, time_left: float) -> void:
+func _receive_round_state(server_phase: int, number: int, time_left: float, server_blackout: bool) -> void:
 	if not _from_server():
 		return
 	phase = server_phase as Phase
 	round_number = number
+	_apply_blackout(server_blackout)
 	if phase == Phase.INTERMISSION:
 		Events.intermission_started.emit(number + 1, time_left)
 	elif phase != Phase.IDLE:

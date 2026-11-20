@@ -41,30 +41,30 @@ Tags with a dash (`v0.2.0-rc.1`) become pre-releases and do not move `latest`.
   exe has no launcher screen any more: started by hand, it opens the main menu.
 - **Restart to update:** "your game is older" offers a button only when the separate
   launcher started the game (`--launcher-exe=<path>`). It starts the launcher, which updates.
-- **Frozen from v0.1.0 (the launcher depends on them):** asset names
-  `ExperimentUndead-<version>-windows.zip`, `-linux.zip`, `-server.zip`; zip root holds
-  the exe and its pck; tags `vX.Y.Z` and `vX.Y.Z-test.N`; GitHub's `digest` field.
+- **Frozen from v0.1.0 (the launcher depends on them):** asset names end in
+  `-windows.zip`, `-linux.zip`, `-server.zip` (today `Fenlight-<version>-windows.zip`; before
+  the rename they started `ExperimentUndead-`, and the launcher only reads the end); zip root
+  holds `ExperimentUndead.exe` / `.x86_64` and its pck (file names kept through the rename); tags `vX.Y.Z` and `vX.Y.Z-test.N`; GitHub's `digest` field.
 - **Cut a test build:** tag `v0.1.0-test.1` on main and push it. Save version bumps go to
   test first. A bad release is fixed by releasing a newer one (roll forward), never by
   deleting the old one.
 - Main builds count up from the last **stable** tag (`stamp_version.sh` ignores test tags).
-- **Host a server** still lives in the game's `systems/launcher/server_host.gd` until F-82
-  step 4 moves it into the separate launcher.
+- **Host a server** is a panel in the separate launcher (next section).
 
 ## The separate launcher (F-82)
 
 The launcher is its own program in `launcher/` (Tauri 2, ADR 0018). The game has no
 launcher screen of its own (removed in F-82 step 3).
 
-- **Install:** download `ExperimentUndead-Setup-<version>.exe` from Releases and run it.
-  It installs per user (no admin) to `%LOCALAPPDATA%\Experiment Undead Launcher\`, with a
+- **Install:** download `Fenlight-Setup-<version>.exe` from Releases and run it.
+  It installs per user (no admin) to `%LOCALAPPDATA%\Fenlight Launcher\`, with a
   Start menu and desktop shortcut and an uninstall entry. Windows SmartScreen warns once
   (the exe is not code-signed): **More info**, **Run anyway**.
 - **Game files:** the launcher installs the game into
   `%LOCALAPPDATA%\com.experimentundead.launcher\game\versions\<version>\` (SHA-256 checked,
   the 2 newest kept). Its settings (`launcher.json`) and log (`launcher.log`) sit in that
   same folder. Uninstalling with "Delete the application data" ticked removes the game too.
-- **Launcher updates:** each release also carries `ExperimentUndead-Setup-<version>.exe.sig`
+- **Launcher updates:** each release also carries `Fenlight-Setup-<version>.exe.sig`
   and `latest.json`. On start the launcher reads `latest.json` from the newest release on its
   channel; when it is newer, it downloads the setup exe, checks its signature against the
   public key built into the launcher, installs it quietly and restarts.
@@ -72,7 +72,25 @@ launcher screen of its own (removed in F-82 step 3).
   password). Without it a release still gets the setup exe but no `.sig` or `latest.json`,
   so installed launchers do not update to it. Losing the key means every player reinstalls
   once from a new setup exe built with a new key; keep a copy in a password manager.
-- **Frozen from v0.1.0:** `ExperimentUndead-Setup-<version>.exe`, its `.sig`, `latest.json`.
+- **Host a server:** the launcher's Host a server panel runs the newest installed game with
+  `--headless -- --server --port=<p> --max-players=<n> --stop-file=<f> --drain-file=<d>` (port and player
+  limit saved in `launcher.json`). Its console output goes to `server\server.log` in the
+  launcher's data folder (Open logs). Stop writes the stop file; closing the launcher while
+  hosting asks, then stops the server. Players, the host too, join from Servers in the game;
+  Play keeps the launcher open while it hosts. The version a server runs is never deleted.
+- **Hosted servers update between matches:** while hosting, the launcher checks the channel
+  every 15 minutes and installs a newer release next to the running server, then writes the
+  drain file. The server finishes its match; in the hub it refuses new players ("restarting
+  for an update"), tells everyone there, and quits with exit code 3 (an empty server waits
+  12 s first). The launcher then starts the new version on the same port. Any other exit is
+  left alone. Players see a Restart to update button that opens the launcher.
+- **News:** the launcher's Play and News pages read `launcher/news/news.json` on `main`, so
+  posting news is a PR that adds an item there (a new, higher `id`; newest first is sorted
+  for you). Pictures must ship in `launcher/ui/news/`; a picture that an older launcher lacks
+  shows the Kessel Dam fallback. Offline, the launcher shows the copy it was built with.
+  Patches lists the release notes of every release on the player's channel.
+- **Frozen from v0.1.0:** `latest.json` and the `.sig` beside the setup exe it names
+  (`Fenlight-Setup-<version>.exe`; `ExperimentUndead-Setup-` before the rename).
 - **Version:** the release workflow stamps the tag's version into the launcher
   (`tools/ci/launcher_release.py stamp`); builds outside a release say `0.0.0`.
 
@@ -105,8 +123,8 @@ launcher screen of its own (removed in F-82 step 3).
 
 ## Crash logs
 
-- Logs: `%APPDATA%\Godot\app_userdata\Experiment Undead\logs` on Windows,
-  `~/.local/share/godot/app_userdata/Experiment Undead/logs` on Linux. Godot
+- Logs: `%APPDATA%\Godot\app_userdata\Fenlight\logs` on Windows,
+  `~/.local/share/godot/app_userdata/Fenlight/logs` on Linux. Godot
   keeps the last few runs. The first lines hold version, commit, OS and GPU.
 - If the game did not quit cleanly, the next start shows "Last session crashed"
   with the log folder in the HUD corner.

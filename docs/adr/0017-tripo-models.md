@@ -39,6 +39,11 @@ hand.
   Halcyon Labs Med Dispenser, Reforger, power switch and exfil hatch, and adds
   12 Tripo room props to its barest rooms (`assets/models/props/`, listed in
   `tools/assets/tripo/halcyon.json`).
+- The three v0.2 zombies (Glower, Stalker, Brute) are Tripo: `tripo_intake.py --kind zombie` puts them on our
+  skeleton with one `ZombieBaked` material ([blackout-glowers](../plans/blackout-glowers.md) step 1).
+- The Shambler (lab tech and guard looks), the Bloater and the Crawler (the lab tech with its legs cut,
+  `--crawler`) moved to Tripo through the same intake ([tripo-zombies](../plans/tripo-zombies.md), F-86); no
+  zombie is code-built any more.
 - Input images may come from Tripo's own text to image (`tripo_make.py`, about
   5 credits each); the person approves them before any model is paid for.
 

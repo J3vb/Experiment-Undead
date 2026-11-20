@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://systems/enemies/zombie_rig.gd" id="4"]
 [ext_resource type="PackedScene" path="res://assets/models/zombies/shambler.glb" id="5"]
 [ext_resource type="Script" path="res://systems/enemies/zombie_voice.gd" id="6"]
+[ext_resource type="PackedScene" path="res://assets/models/zombies/shambler_guard.glb" id="7"]
 
 [sub_resource type="CapsuleShape3D" id="capsule"]
 radius = 0.35
@@ -27,6 +28,7 @@ shape = SubResource("capsule")
 [node name="Visual" type="Node3D" parent="."]
 script = ExtResource("4")
 model = ExtResource("5")
+extra_models = Array[PackedScene]([ExtResource("7")])
 
 [node name="HitZones" type="Node3D" parent="."]
 

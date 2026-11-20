@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GearBaseData" format=3]
+
+[ext_resource type="Script" path="res://systems/loot/gear_base_data.gd" id="1"]
+
+[resource]
+resource_name = "Salvager Gloves (provisional)"
+script = ExtResource("1")
+id = &"gloves_tactical"
+slot = "gloves"
+display_name = "Salvager Gloves"
+visual_id = &"gloves_tactical"
+loot_tags = Array[StringName]([&"gloves"])
+unlock_level = 1
+drop_weight = 0.0

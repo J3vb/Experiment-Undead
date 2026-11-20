@@ -85,19 +85,49 @@ live state belongs in objects such as `WeaponInstance`.
 ## A power-up
 
 1. Create `content/power_ups/<id>.tres` using `systems/power_ups/power_up_data.gd`
-    (`PowerUpData`); set matching `id` and `display_name`.
-2. Add its effect to `match data.id` in `PowerUp.collect(player)` in
-    `systems/power_ups/power_up.gd`; data alone does not implement an effect.
-3. Keep collection behind `_on_body_entered()`'s living-player and
-    `Net.is_authority()` checks. Existing code emits `Events.power_up_collected` after applying the effect.
+    (`PowerUpData`); set matching `id`, `display_name`, its own `color`, and
+    `duration` (seconds, for a team-wide timer with a HUD ring), `team_points`
+    (paid to every player) and `deck_chance` (below 1 sits out some decks) as needed.
+2. A new kind of effect: append a value to `PowerUpData.Effect` (never reorder) and
+    handle it in `PowerUpDrops.on_collected()` (server only). Code that reaches into
+    other systems goes in a static function in `systems/power_ups/power_up_effects.gd`;
+    a timed effect asks `PowerUpDrops.is_active(effect)`. Data alone does not implement an effect.
+3. Collection stays server-side (`PowerUp._on_body_entered()`); ammo reaches the PC that
+    owns the guns, timers reach every peer through `Events.power_up_timer_started`.
 4. For normal drops, add it to `PowerUpDrops.power_ups` in
     `systems/game/game_session.tscn`. Scavenger's `ammo_pack` stays in the separate `ammo_pack` export.
-5. `PowerUpDrops` owns seeded kill rolls, the round cap and shuffled deck;
+5. `PowerUpDrops` owns seeded kill rolls (player kills only), the round cap and shuffled deck;
     lookup is `Content.get_item(&"power_ups", &"<id>") as PowerUpData`.
-6. Extend `tests/content/test_content.gd` and `tests/integration/test_power_ups.gd`
-    for the effect and deck; update assertions that assume every normal drop is Resupply.
+6. Test the effect in `tests/unit/test_power_up_effects.gd` (or `test_power_up_timers.gd`)
+    and from a client in `tests/unit/test_coop_power_ups.gd`.
 7. Done when content validates, the intended players receive the effect once,
     and drops still obey their round cap and pickup lifetime.
+
+## A throwable
+
+1. Create `content/throwables/<id>.tres` (`ThrowableData`, `systems/throwables/throwable_data.gd`),
+    `id` matching the filename; follow `frag.tres`. Numbers come from the balance sheet.
+2. Point `scene` at a RigidBody3D scene with `systems/throwables/grenade.gd` (copy `grenade.tscn`) and
+    the model built in `tools/assets/throwable_models.py` (`assets/models/throwables/`, light_baking 3).
+3. Throws, the server check (`GrenadeClaims`), the blast (`Blast`, `BlastEffect`), the HUD slot and the
+    first-person hold work from the data. Today the lethal slot always holds `GrenadeThrower.FRAG`;
+    choosing another throwable needs a small code change and a plan.
+4. Add a lore row (`design/lore.md`, "Grenades and field kit") and extend `tests/content/test_throwables.gd`.
+
+## A skill
+
+1. Stat skill: a new `content/skills/<id>.tres` (`SkillNodeData`) with `stat` set to a stack
+    stat name gear affixes use (`recoil_pct`, `hs_pct`, `reload_pct`, `max_health`, ...), `op`
+    (`increased` percent, `more` percent, `flat` units) and `per_rank` in the description's units
+    (`{v}` in the text). No code: `SkillEffects.add_to` folds it into the player's `StatBlock`.
+2. A stat nothing reads yet needs one `get_stat(&"<stat>")` where the rule lives (the server for
+    shared state, the owner for its own guns and movement), plus a cap in `content/loot/stat_caps.tres`
+    if the design gives one.
+3. Rule skill: add a value to `SkillNodeData.Rule`, set `rule` in the `.tres`, and check
+    `player.skill_rules.has(SkillNodeData.Rule.<NAME>)` where it applies. Never check the skill id.
+4. Ranks reach the server with the loadout (`LoadoutSync`); nothing else to sync.
+5. Extend `tests/content/test_skills.gd` and add a test in `tests/unit/test_skill_effects.gd`,
+    `test_skill_effects_play.gd` or `test_skill_rules.gd` that fails without the skill.
 
 ## A buyable or machine
 

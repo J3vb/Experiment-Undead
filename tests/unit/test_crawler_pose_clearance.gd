@@ -12,7 +12,7 @@ func _crawler() -> ZombieRig:
 
 
 func _hand_vertices(rig: ZombieRig, skeleton: Skeleton3D) -> Array[Dictionary]:
-	var anatomy: MeshInstance3D = rig.find_child("AnatomyDetails", true, false) as MeshInstance3D
+	var anatomy: MeshInstance3D = rig.find_child("Body", true, false) as MeshInstance3D
 	var result: Array[Dictionary] = []
 	for surface: int in anatomy.mesh.get_surface_count():
 		var arrays: Array = anatomy.mesh.surface_get_arrays(surface)

@@ -147,6 +147,22 @@ func test_open_pack_frees_the_mouse_and_closing_gives_it_back() -> void:
 	UI._root = root
 
 
+func test_co_op_pause_screen_keeps_the_pack_key_and_closes_the_pack() -> void:
+	overlay.set_open(true)
+	var layer: CanvasLayer = CanvasLayer.new()
+	autofree(layer)
+	UI._stack.append({"id": &"pause", "layer": layer, "focus": null})
+	overlay._input(_key(KEY_TAB))
+	assert_false(get_tree().paused, "co-op pause does not pause the tree")
+	assert_false(overlay.panel.visible, "a pushed screen closes the Pack")
+	overlay._input(_key(KEY_TAB))
+	assert_false(overlay.panel.visible, "the Pack key does not open the Pack behind Pause or Settings")
+	UI._stack.pop_back()
+	overlay._input(_key(KEY_TAB))
+	assert_true(overlay.panel.visible, "the Pack opens again once the screen is gone")
+	overlay.set_open(false)
+
+
 func test_pack_keys_are_input_actions_so_rebinding_moves_them() -> void:
 	var saved: Array[InputEvent] = InputMap.action_get_events(&"pack_toggle")
 	InputMap.action_erase_events(&"pack_toggle")
@@ -265,6 +281,7 @@ func test_equip_button_says_wear_for_gear_and_into_hands_for_guns() -> void:
 func test_character_view_has_one_box_per_gear_slot_above_the_pack_grid() -> void:
 	assert_true(overlay.character is PackCharacter)
 	assert_eq(overlay.character.slot_buttons.keys(), CharacterProfile.GEAR_SLOTS)
+	assert_eq(overlay.character.slot_buttons.size(), 7)
 	var box: Node = overlay.character.get_parent()
 	assert_lt(overlay.character.get_index(), overlay.slots[0].get_parent().get_index(), "Pack grid sits underneath")
 	assert_eq(box, overlay.slots[0].get_parent().get_parent())
@@ -305,3 +322,20 @@ func test_pack_slots_and_card_show_the_item_icon() -> void:
 	assert_eq(overlay.slots[0].icon, expected)
 	assert_eq(overlay.tooltip.icon.texture, expected)
 	assert_null(overlay.slots[1].icon, "an empty slot has no icon")
+
+
+func test_seven_gear_boxes_sit_in_two_columns() -> void:
+	var grid: GridContainer = overlay.character.get_node("%Slots") as GridContainer
+	assert_not_null(grid)
+	if grid == null:
+		return
+	assert_eq(grid.columns, 2)
+	assert_eq(grid.get_child_count(), 7)
+	overlay.set_open(true)
+	await wait_process_frames(2)
+	var lefts: Dictionary = {}
+	for button: Button in overlay.character.slot_buttons.values():
+		lefts[roundi(button.position.x)] = true
+	assert_eq(lefts.size(), 2, "boxes line up in two columns")
+	var boots: Button = overlay.character.slot_buttons[&"boots"]
+	assert_lt(boots.get_rect().end.y, overlay.character.size.y + 1.0, "the last box fits in the view")

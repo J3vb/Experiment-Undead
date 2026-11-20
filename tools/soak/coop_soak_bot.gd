@@ -1,6 +1,7 @@
 ## Co-op soak bot: joins the server as a real client, gives itself one strong gun on its own PC (guns are
 ## owner-side) and fights with legal claims only. It moves its own player near a chasing zombie (owners
 ## move themselves, ADR 0003) and claims one body hit per fire interval through the real HitClaims path.
+## Once a round it throws a frag at a far zombie through the real GrenadeClaims request.
 extends Node
 
 const RUN: GDScript = preload("res://tools/soak/coop_soak.gd")
@@ -19,6 +20,8 @@ var _result_path: String = ""
 var _round: int = 0
 var _claims: int = 0
 var _moves: int = 0
+var _throws: int = 0
+var _throw_round: int = -1
 var _cooldown: float = 0.0
 var _settle: float = 0.0
 var _done: bool = false
@@ -61,6 +64,7 @@ func _physics_process(delta: float) -> void:
 	if _player.global_position.distance_to(zombie.global_position) > minf(MOVE_AFTER, _gun.max_range * 0.5):
 		_move_near(zombie)
 	elif _cooldown <= 0.0 and _settle <= 0.0:
+		_maybe_throw(zombie)
 		_claim(zombie)
 
 
@@ -85,6 +89,18 @@ func _nearest_chaser() -> Zombie:
 			best = zombie
 			best_distance = distance
 	return best
+
+
+## One frag a round, lobbed at a zombie far enough not to hurt the bot.
+func _maybe_throw(zombie: Zombie) -> void:
+	var grenades: GrenadeThrower = _player.grenades
+	var gap: Vector3 = zombie.global_position - _player.global_position
+	if _throw_round == _round or grenades.count < 1 or gap.length() <= grenades.data.radius + 1.0:
+		return
+	_throw_round = _round
+	grenades.fuse_left = grenades.data.fuse
+	grenades.throw(gap.normalized() * grenades.data.throw_speed * 0.6 + Vector3.UP * 3.0)
+	_throws += 1
 
 
 ## Steps back along the zombie's own path, which is walkable floor.
@@ -135,6 +151,7 @@ func _finish(lost: bool = false) -> void:
 func _write() -> void:
 	var data: Dictionary = {"role": "bot", "done": _done, "round": _round, "claims": _claims, "moves": _moves}
 	data["joined"] = _player != null
+	data["throws"] = _throws
 	data["lost_server"] = _lost
 	data["net_id"] = _player.net_id if _player else 0
 	data["points"] = _player.wallet.points if _player else 0

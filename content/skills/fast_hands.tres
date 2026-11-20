@@ -13,5 +13,6 @@ column = 1
 max_ranks = 3
 requires = Array[StringName]([])
 branch_points_needed = 0
-stat = &"reload_time"
+stat = &"reload_pct"
 per_rank = 5.0
+op = "increased"

@@ -113,3 +113,53 @@ fn only_the_newest_folders_stay() {
     assert_eq!(installer.installed().len(), KEEP);
     assert!(versions.join("notes").exists());
 }
+
+#[test]
+fn installing_keeps_the_version_a_server_runs() {
+    let dir = common::temp_dir("in-use");
+    let mut installer = Installer::new(dir.join("versions"));
+    for version in ["0.1.0", "0.1.1"] {
+        std::fs::create_dir_all(installer.versions_dir.join(version)).unwrap();
+    }
+    installer.in_use = vec!["0.1.0".to_string()];
+    let zip_path = dir.join("game.zip");
+    std::fs::write(&zip_path, common::game_zip(game_exe_name())).unwrap();
+    let digest = sha256_file(&zip_path).unwrap();
+    installer.install_zip(&zip_path, &digest, "0.1.2").expect("installed");
+    assert_eq!(installer.installed(), vec!["0.1.2", "0.1.1", "0.1.0"]);
+}
+
+#[test]
+fn size_counts_every_version_and_free_space_is_known() {
+    let dir = common::temp_dir("size");
+    let installer = Installer::new(dir.join("versions"));
+    assert_eq!(installer.size(), 0);
+    assert!(
+        installer.free_space() > 0,
+        "free space comes from the nearest existing folder"
+    );
+    std::fs::create_dir_all(dir.join("versions/0.1.0/data")).unwrap();
+    std::fs::write(dir.join("versions/0.1.0").join(game_exe_name()), [0u8; 300]).unwrap();
+    std::fs::write(dir.join("versions/0.1.0/data/game.pck"), [0u8; 700]).unwrap();
+    std::fs::create_dir_all(dir.join("versions/0.2.0")).unwrap();
+    std::fs::write(dir.join("versions/0.2.0").join(game_exe_name()), [0u8; 24]).unwrap();
+    assert_eq!(installer.size(), 1024);
+}
+
+#[test]
+fn remove_and_remove_all_skip_versions_in_use() {
+    let dir = common::temp_dir("remove");
+    let mut installer = Installer::new(dir.join("versions"));
+    for version in ["0.1.0", "0.2.0", "0.3.0"] {
+        std::fs::create_dir_all(dir.join("versions").join(version)).unwrap();
+    }
+    installer.remove("0.3.0").unwrap();
+    assert_eq!(installer.installed(), vec!["0.2.0", "0.1.0"]);
+    assert!(installer.remove("../escape").is_err());
+    installer.in_use.push("0.1.0".into());
+    assert!(installer.remove_all().is_err(), "a hosted server's version stays");
+    assert_eq!(installer.installed(), vec!["0.1.0"]);
+    installer.in_use.clear();
+    installer.remove_all().unwrap();
+    assert!(installer.installed().is_empty());
+}

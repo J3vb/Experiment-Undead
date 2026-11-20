@@ -3,7 +3,7 @@ name = "launcher-core"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Release feed, version compare and game installer for the Experiment Undead launcher"
+description = "Release feed, version compare and game installer for the Fenlight launcher"
 
 [dependencies]
 reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls", "json"] }
@@ -11,3 +11,4 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"
 zip = { version = "2", default-features = false, features = ["deflate"] }
+fs4 = "1"

@@ -15,3 +15,4 @@ requires = Array[StringName]([])
 branch_points_needed = 0
 stat = &"power_up_duration"
 per_rank = 3.0
+op = "flat"

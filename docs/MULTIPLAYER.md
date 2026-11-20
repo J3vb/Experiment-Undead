@@ -69,7 +69,8 @@ server (ADR 0004). `Net.is_authority()` is only for code that has no node
 multiplayer in the game, so the second half adds nothing.
 
 **2. A client asks the server** (reference: `InteractionSync.request` and
-`request_interact`). A public `request_x()` runs the change directly when
+`request_interact`; `GrenadeClaims.request_throw` also shows the owner a
+cosmetic copy at once and relays the throw and blast, pattern 6). A public `request_x()` runs the change directly when
 this peer is the server, and sends `request_x_on_server.rpc_id(1, ...)` from
 a client. The handler is `@rpc("any_peer", "call_remote", "reliable")` and
 keeps this order:
@@ -219,11 +220,15 @@ P7 ends with the 4-player play-test to round 20 (F-43, issue #127).
   then `deploy(place)`. Every peer gets `Events.deploy_vote_changed`; late
   joiners get the running vote once.
 - Changing place: the server's `Net.change_place()` tells every client to go
-  (`_go_to_place`) and keeps their connections until they leave; those
-  "leaving" peers get no player. Clients load the place and join the same
-  server again; the planned disconnect is not a lost connection. The
-  dedicated server swaps its session in one call; a listen host keeps its port
-  open. The handshake reply carries the server's place, so a client that
+  (`_go_to_place`); those "leaving" peers get no player. A client closes its
+  connection as soon as the order arrives, so it stops sending to the old
+  place, then loads the new one and joins the same server again; the planned
+  disconnect is not a lost connection. The server keeps the old session until
+  every leaving client has disconnected (`Net.place_change`, dropped after
+  `Net.CONNECT_TIMEOUT`), because packets sent before the order still name the
+  old place's nodes; hellos that arrive meanwhile wait for the new session's
+  handshake. Then the dedicated server swaps its session in one call, and a
+  listen host follows (`change_place(place, true)`) and keeps its port open. The handshake reply carries the server's place, so a client that
   loaded another place switches before it spawns (a mid-match joiner lands in
   the running match).
 - Back to the hub: a dedicated server returns 1 s after game over and 12 s

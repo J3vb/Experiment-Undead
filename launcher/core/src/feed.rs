@@ -7,11 +7,11 @@ use serde::Serialize;
 use serde_json::Value;
 use std::time::Duration;
 
-pub const API_URL: &str = "https://api.github.com/repos/J3vb/Experiment-Undead/releases";
+pub const API_URL: &str = "https://api.github.com/repos/J3vb/Fenlight/releases";
 pub const WINDOWS_SUFFIX: &str = "-windows.zip";
 pub const LINUX_SUFFIX: &str = "-linux.zip";
 const DIGEST_PREFIX: &str = "sha256:";
-pub const USER_AGENT: &str = "ExperimentUndead-launcher";
+pub const USER_AGENT: &str = "Fenlight-launcher";
 /// The launcher's update manifest, attached to each release next to the setup exe.
 pub const LAUNCHER_MANIFEST: &str = "latest.json";
 
@@ -30,6 +30,31 @@ pub struct Release {
     pub digest: String,
     pub size: u64,
     pub page: String,
+}
+
+/// One release's notes for the Patches page.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Patch {
+    pub version: String,
+    /// `YYYY-MM-DD`, empty when GitHub gave none.
+    pub date: String,
+    pub notes: String,
+}
+
+/// Notes of every release the channel may see, newest first.
+pub fn patches(releases: &[Value], channel: Channel) -> Vec<Patch> {
+    let mut found: Vec<Patch> = releases
+        .iter()
+        .filter_map(|entry| {
+            Some(Patch {
+                version: release_version(entry, channel)?,
+                date: entry["published_at"].as_str().unwrap_or("").chars().take(10).collect(),
+                notes: entry["body"].as_str().unwrap_or("").to_string(),
+            })
+        })
+        .collect();
+    found.sort_by(|a, b| version::compare(&b.version, &a.version));
+    found
 }
 
 /// The zip name ending for this platform's game build.

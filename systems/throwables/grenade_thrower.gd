@@ -6,6 +6,10 @@ extends Node
 const FRAG: ThrowableData = preload("res://content/throwables/frag.tres")
 ## The grenade leaves the hand this far in front of the eyes.
 const HAND_DISTANCE: float = 0.5
+## While cooking, a tick sounds this often.
+const COOK_TICK: float = 0.5
+const PIN_SOUND: AudioStream = preload("res://assets/audio/grenade_pin.wav")
+const TICK_SOUND: AudioStream = preload("res://assets/audio/grenade_tick.wav")
 
 var data: ThrowableData = FRAG
 var count: int = 0
@@ -13,6 +17,8 @@ var cooking: bool = false
 var fuse_left: float = 0.0
 var _player: Player
 var _was_held: bool = false
+var _next_tick: float = 0.0
+var _audio: AudioStreamPlayer
 
 
 func _init() -> void:
@@ -33,7 +39,9 @@ func tick(frame: InputFrame, delta: float) -> void:
 	elif held and not _was_held and can_start():
 		cooking = true
 		fuse_left = data.fuse
+		_next_tick = data.fuse - COOK_TICK
 		_player.weapons.lower(data.recover_time)
+		play_sound(PIN_SOUND)
 	_was_held = held
 
 
@@ -42,10 +50,10 @@ func can_act() -> bool:
 	return _player.input_enabled and _player.is_alive() and not _player.is_downed and not (session and session.is_over)
 
 
-## Nobody throws in co-op until the request path exists (docs/plans/frag-grenades.md step 2).
+## A client checks its synced count; the server checks again (GrenadeClaims).
 func can_start() -> bool:
 	var in_hub: bool = _player.session != null and _player.session.is_hub
-	return count > 0 and not in_hub and can_act() and not Net.is_coop(multiplayer)
+	return count > 0 and not in_hub and can_act()
 
 
 func _cook(held: bool, delta: float) -> void:
@@ -56,6 +64,21 @@ func _cook(held: bool, delta: float) -> void:
 	_player.weapons.lower(data.recover_time)
 	if fuse_left <= 0.0 or not held:
 		throw(throw_velocity())
+	elif fuse_left <= _next_tick:
+		_next_tick -= COOK_TICK
+		play_sound(TICK_SOUND)
+
+
+## The owner's own grenade sounds (pin, cook ticks); nothing on a dedicated server.
+func play_sound(stream: AudioStream) -> void:
+	if Build.is_server():
+		return
+	if _audio == null:
+		_audio = AudioStreamPlayer.new()
+		_audio.bus = &"Weapons"
+		add_child(_audio)
+	_audio.stream = stream
+	_audio.play()
 
 
 func throw_velocity() -> Vector3:
@@ -65,16 +88,21 @@ func throw_velocity() -> Vector3:
 
 
 ## Throws with the fuse that is left; a zero velocity drops it where the player stands.
-func throw(velocity: Vector3) -> Grenade:
+## In a session the throw goes through GrenadeClaims, which owns the count; alone it is direct.
+func throw(velocity: Vector3) -> void:
 	cooking = false
-	count = maxi(count - 1, 0)
 	_player.weapons.lower(data.recover_time)
-	var parent: Node = _player.session if _player.session else _player.get_parent()
-	var grenade: Grenade = Grenade.spawn(
-		parent, data, _player, hand_position(velocity == Vector3.ZERO), velocity, fuse_left
-	)
-	_publish()
-	return grenade
+	var origin: Vector3 = hand_position(velocity == Vector3.ZERO)
+	var claims: GrenadeClaims = _claims()
+	if claims:
+		claims.request_throw(_player, origin, velocity, fuse_left)
+		return
+	count = maxi(count - 1, 0)
+	Grenade.spawn(_player.get_parent(), data, _player, origin, velocity, fuse_left)
+
+
+func _claims() -> GrenadeClaims:
+	return _player.session.get_node_or_null(^"GrenadeClaims") as GrenadeClaims if _player.session else null
 
 
 ## In front of the eyes, pulled back if a wall is closer than that.

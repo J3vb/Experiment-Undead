@@ -51,6 +51,9 @@ var focus: Interactable
 ## Serums bought this run. Their multipliers are read through get_stat().
 var serums: Array[SerumData] = []
 var stats: StatBlock = StatBlock.new()
+## Skill ranks (owner's save; server copy from LoadoutSync), folded into stats by equip_gear (a respec too).
+var skill_ranks: Dictionary[StringName, int] = {}
+var skill_rules: Dictionary[int, bool] = {}
 var moves: PlayerMoves = PlayerMoves.new()
 var mantle: PlayerMantle = PlayerMantle.new()
 var interaction: PlayerInteract = PlayerInteract.new()
@@ -130,8 +133,9 @@ func is_alive() -> bool:
 
 
 func take_damage(info: DamageInfo) -> void:
-	if multiplayer.is_server() and is_alive() and not (session and session.is_over):
-		health.take_damage(info)
+	var hit: DamageInfo = info.scaled(2.0 - get_stat(&"damage_reduction"))  # 1 + reduction, capped
+	if multiplayer.is_server() and is_alive() and not (session and session.is_over) and not revive.absorbs(hit):
+		health.take_damage(hit)
 
 
 ## Gear modifiers and the product of active Serum multipliers.
@@ -148,6 +152,8 @@ func equip_gear(items: Array[Dictionary], heal: bool = true) -> void:
 		var item: ItemInstance = ItemInstance.new(equipped)
 		for modifier: Modifier in item.stats.modifiers:
 			stats.add_modifier(modifier.stat, modifier.op, modifier.value, modifier.source)
+	SkillEffects.add_to(stats, skill_ranks)
+	skill_rules = SkillEffects.rules_for(skill_ranks)
 	_refresh_stats(heal)
 
 
@@ -160,7 +166,7 @@ func has_serum(id: StringName) -> bool:
 
 ## Down with Second Wind still waiting to get them up: the squad is not out yet.
 func can_self_revive() -> bool:
-	return is_downed and not is_dead and has_serum(&"second_wind")
+	return is_downed and not is_dead and (has_serum(&"second_wind") or revive.has_undying_charge())
 
 
 func add_serum(serum: SerumData) -> void:
@@ -288,13 +294,12 @@ func _move(delta: float, frame: InputFrame) -> void:
 		return
 	var jump: bool = input_enabled and frame.has(InputFrame.JUMP) and not is_crouching
 	velocity.y = moves.vertical(self, delta, jump, _gravity * gravity_multiplier)
-	var speed: float = sprint_speed if is_sprinting else walk_speed
+	var speed: float = sprint_speed * get_stat(&"sprint_speed") if is_sprinting else walk_speed
 	if is_crouching:
 		speed *= 0.2 if is_downed else crouch_speed_multiplier
 	speed *= lerpf(1.0, ads_speed_multiplier, weapons.get_ads_progress())
 	speed *= weapons.get_move_speed_multiplier()
 	speed *= get_stat(&"move_speed")
-
 	var wish: Vector3 = (transform.basis * Vector3(move_input.x, 0.0, move_input.y)).normalized() * speed
 	var horizontal: Vector3 = Vector3(velocity.x, 0.0, velocity.z)
 	var rate: float = air_accel
@@ -330,7 +335,7 @@ func _on_points_changed(total: int, delta: int) -> void:
 func _on_died(_info: DamageInfo) -> void:
 	if not multiplayer.is_server():
 		return
-	var second_wind: bool = has_serum(&"second_wind")
+	var second_wind: bool = has_serum(&"second_wind") or revive.has_undying_charge()
 	if state_sync.is_coop():
 		state_sync.down_player(second_wind)
 		return

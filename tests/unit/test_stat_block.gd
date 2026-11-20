@@ -67,7 +67,7 @@ func test_caps_clamp_all_sources_after_buckets() -> void:
 	stats.add_modifier(&"bonus_skill_ranks", "flat", 4.0, &"vest")
 	assert_almost_eq(stats.value(&"move_speed", 5.0), 5.75, 0.0001)
 	assert_eq(stats.value(&"leech", 0.0), 6.0)
-	assert_eq(stats.value(&"damage_reduction", 0.0), 0.3)
+	assert_almost_eq(stats.value(&"damage_reduction", 1.0), 1.3, 0.0001, "read as 1 + reduction")
 	assert_eq(stats.value(&"ability_cooldown_reduction", 0.0), 0.4)
 	assert_eq(stats.value(&"loot_luck", 0.0), 1.0)
 	assert_eq(stats.value(&"bonus_skill_ranks", 0.0), 3.0)
@@ -106,3 +106,14 @@ func test_external_multiplier_is_applied_before_flat_and_all_source_caps() -> vo
 	assert_eq(stats.value(&"health", 100.0, null, 2.0), 240.0)
 	stats.add_modifier(&"move_speed", "increased", 0.3, &"vest")
 	assert_almost_eq(stats.value(&"move_speed", 5.0, null, 0.9), 5.75, 0.0001)
+
+
+func test_five_ten_percent_damage_reduction_lines_cap_at_thirty_percent() -> void:
+	var stats: StatBlock = StatBlock.new()
+	for slot: StringName in [&"vest", &"backpack", &"boots", &"headgear", &"gloves"]:
+		stats.add_modifier(&"damage_reduction", "increased", 0.1, slot)
+	assert_almost_eq(stats.value(&"damage_reduction", 1.0) - 1.0, 0.3, 0.0001)
+	stats.remove_source(&"vest")
+	stats.remove_source(&"backpack")
+	stats.remove_source(&"boots")
+	assert_almost_eq(stats.value(&"damage_reduction", 1.0) - 1.0, 0.2, 0.0001, "under the cap it adds up")

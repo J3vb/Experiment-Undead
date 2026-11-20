@@ -109,3 +109,23 @@ func test_coop_points_wait_for_three_players() -> void:
 	assert_null(spawner._pick_marker(0.0), "2 players: still skipped")
 	players[2].add_to_group(&"players")
 	assert_same(spawner._pick_marker(0.0), point, "3 players: it can be picked")
+
+
+func test_pack_points_must_be_open_and_far_enough() -> void:
+	var spawner: Spawner = _spawner()
+	spawner.spawn_group = &"test_pack_spawn"
+	var near: ZombieSpawnPoint = ZombieSpawnPoint.new()
+	near.position = Vector3(2, 0, 0)
+	var far: ZombieSpawnPoint = ZombieSpawnPoint.new()
+	far.position = Vector3(40, 0, 0)
+	for point: ZombieSpawnPoint in [near, far]:
+		point.add_to_group(spawner.spawn_group)
+		add_child_autofree(point)
+	var player: Node3D = Node3D.new()
+	add_child_autofree(player)
+	player.add_to_group(&"players")
+	assert_same(spawner._pick_marker(12.0, true), far, "the far open point")
+	far.barrier = Barrier.new()
+	autofree(far.barrier)
+	assert_null(spawner._pick_marker(12.0, true), "a near open point is not used for a pack")
+	assert_same(spawner._pick_marker(12.0), far, "the normal pick takes the far window instead")

@@ -1,6 +1,6 @@
 # Plan: Skill effects
 
-Status: Approved
+Status: Done
 Roadmap: F-20 / issue #113
 Phase: P5
 Size: M
@@ -132,12 +132,11 @@ Autoloads, managers or base classes added: none. `SkillEffects` is a static
 helper next to `SkillTree` (same shape), not a service node.
 
 Files over 300 lines this plan grows: `systems/player/player.gd` (335).
-Step 1 first moves the Serum functions (`has_serum`, `add_serum`,
-`lose_serums`, `can_self_revive`) out of player.gd into
-`systems/player/revive.gd` (163 lines; Serums are lost and used when going
-down), so player.gd drops to about 310 before the skill fields, the skill fold
-and the Last Stand check go in. The skill fold itself lives in
-`SkillEffects.add_to`; Last Stand's state lives in Revive.
+Changed in step 1: moving the Serum functions out would touch 61 call sites
+for a few lines, so it was dropped. player.gd gets only the two skill fields
+and the skill fold (341 after step 1); later steps add one refit call and the
+Last Stand check (about 345, under 350). The skill logic lives in
+`SkillEffects`; Last Stand's state lives in Revive.
 
 ## Data
 
@@ -224,8 +223,7 @@ allocation.
 
 ### Step 1: Ranks into the stat stack, solo and co-op
 
-- Build: move the Serum functions from player.gd to revive.gd (callers
-  updated). `SkillNodeData.op` and `rule`. New `systems/progression/skill_effects.gd`:
+- Build: `SkillNodeData.op` and `rule`. New `systems/progression/skill_effects.gd`:
   `add_to(stats, ranks)`, `rules_for(ranks)`, `ranks_from(raw)`,
   `ranks_problem(ranks) -> String`. `Player.skill_ranks`; `equip_gear` adds
   skill modifiers (source `&"skill"`) after gear, so any rebuild (respec,
@@ -234,7 +232,7 @@ allocation.
   server checks and applies them; protocol bump. Fill every skill `.tres` with
   the table's stat and op, and the six rule skills with their rule. Add the 4 caps. Rewrite the DECISIONS "Skill tree"
   line. Roadmap row to Building.
-- Files: systems/progression/skill_node_data.gd, systems/progression/skill_effects.gd (new), content/skills/*.tres, content/loot/stat_caps.tres, systems/player/player.gd, systems/player/revive.gd, Serum callers (player_state_sync.gd, match_end.gd, med_dispenser.gd as found), systems/net/loadout_sync.gd, systems/game/game_session.gd, core/build.gd, tests/content/test_skills.gd, tests/content/test_loot_content.gd, docs/DECISIONS.md, docs/ROADMAP.md.
+- Files: systems/progression/skill_node_data.gd, systems/progression/skill_effects.gd (new), content/skills/*.tres, content/loot/stat_caps.tres, systems/player/player.gd, systems/net/loadout_sync.gd, systems/game/game_session.gd, core/build.gd, tests/content/test_skills.gd, tests/content/test_loot_content.gd, docs/DECISIONS.md, docs/ROADMAP.md.
 - Tests: new `tests/unit/test_skill_effects.gd`: for each of Quick Draw, Weak
   Spot, Fast Hands, Thick Skin, Second Breath, Lucky Find the stat the player
   reads changes by the table value per rank (Lucky Find through
@@ -339,12 +337,12 @@ allocation.
 
 ## Acceptance
 
-- [ ] Every skill in content/skills applies through the shared stat modifier stack (rule skills by id) - tests in `test_skill_effects.gd`
-- [ ] Each skill has a unit test on the stat or rule it changes
-- [ ] Respec (empty ranks) and a new loadout remove the effect - tested
-- [ ] A co-op client's ranks reach the server's copy and change server-side results - tested
-- [ ] Skills, gear and Serums stack and stop at the design caps - tested
-- [ ] Soak passes with no new warnings
+- [x] Every skill in content/skills applies through the shared stat modifier stack (rule skills by their `rule` value) - `tests/content/test_skills.gd`, `tests/unit/test_skill_effects.gd`
+- [x] Each skill has a unit test on the stat or rule it changes - `test_skill_effects.gd` (stats, gun fit), `test_skill_effects_play.gd` (Light Feet, Scrounger, Carpenter, Undying speed), `test_skill_rules.gd` (Last Stand, Undying, Bargain Hunter, Dead Center), `test_hit_claims.gd` (Execution Line), `test_specimen_vault.gd` (Bargain Hunter refund), `test_power_ups.gd` (Chain Supply). Overtime: `test_overtime_lengthens_the_collectors_timed_power_ups` (F-26's timers landed first, so step 5 wired it: the collector's seconds go on the team-wide timer). Gadgeteer and Sturdy: stat in the stack (`test_stat_only_for_later_features_still_sits_in_the_stack`); F-22 and F-24 read it.
+- [x] Respec (empty ranks) and a new loadout remove the effect - `test_respec_removes_every_skill_modifier`, `test_deep_pockets_raises_wall_gun_reserve_and_respec_puts_it_back`, `test_client_skill_ranks_reach_the_server_copy_and_respec_removes_them`
+- [x] A co-op client's ranks reach the server's copy and change server-side results - `test_gear_health_sync.gd`, `test_execution_line_from_a_client_kills_under_fifteen_percent_only`
+- [x] Skills, gear and Serums stack and stop at the design caps - `test_skills_stack_with_gear_and_stop_at_the_caps`, `test_serums_stack_on_top_of_the_caps`
+- [x] Soak passes with no new warnings - CI `soak` and `coop-soak` on the step PRs
 
 ## Risks
 

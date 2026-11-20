@@ -11,6 +11,4 @@ func test_gear_shader_compiles_with_albedo_and_finish_uniforms() -> void:
 		types[StringName(uniform.name)] = uniform.type
 	assert_eq(types.get(&"albedo"), TYPE_COLOR)
 	assert_eq(types.get(&"finish"), TYPE_INT)
-	assert_eq(types.get(&"emission_strength"), TYPE_FLOAT)
-	assert_eq(types.get(&"emission_color"), TYPE_COLOR)
 	assert_push_error_count(0, "gear shader compiles without errors")

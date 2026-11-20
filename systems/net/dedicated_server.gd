@@ -9,6 +9,9 @@ extends Node
 const RESULTS_GRACE: float = 1.0
 ## A squad changing place leaves and rejoins within this; only then is the server really empty.
 const EMPTY_GRACE: float = 12.0
+## Exit code of a drained server: whoever started it restarts it on the newer version.
+const EXIT_UPDATE: int = 3
+const CHECK_EVERY: float = 0.5
 
 ## Screens id of the first place. Tools and tests that need a match set it before super().
 ## After a match, or when the last player leaves one, the server goes back here.
@@ -19,6 +22,10 @@ var session: GameSession
 ## Godot does not catch SIGTERM, so the Docker entrypoint creates this file
 ## on "docker stop" and the server quits cleanly when it sees it.
 var stop_file: String = ""
+## Appears when a newer release is installed: finish the match, then quit with EXIT_UPDATE.
+var drain_file: String = ""
+var draining: bool = false
+var _empty_for: float = 0.0
 
 
 func _ready() -> void:
@@ -40,11 +47,12 @@ func _ready() -> void:
 	session = _make_session(start_place)
 	get_tree().root.add_child.call_deferred(session)
 	stop_file = read_string_setting("stop-file", "EU_STOP_FILE")
-	if stop_file != "":
+	drain_file = read_string_setting("drain-file", "EU_DRAIN_FILE")
+	if stop_file != "" or drain_file != "":
 		var timer: Timer = Timer.new()
-		timer.wait_time = 0.5
+		timer.wait_time = CHECK_EVERY
 		timer.autostart = true
-		timer.timeout.connect(_check_stop_file)
+		timer.timeout.connect(_check_files)
 		add_child(timer)
 	var info: Array = [port, max_players, Build.display_version(), Build.PROTOCOL_VERSION]
 	print("Server ready on UDP port %d (max %d players, %s, protocol %d)" % info)
@@ -79,14 +87,17 @@ func _swap_session(place: StringName) -> void:
 		get_tree().root.remove_child(old)
 		old.queue_free()
 	get_tree().root.add_child(session)
+	if multiplayer.get_peers().is_empty():
+		_return_later(&"empty", EMPTY_GRACE)
 
 
 func _on_game_over(_stats: Dictionary) -> void:
 	_return_later(&"game_over", RESULTS_GRACE)
 
 
+## While a place change waits for clients to leave, the swap checks for an empty server instead.
 func _on_peer_left(_peer_id: int) -> void:
-	if multiplayer.get_peers().is_empty():
+	if multiplayer.get_peers().is_empty() and Net.place_change.pending.is_empty():
 		_return_later(&"empty", EMPTY_GRACE)
 
 
@@ -125,7 +136,29 @@ static func read_string_setting(arg_name: String, env_name: String) -> String:
 	return OS.get_environment(env_name)
 
 
-func _check_stop_file() -> void:
-	if FileAccess.file_exists(stop_file):
+func _check_files() -> void:
+	if stop_file != "" and FileAccess.file_exists(stop_file):
 		print("Stop requested")
 		session.quit_game()
+		return
+	if not draining and drain_file != "" and FileAccess.file_exists(drain_file):
+		draining = true
+		Log.info(&"server", &"drain_started", {"place": String(Net.place), "players": multiplayer.get_peers().size()})
+	if draining and drain_step(CHECK_EVERY, multiplayer.get_peers().size()):
+		Log.info(&"server", &"update_restart", {"place": String(Net.place)})
+		Net.end_reason = "server_updating"
+		session.quit_game(EXIT_UPDATE)
+
+
+## While draining: a match plays on (rejoins still work); the hub refuses new players and
+## sends everyone off with the "updating" notice; an empty server waits EMPTY_GRACE (a squad
+## changing place looks empty for a moment). True when the server should quit with EXIT_UPDATE.
+func drain_step(delta: float, players: int) -> bool:
+	var in_hub: bool = Net.place == DeployVote.HUB
+	if is_instance_valid(session) and session.handshake:
+		session.handshake.draining = in_hub
+	if players > 0:
+		_empty_for = 0.0
+		return in_hub
+	_empty_for += delta
+	return _empty_for >= EMPTY_GRACE
