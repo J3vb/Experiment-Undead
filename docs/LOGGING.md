@@ -71,7 +71,7 @@ The server also prints every warning and error to stdout as
 | `player.body_clips_missing` | warn | The player model has no third-person clips, so teammates show a still body; rebuild `player.glb` |
 | `player.world_model_missing` | warn | A teammate holds a gun whose `WeaponData` has no `world_model`, so its hands are empty; set the field in the gun's `.tres` |
 | `vendor.vendor_clip_missing` | warn | A Lantern Post stall keeper's model has no clip named by its `VendorData.idle_clip`, so they stand in rest pose; re-export the keeper (`tools/assets/tripo/vendors.json`, `clips: keeper`) or fix the data |
-| `perf.long_frames` | warn | Frames over 50 ms in the last second (`count`, `worst_ms`, `draw_compiles`: shader pipelines compiled while drawing that second, `enemies`). Hitch at load is normal; in a round it is not. `draw_compiles` > 0 means a first-use shader stutter |
+| `perf.long_frames` | warn | Frames over 50 ms in the last second (`count`, `worst_ms`, `draw_compiles`: shader pipelines compiled while drawing that second, `all_compiles`: pipelines of any kind since the last line, `enemies`). Hitch at load is normal; in a round it is not. `draw_compiles` > 0 means a first-use shader stutter |
 | `perf.low_fps` | warn | Under 50 fps for 3 s in a row (windowed builds only), with a health snapshot |
 | `perf.health` | info | Every 30 s: fps, process/physics ms, memory, objects, nodes, orphan nodes, enemies, draw calls |
 | `perf.orphan_nodes_growing` | warn | Over 200 orphan nodes and still rising: nodes created and never freed |
@@ -127,6 +127,14 @@ The server also prints every warning and error to stdout as
 | `launcher.version_started` / `start_failed` | info / warn | Play started an installed version (`version`, `pid`) or could not (`exe`): a deleted or blocked versions folder |
 | `launcher.root_refreshed` / `root_refresh_failed` | info / warn | A started copy replaced the install folder's exe and pck (`version`, `tries`), or gave up after 15 s (`root`): the old copy was still running or the folder is read-only |
 | `launcher.server_started` / `server_stop_requested` / `server_exited` / `server_start_failed` | info / warn | The launcher's Host a server panel (`version`, `port`, `pid`, `exe`). A quick `server_exited` after start = port in use; read that server's own log |
+
+The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher.log` in its data folder (`%LOCALAPPDATA%\Experiment Undead\` on Windows): `{"t", "level", "event", "message"}`. The `launcher.*` lines above belong to the old built-in launcher and go away in F-82 step 3.
+
+| Event | Level | Meaning |
+|---|---|---|
+| `check_failed` | warn | The launcher could not read the GitHub Releases list (`message` has the reason; "GitHub answered 403" = rate limit, 60 per hour per address). It plays the newest installed version offline |
+| `installed` | info | A release is downloaded, checked and unpacked into `game/versions/<version>/` (`message` = version) |
+| `install_failed` | warn | A download failed, was cancelled, had the wrong SHA-256, or could not be unpacked (`message` says which). Nothing was installed |
 | `ui.unknown_screen` | warn | `UI.push` or `UI.replace` got an id with no `content/screens/<id>.tres`; `id`. Nothing opens |
 | `ui.pop_empty` | warn | `UI.pop()` with no screen open: a screen emitted `closed` twice or something popped a screen it did not push |
 | `ui.loading_failed` | warn | A root behind a loading screen failed its threaded load; `scene`. The router falls back to a plain scene change |

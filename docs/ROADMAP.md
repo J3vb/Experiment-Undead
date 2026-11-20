@@ -15,6 +15,9 @@ milestone gates come from `docs/design/game-design.md` (Build roadmap) and
 5. When a feature finishes, set its Status to Done in the same PR. New
    features get a new row in the right place, with the next free id.
 
+The game is in **Early Alpha** (shown in the main menu version label).
+v0.2 features may start before the v0.1.0 tag (the person's call, 2026-11-20): read F-11 in their Needs as F-10.
+
 Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 (may already be done, verify and close).
 
@@ -44,8 +47,8 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-16 | Game feel: camera punch, hitstop, downed and death screen | - | - | [ready](plans/game-feel-slice.md) | M | Done |
 | F-65 | Client and server updates: clear version refusals, saves safe across channels, a launcher that installs and updates the game and a server, self-updating Docker servers (steps 1-5 before F-11) | - | - | [ready](plans/client-server-updates.md) | L | Building |
 | F-09 | v0.1 performance check | #108 | F-01..F-07, F-12, F-13, F-16 | issue | S | Todo |
-| F-10 | First play-test (the person plays) | #109 | F-09 | issue | S | Todo |
-| F-82 | Separate launcher program (like Steam or Battle.net): installs and updates the game, updates itself, news and patch notes, hosts a server; replaces the launcher built into the game (F-65 steps 5-6, 9) | - | F-65 step 4 | [ready](plans/separate-launcher.md) | L | Ready |
+| F-10 | First play-test (the person plays) | #109 | F-09 | issue | S | Done (solo play-test 2026-11-19, fixes in F-84, F-85) |
+| F-82 | Separate launcher program (like Steam or Battle.net): installs and updates the game, updates itself, news and patch notes, hosts a server; replaces the launcher built into the game (F-65 steps 5-6, 9) | - | F-65 step 4 | [ready](plans/separate-launcher.md) | L | Building |
 | F-11 | Release v0.1.0 | #111 | F-10, F-65 steps 1-4, F-82 steps 1-4 | issue | S | Todo |
 | F-40 | Round state and power-ups in co-op (rest of #126 after F-02) | #126 | F-02 | [done](plans/coop-round-state-power-ups.md) | M | Done |
 | F-47 | A full co-op match: co-op soak, pause, squad cards, hub and deploy flow | #213 | F-40 | [plan](plans/coop-full-match.md) | L | Done |
@@ -67,19 +70,19 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-72 | The four starter guns to the concept art: worn black with tan and brass, Oriel marks, red dots, taped mags (rifle, Brenner, Kestrel, Talon) | - | - | [done](plans/guns-concept.md) | M | Done |
 | F-73 | Weapon stats panel: five bars (damage, fire rate, accuracy, range, control) computed from WeaponData, on wall-buys, the Vault and the inventory (look: [guns_concept.jpg](design/images/guns_concept.jpg)) | - | F-72 | needed | M | Todo |
 | F-75 | Baked texture maps for the four concept guns: high-detail bake (bevels, stipple, engraved marks, wear), 30,000-triangle gun budget, Forward+ lit previews, intake for handed-over .glb guns | - | F-72 step 2 (per gun: its F-72 step) | [ready](plans/baked-gun-textures.md) | L | Building (steps 1-2; 3-6 after the AR-17 look) |
-| F-85 | Real reload animations: left hand swaps magazines, bolt catch on empty reloads, BR-12 loads shell by shell, sounds on each move (solo play-test 2026-11-19) | - | F-72 | [ready](plans/reload-animations.md) | M | Building |
+| F-85 | Real reload animations: left hand swaps magazines, bolt catch on empty reloads, BR-12 loads shell by shell, sounds on each move (solo play-test 2026-11-19) | - | F-72 | [done](plans/reload-animations.md) | M | Done |
 
 ## Next: v0.2 Progression and loot
 
 | Id | Feature | Issue | Needs | Plan | Size | Status |
 |---|---|---|---|---|---|---|
-| F-20 | Skill effects (through the stat stack) | #113 | F-11 | needed | M | Todo |
+| F-20 | Skill effects (through the stat stack) | #113 | F-11 | [ready](plans/skill-effects.md) | M | Ready |
 | F-21 | Skill tree screen | #112 | F-20 | needed | M | Todo |
 | F-22 | Field abilities | #114 | F-20 | needed | M | Todo |
 | F-23 | Levelling pace check | #115 | F-20, F-22 | issue | S | Todo |
 | F-24 | Frag grenades | #119 | F-11 | needed | M | Todo |
 | F-25 | Mantle | #120 | F-11 | needed | M | Todo |
-| F-26 | More power-ups in the drop deck | #118 | F-11 | needed | M | Todo |
+| F-26 | More power-ups in the drop deck | #118 | F-11 | [needed](plans/more-power-ups.md) | M | Ready |
 | F-27 | Crawler | #121 | F-24 | needed | M | Todo |
 | F-28 | Blackout rounds and Glowers | #122 | F-11 | needed | M | Todo |
 | F-29 | Stalker | #123 | F-11 | needed | L | Todo |

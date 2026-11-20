@@ -76,6 +76,11 @@ static func _take(parent: Node, cap: int) -> BloodPool:
 	return pool
 
 
+## Shared meshes, for ShaderWarmUp to draw once at match start.
+static func warm_up_meshes() -> Array[Mesh]:
+	return [_shared_mesh()]
+
+
 static func _shared_mesh() -> PlaneMesh:
 	if _mesh:
 		return _mesh

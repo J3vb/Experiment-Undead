@@ -10,5 +10,5 @@ key = &"upscaler"
 label = "Upscaler"
 hint = "Sharpens the picture when render scale is below 100%. FSR 2 uses its own anti-aliasing (TAA)."
 kind = &"choice"
-options = PackedStringArray("Off", "FSR 1", "FSR 2")
+options = Array[String](["Off", "FSR 1", "FSR 2"])
 order = 50

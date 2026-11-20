@@ -3,18 +3,20 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cxnn73kmxukvn"
-path="res://.godot/imported/npc_cordon_liaison_npc_cordon_liaison_normal.jpg-b33d7537035d3e843dd843ddab13684e.ctex"
+path.s3tc="res://.godot/imported/npc_cordon_liaison_npc_cordon_liaison_normal.jpg-b33d7537035d3e843dd843ddab13684e.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
-"md5": "bc4ce6c3c273dfd63fa6e34d07a1db46"
+"md5": "885ce68a20e768a9f1a08e11602358c4"
 }
 
 [deps]
 
 source_file="res://assets/models/characters/npc_cordon_liaison_npc_cordon_liaison_normal.jpg"
-dest_files=["res://.godot/imported/npc_cordon_liaison_npc_cordon_liaison_normal.jpg-b33d7537035d3e843dd843ddab13684e.ctex"]
+dest_files=["res://.godot/imported/npc_cordon_liaison_npc_cordon_liaison_normal.jpg-b33d7537035d3e843dd843ddab13684e.s3tc.ctex"]
+
 [params]
 
 compress/mode=2

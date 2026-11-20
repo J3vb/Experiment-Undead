@@ -10,5 +10,5 @@ key = &"anisotropic"
 label = "Texture filtering"
 hint = "Keeps floors and walls sharp at steep angles."
 kind = &"choice"
-options = PackedStringArray("Off", "2x", "4x", "8x", "16x")
+options = Array[String](["Off", "2x", "4x", "8x", "16x"])
 order = 160

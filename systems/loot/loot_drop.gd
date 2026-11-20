@@ -9,6 +9,9 @@ const GLOW: float = 4.0
 const LAND_FLASH: float = 6.0
 const STEADY_LIGHT: float = 1.2
 
+## One glow material per rarity colour, shared by every drop.
+static var _glows: Dictionary[Color, StandardMaterial3D] = {}
+
 var item: Dictionary = {}
 var pack: Pack
 var player: Player
@@ -23,11 +26,7 @@ func _ready() -> void:
 	var rarity: StringName = StringName(item.get("rar", "common"))
 	var data: RarityData = Content.get_item(&"loot", rarity) as RarityData
 	var rank: int = maxi(ItemRoller.RARITIES.find(rarity), 0)
-	var material: StandardMaterial3D = StandardMaterial3D.new()
-	material.albedo_color = data.colour
-	material.emission_enabled = true
-	material.emission = data.colour
-	material.emission_energy_multiplier = GLOW
+	var material: StandardMaterial3D = glow_material(data.colour)
 	($Ring as MeshInstance3D).material_override = material
 	var pillar: MeshInstance3D = $Pillar
 	pillar.visible = rank > 0
@@ -35,6 +34,24 @@ func _ready() -> void:
 	pillar.position.y = HEIGHTS[rank] / 2.0
 	pillar.material_override = material
 	_light_up(data.colour)
+
+
+static func glow_material(colour: Color) -> StandardMaterial3D:
+	if not _glows.has(colour):
+		var material: StandardMaterial3D = StandardMaterial3D.new()
+		material.albedo_color = colour
+		material.emission_enabled = true
+		material.emission = colour
+		material.emission_energy_multiplier = GLOW
+		_glows[colour] = material
+	return _glows[colour]
+
+
+## Shared meshes, for ShaderWarmUp to draw once at match start.
+static func warm_up_meshes() -> Array[Mesh]:
+	var mesh: BoxMesh = BoxMesh.new()
+	mesh.material = glow_material(Color.WHITE)
+	return [mesh]
 
 
 ## A rarity-coloured light that flashes when the item lands, then settles to a steady glow.

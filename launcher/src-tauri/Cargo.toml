@@ -1,0 +1,19 @@
+[package]
+name = "experiment-undead-launcher"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Experiment Undead launcher"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+launcher-core = { path = "../core" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2", features = [] }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

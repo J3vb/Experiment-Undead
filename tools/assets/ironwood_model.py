@@ -227,6 +227,4 @@ def build(m) -> None:
     barrel(m, receiver, metal, black)
     optic(m, receiver, metal, black, glass)
     moving_parts(m, receiver, metal, black)
-    for side in (-1, 1):
-        strip = g.slab("Inlay", g.rounded(-0.15, 0.039, 0.12, 0.041, 0.0008), 0.001, metal, x=side * 0.0323)
-        m.join_into(receiver, [g.mark_inlay(strip)])
+    g.add_inlays(m, receiver, g.rounded(-0.15, 0.039, 0.12, 0.041, 0.0008), 0.001, 0.0323, metal)

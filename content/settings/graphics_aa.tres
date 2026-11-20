@@ -10,5 +10,5 @@ key = &"aa"
 label = "Anti-aliasing"
 hint = "Smooths jagged edges. MSAA is sharpest; TAA is smoothest but can blur in motion."
 kind = &"choice"
-options = PackedStringArray("Off", "FXAA", "MSAA 2x + FXAA", "MSAA 4x + FXAA", "TAA")
+options = Array[String](["Off", "FXAA", "MSAA 2x + FXAA", "MSAA 4x + FXAA", "TAA"])
 order = 90

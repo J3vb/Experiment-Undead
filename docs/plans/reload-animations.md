@@ -1,6 +1,6 @@
 # Plan: Real reload animations
 
-Status: Building
+Status: Done
 Roadmap: F-85 (was F-83, a number three plans took the same day) / solo play-test 2026-11-19
 Phase: P1
 Size: M
@@ -234,13 +234,17 @@ extra IK target per frame, no nodes created, no allocations. Budget: under
 
 ## Acceptance
 
-- [ ] Every starter gun's left hand pulls and seats a magazine (or loads
-      shells) on reload, in a recorded clip.
-- [ ] Empty reloads add the charging handle or bolt move; tactical do not.
-- [ ] Ammo lands only after the magazine is seated (unit test).
-- [ ] Sprint cancel returns the hand to the grip without a pop.
-- [ ] BR-12 full reload from empty still takes 3.6 s (unit test).
-- [ ] The person signs off the feel from the before/after clips.
+- [x] Every starter gun's left hand pulls and seats a magazine (or loads
+      shells) on reload, in a recorded clip. (Clip: `tools/reload_frames.tscn -- --clip`;
+      tests `test_left_arm_reaches_every_key_pose_and_returns_to_its_grip`,
+      `test_brenner_hand_carries_one_shell_into_the_port_per_round`.)
+- [x] Empty reloads add the charging handle or bolt move; tactical do not.
+      (`test_empty_reload_presses_the_bolt_catch_then_releases_the_bolt`; bolt catch, see DECISIONS.)
+- [x] Ammo lands only after the magazine is seated (`test_magazine_seated_before_ammo_lands`).
+- [x] Sprint cancel returns the hand to the grip without a pop
+      (`test_sprint_cancel_eases_the_hand_back_to_its_grip`).
+- [x] BR-12 full reload from empty still takes 3.6 s (`test_round_reload.gd`, first-round rack test).
+- [x] The person signs off the feel from the before/after clips (decision card "Good, keep them", 2026-11-20).
 
 ## Risks
 

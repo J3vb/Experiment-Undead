@@ -10,5 +10,5 @@ key = &"shadows"
 label = "Shadows"
 hint = "Shadow sharpness and soft edges. Low gives hard, blocky shadows."
 kind = &"choice"
-options = PackedStringArray("Low", "Medium", "High", "Ultra")
+options = Array[String](["Low", "Medium", "High", "Ultra"])
 order = 80

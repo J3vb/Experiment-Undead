@@ -10,6 +10,6 @@ key = &"display_mode"
 label = "Display mode"
 hint = "Borderless fills the screen and switches apps quickly. Fullscreen can lower input delay."
 kind = &"choice"
-options = PackedStringArray("Windowed", "Borderless", "Fullscreen")
+options = Array[String](["Windowed", "Borderless", "Fullscreen"])
 order = 20
 needs_confirm = true
