@@ -65,9 +65,9 @@ func second_wind() -> void:
 	await get_tree().create_timer(_player.second_wind_time, false, true).timeout
 	if not _player.is_downed or _player.is_dead:
 		return
-	if _player.has_serum(&"second_wind"):
-		_player.lose_serums(true)
-	else:
+	var held: int = _player.serums.size()
+	_player.lose_serums(true)
+	if _player.serums.size() == held:
 		_undying_used = true
 		_player.lose_serums()
 	if coop:
