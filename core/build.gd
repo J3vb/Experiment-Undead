@@ -3,7 +3,7 @@
 extends Node
 
 ## Bump when client/server messages change. Mismatched peers are refused.
-const PROTOCOL_VERSION: int = 27
+const PROTOCOL_VERSION: int = 28
 ## Development stage shown next to the version.
 const STAGE: String = "Early Alpha"
 const VERSION_FILE: String = "res://version.json"

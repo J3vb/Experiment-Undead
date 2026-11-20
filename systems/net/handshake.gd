@@ -50,6 +50,9 @@ func setup(display_name: String = "Survivor", level: int = 1) -> void:
 	_scene.peer_authenticating.connect(_on_peer_authenticating)
 	_scene.peer_disconnected.connect(_forget_peer)
 	_scene.peer_authentication_failed.connect(_forget_peer)
+	for held: Array in Net.place_change.take_held_hellos():
+		if _scene.get_authenticating_peers().has(held[0]):
+			_receive_auth(held[0], held[1])
 
 
 func _exit_tree() -> void:

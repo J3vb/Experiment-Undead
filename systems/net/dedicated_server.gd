@@ -87,14 +87,17 @@ func _swap_session(place: StringName) -> void:
 		get_tree().root.remove_child(old)
 		old.queue_free()
 	get_tree().root.add_child(session)
+	if multiplayer.get_peers().is_empty():
+		_return_later(&"empty", EMPTY_GRACE)
 
 
 func _on_game_over(_stats: Dictionary) -> void:
 	_return_later(&"game_over", RESULTS_GRACE)
 
 
+## While a place change waits for clients to leave, the swap checks for an empty server instead.
 func _on_peer_left(_peer_id: int) -> void:
-	if multiplayer.get_peers().is_empty():
+	if multiplayer.get_peers().is_empty() and Net.place_change.pending.is_empty():
 		_return_later(&"empty", EMPTY_GRACE)
 
 

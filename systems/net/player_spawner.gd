@@ -34,9 +34,9 @@ func setup(parent: Node3D, spawn_point: Transform3D) -> void:
 		add_peer(peer_id)
 
 
-## Peers on their way to another place (Net.is_leaving) get no player here.
+## Peers on their way to another place (Net.place_change.is_leaving) get no player here.
 func add_peer(peer_id: int) -> Player:
-	if find_player(peer_id) != null or Net.is_leaving(peer_id):
+	if find_player(peer_id) != null or Net.place_change.is_leaving(peer_id):
 		return null
 	var index: int = 0
 	for child: Node in _parent.get_children():
