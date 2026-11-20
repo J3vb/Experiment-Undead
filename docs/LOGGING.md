@@ -102,9 +102,11 @@ The server also prints every warning and error to stdout as
 | `settings.row_unknown_key` | warn | A `content/settings/*.tres` row names a `section`/`key` that `Settings.DEFAULTS` does not have; the row is left off the settings screen. Fix the row or add the key |
 | `game.game_over` | info | Final stats |
 | `net.peer_connected` / `peer_disconnected` | info | Server side, peer id |
-| `net.join_refused` | info | Client side: the server refused the hello (`reason`: `WRONG_VERSION`, `CONTENT_MISMATCH`, `SERVER_FULL`, or `REFUSED` for a code from a newer server; `older`: `client`, `server` or empty for dev builds; `message`, `client_protocol`, `server_protocol`). `older` says which side to update |
+| `net.join_refused` | info | Client side: the server refused the hello (`reason`: `WRONG_VERSION`, `CONTENT_MISMATCH`, `SERVER_FULL`, `SERVER_UPDATING`, or `REFUSED` for a code from a newer server; `older`: `client`, `server` or empty for dev builds; `message`, `client_protocol`, `server_protocol`). `older` says which side to update |
 | `net.join_failed` | warn | Client side: the pending join could not start (`error`, a Godot error string), so the game goes back to the main menu. Usually a bad address or a port the OS would not open |
 | `net.connection_lost` | warn | Client side: the server disconnected, the connection failed or the server refused authentication. Run XP is banked and the game goes back to the main menu. Look at the server's log for the same time |
+| `server.drain_started` | info | A dedicated server saw its drain file (`--drain-file=` / `EU_DRAIN_FILE`): a newer release is installed (`place`, `players`). A match plays on; the hub refuses new players with `SERVER_UPDATING` |
+| `server.update_restart` | info | A draining server quits with exit code 3 (`place`): its hub had players (they get the "updating" notice) or it stayed empty for `EMPTY_GRACE`. The launcher restarts it on the newer version |
 | `net.round_state_ignored` | warn | A round message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
 | `power_ups.crate_expired_unopened` | warn | A Supply Crate vanished before anyone opened it (`name`). Often means players miss it or cannot reach it |
 | `power_ups.timer_ignored` | warn | A power-up timer message reached a peer that must not take it (`sender`): the server got one, or a client got one not from the server. Should never appear |
@@ -144,7 +146,9 @@ The separate launcher (F-82, `launcher/`) writes its own JSON lines to `launcher
 | `server_started` | info | Host a server started the newest installed game as a server (`message` = version and port) |
 | `server_start_failed` | warn | The server exe could not start (`message`): the game is missing or damaged. Reinstall it |
 | `server_stop_requested` | info | The player pressed Stop server; the server quits on its stop file within a second |
-| `server_exited` | info | The hosted server quit (`message` = exit code, or "launcher closed"). A quick exit after `server_started` = port in use; read `server/server.log` |
+| `server_exited` | info | The hosted server quit and was not restarted (`message` = exit code, or "launcher closed"). A quick exit after `server_started` = port in use; read `server/server.log` |
+| `server_draining` | info | A newer game is installed (`message` = version) and the drain file asks the hosted server to finish its match. No `server_update_restarted` within a match's length = the server never drained; read `server/server.log` |
+| `server_update_restarted` | info | The hosted server drained (exit code 3) and runs again on the newer version (`message`), same port and player limit |
 
 ## Adding log lines (rules for agents)
 
