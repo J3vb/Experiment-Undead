@@ -85,17 +85,21 @@ live state belongs in objects such as `WeaponInstance`.
 ## A power-up
 
 1. Create `content/power_ups/<id>.tres` using `systems/power_ups/power_up_data.gd`
-    (`PowerUpData`); set matching `id` and `display_name`.
-2. Add its effect to `match data.id` in `PowerUp.collect(player)` in
-    `systems/power_ups/power_up.gd`; data alone does not implement an effect.
-3. Keep collection behind `_on_body_entered()`'s living-player and
-    `Net.is_authority()` checks. Existing code emits `Events.power_up_collected` after applying the effect.
+    (`PowerUpData`); set matching `id`, `display_name`, its own `color`, and
+    `duration` (seconds, for a team-wide timer with a HUD ring), `team_points`
+    (paid to every player) and `deck_chance` (below 1 sits out some decks) as needed.
+2. A new kind of effect: append a value to `PowerUpData.Effect` (never reorder) and
+    handle it in `PowerUpDrops.on_collected()` (server only). Code that reaches into
+    other systems goes in a static function in `systems/power_ups/power_up_effects.gd`;
+    a timed effect asks `PowerUpDrops.is_active(effect)`. Data alone does not implement an effect.
+3. Collection stays server-side (`PowerUp._on_body_entered()`); ammo reaches the PC that
+    owns the guns, timers reach every peer through `Events.power_up_timer_started`.
 4. For normal drops, add it to `PowerUpDrops.power_ups` in
     `systems/game/game_session.tscn`. Scavenger's `ammo_pack` stays in the separate `ammo_pack` export.
-5. `PowerUpDrops` owns seeded kill rolls, the round cap and shuffled deck;
+5. `PowerUpDrops` owns seeded kill rolls (player kills only), the round cap and shuffled deck;
     lookup is `Content.get_item(&"power_ups", &"<id>") as PowerUpData`.
-6. Extend `tests/content/test_content.gd` and `tests/integration/test_power_ups.gd`
-    for the effect and deck; update assertions that assume every normal drop is Resupply.
+6. Test the effect in `tests/unit/test_power_up_effects.gd` (or `test_power_up_timers.gd`)
+    and from a client in `tests/unit/test_coop_power_ups.gd`.
 7. Done when content validates, the intended players receive the effect once,
     and drops still obey their round cap and pickup lifetime.
 

@@ -8,7 +8,8 @@ extends Resource
 ## OVERKILL: every bullet or melee hit kills while its timer runs.
 ## STASIS: zombies alive at pickup stand still and cannot attack until its timer ends.
 ## PURGE: kills every zombie alive now (no kill points, XP or loot). SCRAP_KIT: rebuilds every barricade.
-enum Effect { RESUPPLY, AMMO_PACK, PAYDAY, OVERKILL, STASIS, PURGE, SCRAP_KIT }
+## SUPPLY_CRATE: leaves a crate with one free Specimen Vault roll.
+enum Effect { RESUPPLY, AMMO_PACK, PAYDAY, OVERKILL, STASIS, PURGE, SCRAP_KIT, SUPPLY_CRATE }
 
 @export var id: StringName = &""
 @export var display_name: String = "Power-up"
@@ -21,3 +22,5 @@ enum Effect { RESUPPLY, AMMO_PACK, PAYDAY, OVERKILL, STASIS, PURGE, SCRAP_KIT }
 @export var duration: float = 0.0
 ## Points every player gets on pickup (Purge, Scrap Kit).
 @export var team_points: int = 0
+## Chance this power-up is in each new deck (Supply Crate: about 1 deck in 3).
+@export var deck_chance: float = 1.0
