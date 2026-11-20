@@ -105,3 +105,49 @@ func test_ranks_problem_checks_ids_ranks_and_total() -> void:
 	assert_eq(SkillEffects.ranks_problem({"thick_skin": 0}), "bad_rank")
 	assert_eq(SkillEffects.ranks_problem({"nope": 1}), "unknown_skill")
 	assert_eq(SkillEffects.ranks_problem({}), "")
+
+
+func _wall_rifle() -> Weapon:
+	return player.weapons.give(Content.weapon(&"rifle_ar"))
+
+
+func test_steady_hands_scales_a_wall_gun_recoil() -> void:
+	_rank({&"steady_hands": 3})
+	var base: RecoilData = Content.weapon(&"rifle_ar").recoil
+	var held: RecoilData = _wall_rifle().data.recoil
+	assert_almost_eq(held.pattern[0].y, base.pattern[0].y * 0.85, 0.0001)
+	assert_almost_eq(held.random_spread, base.random_spread * 0.85, Vector2(0.0001, 0.0001))
+
+
+func test_deep_pockets_raises_wall_gun_reserve_and_respec_puts_it_back() -> void:
+	player.skill_ranks = {&"deep_pockets": 2}
+	var rifle: Weapon = _wall_rifle()
+	ItemLoadout.apply(player, {})
+	assert_eq(rifle.data.max_reserve, 360)
+	assert_eq(rifle.instance.ammo_reserve, 180, "spawn refit starts at the raised reserve")
+	player.skill_ranks = {}
+	ItemLoadout.apply_gear(player, {})
+	assert_eq(rifle.data.max_reserve, 300)
+	assert_eq(rifle.instance.ammo_reserve, 180, "ammo is kept on a refit while it fits")
+	assert_eq(rifle.data.recoil.pattern, Content.weapon(&"rifle_ar").recoil.pattern)
+
+
+func test_deep_pockets_counts_once_on_an_item_gun() -> void:
+	_rank({&"deep_pockets": 2})
+	var item: ItemInstance = ItemInstance.new({"v": 1, "uid": "gun", "base": "rifle_ar", "rar": "common", "ilvl": 1})
+	var weapon: Weapon = ItemLoadout.equip_weapon(player, item, null)
+	assert_eq(weapon.data.max_reserve, 360, "fitted by the item only, not by the holder again")
+
+
+func test_all_damage_gear_leaves_wall_gun_damage_alone() -> void:
+	var vest: Dictionary = {
+		"v": 1, "uid": "vest", "base": "vest_medium", "rar": "rare", "ilvl": 30, "aff": [["all_damage", 5, 1.0]]
+	}
+	ItemLoadout.apply(player, {"vest": vest})
+	assert_gt(player.stats.value(&"dmg_pct"), 1.0, "the vest does roll damage")
+	assert_eq(_wall_rifle().data.damage, Content.weapon(&"rifle_ar").damage)
+
+
+func test_a_player_without_gun_stats_holds_the_shared_content_gun() -> void:
+	_rank({&"thick_skin": 3})
+	assert_eq(_wall_rifle().data, Content.weapon(&"rifle_ar"))
