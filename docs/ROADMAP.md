@@ -71,6 +71,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-73 | Weapon stats panel: five bars (damage, fire rate, accuracy, range, control) computed from WeaponData, on wall-buys, the Vault and the inventory (look: [guns_concept.jpg](design/images/guns_concept.jpg)) | - | F-72 | needed | M | Todo |
 | F-75 | Baked texture maps for the four concept guns: high-detail bake (bevels, stipple, engraved marks, wear), 30,000-triangle gun budget, Forward+ lit previews, intake for handed-over .glb guns | - | F-72 step 2 (per gun: its F-72 step) | [ready](plans/baked-gun-textures.md) | L | Building (steps 1-2; 3-6 after the AR-17 look) |
 | F-85 | Real reload animations: left hand swaps magazines, bolt catch on empty reloads, BR-12 loads shell by shell, sounds on each move (solo play-test 2026-11-19) | - | F-72 | [done](plans/reload-animations.md) | M | Done |
+| F-87 | HUD to the FENLIGHT concept art: angled health/stamina and gun/ammo/frag panels, Serum slots with icons, compass, ROUND counter, pickup prompt on the object (concept art 2026-11-20) | - | - | [ready](plans/hud-concept.md) | M | Ready |
 
 ## Next: v0.2 Progression and loot
 
