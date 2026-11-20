@@ -33,7 +33,7 @@ func test_open_shows_profile_slots_stash_and_default_focus() -> void:
 	assert_string_contains((screen.get_node("%Level") as Label).text, "14")
 	assert_eq(screen.stash_buttons.size(), 60)
 	assert_eq(screen.slots.buttons.size(), 9)
-	assert_eq((screen.get_node("%Grid") as GridContainer).columns, 10)
+	assert_eq((screen.get_node("%Grid") as GridContainer).columns, CharacterScreen.STASH_COLUMNS)
 	assert_true(screen.is_ancestor_of(screen.get_viewport().gui_get_focus_owner()))
 	assert_eq(screen.get_theme_font("font"), (screen.get_node("%ItemTooltip") as Control).get_theme_font("font"))
 	assert_not_null(screen.rig.skeleton)
@@ -201,7 +201,7 @@ func test_shift_holds_compare_and_controller_x_toggles_it() -> void:
 func test_stash_focus_moves_across_cells_rows_and_back_to_controls() -> void:
 	var first: Button = screen.stash_buttons[0]
 	assert_eq(first.get_node(first.focus_neighbor_right), screen.stash_buttons[1])
-	assert_eq(first.get_node(first.focus_neighbor_bottom), screen.stash_buttons[10])
+	assert_eq(first.get_node(first.focus_neighbor_bottom), screen.stash_buttons[CharacterScreen.STASH_COLUMNS])
 	assert_eq(first.get_node(first.focus_neighbor_left), _slot_button(&"primary"))
 	assert_eq(first.get_node(first.focus_neighbor_top), screen.get_node("%Sort"))
 	var last: Button = screen.stash_buttons[59]

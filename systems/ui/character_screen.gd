@@ -4,6 +4,8 @@ extends Control
 
 signal closed
 
+## Stash boxes per row; fewer and bigger boxes read better than a dense grid.
+const STASH_COLUMNS: int = 6
 const ACCENT: Color = Color("7fd6e0")
 const DIM: Color = Color("8fa3a8")
 
@@ -89,7 +91,8 @@ func _build_buttons() -> void:
 		button.gui_input.connect(_item_input.bind(button))
 	for cell: int in CharacterProfile.STASH_SIZE:
 		var button: Button = Button.new()
-		button.custom_minimum_size = Vector2(48, 66)
+		button.custom_minimum_size = Vector2(80, 112)
+		button.add_theme_constant_override("icon_max_width", 64)
 		button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -116,16 +119,22 @@ func _wire_focus() -> void:
 	for cell: int in stash_buttons.size():
 		var button: Button = stash_buttons[cell]
 		button.focus_neighbor_left = button.get_path_to(
-			slots.beside_stash(cell / 10) if cell % 10 == 0 else stash_buttons[cell - 1]
+			slots.beside_stash(cell / STASH_COLUMNS) if cell % STASH_COLUMNS == 0 else stash_buttons[cell - 1]
 		)
-		button.focus_neighbor_right = button.get_path_to(%Back if cell % 10 == 9 else stash_buttons[cell + 1])
-		button.focus_neighbor_top = button.get_path_to(%Sort if cell < 10 else stash_buttons[cell - 10])
-		button.focus_neighbor_bottom = button.get_path_to(%Back if cell >= 50 else stash_buttons[cell + 10])
-	slots.wire_focus(stash_buttons, %Back)
+		button.focus_neighbor_right = button.get_path_to(
+			%Back if cell % STASH_COLUMNS == STASH_COLUMNS - 1 else stash_buttons[cell + 1]
+		)
+		button.focus_neighbor_top = button.get_path_to(
+			%Sort if cell < STASH_COLUMNS else stash_buttons[cell - STASH_COLUMNS]
+		)
+		button.focus_neighbor_bottom = button.get_path_to(
+			%Back if cell >= stash_buttons.size() - STASH_COLUMNS else stash_buttons[cell + STASH_COLUMNS]
+		)
+	slots.wire_focus(stash_buttons, STASH_COLUMNS, %Back)
 	%Category.focus_neighbor_bottom = %Category.get_path_to(%Sort)
 	%Rarity.focus_neighbor_bottom = %Rarity.get_path_to(%Sort)
 	%Sort.focus_neighbor_bottom = %Sort.get_path_to(stash_buttons[0])
-	%Back.focus_neighbor_top = %Back.get_path_to(stash_buttons[59])
+	%Back.focus_neighbor_top = %Back.get_path_to(stash_buttons[-1])
 
 
 func visible_stash_indices() -> Array[int]:

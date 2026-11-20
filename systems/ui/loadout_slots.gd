@@ -40,7 +40,7 @@ func beside_stash(row: int) -> Button:
 	return buttons[LEFT.size() + mini(row, RIGHT.size() - 1)]
 
 
-func wire_focus(stash: Array[Button], above: Control) -> void:
+func wire_focus(stash: Array[Button], columns: int, above: Control) -> void:
 	var left: Array[Button] = buttons.slice(0, LEFT.size())
 	var right: Array[Button] = buttons.slice(LEFT.size())
 	for column: Array[Button] in [left, right]:
@@ -53,4 +53,4 @@ func wire_focus(stash: Array[Button], above: Control) -> void:
 		left[index].focus_neighbor_right = left[index].get_path_to(right[mini(index, right.size() - 1)])
 	for index: int in right.size():
 		right[index].focus_neighbor_left = right[index].get_path_to(left[index])
-		right[index].focus_neighbor_right = right[index].get_path_to(stash[index * 10])
+		right[index].focus_neighbor_right = right[index].get_path_to(stash[index * columns])

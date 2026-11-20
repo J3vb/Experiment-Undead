@@ -250,7 +250,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/h_separation = 5
 theme_override_constants/v_separation = 8
-columns = 10
+columns = 6
 
 [node name="Status" type="Label" parent="Margin/Layout/Columns/Stash/Box"]
 unique_name_in_owner = true

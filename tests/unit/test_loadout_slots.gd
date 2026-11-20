@@ -44,8 +44,8 @@ func test_gamepad_focus_moves_between_slot_columns_and_into_the_stash() -> void:
 	assert_eq(boots.get_node(boots.focus_neighbor_right), _slot_button(&"implant"))
 	var charm: Button = _slot_button(&"charm")
 	assert_eq(charm.get_node(charm.focus_neighbor_left), _slot_button(&"gloves"))
-	assert_eq(charm.get_node(charm.focus_neighbor_right), screen.stash_buttons[20])
-	var last_row: Button = screen.stash_buttons[50]
+	assert_eq(charm.get_node(charm.focus_neighbor_right), screen.stash_buttons[2 * CharacterScreen.STASH_COLUMNS])
+	var last_row: Button = screen.stash_buttons[CharacterProfile.STASH_SIZE - CharacterScreen.STASH_COLUMNS]
 	assert_eq(last_row.get_node(last_row.focus_neighbor_left), _slot_button(&"implant"))
 
 
