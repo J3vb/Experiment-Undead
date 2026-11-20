@@ -77,7 +77,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 
 | Id | Feature | Issue | Needs | Plan | Size | Status |
 |---|---|---|---|---|---|---|
-| F-88 | Front-end screens to the concept art: FENLIGHT logo, brush-stroke menu, painted main menu and Loadout backdrops, Loadout tabs (concept art 2026-11-20) | - | - | [ready](plans/front-end-concept.md) | M | Ready |
+| F-88 | Front-end screens to the concept art: FENLIGHT logo, brush-stroke menu, painted main menu and Loadout backdrops, Loadout tabs (concept art 2026-11-20) | - | - | [ready](plans/front-end-concept.md) | M | Building |
 | F-20 | Skill effects (through the stat stack) | #113 | F-11 | [ready](plans/skill-effects.md) | M | Done |
 | F-21 | Skill tree screen (look target: [research_concept.jpg](design/concepts/screens/research_concept.jpg)) | #112 | F-20 | needed | M | Todo |
 | F-22 | Field abilities | #114 | F-20 | needed | M | Todo |
