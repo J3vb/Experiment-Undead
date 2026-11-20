@@ -357,6 +357,15 @@ stay a plain game score. The drop reasons below are provisional picks.
 | Trainer (skill respec) | Dr. Corvelyn, as first written. *(provisional; open question below)* |
 | Firing Range | The old customs yard behind the post. |
 
+### Front-end screens
+
+| Screen | Story reason |
+| --- | --- |
+| Main menu | Lantern Post at night from the road in, under the Fenlight glow in the sky: the town that sends you out. *(provisional)* |
+| Loadout | Odile's armoury table at the post, where you pick what you carry out. *(provisional)* |
+| Research (skill tree, F-21) | Dr. Corvelyn's lab: samples you bring back are studied there and teach you the salvager trades. *(provisional)* |
+| FENLIGHT logo | The game is named after the mould; the green veins in the logo are Fenlight. |
+
 ### Maps, rooms and props
 
 - **Rooms.** Every room tells one small story you can read in a glance. In
