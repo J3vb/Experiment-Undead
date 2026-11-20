@@ -11,6 +11,8 @@ var buttons: Array[Button] = []
 
 
 func _ready() -> void:
+	var armour: VBoxContainer = $ArmourSlots
+	var kit: VBoxContainer = $KitSlots
 	for slot: StringName in LEFT + RIGHT:
 		var button: Button = Button.new()
 		button.set_meta("slot", slot)
@@ -21,7 +23,7 @@ func _ready() -> void:
 		button.clip_text = true
 		button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		button.add_theme_font_size_override("font_size", 16)
-		($ArmourSlots if LEFT.has(slot) else $KitSlots).add_child(button)
+		(armour if LEFT.has(slot) else kit).add_child(button)
 		buttons.append(button)
 
 
