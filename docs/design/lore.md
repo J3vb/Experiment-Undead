@@ -326,7 +326,7 @@ stay a plain game score. The drop reasons below are provisional picks.
 | Purge | An Oriel pulse breaker. It breaks the pulse sync for a moment, and every host nearby drops dead. |
 | Scrap Kit | A carpenter's repair kit. |
 | Stasis | An Oriel cryo charge: a burst of cold that freezes every host. |
-| Supply Crate | An Oriel Vault key card: one free Vault roll. |
+| Supply Crate | An Oriel Vault key card: it unseals an Oriel supply crate on the spot, good for one free Vault roll (provisional). |
 
 ### Gear and abilities
 

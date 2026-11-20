@@ -47,7 +47,7 @@ Each says when to fix it.
 - **Reforger** has Tier I only and swaps instantly. Fix when: Tiers II (ammo mods) and III get a roadmap row.
 - **Frag numbers** (3 s fuse, 15 m/s throw, 7 m blast with full damage inside 1.5 m, own damage up to 60, no friendly fire) are provisional picks; the 1000 centre damage is the person's. Fix when: the frag play-test. [frag-grenades](plans/frag-grenades.md)
 - **Frag look:** the frag is a grey ball with no first-person hold or throw; the blast is a code-built flash, fireball and smoke (no .tscn, like HeadPop) on the Weapons bus. Fix when: F-24 step 4. [frag-grenades](plans/frag-grenades.md)
-- **Power-ups:** every design power-up but the Supply Crate, plus the Scavenger ammo pack; Scavenger's +1 grenade waits. Fix when: F-24 grenades and F-26 step 4.
+- **Power-ups:** Scavenger's +1 grenade waits; no voice line, tint or drop arpeggio on pickup. Fix when: F-24 grenades, F-04 audio follow-up.
 - **Window barriers:** no slot timeout (move to another barrier after 4 s), no real sill. Fix when: co-op crowding at a window needs it.
 - **Emergency lighting:** dimmed red ceiling lights only, no separate fixtures or sound. Fix when: the sound world step.
 - **Stuck zombies:** relocate replaces the AI doc's repath sidestep and navmesh snap; no louder groan for the last zombies (voice is local). Fix when: relocates show in soak logs.
@@ -102,7 +102,7 @@ Agent picks the person may change.
 - **Halcyon concept pass (F-68):** kitchen fires as the Mess Hall's warm accent, the existing hazard orange (not yellow) on the tank railings, the catwalk office not walkable, pods at leak-glow strength, one steel material on the ceiling models. Look signed off 2026-11-19.
 - **Model looks:** skinned zombies, gear finishes, vest frames, first-person arms, teammate clips and the launcher screen are agent looks until the person sees them.
 - **Tripo settings:** `tripo_make.py` asks for model v3.1, PBR, detailed texture, standard geometry (a 0.9 m prop: 40 credits); `body_tarp` goes in `props/`, not `dressing/` (intake prop budget 2,000). [tripo-models](plans/tripo-models.md)
-- **Power-up drops:** 1% per kill, at most 1 a round (GDD 2.5%, 4), while Resupply is the deck's only power-up; raise with F-26. Resupply glows big and green, the ammo pack small and orange.
+- **Supply Crate:** a plain box with a teal strip, not a model; anyone opens it, only the opener takes the gun; it rolls the level Vault's pool for free and vanishes 25 s after landing unless opened. [more-power-ups](plans/more-power-ups.md)
 - **Power-up timers:** team-wide, a re-pickup resets to full time; Payday doubles hit and kill points only (not repairs or the round bonus); only kills by a player roll drops. [more-power-ups](plans/more-power-ups.md)
 - **Overkill and Stasis:** Overkill raises a hit to the zombie's health after Synapse and Cryo (their splash stays normal); Stasis freezes only zombies alive at pickup, hits on them do normal damage and never Cryo-freeze or shatter. [more-power-ups](plans/more-power-ups.md)
 - **Purge and Scrap Kit:** Purge kills have no attacker (no kill points, XP, loot or drop rolls; the round still counts them); team points go to every player and are not doubled by Payday; Purge glows Rare blue #3D7DFF since bio-green is Resupply's. [more-power-ups](plans/more-power-ups.md)
