@@ -302,6 +302,12 @@ some guns have codes and some have names.
 **Reforged** guns are any of these run through the Reforger's Fenlight alloy
 (see Why the machines exist).
 
+### Grenades and field kit
+
+| Thing | Story reason |
+| --- | --- |
+| Frag grenades | Army and Cordon issue, from the same crates as the wall guns: the evacuation force left them on Day 3 and Cordon patrols still drop them. Two fit in a vest pouch, which is why you carry two and find more each round in the kit the Lit still carry. *(provisional)* |
+
 ### Power-ups, points and buying from walls
 
 These are the arcade rules of the wave game. Decided by the person
