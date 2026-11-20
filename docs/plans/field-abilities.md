@@ -21,8 +21,9 @@ In:
 
 - `AbilityData` resources in `content/abilities/`, one per ability, with the
   design's unlock level, cooldown and effect numbers.
-- One ability per player per run: until the F-21 picker exists, the highest
-  ability your level has unlocked (provisional). Levels 1 and 2 have none.
+- One ability per player per run: the one picked under the Research tree
+  (step 7), else the highest ability your level has unlocked (provisional).
+  Levels 1 and 2 have none.
 - `field_ability` input action on **X** and D-pad down, a new `InputFrame` bit,
   a row on the controls screen.
 - Cooldown: design cooldown x (1 - reduction), reduction from the
@@ -37,13 +38,11 @@ In:
 
 Not in (non-goals, and where each one goes instead):
 
-- The picker that lets you choose a lower ability (F-21 skill tree screen,
-  ui-hud.md "field ability picker sits below the tree"), and the save field
-  for it.
 - The `ability_power` Implant affix, Overclock, Conductor, Fenlight Circuit
   and other legendary or set ability rules (F-31, F-32). The stat stays in
   the stack; DECISIONS line.
-- Showing the picked ability on the Loadout screen (F-21 with the picker).
+- Showing the picked ability on the Loadout screen (with the Loadout tabs,
+  F-88; the pick is in the save from step 7).
 - Brute and boss resistance to stun and lure (F-30 Brute plan).
 - Abilities in the Lantern Post hub: none, the same rule as grenades.
 - Sending live turrets and sirens to a late joiner: they last at most 20 s
@@ -76,7 +75,9 @@ Not in (non-goals, and where each one goes instead):
 - Data: ids and numbers in content/abilities/*.tres; provisional numbers
   listed below go in DECISIONS. Code compares against a specific id: no
   (code switches on `AbilityData.Effect`, like `PowerUpData.Effect`).
-- Save: changes what is saved? no (the pick is derived from level until F-21).
+- Save: changes what is saved? step 7 adds `field_ability` (String, default
+  "", meaning the highest unlocked); version bump, migration and old-sample
+  test as ADR 0005 asks.
 - Events and UI: no new Events. HUD only, no new screens.
 - Input through InputFrame, gameplay in _physics_process, randomness from the
   session RNG: yes (no randomness needed).
@@ -110,7 +111,7 @@ Not in (non-goals, and where each one goes instead):
 - docs/design/lore.md: "Field abilities" row; open-question list names the
   Sentry clash with the Sentry burst rifle.
 - docs/DECISIONS.md: "Skills waiting on their feature" (Gadgeteer),
-  "Skill tree" (no picker until F-21), "Co-op hit bounds".
+  "Skill tree", "Co-op hit bounds".
 - docs/MULTIPLAYER.md "Writing co-op code" patterns 2, 5, 6; reference
   `GrenadeClaims`.
 - docs/adr/0003, 0004, 0017.
@@ -142,6 +143,7 @@ Not in (non-goals, and where each one goes instead):
 | systems/ui/hud.gd | changed | adds the icon (hook only, as the issue asks) |
 | assets/ui/hud/ability_*.svg, assets/audio/ability_*.wav | new | Icons, generated sounds |
 | assets/models/abilities/ | new | Tripo turret and canister |
+| Research screen (F-21), systems/progression/character_profile.gd, systems/save/save_file.gd | changed | Step 7: ability picker and the saved pick |
 
 Autoloads, managers or base classes added: none. `AbilityClaims` owns the
 server's rate limit and the relay, the same job `GrenadeClaims` has for
@@ -162,7 +164,7 @@ plan. zombie.gd gains about 25 lines (two timers, two functions, one check in
 |---|---|---|---|
 | id | StringName | &"" | Content, LoadoutSync |
 | display_name | String | "" | HUD tooltip, key row |
-| description | String | "" | F-21 picker |
+| description | String | "" | picker (step 7) |
 | unlock_level | int | 1 | `FieldAbility.pick_for_level` |
 | cooldown | float | 60.0 | FieldAbility |
 | effect | enum Effect { SHOCK_PULSE, MED_BURST, WATCHDOG, ADRENAL_RUSH, DECOY_SIREN } | SHOCK_PULSE | AbilityEffects |
@@ -198,7 +200,9 @@ Files and numbers (design numbers unless marked provisional):
   snapshot key `"ability_cooldown"`. Steps 2 and 6 change the wire and bump
   `PROTOCOL_VERSION` (one above main when they merge); 4 and 5 reuse
   `show_use` unchanged.
-- Save format change: none.
+- Save format change: step 7 adds `CharacterProfile.field_ability` (String id,
+  default ""); `SaveFile.CURRENT_VERSION` +1 with a migration that adds the
+  empty field, and a test that a version-3 sample still loads.
 - Content checks: new `tests/content/test_abilities.gd`: every file loads,
   id = file name, unlock levels strictly rise and match the design table,
   cooldown > 0, each `Effect` used by exactly one file, icon and sound set
@@ -408,7 +412,27 @@ effect. Budget: under 0.1 ms per frame on the server with 4 turrets up.
   only on the server.
 - Done when: the turret clears a window for 20 s in solo and co-op; CI green.
 
-### Step 7: Close-out
+### Step 7: Ability picker under the Research tree
+
+The F-21 plan (plans/skill-tree-screen.md) leaves the picker to this feature.
+Build after F-21's screen has merged.
+
+- Build: under the tree on the Research screen, 5 slots in unlock order
+  (ui-hud.md): icon and name, locked ones dim with "Level N", the picked one
+  outlined; a click on an unlocked slot picks it. `CharacterProfile.field_ability`
+  saves the id (save version bump and migration). `GameSession` uses the saved
+  pick when it is unlocked, else `pick_for_level`.
+- Files: the F-21 Research screen script, systems/progression/character_profile.gd,
+  systems/save/save_file.gd, systems/game/game_session.gd,
+  systems/abilities/field_ability.gd, tests/unit/test_field_ability.gd, the save
+  migration test, the Research screen test.
+- Tests: a saved pick is used; a saved pick above the level falls back to the
+  highest unlocked; a locked slot cannot be picked; an old save loads with no
+  pick.
+- Done when: a player picks Med Burst at level 20 and brings it into a run; CI
+  green.
+
+### Step 8: Close-out
 
 - Build: tick Acceptance, `Status: Done`, roadmap row Done, DECISIONS lines
   checked, finish-feature skill. Soak with abilities on: soak bots have no
@@ -456,8 +480,8 @@ Provisional picks (reversible, DECISIONS lines in the step that builds them):
 
 - [x] Provisional: field ability key is X (F is interact in the game and in
   two design docs); D-pad down on gamepad as designed. Rebindable.
-- [x] Provisional: until the F-21 picker, you bring the highest ability your
-  level has unlocked.
+- [x] Provisional: until you pick one (step 7), you bring the highest ability
+  your level has unlocked.
 - [x] Provisional: the design's "Sentry" turret is named **Watchdog**, so it
   no longer clashes with the Sentry burst rifle or the Gate Nine boss "The
   Sentry" (lore.md open list).
@@ -471,5 +495,5 @@ Provisional picks (reversible, DECISIONS lines in the step that builds them):
 
 For the person:
 
-- [x] Approve this plan (size L): all five abilities in seven steps, with the
+- [x] Approve this plan (size L): all five abilities in seven steps (eight with the picker F-21 left here), with the
   provisional picks above: approved (the person, decision card 2026-11-20).
