@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3]
+[gd_scene load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://systems/ui/hud.gd" id="1"]
 [ext_resource type="Script" path="res://systems/net/coop_hud.gd" id="coop"]
@@ -27,6 +27,7 @@
 [ext_resource type="Script" path="res://systems/ui/power_up_timers.gd" id="power_up_timers"]
 [ext_resource type="Script" path="res://systems/ui/grenade_slot.gd" id="grenade_slot"]
 [ext_resource type="Script" path="res://systems/ui/hud/vitals_panel.gd" id="vitals_panel"]
+[ext_resource type="Script" path="res://systems/ui/hud/serum_slots.gd" id="serum_slots"]
 
 [sub_resource type="FontVariation" id="round_bold"]
 base_font = ExtResource("round_font")
@@ -209,19 +210,21 @@ anchor_left = 0.025
 anchor_top = 1.0
 anchor_right = 0.3
 anchor_bottom = 1.0
-offset_top = -180.0
+offset_top = -190.0
 offset_bottom = -44.0
 grow_vertical = 0
 theme_override_constants/separation = 10
 alignment = 2
 
-[node name="Serums" type="HBoxContainer" parent="Root/Vitals"]
-custom_minimum_size = Vector2(0, 44)
+[node name="Serums" type="Control" parent="Root/Vitals"]
+custom_minimum_size = Vector2(200, 44)
 layout_mode = 2
-theme_override_constants/separation = 8
+size_flags_horizontal = 0
+mouse_filter = 2
+script = ExtResource("serum_slots")
 
 [node name="VitalsPanel" type="Control" parent="Root/Vitals"]
-custom_minimum_size = Vector2(360, 72)
+custom_minimum_size = Vector2(360, 80)
 layout_mode = 2
 size_flags_horizontal = 0
 mouse_filter = 2

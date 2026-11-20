@@ -109,3 +109,22 @@ func test_result_is_detached_and_does_not_read_transmog_dyes_or_affixes() -> voi
 	assert_eq(second.slots[&"vest"].dyes[0], Color("5f6d68"))
 	assert_eq(second.set_counts[&"lab"], 1)
 	assert_eq(loadout, before)
+
+
+func test_vest_visual_comes_from_its_base_data() -> void:
+	var base: GearBaseData = Content.get_item(&"loot", &"vest_heavy") as GearBaseData
+	var look: CharacterLook = LookBuilder.from_equipped({"vest": {"base": "vest_heavy", "rar": "epic"}})
+	assert_eq(look.slots[&"vest"].visual_id, base.visual_id)
+
+
+func test_new_slots_are_not_drawn_yet_and_raise_no_error() -> void:
+	var loadout: Dictionary = {
+		"headgear": {"base": "headgear_cap", "rar": "rare", "set": "lab"},
+		"gloves": {"base": "gloves_tactical", "rar": "rare"},
+		"backpack": {"base": "backpack_pack", "rar": "rare"},
+		"boots": {"base": "boots_field", "rar": "rare"},
+		"vest": {"base": "vest_light", "rar": "rare"},
+	}
+	var look: CharacterLook = LookBuilder.from_equipped(loadout)
+	assert_eq(look.slots.keys(), [&"vest"], "only look slots are drawn")
+	assert_eq(look.set_counts, {&"lab": 1}, "set pieces in new slots still count")

@@ -18,6 +18,7 @@ const ICON: float = 26.0
 const BAR_HEIGHT: float = 12.0
 const GAP: float = 5.0
 const STAMINA_STEP: float = 0.005
+const RUNNER: Texture2D = preload("res://assets/ui/hud/serum_stride.svg")
 
 var player: Player
 var health_share: float = 1.0
@@ -27,7 +28,7 @@ var cooling: bool = false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	custom_minimum_size = Vector2(360.0, 72.0)
+	custom_minimum_size = Vector2(360.0, 80.0)
 	Events.player_spawned.connect(_on_player_spawned)
 	Events.player_health_changed.connect(_on_health_changed)
 
@@ -59,7 +60,7 @@ func _process(_delta: float) -> void:
 
 func _draw() -> void:
 	_draw_panel()
-	var top_row: float = size.y * 0.34
+	var top_row: float = size.y * 0.3
 	var bottom_row: float = size.y * 0.7
 	var icon_centre: float = PAD + ICON * 0.5
 	var left: float = PAD + ICON + 12.0
@@ -109,15 +110,9 @@ func _draw_cross(centre: Vector2) -> void:
 
 
 func _draw_runner(centre: Vector2) -> void:
-	var s: float = ICON * 0.5
-	draw_circle(centre + Vector2(s * 0.35, -s * 0.8), s * 0.22, TEXT)
-	var hip: Vector2 = centre + Vector2(-s * 0.1, s * 0.15)
-	var neck: Vector2 = centre + Vector2(s * 0.2, -s * 0.45)
-	draw_line(hip, neck, TEXT, 2.0, true)
-	draw_line(neck, centre + Vector2(s * 0.7, -s * 0.05), TEXT, 2.0, true)
-	draw_line(neck, centre + Vector2(-s * 0.45, -s * 0.2), TEXT, 2.0, true)
-	draw_line(hip, centre + Vector2(s * 0.5, s * 0.9), TEXT, 2.0, true)
-	draw_line(hip, centre + Vector2(-s * 0.7, s * 0.7), TEXT, 2.0, true)
+	if RUNNER:  # null in the dedicated server export, which strips textures
+		var half: Vector2 = Vector2.ONE * ICON * 0.5
+		draw_texture_rect(RUNNER, Rect2(centre - half, half * 2.0), false, TEXT)
 
 
 func _on_player_spawned(spawned: Player) -> void:

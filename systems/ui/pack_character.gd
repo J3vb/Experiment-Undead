@@ -1,4 +1,5 @@
-## Top of the Tab Pack: your character in its worn gear, gear slots on the left, guns in hand on the right.
+## Top of the Tab Pack: your character in its worn gear, gear slots in two columns on the left,
+## guns in hand on the right.
 class_name PackCharacter
 extends HBoxContainer
 
@@ -80,6 +81,7 @@ func _select_slot(slot: StringName) -> void:
 func _box() -> Button:
 	var button: Button = Button.new()
 	button.custom_minimum_size = Vector2(0, 64)
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.expand_icon = true
