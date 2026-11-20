@@ -1,4 +1,4 @@
-## One imported first-person arm rig per weapon holder, showing the owner's worn vest cuffs.
+## One imported first-person arm rig per weapon holder, showing the owner's worn vest cuffs and charm.
 class_name PlayerArmView
 extends Node3D
 
@@ -22,6 +22,9 @@ var _morph_index: int = -1
 var _markers: Array[Node3D] = []
 var _hand_rest: Array[Transform3D] = []
 var _gear: Array[Node3D] = []
+var _charm: Node3D
+var _mount: Node3D
+var _swing: CharmSwing = CharmSwing.new()
 
 
 func _ready() -> void:
@@ -48,6 +51,8 @@ func bind_weapon(current: Weapon) -> void:
 	weapon = current
 	profile = null
 	_support = null
+	_mount = null
+	_swing.reset()
 	if current == null:
 		hide()
 		return
@@ -57,6 +62,7 @@ func bind_weapon(current: Weapon) -> void:
 		hide()
 		return
 	var viewmodel: Node3D = current.get_node("Viewmodel").get_child(0) as Node3D
+	_mount = viewmodel.get_node_or_null("CharmMount") as Node3D
 	for part: String in PLACEHOLDERS:
 		var placeholder: Node3D = viewmodel.find_child(part, true, false) as Node3D
 		if placeholder:
@@ -69,6 +75,7 @@ func bind_weapon(current: Weapon) -> void:
 	_support_rest = (_support.get_meta(&"arm_support_rest", Vector3.ZERO) as Vector3 if _support else Vector3.ZERO)
 	_select_grip()
 	update_pose()
+	place_charm(0.0)
 
 
 func _warn_no_grip(data: WeaponData) -> void:
@@ -94,8 +101,19 @@ func _set_markers(index: int, grip: PlayerArmProfiles.Hand) -> void:
 	_markers[index * 2 + 1].position = inverse * grip.source_thumb
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	update_pose()
+	place_charm(delta)
+
+
+## Hangs the charm from the gun's CharmMount. It stays a child of this view, so a freed gun never frees it.
+func place_charm(delta: float) -> void:
+	if _charm == null:
+		return
+	_charm.visible = _mount != null and is_instance_valid(_mount)
+	if _charm.visible:
+		var mount: Transform3D = _mount.global_transform
+		_charm.global_transform = Transform3D(mount.basis * _swing.step(mount, delta), mount.origin)
 
 
 func update_pose() -> void:
@@ -134,8 +152,22 @@ func apply_look(look: CharacterLook) -> void:
 	for node: Node3D in _gear:
 		node.free()
 	_gear.clear()
+	_charm = null
 	if look.slots.has(&"vest"):
 		_attach_cuffs(look.slots[&"vest"])
+	if look.slots.has(&"charm"):
+		_attach_charm(look.slots[&"charm"])
+
+
+func _attach_charm(entry: Dictionary) -> void:
+	var shown: Array = GearRig.resolve(&"charm", entry)
+	var visual: GearVisual = shown[0]
+	var finish: RarityLook = shown[1]
+	_charm = visual.scene_for(finish.tier).instantiate() as Node3D
+	_charm.name = "Charm"
+	add_child(_charm)
+	_show_piece(_charm, finish, entry.get("dyes", [CharacterLook.DEFAULT_DYE_MAIN, CharacterLook.DEFAULT_DYE_ACCENT]))
+	place_charm(0.0)
 
 
 func _attach_cuffs(entry: Dictionary) -> void:
