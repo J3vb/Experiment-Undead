@@ -147,6 +147,22 @@ func test_open_pack_frees_the_mouse_and_closing_gives_it_back() -> void:
 	UI._root = root
 
 
+func test_co_op_pause_screen_keeps_the_pack_key_and_closes_the_pack() -> void:
+	overlay.set_open(true)
+	var layer: CanvasLayer = CanvasLayer.new()
+	autofree(layer)
+	UI._stack.append({"id": &"pause", "layer": layer, "focus": null})
+	overlay._input(_key(KEY_TAB))
+	assert_false(get_tree().paused, "co-op pause does not pause the tree")
+	assert_false(overlay.panel.visible, "a pushed screen closes the Pack")
+	overlay._input(_key(KEY_TAB))
+	assert_false(overlay.panel.visible, "the Pack key does not open the Pack behind Pause or Settings")
+	UI._stack.pop_back()
+	overlay._input(_key(KEY_TAB))
+	assert_true(overlay.panel.visible, "the Pack opens again once the screen is gone")
+	overlay.set_open(false)
+
+
 func test_pack_keys_are_input_actions_so_rebinding_moves_them() -> void:
 	var saved: Array[InputEvent] = InputMap.action_get_events(&"pack_toggle")
 	InputMap.action_erase_events(&"pack_toggle")
