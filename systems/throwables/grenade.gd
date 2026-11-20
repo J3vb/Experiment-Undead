@@ -12,6 +12,8 @@ var fuse_left: float = 0.0
 ## True on the copy that does damage; false on what other peers see.
 var gameplay: bool = true
 var went_off: bool = false
+## The session's GrenadeClaims on the server's real grenade, so the blast reaches everyone.
+var claims: Node
 
 
 static func spawn(
@@ -45,4 +47,6 @@ func go_off() -> void:
 	went_off = true
 	if gameplay and multiplayer.is_server():
 		Blast.apply(self, global_position, data, thrower)
+		if is_instance_valid(claims):
+			claims.call("broadcast_blast", thrower.net_id if is_instance_valid(thrower) else 0, global_position)
 	queue_free()
