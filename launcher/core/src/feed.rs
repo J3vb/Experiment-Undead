@@ -11,7 +11,7 @@ pub const API_URL: &str = "https://api.github.com/repos/J3vb/Experiment-Undead/r
 pub const WINDOWS_SUFFIX: &str = "-windows.zip";
 pub const LINUX_SUFFIX: &str = "-linux.zip";
 const DIGEST_PREFIX: &str = "sha256:";
-pub const USER_AGENT: &str = "ExperimentUndead-launcher";
+pub const USER_AGENT: &str = "Fenlight-launcher";
 /// The launcher's update manifest, attached to each release next to the setup exe.
 pub const LAUNCHER_MANIFEST: &str = "latest.json";
 
