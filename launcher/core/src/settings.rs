@@ -14,6 +14,8 @@ pub struct Settings {
     /// Host a server: UDP port and player limit.
     pub port: u16,
     pub max_players: u8,
+    /// Close the launcher when the game starts (it stays open while hosting a server).
+    pub close_on_play: bool,
 }
 
 impl Default for Settings {
@@ -22,6 +24,7 @@ impl Default for Settings {
             channel: Channel::Stable,
             port: host::DEFAULT_PORT,
             max_players: host::MAX_PLAYERS,
+            close_on_play: true,
         }
     }
 }

@@ -5,5 +5,6 @@ pub mod feed;
 pub mod host;
 pub mod install;
 pub mod log;
+pub mod news;
 pub mod settings;
 pub mod version;

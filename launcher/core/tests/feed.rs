@@ -1,4 +1,4 @@
-use launcher_core::feed::{is_newer, newest, Channel, LINUX_SUFFIX, WINDOWS_SUFFIX};
+use launcher_core::feed::{is_newer, newest, patches, Channel, LINUX_SUFFIX, WINDOWS_SUFFIX};
 use serde_json::Value;
 
 mod common;
@@ -54,4 +54,15 @@ fn launcher_manifest_follows_the_channel() {
         Some("https://example.invalid/latest-0.2.0-test.1.json")
     );
     assert!(launcher_manifest_url(&releases()[2..], Channel::Test).is_none());
+}
+
+#[test]
+fn patches_list_the_channel_newest_first() {
+    let stable = patches(&releases(), Channel::Stable);
+    let versions: Vec<&str> = stable.iter().map(|patch| patch.version.as_str()).collect();
+    assert_eq!(versions, ["0.1.1", "0.1.0"]);
+    assert_eq!(stable[0].date, "2026-11-19");
+    assert_eq!(stable[0].notes, "Stable notes");
+    assert_eq!(stable[1].date, "");
+    assert_eq!(patches(&releases(), Channel::Test)[0].version, "0.2.0-test.1");
 }

@@ -258,6 +258,11 @@ unauthenticated limit. Idle it uses one WebView2 window and no game code.
 
 ### Step 5: The concept look
 
+> 2026-11-20: built. News tests live in `launcher/core/tests/news.rs` (the window crate
+> has no tests); the concept copy is `docs/design/images/launcher_concept.jpg`. Repair game
+> files deletes the newest version and downloads it again (the SHA-256 check runs on the
+> zip). Waiting on the person's look sign-off.
+
 - Build: the concept layout, 1280x720 minimum, resizable, custom title bar:
   left sidebar (Play, News, Patches, Settings, Support; News dot when an item
   is newer than the last one seen), logo and tagline, hero banner from the

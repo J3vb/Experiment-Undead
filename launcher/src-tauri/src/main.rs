@@ -4,6 +4,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod host;
+mod pages;
 
 use launcher_core::feed::{self, Channel, Release};
 use launcher_core::host::Host;
@@ -55,7 +56,12 @@ struct Status {
     online: bool,
     installed: Vec<String>,
     newest: Option<Release>,
+    /// Newest version on each channel, for the Game version dropdown.
+    stable: Option<String>,
+    test: Option<String>,
     update_ready: bool,
+    close_on_play: bool,
+    hosting: bool,
     busy: bool,
     game_dir: String,
 }
@@ -79,17 +85,22 @@ fn status(launcher: State<'_, Launcher>) -> Status {
     let update_ready = newest
         .as_ref()
         .is_some_and(|release| feed::is_newer(&release.version, &installed));
+    let saved = launcher.settings.lock().map(|saved| saved.clone()).unwrap_or_default();
+    let on_channel = |channel: Channel| {
+        let releases = launcher.releases.lock().ok()?;
+        feed::newest(releases.as_deref()?, channel, feed::platform_suffix()).map(|release| release.version)
+    };
     Status {
         version: env!("CARGO_PKG_VERSION").to_string(),
-        channel: launcher
-            .settings
-            .lock()
-            .map(|saved| saved.channel)
-            .unwrap_or(Channel::Stable),
+        channel: saved.channel,
         online: launcher.releases.lock().map(|list| list.is_some()).unwrap_or(false),
         installed,
         newest,
+        stable: on_channel(Channel::Stable),
+        test: on_channel(Channel::Test),
         update_ready,
+        close_on_play: saved.close_on_play,
+        hosting: launcher.hosting().is_some(),
         busy: launcher.busy.load(Ordering::Relaxed),
         game_dir: settings::versions_dir(&launcher.data_dir).display().to_string(),
     }
@@ -215,7 +226,8 @@ async fn check_and_install(app: &AppHandle, manifest: &str) -> Result<bool, Stri
     Ok(true)
 }
 
-/// Starts the newest installed game and closes the launcher, unless it hosts a server.
+/// Starts the newest installed game and closes the launcher when the player wants that and
+/// it hosts no server.
 #[tauri::command]
 fn play(app: AppHandle, launcher: State<'_, Launcher>) -> Result<(), String> {
     let installer = launcher.installer();
@@ -232,7 +244,12 @@ fn play(app: AppHandle, launcher: State<'_, Launcher>) -> Result<(), String> {
         .arg(format!("--launcher-exe={}", me.display()))
         .spawn()
         .map_err(|error| format!("Could not start the game: {error}"))?;
-    if launcher.hosting().is_none() {
+    let close = launcher
+        .settings
+        .lock()
+        .map(|saved| saved.close_on_play)
+        .unwrap_or(true);
+    if close && launcher.hosting().is_none() {
         app.exit(0);
     }
     Ok(())
@@ -279,7 +296,14 @@ fn main() {
             host::host_start,
             host::host_stop,
             host::open_logs,
-            host::quit
+            host::quit,
+            pages::news,
+            pages::patches,
+            pages::disk,
+            pages::repair,
+            pages::uninstall,
+            pages::set_close_on_play,
+            pages::open_place
         ])
         .run(tauri::generate_context!())
         .expect("the launcher window could not start");
