@@ -106,7 +106,7 @@ Not in (non-goals, and where each one goes instead):
 | tools/assets/check_models.py | changed | `doors` budget (2,000 / 4), `JOINTS` lines |
 | tools/assets/prop_import.gd | changed | `Hazard` slot |
 | levels/materials/hazard_paint.tres | new | door orange as a shared material |
-| .github/workflows/assets.yml | changed | door files in the required-output list |
+| .github/workflows/assets.yml | changed | door files in the required-output list (replaced by `tools/assets/check_outputs.py` via `build_models.MODELS` in F-79 step 10) |
 | assets/models/doors/ (*.glb + .import) | new | exported models, `light_baking=3` (they move), `prop_import.gd` |
 | systems/interactables/door.gd | changed | `slide_up` export and the slide in `open()` |
 | levels/halcyon_labs/map.tscn | changed | door Blockers become StaticBody3D + model; `door_dev` material deleted |

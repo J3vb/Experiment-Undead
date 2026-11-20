@@ -123,7 +123,9 @@ the same. Maps at 1024 for props, 2048 for characters, like the player body.
 - Build: `--kind character` adds: decimate to 16,000, maps at 2048, fit the
   22 bones (from Tripo's own skeleton joints when it is rigged, else from body
   slices: feet, knees, hips, shoulders, elbows, hands, neck, head top), skin
-  with `character_rig` segment weights, add an `Eyes` marker, copy the clips
+  with `character_rig` segment weights (as built: Tripo's own skin weights are
+  kept and mapped to our bones; the report in
+  `docs/design/reviews/tripo-trial/README.md` explains why), add an `Eyes` marker, copy the clips
   from `assets/models/characters/player.glb` by bone name. Renders idle, walk
   and a turnaround.
 - Files: tools/assets/tripo_rig.py, tripo_intake.py, test_tripo_intake.py.
@@ -152,7 +154,8 @@ the same. Maps at 1024 for props, 2048 for characters, like the player body.
 
 - Tripo's auto-rig uses its own bones and rest pose; our clips need our bone
   names and rest pose. The plan does not reuse Tripo's skin, only its joint
-  positions, so the clips stay valid.
+  positions, so the clips stay valid. (As built the tool keeps Tripo's skin
+  mapped to our bones; see the trial report.)
 - Tripo bodies in a different pose (T-pose vs our A-pose) give bad skin
   weights at the shoulders. Ask for an A-pose source; the report notes it.
 - Decimating 300k+ Tripo meshes to 2k can wreck thin parts. The bake keeps the

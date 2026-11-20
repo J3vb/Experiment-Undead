@@ -110,7 +110,7 @@ Not in (non-goals, and where each one goes instead):
 | systems/ui/hud.gd, hud.tscn | changed | Pause panel, settings and results nodes removed; no scene change |
 | systems/ui/pause_screen.gd, pause_screen.tscn | new | The pause menu, moved out of the HUD as it looks today |
 | systems/ui/net_error_dialog.gd | changed | `UI.replace(&"main_menu")`; mouse through the router |
-| systems/loot/pack_overlay.gd, systems/debug/debug_console.gd | changed | `UI.hold_mouse(self, open)` instead of setting the mouse |
+| systems/ui/pack_overlay.gd, systems/debug/debug_console.gd | changed | `UI.hold_mouse(self, open)` instead of setting the mouse |
 | systems/ui/settings_screen.gd, character_screen.gd, results_screen.gd | changed | Small: emit `closed` when done; results asks `GameSession` through its signals as today |
 | docs/FOUNDATIONS.md, docs/adr/0011-one-ui-router.md, docs/DECISIONS.md, docs/CODE_RULES.md, docs/LOGGING.md, docs/HOW_TO_ADD.md, AGENTS.md | changed | Foundation 5 solid, ADR accepted, rule documented, "add a screen" recipe |
 
@@ -123,7 +123,7 @@ emit `closed`.
 
 - `ScreenData` (new, `systems/ui/screen_data.gd`), files in
   `content/screens/<id>.tres`, id = file name:
-  - `scene: PackedScene`
+  - `scene: PackedScene` (as built: a `String` path)
   - `layer: int = 20` (ui-hud.md layers: screens 20, overlays 30)
   - `root: bool = false`: true for a place the game goes to with
     `replace()` (`main_menu`, `match`); false for a screen pushed on top
@@ -148,14 +148,15 @@ emit `closed`.
     gives focus back to the control that had it before the push, applies the
     mouse rule.
   - `reload()`: frees every pushed screen, then `reload_current_scene()`
+    (as built, restart goes through `Net.world.reload()`, which calls it)
     (used by `GameSession.restart()`, so a restart from results never keeps
     a stale stack).
   - `top() -> StringName`: id of the top screen, `&""` when none.
   - `hold_mouse(node, held)`: for panels that are not pushed screens (Pack
     overlay, debug console). A freed node lets go automatically.
   - Mouse rule: the mouse is captured only when the current root has
-    `captures_mouse`, no screen is pushed, no node holds the mouse and the
-    window has focus; a mouse click in the match recaptures it (moved from
+    `captures_mouse`, no screen is pushed and no node holds the mouse (as
+    built there is no window focus check); a mouse click in the match recaptures it (moved from
     `GameSession._unhandled_input`). Headless: never touch the mouse.
   - `mouse_should_be_free() -> bool` so tests can check the rule headless.
 - Screen convention: every pushed screen's root has `signal closed` and
@@ -163,7 +164,8 @@ emit `closed`.
   pops it when it emits `closed`.
 - Save format change: none. Network messages: none.
 - Content checks to add in `tests/content/`: every `ScreenData` has a scene
-  that instances; layer is 20 or 30; exactly two roots; every non-root
+  that instances; layer is 20 or 30; exactly two roots (now five: launcher,
+  main_menu, hub, match, dedicated_server); every non-root
   scene root has a `closed` signal.
 
 ## Co-op behaviour
@@ -205,7 +207,7 @@ focus change only, never per frame. Budget: no per-frame cost.
   content/screens/main_menu.tres, content/screens/match.tres (new),
   project.godot, tools/ci/check_rules.py, systems/ui/main_menu.gd,
   systems/ui/hud.gd, systems/game/game_session.gd,
-  systems/ui/net_error_dialog.gd, systems/loot/pack_overlay.gd,
+  systems/ui/net_error_dialog.gd, systems/ui/pack_overlay.gd,
   systems/debug/debug_console.gd, tests/unit/test_ui_router.gd (new),
   tests/content/test_screens.gd (new), tests/unit/test_main_menu.gd,
   tests/unit/test_net_errors.gd, tests/unit/test_pack_overlay.gd,

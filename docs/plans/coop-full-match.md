@@ -30,7 +30,8 @@ In:
 - Squad cards in the match HUD: name, health bar, down state with bleed-out
   timer (`docs/design/ui-hud.md#10-match-hud`). Revive prompt says the
   teammate's name instead of a peer number.
-- Hub and deploy flow: joining a server (dedicated or Host and play) lands
+- Hub and deploy flow (Host and play was later replaced by Enter world, see
+  [join-any-game.md](join-any-game.md)): joining a server (dedicated or Host and play) lands
   in the hub. A deploy board per level sends the whole server into that
   level. When the match ends, after the results screen, everyone returns to
   the hub. A dedicated server also returns to the hub when the last player
@@ -81,7 +82,7 @@ Not in (non-goals, and where each one goes instead):
   The hub is a new root screen (content/screens/hub.tres) reached only through UI.replace.
 - Input through InputFrame, gameplay in _physics_process, randomness from the session RNG: yes.
 - Tests: two-peer ENet unit tests per step, the co-op soak, solo tests and the solo soak stay green.
-- Logging: Log.warn net.match_reset with the reason; the soak reads existing net.* warnings.
+- Logging: Log.info net.match_reset with the reason; the soak reads existing net.* warnings.
 - Performance: squad cards update on state change, not per frame (bleed timer text only while downed).
 - Out of scope: see Not in.
 ```
@@ -118,7 +119,7 @@ Not in (non-goals, and where each one goes instead):
 | systems/net/dedicated_server.gd | changed | Starts in the hub; swaps its session on deploy, match end and when it empties |
 | core/net.gd | changed | Current place id, the "go to place" message, rejoin after a place change |
 | systems/ui/results_screen.gd | changed | In co-op the restart button reads "Back to hub" and returns with the squad |
-| systems/ui/main_menu.gd | changed | Host and play opens the hub |
+| systems/ui/main_menu.gd | changed | Host and play opens the hub (superseded: Enter world, join-any-game.md) |
 | core/build.gd | changed | PROTOCOL_VERSION +1 in step 3 (snapshot fields) |
 | docs/MULTIPLAYER.md, docs/DECISIONS.md, docs/ROADMAP.md | changed | Close-out |
 
@@ -131,8 +132,9 @@ Control script owned by the Hud (one job: draw the cards).
 - `PlayerStateSync._snapshot()` gains `"name": String` and `"bleed": float`
   (seconds left while downed). Clients read them for squad cards and prompts.
 - Soak arguments: `--clients N --rounds N --seed N --timescale N`.
-- `GameSession.is_hub: bool` (export, default false). True skips the
-  WaveDirector start, the Spawner, power-up drops, loot, points and death.
+- `GameSession.is_hub: bool` (export, default false). True means no waves
+  start (as built: it only skips the wave start; no zombies spawn in the hub,
+  so drops, loot, points and death never happen there).
 - Network: `Net._go_to_place(place: StringName)` authority to all (reliable);
   the handshake reply carries the server's current place so a client that
   loaded the wrong one switches before its player spawns.
@@ -159,7 +161,8 @@ Control script owned by the Hud (one job: draw the cards).
 
 ## Performance
 
-Squad cards rebuild only on `health_changed` or a snapshot, at most 3 cards.
+As built, squad cards refresh every 0.25 s (small, not a hot path) and show up
+to 7 cards on an 8-player server (`systems/ui/squad_cards.gd`).
 The bleed label updates in `_process` only while someone is downed. The soak
 is a test tool and never ships. No per-frame allocations.
 
@@ -184,7 +187,9 @@ is a test tool and never ships. No per-frame allocations.
   killable without touching the claim limits. Pass when the server
   log finishes round N, every bot's log reached round N (needs F-40 step 1),
   no SCRIPT ERROR or `level: error` line in any log, and the fail list from
-  `soak.gd` plus `net.hit_claim_rejected` above 1% of claims is empty.
+  `soak.gd` is empty. As built the rule is stricter: any `net.*` warning fails
+  the run, except `hit_claim_rejected` with reason `zombie_not_alive`
+  (`tools/soak/coop_soak.gd`).
   Reuse `soak.gd`'s `check_log` per log. Workflow `coop-soak.yml`: on pull
   requests 1 server + 2 bots, rounds 1-5; nightly and manual 4 bots, rounds
   1-20. Not a required check (the person decides that after a week of green
@@ -208,9 +213,9 @@ is a test tool and never ships. No per-frame allocations.
   player's wallet points.
 - Files: systems/game/game_session.gd, systems/ui/pause_screen.gd/.tscn,
   tests/unit/test_game_session.gd (or the existing pause test),
-  tests/unit/test_coop_pause.gd (new).
-- Tests: two-peer: the host opens pause, the tree is not paused, zombies keep
-  moving on the server and the client; solo pause still pauses; client
+  tests/unit/test_pause_screen.gd (as built; no separate test_coop_pause.gd).
+- Tests: two-peer: the host opens pause and the tree is not paused (as built:
+  the lone-host and friend-joins cases in `test_pause_screen.gd`); solo pause still pauses; client
   results show the client's own points.
 - Done when: pausing never freezes teammates; tests pass.
 
@@ -225,7 +230,7 @@ is a test tool and never ships. No per-frame allocations.
   `CoopHud` revive prompt uses the name. PROTOCOL_VERSION +1.
 - Files: systems/net/handshake.gd, player_state_sync.gd, coop_hud.gd,
   systems/ui/squad_cards.gd (new), systems/ui/hud.gd, hud.tscn,
-  core/build.gd, tests/unit/test_squad_cards.gd (new),
+  core/build.gd, tests/unit/test_squad_game_over.gd (as built; no test_squad_cards.gd),
   tests/unit/test_player_state_sync.gd.
 - Tests: two-peer: a client sees the other player's name and health; a downed
   teammate's card shows the bleed timer counting down; the prompt says
@@ -270,7 +275,8 @@ is a test tool and never ships. No per-frame allocations.
   test servers start in the match). A listen host keeps its port open through
   the swap. The handshake reply carries the server's place; a menu client in
   another place switches before it completes auth (tools and tests that start
-  a session directly have no place and stay). Main menu: Host and play and
+  a session directly have no place and stay). Main menu (later replaced by Enter
+  world, join-any-game.md): Host and play and
   Join land in the hub; Play solo goes straight to the match.
   PROTOCOL_VERSION 14.
 - Files: systems/game/game_session.gd, deploy_vote.gd (new),
