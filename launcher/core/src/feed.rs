@@ -7,7 +7,7 @@ use serde::Serialize;
 use serde_json::Value;
 use std::time::Duration;
 
-pub const API_URL: &str = "https://api.github.com/repos/J3vb/Experiment-Undead/releases";
+pub const API_URL: &str = "https://api.github.com/repos/J3vb/Fenlight/releases";
 pub const WINDOWS_SUFFIX: &str = "-windows.zip";
 pub const LINUX_SUFFIX: &str = "-linux.zip";
 const DIGEST_PREFIX: &str = "sha256:";

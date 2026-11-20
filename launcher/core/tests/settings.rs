@@ -53,6 +53,7 @@ fn command_line_test_hooks() {
     );
     assert_eq!(versions_dir(&PathBuf::from("/d")), PathBuf::from("/d/game/versions"));
     assert_eq!(releases_api(&args(&[])), API_URL);
+    assert_eq!(API_URL, "https://api.github.com/repos/J3vb/Fenlight/releases");
     assert_eq!(
         releases_api(&args(&["--releases-api=http://127.0.0.1:9/r"])),
         "http://127.0.0.1:9/r"
