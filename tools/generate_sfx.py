@@ -364,3 +364,20 @@ rng = np.random.default_rng(25)
 tt = t(0.42)
 rustle = lowpass(rng.standard_normal(len(tt)), 0.12) * np.exp(-((tt - 0.2) ** 2) / 0.006) * 0.6
 save("player_mantle.wav", rustle + handling(0.42, [(0.0, 260, 40, 1.0), (0.015, 1400, 120, 0.35)]), peak=0.7)
+
+# Frag grenade: pin pull, cook tick, bounce, blast near and far (F-24). Own seed.
+rng = np.random.default_rng(24)
+save("grenade_pin.wav", handling(0.32, [(0.0, 2600, 120, 0.5), (0.09, 1750, 30, 0.9)]), peak=0.7)
+save("grenade_tick.wav", handling(0.06, [(0.0, 3100, 220, 1.0)]), peak=0.45)
+tt = t(0.2)
+clunk = np.sin(2 * np.pi * (420 * tt - 300 * tt**2)) * np.exp(-tt * 40)
+save("grenade_bounce.wav", clunk + handling(0.2, [(0.0, 1200, 90, 0.6)]), peak=0.6)
+tt = t(1.9)
+crack = rng.standard_normal(len(tt)) * np.exp(-tt * 45)
+boom = np.sin(2 * np.pi * (70 * tt - 18 * tt**2)) * np.exp(-tt * 4.5)
+rumble = lowpass(rng.standard_normal(len(tt)), 0.04) * np.exp(-tt * 2.2) * 4.0
+debris = lowpass(rng.standard_normal(len(tt)), 0.5) * np.exp(-((tt - 0.35) ** 2) * 30) * 0.25
+save("grenade_blast_near.wav", crack * 1.1 + boom * 1.8 + rumble + debris, peak=0.95)
+tt = t(2.6)
+far = lowpass(lowpass(rng.standard_normal(len(tt)), 0.03), 0.05) * np.minimum(tt * 40, 1) * np.exp(-tt * 1.6)
+save("grenade_blast_far.wav", far + np.sin(2 * np.pi * 45 * tt) * np.exp(-tt * 3) * 0.4, peak=0.8)
