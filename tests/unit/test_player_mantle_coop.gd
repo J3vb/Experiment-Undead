@@ -4,6 +4,8 @@ extends GutTest
 
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
 const TICK: float = 1.0 / 60.0
+## Far from the origin, so bodies other tests leave in the shared physics world cannot block the climb.
+const SPOT: Vector3 = Vector3(300, 0, 300)
 
 var server_root: Node
 var client_root: Node
@@ -79,9 +81,10 @@ func _frame(buttons: int) -> InputFrame:
 func test_a_client_mantle_moves_the_server_copy_onto_the_ledge() -> void:
 	var owner: Player = client_spawner.find_player(client_id)
 	_only_owner_collides(owner)
-	_box(Vector3(0, -0.5, 0), Vector3(40, 1, 40))
-	_box(Vector3(0, 0.5, -1.6), Vector3(3, 1.0, 2))
-	owner.global_position = Vector3(0, 0.05, 0)
+	_box(SPOT + Vector3(0, -0.5, 0), Vector3(40, 1, 40))
+	_box(SPOT + Vector3(0, 0.5, -1.6), Vector3(3, 1.0, 2))
+	owner.global_basis = Basis.IDENTITY
+	owner.global_position = SPOT + Vector3(0, 0.05, 0)
 	await wait_physics_frames(2)
 	for i: int in 20:
 		owner.apply_frame(_frame(0), TICK)
@@ -92,4 +95,5 @@ func test_a_client_mantle_moves_the_server_copy_onto_the_ledge() -> void:
 	assert_almost_eq(owner.global_position.y, 1.0, 0.06)
 	var copy: Player = server_spawner.find_player(client_id)
 	await wait_until(func() -> bool: return copy.global_position.y > 0.9, 3.0, "the climb reached the server")
+	assert_almost_eq(copy.global_position.z, owner.global_position.z, 0.05, "the copy moved onto the ledge too")
 	assert_false(copy.mantle.is_active(), "the server copy never runs a mantle of its own")
