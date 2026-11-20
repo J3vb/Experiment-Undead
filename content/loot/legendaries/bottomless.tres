@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="LegendaryData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/loot/legendary_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"bottomless"
+display_name = "Bottomless"
+base_id = &"kestrel_smg"
+stat = &"bottomless"
+text = "Every {v}th kill refills the magazine"
+low = 10.0
+high = 15.0
+step = 1.0
+lower_is_better = true
+flavour = "Its owner swore the magazine was never empty. The others at Lantern Post stopped arguing after the first winter."

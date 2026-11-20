@@ -6,7 +6,16 @@ extends Node
 
 ## Trait stats with code. tests/content/test_legendaries.gd fails on a Legendary naming any other.
 const STATS: Array[StringName] = [
-	&"tidewater", &"lantern_fall", &"ricochet", &"choir_mark", &"bloodline", &"black_ledger"
+	&"tidewater",
+	&"lantern_fall",
+	&"ricochet",
+	&"choir_mark",
+	&"bloodline",
+	&"black_ledger",
+	&"bottomless",
+	&"overpressure",
+	&"dead_mans_hand",
+	&"cold_snap",
 ]
 const TIDEWATER_MAX_STACKS: int = 10
 ## Provisional: affixes.md gives no radius (the middle of the other trait radii).
@@ -15,6 +24,9 @@ const RICOCHET_RANGE: float = 8.0
 const CHOIR_MARK_RANGE: float = 6.0
 const CHOIR_MARK_SECONDS: float = 4.0
 const BLACK_LEDGER_POINTS: int = 10000
+const COLD_SNAP_SECONDS: float = 2.0
+## Cold Snap may come again after this share of the gun's empty reload time (reload speed bonuses).
+const SLACK_FRACTION: float = 0.5
 
 var session: GameSession
 
@@ -23,6 +35,9 @@ var _time: float = 0.0
 var _tidewater: Dictionary[int, Array] = {}
 ## Per marked zombie instance id: [expires at, bonus percent].
 var _marks: Dictionary[int, Array] = {}
+## Per peer: when its next Cold Snap is allowed.
+var _cold_snap_ready: Dictionary[int, float] = {}
+var _next_warning: float = 0.0
 
 
 func _ready() -> void:
@@ -75,6 +90,59 @@ func _on_enemy_killed(enemy: Node3D, info: DamageInfo) -> void:
 	var blast: float = item.stats.value(&"lantern_fall", 0.0)
 	if blast > 0.0 and info.is_headshot():
 		_lantern_fall(enemy as Zombie, player, item, blast)
+
+
+## Owner: Cold Snap after an empty-magazine reload starts. Runs here on the server, else asks it.
+func request_cold_snap(player: Player, uid: String) -> void:
+	if multiplayer.is_server():
+		_cold_snap(player, uid)
+	else:
+		_request_cold_snap_on_server.rpc_id(1, uid)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _request_cold_snap_on_server(uid: String) -> void:
+	if not multiplayer.is_server():
+		return
+	var sender: int = multiplayer.get_remote_sender_id()
+	var player: Player = session.players.find_player(sender) if session and session.players else null
+	var reason: StringName = _cold_snap_problem(player, uid)
+	if reason != &"":
+		_reject(sender, reason)
+		return
+	_cold_snap(player, uid)
+
+
+func _cold_snap_problem(player: Player, uid: String) -> StringName:
+	if player == null or not player.is_alive():
+		return &"player_not_alive"
+	var item: ItemInstance = player.item_guns.get(uid)
+	if item == null or item.stats.value(&"cold_snap", 0.0) <= 0.0:
+		return &"no_cold_snap"
+	if _time < _cold_snap_ready.get(player.net_id, 0.0):
+		return &"cold_snap_too_fast"
+	return &""
+
+
+## Server: freezes every live zombie within the trait's reach of the player, without shatter.
+func _cold_snap(player: Player, uid: String) -> void:
+	var item: ItemInstance = player.item_guns.get(uid)
+	if item == null or session == null or session.spawner == null:
+		return
+	var base: WeaponData = Content.weapon(StringName(item.data.get("base", "")))
+	_cold_snap_ready[player.net_id] = _time + (base.empty_reload_time if base else 0.0) * SLACK_FRACTION
+	var reach: float = item.stats.value(&"cold_snap", 0.0)
+	for child: Node in session.spawner.get_children():
+		var zombie: Zombie = child as Zombie
+		if zombie and not zombie.health.is_dead and zombie.global_position.distance_to(player.global_position) <= reach:
+			Frost.hold(zombie, COLD_SNAP_SECONDS)
+
+
+func _reject(sender: int, reason: StringName) -> void:
+	if _time < _next_warning:
+		return
+	_next_warning = _time + 1.0
+	Log.warn(&"net", &"trait_rejected", {"peer": sender, "reason": reason})
 
 
 func _mark_scale(zombie: Zombie) -> float:
@@ -157,3 +225,4 @@ static func _near(source: Zombie, reach: float) -> Array[Zombie]:
 
 func _forget_peer(peer_id: int) -> void:
 	_tidewater.erase(peer_id)
+	_cold_snap_ready.erase(peer_id)

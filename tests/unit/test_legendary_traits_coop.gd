@@ -75,3 +75,40 @@ func test_ricochet_from_a_client_headshot_claim_hits_a_second_zombie() -> void:
 	)
 	await wait_until(func() -> bool: return bystander.health.current < 100.0, 3.0, "ricochet landed")
 	assert_almost_eq(bystander.health.current, 96.0, 0.001, "40% of the 10-point hit")
+
+
+func test_cold_snap_from_a_client_freezes_on_the_server_and_is_rate_limited() -> void:
+	var zombie: Zombie = await _zombie()
+	claimant.item_guns["cs"] = ItemInstance.new(
+		{"uid": "cs", "base": "atlas_auto", "rar": "legendary", "trait": ["cold_snap", 1.0]}
+	)
+	var mine: Player = client.players.find_player(client.multiplayer.get_unique_id())
+	client.legendary_traits.request_cold_snap(mine, "nobody_owns_this")
+	await wait_physics_frames(8)
+	assert_false(zombie.frozen, "someone else's or a missing gun is refused")
+	client.legendary_traits.request_cold_snap(mine, "cs")
+	await wait_until(func() -> bool: return zombie.frozen, 3.0, "frozen by the client's Cold Snap")
+	zombie.frozen = false
+	client.legendary_traits.request_cold_snap(mine, "cs")
+	await wait_physics_frames(8)
+	assert_false(zombie.frozen, "a repeat inside the cooldown is refused")
+
+
+func test_dead_mans_hand_claim_passes_bounds_only_from_its_item() -> void:
+	var zombie: Zombie = await _zombie()
+	var hollis: WeaponData = Content.weapon(&"hollis_44")
+	var big: float = hollis.damage * hollis.head_multiplier * 1.5 * 2.0
+	claimant.item_guns["dmh"] = ItemInstance.new(
+		{"uid": "dmh", "base": "hollis_44", "rar": "legendary", "trait": ["dead_mans_hand", 0.5]}
+	)
+	claimant.item_guns["plain"] = ItemInstance.new({"uid": "plain", "base": "hollis_44", "rar": "rare"})
+	for uid: String in ["", "plain"]:
+		client.hit_claims.claim_hit.rpc_id(
+			1, zombie.name, DamageInfo.Zone.BODY, big, &"hollis_44", Vector3.ZERO, Vector3.ZERO, uid
+		)
+	await wait_physics_frames(8)
+	assert_eq(zombie.health.current, 100.0, "too big for a plain Hollis")
+	client.hit_claims.claim_hit.rpc_id(
+		1, zombie.name, DamageInfo.Zone.BODY, big, &"hollis_44", Vector3.ZERO, Vector3.ZERO, "dmh"
+	)
+	await wait_until(func() -> bool: return zombie.health.is_dead, 3.0, "a 4x last round lands")

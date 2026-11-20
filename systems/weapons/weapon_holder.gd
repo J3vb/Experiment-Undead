@@ -259,11 +259,13 @@ func _on_setting_changed(section: StringName, key: StringName, value: Variant) -
 		weapon_bob = value
 
 
-## Dead Center: a confirmed headshot kill puts one round back in the gun in hand (owner only).
+## Owner only: Bottomless counts the kill; Dead Center puts a round back on a headshot kill.
 func _on_hit_confirmed(player: Player, is_kill: bool, headshot: bool) -> void:
-	if player != _player or not (is_kill and headshot) or current == null:
+	if player != _player or not is_kill or current == null or not _player.is_multiplayer_authority():
 		return
-	if not _player.is_multiplayer_authority() or not _player.skill_rules.has(SkillNodeData.Rule.DEAD_CENTER):
+	if OwnerTraits.count_kill(current.item, current.instance, true):
+		current.ammo_changed.emit(current.instance.ammo_in_mag, current.instance.ammo_reserve)
+	if not headshot or not _player.skill_rules.has(SkillNodeData.Rule.DEAD_CENTER):
 		return
 	if current.instance.ammo_in_mag >= current.data.magazine_size:
 		return

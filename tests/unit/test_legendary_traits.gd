@@ -166,3 +166,28 @@ func test_black_ledger_needs_more_than_ten_thousand_points() -> void:
 	assert_eq(_hit(first, "plain"), 100.0)
 	player.wallet.points = 10001
 	assert_almost_eq(_hit(first, "plain"), 110.0, 0.001)
+
+
+func test_cold_snap_holds_zombies_in_reach_without_shatter() -> void:
+	_session.spawner = _spawner
+	_give("cs", "cold_snap")
+	traits.request_cold_snap(player, "cs")
+	assert_true(first.frozen, "0 m away")
+	assert_false(second.frozen, "20 m away")
+	var hit: DamageInfo = DamageInfo.create(10.0, player)
+	assert_false(Frost.apply(first, hit), "a held zombie does not shatter")
+	assert_true(first.frozen)
+	(first.get_node("Frost") as Frost)._physics_process(2.1)
+	assert_false(first.frozen, "the hold ends after 2 s")
+
+
+func test_cold_snap_refuses_a_gun_without_the_trait_and_a_repeat_too_soon() -> void:
+	_session.spawner = _spawner
+	assert_ne(traits._cold_snap_problem(player, "plain"), &"")
+	assert_ne(traits._cold_snap_problem(player, "missing"), &"")
+	_give("cs", "cold_snap")
+	assert_eq(traits._cold_snap_problem(player, "cs"), &"")
+	traits.request_cold_snap(player, "cs")
+	assert_eq(traits._cold_snap_problem(player, "cs"), &"cold_snap_too_fast")
+	traits._physics_process(1.8)
+	assert_eq(traits._cold_snap_problem(player, "cs"), &"")
