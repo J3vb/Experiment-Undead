@@ -57,7 +57,6 @@ func _run_flow(mode: String, seconds: float = 25.0) -> void:
 			"--",
 			"--mode=" + mode,
 			"--result=" + _result_path,
-			"--warm-hub",
 		]
 	)
 	_pid = OS.create_process(OS.get_executable_path(), arguments)
