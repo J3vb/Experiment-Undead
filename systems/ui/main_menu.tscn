@@ -132,28 +132,29 @@ text = "LOADOUT"
 alignment = 0
 theme_type_variation = &"MenuBrush"
 focus_neighbor_top = NodePath("../Servers")
-focus_neighbor_bottom = NodePath("../Settings")
-focus_next = NodePath("../Settings")
+focus_neighbor_bottom = NodePath("../Research")
+focus_next = NodePath("../Research")
 focus_previous = NodePath("../Servers")
 
 [node name="Research" type="Button" parent="Screens/Root/Menu"]
 layout_mode = 2
-tooltip_text = "Coming soon"
-focus_mode = 0
-disabled = true
 text = "RESEARCH"
 alignment = 0
 theme_type_variation = &"MenuBrush"
+focus_neighbor_top = NodePath("../Loadout")
+focus_neighbor_bottom = NodePath("../Settings")
+focus_next = NodePath("../Settings")
+focus_previous = NodePath("../Loadout")
 
 [node name="Settings" type="Button" parent="Screens/Root/Menu"]
 layout_mode = 2
 text = "SETTINGS"
 alignment = 0
 theme_type_variation = &"MenuBrush"
-focus_neighbor_top = NodePath("../Loadout")
+focus_neighbor_top = NodePath("../Research")
 focus_neighbor_bottom = NodePath("../Credits")
 focus_next = NodePath("../Credits")
-focus_previous = NodePath("../Loadout")
+focus_previous = NodePath("../Research")
 
 [node name="Credits" type="Button" parent="Screens/Root/Menu"]
 layout_mode = 2

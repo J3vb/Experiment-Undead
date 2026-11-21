@@ -105,6 +105,7 @@ func test_menu_rows_are_focusable_in_keyboard_and_gamepad_order() -> void:
 		menu.enter_button,
 		menu.servers_button,
 		menu.loadout_button,
+		menu.research_button,
 		menu.settings_button,
 		menu.credits_button,
 		menu.get_node("Screens/Root/Menu/Quit") as Button,
@@ -265,17 +266,20 @@ func test_logo_and_brush_rows() -> void:
 		assert_eq(button.text, button.text.to_upper(), button.name)
 
 
-## F-88 step 2: the painted backdrop replaces the Halcyon Labs map, and Research waits for the skill tree.
-func test_painted_backdrop_and_greyed_research() -> void:
+## F-88 step 2: the painted backdrop replaces the Halcyon Labs map. F-21: Research is a working row.
+func test_painted_backdrop_and_research_row() -> void:
 	assert_false(FileAccess.get_file_as_string("res://systems/ui/main_menu.tscn").contains("halcyon_labs/map.tscn"))
 	assert_eq(menu.backdrop.texture.resource_path, "res://assets/ui/backdrops/main_menu.jpg")
 	assert_gte(menu.backdrop.texture.get_width(), 1600)
-	assert_true(menu.research_button.disabled)
-	assert_eq(menu.research_button.focus_mode, Control.FOCUS_NONE)
-	assert_eq(menu.research_button.tooltip_text, "Coming soon")
+	assert_false(menu.research_button.disabled)
+	assert_eq(menu.research_button.focus_mode, Control.FOCUS_ALL)
+	assert_eq(menu.research_button.tooltip_text, "")
 	assert_eq(menu.research_button.text, "RESEARCH")
 	var loadout: Button = menu.loadout_button
-	assert_eq(loadout.get_node(loadout.focus_neighbor_bottom), menu.settings_button, "focus skips Research")
+	var research: Button = menu.research_button
+	assert_eq(loadout.get_node(loadout.focus_neighbor_bottom), research, "Loadout goes down to Research")
+	assert_eq(research.get_node(research.focus_neighbor_bottom), menu.settings_button)
+	assert_eq(menu.settings_button.get_node(menu.settings_button.focus_neighbor_top), research)
 
 
 func test_backdrop_drifts_and_snow_falls_unless_reduce_motion() -> void:

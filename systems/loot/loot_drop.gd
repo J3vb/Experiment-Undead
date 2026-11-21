@@ -95,6 +95,9 @@ func _can_reach(viewer: Player) -> bool:
 
 
 static func item_name(data: Dictionary) -> String:
+	var legendary: LegendaryData = ItemInstance.legendary_of(data)
+	if legendary:
+		return legendary.display_name
 	var base: StringName = StringName(data.get("base", ""))
 	if Content.has(&"weapons", base):
 		return Content.weapon(base).display_name

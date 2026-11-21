@@ -126,7 +126,10 @@ live state belongs in objects such as `WeaponInstance`.
 3. Rule skill: add a value to `SkillNodeData.Rule`, set `rule` in the `.tres`, and check
     `player.skill_rules.has(SkillNodeData.Rule.<NAME>)` where it applies. Never check the skill id.
 4. Ranks reach the server with the loadout (`LoadoutSync`); nothing else to sync.
-5. Extend `tests/content/test_skills.gd` and add a test in `tests/unit/test_skill_effects.gd`,
+5. Research screen: set `row` (0-2 regular, 3 keystone, 4 capstone) and `column` (a free place in
+    its branch), and draw a white line icon `assets/ui/skills/<id>.svg` on the 64 px grid like the
+    others (stroke 5, round caps), then set `icon`. The screen and its lines pick it up from data.
+6. Extend `tests/content/test_skills.gd` and add a test in `tests/unit/test_skill_effects.gd`,
     `test_skill_effects_play.gd` or `test_skill_rules.gd` that fails without the skill.
 
 ## A buyable or machine

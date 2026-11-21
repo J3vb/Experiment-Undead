@@ -35,6 +35,28 @@ func test_unknown_affix_is_grey_inactive_and_unknown_base_is_safe() -> void:
 	assert_eq(tooltip.stats.get_child_count(), 0)
 
 
+func test_legendary_shows_its_name_and_the_trait_line_first() -> void:
+	var item: Dictionary = _item("rifle_ar", [["reload_pct", 2, 2.0 / 3.0]])
+	item.rar = "legendary"
+	item.trait = ["tidewater", 1.0]
+	tooltip.show_item(item)
+	assert_eq(tooltip.item_name.text, "Tidewater")
+	var line: RichTextLabel = tooltip.affixes.get_child(0) as RichTextLabel
+	assert_eq(line.name, "Trait")
+	assert_eq(line.get_parsed_text(), "◆ Each hit on the same zombie: +5% damage (10x) (3-5)")
+	var orange: Color = (Content.get_item(&"loot", &"legendary") as RarityData).colour
+	assert_string_contains(line.text, "[color=#%s]" % orange.to_html(false))
+	assert_eq((tooltip.affixes.get_child(1) as RichTextLabel).get_parsed_text(), "+12% reload speed (8-20)")
+
+
+func test_unknown_legendary_keeps_the_base_name_and_no_trait_line() -> void:
+	var item: Dictionary = _item("rifle_ar")
+	item.trait = ["future_legendary", 0.5]
+	tooltip.show_item(item)
+	assert_eq(tooltip.item_name.text, "AR-17")
+	assert_null(tooltip.affixes.get_node_or_null("Trait"))
+
+
 func test_compare_marks_better_and_worse_base_stats_and_lower_ads_is_better() -> void:
 	tooltip.show_item(_item("rifle_ar"), _item("talon_dmr"))
 	assert_false(_stat_value(0).text.contains("↓"), "Arrows stay hidden until compare is held")

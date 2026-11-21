@@ -50,6 +50,7 @@ func _refresh() -> void:
 			child.free()
 	_fill_header()
 	_fill_stats()
+	_add_trait()
 	for line: Array in _item.get("aff", []):
 		_add_affix(line, false)
 	var implicit: Variant = _item.get("imp")
@@ -170,6 +171,34 @@ func _add_affix(line: Array, implicit: bool) -> void:
 	affixes.add_child(label)
 
 
+## The Legendary trait: first line, in Legendary orange with a diamond, then its range.
+func _add_trait() -> void:
+	var legendary: LegendaryData = ItemInstance.legendary_of(_item)
+	if legendary == null:
+		return
+	var label: RichTextLabel = RichTextLabel.new()
+	label.name = "Trait"
+	label.bbcode_enabled = true
+	label.fit_content = true
+	label.scroll_active = false
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var value: float = ItemRoller.trait_value(legendary, float(_item.trait[1]))
+	var colour: Color = (Content.get_item(&"loot", &"legendary") as RarityData).colour
+	var first: float = legendary.high if legendary.lower_is_better else legendary.low
+	var last: float = legendary.low if legendary.lower_is_better else legendary.high
+	label.text = (
+		"[color=#%s]◆ %s[/color] [color=#%s](%s-%s)[/color]"
+		% [
+			colour.to_html(false),
+			legendary.text.replace("{v}", _number(value)),
+			DIM.to_html(false),
+			_number(first),
+			_number(last),
+		]
+	)
+	affixes.add_child(label)
+
+
 func _rolled_affix(line: Array, implicit: bool, item: Dictionary) -> Dictionary:
 	var required: int = 2 if implicit else 3
 	if line.size() != required or not Content.has(&"loot", StringName(line[0])):
@@ -240,12 +269,8 @@ func _weapon_stats(item: Dictionary) -> Array[float]:
 
 
 func _display_name(item: Dictionary) -> String:
-	var base: Resource = _base(item, &"weapons")
-	if base:
-		return base.get("display_name")
-	var gear: GearBaseData = _base(item, &"loot") as GearBaseData
-	if gear:
-		return gear.display_name
+	if _base(item, &"weapons") or _base(item, &"loot") is GearBaseData:
+		return LootDrop.item_name(item)
 	var visual: GearVisual = GearVisual.find(StringName(item.get("base", "")))
 	return String(visual.id).capitalize() if visual else "Unknown item"
 

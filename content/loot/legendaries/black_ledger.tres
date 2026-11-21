@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="LegendaryData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/loot/legendary_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"black_ledger"
+display_name = "Black Ledger"
+base_id = &"charm_keycard"
+stat = &"black_ledger"
+text = "Carrying more than 10,000 points: +{v}% damage"
+low = 5.0
+high = 10.0
+step = 0.1
+flavour = "A pass to Oriel's accounts office, where Fenlight had a price long before it had a body count."

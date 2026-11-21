@@ -22,7 +22,11 @@ func test_same_seed_produces_same_plain_dictionary_and_rng_state() -> void:
 		assert_eq(first.rar, String(rarity))
 		assert_eq(first.ilvl, 31)
 		assert_typeof(first.uid, TYPE_STRING)
-		assert_null(first.trait)
+		if rarity == &"legendary":
+			assert_eq(ItemInstance.legendary_of(first).base_id, &"rifle_ar")
+			assert_between(float(first.trait[1]), 0.0, 1.0)
+		else:
+			assert_null(first.trait)
 		assert_null(first.set)
 		assert_eq(first.craft, {})
 		var saved: Dictionary = JSON.parse_string(JSON.stringify(first))
@@ -219,7 +223,10 @@ func test_gear_rolls_repeat_as_plain_item_dicts_without_implicit_ammo() -> void:
 			assert_eq(item.ilvl, 31)
 			assert_typeof(item.uid, TYPE_STRING)
 			assert_null(item.imp)
-			assert_null(item.trait)
+			if rarity == &"legendary" and not ItemRoller.legendaries_for(base.id).is_empty():
+				assert_eq(ItemInstance.legendary_of(item).base_id, base.id)
+			else:
+				assert_null(item.trait)
 			assert_null(item.set)
 			assert_eq(item.craft, {})
 			var saved: Dictionary = JSON.parse_string(JSON.stringify(item, "", true, true))
@@ -348,3 +355,30 @@ func test_unknown_affix_or_tier_from_a_newer_save_is_worth_zero() -> void:
 	assert_eq(ItemRoller.affix_value(&"test_future_affix", 1, 0.5), 0.0)
 	assert_eq(ItemRoller.affix_value(&"dmg_pct", 0, 0.5), 0.0)
 	assert_eq(ItemRoller.affix_value(&"dmg_pct", 99, 0.5), 0.0)
+
+
+func test_legendary_on_a_base_without_a_legendary_stays_unnamed() -> void:
+	var item: Dictionary = ItemRoller.roll_weapon(rng, Content.weapon(&"sentry_br3"), &"legendary", 31, 50)
+	assert_null(item.trait)
+	assert_eq(item.aff.size(), 4)
+
+
+func test_only_legendary_rarity_gets_a_trait() -> void:
+	for rarity: StringName in [&"common", &"uncommon", &"rare", &"epic"]:
+		assert_null(ItemRoller.roll_weapon(rng, Content.weapon(&"rifle_ar"), rarity, 31).trait)
+	assert_null(
+		ItemRoller.roll_gear(rng, Content.get_item(&"loot", &"vest_heavy") as GearBaseData, &"legendary", 31).trait
+	)
+
+
+func test_trait_value_runs_low_to_high_and_flips_for_lower_is_better() -> void:
+	var legendary: LegendaryData = LegendaryData.new()
+	legendary.low = 10.0
+	legendary.high = 15.0
+	legendary.step = 1.0
+	assert_eq(ItemRoller.trait_value(legendary, 0.0), 10.0)
+	assert_eq(ItemRoller.trait_value(legendary, 1.0), 15.0)
+	legendary.lower_is_better = true
+	assert_eq(ItemRoller.trait_value(legendary, 0.0), 15.0)
+	assert_eq(ItemRoller.trait_value(legendary, 1.0), 10.0, "A high roll is the better end")
+	assert_eq(ItemRoller.trait_value(legendary, 2.0), 10.0, "Fractions from a save are clamped")

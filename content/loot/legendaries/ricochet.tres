@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="LegendaryData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/loot/legendary_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"ricochet"
+display_name = "Ricochet"
+base_id = &"mako_pdw"
+stat = &"ricochet"
+text = "Headshots bounce to the nearest zombie within 8 m for {v}% damage"
+low = 40.0
+high = 70.0
+step = 1.0
+flavour = "Oriel security tuned it for tiled corridors. Nobody told them what the tiles would be full of."

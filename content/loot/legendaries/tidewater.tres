@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="LegendaryData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/loot/legendary_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"tidewater"
+display_name = "Tidewater"
+base_id = &"rifle_ar"
+stat = &"tidewater"
+text = "Each hit on the same zombie: +{v}% damage (10x)"
+low = 3.0
+high = 5.0
+step = 0.1
+flavour = "Carried by a Kessel Dam guard on the night the spillway would not close. It keeps pushing, like the water did."

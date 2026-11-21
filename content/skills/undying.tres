@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="SkillNodeData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="SkillNodeData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://systems/progression/skill_node_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/skills/undying.svg" id="2_icon"]
 
 [resource]
 script = ExtResource("1")
@@ -12,8 +13,9 @@ row = 4
 column = 0
 max_ranks = 1
 requires = Array[StringName]([])
-branch_points_needed = 25
+branch_points_needed = 11
 stat = &"fast_revive"
 per_rank = 50.0
 op = "increased"
 rule = 4
+icon = ExtResource("2_icon")
