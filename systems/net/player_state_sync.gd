@@ -111,6 +111,7 @@ func _snapshot() -> Dictionary:
 		"name": _player.display_name,
 		"bleed": bleed_left,
 		"grenades": _player.grenades.count,
+		"ability_cooldown": _player.abilities.cooldown_left,
 	}
 
 
@@ -144,6 +145,7 @@ func _receive_state(state: Dictionary) -> void:
 	_player.display_name = state.get("name", "")
 	bleed_left = float(state.get("bleed", 0.0))
 	_player.grenades.count = int(state.get("grenades", _player.grenades.count))
+	_player.abilities.cooldown_left = float(state.get("ability_cooldown", 0.0))
 	_sync_serums(state.serums)
 	_player.health.health_changed.emit(_player.health.current, _player.health.max_health)
 	if damage > 0.0 and _player.is_multiplayer_authority():
