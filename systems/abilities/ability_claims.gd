@@ -102,3 +102,5 @@ func show_use(peer_id: int, ability_id: StringName, at: Vector3) -> void:
 	var user: Player = session.players.find_player(peer_id) if session.players else null
 	if user and data.effect == AbilityData.Effect.ADRENAL_RUSH:
 		user.abilities.start_rush(data)
+	if data.effect == AbilityData.Effect.WATCHDOG:
+		Watchdog.place(session, data, user, at, false)

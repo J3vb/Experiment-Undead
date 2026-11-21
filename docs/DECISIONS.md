@@ -67,6 +67,7 @@ Each says when to fix it.
 - **Skills waiting on their feature:** Sturdy only adds its stat; Execution Line has no Brute rule. Overtime lengthens timed power-ups by the collector's seconds (team-wide timer). Gadgeteer shortens field ability cooldowns (F-22). Fix when: F-24, F-30. [skill-effects](plans/skill-effects.md)
 - **Field abilities (provisional):** key X (F is interact); the Research row picks one (saved at once, not by Confirm), else the highest unlocked; Shock Pulse pushes at 6 m/s and only holds rising or window zombies. Fix when: play-tests. [field-abilities](plans/field-abilities.md)
 - **Decoy Siren canister (provisional):** a grey-box can with a blinking alarm light, no Tripo model yet; lured zombies at a window keep tearing planks. Fix when: the canister model's own PR. [field-abilities](plans/field-abilities.md)
+- **Watchdog turret (provisional):** grey-box post and gun, no Tripo model yet; each client's turret picks its own target and shows its own shots from synced zombies (no show_turret_shot message). Fix when: the turret model's PR. [field-abilities](plans/field-abilities.md)
 - **Hold-to-buy** stays a tap. Fix when: accidental buys show in play-tests.
 - **Loot extras:** no supply or exfil caches, no gun comparison in the pickup prompt, no trading; sets and `proc` lines save but do not run. Fix when: their loot batches. [legendaries-traits](plans/legendaries-traits.md)
 - **Run loadout:** the equipped Primary is not given at spawn (the round-5 Drop Locker is not built). Fix when: the Drop Locker.

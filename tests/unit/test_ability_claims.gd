@@ -7,6 +7,7 @@ const RULES: WaveRules = preload("res://content/waves/default_waves.tres")
 const SHOCK_PULSE: AbilityData = preload("res://content/abilities/shock_pulse.tres")
 const ADRENAL_RUSH: AbilityData = preload("res://content/abilities/adrenal_rush.tres")
 const DECOY_SIREN: AbilityData = preload("res://content/abilities/decoy_siren.tres")
+const WATCHDOG: AbilityData = preload("res://content/abilities/watchdog.tres")
 
 var _port: int
 var _server: GameSession
@@ -225,3 +226,22 @@ func test_a_siren_aimed_past_its_reach_is_refused() -> void:
 	assert_eq(_server_copy().abilities.cooldown_left, 0.0)
 	_claims(_client).use_on_server.rpc_id(1, _server_copy().global_position + Vector3(15, 0, 0))
 	await wait_until(func() -> bool: return _server_copy().abilities.cooldown_left > 0.0, 3.0, "15 m is fine")
+
+
+func _turrets(session: GameSession) -> Array[Watchdog]:
+	var found: Array[Watchdog] = []
+	for child: Node in session.get_children():
+		if child is Watchdog:
+			found.append(child)
+	return found
+
+
+func test_a_clients_watchdog_damages_only_on_the_server() -> void:
+	var watchdog: AbilityData = WATCHDOG
+	_server_copy().abilities.ability = watchdog
+	_client_player().abilities.ability = watchdog
+	_press(_client_player())
+	await wait_until(func() -> bool: return _turrets(_client).size() == 1, 3.0, "the client sees the turret")
+	assert_true(_turrets(_server)[0].live, "the server's turret deals the damage")
+	assert_false(_turrets(_client)[0].live, "the client's only shows its shots")
+	assert_eq(_turrets(_server)[0].user, _server_copy(), "kills go to the user")
