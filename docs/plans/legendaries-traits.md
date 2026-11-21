@@ -356,7 +356,8 @@ does. No per-frame cost, no allocation per hit beyond the existing
   `LegendaryTraits`, which keeps both files under 350. Quarantine Shell:
   `Revive.absorbs` (server) ignores the first hit after value s since the
   last block. Last Rites (the Warden P9 Legendary, renamed from Second Wind):
-  a player holding it goes down instead of dying (solo too); while downed,
+  a co-op player holding it goes down instead of dying (solo has no downed
+  state, so it does nothing in solo; DECISIONS); while downed,
   value kills with that item gun get them up through
   `state_sync.revive_player()`, once per round, without touching Serums or
   the Undying charge; `can_get_up()` counts an unused Last Rites, so the squad
@@ -369,12 +370,12 @@ does. No per-frame cost, no allocation per hit beyond the existing
 - Files: systems/player/player.gd (lines moved out only), systems/player/revive.gd, systems/game/match_end.gd (only if the call changes), systems/damage/health_component.gd, systems/net/player_state_sync.gd (only if the pistol check needs it), content/loot/legendaries/{quarantine_shell,iron_lung,last_rites}.tres, docs/design/lore.md.
 - Tests: `tests/unit/test_legendary_traits.gd` or `test_skill_rules.gd`:
   Quarantine Shell blocks once per window; Iron Lung skips the delay after the
-  streak and a hit resets the streak; Last Rites puts a solo player down and
+  streak and a hit resets the streak; Last Rites puts a co-op player down and
   gets them up after value downed kills, once per round, only with that gun,
   Serums and Undying untouched; the run does not end while a downed player has
   an unused Last Rites; a co-op client's Last Rites works through its claims.
   Existing Second Wind and Undying tests still pass unchanged.
-- Done when: three more Legendaries work in solo and co-op; player.gd no
+- Done when: Quarantine Shell and Iron Lung work in solo and co-op, Last Rites in co-op; player.gd no
   longer than before; CI green.
 
 ### Step 6: Twin Pin, Legendary-only bases and close-out

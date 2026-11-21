@@ -18,6 +18,7 @@ These win over the design docs (see `docs/design/README.md`).
 - **Gear budgets:** vests light 3,000-4,500, medium 4,000-5,500, heavy 4,500-6,000 tris; charms 600-1,300; implants 1,000-1,800; first-person arms up to 10,000. Replaces gear-visuals.md's 3,000 / 300 / 500 estimates.
 - **Screens folder:** screen data lives in `content/screens/`, not ui-hud.md's `content/ui/screens/`, because `Content` treats each top folder as one type. [ui-router](plans/ui-router.md)
 - **Legendary data:** TraitData is merged into `LegendaryData` (one file per Legendary); a trait is one flat stat line with its own stat name, read by the code that runs it; an unknown trait shows no line, not "Inactive bonus". [legendaries-traits](plans/legendaries-traits.md)
+- **Last Rites in solo:** works in co-op only; solo has no downed state with a pistol, so a solo player with it still dies (unless Second Wind or Undying). Fix when: a solo downed state. [legendaries-traits](plans/legendaries-traits.md)
 - **Knife:** lives in `content/melee/`, not `content/weapons/`, so gun-only code (Vault, loot, grips, viewmodels) never sees it. [core-loop-gaps](plans/core-loop-gaps.md)
 - **Synapse:** 50% damage to up to 3 other zombies within 6 m, replacing the roster's 60% chain; its repeated-target ramp is deferred. Cryo Lance: 3 hits freeze 2 s, the next bullet shatters for 50% within 3 m.
 - **Ironwood .50:** loot only, overriding the roster's "every base is in the Vault" rule.

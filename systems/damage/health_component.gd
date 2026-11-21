@@ -50,6 +50,11 @@ func heal(amount: float) -> void:
 	health_changed.emit(current, max_health)
 
 
+## Skips the rest of the regen delay (Iron Lung).
+func start_regen_now() -> void:
+	_since_damage = regen_delay
+
+
 func get_ratio() -> float:
 	return current / max_health if max_health > 0.0 else 0.0
 
