@@ -167,10 +167,12 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-## Only the front end on a screen warms the hub. Headless runs (the CI boot test, soak) quit
-## before the load ends, and Godot aborts a load cut off by a quit with Parse Errors.
+## Only the front end warms the hub, and headless only when asked (--warm-hub): the CI boot
+## test quits mid-load, and Godot aborts a cut-off load with Parse Errors.
 func should_warm_hub() -> bool:
-	return get_tree().current_scene == self and DisplayServer.get_name() != "headless"
+	if get_tree().current_scene != self:
+		return false
+	return DisplayServer.get_name() != "headless" or OS.get_cmdline_user_args().has("--warm-hub")
 
 
 ## Your own Lantern Post: open to friends on the saved port, or offline when it cannot be
