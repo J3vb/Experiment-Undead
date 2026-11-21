@@ -67,7 +67,8 @@ func _process_events(pid: int) -> Array[Dictionary]:
 		if not filename.ends_with("_%d.jsonl" % pid):
 			continue
 		var contents: String = FileAccess.get_file_as_string(Log.DIR.path_join(filename))
-		for line: String in contents.split("\n", false):
+		# The game may be mid-write: only lines that already end in a newline are whole.
+		for line: String in contents.left(contents.rfind("\n") + 1).split("\n", false):
 			var entry: Variant = JSON.parse_string(line)
 			if entry is Dictionary:
 				events.append(entry)

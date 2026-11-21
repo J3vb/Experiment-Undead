@@ -35,10 +35,20 @@ static func pick_for_level(level: int) -> AbilityData:
 	return best
 
 
-## Called from the owner's Player.apply_frame each physics tick.
+## Called from the owner's Player.apply_frame each physics tick. In a session the
+## request goes through AbilityClaims, which checks it on the server.
 func tick(frame: InputFrame) -> void:
-	if frame.has(InputFrame.FIELD_ABILITY) and can_use() and multiplayer.is_server():
+	if not frame.has(InputFrame.FIELD_ABILITY) or not can_use():
+		return
+	var claims: AbilityClaims = _claims()
+	if claims:
+		claims.request_use(_player)
+	elif multiplayer.is_server():
 		use()
+
+
+func _claims() -> AbilityClaims:
+	return _player.session.get_node_or_null(^"AbilityClaims") as AbilityClaims if _player.session else null
 
 
 func can_use() -> bool:
@@ -53,15 +63,32 @@ func full_cooldown() -> float:
 	return ability.cooldown * (2.0 - _player.get_stat(&"ability_cooldown")) if ability else 0.0
 
 
-## Server: runs the effect and starts the cooldown. False when it cannot be used now.
+## Server, without a session's AbilityClaims: checks, then runs. False when it cannot be used now.
 func use() -> bool:
 	if not multiplayer.is_server() or not can_use():
 		return false
-	cooldown_left = full_cooldown()
-	AbilityEffects.run(ability, _player, _player.session.spawner if _player.session else null)
+	run()
 	return true
 
 
+## Server, after the checks: starts the cooldown, runs the effect, shows it and tells the owner.
+func run() -> void:
+	cooldown_left = full_cooldown()
+	AbilityEffects.run(ability, _player, _player.session.spawner if _player.session else null)
+	var at: Vector3 = _player.global_position
+	PulseRing.play(_player.session if _player.session else _player.get_parent(), ability, at)
+	var claims: AbilityClaims = _claims()
+	if claims:
+		claims.relay_use(_player.net_id, ability, at)
+	_publish()
+
+
 func _on_enemy_killed(_enemy: Node3D, info: DamageInfo) -> void:
-	if multiplayer.is_server() and info and info.attacker == _player:
+	if multiplayer.is_server() and info and info.attacker == _player and cooldown_left > 0.0:
 		cooldown_left = maxf(cooldown_left - KILL_CREDIT, 0.0)
+		_publish()
+
+
+func _publish() -> void:
+	if _player.state_sync:
+		_player.state_sync.queue_publish()

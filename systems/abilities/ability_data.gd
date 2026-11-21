@@ -21,3 +21,7 @@ enum Effect { SHOCK_PULSE, MED_BURST, WATCHDOG, ADRENAL_RUSH, DECOY_SIREN }
 @export var duration: float = 0.0
 ## Effect strength: Shock Pulse push speed (m/s), Med Burst teammate heal, buff fraction.
 @export var amount: float = 0.0
+## HUD icon (white line art on transparent, assets/ui/hud/ability_*.svg).
+@export var icon: Texture2D
+## Played at the user on every peer when it is used.
+@export var sound: AudioStream

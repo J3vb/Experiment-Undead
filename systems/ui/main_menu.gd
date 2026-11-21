@@ -90,7 +90,7 @@ func _ready() -> void:
 	for row: Button in menu.get_children().filter(func(node: Node) -> bool: return node is Button):
 		row.mouse_entered.connect(row.grab_focus)
 	enter_button.grab_focus()
-	if get_tree().current_scene == self:
+	if should_warm_hub():
 		warm_hub()
 	if not Net.last_error.is_empty():
 		_show_error(Net.last_error["reason"], Net.last_error["details"])
@@ -165,6 +165,14 @@ func _input(event: InputEvent) -> void:
 	if credits_panel.visible:
 		_close_credits()
 		get_viewport().set_input_as_handled()
+
+
+## Only the front end warms the hub, and not in a bare headless boot (the CI boot test): that run
+## quits after a set number of frames, usually mid-load, and collecting the load while the game
+## quits never returns. Headless runs with their own arguments (the menu flow test) still warm it.
+func should_warm_hub() -> bool:
+	var bare_headless: bool = DisplayServer.get_name() == "headless" and OS.get_cmdline_user_args().is_empty()
+	return get_tree().current_scene == self and not bare_headless
 
 
 ## Your own Lantern Post: open to friends on the saved port, or offline when it cannot be

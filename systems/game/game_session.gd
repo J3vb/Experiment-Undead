@@ -139,6 +139,7 @@ func _setup_shooting() -> void:
 		legendary_traits,
 		WellClaims.new(),
 		GrenadeClaims.new(),
+		AbilityClaims.new(),
 		loot,
 		remote_shots,
 		interactions,

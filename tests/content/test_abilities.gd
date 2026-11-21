@@ -20,6 +20,8 @@ func test_every_ability_is_complete() -> void:
 		assert_false(data.description.is_empty(), id)
 		assert_gt(data.cooldown, 0.0, id)
 		assert_between(data.unlock_level, 1, 50, id)
+		assert_not_null(data.icon, "%s has a HUD icon" % id)
+		assert_not_null(data.sound, "%s has a sound" % id)
 		assert_false(effects.has(data.effect), "%s: each effect is used by one ability" % id)
 		effects[data.effect] = true
 		assert_false(levels.has(data.unlock_level), "%s: one ability per unlock level" % id)
