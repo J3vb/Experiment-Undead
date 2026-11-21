@@ -46,6 +46,7 @@ func _run() -> void:
 		_bot = BOT.new()
 		add_child(_bot)
 		_bot.setup(_player, _wall)
+		_player.abilities.ability = Content.get_item(&"abilities", &"shock_pulse") as AbilityData
 		Events.player_died.connect(_on_player_died)
 	else:
 		_player.input_enabled = false

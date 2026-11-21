@@ -1,7 +1,8 @@
 ## Co-op soak bot: joins the server as a real client, gives itself one strong gun on its own PC (guns are
 ## owner-side) and fights with legal claims only. It moves its own player near a chasing zombie (owners
 ## move themselves, ADR 0003) and claims one body hit per fire interval through the real HitClaims path.
-## Once a round it throws a frag at a far zombie through the real GrenadeClaims request.
+## Once a round it throws a frag at a far zombie through the real GrenadeClaims request. Each bot
+## brings a different field ability (it says level 50 in its hello) and uses it when ready near a zombie.
 extends Node
 
 const RUN: GDScript = preload("res://tools/soak/coop_soak.gd")
@@ -10,6 +11,7 @@ const STAND_OFF: float = 4.0  ## Metres from the zombie after a move.
 const MOVE_AFTER: float = 15.0  ## Move when the target is farther than this (or half the gun's range).
 const SETTLE: float = 0.3  ## Seconds after a move before claiming, so the server has the new pose.
 const INTERVAL_SLACK: float = 1.2  ## Claim a little slower than the gun fires.
+const ABILITY_REACH: float = 8.0  ## Metres from the zombie to use the field ability.
 
 var _session: GameSession
 var _player: Player
@@ -21,6 +23,7 @@ var _round: int = 0
 var _claims: int = 0
 var _moves: int = 0
 var _throws: int = 0
+var _abilities: int = 0
 var _throw_round: int = -1
 var _cooldown: float = 0.0
 var _settle: float = 0.0
@@ -65,6 +68,7 @@ func _physics_process(delta: float) -> void:
 		_move_near(zombie)
 	elif _cooldown <= 0.0 and _settle <= 0.0:
 		_maybe_throw(zombie)
+		_maybe_use_ability(zombie)
 		_claim(zombie)
 
 
@@ -73,6 +77,9 @@ func _arm() -> void:
 	_player.local_input.enabled = false
 	_player.set_physics_process(false)
 	_weapon = _player.weapons.give(_gun)
+	var abilities: Array[AbilityData] = FieldAbility.all_by_unlock()
+	_player.abilities.ability = abilities[int(RUN.arg("leave-delay", "0")) % abilities.size()]
+	_player.loadout_sync.send_loadout()
 	_settle = SETTLE
 	_write()
 
@@ -101,6 +108,19 @@ func _maybe_throw(zombie: Zombie) -> void:
 	grenades.fuse_left = grenades.data.fuse
 	grenades.throw(gap.normalized() * grenades.data.throw_speed * 0.6 + Vector3.UP * 3.0)
 	_throws += 1
+
+
+## The field ability through the real AbilityClaims request, when the synced cooldown is over.
+## The local countdown starts at once so it never asks twice before the snapshot arrives.
+func _maybe_use_ability(zombie: Zombie) -> void:
+	var field: FieldAbility = _player.abilities
+	if field.ability == null or field.cooldown_left > 0.0:
+		return
+	if _player.global_position.distance_to(zombie.global_position) > ABILITY_REACH:
+		return
+	(_session.get_node(^"AbilityClaims") as AbilityClaims).request_use(_player, field.aim_point())
+	field.cooldown_left = field.full_cooldown()
+	_abilities += 1
 
 
 ## Steps back along the zombie's own path, which is walkable floor.
@@ -152,6 +172,7 @@ func _write() -> void:
 	var data: Dictionary = {"role": "bot", "done": _done, "round": _round, "claims": _claims, "moves": _moves}
 	data["joined"] = _player != null
 	data["throws"] = _throws
+	data["abilities"] = _abilities
 	data["lost_server"] = _lost
 	data["net_id"] = _player.net_id if _player else 0
 	data["points"] = _player.wallet.points if _player else 0

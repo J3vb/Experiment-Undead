@@ -129,6 +129,18 @@ live state belongs in objects such as `WeaponInstance`.
 4. Add a lore line in the flavour, keep `test_legendaries.gd` passing, and add an effect test in
     `test_legendary_traits.gd` (or `test_owner_traits.gd`, `test_player_traits.gd`) plus a co-op case.
 
+## A field ability
+
+1. A new number on an existing effect (radius, cooldown, heal): edit or copy a `content/abilities/<id>.tres`
+    (`AbilityData`, `systems/abilities/ability_data.gd`), `id` matching the filename, with an `icon`
+    (`assets/ui/hud/ability_<id>.svg`) and a `sound` (`tools/generate_sfx.py`). One ability per unlock level.
+2. A new kind of effect: add a value to `AbilityData.Effect` and one static function in
+    `systems/abilities/ability_effects.gd` (server only); what other peers see goes in `PulseRing.play`
+    or `AbilityClaims.show_use`. The HUD icon, the Research picker, the cooldown and the co-op check
+    work from the data.
+3. Ability ids are saved: `python tools/ci/check_saved_ids.py origin/main --fix`. Extend
+    `tests/content/test_abilities.gd` and add a lore reason (`design/lore.md`, "Field abilities").
+
 ## A skill
 
 1. Stat skill: a new `content/skills/<id>.tres` (`SkillNodeData`) with `stat` set to a stack

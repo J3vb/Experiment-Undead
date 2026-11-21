@@ -85,6 +85,7 @@ func _run() -> void:
 		for index: int in range(1, names.size()):
 			var extra: Array[String] = ["--join=127.0.0.1:%s" % arg("port"), "--gun=" + arg("gun")]
 			extra.append("--leave-delay=%d" % (index - 1))
+			extra.append("--soak-level=50")
 			_launch(names[index], "bot", out, extra)
 			await create_timer(1.0).timeout
 		await _wait_for_results(names, out)
