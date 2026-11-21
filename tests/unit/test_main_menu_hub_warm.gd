@@ -27,3 +27,14 @@ func test_a_menu_made_outside_the_front_end_does_not_warm_the_hub() -> void:
 	var menu: MainMenu = MENU.instantiate() as MainMenu
 	add_child_autofree(menu)
 	assert_eq(menu.get(&"_hub_path"), "")
+
+
+func test_a_headless_front_end_does_not_warm_the_hub() -> void:
+	var menu: MainMenu = MENU.instantiate() as MainMenu
+	autofree(menu)
+	get_tree().root.add_child(menu)
+	var old_scene: Node = get_tree().current_scene
+	get_tree().current_scene = menu
+	assert_false(menu.should_warm_hub(), "the boot test quits mid-load, which aborts the load with Parse Errors")
+	get_tree().current_scene = old_scene
+	get_tree().root.remove_child(menu)
