@@ -5,6 +5,9 @@ extends RefCounted
 var data: WeaponData
 var ammo_in_mag: int = 0
 var ammo_reserve: int = 0
+## Owner-side Legendary state: kills toward Bottomless, and a reload that charged Overpressure.
+var trait_kills: int = 0
+var charged: bool = false
 
 
 func _init(p_data: WeaponData) -> void:

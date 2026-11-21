@@ -189,7 +189,8 @@ renders the whole Halcyon Labs map behind the menu.
   the tab; locked tabs are disabled and not in the focus loop; after each tab
   change every focus neighbour points at a visible control; equip and save
   still work from both tabs (existing character tests stay green).
-- Done when: look-check screenshot next to `loadout_concept.jpg`; plan Done.
+- Done when: look-check screenshot next to `loadout_concept.jpg`; plan Done once the clean armoury
+  backdrop is in (small follow-up: drop the image in `assets/ui/backdrops/loadout.jpg` behind the panels).
 
 ## Acceptance
 

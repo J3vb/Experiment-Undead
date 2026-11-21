@@ -7,6 +7,8 @@
 [ext_resource type="Script" path="res://systems/ui/name_field.gd" id="name_field"]
 [ext_resource type="PackedScene" path="res://systems/ui/item_tooltip.tscn" id="tooltip"]
 [ext_resource type="Script" path="res://systems/ui/loadout_slots.gd" id="loadout_slots"]
+[ext_resource type="Script" path="res://systems/ui/loadout_tabs.gd" id="tabs"]
+[ext_resource type="Texture2D" path="res://assets/ui/fenlight_logo.png" id="logo"]
 
 [sub_resource type="StyleBoxFlat" id="panel"]
 bg_color = Color(0.071, 0.102, 0.125, 0.94)
@@ -53,9 +55,9 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme_override_constants/margin_left = 32
+theme_override_constants/margin_left = 8
 theme_override_constants/margin_top = 24
-theme_override_constants/margin_right = 32
+theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 20
 
 [node name="Layout" type="VBoxContainer" parent="Margin"]
@@ -64,26 +66,38 @@ theme_override_constants/separation = 20
 
 [node name="Header" type="HBoxContainer" parent="Margin/Layout"]
 layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Logo" type="TextureRect" parent="Margin/Layout/Header"]
+custom_minimum_size = Vector2(220, 74)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("logo")
+expand_mode = 1
+stretch_mode = 5
+texture_filter = 4
 
 [node name="Title" type="Label" parent="Margin/Layout/Header"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 8
 theme_override_font_sizes/font_size = 36
-text = "Character"
-
-[node name="Section" type="Label" parent="Margin/Layout/Header"]
-layout_mode = 2
-text = "Loadout and stash"
-theme_override_colors/font_color = Color(0.561, 0.639, 0.659, 1)
+text = "LOADOUT"
 
 [node name="Columns" type="HBoxContainer" parent="Margin/Layout"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 20
+theme_override_constants/separation = 6
+
+[node name="Tabs" type="VBoxContainer" parent="Margin/Layout/Columns"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+script = ExtResource("tabs")
 
 [node name="Loadout" type="PanelContainer" parent="Margin/Layout/Columns"]
 layout_mode = 2
-custom_minimum_size = Vector2(460, 0)
+custom_minimum_size = Vector2(380, 0)
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 1.1
 theme_override_styles/panel = SubResource("panel")
@@ -116,7 +130,7 @@ theme_override_constants/separation = 6
 [node name="Preview" type="SubViewportContainer" parent="Margin/Layout/Columns/Loadout/Box/LoadoutSlots"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(140, 270)
+custom_minimum_size = Vector2(110, 270)
 size_flags_horizontal = 3
 size_flags_vertical = 3
 stretch = true
@@ -195,18 +209,6 @@ theme_override_font_sizes/font_size = 28
 [node name="Filters" type="HBoxContainer" parent="Margin/Layout/Columns/Stash/Box"]
 layout_mode = 2
 theme_override_constants/separation = 10
-
-[node name="Category" type="OptionButton" parent="Margin/Layout/Columns/Stash/Box/Filters"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-item_count = 3
-selected = 0
-popup/item_0/text = "All items"
-popup/item_1/text = "Weapons"
-popup/item_1/id = 1
-popup/item_2/text = "Gear"
-popup/item_2/id = 2
 
 [node name="Rarity" type="OptionButton" parent="Margin/Layout/Columns/Stash/Box/Filters"]
 unique_name_in_owner = true

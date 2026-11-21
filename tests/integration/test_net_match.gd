@@ -164,6 +164,27 @@ func test_two_clients_meet_on_a_dedicated_server() -> void:
 		assert_eq(session.loot.pack.items.size(), 1)
 
 
+## The --join client starts from the menu in the hub; the server runs the match, so the
+## client switches place before any player spawns and ends up in the match.
+func test_a_menu_client_joining_a_running_match_switches_from_the_hub() -> void:
+	var joiner: int = _pids[1]
+	var names: Callable = func() -> Array[String]:
+		var out: Array[String] = []
+		for entry: Dictionary in _process_events(joiner):
+			out.append(str(entry.get("event")))
+		return out
+	await wait_until(
+		func() -> bool: return (names.call() as Array[String]).has("player_spawned"), 45.0, "joiner spawned"
+	)
+	var events: Array[String] = names.call()
+	var switch: int = events.find("join_switches_place")
+	assert_gt(switch, -1, "the joiner switched place")
+	assert_lt(switch, events.find("player_spawned"), "the switch comes before any player spawns")
+	for entry: Dictionary in _process_events(joiner):
+		if entry.get("event") == "join_switches_place":
+			assert_eq(entry.get("data"), {"from": "hub", "to": "match"})
+
+
 func _claim_a_kill(mine: Player) -> void:
 	await wait_until(
 		func() -> bool: return mine.wallet.points == session.economy.rules.starting_points,

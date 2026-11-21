@@ -36,7 +36,9 @@ hand.
 - Code-built models stay where Tripo is weak (snap-together kit pieces) and for
   done features until a plan moves them. F-83
   ([halcyon-machines-fill.md](../plans/halcyon-machines-fill.md)) moves the
-  Halcyon Labs Med Dispenser, Reforger, power switch and exfil hatch.
+  Halcyon Labs Med Dispenser, Reforger, power switch and exfil hatch, and adds
+  12 Tripo room props to its barest rooms (`assets/models/props/`, listed in
+  `tools/assets/tripo/halcyon.json`).
 - The three v0.2 zombies (Glower, Stalker, Brute) are Tripo: `tripo_intake.py --kind zombie` puts them on our
   skeleton with one `ZombieBaked` material ([blackout-glowers](../plans/blackout-glowers.md) step 1).
 - The Shambler (lab tech and guard looks), the Bloater and the Crawler (the lab tech with its legs cut,

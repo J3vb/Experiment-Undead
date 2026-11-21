@@ -126,10 +126,11 @@ No ammo or round number in town. Top left: level and XP bar. Top right: Scrap an
 
 ### 5. Character screen: loadout, stash and inventory
 
-One screen with three columns, opened with I anywhere in town or at the Stash.
+One screen opened from LOADOUT on the main menu (and later with I in town or at the Stash). Concept: [loadout_concept.jpg](concepts/screens/loadout_concept.jpg) (F-88): the FENLIGHT logo and a LOADOUT heading on top, and a left tab column with the `MenuBrush` brush on the open tab.
 
+- **Tabs.** WEAPONS (default: guns in the stash) and FIELD GEAR (everything that is not a gun in the stash). All nine slots stay around the figure on both tabs. SERUMS, PERKS and CUSTOMIZE are greyed with "Coming soon" until their features exist (Customize with Dyes, F-46). The tabs replace the old weapons/gear filter.
 - **Left: loadout.** Character model, Sidearm and Primary slots, Vest, Charm and Implant slots, the field ability picked for the next run, and total stats (health, damage bonus, luck).
-- **Middle: stash grid.** 60 slots at start (10 x 6), more pages bought with Scrap. Filters: weapons, gear, rarity. Sort: rarity, item level, newest.
+- **Middle: stash grid.** 60 slots at start (10 x 6), more pages bought with Scrap. Filter: rarity. Sort: rarity, item level, newest.
 - **Right: tooltip.** Shows the hovered item. Hold Shift (or press X on controller) to compare with what you have equipped: better stats in teal with an up arrow, worse in orange with a down arrow.
 - Drag and drop, or select and press E to equip. Double-click to send between stash and loadout. Marking items as "junk" (Z) lets the Workbench salvage them all in one go.
 

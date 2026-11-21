@@ -53,6 +53,7 @@ func test_equipping_a_backpack_updates_its_button_and_rebuilds_the_rig() -> void
 	var pack: Dictionary = _item("backpack_pack", "pack", "rare", 12)
 	profile.stash[30] = pack
 	screen.open(profile)
+	screen.select_tab(&"field_gear")
 	watch_signals(screen.rig)
 	_stash_button(30).grab_focus()
 	screen._input(_key(KEY_E))

@@ -10,6 +10,8 @@ const SHATTER_DAMAGE: float = 0.5
 
 var buildup: int = 0
 var remaining: float = 0.0
+## Frozen by a hold (Cold Snap): hits land normally and never shatter.
+var held: bool = false
 
 var _zombie: Zombie
 var _coating: StandardMaterial3D
@@ -20,6 +22,8 @@ static func apply(zombie: Zombie, info: DamageInfo) -> bool:
 	if not zombie.multiplayer.is_server() or zombie.health.is_dead or info.amount <= 0.0:
 		return false
 	var effect: Frost = _effect(zombie)
+	if zombie.frozen and effect.held:
+		return false
 	if zombie.frozen:
 		effect._shatter(info)
 		return true
@@ -29,6 +33,17 @@ static func apply(zombie: Zombie, info: DamageInfo) -> bool:
 		effect.remaining = FREEZE_SECONDS
 		zombie.frozen = true
 	return false
+
+
+## Server: freezes a zombie for seconds without the shatter rule. A Cryo freeze keeps its shatter.
+static func hold(zombie: Zombie, seconds: float) -> void:
+	if not zombie.multiplayer.is_server() or zombie.health.is_dead:
+		return
+	var effect: Frost = _effect(zombie)
+	if not zombie.frozen:
+		effect.held = true
+	effect.remaining = maxf(effect.remaining, seconds)
+	zombie.frozen = true
 
 
 static func _effect(zombie: Zombie) -> Frost:
@@ -68,6 +83,7 @@ func _physics_process(delta: float) -> void:
 	remaining = maxf(remaining - delta, 0.0)
 	if is_zero_approx(remaining) or _zombie.health.is_dead:
 		_zombie.frozen = false
+		held = false
 
 
 func _shatter(info: DamageInfo) -> void:
