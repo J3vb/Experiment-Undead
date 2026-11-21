@@ -20,6 +20,7 @@ CONTENT_DIRS = (
     "content/loot/affixes",
     "content/loot/rarities",
     "content/skills",
+    "content/abilities",
 )
 LEVELS_DIR = "levels"
 STABLE_TAG = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")

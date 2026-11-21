@@ -173,7 +173,8 @@ func _notification(what: int) -> void:
 func _on_player_added(player: Player) -> void:
 	if player.is_multiplayer_authority():
 		progression.set_start_total(player, start_total_xp)
-		player.abilities.ability = FieldAbility.pick_for_level(progression.get_level(player))
+		var saved_pick: String = profile.field_ability if profile else ""
+		player.abilities.ability = FieldAbility.pick_for(saved_pick, progression.get_level(player))
 		profile_player = player
 		loot.player = player
 	var named: bool = not multiplayer.multiplayer_peer is OfflineMultiplayerPeer

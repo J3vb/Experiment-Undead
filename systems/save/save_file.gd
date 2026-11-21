@@ -5,7 +5,7 @@
 class_name SaveFile
 extends RefCounted
 
-const CURRENT_VERSION: int = 3
+const CURRENT_VERSION: int = 4
 const VERSION_KEY: String = "save_version"
 
 
@@ -74,6 +74,7 @@ static func _migrations() -> Array[Callable]:
 		_v0_to_v1,
 		_v1_to_v2,
 		_v2_to_v3,
+		_v3_to_v4,
 	]
 
 
@@ -92,4 +93,11 @@ static func _v1_to_v2(data: Dictionary) -> Dictionary:
 ## Version 3 adds the headgear, gloves, backpack and boots slots. Missing slots
 ## load empty; the bump stops a version 2 build from dropping them on save.
 static func _v2_to_v3(data: Dictionary) -> Dictionary:
+	return data
+
+
+## Version 4 adds the picked field ability (an id; empty means the highest unlocked).
+static func _v3_to_v4(data: Dictionary) -> Dictionary:
+	if not data.get("field_ability") is String:
+		data["field_ability"] = ""
 	return data

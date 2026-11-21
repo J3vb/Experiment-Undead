@@ -1,4 +1,7 @@
 # Ids that can be in a character save. Grows only: see tools/ci/check_saved_ids.py.
+content/abilities/adrenal_rush
+content/abilities/med_burst
+content/abilities/shock_pulse
 content/loot/affixes/ability_cooldown
 content/loot/affixes/ability_power
 content/loot/affixes/ads_pct

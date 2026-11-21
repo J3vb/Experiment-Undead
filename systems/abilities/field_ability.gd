@@ -56,6 +56,24 @@ static func pick_for_level(level: int) -> AbilityData:
 	return best
 
 
+## The saved pick when it exists and the level has unlocked it, else the highest unlocked.
+static func pick_for(saved_id: String, level: int) -> AbilityData:
+	if not saved_id.is_empty() and Content.has(&"abilities", StringName(saved_id)):
+		var saved: AbilityData = Content.get_item(&"abilities", StringName(saved_id)) as AbilityData
+		if saved.unlock_level <= level:
+			return saved
+	return pick_for_level(level)
+
+
+## Every ability, lowest unlock first.
+static func all_by_unlock() -> Array[AbilityData]:
+	var list: Array[AbilityData] = []
+	for id: StringName in Content.sorted_ids(&"abilities"):
+		list.append(Content.get_item(&"abilities", id) as AbilityData)
+	list.sort_custom(func(a: AbilityData, b: AbilityData) -> bool: return a.unlock_level < b.unlock_level)
+	return list
+
+
 ## Called from the owner's Player.apply_frame each physics tick. In a session the
 ## request goes through AbilityClaims, which checks it on the server.
 func tick(frame: InputFrame) -> void:

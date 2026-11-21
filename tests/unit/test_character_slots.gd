@@ -27,7 +27,7 @@ func _write_raw(text: String) -> void:
 	file.close()
 
 
-func test_version_2_save_loads_four_empty_new_slots_and_saves_as_version_3() -> void:
+func test_version_2_save_loads_four_empty_new_slots_and_saves_as_the_current_version() -> void:
 	var vest: String = '{"uid": "old_vest", "base": "vest_medium"}'
 	_write_raw('{"save_version": 2, "id": "test_character_slots", "loadout": {"vest": %s}}' % vest)
 	var profile: CharacterProfile = CharacterProfile.load_or_create(ID)
@@ -36,7 +36,7 @@ func test_version_2_save_loads_four_empty_new_slots_and_saves_as_version_3() -> 
 		assert_eq(profile.loadout[slot], {}, slot)
 	assert_eq(profile.save(), OK)
 	var saved: Dictionary = SaveFile.read(_path)
-	assert_eq(int(saved["save_version"]), 3)
+	assert_eq(int(saved["save_version"]), SaveFile.CURRENT_VERSION)
 	assert_eq(saved["loadout"].keys().size(), 9)
 
 

@@ -196,3 +196,19 @@ func test_a_rank_added_after_reset_all_can_come_off_again() -> void:
 	screen.add_rank(&"steady_hands")
 	screen.remove_rank(&"steady_hands")
 	assert_false(screen.pending.has(&"steady_hands"))
+
+
+func test_field_ability_row_picks_unlocked_abilities_only() -> void:
+	var picker: AbilityPicker = screen.picker
+	assert_eq(picker.buttons.size(), Content.ids(&"abilities").size(), "one slot per ability")
+	assert_eq(picker.current().id, &"med_burst", "level 12 brings the highest unlocked by default")
+	assert_true(picker.buttons[&"med_burst"].button_pressed)
+	assert_true(picker.buttons[&"adrenal_rush"].disabled, "level 22 ability is locked at 12")
+	assert_true(picker.buttons[&"adrenal_rush"].text.contains("level 22"))
+	assert_false(picker.pick(&"adrenal_rush"))
+	picker.buttons[&"shock_pulse"].pressed.emit()
+	assert_eq(profile.field_ability, "shock_pulse")
+	assert_true(picker.buttons[&"shock_pulse"].button_pressed)
+	assert_false(picker.buttons[&"med_burst"].button_pressed)
+	var reloaded: CharacterProfile = CharacterProfile.load_or_create(PROFILE_ID)
+	assert_eq(reloaded.field_ability, "shock_pulse", "the pick is saved at once")

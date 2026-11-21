@@ -38,12 +38,14 @@ func test_dictionary_round_trip() -> void:
 		"display_name": "Survivor",
 		"total_xp": 1234,
 		"skill_ranks": {},
+		"field_ability": "med_burst",
 	}
 	var profile: CharacterProfile = CharacterProfile.from_dict(data)
 	assert_eq(profile.id, ID)
 	assert_eq(profile.display_name, "Survivor")
 	assert_eq(profile.total_xp, 1234)
 	assert_eq(profile.skill_ranks, {})
+	assert_eq(profile.field_ability, "med_burst")
 	var saved: Dictionary = profile.to_dict()
 	saved.erase("stash")
 	saved.erase("loadout")
