@@ -1,4 +1,5 @@
 ## Research: spend skill points in three branch lanes. Ranks stay pending until Confirm saves them.
+## The field ability row under the lanes saves its pick at once (AbilityPicker).
 class_name ResearchScreen
 extends Control
 
@@ -12,6 +13,7 @@ var profile: CharacterProfile
 var saved: Dictionary[StringName, int] = {}
 var pending: Dictionary[StringName, int] = {}
 var tiles: Dictionary[StringName, SkillTile] = {}
+var picker: AbilityPicker
 var _branch_labels: Dictionary[StringName, Label] = {}
 ## Ranks at or below these stay unless Reset all: the save, or nothing after a Reset all.
 var _floor: Dictionary[StringName, int] = {}
@@ -28,6 +30,9 @@ var _warned: bool = false
 
 func _ready() -> void:
 	_build_lanes()
+	picker = AbilityPicker.new()
+	status.add_sibling(picker)
+	status.get_parent().move_child(picker, status.get_index())
 	lanes.resized.connect(links.queue_redraw)
 	_pulse_glow()
 	%Confirm.pressed.connect(confirm)
@@ -47,6 +52,7 @@ func open(character: CharacterProfile) -> void:
 		status.text = "This character holds more ranks than its level allows. Reset all to spend again."
 	show()
 	_refresh()
+	picker.open(character)
 	first_tile().grab_focus()
 
 

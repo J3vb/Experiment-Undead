@@ -188,3 +188,11 @@ func test_stun_does_not_trip_the_stuck_watch() -> void:
 func test_shock_pulse_without_a_spawner_does_nothing() -> void:
 	AbilityEffects.shock_pulse(null, Vector3.ZERO, SHOCK_PULSE)
 	assert_eq(ability.cooldown_left, 0.0, "no zombies to stun, no crash")
+
+
+func test_saved_pick_is_used_only_when_unlocked() -> void:
+	assert_eq(FieldAbility.pick_for("shock_pulse", 20).id, &"shock_pulse", "a saved pick is brought")
+	assert_eq(FieldAbility.pick_for("adrenal_rush", 20), FieldAbility.pick_for_level(20), "locked: highest unlocked")
+	assert_eq(FieldAbility.pick_for("no_such_ability", 20), FieldAbility.pick_for_level(20), "unknown: highest")
+	assert_eq(FieldAbility.pick_for("", 3), SHOCK_PULSE)
+	assert_null(FieldAbility.pick_for("shock_pulse", 2))

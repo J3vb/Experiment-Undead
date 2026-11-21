@@ -23,6 +23,8 @@ var stash: Array[Dictionary] = []
 var loadout: Dictionary = {}
 ## Best run per map (the level folder name): {"round": int, "kills": int}.
 var best_runs: Dictionary = {}
+## The picked field ability id; empty brings the highest one the level unlocked.
+var field_ability: String = ""
 var level: int:
 	get:
 		return XP_RULES.level_for_total_xp(total_xp)
@@ -50,6 +52,7 @@ func to_dict() -> Dictionary:
 	data["stash"] = stash.duplicate(true)
 	data["loadout"] = loadout.duplicate(true)
 	data["best_runs"] = best_runs.duplicate(true)
+	data["field_ability"] = field_ability
 	return data
 
 
@@ -71,8 +74,12 @@ static func from_dict(data: Dictionary) -> CharacterProfile:
 	var saved_best: Variant = data.get("best_runs", {})
 	if saved_best is Dictionary:
 		profile.best_runs = saved_best.duplicate(true)
+	var saved_ability: Variant = data.get("field_ability", "")
+	profile.field_ability = saved_ability if saved_ability is String else ""
 	profile._unknown = data.duplicate(true)
-	for key: String in ["id", "display_name", "total_xp", "skill_ranks", "stash", "loadout", "best_runs"]:
+	for key: String in [
+		"id", "display_name", "total_xp", "skill_ranks", "stash", "loadout", "best_runs", "field_ability"
+	]:
 		profile._unknown.erase(key)
 	return profile
 

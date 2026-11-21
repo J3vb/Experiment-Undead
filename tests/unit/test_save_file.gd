@@ -4,7 +4,7 @@ const PATH: String = "user://test_save.json"
 
 
 func after_each() -> void:
-	for p: String in [PATH, PATH + ".tmp", PATH + ".v0.bak", PATH + ".v1.bak", PATH + ".v2.bak"]:
+	for p: String in [PATH, PATH + ".tmp", PATH + ".v0.bak", PATH + ".v1.bak", PATH + ".v2.bak", PATH + ".v3.bak"]:
 		if FileAccess.file_exists(p):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(p))
 
@@ -36,9 +36,13 @@ func test_unversioned_save_is_upgraded_and_backed_up() -> void:
 
 
 func test_version_2_save_upgrades_to_3_unchanged_and_is_backed_up() -> void:
-	_write_raw('{"save_version": 2, "loadout": {"vest": {"uid": "v"}}, "best_runs": {}}')
+	var old: Dictionary = {"save_version": 2, "loadout": {"vest": {"uid": "v"}}, "best_runs": {}}
+	var step: Dictionary = SaveFile.upgrade(old, SaveFile._migrations().slice(0, 3))
+	assert_eq(int(step[SaveFile.VERSION_KEY]), 3)
+	assert_eq(step["loadout"], {"vest": {"uid": "v"}})
+	_write_raw(JSON.stringify(old))
 	var data: Dictionary = SaveFile.read(PATH)
-	assert_eq(int(data[SaveFile.VERSION_KEY]), 3)
+	assert_eq(int(data[SaveFile.VERSION_KEY]), SaveFile.CURRENT_VERSION)
 	assert_eq(data["loadout"], {"vest": {"uid": "v"}})
 	assert_true(FileAccess.file_exists(PATH + ".v2.bak"))
 
@@ -98,3 +102,12 @@ func test_saved_version_tells_newer_from_broken() -> void:
 	_write_raw(newer)
 	assert_eq(SaveFile.saved_version(PATH), SaveFile.CURRENT_VERSION + 1)
 	assert_eq(FileAccess.get_file_as_string(PATH), newer, "reading the version changes nothing")
+
+
+func test_version_3_save_gains_an_empty_field_ability_pick() -> void:
+	_write_raw('{"save_version": 3, "id": "old", "total_xp": 400, "loadout": {"vest": {"uid": "v"}}}')
+	var data: Dictionary = SaveFile.read(PATH)
+	assert_eq(int(data[SaveFile.VERSION_KEY]), 4)
+	assert_eq(data["field_ability"], "")
+	assert_eq(data["loadout"], {"vest": {"uid": "v"}}, "other fields stay")
+	assert_true(FileAccess.file_exists(PATH + ".v3.bak"))
