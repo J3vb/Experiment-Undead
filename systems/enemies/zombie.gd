@@ -118,15 +118,7 @@ func _show_ice() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if stun_left > 0.0:
-		stun_left = maxf(stun_left - delta, 0.0)
-		if stun_left == 0.0:
-			_stuck_watch.restart(global_position)
-	if (frozen or stasis) and state != State.DEAD:
-		velocity = Vector3.ZERO
-		return
-	if stun_left > 0.0 and state != State.DEAD:
-		_tick_stunned(delta)
+	if _held(delta):
 		return
 	state_time += delta
 	_attack_cooldown = maxf(_attack_cooldown - delta, 0.0)
@@ -160,6 +152,23 @@ func stun(seconds: float, push: Vector3) -> void:
 		velocity.z = push.z
 		_enter(State.CHASING)
 	_stuck_watch.restart(global_position)
+
+
+## Frozen, in Stasis or stunned: true when this tick is spent held in place.
+func _held(delta: float) -> bool:
+	if stun_left > 0.0:
+		stun_left = maxf(stun_left - delta, 0.0)
+		if stun_left == 0.0:
+			_stuck_watch.restart(global_position)
+	if state == State.DEAD:
+		return false
+	if frozen or stasis:
+		velocity = Vector3.ZERO
+		return true
+	if stun_left > 0.0:
+		_tick_stunned(delta)
+		return true
+	return false
 
 
 ## Rising or at a window: held in place like Stasis. Inside: the shove slows to a stop.
