@@ -45,11 +45,16 @@ func after_each() -> void:
 		CoopSide.close(session)
 
 
-func test_tidewater_from_a_client_claim_stacks_on_the_server() -> void:
+func _zombie() -> Zombie:
 	var zombie: Zombie = server.spawner.spawn(WALKER, 1, WAVES)
 	zombie.set_physics_process(false)
 	var path: NodePath = NodePath(String(zombie.name))
 	await wait_until(func() -> bool: return client.spawner.has_node(path), 3.0, "zombie replicated")
+	return zombie
+
+
+func test_tidewater_from_a_client_claim_stacks_on_the_server() -> void:
+	var zombie: Zombie = await _zombie()
 	claimant.item_guns["tw"] = ItemInstance.new({"uid": "tw", "rar": "legendary", "trait": ["tidewater", 1.0]})
 	for index: int in 3:
 		client.hit_claims.claim_hit.rpc_id(
@@ -57,3 +62,16 @@ func test_tidewater_from_a_client_claim_stacks_on_the_server() -> void:
 		)
 	await wait_until(func() -> bool: return zombie.health.current < 40.0, 3.0, "three stacking hits")
 	assert_almost_eq(zombie.health.current, 100.0 - 20.0 - 21.0 - 22.0, 0.001, "+0%, +5%, +10%")
+
+
+func test_ricochet_from_a_client_headshot_claim_hits_a_second_zombie() -> void:
+	var target: Zombie = await _zombie()
+	var bystander: Zombie = await _zombie()
+	claimant.item_guns["rc"] = ItemInstance.new(
+		{"uid": "rc", "base": "mako_pdw", "rar": "legendary", "trait": ["ricochet", 0.0]}
+	)
+	client.hit_claims.claim_hit.rpc_id(
+		1, target.name, DamageInfo.Zone.HEAD, 10.0, &"mako_pdw", Vector3.ZERO, Vector3.ZERO, "rc"
+	)
+	await wait_until(func() -> bool: return bystander.health.current < 100.0, 3.0, "ricochet landed")
+	assert_almost_eq(bystander.health.current, 96.0, 0.001, "40% of the 10-point hit")

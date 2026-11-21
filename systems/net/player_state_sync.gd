@@ -72,7 +72,7 @@ func _on_enemy_damaged(_enemy: Node3D, info: DamageInfo) -> void:
 	if multiplayer.is_server() and info.attacker == _player and not info.item_uid.is_empty():
 		var item: ItemInstance = _player.item_guns.get(info.item_uid)
 		if item:
-			ItemLoadout.apply_hit(_player, item)
+			ItemLoadout.apply_hit(_player, item, info)
 
 
 func _points_changed(_total: int, _delta: int) -> void:
