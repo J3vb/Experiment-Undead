@@ -181,3 +181,32 @@ func test_server_loads_every_loot_base_before_the_first_drop() -> void:
 	for type: StringName in [&"weapons", &"loot"]:
 		for id: StringName in Content.ids(type):
 			assert_true(Content._loaded.has(Content._by_type[type][id]), "%s %s loaded at start" % [type, id])
+
+
+func test_legendary_pool_keeps_only_bases_with_a_legendary() -> void:
+	var pool: Array[Resource] = LootService.eligible_bases(50, &"legendary")
+	assert_true(pool.has(Content.weapon(&"rifle_ar")), "Tidewater's base stays")
+	assert_true(pool.has(Content.get_item(&"loot", &"implant_relay")), "Twin Pin's base stays")
+	assert_false(pool.has(Content.weapon(&"sentry_br3")), "a base with no Legendary is left out")
+	assert_true(LootService.eligible_bases(50, &"epic").has(Content.weapon(&"sentry_br3")), "other rarities keep it")
+	for base: Resource in pool:
+		var id: StringName = (base as WeaponData).id if base is WeaponData else (base as GearBaseData).id
+		assert_false(ItemRoller.legendaries_for(id).is_empty(), String(id))
+
+
+func test_legendary_drops_are_named_and_carry_a_trait() -> void:
+	var boss: EnemyData = EnemyData.new()
+	boss.id = &"test_legend_boss"
+	boss.loot_drop_chance = 1.0
+	boss.loot_min_rarity = &"legendary"
+	var seen: int = 0
+	for index: int in 80:
+		var drop: Dictionary = service.roll_drop(boss, 50)
+		if drop.get("rar") != "legendary":
+			continue
+		seen += 1
+		var named: LegendaryData = ItemInstance.legendary_of(drop)
+		assert_not_null(named, "every Legendary drop has a trait")
+		if named:
+			assert_eq(named.base_id, StringName(drop.get("base", "")))
+	assert_gt(seen, 0, "the floor rolls some Legendaries")

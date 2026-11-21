@@ -172,7 +172,18 @@ static func eligible_bases(character_level: int, rarity: StringName) -> Array[Re
 		var gear: GearBaseData = Content.get_item(&"loot", id) as GearBaseData
 		if gear and gear.unlock_level <= character_level and gear.drop_weight > 0.0:
 			pool.append(gear)
+	if rarity == &"legendary":
+		return _with_legendary(pool)
 	return pool
+
+
+static func _with_legendary(pool: Array[Resource]) -> Array[Resource]:
+	var kept: Array[Resource] = []
+	for base: Resource in pool:
+		var id: StringName = (base as WeaponData).id if base is WeaponData else (base as GearBaseData).id
+		if not ItemRoller.legendaries_for(id).is_empty():
+			kept.append(base)
+	return kept
 
 
 static func _weight(base: Resource) -> float:

@@ -114,6 +114,21 @@ live state belongs in objects such as `WeaponInstance`.
     choosing another throwable needs a small code change and a plan.
 4. Add a lore row (`design/lore.md`, "Grenades and field kit") and extend `tests/content/test_throwables.gd`.
 
+## A Legendary
+
+1. Create `content/loot/legendaries/<id>.tres` (`LegendaryData`, `systems/loot/legendary_data.gd`), `id`
+    matching the filename; follow `tidewater.tres`. `base_id` is the gun or gear base it drops on, `stat`
+    the trait's stat name (usually the id), `low`/`high`/`step` the roll range (`low` < `high`; set
+    `lower_is_better` when a smaller number is stronger), `text` with `{v}`, and a `flavour` line.
+2. The roll, the name, the tooltip line and the save need no code. The trait's stat is a flat line on the
+    item's `StatBlock`; add its name to `LegendaryTraits.STATS`.
+3. Make the stat do something where its rule lives: server hit hooks in `LegendaryTraits`, owner gun
+    hooks in `OwnerTraits` (check the owner is the multiplayer authority), player hooks in `Revive`.
+    A new request to the server follows docs/MULTIPLAYER.md "Writing co-op code" and bumps
+    `Build.PROTOCOL_VERSION`. Widen hit bounds in `HitClaims._trait_bounds` only for items with the trait.
+4. Add a lore line in the flavour, keep `test_legendaries.gd` passing, and add an effect test in
+    `test_legendary_traits.gd` (or `test_owner_traits.gd`, `test_player_traits.gd`) plus a co-op case.
+
 ## A skill
 
 1. Stat skill: a new `content/skills/<id>.tres` (`SkillNodeData`) with `stat` set to a stack
