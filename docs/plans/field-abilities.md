@@ -343,6 +343,9 @@ effect. Budget: under 0.1 ms per frame on the server with 4 turrets up.
   rebind. Content: every ability has icon and sound.
 - Done when: the icon reads clearly at 1440p next to the vitals panel (look
   check image in the PR); CI green.
+- Built: `show_use(peer_id, ability_id, at)` reliable from the server
+  (protocol bump); step 6 adds the turret's object id. The sound plays on the
+  SFX bus (there is no Effects bus).
 
 ### Step 4: Med Burst and Adrenal Rush
 
@@ -376,7 +379,7 @@ effect. Budget: under 0.1 ms per frame on the server with 4 turrets up.
   live zombie within 20 m of it gets `Zombie.lure(point, 6.0)`: it paths to
   the point and does not swing at players until the lure ends (zombies at a
   window keep tearing planks, provisional). `DecoySiren` scene on every
-  peer: canister model, blinking light, siren sound (Audio bus Effects), freed
+  peer: canister model, blinking light, siren sound (Audio bus SFX), freed
   after 6 s. Canister model made in Tripo with `tools/assets/tripo_make.py`
   and the intake (ADR 0017), prompt row in docs/design/tripo-prompts.md; if the
   API cannot be reached from the thread, a grey box ships and the model

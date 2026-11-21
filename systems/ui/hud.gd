@@ -55,6 +55,7 @@ func _ready() -> void:
 	$Root.add_child(VersionLabel.new())
 	_squad = SquadCards.new()
 	$Root.add_child(_squad)
+	$Root.add_child(AbilityIcon.new())
 	Events.player_spawned.connect(_on_player_spawned)
 	Events.player_health_changed.connect(_on_health_changed)
 	Events.player_damaged.connect(_on_player_damaged)
