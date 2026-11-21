@@ -46,6 +46,7 @@ func _run() -> void:
 			await _host_flow(true)
 		_:
 			_failures.append("Unknown mode: " + _mode)
+	await _hub_load_settled()
 	_finish()
 
 
@@ -173,6 +174,15 @@ func _hub_warmed() -> void:
 	_check(
 		ResourceLoader.load_threaded_get_status(path) == ResourceLoader.THREAD_LOAD_LOADED, "The menu warmed the hub"
 	)
+
+
+## A menu shown again warms the hub again; quitting mid-load makes Godot abort it with Parse Errors.
+func _hub_load_settled() -> void:
+	var until: int = Time.get_ticks_msec() + 10000
+	while ResourceLoader.load_threaded_get_status(SESSION_SCENE) == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		if Time.get_ticks_msec() > until:
+			return
+		await process_frame
 
 
 func _browser() -> Control:

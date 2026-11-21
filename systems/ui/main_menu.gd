@@ -168,8 +168,8 @@ func _input(event: InputEvent) -> void:
 
 
 ## Only the front end warms the hub, and not in a bare headless boot (the CI boot test): that run
-## quits after a set number of frames, usually mid-load, and collecting the load while the game
-## quits never returns. Headless runs with their own arguments (the menu flow test) still warm it.
+## quits after a set number of frames, usually mid-load, and Godot aborts a cut-off load with
+## Parse Errors. Headless runs with their own arguments (the menu flow test) still warm it.
 func should_warm_hub() -> bool:
 	var bare_headless: bool = DisplayServer.get_name() == "headless" and OS.get_cmdline_user_args().is_empty()
 	return get_tree().current_scene == self and not bare_headless
@@ -183,9 +183,11 @@ func warm_hub() -> void:
 	ResourceLoader.load_threaded_request(_hub_path)
 
 
+## Hands the warm-up to UI, which collects it once done. Waiting for it here hung the game
+## when it quit mid-load.
 func _exit_tree() -> void:
 	if not _hub_path.is_empty():
-		ResourceLoader.load_threaded_get(_hub_path)
+		UI.drop_load(_hub_path)
 		_hub_path = ""
 
 
