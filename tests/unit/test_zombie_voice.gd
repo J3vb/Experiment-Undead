@@ -82,3 +82,18 @@ func test_freed_voices_leave_the_caps() -> void:
 	remove_child(voice)
 	assert_false(ZombieVoice._vocals.has(voice), "a voice that leaves the tree frees its slot")
 	voice.free()
+
+
+func test_refused_voice_warns_once() -> void:
+	ZombieVoice.refused_warned = false
+	var before: int = Log.event_counts.get("enemies.zombie_voice_refused", 0)
+	var voices: Array[ZombieVoice] = []
+	for index: int in ZombieVoice.MAX_VOCALS:
+		voices.append(_voice(5.0 + index))
+		voices[-1].say(STREAM)
+	assert_eq(Log.event_counts.get("enemies.zombie_voice_refused", 0), before, "free slots refuse nothing")
+	_voice(40.0).say(STREAM)
+	_voice(41.0).say(STREAM)
+	assert_eq(
+		Log.event_counts.get("enemies.zombie_voice_refused", 0), before + 1, "first refusal warns, the next is quiet"
+	)

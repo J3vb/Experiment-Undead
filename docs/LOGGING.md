@@ -83,6 +83,7 @@ The server also prints every warning and error to stdout as
 | `enemies.zombie_stuck` | warn | A chasing zombie moved under 0.3 m in 2 s while out of reach (logged once per zombie). `at`, `next_path_point`, `path_finished`: navmesh hole, bad spawn point or geometry snag |
 | `enemies.zombie_fell_out` | warn | Zombie below y = -50: missing floor collision (it relocates at once) |
 | `enemies.zombie_relocated` | warn | A lost zombie moved to a hidden spawn: `reason` unreachable (20 s without progress), far (over 60 m for 15 s) or fell_out; `from`, `to` (spawn point). Many from one place = navmesh hole there |
+| `enemies.zombie_voice_refused` | warn | A zombie sound stayed quiet because every voice in its cap (`cap`: 8 mouths or 6 feet) is closer to the listener. Once per run. Normal in big hordes; if players say zombies are silent nearby, check the caps in `zombie_voice.gd` |
 | `waves.round_started` | info | Round number, enemies this round, health snapshot |
 | `waves.round_ended` | info | Round cleared |
 | `waves.round_stalled` | warn | 90 s in a round with no kill; lists where the living zombies are |
@@ -90,6 +91,7 @@ The server also prints every warning and error to stdout as
 | `waves.spawn_points_missing` | warn | The Spawner found no marker in its `spawn_group` (`spawn_group`), so no zombie spawns. The map has no spawn markers in that group, or the group name in the Spawner is wrong |
 | `player.player_spawned` / `player_died` | info | Player `net_id`, spawn position |
 | `player.weapon_has_no_grip` | warn | A gun has no `GripData`, so it shows no first-person arms. `weapon` id; once per gun per run. Add `content/grips/<base id>.tres` and set the gun's `grip` |
+| `player.weapon_has_no_feel` | warn | A gun fired with no `FeelData`, so it has no view kick, shake or FOV punch. `weapon` id; once per gun per run. Set the gun's `feel` in its `.tres` |
 | `player.reload_motion_unreachable` | warn | The left arm cannot reach a reload key pose, so the forearm stretches off the hand. `weapon` id, `gap` in metres; once per gun per run. Move the gun's reload pose in `WeaponPose` or the grab offsets in `ReloadMotion` |
 | `gear.fp_piece_missing` | warn | A worn gear model has no first-person piece (a vest scene without `CuffFP_L`/`CuffFP_R`), so the first-person arms show nothing for it. `visual` id; once per visual per run. Rebuild the model with its first-person pieces |
 | `progression.profile_save_failed` | warn | Character could not be saved; `id`, `path`, `error` (Godot Error code). Check folder permissions and disk space |

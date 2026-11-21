@@ -219,3 +219,22 @@ func test_solo_has_no_squad_cards() -> void:
 	cards.refresh()
 	assert_false(cards.visible)
 	assert_eq(cards.get_child_count(), 0)
+
+
+## The client banks its run XP into its own character once, however many exits follow.
+func test_client_banks_its_run_xp_once() -> void:
+	var path: String = CharacterProfile.directory() + "test_coop_bank_once.json"
+	client.profile = CharacterProfile.from_dict({"id": "test_coop_bank_once", "total_xp": 200})
+	var client_id: int = client.multiplayer.get_unique_id()
+	server.progression.add_xp(server.players.find_player(client_id), 25)
+	_down(server.players.find_player(1))
+	_down(server.players.find_player(client_id))
+	await wait_until(func() -> bool: return client.is_over, 3.0, "client received the match end")
+	assert_true(client.match_end.xp_banked)
+	client.match_end.bank_run_xp()
+	client.progression.run_xp_finalized.emit()
+	assert_eq(client.profile.total_xp, 225, "the run's 25 XP is banked once")
+	assert_eq(CharacterProfile.load_or_create(&"test_coop_bank_once").total_xp, 225, "the save holds it once")
+	for leftover: String in [path, path + ".tmp"]:
+		if FileAccess.file_exists(leftover):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(leftover))

@@ -210,3 +210,28 @@ func test_cycle_progress_follows_the_round_now_loading() -> void:
 	assert_almost_eq(RoundReload.cycle_t(weapon), 0.25, 0.001)
 	weapon.tick(1.0)
 	assert_almost_eq(RoundReload.cycle_t(weapon), 0.5, 0.001, "second shell, half way")
+
+
+## The lever gun has no separate empty reload: from empty, every round takes per_round_time.
+func test_fieldhand_reload_timing_is_unchanged() -> void:
+	for id: StringName in [&"fieldhand_lever", &"fieldhand_lever_reforged"]:
+		var data: WeaponData = Content.weapon(id)
+		assert_almost_eq(data.per_round_time, 0.375, 0.0001, String(id))
+		assert_almost_eq(data.empty_reload_time, data.per_round_time, 0.0001, "%s: no extra empty time" % id)
+		var camera: Camera3D = Camera3D.new()
+		add_child_autofree(camera)
+		var weapon: Weapon = WEAPON.instantiate() as Weapon
+		weapon.setup(WeaponInstance.new(data), null, camera)
+		camera.add_child(weapon)
+		weapon.set_active(true)
+		weapon.instance.ammo_in_mag = 0
+		weapon.instance.ammo_reserve = 8
+		assert_true(weapon.start_reload())
+		weapon.tick(0.37)
+		assert_eq(weapon.instance.ammo_in_mag, 0, "%s: first round not in before 0.375 s" % id)
+		weapon.tick(0.01)
+		assert_eq(weapon.instance.ammo_in_mag, 1, "%s: first round in at 0.375 s" % id)
+		weapon.tick(0.36)
+		assert_eq(weapon.instance.ammo_in_mag, 1)
+		weapon.tick(0.02)
+		assert_eq(weapon.instance.ammo_in_mag, 2, "%s: each later round takes the same time" % id)

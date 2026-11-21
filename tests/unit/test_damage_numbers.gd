@@ -119,3 +119,27 @@ func test_a_teammates_hit_shows_nothing() -> void:
 	mate.set_physics_process(false)
 	_hit(34.0, false, target, mate)
 	assert_eq(numbers.visible_count(), 0)
+
+
+## Plan budget: under 0.1 ms per frame with 24 zombies and an LMG firing. A hit lands every
+## 4th frame (15 a second, faster than any LMG) while all 12 labels are in the air.
+func test_a_busy_frame_stays_under_the_budget_and_makes_no_labels() -> void:
+	var zombies: Array[Node3D] = []
+	for index: int in 24:
+		var zombie: Node3D = Node3D.new()
+		add_child_autofree(zombie)
+		zombies.append(zombie)
+	for warmup: int in 24:
+		_hit(30.0, false, zombies[warmup])
+	var children: int = numbers.get_child_count()
+	var frames: int = 600
+	var started: int = Time.get_ticks_usec()
+	for frame: int in frames:
+		if frame % 4 == 0:
+			_hit(30.0, frame % 5 == 0, zombies[frame % zombies.size()])
+		numbers._process(1.0 / 60.0)
+	var per_frame_ms: float = float(Time.get_ticks_usec() - started) / frames / 1000.0
+	gut.p("damage numbers: %.4f ms per frame" % per_frame_ms)
+	assert_lt(per_frame_ms, 0.1, "under 0.1 ms per frame")
+	assert_eq(numbers.get_child_count(), children, "the 12 pooled labels are reused, none made")
+	assert_eq(numbers.visible_count(), DamageNumbers.MAX_LABELS, "the pool is full the whole time")

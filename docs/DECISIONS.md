@@ -52,7 +52,7 @@ Each says when to fix it.
 - **Window barriers:** no slot timeout (move to another barrier after 4 s), no real sill. Fix when: co-op crowding at a window needs it.
 - **Emergency lighting:** dimmed red ceiling lights only, no separate fixtures or sound. Fix when: the sound world step.
 - **Stuck zombies:** relocate replaces the AI doc's repath sidestep and navmesh snap; no louder groan for the last zombies (voice is local). Fix when: relocates show in soak logs.
-- **Slide** keeps the normal 0.18 s sprint-out block before hip fire (weapon.gd was at its size limit). Fix when: weapon.gd is split (F-79 step 7).
+- **Slide** keeps the normal 0.18 s sprint-out block before hip fire. weapon.gd is split now (F-79 step 7), so this is a feel call. Fix when: the feel play-test asks for firing straight out of a slide. [game-feel-slice](plans/game-feel-slice.md)
 - **Co-op hit bounds** use Content weapon data, not the held inventory (weapon switching is local). Fix when: a server checks loadouts (P8).
 - **Loadout trust:** the server does not check that a client owns the gear it sends (friends-only servers). Fix when: public servers (P8). [item-effects-server](plans/item-effects-server.md)
 - **All-guns gear stats (F-71 step 1):** non-item guns get gear damage, recoil and reserve through F-20's `ItemInstance.fit_player_gun` and `ItemLoadout.refit_guns`, not a new `Weapon.refit`; swap time also reads the raised gun's own handling line. [four-gear-slots](plans/four-gear-slots.md)
@@ -72,6 +72,7 @@ Each says when to fix it.
 - **Ambience** sends to SFX, so the Effects slider covers it; no separate Ambience slider and no power-off or Blackout bed swaps. Fix when: the audio settings pass.
 - **Gore:** no stump cap, limb loss or wound decals; blood pools are quads, not Decals (Compatibility renderer). Fix when: a gore follow-up.
 - **Settings:** controller rebinding, presets and action contexts wait; one key, one action everywhere; a plain Esc cancels a rebind. Fix when: controller support. [control-rebinding](plans/control-rebinding.md)
+- **Settings Revert** puts back the values from when the screen opened, but not key bindings; each action keeps its own Reset. Fix when: players expect Revert to undo a rebind. [full-settings](plans/full-settings.md)
 - **Hub:** one place per server, one Deploy board per map, the whole server is one squad, a listen host decides when to return. Fix when: a second map. [coop-full-match](plans/coop-full-match.md)
 - **Server browser:** no Map, Players or search filters, no map picture, no password; a server goes into Recent when a join starts. Fix when: P8 servers. [join-any-game](plans/join-any-game.md)
 - **Launcher:** no Windows-runner check, no drain file, no install-size readout. Fix when: F-65 step 8. [client-server-updates](plans/client-server-updates.md)

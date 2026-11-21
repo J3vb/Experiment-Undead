@@ -37,6 +37,7 @@ var _noise: FastNoiseLite = FastNoiseLite.new()
 var _hold_left: float = 0.0
 var _clock: float = 0.0
 var _hitstop_times: Array[float] = []
+var _warned_no_feel: Dictionary[StringName, bool] = {}
 var _dip_depth: float = 0.0
 var _dip_length: float = 0.0
 var _dip_time: float = 0.0
@@ -245,7 +246,15 @@ func _comfort(own_gun: bool) -> float:
 
 func _on_weapon_fired(player: Player, weapon: Weapon) -> void:
 	if player == _body and _is_local() and weapon and weapon.data:
+		_warn_no_feel(weapon.data)
 		kick_view(weapon.data.feel)
+
+
+func _warn_no_feel(data: WeaponData) -> void:
+	if data.feel != null or _warned_no_feel.has(data.id):
+		return
+	_warned_no_feel[data.id] = true
+	Log.warn(&"player", &"weapon_has_no_feel", {"weapon": String(data.id)})
 
 
 func _on_player_damaged(player: Player, _info: DamageInfo) -> void:

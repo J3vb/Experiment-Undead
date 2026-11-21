@@ -129,6 +129,22 @@ func test_round_ends_when_all_dead() -> void:
 	assert_eq(session.director.round_number, 1)
 
 
+## Round counts from the design (6, then 8): a real match spawns exactly that many.
+func test_rounds_spawn_the_design_counts() -> void:
+	watch_signals(Events)
+	var deadline: float = 15.0
+	while deadline > 0.0 and get_signal_emit_count(Events, "round_ended") == 0:
+		for z: Zombie in _zombies():
+			z.health.take_damage(DamageInfo.create(10000.0, player))
+		await wait_seconds(0.2)
+		deadline -= 0.2
+	assert_eq(get_signal_parameters(Events, "round_started", 0), [1, 6], "round 1 announces six")
+	assert_eq(get_signal_emit_count(Events, "enemy_killed"), 6, "round 1 is six zombies")
+	session.director._timer = 0.0
+	await wait_until(func() -> bool: return get_signal_emit_count(Events, "round_started") > 1, 5.0, "round 2")
+	assert_eq(get_signal_parameters(Events, "round_started", 1), [2, 8], "round 2 announces eight")
+
+
 func test_holding_trigger_through_reload_fires_one_shot_per_interval() -> void:
 	player.set_physics_process(false)
 	var weapon: Weapon = player.weapons.current

@@ -95,11 +95,13 @@ func test_alarm_beacons_spin_on_their_own() -> void:
 	scene.free()
 
 
+## Counts every emitter in the whole map, so the truck-wreck fire (map.tscn, not
+## atmosphere.tscn) is inside the budget too.
 func test_particles_stay_inside_the_budget() -> void:
-	var scene: Node3D = (load(ATMOSPHERE) as PackedScene).instantiate() as Node3D
-	add_child_autofree(scene)
-	var emitters: Array[Node] = scene.find_children("*", "GPUParticles3D", true, false)
-	assert_gt(emitters.size(), 0, "atmosphere has particles")
+	var map: Node3D = (load(MAP) as PackedScene).instantiate() as Node3D
+	var emitters: Array[Node] = map.find_children("*", "GPUParticles3D", true, false)
+	assert_not_null(map.get_node_or_null("TruckWreckage/Fire"), "the truck-wreck fire is counted")
+	assert_gt(emitters.size(), 0, "the map has particles")
 	var total: int = 0
 	for node: Node in emitters:
 		var particles: GPUParticles3D = node as GPUParticles3D
@@ -111,10 +113,22 @@ func test_particles_stay_inside_the_budget() -> void:
 		var rect: Rect2 = Rect2(r[0], r[1], r[2] - r[0], r[3] - r[1])
 		var count: int = 0
 		for node: Node in emitters:
-			var at: Vector3 = (node as Node3D).global_position
+			var at: Vector3 = _map_position(node as Node3D, map)
 			if rect.has_point(Vector2(at.x, at.z)):
 				count += (node as GPUParticles3D).amount
 		assert_lte(count, MAX_PARTICLES_PER_ROOM, "%s particles" % room["id"])
+	map.free()
+
+
+## Position in map space without adding the map to the tree.
+func _map_position(node: Node3D, map: Node3D) -> Vector3:
+	var at: Transform3D = node.transform
+	var parent: Node = node.get_parent()
+	while parent and parent != map:
+		if parent is Node3D:
+			at = (parent as Node3D).transform * at
+		parent = parent.get_parent()
+	return at.origin
 
 
 func test_atmosphere_is_decoration_under_an_atmosphere_root() -> void:
