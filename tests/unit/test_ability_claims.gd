@@ -6,6 +6,7 @@ const WALKER: EnemyData = preload("res://content/enemies/zombie_walker.tres")
 const RULES: WaveRules = preload("res://content/waves/default_waves.tres")
 const SHOCK_PULSE: AbilityData = preload("res://content/abilities/shock_pulse.tres")
 const ADRENAL_RUSH: AbilityData = preload("res://content/abilities/adrenal_rush.tres")
+const DECOY_SIREN: AbilityData = preload("res://content/abilities/decoy_siren.tres")
 
 var _port: int
 var _server: GameSession
@@ -117,36 +118,36 @@ func test_cooldown_reaches_the_client_in_its_snapshot() -> void:
 
 func test_second_use_inside_the_cooldown_is_refused() -> void:
 	_server_copy().abilities.cooldown_left = 30.0
-	_claims(_client).use_on_server.rpc_id(1)
+	_claims(_client).use_on_server.rpc_id(1, Vector3.ZERO)
 	await wait_until(func() -> bool: return _reasons().has(&"ability_cooling"), 3.0, "refused")
 	assert_eq(_server_copy().abilities.cooldown_left, 30.0)
 
 
 func test_use_is_accepted_again_once_the_server_cooldown_runs_out() -> void:
 	_server_copy().abilities.cooldown_left = 0.5
-	_claims(_client).use_on_server.rpc_id(1)
+	_claims(_client).use_on_server.rpc_id(1, Vector3.ZERO)
 	await wait_until(func() -> bool: return _reasons().has(&"ability_cooling"), 3.0, "refused while cooling")
 	_server_copy().abilities._physics_process(0.5)
-	_claims(_client).use_on_server.rpc_id(1)
+	_claims(_client).use_on_server.rpc_id(1, Vector3.ZERO)
 	await wait_until(func() -> bool: return _server_copy().abilities.cooldown_left > 50.0, 3.0, "accepted")
 
 
 func test_press_a_few_ticks_early_is_allowed() -> void:
 	_server_copy().abilities.cooldown_left = 0.1
-	_claims(_client).use_on_server.rpc_id(1)
+	_claims(_client).use_on_server.rpc_id(1, Vector3.ZERO)
 	await wait_until(func() -> bool: return _server_copy().abilities.cooldown_left > 50.0, 3.0, "within the slack")
 
 
 func test_downed_client_is_refused() -> void:
 	_server_copy().is_downed = true
-	_claims(_client).use_on_server.rpc_id(1)
+	_claims(_client).use_on_server.rpc_id(1, Vector3.ZERO)
 	await wait_until(func() -> bool: return _reasons().has(&"ability_not_alive"), 3.0, "refused")
 	assert_eq(_server_copy().abilities.cooldown_left, 0.0)
 
 
 func test_two_uses_at_once_are_too_fast() -> void:
-	_claims(_client).use_on_server.rpc_id(1)
-	_claims(_client).use_on_server.rpc_id(1)
+	_claims(_client).use_on_server.rpc_id(1, Vector3.ZERO)
+	_claims(_client).use_on_server.rpc_id(1, Vector3.ZERO)
 	await wait_until(func() -> bool: return _reasons().size() == 1, 3.0, "second use refused")
 	assert_true(_reasons().has(&"ability_cooling") or _reasons().has(&"ability_too_fast"))
 
@@ -155,7 +156,7 @@ func test_ability_above_the_client_level_is_refused() -> void:
 	var stub: LevelStub = LevelStub.new()
 	stub.level = 2
 	_server.handshake = stub
-	_claims(_client).use_on_server.rpc_id(1)
+	_claims(_client).use_on_server.rpc_id(1, Vector3.ZERO)
 	await wait_until(func() -> bool: return _reasons().has(&"ability_locked"), 3.0, "refused")
 	assert_eq(_server_copy().abilities.cooldown_left, 0.0)
 
@@ -201,7 +202,7 @@ func test_every_peer_sees_the_pulse_ring() -> void:
 
 func test_a_refused_use_shows_nothing() -> void:
 	_server_copy().abilities.cooldown_left = 30.0
-	_claims(_client).use_on_server.rpc_id(1)
+	_claims(_client).use_on_server.rpc_id(1, Vector3.ZERO)
 	await wait_until(func() -> bool: return _reasons().has(&"ability_cooling"), 3.0, "refused")
 	await wait_physics_frames(5)
 	assert_eq(_rings(_client) + _rings(_server), 0)
@@ -214,3 +215,13 @@ func test_a_clients_adrenal_rush_reaches_the_server_copy_and_the_owner() -> void
 	_press(_client_player())
 	await wait_until(func() -> bool: return _client_player().abilities.rush_left > 0.0, 3.0, "the owner runs faster")
 	assert_gt(_server_copy().abilities.rush_left, 0.0, "the server copy fires faster for its hit checks")
+
+
+func test_a_siren_aimed_past_its_reach_is_refused() -> void:
+	var siren: AbilityData = DECOY_SIREN
+	_server_copy().abilities.ability = siren
+	_claims(_client).use_on_server.rpc_id(1, _server_copy().global_position + Vector3(40, 0, 0))
+	await wait_until(func() -> bool: return _reasons().has(&"ability_bad_aim"), 3.0, "refused")
+	assert_eq(_server_copy().abilities.cooldown_left, 0.0)
+	_claims(_client).use_on_server.rpc_id(1, _server_copy().global_position + Vector3(15, 0, 0))
+	await wait_until(func() -> bool: return _server_copy().abilities.cooldown_left > 0.0, 3.0, "15 m is fine")

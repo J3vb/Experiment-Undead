@@ -2,7 +2,9 @@
 extends GutTest
 
 ## Unlock level and cooldown from the design table, for the abilities built so far.
-const DESIGN: Dictionary = {&"shock_pulse": [3, 60.0], &"med_burst": [8, 75.0], &"adrenal_rush": [22, 90.0]}
+const DESIGN: Dictionary = {
+	&"shock_pulse": [3, 60.0], &"med_burst": [8, 75.0], &"adrenal_rush": [22, 90.0], &"decoy_siren": [30, 90.0]
+}
 
 
 func test_every_ability_is_complete() -> void:

@@ -6,7 +6,8 @@ extends Resource
 ## SHOCK_PULSE: pushes back and stuns every zombie within radius for duration.
 ## MED_BURST: heals the user to full and teammates within radius by amount.
 ## ADRENAL_RUSH: amount more move speed and fire rate for duration.
-## WATCHDOG, DECOY_SIREN: built in later steps of plans/field-abilities.md.
+## DECOY_SIREN: zombies within radius of a point up to amount metres out walk to it for duration.
+## WATCHDOG: built in a later step of plans/field-abilities.md.
 enum Effect { SHOCK_PULSE, MED_BURST, WATCHDOG, ADRENAL_RUSH, DECOY_SIREN }
 
 @export var id: StringName = &""

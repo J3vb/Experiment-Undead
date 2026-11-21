@@ -48,6 +48,8 @@ var pack_leader: Zombie
 var pack_side: int = 0
 ## Window queue, plank tearing and vault (ZombieEntry).
 var entry: ZombieEntry = ZombieEntry.new()
+## Decoy Siren: walks to a point instead of chasing for a few seconds (server only).
+var lure: ZombieLure = ZombieLure.new()
 
 var _max_health: float = 100.0
 var _speed: float = 1.8
@@ -70,15 +72,10 @@ var _rng: RandomNumberGenerator
 
 ## Called by the Spawner before adding to the tree.
 func setup(
-	p_data: EnemyData,
-	p_net_id: int,
-	health_mult: float,
-	speed_mult: float,
-	damage_mult: float,
-	rng: RandomNumberGenerator
+	p_data: EnemyData, p_id: int, health_mult: float, speed_mult: float, damage_mult: float, rng: RandomNumberGenerator
 ) -> void:
 	data = p_data
-	net_id = p_net_id
+	net_id = p_id
 	# Before the rig is ready (`visual` is @onready): every peer picks the same look from the synced id.
 	($Visual as ZombieRig).look = hash(net_id)
 	_max_health = data.max_health * health_mult
@@ -197,6 +194,8 @@ func _tick_spawning() -> void:
 
 
 func _tick_chasing(delta: float) -> void:
+	if lure.tick(self, delta):
+		return
 	_update_target(delta)
 	if target == null:
 		_steer(Vector3.ZERO, delta)

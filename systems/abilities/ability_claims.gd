@@ -9,6 +9,8 @@ extends Node
 const COOLDOWN_SLACK: float = 0.25
 ## Two uses closer than this are refused whatever the cooldown says.
 const MIN_GAP: float = 0.5
+## Metres a Decoy Siren aim may land past its reach (the drop to the floor, lag).
+const AIM_SLACK: float = 3.0
 
 var session: GameSession
 
@@ -28,28 +30,40 @@ func _physics_process(delta: float) -> void:
 	_time += delta
 
 
-## Owner: use the ability. The server runs it directly; a client asks.
-func request_use(player: Player) -> void:
+## Owner: use the ability at aim (FieldAbility.aim_point). The server runs it directly; a client asks.
+func request_use(player: Player, aim: Vector3) -> void:
 	if multiplayer.is_server():
-		_accept(player.net_id)
+		_accept(player.net_id, aim)
 	else:
-		use_on_server.rpc_id(1)
+		use_on_server.rpc_id(1, aim)
 
 
 @rpc("any_peer", "call_remote", "reliable")
-func use_on_server() -> void:
+func use_on_server(aim: Vector3) -> void:
 	if not multiplayer.is_server():
 		return
-	_accept(multiplayer.get_remote_sender_id())
+	_accept(multiplayer.get_remote_sender_id(), aim)
 
 
 ## Empty when the use is fine, else the reason to refuse it.
-func check(peer_id: int, player: Player) -> StringName:
+func check(peer_id: int, player: Player, aim: Vector3) -> StringName:
 	if player == null or not player.is_alive() or player.is_downed:
 		return &"ability_not_alive"
 	if session.is_hub or session.is_over or player.abilities.ability == null:
 		return &"ability_not_now"
+	if not _aim_fits(player, aim):
+		return &"ability_bad_aim"
 	return _timing_problem(peer_id, player.abilities)
+
+
+## Only the Decoy Siren uses the aim: it must land within reach of the user.
+static func _aim_fits(player: Player, aim: Vector3) -> bool:
+	var data: AbilityData = player.abilities.ability
+	if data.effect != AbilityData.Effect.DECOY_SIREN:
+		return true
+	var flat: Vector3 = aim - player.global_position
+	flat.y = 0.0
+	return aim.is_finite() and flat.length() <= data.amount + AIM_SLACK
 
 
 func _timing_problem(peer_id: int, ability: FieldAbility) -> StringName:
@@ -62,15 +76,15 @@ func _timing_problem(peer_id: int, ability: FieldAbility) -> StringName:
 	return &""
 
 
-func _accept(peer_id: int) -> void:
+func _accept(peer_id: int, aim: Vector3) -> void:
 	var player: Player = session.players.find_player(peer_id) if session.players else null
-	var reason: StringName = check(peer_id, player)
+	var reason: StringName = check(peer_id, player, aim)
 	if reason != &"":
 		if session.hit_claims:
 			session.hit_claims.reject(peer_id, reason)
 		return
 	_last_use[peer_id] = _time
-	player.abilities.run()
+	player.abilities.run(aim)
 
 
 ## Server, after a use: every client plays the ring and sound (the server already did).

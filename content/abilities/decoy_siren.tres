@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://systems/abilities/ability_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/hud/ability_decoy_siren.svg" id="icon"]
+[ext_resource type="AudioStream" path="res://assets/audio/ability_siren.wav" id="sound"]
+
+[resource]
+script = ExtResource("1")
+id = &"decoy_siren"
+display_name = "Decoy Siren"
+description = "Sets a wailing siren where you look, up to 20 m away. Zombies within 20 m of it walk to it for 6 s and do not attack."
+unlock_level = 30
+cooldown = 90.0
+effect = 4
+radius = 20.0
+duration = 6.0
+amount = 20.0
+icon = ExtResource("icon")
+sound = ExtResource("sound")

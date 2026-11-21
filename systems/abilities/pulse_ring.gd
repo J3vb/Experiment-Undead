@@ -1,6 +1,7 @@
 ## What every peer sees and hears when a field ability goes off (plans/field-abilities.md step 3):
-## the ability's sound at the user and, for Shock Pulse, a pale ring that grows to the radius and
-## fades. Cosmetic only: skipped on a dedicated server; frees itself when done.
+## the ability's sound where it went off and, for Shock Pulse, a pale ring that grows to the radius
+## and fades; the Decoy Siren places its canister instead. Cosmetic only: skipped on a dedicated
+## server; frees itself when done.
 class_name PulseRing
 extends Node3D
 
@@ -17,6 +18,9 @@ static var _material: StandardMaterial3D
 ## Shows data's use at point under parent; null on a dedicated server.
 static func play(parent: Node, data: AbilityData, point: Vector3) -> PulseRing:
 	if parent == null or data == null or Build.is_server() or not parent.is_inside_tree():
+		return null
+	if data.effect == AbilityData.Effect.DECOY_SIREN:
+		DecoySiren.place(parent, data, point)
 		return null
 	var effect: PulseRing = PulseRing.new()
 	parent.add_child(effect)
