@@ -14,6 +14,9 @@ static func run(data: AbilityData, user: Player, spawner: Spawner, at: Vector3) 
 			user.abilities.start_rush(data)
 		AbilityData.Effect.DECOY_SIREN:
 			decoy_siren(spawner, at, data)
+		AbilityData.Effect.WATCHDOG:
+			if user.session:
+				Watchdog.place(user.session, data, user, at, true)
 
 
 ## Every live zombie within radius is pushed away from the centre and stunned for duration.

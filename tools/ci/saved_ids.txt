@@ -3,6 +3,7 @@ content/abilities/adrenal_rush
 content/abilities/decoy_siren
 content/abilities/med_burst
 content/abilities/shock_pulse
+content/abilities/watchdog
 content/loot/affixes/ability_cooldown
 content/loot/affixes/ability_power
 content/loot/affixes/ads_pct

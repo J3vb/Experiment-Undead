@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://systems/abilities/ability_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/hud/ability_watchdog.svg" id="icon"]
+[ext_resource type="AudioStream" path="res://assets/audio/ability_turret.wav" id="sound"]
+
+[resource]
+script = ExtResource("1")
+id = &"watchdog"
+display_name = "Watchdog"
+description = "Sets down a sentry turret for 20 s. It shoots the nearest zombie it can see within 25 m in the head; three shots kill anything."
+unlock_level = 15
+cooldown = 120.0
+effect = 2
+radius = 25.0
+duration = 20.0
+amount = 0.4
+icon = ExtResource("icon")
+sound = ExtResource("sound")

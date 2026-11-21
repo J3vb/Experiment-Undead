@@ -5,6 +5,8 @@ class_name FieldAbility
 extends Node
 
 const KILL_CREDIT: float = 0.5
+## Metres in front of the user the Watchdog turret is set down.
+const WATCHDOG_AHEAD: float = 1.5
 
 var ability: AbilityData
 var cooldown_left: float = 0.0
@@ -131,6 +133,8 @@ func use(at: Vector3 = Vector3.INF) -> bool:
 func run(at: Vector3 = Vector3.INF) -> void:
 	if ability.effect != AbilityData.Effect.DECOY_SIREN or not at.is_finite():
 		at = _player.global_position
+	if ability.effect == AbilityData.Effect.WATCHDOG:
+		at -= _player.global_basis.z * WATCHDOG_AHEAD
 	cooldown_left = full_cooldown()
 	AbilityEffects.run(ability, _player, _player.session.spawner if _player.session else null, at)
 	PulseRing.play(_player.session if _player.session else _player.get_parent(), ability, at)
