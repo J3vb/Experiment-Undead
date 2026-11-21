@@ -71,10 +71,15 @@ func use() -> bool:
 	return true
 
 
-## Server, after the checks: starts the cooldown, runs the effect and tells the owner.
+## Server, after the checks: starts the cooldown, runs the effect, shows it and tells the owner.
 func run() -> void:
 	cooldown_left = full_cooldown()
 	AbilityEffects.run(ability, _player, _player.session.spawner if _player.session else null)
+	var at: Vector3 = _player.global_position
+	PulseRing.play(_player.session if _player.session else _player.get_parent(), ability, at)
+	var claims: AbilityClaims = _claims()
+	if claims:
+		claims.relay_use(_player.net_id, ability, at)
 	_publish()
 
 

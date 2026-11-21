@@ -1,5 +1,5 @@
 ## Co-op field ability use (docs/plans/field-abilities.md, step 2): two ENet peers prove the
-## server runs a client's Shock Pulse, owns the cooldown and refuses bad requests.
+## server runs a client's Shock Pulse, owns the cooldown, refuses bad requests and shows each use to every peer.
 extends GutTest
 
 const WALKER: EnemyData = preload("res://content/enemies/zombie_walker.tres")
@@ -182,3 +182,25 @@ func test_host_uses_its_own_ability_without_a_message() -> void:
 	_press(host)
 	assert_gt(zombie.stun_left, 0.0, "ran at once on the server")
 	assert_eq(host.abilities.cooldown_left, 60.0)
+
+
+func _rings(session: GameSession) -> int:
+	var count: int = 0
+	for child: Node in session.get_children():
+		if child is PulseRing:
+			count += 1
+	return count
+
+
+func test_every_peer_sees_the_pulse_ring() -> void:
+	_press(_client_player())
+	await wait_until(func() -> bool: return _rings(_client) == 1, 3.0, "the client shows the ring the server relayed")
+	assert_eq(_rings(_server), 1, "the server shows its own")
+
+
+func test_a_refused_use_shows_nothing() -> void:
+	_server_copy().abilities.cooldown_left = 30.0
+	_claims(_client).use_on_server.rpc_id(1)
+	await wait_until(func() -> bool: return _reasons().has(&"ability_cooling"), 3.0, "refused")
+	await wait_physics_frames(5)
+	assert_eq(_rings(_client) + _rings(_server), 0)

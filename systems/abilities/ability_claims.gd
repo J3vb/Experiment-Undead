@@ -1,6 +1,7 @@
 ## Field ability use in co-op (docs/MULTIPLAYER.md pattern 2): the owner asks, the server
 ## checks the player, the cooldown and the unlock level from the handshake, then runs the
-## same FieldAbility.run() solo uses. The cooldown reaches the owner in its state snapshot.
+## same FieldAbility.run() solo uses. The cooldown reaches the owner in its state snapshot;
+## show_use tells every other peer to play the ring and sound.
 class_name AbilityClaims
 extends Node
 
@@ -70,3 +71,15 @@ func _accept(peer_id: int) -> void:
 		return
 	_last_use[peer_id] = _time
 	player.abilities.run()
+
+
+## Server, after a use: every client plays the ring and sound (the server already did).
+func relay_use(peer_id: int, data: AbilityData, at: Vector3) -> void:
+	if multiplayer.is_server() and Net.is_coop(multiplayer):
+		show_use.rpc(peer_id, data.id, at)
+
+
+@rpc("authority", "call_remote", "reliable")
+func show_use(_peer_id: int, ability_id: StringName, at: Vector3) -> void:
+	if Content.has(&"abilities", ability_id):
+		PulseRing.play(session, Content.get_item(&"abilities", ability_id) as AbilityData, at)

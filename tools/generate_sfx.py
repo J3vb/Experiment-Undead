@@ -381,3 +381,27 @@ save("grenade_blast_near.wav", crack * 1.1 + boom * 1.8 + rumble + debris, peak=
 tt = t(2.6)
 far = lowpass(lowpass(rng.standard_normal(len(tt)), 0.03), 0.05) * np.minimum(tt * 40, 1) * np.exp(-tt * 1.6)
 save("grenade_blast_far.wav", far + np.sin(2 * np.pi * 45 * tt) * np.exp(-tt * 3) * 0.4, peak=0.8)
+
+# Field abilities: shock pulse, med burst, watchdog deploy, adrenal rush, decoy siren (F-22). Own seed.
+rng = np.random.default_rng(22)
+tt = t(0.9)
+zap = rng.standard_normal(len(tt)) * np.exp(-tt * 30) * 0.6
+whump = np.sin(2 * np.pi * (140 * tt - 90 * tt**2)) * np.exp(-tt * 6)
+crackle = lowpass(rng.standard_normal(len(tt)), 0.6) * (rng.random(len(tt)) > 0.97) * np.exp(-tt * 5) * 2.0
+save("ability_pulse.wav", zap + whump * 1.4 + crackle, peak=0.9)
+tt = t(0.8)
+hiss = lowpass(rng.standard_normal(len(tt)), 0.35) * np.exp(-tt * 5) * 0.7
+chime = sum(np.sin(2 * np.pi * f * tt) * np.exp(-tt * d) for f, d in [(880, 5), (1320, 7), (1760, 9)])
+save("ability_heal.wav", hiss + chime * 0.35, peak=0.8)
+save(
+    "ability_turret.wav",
+    handling(0.7, [(0.0, 500, 30, 1.0), (0.18, 1600, 90, 0.6), (0.32, 2200, 120, 0.5), (0.45, 700, 40, 0.8)]),
+    peak=0.85,
+)
+tt = t(0.7)
+beat = sum(np.sin(2 * np.pi * 55 * (tt - at)) * np.exp(-np.clip(tt - at, 0, None) * 20) * (tt >= at) for at in (0, 0.3))
+rise = np.sin(2 * np.pi * (300 * tt + 500 * tt**2)) * np.minimum(tt * 4, 1) * np.exp(-tt * 3) * 0.3
+save("ability_rush.wav", beat + rise, peak=0.85)
+tt = t(1.6)
+wail = np.sin(2 * np.pi * np.cumsum(700 + 300 * np.sin(2 * np.pi * 2.5 * tt)) / SR)
+save("ability_siren.wav", wail * np.minimum(tt * 10, 1) * np.minimum((1.6 - tt) * 10, 1), peak=0.7)

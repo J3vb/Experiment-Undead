@@ -1,6 +1,8 @@
 [gd_resource type="Resource" script_class="AbilityData" format=3]
 
 [ext_resource type="Script" path="res://systems/abilities/ability_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/hud/ability_shock_pulse.svg" id="icon"]
+[ext_resource type="AudioStream" path="res://assets/audio/ability_pulse.wav" id="sound"]
 
 [resource]
 script = ExtResource("1")
@@ -13,3 +15,5 @@ effect = 0
 radius = 6.0
 duration = 2.0
 amount = 6.0
+icon = ExtResource("icon")
+sound = ExtResource("sound")
