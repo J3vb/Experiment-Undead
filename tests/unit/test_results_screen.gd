@@ -115,7 +115,7 @@ func test_loot_column_lists_items_best_first_with_rarity_colours() -> void:
 	var items: Array[Dictionary] = [
 		{"base": "pistol", "rar": "common", "ilvl": 4},
 		{"base": "talon_dmr", "rar": "rare", "ilvl": 17},
-		{"base": "rifle_ar", "rar": "legendary", "ilvl": 27},
+		{"base": "rifle_ar", "rar": "legendary", "ilvl": 27, "trait": ["tidewater", 0.5]},
 		{"base": "lucky_charm", "rar": "epic", "ilvl": 15},
 		{"base": "kestrel_smg", "rar": "rare", "ilvl": 20},
 		{"base": "ward_vest", "rar": "uncommon", "ilvl": 12},
@@ -123,7 +123,7 @@ func test_loot_column_lists_items_best_first_with_rarity_colours() -> void:
 	var original: Array[Dictionary] = items.duplicate(true)
 	screen.show_results({"loot": items})
 	assert_eq(screen.loot_items.get_child_count(), 6)
-	assert_eq(_loot_name(0).text, Content.weapon(&"rifle_ar").display_name)
+	assert_eq(_loot_name(0).text, "Tidewater", "A Legendary shows its own name")
 	assert_eq(_loot_name(1).text, "Lucky Charm")
 	assert_eq(_loot_name(2).text, Content.weapon(&"kestrel_smg").display_name)
 	assert_eq(_loot_name(3).text, Content.weapon(&"talon_dmr").display_name)

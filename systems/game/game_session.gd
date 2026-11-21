@@ -25,6 +25,7 @@ var players: PlayerSpawner
 var handshake: Handshake
 var look_sync: LookSync
 var hit_claims: HitClaims
+var legendary_traits: LegendaryTraits
 var interactions: InteractionSync
 var loot: LootService
 var remote_shots: RemoteShots
@@ -126,13 +127,22 @@ func _setup_network() -> bool:
 func _setup_shooting() -> void:
 	hit_claims = HitClaims.new()
 	hit_claims.name = "HitClaims"
+	legendary_traits = LegendaryTraits.new()
+	legendary_traits.name = "LegendaryTraits"
 	loot = LootService.new()
 	remote_shots = RemoteShots.new()
 	remote_shots.name = "RemoteShots"
 	interactions = InteractionSync.new()
 	deploy_vote = DeployVote.new()
 	for system: Node in [
-		hit_claims, WellClaims.new(), GrenadeClaims.new(), loot, remote_shots, interactions, deploy_vote
+		hit_claims,
+		legendary_traits,
+		WellClaims.new(),
+		GrenadeClaims.new(),
+		loot,
+		remote_shots,
+		interactions,
+		deploy_vote,
 	]:
 		system.set("session", self)
 		add_child(system)

@@ -95,6 +95,7 @@ The server also prints every warning and error to stdout as
 | `player.reload_motion_unreachable` | warn | The left arm cannot reach a reload key pose, so the forearm stretches off the hand. `weapon` id, `gap` in metres; once per gun per run. Move the gun's reload pose in `WeaponPose` or the grab offsets in `ReloadMotion` |
 | `gear.fp_piece_missing` | warn | A worn gear model has no first-person piece (a vest scene without `CuffFP_L`/`CuffFP_R`), so the first-person arms show nothing for it. `visual` id; once per visual per run. Rebuild the model with its first-person pieces |
 | `progression.profile_save_failed` | warn | Character could not be saved; `id`, `path`, `error` (Godot Error code). Check folder permissions and disk space |
+| `progression.skill_ranks_over_budget` | warn | A character holds more skill ranks than its level allows (edited save or a gate change). `level`, `ranks`; the Research screen asks for Reset all |
 | `progression.profile_unreadable` | warn | Existing character is unreadable or malformed; file stays untouched, this match uses a temporary character. `id`, `path`; inspect nearby engine errors |
 | `save.profile_newer` | warn | A character file was saved by a newer game version (`id`, `path`, `version` = its save_version). The file stays untouched, the main menu tells the player to update, and this run uses a temporary character. Happens after going back to an older build |
 | `save.old_name_data_copied` | info | First run after the rename to Fenlight: the player's settings, saved servers and characters were copied from the old `Experiment Undead` user folder (`files`, `from`). The old folder stays as a backup. Once per PC |
@@ -132,9 +133,11 @@ The server also prints every warning and error to stdout as
 | `net.skills_rejected` | warn | Server refused a client's skill ranks sent with its loadout (`peer`, `reason`): `unknown_skill` (id not in `content/skills/`), `bad_rank` (not an int from 1 to the node's `max_ranks`), `too_many_points` (more than 54). The whole loadout is ignored; check that both builds have the same skills content |
 | `loot.gear_worn` | info | The owner wore a Pack gear item mid-run (`uid`, `slot`); the old piece went into its Pack slot |
 | `loot.gear_equip_refused` | warn | A Pack gear item could not be worn (`uid`, `banked`): the run was already banked or there is no character profile (soak bots, tests). In a normal run this should never appear |
+| `loot.unknown_legendary` | warn | A saved item names a Legendary (`id`, `uid`) this build does not know (a save from a newer build or a removed Legendary). The item keeps its base name and no trait. Once per id |
 | `net.interaction_rate_limited` | warn | A client sent interact requests less than 0.1 s apart; extra ones are refused. At most one per second |
 | `ui.unknown_screen` | warn | `UI.push` or `UI.replace` got an id with no `content/screens/<id>.tres`; `id`. Nothing opens |
 | `ui.pop_empty` | warn | `UI.pop()` with no screen open: a screen emitted `closed` twice or something popped a screen it did not push |
+| `ui.skill_icon_missing` | warn | A skill has no `icon` (`id`); its Research tile shows text only. Add `assets/ui/skills/<id>.svg` and set `icon` |
 | `ui.menu_backdrop_missing` | warn | A front-end screen opened with no backdrop texture (`screen`); it shows the dark shade only. The image in `assets/ui/backdrops/` is missing or failed to import |
 | `ui.loading_failed` | warn | A root behind a loading screen failed its threaded load; `scene`. The router falls back to a plain scene change |
 

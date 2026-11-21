@@ -1,4 +1,4 @@
-## Main menu screens opened through the UI router: settings and character, Back and focus.
+## Main menu screens opened through the UI router: settings, character and research, Back and focus.
 extends GutTest
 
 const MENU: PackedScene = preload("res://systems/ui/main_menu.tscn")
@@ -123,6 +123,46 @@ func test_newer_character_save_shows_update_message_then_opens_screen_and_keeps_
 	assert_true(screen.profile.saved_by_newer_version)
 	screen._close()
 	screen._close()
+	assert_eq(FileAccess.get_file_as_string(path), raw, "the newer save is never changed")
+	if backup.is_empty():
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	else:
+		file = FileAccess.open(path, FileAccess.WRITE)
+		file.store_string(backup)
+		file.close()
+
+
+func test_research_opens_solo_profile_and_back_restores_menu_focus() -> void:
+	menu.research_button.grab_focus()
+	menu.research_button.pressed.emit()
+	assert_eq(UI.top(), &"research")
+	var screen: ResearchScreen = _top_screen() as ResearchScreen
+	assert_eq(screen.profile.id, &"solo")
+	assert_true(screen.is_ancestor_of(get_viewport().gui_get_focus_owner()))
+	screen.back()
+	assert_eq(UI.top(), &"")
+	assert_true(menu.research_button.has_focus())
+
+
+func test_newer_save_message_then_opens_research_not_loadout() -> void:
+	var path: String = CharacterProfile.directory() + "solo.json"
+	var backup: String = FileAccess.get_file_as_string(path) if FileAccess.file_exists(path) else ""
+	var raw: String = '{"save_version": %d, "total_xp": 9000}' % (SaveFile.CURRENT_VERSION + 1)
+	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
+	file.store_string(raw)
+	file.close()
+	menu.research_button.grab_focus()
+	menu.research_button.pressed.emit()
+	assert_eq(UI.top(), &"", "the message comes first")
+	menu.error_dialog.action_button.pressed.emit()
+	assert_eq(UI.top(), &"research")
+	var screen: ResearchScreen = _top_screen() as ResearchScreen
+	screen.reset_all()
+	screen.confirm()
+	assert_true(screen.status.text.begins_with("Could not save"), "a newer save never takes new ranks")
+	screen.back()
+	screen.back()
+	assert_eq(UI.top(), &"")
 	assert_eq(FileAccess.get_file_as_string(path), raw, "the newer save is never changed")
 	if backup.is_empty():
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
