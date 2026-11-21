@@ -12,6 +12,7 @@ const NAMES: Dictionary = {
 	&"crouch": "Crouch",
 	&"reload": "Reload",
 	&"lethal": "Lethal (grenade)",
+	&"field_ability": "Field ability",
 	&"interact": "Interact, buy, repair",
 	&"weapon_next": "Next weapon",
 	&"weapon_prev": "Previous weapon",

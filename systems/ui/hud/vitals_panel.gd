@@ -51,7 +51,7 @@ func _process(_delta: float) -> void:
 		return
 	var full: float = player.sprint_time * player.get_stat(&"sprint_time")
 	var share: float = clampf(player.sprint_left / maxf(full, 0.01), 0.0, 1.0)
-	var cool: bool = not player.can_sprint()
+	var cool: bool = not player.moves.can_sprint()
 	if absf(share - stamina_share) >= STAMINA_STEP or cool != cooling or (share >= 1.0) != (stamina_share >= 1.0):
 		stamina_share = share
 		cooling = cool

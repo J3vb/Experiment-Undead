@@ -11,6 +11,7 @@ const PRESS_BITS: Dictionary[StringName, int] = {
 	&"weapon_slot_2": InputFrame.SLOT_2,
 	&"weapon_slot_3": InputFrame.SLOT_3,
 	&"melee": InputFrame.MELEE,
+	&"field_ability": InputFrame.FIELD_ABILITY,
 }
 
 var mouse_sensitivity: float = 0.0022

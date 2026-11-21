@@ -33,6 +33,8 @@ var stasis: bool = false:
 		stasis = value
 		if is_node_ready():
 			_show_ice()
+## Shock Pulse: seconds left standing still, no attacks (server only; positions sync).
+var stun_left: float = 0.0
 ## Seconds since the current state began.
 var state_time: float = 0.0
 var head_popped: bool = false
@@ -116,8 +118,15 @@ func _show_ice() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if stun_left > 0.0:
+		stun_left = maxf(stun_left - delta, 0.0)
+		if stun_left == 0.0:
+			_stuck_watch.restart(global_position)
 	if (frozen or stasis) and state != State.DEAD:
 		velocity = Vector3.ZERO
+		return
+	if stun_left > 0.0 and state != State.DEAD:
+		_tick_stunned(delta)
 		return
 	state_time += delta
 	_attack_cooldown = maxf(_attack_cooldown - delta, 0.0)
@@ -137,6 +146,29 @@ func _physics_process(delta: float) -> void:
 		State.DEAD:
 			velocity.x = 0.0
 			velocity.z = 0.0
+	move_and_slide()
+
+
+## Stands still for seconds, no attacks. A zombie on its feet inside (chasing or swinging) is
+## shoved by push first and its swing is cancelled; one rising or at a window is only held.
+func stun(seconds: float, push: Vector3) -> void:
+	if state == State.DEAD:
+		return
+	stun_left = maxf(stun_left, seconds)
+	if state == State.CHASING or state == State.ATTACKING:
+		velocity.x = push.x
+		velocity.z = push.z
+		_enter(State.CHASING)
+	_stuck_watch.restart(global_position)
+
+
+## Rising or at a window: held in place like Stasis. Inside: the shove slows to a stop.
+func _tick_stunned(delta: float) -> void:
+	if state != State.CHASING:
+		velocity = Vector3.ZERO
+		return
+	velocity.y = -0.1 if is_on_floor() else velocity.y - _gravity * delta
+	_steer(Vector3.ZERO, delta)
 	move_and_slide()
 
 

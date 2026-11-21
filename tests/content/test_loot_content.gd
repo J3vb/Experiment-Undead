@@ -28,7 +28,7 @@ func test_stat_caps_match_the_affix_design_table() -> void:
 		{
 			&"move_speed": 0.15,
 			&"damage_reduction": 0.3,
-			&"ability_cooldown_reduction": 0.4,
+			&"ability_cooldown": 1.4,
 			&"loot_luck": 1.0,
 			&"bonus_skill_ranks": 3.0,
 			&"fire_rate_pct": 0.3,
