@@ -132,3 +132,31 @@ func test_swap_time_reads_handling_and_serums_still_multiply() -> void:
 	stats.add_modifier(&"handling_pct", "increased", 0.1, &"gloves")
 	assert_almost_eq(ItemInstance.stat_value(stats, &"swap_time"), 1.0 / 1.1, 0.00001)
 	assert_almost_eq(ItemInstance.stat_value(stats, &"swap_time", 1.0, null, 0.6), 0.6 / 1.1, 0.00001, "Quickhands")
+
+
+func test_legendary_trait_loads_as_its_own_flat_stat_line() -> void:
+	var low: ItemInstance = ItemInstance.new({"uid": "tw", "rar": "legendary", "trait": ["tidewater", 0.0]})
+	var high: ItemInstance = ItemInstance.new({"uid": "tw", "rar": "legendary", "trait": ["tidewater", 1.0]})
+	assert_eq(low.stats.value(&"tidewater", 0.0), 3.0)
+	assert_eq(high.stats.value(&"tidewater", 0.0), 5.0)
+	assert_eq(ItemInstance.legendary_of(high.data).display_name, "Tidewater")
+	high.stats.remove_source(&"tw")
+	assert_eq(high.stats.value(&"tidewater", 0.0), 0.0)
+
+
+func test_legendary_trait_survives_a_save_round_trip() -> void:
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.seed = 5
+	var item: Dictionary = ItemRoller.roll_weapon(rng, Content.weapon(&"rifle_ar"), &"legendary", 20)
+	var saved: Dictionary = JSON.parse_string(JSON.stringify(item))
+	var before: float = ItemInstance.new(item).stats.value(&"tidewater", 0.0)
+	assert_gt(before, 0.0)
+	assert_eq(ItemInstance.new(saved).stats.value(&"tidewater", 0.0), before)
+	assert_eq(LootDrop.item_name(saved), "Tidewater")
+
+
+func test_bad_or_unknown_trait_lines_add_nothing() -> void:
+	for line: Variant in [null, [], ["tidewater"], ["future_legendary", 0.5], ["dmg_pct", 0.5]]:
+		var item: ItemInstance = ItemInstance.new({"uid": "x", "trait": line})
+		assert_true(item.stats.modifiers.is_empty())
+		assert_null(ItemInstance.legendary_of(item.data))

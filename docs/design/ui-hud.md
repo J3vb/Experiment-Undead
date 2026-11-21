@@ -73,7 +73,7 @@ Concept: [main_menu_concept.jpg](concepts/screens/main_menu_concept.jpg) (2026-1
   - **PLAY** (default focus): starts your own Lantern Post with your character (open to friends, F-66).
   - **SERVERS**: the server browser (screen 2).
   - **LOADOUT**: the Character screen (screen 5).
-  - **RESEARCH**: the Skill tree (screen 6, F-21). Greyed out with "Coming soon" until it is built, and skipped by focus.
+  - **RESEARCH**: the Skill tree (screen 6, F-21), for the local character.
   - **SETTINGS**, **CREDITS**, **QUIT**.
 - **Bottom left:** controls hint. **Bottom right:** game version and build number, for bug reports.
 - Not on the restyled menu yet: Character (character select, F-67), the profile card and the news card. They come back when those features are built, in the new look.
@@ -146,7 +146,7 @@ One screen opened from LOADOUT on the main menu (and later with I in town or at 
 
 ### 6. Skill tree (Trainer)
 
-Three columns side by side: Marksman, Survivor, Tinkerer. Nodes run top to bottom, with the keystone at 15 points and capstone at 25 drawn larger. A node shows ranks (2/3). Points spent per branch sit above each column. Points left and respec count (Free respecs: 2 of 3) at the top.
+Built as RESEARCH on the main menu (F-21): three lanes, Marksman, Survivor, Tinkerer, running left to right like the research concept, with the keystone and capstone (8 and 11 points for now) drawn larger. For now there is no K key, no Trainer and respec is a free Reset all (docs/DECISIONS.md "Skill tree"). A node shows ranks (2/3). Points spent per branch sit above each column. Points left and respec count (Free respecs: 2 of 3) at the top.
 
 - Click or A to add a rank, right-click or B to remove before you confirm. Nothing is saved until **Confirm**.
 - The field ability picker sits below the tree: 5 slots, locked ones show the unlock level.

@@ -216,16 +216,7 @@ func _paint_button(button: Button, item: Dictionary) -> void:
 
 
 func _item_name(item: Dictionary) -> String:
-	if item.is_empty():
-		return "Empty"
-	var base: StringName = StringName(item.get("base", ""))
-	if Content.has(&"weapons", base):
-		return Content.weapon(base).display_name
-	if Content.has(&"loot", base):
-		var gear: GearBaseData = Content.get_item(&"loot", base) as GearBaseData
-		if gear != null:
-			return gear.display_name
-	return "Unknown item"
+	return "Empty" if item.is_empty() else LootDrop.item_name(item)
 
 
 func _inspect_button(button: Button) -> void:

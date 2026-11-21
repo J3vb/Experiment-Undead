@@ -53,7 +53,7 @@ static func roll_weapon(
 		"ilvl": level,
 		"aff": _roll_affixes(rng, affixes, weapon.loot_tags, rarity, level),
 		"imp": _roll_ammo(rng, ammo, rarity_id),
-		"trait": null,
+		"trait": _roll_trait(rng, weapon.id, rarity_id),
 		"set": null,
 		"craft": {},
 	}
@@ -84,7 +84,7 @@ static func roll_gear(
 		"ilvl": level,
 		"aff": _roll_affixes(rng, affixes, base.loot_tags, rarity, level),
 		"imp": null,
-		"trait": null,
+		"trait": _roll_trait(rng, base.id, rarity_id),
 		"set": null,
 		"craft": {},
 	}
@@ -99,6 +99,33 @@ static func affix_value(affix_id: StringName, tier: int, q: float) -> float:
 		return 0.0
 	var data: AffixTier = affix.tiers[tier - 1]
 	return snappedf(lerpf(data.low, data.high, q), affix.step)
+
+
+## The Legendaries named for this base, in id order.
+static func legendaries_for(base_id: StringName) -> Array[LegendaryData]:
+	var found: Array[LegendaryData] = []
+	for id: StringName in Content.sorted_ids(&"loot"):
+		var legendary: LegendaryData = Content.get_item(&"loot", id) as LegendaryData
+		if legendary and legendary.base_id == base_id:
+			found.append(legendary)
+	return found
+
+
+## The trait's rolled value; a high q is always the better end.
+static func trait_value(legendary: LegendaryData, q: float) -> float:
+	var fraction: float = 1.0 - clampf(q, 0.0, 1.0) if legendary.lower_is_better else clampf(q, 0.0, 1.0)
+	return snappedf(lerpf(legendary.low, legendary.high, fraction), legendary.step)
+
+
+## Rolled after the affixes and ammo, so other items' seeded rolls stay the same.
+static func _roll_trait(rng: RandomNumberGenerator, base_id: StringName, rarity_id: StringName) -> Variant:
+	if rarity_id != &"legendary":
+		return null
+	var choices: Array[LegendaryData] = legendaries_for(base_id)
+	if choices.is_empty():
+		return null
+	var pick: LegendaryData = choices[0] if choices.size() == 1 else choices[rng.randi_range(0, choices.size() - 1)]
+	return [String(pick.id), rng.randf()]
 
 
 static func _roll_affixes(

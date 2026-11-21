@@ -342,7 +342,7 @@ stay a plain game score. The drop reasons below are provisional picks.
 | Rarity | How much use and Fenlight an item has seen. Prototype = live Fenlight (bio-green). |
 | Legendaries | Named items with a past. Each name hints at a place or person from the lore (Lantern Fall, Choir Mark, Quarantine Shell). |
 | Sets | Each set belongs to one map's story. Proposed: Containment Detail = Halcyon (Oriel security), Fenlight Circuit = Kessel Dam (the power line), Lamplighter = Grauwald (the night nurses), Marrow Junction gets a rail or evacuation set later. *(proposed; affixes.md still says Lamplighter on map 1)* |
-| Field abilities | Salvager kit Teun and Dr. Corvelyn build from Oriel scrap: Shock Pulse, Med Burst, the Sentry turret, Adrenal Rush (a HALCYON stimulant), Decoy Siren (copies the pulse sound). |
+| Field abilities | Salvager kit Teun and Dr. Corvelyn build from Oriel scrap: Shock Pulse, Med Burst, the Watchdog turret (an Oriel security gun head on a scrap tripod; renamed from Sentry so it does not clash with the Sentry burst rifle, *provisional*), Adrenal Rush (a HALCYON stimulant), Decoy Siren (a dented canister with a blinking lamp that copies the pulse sound, *provisional*). |
 | Skill branches | The three salvager trades taught in town: Marksman, Survivor, Tinkerer. |
 | Your name | The name you sign in Pell's run log at the Deploy gate. Teammates read it on the squad cards, the ready-up board and the revive prompt. *(provisional)* |
 | Scrap | The town's money. Metal, parts and Oriel tech, traded at Odile's stall. |
@@ -427,4 +427,4 @@ No cutscenes and nothing that stops play. Story is optional: a player who ignore
 - [ ] Who are the playable survivors (F-67 character select)? Write them as Lantern Post salvagers when F-67 is planned.
 - [ ] Who runs the Trainer (skill respec)? Provisional: Dr. Corvelyn. Decide with F-45.
 - [ ] The TECHNICIAN stall says "Serums / Gear", but Serums are run items bought from Med Dispensers in maps. Decide with F-45 what the town sells (implants and gear fit; Serums would break the run layer).
-- [ ] Name clashes that confuse players: Overclock (Serum and Implant Legendary), Second Wind (Serum and Warden P9 Legendary), Overkill (power-up and Corvid Legendary), Sentry (burst rifle and field ability). Rename the Legendaries and the ability with the design-change skill before loot ships.
+- [ ] Name clashes that confuse players: Overclock (Serum and Implant Legendary), Second Wind (Serum and Warden P9 Legendary), Overkill (power-up and Corvid Legendary). (Sentry ability renamed Watchdog by F-22, provisional; "The Sentry" is also the Gate Nine boss.) Rename the Legendaries with the design-change skill before loot ships.
