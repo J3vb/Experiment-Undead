@@ -1,6 +1,6 @@
 # Plan: Legendaries and traits
 
-Status: Approved
+Status: Building
 Roadmap: F-31 / issue #116
 Phase: P6
 Size: L
