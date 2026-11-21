@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://systems/abilities/ability_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"shock_pulse"
+display_name = "Shock Pulse"
+description = "Knocks back and stuns every zombie within 6 m for 2 s."
+unlock_level = 3
+cooldown = 60.0
+effect = 0
+radius = 6.0
+duration = 2.0
+amount = 6.0

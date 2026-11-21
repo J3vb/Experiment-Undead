@@ -82,7 +82,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-20 | Skill effects (through the stat stack) | #113 | F-11 | [ready](plans/skill-effects.md) | M | Done |
 | F-21 | Skill tree screen (look target: [research_concept.jpg](design/concepts/screens/research_concept.jpg)) | #112 | F-20 | [done](plans/skill-tree-screen.md) | M | Done |
 | F-90 | More skill nodes: about 5 per branch so each holds about 30 points, keystone and capstone gates back to 15 and 25 (the person's pick 2026-11-20) | - | F-21 | needed | M | Todo |
-| F-22 | Field abilities | #114 | F-20 | [ready](plans/field-abilities.md) | L | Ready |
+| F-22 | Field abilities | #114 | F-20 | [ready](plans/field-abilities.md) | L | Building |
 | F-23 | Levelling pace check | #115 | F-20, F-22 | issue | S | Todo |
 | F-24 | Frag grenades | #119 | F-11 | [ready](plans/frag-grenades.md) | M | Building (all 4 steps merged; play-test left) |
 | F-25 | Mantle | #120 | F-11 | [ready](plans/mantle.md) | M | Building |
@@ -92,8 +92,9 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-28 | Blackout rounds and Glowers | #122 | F-11 | [ready](plans/blackout-glowers.md) | M | Building |
 | F-29 | Stalker | #123 | F-11, F-28 | [ready](plans/stalker.md) | L | Ready |
 | F-30 | Brute | #124 | F-11, F-29 | [ready](plans/brute.md) | L | Ready |
-| F-31 | Legendaries and traits | #116 | F-20 | [ready](plans/legendaries-traits.md) | L | Building |
+| F-31 | Legendaries and traits | #116 | F-20 | [done](plans/legendaries-traits.md) | L | Done |
 | F-32 | Item sets (needs set lore first); a set is the five armour pieces: headgear, vest, gloves, backpack, boots (F-71) | #117 | F-31, F-71 | needed | M | Todo |
+| F-90 | More Legendaries: Furnace (needs burning), Overkill and Overclock (renames first, Overclock needs F-22), Gambler's Coin, Dead Man's Hand stagger, the 9 new-base traits from gun-roster.md | - | F-31 | needed | L | Todo |
 | F-33 | Run length target: solo runs end between round 15 and 30 | #125 | F-27..F-30 | issue | S | Todo |
 
 ## Later: v0.9 Alpha

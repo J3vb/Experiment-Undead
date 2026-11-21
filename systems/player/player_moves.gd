@@ -11,6 +11,8 @@ const CHAIN_WINDOW: float = 0.4
 const CHAIN_HEIGHT: float = 0.8
 
 var slide_left: float = 0.0
+## Out of breath: sprint is blocked until this runs out.
+var sprint_cooldown_left: float = 0.0
 var _slide_time: float = SLIDE_TIME
 var _slide_dir: Vector3 = Vector3.FORWARD
 var _crouch_was: bool = false
@@ -59,3 +61,24 @@ func vertical(player: Player, delta: float, wants_jump: bool, gravity: float) ->
 	var speed: float = player.jump_velocity * sqrt(_jump_height)
 	_jump_height *= CHAIN_HEIGHT
 	return speed
+
+
+func can_sprint() -> bool:
+	return sprint_cooldown_left <= 0.0
+
+
+## Sprint drains sprint_left; running out blocks sprint for sprint_cooldown,
+## then refills it. Stopping early refills it over sprint_cooldown seconds.
+func tick_stamina(player: Player, delta: float) -> void:
+	var full: float = player.sprint_time * player.get_stat(&"sprint_time")
+	if sprint_cooldown_left > 0.0:
+		sprint_cooldown_left -= delta
+		if sprint_cooldown_left <= 0.0:
+			player.sprint_left = full
+	elif player.is_sprinting:
+		player.sprint_left -= delta
+		if player.sprint_left <= 0.0:
+			player.sprint_left = 0.0
+			sprint_cooldown_left = player.sprint_cooldown
+	else:
+		player.sprint_left = minf(player.sprint_left + delta * full / player.sprint_cooldown, full)

@@ -113,7 +113,7 @@ func test_real_gear_sprint_duration_reaches_the_stamina_consumer() -> void:
 	assert_almost_eq(player.get_stat(&"sprint_time"), 1.4, 0.0001)
 	player.sprint_left = 0.0
 	player.is_sprinting = false
-	player._tick_stamina(player.sprint_cooldown)
+	player.moves.tick_stamina(player, player.sprint_cooldown)
 	assert_almost_eq(player.sprint_left, player.sprint_time * 1.4, 0.0001)
 	assert_eq(saved, before)
 

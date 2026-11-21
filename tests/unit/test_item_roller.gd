@@ -223,7 +223,7 @@ func test_only_legendary_rarity_gets_a_trait() -> void:
 	for rarity: StringName in [&"common", &"uncommon", &"rare", &"epic"]:
 		assert_null(ItemRoller.roll_weapon(rng, Content.weapon(&"rifle_ar"), rarity, 31).trait)
 	assert_null(
-		ItemRoller.roll_gear(rng, Content.get_item(&"loot", &"vest_heavy") as GearBaseData, &"legendary", 31).trait
+		ItemRoller.roll_gear(rng, Content.get_item(&"loot", &"vest_light") as GearBaseData, &"legendary", 31).trait
 	)
 
 

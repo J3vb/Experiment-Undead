@@ -47,7 +47,7 @@ func test_stamina_share_and_cooldown() -> void:
 	assert_false(panel.cooling)
 	assert_eq(panel.stamina_colour(), VitalsPanel.TEXT)
 	player.sprint_left = 0.0
-	player._sprint_cooldown_left = 1.0
+	player.moves.sprint_cooldown_left = 1.0
 	panel._process(0.0)
 	assert_almost_eq(panel.stamina_share, 0.0, 0.001)
 	assert_true(panel.cooling)

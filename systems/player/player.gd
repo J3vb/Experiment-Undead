@@ -43,6 +43,7 @@ var state_sync: PlayerStateSync
 var loadout_sync: LoadoutSync
 var revive: Revive
 var grenades: GrenadeThrower
+var abilities: FieldAbility
 var move_input: Vector2 = Vector2.ZERO
 var sprint_left: float = 4.0
 var last_frame: InputFrame = InputFrame.new()
@@ -65,7 +66,6 @@ var _fallback_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _base_max_health: float = 100.0
 var _base_regen_delay: float = 0.0
 var _base_slots: int = 2
-var _sprint_cooldown_left: float = 0.0
 var _teleport_to: Transform3D
 var _teleport_pending: bool = false
 
@@ -101,6 +101,8 @@ func _ready() -> void:
 	add_child(revive)
 	grenades = GrenadeThrower.new()
 	add_child(grenades)
+	abilities = FieldAbility.new()
+	add_child(abilities)
 
 
 ## The owning peer sees through this player's camera and drives it; everyone
@@ -164,9 +166,9 @@ func has_serum(id: StringName) -> bool:
 	return false
 
 
-## Down with Second Wind still waiting to get them up: the squad is not out yet.
+## Down with Second Wind, Undying or Last Rites still able to get them up: the squad is not out yet.
 func can_self_revive() -> bool:
-	return is_downed and not is_dead and (has_serum(&"second_wind") or revive.has_undying_charge())
+	return is_downed and not is_dead and (has_serum(&"second_wind") or revive.can_get_up())
 
 
 func add_serum(serum: SerumData) -> void:
@@ -237,11 +239,12 @@ func apply_frame(frame: InputFrame, delta: float) -> void:
 		look(frame.look)
 		weapons.add_sway(frame.look)
 	_read_input(frame)
-	_tick_stamina(delta)
+	moves.tick_stamina(self, delta)
 	interaction.update(self, frame, delta)
 	_move(delta, frame)
 	weapons.tick(delta)
 	grenades.tick(frame, delta)
+	abilities.tick(frame)
 	var fov: float = weapons.get_ads_fov(camera_rig.base_fov)
 	camera_rig.update_feel(delta, is_crouching, is_sprinting, weapons.get_ads_progress(), fov, walk_speed)
 
@@ -258,34 +261,13 @@ func _read_input(frame: InputFrame) -> void:
 	is_crouching = is_downed or sliding or (frame.has(InputFrame.CROUCH) and is_on_floor())
 	var wants_sprint: bool = frame.has(InputFrame.SPRINT) and move_input.y < -0.4 and not is_crouching
 	is_aiming = frame.has(InputFrame.ADS) and not wants_sprint
-	is_sprinting = wants_sprint and is_on_floor() and can_sprint()
+	is_sprinting = wants_sprint and is_on_floor() and moves.can_sprint()
 	weapons.set_trigger(frame.has(InputFrame.FIRE))
 	if frame.has(InputFrame.RELOAD):
 		weapons.reload()
 	if is_downed:
 		return
 	weapons.handle_presses(frame)
-
-
-func can_sprint() -> bool:
-	return _sprint_cooldown_left <= 0.0
-
-
-## Sprint drains sprint_left; running out blocks sprint for sprint_cooldown,
-## then refills it. Stopping early refills it over sprint_cooldown seconds.
-func _tick_stamina(delta: float) -> void:
-	var full: float = sprint_time * get_stat(&"sprint_time")
-	if _sprint_cooldown_left > 0.0:
-		_sprint_cooldown_left -= delta
-		if _sprint_cooldown_left <= 0.0:
-			sprint_left = full
-	elif is_sprinting:
-		sprint_left -= delta
-		if sprint_left <= 0.0:
-			sprint_left = 0.0
-			_sprint_cooldown_left = sprint_cooldown
-	else:
-		sprint_left = minf(sprint_left + delta * full / sprint_cooldown, full)
 
 
 func _move(delta: float, frame: InputFrame) -> void:

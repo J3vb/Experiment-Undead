@@ -1,10 +1,11 @@
 # Plan: Legendaries and traits
 
-Status: Building
+Status: Done
 Roadmap: F-31 / issue #116
 Phase: P6
 Size: L
 Approved by: plan PR #466 (fresh Claude review, Codex out of quota), the person on the approval card (2026-11-20)
+Built in: #470 (step 1), #471 (2), #472 (3), #473 (4), #475 (5), step 6 in the close-out PR
 Lore link: docs/design/lore.md#story-links-for-game-content, "Legendaries" row: named items with a past, each name hinting at a place or person from the lore. Each Legendary gets a one-line flavour text in that spirit. One rename (Second Wind becomes Last Rites, below) to fix the name clash the lore audit flagged.
 
 ## Goal
@@ -356,7 +357,8 @@ does. No per-frame cost, no allocation per hit beyond the existing
   `LegendaryTraits`, which keeps both files under 350. Quarantine Shell:
   `Revive.absorbs` (server) ignores the first hit after value s since the
   last block. Last Rites (the Warden P9 Legendary, renamed from Second Wind):
-  a player holding it goes down instead of dying (solo too); while downed,
+  a co-op player holding it goes down instead of dying (solo has no downed
+  state, so it does nothing in solo; DECISIONS); while downed,
   value kills with that item gun get them up through
   `state_sync.revive_player()`, once per round, without touching Serums or
   the Undying charge; `can_get_up()` counts an unused Last Rites, so the squad
@@ -369,12 +371,12 @@ does. No per-frame cost, no allocation per hit beyond the existing
 - Files: systems/player/player.gd (lines moved out only), systems/player/revive.gd, systems/game/match_end.gd (only if the call changes), systems/damage/health_component.gd, systems/net/player_state_sync.gd (only if the pistol check needs it), content/loot/legendaries/{quarantine_shell,iron_lung,last_rites}.tres, docs/design/lore.md.
 - Tests: `tests/unit/test_legendary_traits.gd` or `test_skill_rules.gd`:
   Quarantine Shell blocks once per window; Iron Lung skips the delay after the
-  streak and a hit resets the streak; Last Rites puts a solo player down and
+  streak and a hit resets the streak; Last Rites puts a co-op player down and
   gets them up after value downed kills, once per round, only with that gun,
   Serums and Undying untouched; the run does not end while a downed player has
   an unused Last Rites; a co-op client's Last Rites works through its claims.
   Existing Second Wind and Undying tests still pass unchanged.
-- Done when: three more Legendaries work in solo and co-op; player.gd no
+- Done when: Quarantine Shell and Iron Lung work in solo and co-op, Last Rites in co-op; player.gd no
   longer than before; CI green.
 
 ### Step 6: Twin Pin, Legendary-only bases and close-out
@@ -398,13 +400,13 @@ does. No per-frame cost, no allocation per hit beyond the existing
 
 ## Acceptance
 
-- [ ] Traits are data files (`content/loot/legendaries/*.tres`) per affixes.md - `tests/content/test_legendaries.gd`
-- [ ] Roller tests cover trait rolls and save/load - `test_item_roller.gd`, `test_item_instance.gd`
-- [ ] Each trait has an effect test - `test_legendary_traits.gd`, `test_owner_traits.gd`
-- [ ] Every trait works for a co-op client (server traits through claims, owner traits on the owner only) - co-op cases in the same files
-- [ ] Tooltip shows the name and the trait line first in Legendary orange - `test_item_tooltip.gd`
-- [ ] A Legendary drop always has a trait (after step 6) - drop test
-- [ ] Soak passes with no new warnings - CI `soak` and `coop-soak` on the step PRs
+- [x] Traits are data files (`content/loot/legendaries/*.tres`) per affixes.md - `tests/content/test_legendaries.gd`
+- [x] Roller tests cover trait rolls and save/load - `test_item_roller.gd`, `test_item_instance.gd`
+- [x] Each trait has an effect test - `test_legendary_traits.gd`, `test_owner_traits.gd`
+- [x] Every trait works for a co-op client (server traits through claims, owner traits on the owner only) - co-op cases in the same files
+- [x] Tooltip shows the name and the trait line first in Legendary orange - `test_item_tooltip.gd`
+- [x] A Legendary drop always has a trait (after step 6) - `test_loot_service.gd` test_legendary_drops_are_named_and_carry_a_trait
+- [x] Soak passes with no new warnings - CI `soak` and `coop-soak` on the step PRs
 
 ## Risks
 
