@@ -44,6 +44,8 @@ func setup(display_name: String = "Survivor", level: int = 1) -> void:
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--test-protocol="):
 			protocol_version = arg.trim_prefix("--test-protocol=").to_int()
+		if arg.begins_with("--soak-level="):
+			_level = arg.trim_prefix("--soak-level=").to_int()
 	_scene = multiplayer as SceneMultiplayer
 	_scene.auth_timeout = Net.CONNECT_TIMEOUT
 	_scene.auth_callback = _receive_auth

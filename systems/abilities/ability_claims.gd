@@ -1,5 +1,5 @@
 ## Field ability use in co-op (docs/MULTIPLAYER.md pattern 2): the owner asks, the server
-## checks the player, the cooldown and the unlock level from the handshake, then runs the
+## checks the player, the cooldown and a client's unlock level from the handshake, then runs the
 ## same FieldAbility.run() solo uses. The cooldown reaches the owner in its state snapshot;
 ## show_use tells every other peer to play the ring and sound.
 class_name AbilityClaims
@@ -71,7 +71,8 @@ func _timing_problem(peer_id: int, ability: FieldAbility) -> StringName:
 		return &"ability_cooling"
 	if _last_use.has(peer_id) and _time - _last_use[peer_id] < MIN_GAP:
 		return &"ability_too_fast"
-	if session.handshake and session.handshake.player_level(peer_id) < ability.ability.unlock_level:
+	var own: bool = peer_id == multiplayer.get_unique_id()
+	if not own and session.handshake and session.handshake.player_level(peer_id) < ability.ability.unlock_level:
 		return &"ability_locked"
 	return &""
 

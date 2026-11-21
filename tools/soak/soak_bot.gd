@@ -1,5 +1,5 @@
 ## Balance bot for the soak: backs away from close zombies, turns toward the nearest zombie it can see,
-## holds fire, reloads, throws one frag a round at a far zombie,
+## holds fire, reloads, throws one frag a round at a far zombie, uses its field ability up close,
 ## buys one wall gun (and its ammo) from anywhere once it can pay.
 ## A zombie it cannot see for HUNT_AFTER seconds is killed outright, standing in for
 ## the player walking over to it (zombies can stall out of sight, see the soak notes).
@@ -9,6 +9,7 @@ const TURN_RATE: float = 6.0  ## Radians per second, about a quick human flick.
 const AIM_HEIGHT: float = 1.15  ## Chest height: body shots only, no headshots.
 const HUNT_AFTER: float = 10.0
 const BACK_OFF: float = 4.0  ## Metres: closer than this, walk backwards while shooting.
+const ABILITY_REACH: float = 6.0  ## Metres: uses its field ability once a zombie is this close.
 
 var player: Player
 var wall: WallBuy
@@ -52,6 +53,9 @@ func _physics_process(delta: float) -> void:
 			frame.buttons |= InputFrame.FIRE
 		if frame.look.length() < 0.05 and _wants_frag(target):
 			frame.buttons |= InputFrame.LETHAL
+		var ready: bool = player.abilities.ability != null and player.abilities.cooldown_left <= 0.0
+		if wants_ability(ready, player.global_position.distance_to(target), ABILITY_REACH):
+			frame.buttons |= InputFrame.FIELD_ABILITY
 	if gun.instance.ammo_in_mag == 0 and gun.instance.ammo_reserve > 0 and not gun.is_reloading():
 		frame.buttons |= InputFrame.RELOAD
 	player.apply_frame(frame, delta)
@@ -130,3 +134,8 @@ static func turn_toward(forward: Vector3, wanted: Vector3, max_turn: float) -> V
 	var yaw: float = wrapf(atan2(-wanted.x, -wanted.z) - atan2(-forward.x, -forward.z), -PI, PI)
 	var pitch: float = asin(clampf(wanted.y, -1.0, 1.0)) - asin(clampf(forward.y, -1.0, 1.0))
 	return Vector2(-yaw, -pitch).limit_length(max_turn)
+
+
+## Presses the field ability when it is ready and the nearest zombie is within reach.
+static func wants_ability(ready: bool, distance: float, reach: float) -> bool:
+	return ready and distance < reach

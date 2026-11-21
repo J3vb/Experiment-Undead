@@ -63,3 +63,9 @@ func test_bot_turns_the_short_way_and_caps_the_turn() -> void:
 	assert_almost_eq(SOAK_BOT.turn_toward(Vector3.FORWARD, right, 0.1).length(), 0.1, 0.001)
 	var up: Vector3 = Vector3(0.0, 1.0, -1.0).normalized()
 	assert_lt(SOAK_BOT.turn_toward(Vector3.FORWARD, up, 10.0).y, 0.0, "negative look.y pitches up")
+
+
+func test_bot_uses_its_field_ability_when_ready_and_a_zombie_is_close() -> void:
+	assert_true(SOAK_BOT.wants_ability(true, 4.0, 6.0))
+	assert_false(SOAK_BOT.wants_ability(false, 4.0, 6.0), "still cooling down")
+	assert_false(SOAK_BOT.wants_ability(true, 9.0, 6.0), "nothing close")

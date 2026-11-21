@@ -1,6 +1,6 @@
 # Plan: Field abilities
 
-Status: Building
+Status: Done
 Roadmap: F-22 / issue #114
 Phase: P5
 Size: L
@@ -344,7 +344,7 @@ effect. Budget: under 0.1 ms per frame on the server with 4 turrets up.
 - Done when: the icon reads clearly at 1440p next to the vitals panel (look
   check image in the PR); CI green.
 - Built: `show_use(peer_id, ability_id, at)` reliable from the server
-  (protocol bump); step 6 adds the turret's object id. The sound plays on the
+  (protocol bump). The sound plays on the
   SFX bus (there is no Effects bus).
 
 ### Step 4: Med Burst and Adrenal Rush
@@ -374,6 +374,7 @@ effect. Budget: under 0.1 ms per frame on the server with 4 turrets up.
 
 ### Step 5: Decoy Siren
 
+
 - Build: `decoy_siren.tres`. The siren lands where the user aims, up to 20 m
   (ray from the eyes, else 20 m out, dropped to the floor). Server: every
   live zombie within 20 m of it gets `Zombie.lure(point, 6.0)`: it paths to
@@ -394,6 +395,8 @@ effect. Budget: under 0.1 ms per frame on the server with 4 turrets up.
   is capped at 20 m; the server refuses an aim point farther than 20 m plus
   slack from the eyes.
 - Done when: a siren pulls a crowd off a downed teammate in co-op; CI green.
+- Built: the lure lives in `ZombieLure` (zombie.gd is at its size limit); the
+  canister is a grey box (DECISIONS line), the Tripo model follows in its own PR.
 
 ### Step 6: Watchdog turret
 
@@ -415,6 +418,9 @@ effect. Budget: under 0.1 ms per frame on the server with 4 turrets up.
   (points, XP, cooldown -0.5 s); gone after 20 s; a client's turret damages
   only on the server.
 - Done when: the turret clears a window for 20 s in solo and co-op; CI green.
+- Built: no `show_turret_shot`: each client's turret picks its own target and
+  shows its shots from synced zombies, so `show_use` needs no object id and the
+  wire is unchanged (DECISIONS line). Grey-box turret until its Tripo model.
 
 ### Step 7: Ability picker under the Research tree
 
@@ -435,6 +441,8 @@ Build after F-21's screen has merged.
   pick.
 - Done when: a player picks Med Burst at level 20 and brings it into a run; CI
   green.
+- Built: the pick saves at once on click (Research ranks still wait for
+  Confirm). Save version 4; ability ids join `tools/ci/saved_ids.txt`.
 
 ### Step 8: Close-out
 
@@ -448,17 +456,20 @@ Build after F-21's screen has merged.
   tools/soak/soak_bot.gd, coop_soak_bot.gd, soak_run.gd, their test.
 - Tests: the soak bot test checks it presses the ability when ready.
 - Done when: `quality`, `test`, `soak` green; play-test checklist posted.
+- Built: the server trusts its own player's level (only clients are checked
+  against the hello), so the solo fight-mode soak bot needs no hello level;
+  co-op soak bots pass `--soak-level=50`.
 
 ## Acceptance
 
-- [ ] Abilities are data files with cooldowns - `tests/content/test_abilities.gd`
-- [ ] The highest unlocked ability is used, from level 3 - `test_field_ability.gd`
-- [ ] Cooldown: kills take 0.5 s, Gadgeteer and the Implant affix shorten it, 40% cap - `test_field_ability.gd`
-- [ ] Each ability has a unit test on its effect - steps 1, 4, 5, 6
-- [ ] A client's use runs on the server and everyone sees it - `test_ability_claims.gd`, `test_watchdog.gd`
-- [ ] HUD shows the ability and its cooldown - `test_ability_icon.gd`, look check image
-- [ ] Soak passes with abilities in use, no new warnings - CI `soak`, `coop-soak`
-- [ ] Play-test: the person tries each ability (recorded in the close-out PR)
+- [x] Abilities are data files with cooldowns - `tests/content/test_abilities.gd`
+- [x] The highest unlocked ability is used, from level 3 - `test_field_ability.gd`
+- [x] Cooldown: kills take 0.5 s, Gadgeteer and the Implant affix shorten it, 40% cap - `test_field_ability.gd`
+- [x] Each ability has a unit test on its effect - steps 1, 4, 5, 6
+- [x] A client's use runs on the server and everyone sees it - `test_ability_claims.gd`, `test_watchdog.gd`
+- [x] HUD shows the ability and its cooldown - `test_ability_icon.gd`, look check image
+- [x] Soak passes with abilities in use, no new warnings - CI `soak`, `coop-soak` (co-op bots bring a different ability each; the fight-mode solo bot brings Shock Pulse)
+- [ ] Play-test: the person tries each ability (checklist in the close-out PR; open)
 
 ## Risks
 
