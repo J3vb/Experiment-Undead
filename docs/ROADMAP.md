@@ -50,7 +50,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-10 | First play-test (the person plays) | #109 | F-09 | issue | S | Done (solo play-test 2026-11-19, fixes in F-84, F-85) |
 | F-82 | Separate launcher program (like Steam or Battle.net): installs and updates the game, updates itself, news and patch notes, hosts a server; replaces the launcher built into the game (F-65 steps 5-6, 9) | - | F-65 step 4 | [ready](plans/separate-launcher.md) | L | Building |
 | F-11 | Release v0.1.0 | #111 | F-10, F-65 steps 1-4, F-82 steps 1-4 | issue | S | Todo |
-| F-91 | Performance pass: one fps benchmark, baseline on the person's PC, fix only the measured hotspots (draw calls, AI frame-skip at the 66-zombie co-op cap), upscaler defaults, regression report in CI | - | - | [planning](plans/performance-pass.md) | M | Planning |
+| F-91 | Performance pass: one fps benchmark, baseline on the person's PC, fix only the measured hotspots (draw calls, AI frame-skip at the 66-zombie co-op cap), upscaler defaults, regression report in CI | - | - | [ready](plans/performance-pass.md) | M | Ready |
 | F-40 | Round state and power-ups in co-op (rest of #126 after F-02) | #126 | F-02 | [done](plans/coop-round-state-power-ups.md) | M | Done |
 | F-47 | A full co-op match: co-op soak, pause, squad cards, hub and deploy flow | #213 | F-40 | [plan](plans/coop-full-match.md) | L | Done |
 | F-48 | Full settings screen: Graphics page with presets, then Accessibility and Comfort | - | F-05 | [done](plans/full-settings.md) | L | Done |
