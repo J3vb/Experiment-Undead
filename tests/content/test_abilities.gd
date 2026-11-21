@@ -2,7 +2,7 @@
 extends GutTest
 
 ## Unlock level and cooldown from the design table, for the abilities built so far.
-const DESIGN: Dictionary = {&"shock_pulse": [3, 60.0]}
+const DESIGN: Dictionary = {&"shock_pulse": [3, 60.0], &"med_burst": [8, 75.0], &"adrenal_rush": [22, 90.0]}
 
 
 func test_every_ability_is_complete() -> void:
@@ -43,3 +43,13 @@ func test_shock_pulse_numbers() -> void:
 	assert_eq(data.radius, 6.0, "within 6 m")
 	assert_eq(data.duration, 2.0, "stuns for 2 s")
 	assert_gt(data.amount, 0.0, "knocks back")
+
+
+func test_med_burst_and_adrenal_rush_numbers() -> void:
+	var med: AbilityData = Content.get_item(&"abilities", &"med_burst") as AbilityData
+	assert_eq(med.effect, AbilityData.Effect.MED_BURST)
+	assert_eq(med.amount, 50.0, "teammates heal 50")
+	var rush: AbilityData = Content.get_item(&"abilities", &"adrenal_rush") as AbilityData
+	assert_eq(rush.effect, AbilityData.Effect.ADRENAL_RUSH)
+	assert_eq(rush.duration, 8.0)
+	assert_eq(rush.amount, 0.3, "+30% move speed and fire rate")

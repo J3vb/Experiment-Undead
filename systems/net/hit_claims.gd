@@ -121,7 +121,7 @@ func claim_hit(
 	if hit_zone == null:
 		reject(sender, &"zone_missing")
 		return
-	if not take_claim(sender, weapon):
+	if not take_claim(sender, weapon, 1.0 / player.get_stat(&"fire_interval", 1.0, item.stats if item else null)):
 		reject(sender, &"claims_too_fast")
 		return
 	var info: DamageInfo = DamageInfo.create(amount, player)
@@ -230,7 +230,8 @@ func _find_zone(zombie: Zombie, zone: int) -> HitZone:
 
 
 ## Per-gun claim window shared with WellClaims: false once a sender claims faster than the gun fires.
-func take_claim(sender: int, weapon: WeaponData) -> bool:
+## rate is the shooter's fire-rate factor (gear, Adrenal Rush); it only ever widens the window.
+func take_claim(sender: int, weapon: WeaponData, rate: float) -> bool:
 	if not _claims.has(sender):
 		_claims[sender] = {}
 	var per_weapon: Dictionary = _claims[sender]
@@ -238,7 +239,7 @@ func take_claim(sender: int, weapon: WeaponData) -> bool:
 	while not recent.is_empty() and float(recent[0]) <= _time - 1.0:
 		recent.pop_front()
 	var hits_per_shot: int = weapon.pellets * (maxi(weapon.pierce_count, 0) + 1)
-	var limit: float = weapon.rounds_per_minute / 60.0 * hits_per_shot * SLACK + 2.0
+	var limit: float = weapon.rounds_per_minute / 60.0 * hits_per_shot * SLACK * maxf(rate, 1.0) + 2.0
 	per_weapon[weapon.id] = recent
 	if recent.size() + 1 > limit:
 		return false
