@@ -27,14 +27,14 @@ The layout follows what military-shooter players already expect, so nobody has t
 | Alt fire (`alt_fire`) | Middle mouse | Press | Both barrels on Coachman and Grubber; with one round left, fires it normally |
 | Aim down sights | Right mouse | Hold |  |
 | Reload | R | - |  |
-| Interact, buy, repair barrier | E | Hold 0.3 s | Tap option in settings |
+| Interact, buy, repair barrier | F | Hold 0.3 s | Tap option in settings. F in the game and the other design docs |
 | Jump, mantle | Space | - |  |
 | Sprint | Left Shift | Hold | Double tap for tactical sprint |
 | Crouch, slide | C | Toggle | Press while sprinting to slide |
 | Melee | V | - |  |
 | Lethal (grenade) | G | - | Hold to cook |
 | Tactical | Q | - |  |
-| Field ability | F | - | From the skill tree |
+| Field ability | X | - | F is interact. Until the skill tree picker (F-21) you bring the highest ability your level has unlocked *(provisional)* |
 | Weapon slot 1, 2, 3 | 1, 2, 3 | - |  |
 | Next or previous weapon | Mouse wheel | - |  |
 | Ping | Unbound | - | Planned; middle mouse is used by alt fire |

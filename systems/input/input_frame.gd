@@ -20,6 +20,7 @@ const SLOTS: Array[int] = [SLOT_1, SLOT_2, SLOT_3]
 const MELEE: int = 1 << 13  ## Pressed this tick.
 const INTERACT_HELD: int = 1 << 14  ## Held down; INTERACT is the press.
 const LETHAL: int = 1 << 15  ## Held down: cooking a grenade.
+const FIELD_ABILITY: int = 1 << 16  ## Pressed this tick.
 
 var tick: int = 0
 var move: Vector2 = Vector2.ZERO
