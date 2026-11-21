@@ -81,9 +81,25 @@ func tick(frame: InputFrame) -> void:
 		return
 	var claims: AbilityClaims = _claims()
 	if claims:
-		claims.request_use(_player)
+		claims.request_use(_player, aim_point())
 	elif multiplayer.is_server():
-		use()
+		use(aim_point())
+
+
+## Owner: where the ability goes off. The user's feet, or for the Decoy Siren the floor under
+## what the eyes look at, at most amount metres out.
+func aim_point() -> Vector3:
+	if ability == null or ability.effect != AbilityData.Effect.DECOY_SIREN or _player.camera == null:
+		return _player.global_position
+	var eyes: Vector3 = _player.camera.global_position
+	var end: Vector3 = eyes - _player.camera.global_basis.z * ability.amount
+	var space: PhysicsDirectSpaceState3D = _player.get_world_3d().direct_space_state
+	var hit: Dictionary = space.intersect_ray(PhysicsRayQueryParameters3D.create(eyes, end, Layers.WORLD))
+	var point: Vector3 = hit.position + hit.normal * 0.3 if hit else end
+	var floor_hit: Dictionary = space.intersect_ray(
+		PhysicsRayQueryParameters3D.create(point, point + Vector3.DOWN * 30.0, Layers.WORLD)
+	)
+	return floor_hit.position if floor_hit else point
 
 
 func _claims() -> AbilityClaims:
@@ -103,18 +119,20 @@ func full_cooldown() -> float:
 
 
 ## Server, without a session's AbilityClaims: checks, then runs. False when it cannot be used now.
-func use() -> bool:
+## at: the aim point (Decoy Siren); left out, the user's feet.
+func use(at: Vector3 = Vector3.INF) -> bool:
 	if not multiplayer.is_server() or not can_use():
 		return false
-	run()
+	run(at)
 	return true
 
 
 ## Server, after the checks: starts the cooldown, runs the effect, shows it and tells the owner.
-func run() -> void:
+func run(at: Vector3 = Vector3.INF) -> void:
+	if ability.effect != AbilityData.Effect.DECOY_SIREN or not at.is_finite():
+		at = _player.global_position
 	cooldown_left = full_cooldown()
-	AbilityEffects.run(ability, _player, _player.session.spawner if _player.session else null)
-	var at: Vector3 = _player.global_position
+	AbilityEffects.run(ability, _player, _player.session.spawner if _player.session else null, at)
 	PulseRing.play(_player.session if _player.session else _player.get_parent(), ability, at)
 	var claims: AbilityClaims = _claims()
 	if claims:

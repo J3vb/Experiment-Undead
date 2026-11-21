@@ -1,11 +1,12 @@
 ## Field abilities (docs/plans/field-abilities.md, step 1): pick by level, press and cooldown,
-## kill credit, Gadgeteer and the 40% cap, and Shock Pulse's stun and push.
+## kill credit, Gadgeteer and the 40% cap, Shock Pulse's stun and push, and the Decoy Siren lure.
 extends GutTest
 
 const PLAYER: PackedScene = preload("res://systems/player/player.tscn")
 const WALKER: EnemyData = preload("res://content/enemies/zombie_walker.tres")
 const RULES: WaveRules = preload("res://content/waves/default_waves.tres")
 const SHOCK_PULSE: AbilityData = preload("res://content/abilities/shock_pulse.tres")
+const DECOY_SIREN: AbilityData = preload("res://content/abilities/decoy_siren.tres")
 
 var root: Node3D
 var session: GameSession
@@ -196,3 +197,36 @@ func test_saved_pick_is_used_only_when_unlocked() -> void:
 	assert_eq(FieldAbility.pick_for("no_such_ability", 20), FieldAbility.pick_for_level(20), "unknown: highest")
 	assert_eq(FieldAbility.pick_for("", 3), SHOCK_PULSE)
 	assert_null(FieldAbility.pick_for("shock_pulse", 2))
+
+
+func test_decoy_siren_pulls_zombies_within_twenty_metres_off_a_player() -> void:
+	ability.ability = DECOY_SIREN
+	player.global_position = Vector3(0, 0, 0)
+	var near: Zombie = _zombie(Vector3(1, 0, 0))
+	var far: Zombie = _zombie(Vector3(-23, 0, 0))
+	var siren: Vector3 = Vector3(10, 0, 0)
+	assert_true(ability.use(siren))
+	var lure: ZombieLure = near.lure
+	assert_true(lure.is_active(), "within 20 m of the siren")
+	assert_eq(lure.point, siren)
+	assert_false(far.lure.is_active(), "33 m from the siren")
+	var start: float = near.global_position.distance_to(siren)
+	for tick: int in 30:
+		near._physics_process(0.1)
+		assert_ne(near.state, Zombie.State.ATTACKING, "no swing at the player in reach while lured")
+	assert_lt(near.global_position.distance_to(siren), start - 2.0, "walked toward the siren")
+	for tick: int in 31:
+		near._physics_process(0.1)
+	assert_false(near.lure.is_active(), "over after 6 s")
+	assert_eq(near.state, Zombie.State.CHASING, "chases again")
+
+
+func test_decoy_siren_aim_stops_at_twenty_metres() -> void:
+	ability.ability = DECOY_SIREN
+	player.global_position = Vector3(0, 0, 0)
+	var aim: Vector3 = ability.aim_point()
+	var flat: Vector3 = aim - player.global_position
+	flat.y = 0.0
+	assert_almost_eq(flat.length(), 20.0, 0.5, "nothing in the way: 20 m out")
+	ability.ability = SHOCK_PULSE
+	assert_eq(ability.aim_point(), player.global_position, "other abilities go off at the feet")

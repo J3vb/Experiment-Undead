@@ -4,7 +4,7 @@ class_name AbilityEffects
 extends RefCounted
 
 
-static func run(data: AbilityData, user: Player, spawner: Spawner) -> void:
+static func run(data: AbilityData, user: Player, spawner: Spawner, at: Vector3) -> void:
 	match data.effect:
 		AbilityData.Effect.SHOCK_PULSE:
 			shock_pulse(spawner, user.global_position, data)
@@ -12,6 +12,8 @@ static func run(data: AbilityData, user: Player, spawner: Spawner) -> void:
 			med_burst(user, data)
 		AbilityData.Effect.ADRENAL_RUSH:
 			user.abilities.start_rush(data)
+		AbilityData.Effect.DECOY_SIREN:
+			decoy_siren(spawner, at, data)
 
 
 ## Every live zombie within radius is pushed away from the centre and stunned for duration.
@@ -38,3 +40,13 @@ static func med_burst(user: Player, data: AbilityData) -> void:
 			continue
 		if mate.global_position.distance_squared_to(user.global_position) <= reach:
 			mate.health.heal(data.amount)
+
+
+## Every live zombie within radius of the siren walks to it for duration instead of chasing.
+static func decoy_siren(spawner: Spawner, at: Vector3, data: AbilityData) -> void:
+	if spawner == null:
+		return
+	var reach: float = data.radius * data.radius
+	for zombie: Zombie in spawner.zombies:
+		if zombie.state != Zombie.State.DEAD and zombie.global_position.distance_squared_to(at) <= reach:
+			zombie.lure.start(at, data.duration)
