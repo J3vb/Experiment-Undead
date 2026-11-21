@@ -175,9 +175,11 @@ func warm_hub() -> void:
 	ResourceLoader.load_threaded_request(_hub_path)
 
 
+## Hands the warm-up to UI, which collects it once done. Waiting for it here hung the game
+## when it quit mid-load.
 func _exit_tree() -> void:
 	if not _hub_path.is_empty():
-		ResourceLoader.load_threaded_get(_hub_path)
+		UI.drop_load(_hub_path)
 		_hub_path = ""
 
 
