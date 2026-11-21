@@ -140,12 +140,12 @@ func take_damage(info: DamageInfo) -> void:
 		health.take_damage(hit)
 
 
-## Gear modifiers and the product of active Serum multipliers.
+## Gear modifiers and the product of active Serum multipliers, then Adrenal Rush past the caps.
 func get_stat(stat: StringName, base: float = 1.0, other: StatBlock = null) -> float:
 	var value: float = 1.0
 	for serum: SerumData in serums:
 		value *= serum.multipliers.get(stat, 1.0)
-	return ItemInstance.stat_value(stats, stat, base, other, value)
+	return ItemInstance.stat_value(stats, stat, base, other, value) * (abilities.multiplier(stat) if abilities else 1.0)
 
 
 func equip_gear(items: Array[Dictionary], heal: bool = true) -> void:

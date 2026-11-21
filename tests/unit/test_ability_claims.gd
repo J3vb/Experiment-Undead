@@ -5,6 +5,7 @@ extends GutTest
 const WALKER: EnemyData = preload("res://content/enemies/zombie_walker.tres")
 const RULES: WaveRules = preload("res://content/waves/default_waves.tres")
 const SHOCK_PULSE: AbilityData = preload("res://content/abilities/shock_pulse.tres")
+const ADRENAL_RUSH: AbilityData = preload("res://content/abilities/adrenal_rush.tres")
 
 var _port: int
 var _server: GameSession
@@ -204,3 +205,12 @@ func test_a_refused_use_shows_nothing() -> void:
 	await wait_until(func() -> bool: return _reasons().has(&"ability_cooling"), 3.0, "refused")
 	await wait_physics_frames(5)
 	assert_eq(_rings(_client) + _rings(_server), 0)
+
+
+func test_a_clients_adrenal_rush_reaches_the_server_copy_and_the_owner() -> void:
+	var rush: AbilityData = ADRENAL_RUSH
+	_server_copy().abilities.ability = rush
+	_client_player().abilities.ability = rush
+	_press(_client_player())
+	await wait_until(func() -> bool: return _client_player().abilities.rush_left > 0.0, 3.0, "the owner runs faster")
+	assert_gt(_server_copy().abilities.rush_left, 0.0, "the server copy fires faster for its hit checks")

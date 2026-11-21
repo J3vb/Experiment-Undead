@@ -8,6 +8,9 @@ const KILL_CREDIT: float = 0.5
 
 var ability: AbilityData
 var cooldown_left: float = 0.0
+## Adrenal Rush: seconds left and the fraction it adds to move speed and fire rate.
+var rush_left: float = 0.0
+var rush: float = 0.0
 var _player: Player
 
 
@@ -23,6 +26,24 @@ func _ready() -> void:
 ## Counts down on every peer: the server's copy of a client player runs no physics of its own.
 func _physics_process(delta: float) -> void:
 	cooldown_left = maxf(cooldown_left - delta, 0.0)
+	rush_left = 0.0 if _player.is_downed else maxf(rush_left - delta, 0.0)
+
+
+## Adrenal Rush on this copy of the player: on the server by the effect, on the owner by show_use.
+func start_rush(data: AbilityData) -> void:
+	rush_left = data.duration
+	rush = data.amount
+
+
+## What Player.get_stat multiplies stat by, outside the caps: Adrenal Rush only.
+func multiplier(stat: StringName) -> float:
+	if rush_left <= 0.0:
+		return 1.0
+	if stat == &"move_speed":
+		return 1.0 + rush
+	if stat == &"fire_interval":
+		return 1.0 / (1.0 + rush)
+	return 1.0
 
 
 ## The highest ability this level has unlocked, or null below the first unlock.

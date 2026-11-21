@@ -80,6 +80,11 @@ func relay_use(peer_id: int, data: AbilityData, at: Vector3) -> void:
 
 
 @rpc("authority", "call_remote", "reliable")
-func show_use(_peer_id: int, ability_id: StringName, at: Vector3) -> void:
-	if Content.has(&"abilities", ability_id):
-		PulseRing.play(session, Content.get_item(&"abilities", ability_id) as AbilityData, at)
+func show_use(peer_id: int, ability_id: StringName, at: Vector3) -> void:
+	if not Content.has(&"abilities", ability_id):
+		return
+	var data: AbilityData = Content.get_item(&"abilities", ability_id) as AbilityData
+	PulseRing.play(session, data, at)
+	var user: Player = session.players.find_player(peer_id) if session.players else null
+	if user and data.effect == AbilityData.Effect.ADRENAL_RUSH:
+		user.abilities.start_rush(data)

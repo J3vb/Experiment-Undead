@@ -61,7 +61,10 @@ func _accept_well(peer_id: int, point: Vector3, weapon_id: StringName) -> void:
 	if player == null or not player.is_alive() or not point.is_finite():
 		claims.reject(peer_id, &"well_out_of_bounds")
 		return
-	if not _well_in_range(peer_id, player, data, point) or not claims.take_claim(peer_id, data):
+	if (
+		not _well_in_range(peer_id, player, data, point)
+		or not claims.take_claim(peer_id, data, 1.0 / player.get_stat(&"fire_interval"))
+	):
 		claims.reject(peer_id, &"well_out_of_bounds")
 		return
 	var well: GravityWell = GravityWell.open(session, player, point, data, false, claims)

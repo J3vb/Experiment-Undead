@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" path="res://systems/abilities/ability_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/hud/ability_med_burst.svg" id="icon"]
+[ext_resource type="AudioStream" path="res://assets/audio/ability_heal.wav" id="sound"]
+
+[resource]
+script = ExtResource("1")
+id = &"med_burst"
+display_name = "Med Burst"
+description = "Heals you to full and teammates within 10 m for 50."
+unlock_level = 8
+cooldown = 75.0
+effect = 1
+radius = 10.0
+duration = 0.0
+amount = 50.0
+icon = ExtResource("icon")
+sound = ExtResource("sound")
