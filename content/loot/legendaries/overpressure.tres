@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="LegendaryData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/loot/legendary_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"overpressure"
+display_name = "Overpressure"
+base_id = &"brenner_trench"
+stat = &"overpressure"
+text = "First shot after a reload fires {v}x pellets"
+low = 1.6
+high = 2.0
+step = 0.1
+lower_is_better = false
+flavour = "Reworked at the Halcyon loading dock with a heavier spring and a lot of hope."

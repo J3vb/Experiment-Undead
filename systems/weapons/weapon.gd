@@ -104,6 +104,12 @@ func start_reload() -> bool:
 		_reload_timer = RoundReload.cycle_length(self)
 	if pose.motion == null:
 		pose.play_mech(data.reload_sound)
+	if (
+		OwnerTraits.wants_cold_snap(item, _owns(), _empty_reload)
+		and shooter.session
+		and shooter.session.legendary_traits
+	):
+		shooter.session.legendary_traits.request_cold_snap(shooter, str(item.data.get("uid", "")))
 	reload_started.emit(_reload_timer)
 	return true
 
@@ -112,6 +118,10 @@ func _stat(stat: StringName) -> float:
 	if shooter:
 		return shooter.get_stat(stat, 1.0, item.stats if item else null)
 	return item.weapon_stat(stat) if item else 1.0
+
+
+func _owns() -> bool:
+	return item != null and shooter != null and shooter.is_inside_tree() and shooter.is_multiplayer_authority()
 
 
 func can_fire() -> bool:
@@ -199,7 +209,7 @@ func fire() -> void:
 	var spread: float = get_current_spread()
 	var origin: Vector3 = camera.global_position
 	var basis: Basis = PlayerCamera.aim_of(camera)
-	for i: int in data.pellets * rounds:
+	for i: int in OwnerTraits.take_pellets(item, instance, _owns()) * rounds:
 		_trace(origin, _spread_direction(basis, spread))
 	_bloom = minf(_bloom + data.spread_per_shot, data.max_spread)
 	_apply_recoil()
@@ -258,6 +268,7 @@ func _hit(result: Dictionary, origin: Vector3, direction: Vector3) -> void:
 	info.amount *= data.get_zone_multiplier(hit_zone.zone)
 	if hit_zone.zone == DamageInfo.Zone.HEAD:
 		info.amount *= _stat(&"head_damage")
+	info.amount *= OwnerTraits.last_round_scale(item, instance, _owns())
 	if not Net.is_authority():
 		if shooter and shooter.session:
 			shooter.session.hit_claims.submit_hit(self, hit_zone, info)
@@ -279,7 +290,7 @@ func _on_traced(point: Vector3, normal: Vector3, kind: Impact.Kind) -> void:
 
 func _finish_reload() -> void:
 	state = State.IDLE
-	instance.refill_magazine()
+	instance.charged = instance.refill_magazine() > 0 or instance.charged
 	_emit_ammo()
 
 

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="LegendaryData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://systems/loot/legendary_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"cold_snap"
+display_name = "Cold Snap"
+base_id = &"atlas_auto"
+stat = &"cold_snap"
+text = "Reloading an empty magazine freezes zombies within {v} m for 2 s"
+low = 3.0
+high = 5.0
+step = 0.1
+lower_is_better = false
+flavour = "Its stock still carries frost from Halcyon's cold line, the night the power went out and the labs warmed up."

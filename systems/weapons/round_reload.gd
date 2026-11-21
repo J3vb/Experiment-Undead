@@ -40,6 +40,7 @@ static func tick(weapon: Weapon, delta: float) -> void:
 	while weapon._reload_timer <= 0.0 and weapon.state == Weapon.State.RELOADING:
 		weapon.instance.ammo_in_mag += 1
 		weapon.instance.ammo_reserve -= 1
+		weapon.instance.charged = true
 		weapon._empty_reload = false
 		if weapon.instance.needs_reload():
 			weapon._reload_timer += weapon._reload_duration

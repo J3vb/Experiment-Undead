@@ -111,7 +111,7 @@ func claim_hit(
 	var item: ItemInstance = player.item_guns.get(item_uid) if not item_uid.is_empty() else null
 	var weapon: WeaponData = _weapons.get(weapon_id)
 	if item and weapon:
-		weapon = item.weapon_data(weapon, player.stats)
+		weapon = _trait_bounds(item.weapon_data(weapon, player.stats), item)
 	elif weapon and weapon.slot != WeaponData.Slot.MELEE:
 		weapon = _fitted_gun(sender, player, weapon)
 	if not _valid_hit(player, weapon, amount, point, impulse):
@@ -193,6 +193,18 @@ func _valid_hit(player: Player, weapon: WeaponData, amount: float, point: Vector
 	var maximum: float = maxf(weapon.damage, weapon.min_damage) * weapon.head_multiplier
 	maximum *= player.get_stat(&"head_damage") * SLACK
 	return amount <= maximum
+
+
+## An owner trait gun's bounds: Dead Man's Hand's last round hits harder, Overpressure fires more pellets.
+static func _trait_bounds(weapon: WeaponData, item: ItemInstance) -> WeaponData:
+	var last_round: float = item.stats.value(&"dead_mans_hand", 0.0)
+	if last_round > 1.0:
+		weapon.damage *= last_round
+		weapon.min_damage *= last_round
+	var pellets: float = item.stats.value(&"overpressure", 0.0)
+	if pellets > 1.0:
+		weapon.pellets = roundi(weapon.pellets * pellets)
+	return weapon
 
 
 ## The Content gun with the sender's gear and skill lines, rebuilt only when their stats object changes.
