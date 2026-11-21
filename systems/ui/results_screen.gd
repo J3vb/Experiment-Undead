@@ -156,8 +156,7 @@ func _add_loot_card(item: Dictionary, best: bool) -> void:
 	card.add_child(lines)
 	var title: Label = Label.new()
 	title.name = "ItemName"
-	var base: StringName = StringName(item.get("base", ""))
-	title.text = Content.weapon(base).display_name if Content.has(&"weapons", base) else String(base).capitalize()
+	title.text = LootDrop.item_name(item)
 	title.add_theme_color_override("font_color", rarity.colour)
 	title.add_theme_font_size_override("font_size", 26 if best else 22)
 	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

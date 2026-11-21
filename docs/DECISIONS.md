@@ -17,6 +17,7 @@ These win over the design docs (see `docs/design/README.md`).
 - **Co-op gear looks:** each client builds its own look and `LookSync` relays it (trusted cosmetics), replacing the server-built appearance model in gear-visuals.md. [ADR 0003](adr/0003-trusted-client-co-op.md)
 - **Gear budgets:** vests light 3,000-4,500, medium 4,000-5,500, heavy 4,500-6,000 tris; charms 600-1,300; implants 1,000-1,800; first-person arms up to 10,000. Replaces gear-visuals.md's 3,000 / 300 / 500 estimates.
 - **Screens folder:** screen data lives in `content/screens/`, not ui-hud.md's `content/ui/screens/`, because `Content` treats each top folder as one type. [ui-router](plans/ui-router.md)
+- **Legendary data:** TraitData is merged into `LegendaryData` (one file per Legendary); a trait is one flat stat line with its own stat name, read by the code that runs it; an unknown trait shows no line, not "Inactive bonus". [legendaries-traits](plans/legendaries-traits.md)
 - **Knife:** lives in `content/melee/`, not `content/weapons/`, so gun-only code (Vault, loot, grips, viewmodels) never sees it. [core-loop-gaps](plans/core-loop-gaps.md)
 - **Synapse:** 50% damage to up to 3 other zombies within 6 m, replacing the roster's 60% chain; its repeated-target ramp is deferred. Cryo Lance: 3 hits freeze 2 s, the next bullet shatters for 50% within 3 m.
 - **Ironwood .50:** loot only, overriding the roster's "every base is in the Vault" rule.
@@ -59,7 +60,7 @@ Each says when to fix it.
 - **Skill rules (provisional):** Execution Line checks health before the hit; Dead Center refunds a round to the gun in hand on any headshot kill; Undying works only without Second Wind and costs every Serum; Scrounger skips the revive reward. [skill-effects](plans/skill-effects.md)
 - **Skills waiting on their feature:** Gadgeteer and Sturdy only add their stat; Execution Line has no Brute rule. Overtime lengthens timed power-ups by the collector's seconds (team-wide timer). Fix when: F-22, F-24, F-30. [skill-effects](plans/skill-effects.md)
 - **Hold-to-buy** stays a tap. Fix when: accidental buys show in play-tests.
-- **Loot extras:** no supply or exfil caches, no gun comparison in the pickup prompt, no trading; traits, sets and `proc` lines save but do not run. Fix when: their loot batches.
+- **Loot extras:** no supply or exfil caches, no gun comparison in the pickup prompt, no trading; sets and `proc` lines save but do not run. Legendary traits roll and show; they run as F-31 builds them. Fix when: their loot batches. [legendaries-traits](plans/legendaries-traits.md)
 - **Run loadout:** the equipped Primary is not given at spawn (the round-5 Drop Locker is not built). Fix when: the Drop Locker.
 - **Skill tree:** Research opens from the main menu only (no K key or Trainer), Reset all is free, gates are 8/11 not 15/25, and the server checks only the 54-point total, not level or gates. Fix when: F-45 (Trainer, Scrap), F-90 (nodes). [skill-tree-screen](plans/skill-tree-screen.md)
 - **Teammate animations:** one two-handed rifle pose and one reload clip for every gun; a remote muzzle flash plays at the owner's first-person muzzle. Fix when: F-41 follow-ups.
