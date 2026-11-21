@@ -26,7 +26,7 @@ In:
   measured costs only.
 - The headless CPU benchmark at 66 zombies in CI as a report line, so CPU
   regressions show up on every PR.
-- Upscaler: per the open decision below. Recommended: keep FSR 2 (already in
+- Upscaler: FSR 2 now, DLSS later (the person's pick). Keep FSR 2 (already in
   Settings > Graphics), tune its default per preset, no engine fork.
 
 Not in (and where each goes):
@@ -165,11 +165,10 @@ dropped with one line in the close-out.
   ticks; one in view or within 20 m never skips (fails without the step).
 - Done when: CPU benchmark at 66 zombies under the step-2 number by a clear margin; soak green.
 
-### Step 5: upscaler (per the open decision)
+### Step 5: upscaler defaults
 
-- Build (recommended answer): Low and Medium presets turn on FSR 2 at 77% render
+- Build (the person picked FSR 2 now, DLSS later): Low and Medium presets turn on FSR 2 at 77% render
   scale; High and Ultra stay native. The Settings hint names what FSR 2 does.
-  Other answers: a new ADR first, then its own plan.
 - Files: core/graphics.gd, content/settings/graphics_upscaler.tres, tests/unit/test_graphics.gd
 - Tests: applying the Low preset sets FSR 2 and 0.77 scale; High leaves both off (fails without the step).
 - Done when: benchmark Low and Medium faster than before at equal or better look in a look-check render.
@@ -202,5 +201,5 @@ dropped with one line in the close-out.
 
 ## Open decisions
 
-- [ ] Upscaler: FSR 2 now with DLSS later (recommended), DLSS via a Godot fork, or DLSS 5. Asked on a decision card 2026-11-21.
-- [ ] 66-zombie target of 90 fps avg: provisional, taken from the stress target (48 zombies above 90 fps) in the architecture decisions.
+- [x] Upscaler: FSR 2 now, DLSS later (the person's pick on a decision card, 2026-11-21). DLSS gets a new roadmap row once a DLSS add-on works on stock Godot.
+- [x] 66-zombie target of 90 fps avg: provisional pick, taken from the stress target (48 zombies above 90 fps) in the architecture decisions; the person can change it after the baseline.
