@@ -167,10 +167,12 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-## Only the front end on a screen warms the hub. Headless runs (the CI boot test, soak) quit
-## before the load ends, and collecting it while the game quits never returns.
+## Only the front end warms the hub, and not in a bare headless boot (the CI boot test): that run
+## quits after a set number of frames, usually mid-load, and collecting the load while the game
+## quits never returns. Headless runs with their own arguments (the menu flow test) still warm it.
 func should_warm_hub() -> bool:
-	return get_tree().current_scene == self and DisplayServer.get_name() != "headless"
+	var bare_headless: bool = DisplayServer.get_name() == "headless" and OS.get_cmdline_user_args().is_empty()
+	return get_tree().current_scene == self and not bare_headless
 
 
 ## Your own Lantern Post: open to friends on the saved port, or offline when it cannot be
