@@ -1,4 +1,5 @@
-## The owner's equipped gear, item guns and skill ranks, sent to the server on spawn and every Pack equip.
+## The owner's equipped gear, item guns, skill ranks and field ability, sent to the server on spawn
+## and every Pack equip.
 ## The server checks the loadout and rebuilds the player's stats and item guns from it.
 ## Only the first loadout of a Player heals up to the new max health; later ones (mid-run swaps) only cap it.
 class_name LoadoutSync
@@ -33,11 +34,12 @@ func send_loadout() -> void:
 	if multiplayer.is_server():
 		_apply_loadout(gear, guns, _player.skill_ranks)
 	else:
-		submit_loadout.rpc_id(1, gear, guns, skills)
+		var ability: AbilityData = _player.abilities.ability
+		submit_loadout.rpc_id(1, gear, guns, skills, String(ability.id) if ability else "")
 
 
 @rpc("any_peer", "call_remote", "reliable")
-func submit_loadout(new_gear: Array, guns: Array, skills: Dictionary) -> void:
+func submit_loadout(new_gear: Array, guns: Array, skills: Dictionary, ability_id: String) -> void:
 	if not multiplayer.is_server() or multiplayer.get_remote_sender_id() != _player.get_multiplayer_authority():
 		return
 	var sender: int = multiplayer.get_remote_sender_id()
@@ -54,6 +56,19 @@ func submit_loadout(new_gear: Array, guns: Array, skills: Dictionary) -> void:
 	var typed_guns: Array[Dictionary] = []
 	typed_guns.assign(guns)
 	_apply_loadout(typed_gear, typed_guns, SkillEffects.ranks_from(skills))
+	_player.abilities.ability = _ability_for(sender, StringName(ability_id))
+
+
+## The sent ability when it exists and the sender's handshake level unlocks it, else none.
+func _ability_for(sender: int, id: StringName) -> AbilityData:
+	if id == &"":
+		return null
+	var data: AbilityData = Content.get_item(&"abilities", id) as AbilityData if Content.has(&"abilities", id) else null
+	var handshake: Handshake = _player.session.handshake if _player.session else null
+	if data == null or (handshake and handshake.player_level(sender) < data.unlock_level):
+		Log.warn(&"net", &"ability_unknown", {"peer": sender, "ability": String(id)})
+		return null
+	return data
 
 
 func _loadout_problem(new_gear: Array, guns: Array) -> String:

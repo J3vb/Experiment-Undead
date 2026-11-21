@@ -302,16 +302,17 @@ effect. Budget: under 0.1 ms per frame on the server with 4 turrets up.
   `ability_cooling`, `ability_locked`, `ability_bad_aim`, `ability_too_fast`)
   and runs `FieldAbility.use`; refusals go through `HitClaims.reject` (logged
   as `hit_claim_rejected` with the reason). `show_use` reliable to every
-  other peer. `LoadoutSync` sends the id; the server checks it exists and
-  against `Handshake.player_level`, and logs `ability_unknown` otherwise.
-  Snapshot key `ability_cooldown`. The co-op soak bot gets Shock Pulse in its
-  loadout and asks `AbilityClaims` when ready, so a client asking a dedicated
-  server is soaked from this step. Protocol bump.
+  other peer (moved to step 3, where the ring first needs it). `LoadoutSync`
+  sends the id; the server checks it exists and against
+  `Handshake.player_level`, and logs `ability_unknown` otherwise. Snapshot key
+  `ability_cooldown`. Protocol bump. (The co-op soak bot moved to step 8: soak
+  bots join at level 1, below every unlock, so they need the soak profile
+  step 8 sets up.)
 - Files: systems/abilities/ability_claims.gd (new), field_ability.gd,
   systems/net/loadout_sync.gd, player_state_sync.gd,
   systems/game/game_session.gd, core/build.gd, docs/MULTIPLAYER.md (adds
   AbilityClaims as a second pattern 2 reference with relay),
-  tools/soak/coop_soak_bot.gd, tests/unit/test_ability_claims.gd (new).
+  tests/unit/test_ability_claims.gd (new).
 - Tests: two-peer ENet test (the shape of `test_grenade_claims.gd`): a
   client's Shock Pulse stuns a server zombie; the client's cooldown arrives
   in its snapshot; a second request inside the cooldown is refused with
@@ -436,7 +437,8 @@ Build after F-21's screen has merged.
 
 - Build: tick Acceptance, `Status: Done`, roadmap row Done, DECISIONS lines
   checked, finish-feature skill. Soak with abilities on: soak bots have no
-  profile (level 1), so the soak run gives each bot an ability directly
+  profile (level 1), so the soak run gives each bot a level-50 hello (a soak
+  argument to `Handshake.setup`) and an ability directly
   (solo soak: Shock Pulse; co-op soak bots: a different one each) and the bot
   presses the ability bit when it is ready.
 - Files: docs/plans/field-abilities.md, docs/ROADMAP.md, docs/DECISIONS.md,
