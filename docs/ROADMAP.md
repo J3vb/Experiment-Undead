@@ -65,7 +65,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-80 | Props and vendors made in Tripo: Tripo API tool with manifests and image prompts, ADR for Tripo models, F-76 vendors and F-77 prop families built from Tripo instead of Blender scripts | - | F-78 | [ready](plans/tripo-models.md) | L | Building |
 | F-83 | Halcyon Labs machine models (Med Dispenser, Reforger, power switch, exfil hatch) from Tripo, about 12 Tripo room props in the bare rooms, and small life (fan, drips, PA crackle) | - | F-80 step 2 | [ready](plans/halcyon-machines-fill.md) | L | Building |
 | F-70 | Player and gear to the concept art: bearded survivor body, headgear, gloves, backpack and boots models in three tiers (field, plated, Oriel), plate carrier vests, eye implant and vest vial | - | - | [ready](plans/player-gear-concept.md) | L | Building |
-| F-71 | Four new loot slots: headgear, gloves, backpack, boots (item bases, affix pools, drops, sets, save, inventory and character screen) | - | - | [ready](plans/four-gear-slots.md) | M | Building |
+| F-71 | Four new loot slots: headgear, gloves, backpack, boots (item bases, affix pools, drops, sets, save, inventory and character screen) | - | - | [done](plans/four-gear-slots.md) | M | Done |
 | F-84 | Wear loot gear mid-run: Tab Pack overlay shows your character and gear slots, E wears a picked-up vest, charm or implant (solo play-test 2026-11-19) | - | - | [ready](plans/wear-gear-mid-run.md) | M | Building (all 3 steps merged; play-test left) |
 | F-72 | The four starter guns to the concept art: worn black with tan and brass, Oriel marks, red dots, taped mags (rifle, Brenner, Kestrel, Talon) | - | - | [done](plans/guns-concept.md) | M | Done |
 | F-73 | Weapon stats panel: five bars (damage, fire rate, accuracy, range, control) computed from WeaponData, on wall-buys, the Vault and the inventory (look: [guns_concept.jpg](design/images/guns_concept.jpg)) | - | F-72 | needed | M | Todo |
@@ -93,7 +93,7 @@ Status values: Todo, Planning, Ready (plan approved), Building, Done, Check
 | F-29 | Stalker | #123 | F-11, F-28 | [ready](plans/stalker.md) | L | Ready |
 | F-30 | Brute | #124 | F-11, F-29 | [ready](plans/brute.md) | L | Ready |
 | F-31 | Legendaries and traits | #116 | F-20 | [done](plans/legendaries-traits.md) | L | Done |
-| F-32 | Item sets (needs set lore first) | #117 | F-31 | needed | M | Todo |
+| F-32 | Item sets (needs set lore first); a set is the five armour pieces: headgear, vest, gloves, backpack, boots (F-71) | #117 | F-31, F-71 | needed | M | Todo |
 | F-90 | More Legendaries: Furnace (needs burning), Overkill and Overclock (renames first, Overclock needs F-22), Gambler's Coin, Dead Man's Hand stagger, the 9 new-base traits from gun-roster.md | - | F-31 | needed | L | Todo |
 | F-33 | Run length target: solo runs end between round 15 and 30 | #125 | F-27..F-30 | issue | S | Todo |
 

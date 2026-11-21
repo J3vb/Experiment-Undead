@@ -283,7 +283,7 @@ One active ability on a key, on a cooldown. Each kill shortens the cooldown by 0
 
 ### How this fits with Serums
 
-Serums stay as the in-run purchase layer. Skills, gear and Serums all add to the same stat modifiers, with hard caps so stacking never breaks the game: reload speed +60%, recoil reduction 50%, max health 400, points bonus +50%, loot luck +100%. Overlaps are kept on purpose but weaker on the character side: Ironhide gives +150 health, the Thick Skin skill only +30.
+Serums stay as the in-run purchase layer. Skills, gear and Serums all add to the same stat modifiers, with hard caps so stacking never breaks the game: reload speed +60%, recoil reduction 50%, flat max health +100 (Ironhide multiplies on top), points bonus +50%, loot luck +100%. Overlaps are kept on purpose but weaker on the character side: Ironhide gives +150 health, the Thick Skin skill only +30.
 
 ## Loot
 
@@ -508,6 +508,7 @@ Design changes since the Nov 14, 2026 copy, newest first. Add one row in the sam
 
 | Date | Area | Change | Detail |
 | --- | --- | --- | --- |
+| 2026-11-20 | Loot | Headgear, gloves, backpack and boots now drop (Salvager Cap, Gloves, Pack, Boots), each as often as a vest; guns fall to about 39% of drops. Each rolls 2 prefixes and 2 suffixes from its own pool, with three new lines (Steady aim, Recoil grip, Quick hands). Flat max health from gear and skills is capped at +100. Sets become the five armour pieces. | [affixes.md](affixes.md#gear-affixes), [four-gear-slots plan](../plans/four-gear-slots.md) |
 | 2026-11-20 | Town | The stall keepers come alive (provisional look): each has their own idle (Odile leans on her counter, Teun files a part at his vice, Lien types and checks her monitors, Raes stands arms crossed by the board), turns their head to you within 4 m, and greets you with a nod and a raised hand when you talk. The line shows only for you. | [lore.md](lore.md#the-stall-keepers), plan lantern-post-vendors steps 3-4, PRs #393 #394 |
 | 2026-11-20 | Skills | The hard caps on the shared stat stack hold skills plus gear; Serums stack on top of them, so Quickhands keeps its full reload boost. | [skill-effects plan](../plans/skill-effects.md), PR #409 |
 | 2026-11-20 | Weapons | Frag grenades: hold G to cook (3 s fuse), 1000 damage inside 1.5 m falling to 0 at 7 m, blocked by walls, own frag hurts up to 60, no friendly fire, explosives burst Bloaters. Fixed damage is the person's pick; the rest is provisional. | [frag-grenades.md](../plans/frag-grenades.md) |

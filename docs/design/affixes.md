@@ -19,7 +19,7 @@ Every gun and gear piece rolls up to 4 affixes from slot pools, each affix in on
 
 ## Item model
 
-An item is a base (which gun or gear piece), a rarity, an item level and a short list of rolled affixes. Five slots carry affixes: Primary, Sidearm, Vest, Charm and Implant.
+An item is a base (which gun or gear piece), a rarity, an item level and a short list of rolled affixes. Nine slots carry affixes: Primary, Sidearm, Vest, Charm, Implant, Headgear, Gloves, Backpack and Boots.
 
 - **Item level** = the round it dropped in, capped at 50 (unchanged from the design doc). It decides which affix tiers can roll.
 - **Rarity** decides how many affixes, the tier bonus, and whether a trait rolls.
@@ -79,14 +79,14 @@ The element family holds one element per gun, so a gun is fire, shock or frost, 
 
 ## Gear affixes
 
-Each gear slot has its own job, so a player knows where to look for a stat. Vest = staying alive, Charm = economy and luck, Implant = abilities and skills. A small shared pool can roll on any gear piece. 24 gear affixes in total.
+Each gear slot has its own job, so a player knows where to look for a stat. Vest = staying alive, Charm = economy and luck, Implant = abilities and skills, Headgear = head and aim, Gloves = handling, Backpack = carrying, Boots = moving. A small shared pool rolls on vest, charm and implant. Each of the four armour slots added by F-71 rolls exactly 2 prefixes and 2 suffixes (its pool below), with no All damage or Headshot focus. 27 gear affixes in total.
 
 | Affix | Text on item | Kind | Slot | Range | Weight |
 | --- | --- | --- | --- | --- | --- |
-| Max health | +X max health | prefix | Vest | 10-40 | 100 |
-| Damage reduction (new) | -X% damage taken from hits | prefix | Vest | 3-10% | 70 |
+| Max health | +X max health | prefix | Vest, Headgear, Backpack, Boots | 10-40 | 100 |
+| Damage reduction (new) | -X% damage taken from hits | prefix | Vest, Backpack, Boots | 3-10% | 70 |
 | Explosion guard (new) | -X% damage from Bloaters and your own grenades | suffix | Vest | 15-50% | 60 |
-| Regen delay | -X s before health regen | suffix | Vest | 0.3-1.0 s | 100 |
+| Regen delay | -X s before health regen | suffix | Vest, Headgear | 0.3-1.0 s | 100 |
 | Grab escape (new) | Break free from grabs X% faster | suffix | Vest | 15-40% | 60 |
 | Fast revive (new) | Revive teammates X% faster | suffix | Vest | 15-40% | 60 |
 | Points earned (new) | +X% points earned | prefix | Charm | 3-10% | 80 |
@@ -101,14 +101,17 @@ Each gear slot has its own job, so a player knows where to look for a stat. Vest
 | Ability cooldown | -X% ability cooldown | suffix | Implant | 5-15% | 100 |
 | Extra grenade (new) | +1 frag carried | suffix | Implant | +1 only, item level 22+ | 25 |
 | Tactical recharge (new) | Tactical refills X% faster | suffix | Implant | 10-30% | 70 |
-| Move speed | +X% move speed | suffix | any gear | 3-8% | 70 |
-| Sprint duration (new) | +X% sprint time | suffix | any gear | 15-40% | 60 |
-| All damage (new) | +X% damage with all guns | prefix | any gear | 2-6% | 50 |
-| Headshot focus (new) | +X% headshot damage, all guns | prefix | any gear | 4-12% | 50 |
-| Reload focus (new) | +X% reload speed, all guns | suffix | any gear | 4-10% | 60 |
-| Mule (new) | +X% reserve ammo, all guns | suffix | any gear | 5-15% | 50 |
+| Move speed | +X% move speed | suffix | Vest, Charm, Implant, Boots | 3-8% | 70 |
+| Sprint duration (new) | +X% sprint time | suffix | Vest, Charm, Implant, Backpack, Boots | 15-40% | 60 |
+| All damage (new) | +X% damage with all guns | prefix | Vest, Charm, Implant | 2-6% | 50 |
+| Headshot focus (new) | +X% headshot damage, all guns | prefix | Vest, Charm, Implant | 4-12% | 50 |
+| Reload focus (new) | +X% reload speed, all guns | suffix | Vest, Charm, Implant, Headgear, Gloves | 4-10% | 60 |
+| Mule (new) | +X% reserve ammo, all guns | suffix | Vest, Charm, Implant, Backpack | 5-15% | 50 |
+| Steady aim (F-71) | +X% aim speed, all guns | prefix | Headgear, Gloves | 3-8% | 90 |
+| Recoil grip (F-71) | -X% recoil, all guns | prefix | Gloves | 3-8% | 90 |
+| Quick hands (F-71) | +X% swap and sprint-to-fire speed, all guns | suffix | Gloves | 6-14% | 70 |
 
-Gun stats on gear roll at about 40% of the gun version, so a gun's own lines always matter more. Skill rank and Extra grenade are "one value" lines: they show no range and no tier pips.
+Gun stats on gear roll at about 40% of the gun version, so a gun's own lines always matter more. Steady aim and Recoil grip are prefixes on gear (the gun versions are suffixes) because the new slots have no damage lines. Skill rank and Extra grenade are "one value" lines: they show no range and no tier pips.
 
 ## Tiers, rolls and weights
 
@@ -230,6 +233,7 @@ The skill design (P5) owns the node list; this doc only fixes the tag field and 
 | Bonus skill ranks from gear | +3 |
 | Fire rate (increased bucket) | +30% |
 | Leech per hit | 6 |
+| Max health (flat part: gear and skills) | +100; Ironhide still multiplies the base |
 
 The character screen shows a stat in amber when it hits its cap, so wasted rolls are visible.
 

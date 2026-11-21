@@ -74,7 +74,7 @@ func test_skills_stack_with_gear_and_stop_at_the_caps() -> void:
 	player.stats.add_modifier(&"reload_pct", "increased", 0.55, &"gear")
 	assert_almost_eq(player.get_stat(&"reload_time"), 1.0 / 1.6, 0.0001, "reload stops at +60%")
 	player.stats.add_modifier(&"max_health", "flat", 400.0, &"gear")
-	assert_eq(player.get_stat(&"max_health", 100.0), 400.0, "max health stops at 400")
+	assert_eq(player.get_stat(&"max_health", 100.0), 200.0, "flat max health from skills and gear stops at +100")
 
 
 func test_serums_stack_on_top_of_the_caps() -> void:

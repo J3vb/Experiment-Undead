@@ -37,7 +37,9 @@ content/loot/affixes/points_earned
 content/loot/affixes/points_per_hit
 content/loot/affixes/power_up_chance
 content/loot/affixes/power_up_duration
+content/loot/affixes/quick_hands
 content/loot/affixes/reclaimer
+content/loot/affixes/recoil_grip
 content/loot/affixes/recoil_pct
 content/loot/affixes/regen_delay
 content/loot/affixes/reload_focus
@@ -46,6 +48,7 @@ content/loot/affixes/scrap_find
 content/loot/affixes/skill_rank
 content/loot/affixes/sprint_duration
 content/loot/affixes/stagger_pct
+content/loot/affixes/steady_aim
 content/loot/affixes/tactical_recharge
 content/loot/affixes/vault_favour
 content/loot/gear/backpack_pack

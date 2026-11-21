@@ -15,6 +15,6 @@ caps = Dictionary[StringName, float]({
 &"leech": 6.0,
 &"reload_pct": 1.6,
 &"recoil_pct": 1.5,
-&"max_health": 400.0,
+&"max_health": 100.0,
 &"points_earned": 1.5
 })

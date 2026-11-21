@@ -66,6 +66,12 @@ func _request(path: String) -> bool:
 	return ResourceLoader.load_threaded_request(path) == OK
 
 
+## A background load nobody waits for any more: collected once done, never waited on.
+func drop_load(path: String) -> void:
+	_dropped_paths.append(path)
+	set_process(true)
+
+
 func is_loading() -> bool:
 	return not _loading_path.is_empty()
 

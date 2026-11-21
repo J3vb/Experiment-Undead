@@ -11,4 +11,4 @@ display_name = "Salvager Boots"
 visual_id = &"boots_field"
 loot_tags = Array[StringName]([&"boots"])
 unlock_level = 1
-drop_weight = 0.0
+drop_weight = 300.0

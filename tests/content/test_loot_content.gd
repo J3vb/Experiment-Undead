@@ -16,7 +16,7 @@ func test_loot_ids_are_unique_across_subfolders() -> void:
 		seen.append(id)
 		assert_eq(String(id), path.get_file().get_basename())
 		assert_eq(Content.get_item(&"loot", id), resource)
-	assert_eq(paths.size(), 87)
+	assert_eq(paths.size(), 90)
 	assert_eq(Content.ids(&"loot").size(), paths.size())
 
 
@@ -35,7 +35,7 @@ func test_stat_caps_match_the_affix_design_table() -> void:
 			&"leech": 6.0,
 			&"reload_pct": 1.6,
 			&"recoil_pct": 1.5,
-			&"max_health": 400.0,
+			&"max_health": 100.0,
 			&"points_earned": 1.5,
 		}
 	)

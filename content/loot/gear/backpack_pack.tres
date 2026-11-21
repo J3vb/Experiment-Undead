@@ -11,4 +11,4 @@ display_name = "Salvager Pack"
 visual_id = &"backpack_pack"
 loot_tags = Array[StringName]([&"backpack"])
 unlock_level = 1
-drop_weight = 0.0
+drop_weight = 300.0
