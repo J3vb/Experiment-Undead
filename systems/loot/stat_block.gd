@@ -1,4 +1,5 @@
 ## Runtime modifiers: increased fractions add, more factors multiply, then flat units add.
+## Fire rate caps its increased bucket and max health its flat bucket; other caps clamp the result.
 class_name StatBlock
 extends RefCounted
 
@@ -26,6 +27,8 @@ func value(stat: StringName, base: float = 1.0, extra: StatBlock = null, multipl
 		totals.z += added.z
 	if stat == &"fire_rate_pct":
 		totals.x = minf(totals.x, CAPS.caps[stat])
+	elif stat == &"max_health":
+		totals.z = minf(totals.z, CAPS.caps[stat])
 	var result: float = base * (1.0 + totals.x) * totals.y * multiplier + totals.z
 	return _apply_cap(stat, base, result)
 
@@ -48,6 +51,6 @@ func _totals(stat: StringName) -> Vector3:
 func _apply_cap(stat: StringName, base: float, result: float) -> float:
 	if stat == &"move_speed" or stat == &"damage_reduction":
 		return minf(result, base * (1.0 + CAPS.caps[stat]))
-	if stat != &"fire_rate_pct" and CAPS.caps.has(stat):
+	if stat != &"fire_rate_pct" and stat != &"max_health" and CAPS.caps.has(stat):
 		return minf(result, CAPS.caps[stat])
 	return result

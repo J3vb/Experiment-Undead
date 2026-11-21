@@ -1,6 +1,6 @@
 # Plan: Four new loot slots (headgear, gloves, backpack, boots)
 
-Status: Building
+Status: Done
 Roadmap: F-71 / issue none (split out of F-70, docs/plans/player-gear-concept.md)
 Phase: P6
 Size: M
@@ -385,15 +385,15 @@ Riskiest part first: it touches the co-op hit check. Label `fix`.
 
 ## Acceptance
 
-- [ ] Gear gun lines change starter, wall and Vault guns, and the server
+- [x] Gear gun lines change starter, wall and Vault guns, and the server
       accepts the boosted hits (test).
-- [ ] A version 2 save loads with four empty new slots and saves as version 3
+- [x] A version 2 save loads with four empty new slots and saves as version 3
       (test).
-- [ ] A client with all nine slots filled joins a co-op game and the server
+- [x] A client with all nine slots filled joins a co-op game and the server
       applies its gear stats (test).
-- [ ] The character screen and the Pack show and equip all new slots with
+- [x] The character screen and the Pack show and equip all new slots with
       mouse and gamepad (test + screenshot).
-- [ ] All four new slots drop in a soak run and roll only live lines (test +
+- [x] All four new slots drop in a soak run and roll only live lines (test +
       soak log).
 
 ## Risks
